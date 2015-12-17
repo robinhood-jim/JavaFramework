@@ -1,3 +1,18 @@
+/*
+ * Copyright (c) 2015,robinjim(robinjim@126.com)
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.robin.core.base.util;
 
 import java.io.File;
@@ -17,25 +32,14 @@ import org.supercsv.io.CsvListWriter;
 import org.supercsv.io.ICsvListReader;
 import org.supercsv.io.ICsvListWriter;
 import org.supercsv.prefs.CsvPreference;
-/**
- * <p>Title:  锟阶诧拷平台</p>
- *
- * <p>Description: 通锟斤拷Csv锟斤拷写锟斤拷锟斤拷锟斤拷</p>
- *
- * <p>Copyright: Copyright (c) 2009</p>
- *
- * <p>Company: talkweb-BI</p>
- *
- * @author luoming
- * @version 1.0
- */
+
 public class CsvGenerator{
 	private static Logger logger=LoggerFactory.getLogger(CsvGenerator.class);
 	/**
-	 * CSV锟斤拷取
-	 * @param inputStream   锟斤拷
-	 * @param config        CSV锟斤拷锟斤拷
-	 * @param columnResultList    锟斤拷锟?
+	 * 
+	 * @param inputStream   
+	 * @param config    
+	 * @param columnResultList   
 	 * @return
 	 */
 	public static int ReadFile(InputStream inputStream,CsvConfig config,List<Map<String,String>> columnResultList){
@@ -43,10 +47,6 @@ public class CsvGenerator{
 		int pos=0;
 		try{
 			ICsvListReader reader=new CsvListReader(new InputStreamReader(inputStream,"UTF-8"),CsvPreference.STANDARD_PREFERENCE);
-//			String[] header=reader.getCSVHeader(true);
-//			if(header==null || header.length==0)
-//				throw new Exception("没锟斤拷锟斤拷锟斤拷头锟斤拷锟睫凤拷锟斤拷锟斤拷");
-			//锟叫讹拷锟街讹拷锟角凤拷锟节憋拷锟叫达拷锟节ｏ拷锟斤拷锟斤拷锟斤拷锟睫筹拷,锟斤拷锟斤拷为全锟斤拷写锟斤拷全小写
 			List<CsvColumnConfig> columnList=config.getConfigList();
 //			for(int k=0;k<header.length;k++){
 //				String column=columnList.get(k).getColumnName();
@@ -79,8 +79,6 @@ public class CsvGenerator{
 			ICsvListReader reader=new CsvListReader(new InputStreamReader(inputStream,"UTF-8"),new CsvPreference('"', separator, "\r\n"));
 //			String[] header=reader.getCSVHeader(true);
 //			if(header==null || header.length==0)
-//				throw new Exception("没锟斤拷锟斤拷锟斤拷头锟斤拷锟睫凤拷锟斤拷锟斤拷");
-			//锟叫讹拷锟街讹拷锟角凤拷锟节憋拷锟叫达拷锟节ｏ拷锟斤拷锟斤拷锟斤拷锟睫筹拷,锟斤拷锟斤拷为全锟斤拷写锟斤拷全小写
 			List<CsvColumnConfig> columnList=config.getConfigList();
 //			for(int k=0;k<header.length;k++){
 //				String column=columnList.get(k).getColumnName();
@@ -113,17 +111,7 @@ public class CsvGenerator{
 			ICsvListReader reader=new CsvListReader(new InputStreamReader(inputStream,"UTF-8"),CsvPreference.STANDARD_PREFERENCE);
 			String[] header=reader.getCSVHeader(true);
 			if(header==null || header.length==0)
-				throw new Exception("没锟斤拷锟斤拷锟斤拷头锟斤拷锟睫凤拷锟斤拷锟斤拷");
-			//锟叫讹拷锟街讹拷锟角凤拷锟节憋拷锟叫达拷锟节ｏ拷锟斤拷锟斤拷锟斤拷锟睫筹拷,锟斤拷锟斤拷为全锟斤拷写锟斤拷全小写
-//			for(int k=0;k<header.length;k++){
-//				String column=columnList.get(k).getColumnName();
-//				if(column==null)
-//					column=columnMap.get(header[k].toLowerCase());
-//				if(column!=null){
-//					colList.add(Integer.valueOf(k));
-//					ecolList.add(column);
-//				}
-//			}
+				throw new Exception("no file");
 			List<String> resultlist=new ArrayList<String>();
 			while((resultlist=reader.read())!=null){
 				pos++;
@@ -145,19 +133,8 @@ public class CsvGenerator{
 			ICsvListReader reader=new CsvListReader(new InputStreamReader(inputStream,"UTF-8"),new CsvPreference('"', seperator, "\r\n"));
 			String[] header=reader.getCSVHeader(true);
 			if(header==null || header.length==0)
-				throw new Exception("没锟斤拷锟斤拷锟斤拷头锟斤拷锟睫凤拷锟斤拷锟斤拷");
-			//List<Integer> colList=new ArrayList<Integer>();
-			//List<Map<String, String>> ecolList=new ArrayList<Map<String,String>>();
-			//锟叫讹拷锟街讹拷锟角凤拷锟节憋拷锟叫达拷锟节ｏ拷锟斤拷锟斤拷锟斤拷锟睫筹拷,锟斤拷锟斤拷为全锟斤拷写锟斤拷全小写
-//			for(int k=0;k<header.length;k++){
-//				String column=columnList.get(k).getColumnName();
-//				if(column==null)
-//					column=columnMap.get(header[k].toLowerCase());
-//				if(column!=null){
-//					colList.add(Integer.valueOf(k));
-//					ecolList.add(column);
-//				}
-//			}
+				throw new Exception("no file");
+
 			List<String> resultlist=new ArrayList<String>();
 			while((resultlist=reader.read())!=null){
 				pos++;
@@ -179,17 +156,7 @@ public class CsvGenerator{
 			ICsvListReader reader=new CsvListReader(ireader,CsvPreference.STANDARD_PREFERENCE);
 			String[] header=reader.getCSVHeader(true);
 			if(header==null || header.length==0)
-				throw new Exception("没锟斤拷锟斤拷锟斤拷头锟斤拷锟睫凤拷锟斤拷锟斤拷");
-			//锟叫讹拷锟街讹拷锟角凤拷锟节憋拷锟叫达拷锟节ｏ拷锟斤拷锟斤拷锟斤拷锟睫筹拷,锟斤拷锟斤拷为全锟斤拷写锟斤拷全小写
-//			for(int k=0;k<header.length;k++){
-//				String column=columnList.get(k).getColumnName();
-//				if(column==null)
-//					column=columnMap.get(header[k].toLowerCase());
-//				if(column!=null){
-//					colList.add(Integer.valueOf(k));
-//					ecolList.add(column);
-//				}
-//			}
+				throw new Exception("no file");
 			List<String> resultlist=new ArrayList<String>();
 			while((resultlist=reader.read())!=null){
 				pos++;
@@ -204,7 +171,7 @@ public class CsvGenerator{
 		}
 		return pos;
 	}
-public static int ReadFile(Reader ireader,CsvConfig config,List<Map<String,String>> columnResultList){
+	public static int ReadFile(Reader ireader,CsvConfig config,List<Map<String,String>> columnResultList){
 		
 		int pos=0;
 		try{
@@ -233,7 +200,7 @@ public static int ReadFile(Reader ireader,CsvConfig config,List<Map<String,Strin
 			ICsvListReader reader=new CsvListReader(ireader,new CsvPreference('"', seperator, "\n"));
 			String[] header=reader.getCSVHeader(true);
 			if(header==null || header.length==0)
-				throw new Exception("没锟斤拷锟斤拷锟斤拷头锟斤拷锟睫凤拷锟斤拷锟斤拷");
+				throw new Exception("no file ");
 			List<String> resultlist=new ArrayList<String>();
 			while((resultlist=reader.read())!=null){
 				pos++;
@@ -270,11 +237,11 @@ public static int ReadFile(Reader ireader,CsvConfig config,List<Map<String,Strin
 		return pos;
 	}
 	/**
-	 * 写锟斤拷CSV锟侥硷拷
+	 * 
 	 * @param pwriter  PrintWriter
-	 * @param header   头锟斤拷锟街凤拷锟叫憋拷
-	 * @param resultList  锟斤拷菁锟斤拷锟?
-	 * @param quotachar   锟街革拷锟斤拷
+	 * @param header   
+	 * @param resultList
+	 * @param quotachar  
 	 */
 	public static void WriteFile(PrintWriter pwriter,String[] header, List<String[]> resultList,String quotachar){
 		try{
@@ -294,12 +261,12 @@ public static int ReadFile(Reader ireader,CsvConfig config,List<Map<String,Strin
 		}
 	}
 	/**
-	 * 写锟斤拷CSV锟侥硷拷
+	 * 
 	 * @param pwriter  PrintWirter
-	 * @param header   头 锟斤拷锟斤拷为锟斤拷
-	 * @param columnName  锟街讹拷锟叫憋拷
-	 * @param list        锟斤拷菁锟?
-	 * @param quotachar   锟街革拷锟斤拷
+	 * @param header   
+	 * @param columnName  
+	 * @param list      
+	 * @param quotachar   
 	 */
 	public static void WriteDataToFile(PrintWriter pwriter,String[] header,String[] columnName,List<Map<String, String>> list,String quotachar){
 		try{
