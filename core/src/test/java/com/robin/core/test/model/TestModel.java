@@ -4,7 +4,7 @@ import com.robin.core.base.annotation.MappingEntity;
 import com.robin.core.base.annotation.MappingField;
 import com.robin.core.base.model.BaseObject;
 
-@MappingEntity(table="t_test",schema="etl")
+@MappingEntity(table="t_test")
 public class TestModel extends BaseObject{
 	@MappingField(primary="1",increment="1")
 	private Long id;

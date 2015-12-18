@@ -26,7 +26,7 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ConfigurableApplicationContext;
 
 public class DynamicBeanReaderImpl implements DynamicBeanReader,ApplicationContextAware {
-	  private static final Log logger = LogFactory.getLog(DynamicBeanReaderImpl.class);//锟秸硷拷  
+	 private static Log logger = LogFactory.getLog(DynamicBeanReaderImpl.class);
 	private XmlBeanDefinitionReader beanDefinitionReader;  
     
     private ConfigurableApplicationContext applicationContext = null;    
@@ -47,11 +47,11 @@ public class DynamicBeanReaderImpl implements DynamicBeanReader,ApplicationConte
         long startTime = System.currentTimeMillis();  
         String beanName = dynamicBean.getBeanName();  
         if(applicationContext.containsBean(beanName)){  
-            logger.warn("bean锟斤拷"+beanName+"锟斤拷锟窖撅拷锟斤拷锟截ｏ拷");  
+            logger.warn("bean Name"+beanName+"already Exist!");  
             return;  
         }  
         beanDefinitionReader.loadBeanDefinitions(new DynamicResource(dynamicBean));  
-        logger.info("锟斤拷始锟斤拷bean锟斤拷"+dynamicBean.getBeanName()+"锟斤拷锟斤拷时"+(System.currentTimeMillis()-startTime)+"锟斤拷锟诫。");  
+        logger.info("load bean"+dynamicBean.getBeanName()+" cost time "+(System.currentTimeMillis()-startTime)+"Second.");  
     }   
 	
 

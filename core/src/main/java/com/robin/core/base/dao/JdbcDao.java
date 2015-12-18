@@ -17,8 +17,6 @@ package com.robin.core.base.dao;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Type;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -37,14 +35,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-
 import org.apache.commons.beanutils.BeanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,8 +51,7 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.jdbc.support.lob.LobHandler;
 
-import com.robin.core.base.annotation.MappingEntity;
-import com.robin.core.base.annotation.MappingField;
+import com.robin.core.base.dao.util.AnnotationRetrevior;
 import com.robin.core.base.exception.DAOException;
 import com.robin.core.base.exception.QueryConfgNotFoundException;
 import com.robin.core.base.model.BaseObject;
@@ -481,40 +470,6 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao{
 		}
 		return retlist;
     }
-	/*public List<BaseObject> queryByCondition(Class<? extends BaseObject>type,List<FilterCondition> conditions,String orderByStr)
-			throws DAOException {
-		List<BaseObject> retlist = new ArrayList<BaseObject>();
-		try{
-		StringBuffer buffer=new StringBuffer();
-		Map<String, String> tableMap = new HashMap<String, String>();
-		List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
-		buffer.append(getWholeSelectSql(type.newInstance(), tableMap, list));
-		List<Object> objList=new ArrayList<Object>();
-		for (int i = 0; i < conditions.size(); i++) {
-			buffer.append(conditions.get(i).toSQLPart()).append(" and ");
-			getConditionParam(conditions.get(i), objList);
-		}
-		String sql = buffer.toString().substring(0, buffer.length() - 5);
-		if(orderByStr!=null &&	!"".equals(orderByStr))
-			sql+=" order by "+orderByStr;
-		
-		Object[] objs = new Object[objList.size()];
-		for (int i = 0; i < objList.size(); i++) {
-			objs[i] = objList.get(i);
-		}
-		if(logger.isDebugEnabled())
-			logger.debug("querySql="+sql);
-		List<Map<String, Object>> rsList = queryBySql(sql, objs);
-		for (int i = 0; i < rsList.size(); i++) {
-			BaseObject obj = type.newInstance();
-			ConvertUtil.convertToModel(obj, rsList.get(i));
-			retlist.add(obj);
-		}
-		}catch (Exception e) {
-			throw new DAOException(e);
-		}
-		return retlist;
-	}*/
 	private List<Map<String,Object>> queryItemList(final PageQuery qs, final String pageSQL) throws DAOException{
 		int pageNum=Integer.parseInt(qs.getPageNumber());
 		int pageSize=Integer.parseInt(qs.getPageSize());
@@ -561,22 +516,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao{
 		}
 		return namedstr;
 	}
-	/*private void getConditionParam(FilterCondition condition,List<Object> objList){
-		if(condition.getValue()!=null){
-			if(condition.getValue() instanceof FilterCondition){
-				getConditionParam((FilterCondition)condition.getValue(), objList);
-			}else
-				objList.add(condition.getValue());
-		}else if(condition.getValues()!=null){
-			Object[] objArr=condition.getValues();
-			for (int i = 0; i < objArr.length; i++) {
-				if(condition.getValue() instanceof Condition){
-					getConditionParam((FilterCondition)condition.getValue(), objList);
-				}else
-					objList.add(condition.getValue());
-			}
-		}
-	}*/
+	
 	public void batchUpdate(String sql,List<Map<String,String>> resultList,List<Map<String,String>> columnpoolList,final int batchsize) throws DAOException{
 		CommJdbcUtil.batchUpdate(getJdbcTemplate(), sql, resultList, columnpoolList, batchsize);
 	}
@@ -590,6 +530,13 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao{
 	public int executeUpdate(String sql,Object[] objs) throws DAOException{
 		try{
 			return this.getJdbcTemplate().update(sql, objs);
+		}catch (Exception e) {
+			throw new DAOException(e);
+		}
+	}
+	private int executeUpdate(String sql,List<Map<String,Object>> fields) throws DAOException{
+		try{
+			return this.getJdbcTemplate().update(sql, new DefaultPrepareStatement(fields, sql));
 		}catch (Exception e) {
 			throw new DAOException(e);
 		}
@@ -614,23 +561,6 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao{
 		}
 	}
 	
-	public String[] getResultColName(QueryString qs){
-		String field=qs.getField();
-		if(field==null || "".equals(field.trim()))
-			return null;
-		StringTokenizer token=new StringTokenizer(field,",");
-		 int fields_nums = token.countTokens();
-         String fields[] = new String[fields_nums];
-         for(int i = 0; i < fields_nums; i++)
-         {
-             fields[i] = token.nextToken().trim();
-             int index = fields[i].lastIndexOf(" ");
-             if(index > -1)
-                 fields[i] = fields[i].substring(index).trim();
-         }
-         return fields;
-         
-	}
 
 	/** 
      * Call Procedure
@@ -713,28 +643,76 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao{
 		}, keyHolder);
 		return keyHolder.getKey().longValue();
 	}
-    public long executeOracleSqlWithReturn(final String sql,final String seqfield, final Object... objects)
+    private long executeSqlWithReturn(List<Map<String, Object>> field,final String sql)
+			throws DAOException {
+		KeyHolder keyHolder=new GeneratedKeyHolder();
+		getJdbcTemplate().update(new DefaultPrepareStatement(field,sql), keyHolder);
+		return keyHolder.getKey().longValue();
+	}
+    private long executeOracleSqlWithReturn(final List<Map<String, Object>> fields,final String sql,final String seqfield)
 			throws DAOException {
 		KeyHolder keyHolder=new GeneratedKeyHolder();
 		getJdbcTemplate().update(new PreparedStatementCreator() {
 			public java.sql.PreparedStatement createPreparedStatement(Connection conn)
 					throws SQLException {
 				PreparedStatement ps =conn.prepareStatement(sql, new String[]{seqfield});
-				for (int i = 0; i < objects.length; i++) {
-					setParameter(ps, i+1, objects[i]);
+				int pos=1;
+				for (Map<String, Object> map : fields) {
+					if (!map.containsKey("increment")) {
+						if (map.get("value") != null) {
+							String datatype = map.get("datatype").toString();
+							if (datatype.equalsIgnoreCase("clob")) {
+								 lobHandler.getLobCreator().setClobAsString(ps, pos, map.get("value").toString());
+							} else if (datatype.equalsIgnoreCase("blob")) {
+								lobHandler.getLobCreator().setBlobAsBytes(ps, pos, (byte[])map.get("value"));
+							} else {
+								setParameter(ps, pos, map.get("value"));
+							}
+							pos++;
+						}
+					}
 				}
 				return ps;
 			}
 		}, keyHolder);
 		return keyHolder.getKey().longValue();
 	}
+    private class DefaultPrepareStatement implements PreparedStatementCreator{
+    	private String sql;
+    	private List<Map<String, Object>> fields;
+    	public DefaultPrepareStatement(List<Map<String, Object>> fields,final String sql) {
+			this.sql=sql;
+			this.fields=fields;
+		}
+    	public java.sql.PreparedStatement createPreparedStatement(Connection conn)
+				throws SQLException {
+			PreparedStatement ps =conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+			int pos=1;
+			for (Map<String, Object> map : fields) {
+				if (!map.containsKey("increment")) {
+					if (map.get("value") != null) {
+						String datatype = map.get("datatype").toString();
+						if (datatype.equalsIgnoreCase("clob")) {
+							 lobHandler.getLobCreator().setClobAsString(ps, pos, map.get("value").toString());
+						} else if (datatype.equalsIgnoreCase("blob")) {
+							lobHandler.getLobCreator().setBlobAsBytes(ps, pos, (byte[])map.get("value"));
+						} else {
+							setParameter(ps, pos, map.get("value"));
+						}
+						pos++;
+					}
+				}
+			}
+			return ps;
+		}
+    }
     /** 
      * Create Model 
      * @param BaseObject
      */ 
     public Long createVO(BaseObject obj) throws DAOException{
     	Map<String, String> tableMap=new HashMap<String, String>();
-    	List<Map<String, Object>> list=getMappingFields(obj,tableMap,true);
+    	List<Map<String, Object>> fields=AnnotationRetrevior.getMappingFields(obj,tableMap,true);
     	StringBuffer buffer=new StringBuffer();
     	buffer.append("insert into ");
     	if(tableMap.containsKey("schema"))
@@ -742,13 +720,13 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao{
     	buffer.append(tableMap.get("tableName"));
     	StringBuffer fieldBuffer=new StringBuffer();
     	StringBuffer valuebuBuffer=new StringBuffer();
-    	List<Object> objList=new ArrayList<Object>();
+    	//List<Object> objList=new ArrayList<Object>();
     	boolean hasincrementPk=false;
     	boolean containlob=false;
     	Long retval=null;
     	String seqfield="";
     	String incrementcolumn=null;
-    	for (Map<String, Object> map:list) {
+    	for (Map<String, Object> map:fields) {
     		if(map.get("datatype")!=null){
     			if(map.get("datatype").toString().equalsIgnoreCase("clob") || map.get("datatype").toString().equalsIgnoreCase("blob")){
     				containlob=true;
@@ -758,7 +736,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao{
 				if(map.get("value")!=null){
 					fieldBuffer.append(map.get("field").toString()).append(",");
 					valuebuBuffer.append("?,");
-					objList.add(map.get("value"));
+					//objList.add(map.get("value"));
 				}
 			}else{
 				hasincrementPk=true;
@@ -774,26 +752,32 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao{
 			
 		}
     	buffer.append("(").append(fieldBuffer.substring(0, fieldBuffer.length()-1)).append(") values (").append(valuebuBuffer.substring(0, valuebuBuffer.length()-1)).append(")");
-    	Object[] objs=objList.toArray();
+    	//Object[] objs=objList.toArray();
     	String insertSql=buffer.toString();
     	if(logger.isDebugEnabled())
     		logger.debug("insert sql="+insertSql);
     	try{
+    		LobCreatingPreparedStatementCallBack back=null;
+    		if(containlob){
+    			back=new LobCreatingPreparedStatementCallBack(lobHandler);
+    			back.setFields(fields);
+    			back.setObj(obj);
+    		}
     	if(hasincrementPk){
-    		if(sqlGen instanceof OracleSqlGen)
-    			retval= new Long(executeOracleSqlWithReturn(insertSql, seqfield, objs));
+    		if(sqlGen instanceof OracleSqlGen){
+    			retval= new Long(executeOracleSqlWithReturn(fields,insertSql, seqfield));
+    		}
     		else
-    			retval=new Long(executeSqlWithReturn(insertSql, objs));
+    		{
+    			retval=new Long(executeSqlWithReturn(fields,insertSql));
+    		}
     		if(incrementcolumn!=null)
     			MethodInvoker.invokeSetMethod(obj, incrementcolumn, retval);
     	}
     	else{
     		if(!containlob)
-    			executeUpdate(insertSql,objs);
+    			executeUpdate(insertSql,fields);
     		else {
-    			LobCreatingPreparedStatementCallBack back=new LobCreatingPreparedStatementCallBack(lobHandler);
-    			back.setFields(list);
-    			back.setObj(obj);
     			this.getJdbcTemplate().execute(insertSql,back);
     		}
     	}
@@ -814,13 +798,13 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao{
      */ 
     public int updateVO(Class<? extends BaseObject> clazz,BaseObject obj) throws DAOException{
     	Map<String, String> tableMap=new HashMap<String, String>();
-    	List<Map<String, Object>> list=getMappingFields(obj,tableMap,false);
-    	Map<String, Object> primarycol=getPrimaryField(list);
+    	List<Map<String, Object>> list=AnnotationRetrevior.getMappingFields(obj,tableMap,false);
+    	Map<String, Object> primarycol=AnnotationRetrevior.getPrimaryField(list);
     	Map<String, Object> orgmap=new HashMap<String, Object>();
     	
     	if(primarycol!=null){
     		BaseObject orgobj=getEntity(clazz, (Serializable) primarycol.get("value"));
-    		List<Map<String, Object>> list1=getMappingFields(orgobj,tableMap,false);
+    		List<Map<String, Object>> list1=AnnotationRetrevior.getMappingFields(orgobj,tableMap,false);
     		for (Map<String, Object> map:list1) {
     			if(!map.containsKey("primary")){
     				if(map.get("value")!=null){
@@ -884,7 +868,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao{
     public int deleteVO(Class<? extends BaseObject> clazz,Serializable[] value) throws DAOException{
     	try{
     	Map<String, String> tableMap=new HashMap<String, String>();
-    	List<Map<String, Object>> list=getMappingFields((BaseObject)clazz.newInstance(),tableMap,false);
+    	List<Map<String, Object>> list=AnnotationRetrevior.getMappingFields((BaseObject)clazz.newInstance(),tableMap,false);
     	StringBuffer buffer=new StringBuffer();
     	buffer.append("delete from ");
     	if(tableMap.containsKey("schema"))
@@ -921,7 +905,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao{
     public int deleteByField(Class<? extends BaseObject> clazz,String field,Object value) throws DAOException{
     	try{
     	Map<String, String> tableMap=new HashMap<String, String>();
-    	List<Map<String, Object>> list=getMappingFields((BaseObject)clazz.newInstance(),tableMap,false);
+    	List<Map<String, Object>> list=AnnotationRetrevior.getMappingFields((BaseObject)clazz.newInstance(),tableMap,false);
     	StringBuffer buffer=new StringBuffer();
     	buffer.append("delete from ");
     	if(tableMap.containsKey("schema"))
@@ -955,7 +939,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao{
     	try{
     		BaseObject obj=(BaseObject) clazz.newInstance();
     		Map<String, String> tableMap=new HashMap<String, String>();
-    		List<Map<String, Object>> list=getMappingFields(obj,tableMap,false);
+    		List<Map<String, Object>> list=AnnotationRetrevior.getMappingFields(obj,tableMap,false);
     		StringBuffer sqlbuffer=new StringBuffer("select ");
     		StringBuffer wherebuffer=new StringBuffer();
     		
@@ -1086,7 +1070,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao{
     public String getWholeSelectSql(BaseObject obj,Map<String, String> tableMap,List<Map<String, Object>> list) throws DAOException{
     	try{
     		tableMap=new HashMap<String, String>();
-    		List<Map<String, Object>> list1=getMappingFields(obj, tableMap, false);
+    		List<Map<String, Object>> list1=AnnotationRetrevior.getMappingFields(obj, tableMap, false);
     		list.addAll(list1);
     		StringBuffer buffer=new StringBuffer("select ");
     		for (Map<String, Object> map:list) {
@@ -1101,216 +1085,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao{
     		throw new DAOException(ex);
     	}
     }
-    private List<Map<String, Object>> getMappingFields(BaseObject obj,Map<String, String> tableMap,boolean needValidate) throws DAOException{
-    	boolean flag = obj.getClass().isAnnotationPresent(MappingEntity.class);
-    	if(flag){
-    		MappingEntity entity=obj.getClass().getAnnotation(MappingEntity.class);
-    		String tableName=entity.table();
-    		String schema=entity.schema();
-    		tableMap.put("tableName", tableName);
-    		if(!"".equals(schema))
-    			tableMap.put("schema", schema);
-    		List<Map<String, Object>> list=new ArrayList<Map<String,Object>>();
-    		Field[] fields=obj.getClass().getDeclaredFields();
-    		
-    		for (Field field:fields) {
-    			MappingField mapfield=field.getAnnotation(MappingField.class);
-    			if(mapfield==null)
-    				continue;
-    			Map<String, Object> map=retireveField(field, obj,needValidate);
-    			if(!map.isEmpty()){
-    				list.add(map);
-    			}
-			}
-    		return list;
-    	}else{
-    		 flag = obj.getClass().isAnnotationPresent(Entity.class);
-    		 if(flag){
-    			 return getMappingFieldsByJpa(obj, tableMap, needValidate);
-    		 }
-    		 else
-    			 throw new DAOException("must using MappingEnity annotation or Jpa");
-    	}
-    }
-    private List<Map<String, Object>> getMappingFieldsByJpa(BaseObject obj,Map<String, String> tableMap,boolean needValidate) throws DAOException{
-    	boolean flag = obj.getClass().isAnnotationPresent(Entity.class);
-    	if(flag){
-    		Table table=obj.getClass().getAnnotation(Table.class);
-    		String tableName=table.name();
-    		String schema=table.schema();
-    		tableMap.put("tableName", tableName);
-    		if(!"".equals(schema))
-    			tableMap.put("schema", schema);
-    		List<Map<String, Object>> list=new ArrayList<Map<String,Object>>();
-    		Field[] fields=obj.getClass().getDeclaredFields();
-    		
-    		for (Field field:fields) {
-    			Map<String, Object> map=retireveFieldByJpa(field, obj,needValidate);
-    			if(!map.isEmpty()){
-    				list.add(map);
-    			}
-			}
-    		return list;
-    	}else
-    		throw new DAOException("must using MappingEnity annotation");
-    }
-    private Map<String, Object> getPrimaryField(List<Map<String, Object>> columList){
-    	Map<String, Object> tmpMap=null;
-    	for (Map<String, Object> map:columList) {
-			if(map.containsKey("primary")){
-				tmpMap=map;
-				break;
-			}
-    	}
-    	return tmpMap;
-    }
-    private Map<String, Object> retireveField(Field field,BaseObject obj,final boolean needValidate) throws DAOException{
-    	Map<String, Object> map=new HashMap<String, Object>();
-    	try{
-    		MappingField mapfield=field.getAnnotation(MappingField.class);
-    		String name=field.getName();
-    		map.put("name", name);
-    		name=name.substring(0,1).toUpperCase()+name.substring(1,name.length());
-    		Method method=obj.getClass().getMethod("get"+name, null);
-    		Type type=method.getReturnType();
-			Object value=method.invoke(obj, null);
-			String property="";
-			if(mapfield!=null){
-				property=mapfield.property();
-				String colfield=mapfield.field();
-				String datatype=mapfield.datatype();
-				if (colfield!=null && !"".equals(colfield.trim())) {
-					map.put("field", colfield);
-				}else
-					map.put("field", name);
-				map.put("value", value);
-				boolean isincrement=mapfield.increment().equals("1");
-				boolean isprimary=mapfield.primary().equals("1");
-				boolean issequnce=!mapfield.sequenceName().equals("");
-				if(isincrement)
-					map.put("increment", true);
-				if(isprimary)
-					map.put("primary", true);
-				if(issequnce){
-					map.put("sequence", mapfield.sequenceName());
-				}
-				if (datatype == null && !"".equals(datatype)) {
-					if (type.equals(Void.TYPE)) {
-					} else if (type.equals(Long.TYPE)) {
-						map.put("datatype", "int");
-					} else if (type.equals(Integer.TYPE)) {
-						map.put("datatype", "int");
-					} else if (type.equals(Double.TYPE)) {
-						map.put("datatype", "numeric");
-					} else if (type.equals(Float.TYPE)) {
-						map.put("datatype", "numeric");
-					} else if (type.equals(String.class)) {
-						map.put("datatype", "string");
-					} else if (type.equals(java.util.Date.class)) {
-						map.put("datatype", "date");
-					} else if (type.equals(Date.class)) {
-						map.put("datatype", "date");
-					} else if (type.equals(byte[].class)) {
-						map.put("datatype", "blob");
-					} else if (type.equals(Timestamp.class)) {
-						map.put("datatype", "timestamp");
-					}
-				}else{
-					map.put("datatype", datatype);
-				}
-			}
-			if(needValidate){
-				if(mapfield!=null){
-					boolean required=mapfield.required();
-					if(value==null && required && needValidate){
-						throw new DAOException("column "+property+" must not be null!");
-					}
-				}
-			}
-    	}catch(Exception ex){
-    		ex.printStackTrace();
-    		throw new DAOException(ex);
-    	}
-    	return map;
-    }
-    private Map<String, Object> retireveFieldByJpa(Field field,BaseObject obj,final boolean needValidate) throws DAOException{
-    	Map<String, Object> map=new HashMap<String, Object>();
-    	try{
-    		Id idfield=field.getAnnotation(Id.class);
-			if(idfield!=null){
-				map.put("primary", true);
-				GeneratedValue genval=field.getAnnotation(GeneratedValue.class);
-				if(genval!=null){
-					if(genval.strategy()==GenerationType.AUTO){
-						map.put("increment", true);
-					}else if(genval.strategy()==GenerationType.IDENTITY){
-						map.put("increment", true);
-					}else if(genval.strategy()==GenerationType.SEQUENCE){
-						SequenceGenerator generator=field.getAnnotation(SequenceGenerator.class);
-						if(generator!=null)
-							map.put("sequence", generator.sequenceName());
-					}
-				}
-			}
-			Column mapfield=field.getAnnotation(Column.class);
-    	
-    		String name=field.getName();
-    		map.put("name", name);
-    		
-    		String tmname=name.substring(0,1).toUpperCase()+name.substring(1,name.length());
-    		Method method=obj.getClass().getMethod("get"+tmname, null);
-    		Type type=method.getReturnType();
-			Object value=method.invoke(obj, null);
-			String property="";
-			if(mapfield!=null){
-				property=name;
-				String colfield=mapfield.name();
-				if (colfield!=null && !"".equals(colfield.trim())) {
-					map.put("field", colfield);
-				}else
-					map.put("field", name);
-			}else{
-				map.put("field", name);
-			}
-			map.put("value", value);
-			
-					if (type.equals(Void.TYPE)) {
-					} else if (type.equals(Long.TYPE)) {
-						map.put("datatype", "int");
-					} else if (type.equals(Integer.TYPE)) {
-						map.put("datatype", "int");
-					} else if (type.equals(Double.TYPE)) {
-						map.put("datatype", "numeric");
-					} else if (type.equals(Float.TYPE)) {
-						map.put("datatype", "numeric");
-					} else if (type.equals(String.class)) {
-						map.put("datatype", "string");
-					} else if (type.equals(java.util.Date.class)) {
-						map.put("datatype", "date");
-					} else if (type.equals(Date.class)) {
-						map.put("datatype", "date");
-					} else if (type.equals(byte[].class)) {
-						map.put("datatype", "blob");
-					} else if (type.equals(Timestamp.class)) {
-						map.put("datatype", "timestamp");
-					}
-				
-			
-			if(needValidate){
-				if(mapfield!=null){
-					boolean required=!mapfield.nullable();
-					if(value==null && required && needValidate){
-						throw new DAOException("column "+property+" must not be null!");
-					}
-				}
-			}
-    	}catch(Exception ex){
-    		ex.printStackTrace();
-    		throw new DAOException(ex);
-    	}
-    	return map;
-    }
-   
+ 
     private void setParameter(PreparedStatement stmt,int pos,Object obj) {
     	try{
 			if (obj == null){
@@ -1348,6 +1123,5 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao{
 	public void setLobHandler(LobHandler lobHandler) {
 		this.lobHandler = lobHandler;
 	}
-	
 	
 }

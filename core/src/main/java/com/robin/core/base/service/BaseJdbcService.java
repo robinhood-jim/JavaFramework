@@ -25,6 +25,8 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.robin.core.base.dao.JdbcDao;
 import com.robin.core.base.exception.DAOException;
@@ -39,6 +41,10 @@ public class BaseJdbcService <V extends BaseObject,P extends Serializable>{
 	private JdbcDao jdbcDao;
 	private BaseSqlGen sqlGen;
 	private Logger logger=LoggerFactory.getLogger(getClass());
+	public BaseJdbcService(){
+		
+	}
+	@Transactional(propagation=Propagation.REQUIRED,rollbackFor=RuntimeException.class)
 	public Long saveEntity(V vo) throws ServiceException{
 		try{
 			return jdbcDao.createVO(vo);
@@ -46,6 +52,7 @@ public class BaseJdbcService <V extends BaseObject,P extends Serializable>{
 			throw new ServiceException(e);
 		}
 	}
+	@Transactional(propagation=Propagation.REQUIRED,rollbackFor=RuntimeException.class)
 	public int updateEnity(Class<V> clazz,V vo) throws ServiceException{
 		try{
 			return jdbcDao.updateVO(clazz,vo);
@@ -53,6 +60,7 @@ public class BaseJdbcService <V extends BaseObject,P extends Serializable>{
 			throw new ServiceException(e);
 		}
 	}
+	@Transactional(propagation=Propagation.REQUIRED,rollbackFor=RuntimeException.class)
 	public int deleteEnity(Class<V> clazz,P [] vo) throws ServiceException{
 		try{
 			return jdbcDao.deleteVO(clazz,vo);
@@ -60,7 +68,7 @@ public class BaseJdbcService <V extends BaseObject,P extends Serializable>{
 			throw new ServiceException(e);
 		}
 	}
-	@SuppressWarnings("unchecked")
+	@Transactional(readOnly=true)
 	public V getEntity(Class<V> vo,P id) throws ServiceException{
 		try{
 			return (V)jdbcDao.getEntity(vo, id);
@@ -71,6 +79,7 @@ public class BaseJdbcService <V extends BaseObject,P extends Serializable>{
 	public void setJdbcDao(JdbcDao jdbcDao) {
 		this.jdbcDao = jdbcDao;
 	}
+	@Transactional(readOnly=true)
 	public PageQuery queryBySelectId(PageQuery query) throws ServiceException{
 		try{
 			return jdbcDao.queryBySelectId(query);
@@ -78,6 +87,7 @@ public class BaseJdbcService <V extends BaseObject,P extends Serializable>{
 			throw new ServiceException(ex);
 		}
 	}
+	@Transactional(readOnly=true)
 	public List<Map<String, Object>> queryByPageSql(String sql,PageQuery pageQuery) throws ServiceException{
 		try{
 			return jdbcDao.queryByPageSql(sql, pageQuery);
@@ -85,6 +95,7 @@ public class BaseJdbcService <V extends BaseObject,P extends Serializable>{
 			throw new ServiceException(ex);
 		}
 	}
+	@Transactional(propagation=Propagation.REQUIRED,rollbackFor=RuntimeException.class)
 	public void executeBySelectId(PageQuery query) throws ServiceException{
 		try{
 			jdbcDao.executeBySelectId(query);
@@ -92,6 +103,7 @@ public class BaseJdbcService <V extends BaseObject,P extends Serializable>{
 			throw new ServiceException(ex);
 		}
 	}
+	@Transactional(readOnly=true)
 	public List<Map<String,Object>> queryBySql(String sqlstr) throws ServiceException{
 		try{
 			return jdbcDao.queryBySql(sqlstr);
@@ -99,6 +111,7 @@ public class BaseJdbcService <V extends BaseObject,P extends Serializable>{
 			throw new ServiceException(ex);
 		}
 	}
+	@Transactional(readOnly=true)
 	public PageQuery queryBySql(String querySQL,String countSql,String[] displayname,PageQuery pageQuery)throws ServiceException{
 		try{
 			return jdbcDao.queryBySql(querySQL, countSql, displayname, pageQuery);
@@ -106,6 +119,7 @@ public class BaseJdbcService <V extends BaseObject,P extends Serializable>{
 			throw new ServiceException(ex);
 		}
 	}
+	@Transactional(readOnly=true)
 	public List<Map<String,Object>> queryBySql(String sqlstr,Object[] obj) throws ServiceException{
 		try{
 			return jdbcDao.queryBySql(sqlstr, obj);
@@ -113,6 +127,7 @@ public class BaseJdbcService <V extends BaseObject,P extends Serializable>{
 			throw new ServiceException(ex);
 		}
 	}
+	@Transactional(readOnly=true)
 	public int queryByInt(String querySQL) throws ServiceException{
 		try{
 			return jdbcDao.queryByInt(querySQL);
@@ -120,7 +135,7 @@ public class BaseJdbcService <V extends BaseObject,P extends Serializable>{
 			throw new ServiceException(ex);
 		}
 	}
-	@SuppressWarnings("unchecked")
+	@Transactional(readOnly=true)
 	public List<V> queryByField(Class<? extends BaseObject> clazz,String fieldName,String oper,Object... fieldValues) throws ServiceException{
 		List<V> retlist=new ArrayList<V>();
 		try{	
@@ -188,16 +203,8 @@ public class BaseJdbcService <V extends BaseObject,P extends Serializable>{
 			}
 			return namedstr;
 	}
-	/**
-	 * 锟斤拷锟斤拷VO锟斤拷锟斤拷锟窖碉拷锟斤拷斜锟?
-	 * @param clazz
-	 * @param vo  vo锟斤拷锟斤拷
-	 * @param additonMap 锟斤拷锟斤拷牟锟窖拷锟斤拷锟斤拷锟斤拷锟絠n锟斤拷between锟饺诧拷锟斤拷时
-	 * @param orderByStr  锟斤拷锟斤拷锟街讹拷
-	 * @return
-	 * @throws DAOException
-	 */
-	@SuppressWarnings("unchecked")
+
+	@Transactional(readOnly=true)
 	public List<V> queryByVO(Class<? extends BaseObject> clazz,V vo,Map<String, Object> additonMap,String orderByStr) throws DAOException{
 		List<V> retlist=new ArrayList<V>();
 		try{
@@ -281,17 +288,8 @@ public class BaseJdbcService <V extends BaseObject,P extends Serializable>{
 		}
 		return retlist;
 	}
-	/**
-	 *锟斤拷锟斤拷sql锟斤拷询锟斤拷锟斤拷锟斤拷
-	 * @param clazz
-	 * @param orderByStr
-	 * @param fieldName
-	 * @param oper
-	 * @param fieldValues
-	 * @return
-	 * @throws ServiceException
-	 */
-	@SuppressWarnings("unchecked")
+
+	@Transactional(readOnly=true)
 	public List<V> queryByFieldOrderBy(Class<? extends BaseObject> clazz,String orderByStr,String fieldName,String oper,Object... fieldValues) throws ServiceException{
 		List<V> retlist=new ArrayList<V>();
 		try{	

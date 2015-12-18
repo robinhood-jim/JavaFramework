@@ -36,7 +36,7 @@ public interface IjdbcDao {
 	public int queryCountBySql(String querySQL) throws DAOException;
 	/**
 	 * Return ResultSet frist Integer
-	 * @param querySQL   锟斤拷询锟斤拷count锟斤拷锟?
+	 * @param querySQL   
 	 * @return
 	 * @throws DAOException
 	 */
@@ -142,7 +142,6 @@ public interface IjdbcDao {
 	 * @throws DAOException
 	 */
 	public long executeSqlWithReturn(String sql,Object...objects) throws DAOException;
-	
 	public Long createVO(BaseObject obj) throws DAOException;
 	public int updateVO(Class<? extends BaseObject> clazz,BaseObject obj) throws DAOException;
 	public int deleteVO(Class<? extends BaseObject> clazz,Serializable[] value) throws DAOException;

@@ -35,28 +35,13 @@ import org.supercsv.prefs.CsvPreference;
 
 public class CsvGenerator{
 	private static Logger logger=LoggerFactory.getLogger(CsvGenerator.class);
-	/**
-	 * 
-	 * @param inputStream   
-	 * @param config    
-	 * @param columnResultList   
-	 * @return
-	 */
+
 	public static int ReadFile(InputStream inputStream,CsvConfig config,List<Map<String,String>> columnResultList){
 		
 		int pos=0;
 		try{
 			ICsvListReader reader=new CsvListReader(new InputStreamReader(inputStream,"UTF-8"),CsvPreference.STANDARD_PREFERENCE);
 			List<CsvColumnConfig> columnList=config.getConfigList();
-//			for(int k=0;k<header.length;k++){
-//				String column=columnList.get(k).getColumnName();
-//				if(column==null)
-//					column=columnMap.get(header[k].toLowerCase());
-//				if(column!=null){
-//					colList.add(Integer.valueOf(k));
-//					ecolList.add(column);
-//				}
-//			}
 			List<String> resultlist=new ArrayList<String>();
 			while((resultlist=reader.read())!=null){
 				pos++;
@@ -77,18 +62,7 @@ public class CsvGenerator{
 		int pos=0;
 		try{
 			ICsvListReader reader=new CsvListReader(new InputStreamReader(inputStream,"UTF-8"),new CsvPreference('"', separator, "\r\n"));
-//			String[] header=reader.getCSVHeader(true);
-//			if(header==null || header.length==0)
 			List<CsvColumnConfig> columnList=config.getConfigList();
-//			for(int k=0;k<header.length;k++){
-//				String column=columnList.get(k).getColumnName();
-//				if(column==null)
-//					column=columnMap.get(header[k].toLowerCase());
-//				if(column!=null){
-//					colList.add(Integer.valueOf(k));
-//					ecolList.add(column);
-//				}
-//			}
 			List<String> resultlist=new ArrayList<String>();
 			while((resultlist=reader.read())!=null){
 				pos++;
@@ -236,13 +210,6 @@ public class CsvGenerator{
 		}
 		return pos;
 	}
-	/**
-	 * 
-	 * @param pwriter  PrintWriter
-	 * @param header   
-	 * @param resultList
-	 * @param quotachar  
-	 */
 	public static void WriteFile(PrintWriter pwriter,String[] header, List<String[]> resultList,String quotachar){
 		try{
 			ICsvListWriter writer=new CsvListWriter(pwriter,CsvPreference.STANDARD_PREFERENCE);
@@ -260,14 +227,6 @@ public class CsvGenerator{
 			e.printStackTrace();
 		}
 	}
-	/**
-	 * 
-	 * @param pwriter  PrintWirter
-	 * @param header   
-	 * @param columnName  
-	 * @param list      
-	 * @param quotachar   
-	 */
 	public static void WriteDataToFile(PrintWriter pwriter,String[] header,String[] columnName,List<Map<String, String>> list,String quotachar){
 		try{
 			ICsvListWriter writer=new CsvListWriter(pwriter,CsvPreference.STANDARD_PREFERENCE);

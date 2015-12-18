@@ -4,4 +4,8 @@
 		<FIELD>ID, NAME,CODE_DESC</FIELD>
 		<FROMSQL> FROM t_test where 1=1 ${queryString}</FROMSQL>
 	</SQLSCRIPT>
+	<SQLSCRIPT ID="GET_LOB"> 
+		<FIELD>lob1 as str,lob2 as bincol</FIELD>
+		<FROMSQL>FROM TESTLOB WHERE 1=1 ${condition} </FROMSQL>
+	</SQLSCRIPT>
 </SQLSCRIPTS>

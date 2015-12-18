@@ -30,16 +30,9 @@ public abstract class DynamicBean {
         this.beanName = beanName;  
     }  
       
-    /** 
-     * 锟斤拷取bean 锟斤拷xml锟斤拷锟斤拷 
-     * @return 
-     */  
+
     protected abstract String getBeanXml();  
       
-    /** 
-     * 锟斤拷锟斤拷锟斤拷锟斤拷xml锟街凤拷 
-     * @return 
-     */  
     public String getXml(){  
         StringBuffer buf = new StringBuffer();  
         buf.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")  

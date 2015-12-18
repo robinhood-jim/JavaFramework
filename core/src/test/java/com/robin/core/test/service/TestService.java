@@ -30,7 +30,6 @@ public class TestService {
 		jdbcDao.executeUpdate("update t_test set name='CCCCC' where id=5");
 		jdbcDao.queryBySql("select * from t_test");
 		jdbcDao.executeUpdate("update t_test set name='DDDDDD' where id=6");
-		
 		throw new RuntimeException("error");
 	}
 

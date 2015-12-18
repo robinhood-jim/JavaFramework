@@ -1,0 +1,4 @@
+inputstreamlimit=10
+readerlimit=10
+fileaccess_type=local,hdfs,ftp
+
