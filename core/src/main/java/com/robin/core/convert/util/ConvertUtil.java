@@ -27,23 +27,9 @@ import org.slf4j.LoggerFactory;
 
 import com.robin.core.base.model.BaseObject;
 
-/**
- * <p>Description:<b>Type Convert Util</b></p>
- *
- * <p>Copyright: Copyright (c) 2007</p>
- *
- * @author wanchuan
- * @version 1.0
- */
 public class ConvertUtil {
 
-	/**
-	 * 锟斤拷锟斤拷model锟斤拷锟斤拷锟絯eb锟斤拷锟斤拷锟?
-	 * 
-	 * @param target
-	 * @param src
-	 * @throws Exception
-	 */
+	
 	private static Logger logger=LoggerFactory.getLogger(ConvertUtil.class);
 	public static void convertToWeb(Object target, Object src) throws Exception {
 		if (target == null || src == null) return;
@@ -67,12 +53,7 @@ public class ConvertUtil {
 			}
 		}
 	}
-	/**
-	 * 锟斤拷锟斤拷锟斤拷转锟斤拷为Map锟斤拷key为锟斤拷锟斤拷锟絧roperty
-	 * @param target
-	 * @param src
-	 * @throws Exception
-	 */
+
 	public static void objectToMap(Map<String, String> target, Object src) throws Exception {
 		if (src == null || target == null) return;
 
@@ -87,12 +68,7 @@ public class ConvertUtil {
 			}
 		}
 	}
-	/**
-	 * Map锟斤拷锟斤拷转VO
-	 * @param target
-	 * @param src
-	 * @throws Exception
-	 */
+
 	public static void mapToObject(BaseObject target, Map<String, String> src) throws Exception {
 		if (src == null || target == null)
 			return;
@@ -118,14 +94,14 @@ public class ConvertUtil {
 	
 	}
 
-	public static void mapToObject(Object target, Map<String, String> src) throws Exception {
+	public static void mapToObject(Object target, Map<String, Object> src) throws Exception {
 		if (src == null || target == null) return;
 
 		Iterator it = src.keySet().iterator();
 		Method methods[] = target.getClass().getMethods();
 		while (it.hasNext()) {
 			String key = (String) it.next();
-			String value = src.get(key);
+			String value = src.get(key).toString();
 			String methordName = "set" + key.substring(0, 1).toUpperCase() + key.substring(1);
 			for (int i = 0; i < methods.length; i++) {
 				if (methods[i].getName().equalsIgnoreCase(methordName)) {
@@ -166,15 +142,7 @@ public class ConvertUtil {
 		return value.substring(0, 1).toUpperCase() + value.substring(1);
 	}
 
-	/**
-	 * 锟斤拷锟斤拷web锟斤拷锟斤拷锟絤odel锟斤拷锟斤拷锟?
-	 * 
-	 * @param target
-	 *           目锟侥讹拷锟斤拷
-	 * @param src
-	 *           源锟斤拷锟斤拷
-	 * @throws Exception
-	 */
+
 	public static void convertToModel(Object target, Object src) throws Exception {
 		if (target == null || src == null) return;
 
@@ -188,8 +156,6 @@ public class ConvertUtil {
 				if (setMethod != null) {
 					Object value = methods[i].invoke(src, (Object[]) null);
 					if (value != null) {
-//						Class type = setMethod.getParameterTypes()[0];
-//						Object retValue = parseParamenter(type, value);
 						setMethod.invoke(target, new Object[] { value });
 					}
 				}
@@ -197,13 +163,6 @@ public class ConvertUtil {
 		}
 	}
 
-	/**
-	 * 为Update锟斤拷锟斤拷准锟斤拷VO锟斤拷锟斤拷
-	 * 
-	 * @param target
-	 * @param src
-	 * @throws Exception
-	 */
 	public static void convertToModelForUpdateNew(BaseObject target, BaseObject src) throws Exception {
 		if (target == null || src == null) return;
 		if (!target.getClass().equals(src.getClass())) throw new Exception("");
@@ -241,8 +200,6 @@ public class ConvertUtil {
 					
 					if (value != null) {
 						logger.info("getValue="+value.toString()); 
-//						Class type = setMethod.getParameterTypes()[0];
-//						Object retValue = parseParamenter(type, value);
 						setMethod.invoke(target, new Object[] { value });
 					}
 				}
@@ -254,13 +211,7 @@ public class ConvertUtil {
 		}
 	}
 
-	/**
-	 * Convert to target Object by source Map
-	 * 
-	 * @param target
-	 * @param src
-	 */
-	public static void convertToModel(Object target, Map<String, String> src) throws Exception {
+	public static void convertToModel(Object target, Map<String, Object> src) throws Exception {
 		if (target == null || src == null) return;
 
 		Map<String, Method> map = getAllSetMethodNames(target);
@@ -270,7 +221,7 @@ public class ConvertUtil {
 			String method = (String) set.next();
 			Method setMethod = map.get("set" + wordCase(method));
 			if (setMethod != null) {
-				String value = src.get(method);
+				String value = src.get(method).toString();
 				if (value != null) {
 					Class type = setMethod.getParameterTypes()[0];
 					if (!type.getName().equalsIgnoreCase("java.lang.String") && value.equals("")) {
@@ -284,12 +235,7 @@ public class ConvertUtil {
 			}
 		}
 	}
-	/**
-	 * 
-	 * @param target
-	 * @param src
-	 * @throws Exception
-	 */
+
 	public static void convertToPool(Object target, Object src) throws Exception {
 		if (target == null || src == null) return;
 
@@ -339,13 +285,12 @@ public class ConvertUtil {
 		}
 
 		if (typeName.startsWith("java.math.") || "java.util.Date".equals(typeName)) {
-			//Constructor c = type.getConstructor(new Class[] { "java.lang.String".getClass() });
 			String value = strValue.toString().trim();
 			if(value.indexOf(":")==-1)
 				value+=" 00:00:00";
 			SimpleDateFormat format=new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
 			ret=format.parse(value);
-			//ret = c.newInstance(new Object[] { value });
+
 		}
 		else if (typeName.equals("java.lang.String")) {
 			ret = strValue.toString();
