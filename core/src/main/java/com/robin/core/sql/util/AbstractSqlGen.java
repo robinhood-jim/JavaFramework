@@ -33,15 +33,7 @@ public abstract class AbstractSqlGen implements BaseSqlGen{
 	 * @return
 	 */
 	public static String replace(String str) {
-//		String check = "#&'\",;:=!^";
-//		if (str != null) {
-//			for (int i = 0; i < check.length(); i++) {
-//				String key = check.substring(i, i + 1);
-//				str = str.replaceAll(key, "");
-//			}
-//
-//			str = str.trim();
-//		}
+
 		if (str != null) return str.replaceAll("'", "''");
 		else return null;
 	}
@@ -134,10 +126,8 @@ public abstract class AbstractSqlGen implements BaseSqlGen{
 		return sqlstr;
 	}
 	public String getCountSqlByConfig(QueryString qs, PageQuery query) {
-		String querySQL = qs.getCountSql();
-		
+		String querySQL = qs.getCountSql();		
 		Map<String, String> params = query.getParameters();
-
 		Iterator<String> keyiter = params.keySet().iterator();
 		while (keyiter.hasNext()) {
 			String key = keyiter.next();
@@ -207,7 +197,6 @@ public abstract class AbstractSqlGen implements BaseSqlGen{
              }
          }
          return fields;
-         
 	}
 	public String[] getResultColName(String field){
 		if(field==null || "".equals(field.trim()))
@@ -229,8 +218,18 @@ public abstract class AbstractSqlGen implements BaseSqlGen{
              }
          }
          return fields;
-         
 	}
+	public String getCreateFieldPart(Map<String, Object> fieldMap) {
+		String datatype=fieldMap.get("datatype").toString();
+		StringBuilder builder=new StringBuilder();
+		String name=fieldMap.get("field").toString();
+		if(name==null || "".equals(name)){
+			name=fieldMap.get("name").toString();
+		}
+		builder.append(name).append(" ").append(returnTypeDef(datatype, fieldMap));
+		return builder.toString();
+	}
+	public abstract String returnTypeDef(String dataType,Map<String, Object> fieldMap);
 	
 	
 	protected abstract String toSQLForDecimal(QueryParam param);

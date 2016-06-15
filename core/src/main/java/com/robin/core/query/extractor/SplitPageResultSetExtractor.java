@@ -1,4 +1,3 @@
-
 /*
  * Copyright (c) 2015,robinjim(robinjim@126.com)
  * 
@@ -33,14 +32,22 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.lob.LobHandler;
 
 public class SplitPageResultSetExtractor implements ResultSetExtractor<List<Map<String,Object>>> {
-	private final int start;// 锟斤拷始锟叫猴拷 
+	private final int start;
 
-	private final int len;// 锟斤拷锟较的筹拷锟斤拷 
+	private final int len;
     private LobHandler lobHandler;
+    private List<Map<String,Object>> mappingFieldList;
 
 	public SplitPageResultSetExtractor(int start, int len) {
 		this.start = start;
 		this.len = len;
+	}
+	public SplitPageResultSetExtractor(int start, int len,LobHandler handler,List<Map<String,Object>> mappingFieldList) {
+		
+		this.start = start;
+		this.len = len;
+		this.lobHandler=handler;
+		this.mappingFieldList=mappingFieldList;
 	}
 	public SplitPageResultSetExtractor(int start, int len,LobHandler handler) {
 		
@@ -67,7 +74,10 @@ public class SplitPageResultSetExtractor implements ResultSetExtractor<List<Map<
 			String[] typeName=new String[count];
 			String[] className=new String[count];
 			for(int k=0;k<count;k++){
-				columnName[k] = rsmd.getColumnLabel(k + 1);
+				if(mappingFieldList!=null && !mappingFieldList.isEmpty()){
+					columnName[k]=mappingFieldList.get(k).get("name").toString();
+				}else
+					columnName[k] = rsmd.getColumnLabel(k + 1);
 				typeName[k]=rsmd.getColumnTypeName(k+1);
 				String fullclassName=rsmd.getColumnClassName(k+1);
 				int pos=fullclassName.lastIndexOf(".");
@@ -99,13 +109,13 @@ public class SplitPageResultSetExtractor implements ResultSetExtractor<List<Map<
 						Timestamp stamp=rs.getTimestamp(i+1);
 						String datestr=format.format(new Date(stamp.getTime()));
 						map.put(columnName[i], datestr);
-					}else if(className[i].contains("CLOB")){
+					}else if(className[i].toUpperCase().contains("CLOB")){
 						if(lobHandler!=null){
 							String result=lobHandler.getClobAsString(rs, i+1);
 							map.put(columnName[i], result);
 						}
 					}
-					else if(className[i].contains("BLOB")){
+					else if(className[i].toUpperCase().contains("BLOB") || typeName[i].toUpperCase().contains("BLOB")){
 						if(lobHandler!=null){
 							byte[] bytes=lobHandler.getBlobAsBytes(rs, i+1);
 							map.put(columnName[i], bytes);

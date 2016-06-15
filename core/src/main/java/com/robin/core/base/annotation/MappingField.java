@@ -30,4 +30,7 @@ public @interface MappingField {
 	String sequenceName() default "";
 	boolean required() default false;
 	String datatype() default "";
+	int precise() default 0;
+	int scale() default 0;
+	int length() default 0;
 }

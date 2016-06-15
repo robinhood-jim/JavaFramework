@@ -221,7 +221,7 @@ public class ConvertUtil {
 			String method = (String) set.next();
 			Method setMethod = map.get("set" + wordCase(method));
 			if (setMethod != null) {
-				String value = src.get(method).toString();
+				Object value = src.get(method);
 				if (value != null) {
 					Class type = setMethod.getParameterTypes()[0];
 					if (!type.getName().equalsIgnoreCase("java.lang.String") && value.equals("")) {
@@ -273,6 +273,9 @@ public class ConvertUtil {
 
 	private static Object parseParamenter(Class type, Object strValue) throws Exception {
 		String typeName = type.getName();
+		if(type.equals(byte[].class)){
+			typeName="byte";
+		}
 		Object ret = null;
 		if (type.isPrimitive()) {
 			if ("int".equals(typeName)) type = Class.forName("java.lang.Integer");
@@ -314,9 +317,13 @@ public class ConvertUtil {
 				}
 				strValue = value;
 			}
-			Method method = type.getMethod("valueOf", new Class[] { "java.lang.String".getClass() });
-			if(method!=null)
-				ret = method.invoke(type, new Object[] { strValue.toString() });
+			if(!typeName.equals("byte")){
+				Method method = type.getMethod("valueOf", new Class[] { "java.lang.String".getClass() });
+				if(method!=null)
+					ret = method.invoke(type, new Object[] { strValue.toString() });
+			}else{
+				ret=strValue;
+			}
 		}
 		return ret;
 	}

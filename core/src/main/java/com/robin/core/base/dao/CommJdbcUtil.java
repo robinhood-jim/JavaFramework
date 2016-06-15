@@ -280,15 +280,20 @@ public class CommJdbcUtil {
 			String querySQL = sqlGen.generateSqlBySelectId(qs, pageQuery);
 			if (logger.isInfoEnabled()) logger.info((new StringBuilder()).append("querySQL: ").append(querySQL).toString());
 			if (Integer.parseInt(pageQuery.getPageSize()) > 0) {
-				String sumSQL = sqlGen.generateCountSql(querySQL);
+				String sumSQL = "";
+				if(qs.getCountSql()==null || qs.getCountSql().trim().equals(""))
+					sumSQL=sqlGen.generateCountSql(querySQL);
+				else
+					sumSQL=sqlGen.getCountSqlByConfig(qs, pageQuery);
+				
+				Object[] paramobj = pageQuery.getParameterArr();
+				Integer total = (Integer) jdbcTemplate.queryForObject(sumSQL, paramobj,Integer.class);
+				pageQuery.setRecordCount(String.valueOf(total));
 				String pageSQL = sqlGen.generatePageSql(querySQL, pageQuery);
 				if (logger.isDebugEnabled()) {
 					logger.debug((new StringBuilder()).append("sumSQL: ").append(sumSQL).toString());
 					logger.debug((new StringBuilder()).append("pageSQL: ").append(pageSQL).toString());
 				}
-				Object[] paramobj = pageQuery.getParameterArr();
-				Integer total = (Integer) jdbcTemplate.queryForObject(sumSQL, paramobj,Integer.class);
-				pageQuery.setRecordCount(String.valueOf(total));
 				if (total > 0) {
 					int pages = total / Integer.parseInt(pageQuery.getPageSize());
 					if (total % Integer.parseInt(pageQuery.getPageSize()) != 0) pages++;

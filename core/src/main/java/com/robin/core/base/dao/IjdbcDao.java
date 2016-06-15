@@ -141,7 +141,7 @@ public interface IjdbcDao {
 	 * @return
 	 * @throws DAOException
 	 */
-	public long executeSqlWithReturn(String sql,Object...objects) throws DAOException;
+	public long executeSqlWithReturn(List<Map<String, Object>> field,String sql) throws DAOException;
 	public Long createVO(BaseObject obj) throws DAOException;
 	public int updateVO(Class<? extends BaseObject> clazz,BaseObject obj) throws DAOException;
 	public int deleteVO(Class<? extends BaseObject> clazz,Serializable[] value) throws DAOException;

@@ -1,3 +1,18 @@
+/*
+ * Copyright (c) 2015,robinjim(robinjim@126.com)
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.robin.core.base.dao.util;
 
 import java.lang.reflect.Field;
@@ -22,19 +37,8 @@ import com.robin.core.base.annotation.MappingEntity;
 import com.robin.core.base.annotation.MappingField;
 import com.robin.core.base.exception.DAOException;
 import com.robin.core.base.model.BaseObject;
+import com.robin.core.base.util.Const;
 
-/**
- * <p>Project:  core</p>
- *
- * <p>Description:AnnotationRetrevior.java</p>
- *
- * <p>Copyright: Copyright (c) 2015 create at 2015年12月18日</p>
- *
- * <p>Company: TW_DEV</p>
- *
- * @author robinjim
- * @version 1.0
- */
 public class AnnotationRetrevior {
 	   public static List<Map<String, Object>> getMappingFields(BaseObject obj,Map<String, String> tableMap,boolean needValidate) throws DAOException{
 	    	boolean flag = obj.getClass().isAnnotationPresent(MappingEntity.class);
@@ -105,6 +109,9 @@ public class AnnotationRetrevior {
 	    		MappingField mapfield=field.getAnnotation(MappingField.class);
 	    		String name=field.getName();
 	    		map.put("name", name);
+	    		map.put("precise", mapfield.precise());
+	    		map.put("scale", mapfield.scale());
+	    		map.put("length", mapfield.length());
 	    		name=name.substring(0,1).toUpperCase()+name.substring(1,name.length());
 	    		Method method=obj.getClass().getMethod("get"+name, null);
 	    		Type type=method.getReturnType();
@@ -129,29 +136,33 @@ public class AnnotationRetrevior {
 					if(issequnce){
 						map.put("sequence", mapfield.sequenceName());
 					}
-					if (datatype == null && !"".equals(datatype)) {
-						if (type.equals(Void.TYPE)) {
-						} else if (type.equals(Long.TYPE)) {
-							map.put("datatype", "int");
-						} else if (type.equals(Integer.TYPE)) {
-							map.put("datatype", "int");
-						} else if (type.equals(Double.TYPE)) {
-							map.put("datatype", "numeric");
-						} else if (type.equals(Float.TYPE)) {
-							map.put("datatype", "numeric");
+					if (datatype == null || "".equals(datatype)) {
+						if (type.equals(Void.class)) {
+						} else if (type.equals(Long.class)) {
+							map.put("datatype", Const.META_TYPE_BIGINT);
+						} else if (type.equals(Integer.class)) {
+							map.put("datatype", Const.META_TYPE_INTEGER);
+						} else if (type.equals(Double.class)) {
+							map.put("datatype", Const.META_TYPE_NUMERIC);
+						} else if (type.equals(Float.class)) {
+							map.put("datatype", Const.META_TYPE_NUMERIC);
 						} else if (type.equals(String.class)) {
-							map.put("datatype", "string");
+							map.put("datatype", Const.META_TYPE_STRING);
 						} else if (type.equals(java.util.Date.class)) {
-							map.put("datatype", "date");
+							map.put("datatype", Const.META_TYPE_TIMESTAMP);
 						} else if (type.equals(Date.class)) {
-							map.put("datatype", "date");
+							map.put("datatype", Const.META_TYPE_DATE);
 						} else if (type.equals(byte[].class)) {
-							map.put("datatype", "blob");
+							map.put("datatype", Const.META_TYPE_BLOB);
 						} else if (type.equals(Timestamp.class)) {
-							map.put("datatype", "timestamp");
+							map.put("datatype", Const.META_TYPE_TIMESTAMP);
 						}
 					}else{
-						map.put("datatype", datatype);
+						if(datatype.equalsIgnoreCase("clob"))
+							map.put("datatype", Const.META_TYPE_CLOB);
+						else if(datatype.equalsIgnoreCase("blob")){
+							map.put("datatype", Const.META_TYPE_BLOB);
+						}
 					}
 				}
 				if(needValidate){

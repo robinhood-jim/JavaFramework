@@ -12,8 +12,8 @@ INSERT INTO `t_test` VALUES ('2', 'tttt', 'tttttttt');
 INSERT INTO `t_test` VALUES ('3', 'tttt', 'tttttttt');
 INSERT INTO `t_test` VALUES ('4', 'tttt', 'tttttttt');
 
-DROP TABLE IF EXISTS `testlob`;
-CREATE TABLE `testlob` (
+DROP TABLE IF EXISTS `testtablob`;
+CREATE TABLE `testtablob` (
   `id` bigint(20) NOT NULL auto_increment,
   `name` varchar(32) default NULL,
   `lob1` text,

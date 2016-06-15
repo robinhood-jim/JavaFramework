@@ -16,6 +16,7 @@
 package com.robin.core.sql.util;
 
 import java.util.List;
+import java.util.Map;
 
 import com.robin.core.base.exception.DAOException;
 import com.robin.core.query.util.PageQuery;
@@ -39,4 +40,5 @@ public interface BaseSqlGen {
 	public String[] getResultColName(String selectSql);
 	public String getSequnceScript(String sequnceName) throws DAOException;
 	public String getSelectPart(String columnName,String aliasName);
+	public String getCreateFieldPart(Map<String,Object> fieldMap);
 }

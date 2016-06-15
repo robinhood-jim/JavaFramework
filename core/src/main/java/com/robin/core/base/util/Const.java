@@ -1,3 +1,18 @@
+/*
+ * Copyright (c) 2015,robinjim(robinjim@126.com)
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.robin.core.base.util;
 
 public class Const {
@@ -34,6 +49,8 @@ public class Const {
 	public static String	META_TYPE_BOOLEAN	    = "7";
 	public static String	META_TYPE_BINARY	    = "8";
 	public static String	META_TYPE_TIMESTAMP		= "9";
+	public static String	META_TYPE_CLOB		= "10";
+	public static String	META_TYPE_BLOB		= "11";
 	//filter type
 	public static String	FILTER_OPER_BETWEEN	= "BT";
 	public static String	FILTER_OPER_LIKE		= "LK";
@@ -64,11 +81,35 @@ public class Const {
 	public static final String SUFFIX_ZIP="zip";
 	public static final String SUFFIX_GZIP="gz";
 	public static final String SUFFIX_BZIP2="bz2";
+	public static final String SUFFIX_SNAPPY="snappy";
+	
+	//text fileType
+	public static final String FILETYPE_PLAINTEXT="1";
+	public static final String FILETYPE_JSON="2";
+	public static final String FILETYPE_XML="3";
+	public static final String FILETYPE_AVRO="4";
 	
 	
 	//InStream enum
 	public static final String LOCAL_INSTREAM_CLASS="com.robin.core.local.LocalInStream";
 	public static final String FTP_INSTREAM_CLASS="com.robin.core.remote.FtpInStream";
 	public static final String HDFS_INSTREAM_CLASS="com.robin.core.hadoop.HdfsInStream";
+	//db script Const
+	public static final String DB2EXECUTE_SCRIPTS="/scripts/db/db2execute.sh";
+	
+	public static final String ORACLEEXECUTE_SCRIPTS="/scripts/db/oracleexecute.sh";
+	public static final String ORACLEIMP_SCRIPTS="/scripts/db/oracle_import.sh";
+	public static final String ORACLEEXP_SCRIPTS="/scripts/db/oracle_export.sh";
+	
+	public static final String BOOLEAN_VALID="1";
+	public static final String BOOLEAN_INVALID="0";
+	public static final String HDFS_NAME_HADOOP1 = "fs.default.name";
+	public static final String HDFS_NAME_HADOOP2 = "fs.defaultFS";
+	
+	public static final String AVRO_SCHEMA_FILE_PARAM="schemaPath";
+	public static final String AVRO_SCHEMA_CONTENT_PARAM="schemaContent";
+	
+	public static final String VALID="1";
+	public static final String INVALID="0";
 
 }

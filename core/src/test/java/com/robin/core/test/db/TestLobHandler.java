@@ -2,8 +2,13 @@
 package com.robin.core.test.db;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
 
@@ -53,6 +58,21 @@ public class TestLobHandler extends TestCase {
 		query.getParameters().put("condition", "");
 		jdbcDao.queryBySelectId(query);
 		List<Map<String, Object>> list2=query.getRecordSet();
+	}
+	@Test
+	public  void testQueryVO() throws Exception{
+		TestLobService service=(TestLobService) SpringContextHolder.getBean("lobService");
+		TestLob obj=service.getEntity(Long.valueOf("1"));
+		try{
+			ByteArrayInputStream in=new ByteArrayInputStream(obj.getLob2());
+			String path=this.getClass().getClassLoader().getResource("").getPath()+"test.exe";
+			System.out.println(path);
+			OutputStream out=new FileOutputStream(new File(path));
+			IOUtils.copy(in, out);
+			out.close();
+		}catch(Exception ex){
+			ex.printStackTrace();
+		}
 	}
 
 }

@@ -33,7 +33,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
 
 import org.apache.commons.beanutils.BeanUtils;
 import org.slf4j.Logger;
@@ -49,6 +48,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.support.JdbcDaoSupport;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
+import org.springframework.jdbc.support.lob.LobCreator;
 import org.springframework.jdbc.support.lob.LobHandler;
 
 import com.robin.core.base.dao.util.AnnotationRetrevior;
@@ -56,6 +56,7 @@ import com.robin.core.base.exception.DAOException;
 import com.robin.core.base.exception.QueryConfgNotFoundException;
 import com.robin.core.base.model.BaseObject;
 import com.robin.core.base.reflect.MethodInvoker;
+import com.robin.core.base.util.Const;
 import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.query.extractor.ResultSetOperationExtractor;
 import com.robin.core.query.extractor.SplitPageResultSetExtractor;
@@ -80,8 +81,6 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao{
 		String querySQL = sqlstr;
 		List<Map<String,Object>> list=null;
 		if (logger.isDebugEnabled()) logger.debug((new StringBuilder()).append("querySQL: ").append(querySQL).toString());
-		
-			
 			String sumSQL = sqlGen.generateCountSql(querySQL);
 			int total = this.getJdbcTemplate().queryForObject(sumSQL, new RowMapper<Integer>() {
 				@Override
@@ -92,18 +91,14 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao{
 				}
 			});
 			pageQuery.setRecordCount(String.valueOf(total));
-			
 			if (Integer.parseInt(pageQuery.getPageSize()) > 0) {
-			
-			String pageSQL = sqlGen.generatePageSql(querySQL, pageQuery);
-						
+			String pageSQL = sqlGen.generatePageSql(querySQL, pageQuery);				
 			if (pageQuery.getOrder() != null && !"".equals(pageQuery.getOrder()))
 				pageSQL+=" order by "+pageQuery.getOrder()+" "+pageQuery.getOrderDirection();
 			if (logger.isDebugEnabled()) {
 				logger.debug((new StringBuilder()).append("sumSQL: ").append(sumSQL).toString());
 				logger.debug((new StringBuilder()).append("pageSQL: ").append(pageSQL).toString());
-			}
-			
+			}		
 			if (total > 0) {
 				int pages = total / Integer.parseInt(pageQuery.getPageSize());
 				if (total % Integer.parseInt(pageQuery.getPageSize()) != 0) pages++;
@@ -203,9 +198,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao{
 		String querySQL = sqlGen.generateSqlBySelectId(qs, pageQuery);
 		if (logger.isDebugEnabled()) logger.debug((new StringBuilder()).append("querySQL: ").append(querySQL).toString());
 		Map<String, String> params = pageQuery.getParameters();
-
-		Object[] keyarray = params.keySet().toArray();
-		if (keyarray.length>0 && CommJdbcUtil.isNumeric(keyarray[0].toString())) {
+		if (pageQuery.getParameterArr()!=null && pageQuery.getParameterArr().length>0 ) {
 			pageQuery = CommJdbcUtil.queryByPreparedParamter(this.getJdbcTemplate(),sqlGen,qs, pageQuery);
 		}
 		else {
@@ -244,6 +237,17 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao{
 			String querySQL = sqlstr;
 			if (logger.isDebugEnabled()) logger.debug((new StringBuilder()).append("querySQL: ").append(querySQL).toString());	
 			list =queryAllItemList(sqlstr,obj);
+			return list;
+		}catch (Exception e) {
+			throw new DAOException(e);
+		}
+	}
+	private List<Map<String,Object>> queryBySql(String sqlstr,List<Map<String,Object>> mappingFieldList,Object[] obj) throws DAOException {
+		List<Map<String,Object>> list = null;
+		try{
+			String querySQL = sqlstr;
+			if (logger.isDebugEnabled()) logger.debug((new StringBuilder()).append("querySQL: ").append(querySQL).toString());	
+			list =queryAllItemList(sqlstr,mappingFieldList,obj);
 			return list;
 		}catch (Exception e) {
 			throw new DAOException(e);
@@ -292,16 +296,14 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao{
 						String columnName = fields[i].getName();
 						if (columnNameList.contains(columnName)) {
 							int pos = columnNameList.indexOf(columnName);
-							if (!className[pos].equals("CLOB")
-									&& !className[pos].equals("BLOB")) {
+							if (!className[pos].equals("CLOB") && !className[pos].equals("BLOB")) {
 								Object obj = rs.getObject(columnName);
 								BeanUtils.copyProperty(tmpobj, columnName, obj);
 							} else if (className[pos].equals("CLOB")) {
 								String result = lobHandler.getClobAsString(rs,pos + 1);
 								BeanUtils.copyProperty(tmpobj, columnName,result);
 							} else {
-								byte[] bytes = lobHandler.getBlobAsBytes(rs,
-										pos + 1);
+								byte[] bytes = lobHandler.getBlobAsBytes(rs,pos + 1);
 								BeanUtils.copyProperty(tmpobj, columnName,bytes);
 							}
 						}
@@ -381,7 +383,6 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao{
 			List<Map<String, Object>> rsList=null;
 			if(map1.containsKey(fieldName)){
 				String namedstr="";
-			
 				namedstr=generateQuerySqlBySingleFields(map1, fieldName, oper, queryBuffer);
 				String sql=buffer.toString()+queryBuffer.toString();
 				if(oper.equals(BaseObject.OPER_IN)){
@@ -396,13 +397,12 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao{
 					BaseObject obj=type.newInstance();
 					ConvertUtil.convertToModel(obj, rsList.get(i));
 					retlist.add(obj);
-				}
-				
+				}				
 			}else{
 				throw new DAOException(" query Field not in entity");
 			}
 		}catch(Exception ex){
-			
+			throw new DAOException(ex);
 		}
 		return retlist;
 	}
@@ -441,8 +441,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao{
 				}
 			}else{
 				throw new DAOException(" query Field not in entity");
-			}
-			
+			}			
 		}
 		catch(Exception ex){
 			throw new DAOException(ex);
@@ -452,19 +451,19 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao{
 	public List<BaseObject> queryAll(Class<? extends BaseObject> type) throws DAOException{
 		List<BaseObject> retlist = new ArrayList<BaseObject>();
 		try{
-		StringBuffer buffer=new StringBuffer();
-		Map<String, String> tableMap = new HashMap<String, String>();
-		List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
-		buffer.append(getWholeSelectSql(type.newInstance(), tableMap, list));
-		String sql=buffer.substring(0,buffer.length()-5);
-		if(logger.isDebugEnabled())
-			logger.debug("querySql="+sql);
-		List<Map<String, Object>> rsList = queryBySql(sql);
-		for (int i = 0; i < rsList.size(); i++) {
-			BaseObject obj =type.newInstance();
-			ConvertUtil.convertToModel(obj, rsList.get(i));
-			retlist.add(obj);
-		}
+			StringBuffer buffer=new StringBuffer();
+			Map<String, String> tableMap = new HashMap<String, String>();
+			List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
+			buffer.append(getWholeSelectSql(type.newInstance(), tableMap, list));
+			String sql=buffer.substring(0,buffer.length()-5);
+			if(logger.isDebugEnabled())
+				logger.debug("querySql="+sql);
+			List<Map<String, Object>> rsList = queryBySql(sql);
+			for (int i = 0; i < rsList.size(); i++) {
+				BaseObject obj =type.newInstance();
+				ConvertUtil.convertToModel(obj, rsList.get(i));
+				retlist.add(obj);
+			}
 		}catch (Exception e) {
 			throw new DAOException(e);
 		}
@@ -479,19 +478,17 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao{
 			start=(pageNum-1)*pageSize;
 			end=pageNum*pageSize;
 		}
-		return  this.getJdbcTemplate().query(pageSQL, new SplitPageResultSetExtractor(start,end) {
-		});
+		return  this.getJdbcTemplate().query(pageSQL, new SplitPageResultSetExtractor(start,end) {});
 	}
-	private List<Map<String,Object>> queryAllItemList(final String querySQL) {
-		
-		return this.getJdbcTemplate().query(querySQL, new SplitPageResultSetExtractor(0,0,lobHandler) {
-		});
+	private List<Map<String,Object>> queryAllItemList(final String querySQL) {		
+		return this.getJdbcTemplate().query(querySQL, new SplitPageResultSetExtractor(0,0,lobHandler) {});
 	}
 	
 	private List<Map<String,Object>> queryAllItemList(final String querySQL,Object[] obj) {
-		return this.getJdbcTemplate().query(querySQL,obj, new SplitPageResultSetExtractor(0,0,lobHandler) {
-
-		});
+		return this.getJdbcTemplate().query(querySQL,obj, new SplitPageResultSetExtractor(0,0,lobHandler) {});
+	}
+	private List<Map<String,Object>> queryAllItemList(final String querySQL,final List<Map<String,Object>> mappingFieldList,Object[] obj) {
+		return this.getJdbcTemplate().query(querySQL,obj, new SplitPageResultSetExtractor(0,0,lobHandler,mappingFieldList) {});
 	}
 	private String generateQuerySqlBySingleFields(Map<String,Map<String, Object>> map1,String fieldName,String oper,StringBuffer queryBuffer){
 		String namedstr="";
@@ -561,7 +558,6 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao{
 		}
 	}
 	
-
 	/** 
      * Call Procedure
      * @param sql 
@@ -587,8 +583,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao{
      */ 
     public Map<String,Object> executeCall(String sql, List<SqlParameter> declaredParameters, Map<String,Object> inPara,boolean function) throws DAOException{ 
         try{
-        	BaseStoreProcedure xsp = new BaseStoreProcedure(this.getJdbcTemplate(),sql,declaredParameters);
-        	
+        	BaseStoreProcedure xsp = new BaseStoreProcedure(this.getJdbcTemplate(),sql,declaredParameters);        	
         	xsp.setFunction(function); 
         	return xsp.execute(inPara); 
         }catch (Exception e) {
@@ -609,8 +604,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao{
     	try{
     		for(int i=0;i<declaredParameters.size();i++){ 
     			SqlParameter parameter = (SqlParameter)declaredParameters.get(i); 
-    			if(parameter instanceof SqlOutParameter){ 
-    				
+    			if(parameter instanceof SqlOutParameter){    				
     				xsp.setOutParameter(parameter.getName(),parameter.getSqlType()); 
     			}else if(parameter instanceof SqlInOutParameter){
     				xsp.setInOutParameter(parameter.getName(),parameter.getSqlType());
@@ -628,22 +622,8 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao{
     		throw new DAOException(e);
 		}
     } 
-    public long executeSqlWithReturn(final String sql, final Object... objects)
-			throws DAOException {
-		KeyHolder keyHolder=new GeneratedKeyHolder();
-		getJdbcTemplate().update(new PreparedStatementCreator() {
-			public java.sql.PreparedStatement createPreparedStatement(Connection conn)
-					throws SQLException {
-				PreparedStatement ps =conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-				for (int i = 0; i < objects.length; i++) {
-					setParameter(ps, i+1, objects[i]);
-				}
-				return ps;
-			}
-		}, keyHolder);
-		return keyHolder.getKey().longValue();
-	}
-    private long executeSqlWithReturn(List<Map<String, Object>> field,final String sql)
+    
+    public long executeSqlWithReturn(List<Map<String, Object>> field,final String sql)
 			throws DAOException {
 		KeyHolder keyHolder=new GeneratedKeyHolder();
 		getJdbcTemplate().update(new DefaultPrepareStatement(field,sql), keyHolder);
@@ -692,9 +672,9 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao{
 				if (!map.containsKey("increment")) {
 					if (map.get("value") != null) {
 						String datatype = map.get("datatype").toString();
-						if (datatype.equalsIgnoreCase("clob")) {
+						if (datatype.equalsIgnoreCase(Const.META_TYPE_CLOB)) {
 							 lobHandler.getLobCreator().setClobAsString(ps, pos, map.get("value").toString());
-						} else if (datatype.equalsIgnoreCase("blob")) {
+						} else if (datatype.equalsIgnoreCase(Const.META_TYPE_BLOB)) {
 							lobHandler.getLobCreator().setBlobAsBytes(ps, pos, (byte[])map.get("value"));
 						} else {
 							setParameter(ps, pos, map.get("value"));
@@ -728,7 +708,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao{
     	String incrementcolumn=null;
     	for (Map<String, Object> map:fields) {
     		if(map.get("datatype")!=null){
-    			if(map.get("datatype").toString().equalsIgnoreCase("clob") || map.get("datatype").toString().equalsIgnoreCase("blob")){
+    			if(map.get("datatype").toString().equals(Const.META_TYPE_BLOB) || map.get("datatype").toString().equals(Const.META_TYPE_CLOB)){
     				containlob=true;
     			}
     		}
@@ -736,7 +716,6 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao{
 				if(map.get("value")!=null){
 					fieldBuffer.append(map.get("field").toString()).append(",");
 					valuebuBuffer.append("?,");
-					//objList.add(map.get("value"));
 				}
 			}else{
 				hasincrementPk=true;
@@ -752,7 +731,6 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao{
 			
 		}
     	buffer.append("(").append(fieldBuffer.substring(0, fieldBuffer.length()-1)).append(") values (").append(valuebuBuffer.substring(0, valuebuBuffer.length()-1)).append(")");
-    	//Object[] objs=objList.toArray();
     	String insertSql=buffer.toString();
     	if(logger.isDebugEnabled())
     		logger.debug("insert sql="+insertSql);
@@ -879,20 +857,16 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao{
 			if(map.get("primary")!=null){
 				fieldBuffer.append(map.get("field").toString()).append(" in (:ids) ");
 				break;
-				//objList.add(map.get("value"));
 			}
 		}
     	NamedParameterJdbcTemplate nameTemplate=new NamedParameterJdbcTemplate(this.getDataSource());
     	List<Serializable>ids=Arrays.asList(value);
     	Map<String,List<Serializable>> params = Collections.singletonMap("ids", ids);   
-    	//objList.add(value);
     	buffer.append(fieldBuffer);
-    	//Object[] objs=objList.toArray();
     	String deleteSql=buffer.toString();
     	if(logger.isDebugEnabled())
     		logger.debug("delete sql="+deleteSql);
     	return nameTemplate.update(deleteSql, params);
-    	//return update(deleteSql, objs);
     	}catch(Exception ex){
     		if(logger.isDebugEnabled()){
     			logger.debug("Encounter error",ex);
@@ -956,7 +930,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao{
     			sqlbuffer.append(tableMap.get("schema")).append(".");
     		sqlbuffer.append(tableMap.get("tableName")).append(" where ");
     		sqlbuffer.append(wherebuffer);
-    		List<Map<String, Object>> list1=queryBySql(sqlbuffer.toString(), objs);
+    		List<Map<String, Object>> list1=queryBySql(sqlbuffer.toString(), list,objs);
     		if(!list1.isEmpty()){
     			ConvertUtil.convertToModel(obj, list1.get(0));
     		}else{
@@ -1107,6 +1081,40 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao{
 				stmt.setString(pos, obj.toString());
 			}else if(obj instanceof Long){
 				stmt.setLong(pos, Long.parseLong(obj.toString()));
+			}
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+    }
+    private void setParameter(PreparedStatement stmt,int pos,List<String> columnTypeList,Object obj) {
+    	try{
+			if (obj == null){
+				if(pos!=0)
+					stmt.setNull(pos, Types.VARCHAR);
+			}
+			else if (obj instanceof Integer) {
+				stmt.setInt(pos, Integer.valueOf(obj.toString()));
+			} else if (obj instanceof Double) {
+				stmt.setDouble(pos, Double.valueOf(obj.toString()));
+			} else if (obj instanceof java.util.Date) {
+				stmt.setTimestamp(pos, new Timestamp(((java.util.Date) obj).getTime()));
+			}else if(obj instanceof java.sql.Date){
+				stmt.setDate(pos, new Date(((java.sql.Date)obj).getTime()));
+			}
+			else if (obj instanceof Timestamp) {
+				stmt.setTimestamp(pos, (Timestamp) obj);
+			}else if(obj instanceof String){
+				if(!columnTypeList.get(pos-1).equalsIgnoreCase("clob"))
+					stmt.setString(pos, obj.toString());
+				else{
+					LobCreator lobCreator=lobHandler.getLobCreator();
+					lobCreator.setClobAsString(stmt, pos, obj.toString());
+				}
+			}else if(obj instanceof Long){
+				stmt.setLong(pos, Long.parseLong(obj.toString()));
+			}else if(obj instanceof byte[]){
+				LobCreator lobCreator=lobHandler.getLobCreator();
+				lobCreator.setBlobAsBytes(stmt, pos,(byte[]) obj);
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();

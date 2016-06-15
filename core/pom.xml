@@ -16,7 +16,7 @@
 	</properties>
 
 	<dependencies>
-		<!--  Apache commons start -->
+		<!-- Apache commons start -->
 		<dependency>
 			<groupId>commons-lang</groupId>
 			<artifactId>commons-lang</artifactId>
@@ -42,12 +42,16 @@
 			<artifactId>commons-beanutils</artifactId>
 		</dependency>
 		<dependency>
-			  <groupId>commons-dbutils</groupId>
-			  <artifactId>commons-dbutils</artifactId>
+			<groupId>commons-dbutils</groupId>
+			<artifactId>commons-dbutils</artifactId>
 		</dependency>
-		<!--  Apache commons end -->
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-compress</artifactId>
+		</dependency>
+		<!-- Apache commons end -->
 		<!-- Spring start -->
-				<dependency>
+		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-core</artifactId>
 		</dependency>
@@ -68,44 +72,54 @@
 			<artifactId>spring-jdbc</artifactId>
 		</dependency>
 		<dependency>
-			  <groupId>javax.persistence</groupId>
-			  <artifactId>com.springsource.javax.persistence</artifactId>
-		</dependency>	 
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>javax.persistence</groupId>
+			<artifactId>com.springsource.javax.persistence</artifactId>
+		</dependency>
 		<!-- Spring end -->
+		<dependency>
+			<groupId>postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-log4j12</artifactId>
 		</dependency>
 		<dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
-        </dependency>
-		
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-		</dependency>
-		
-		
-		<dependency>
-				<groupId>dom4j</groupId>
-				<artifactId>dom4j</artifactId>
-		</dependency>
-		<dependency>
-			  <groupId>cglib</groupId>
-			  <artifactId>cglib-nodep</artifactId>
+			<groupId>com.google.code.gson</groupId>
+			<artifactId>gson</artifactId>
 		</dependency>
 
 		<dependency>
-			  <groupId>org.xeustechnologies</groupId>
-			  <artifactId>jcl-core</artifactId>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+
+		<dependency>
+			<groupId>dom4j</groupId>
+			<artifactId>dom4j</artifactId>
 		</dependency>
 		<dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>servlet-api</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
+			<groupId>cglib</groupId>
+			<artifactId>cglib-nodep</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.xeustechnologies</groupId>
+			<artifactId>jcl-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>servlet-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
 			<groupId>net.sf.supercsv</groupId>
 			<artifactId>super-csv</artifactId>
 		</dependency>
@@ -114,27 +128,47 @@
 			<artifactId>mysql-connector-java</artifactId>
 		</dependency>
 		<dependency>
-		  <groupId>org.hibernate</groupId>
-		  <artifactId>hibernate</artifactId>
+			<groupId>com.oracle</groupId>
+			<artifactId>ojdbc14</artifactId>
 		</dependency>
 		<dependency>
-			  <groupId>com.google.guava</groupId>
-			  <artifactId>guava</artifactId>
-			  <version>${guava.version}</version>
-			</dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.freemarker</groupId>
+			<artifactId>freemarker</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-vfs2</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.aspectj</groupId>
+			<artifactId>aspectjlib</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.scannotation</groupId>
+			<artifactId>scannotation</artifactId>
+		</dependency>
+
 	</dependencies>
-	
+
 
 	<build>
 		<sourceDirectory>src/main/java</sourceDirectory>
 		<plugins>
 			<plugin>
-			  <artifactId>maven-compiler-plugin</artifactId>
-			  <version>3.1</version>
-			  <configuration>
-			    <source>1.6</source>
-			    <target>1.6</target>
-			  </configuration>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.1</version>
+				<configuration>
+					<source>1.6</source>
+					<target>1.6</target>
+				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -165,7 +199,7 @@
 						<configuration>
 							<outputDirectory>
 								${project.build.directory}/lib
-                            </outputDirectory>
+							</outputDirectory>
 						</configuration>
 					</execution>
 				</executions>
