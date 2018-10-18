@@ -37,6 +37,7 @@ import com.robin.core.base.model.BaseObject;
 import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.query.util.PageQuery;
 import com.robin.core.sql.util.BaseSqlGen;
+import com.robin.core.sql.util.FilterCondition;
 
 /**
  * <p>Description:<b>Auto wired Service With defalut methold</b></p>
@@ -122,7 +123,7 @@ public class BaseAnnotationJdbcService<V extends BaseObject,P extends Serializab
 			throw new ServiceException(ex);
 		}
 	}
-	@Transactional(readOnly=true)
+	@Transactional(propagation=Propagation.REQUIRED,rollbackFor=RuntimeException.class)
 	public void executeBySelectId(PageQuery query) throws ServiceException{
 		try{
 			jdbcDao.executeBySelectId(query);
@@ -232,6 +233,17 @@ public class BaseAnnotationJdbcService<V extends BaseObject,P extends Serializab
 			retlist=(List<V>) jdbcDao.queryByVO(type, vo, additonMap, orderByStr);
 		} catch (DAOException ex) {
 			throw new ServiceException(ex);
+		}
+		return retlist;
+	}
+	@Transactional(readOnly=true)
+	public List<V> queryByCondition(List<FilterCondition> conditions,String orderByStr)
+			throws ServiceException {
+		List<V> retlist = new ArrayList();
+		try{
+			retlist=(List<V>) jdbcDao.queryByCondition(type, conditions, orderByStr);
+		}catch (DAOException e) {
+			throw new ServiceException(e);
 		}
 		return retlist;
 	}

@@ -1,3 +1,18 @@
+/*
+ * Copyright (c) 2015,robinjim(robinjim@126.com)
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.robin.core.query.util;
 
 public class Condition implements ICondition{
@@ -50,7 +65,7 @@ public class Condition implements ICondition{
 		StringBuffer sbSQLStr = new StringBuffer();
 		if (BETWEEN == state){
 			if (values.length < 2){
-				throw new Exception("between must has least two value");
+				throw new RuntimeException("between must has least two value");
 			}
 			sbSQLStr.append(" (");
 			sbSQLStr.append(tablename);
@@ -122,7 +137,7 @@ public class Condition implements ICondition{
 		} else 
 		if (IN == state){
 			if (values.length < 1 || values[0] == null){
-				throw new Exception("In must have at least one Value");
+				throw new RuntimeException("In must have at least one Value");
 			}
 			sbSQLStr.append(" (");
 			sbSQLStr.append(tablename);

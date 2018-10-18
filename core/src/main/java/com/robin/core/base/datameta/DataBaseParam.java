@@ -112,4 +112,8 @@ public class DataBaseParam {
 		}
 		return isequal;
 	}
+	@Override
+	public int hashCode() {
+		return new String(this.getType()+"|"+this.getDatabaseName()+"|"+this.getHostName()+"|"+String.valueOf(this.getPort())).hashCode();
+	}
 }

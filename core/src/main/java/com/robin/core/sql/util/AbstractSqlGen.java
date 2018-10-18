@@ -125,6 +125,33 @@ public abstract class AbstractSqlGen implements BaseSqlGen{
 		else if (param.getColumnType().equals(Const.META_TYPE_DATE)) sqlstr=toSQLForDate(param);
 		return sqlstr;
 	}
+	public String generateSqlBySelectId(QueryString qs, PageQuery queryString) {
+
+		StringBuffer buffer = new StringBuffer();
+		String fromscript=qs.getFromSql();
+		String sql=qs.sql;
+		String fields=qs.field;
+		buffer.append(SELECT);
+		buffer.append(fields).append(" ");
+		buffer.append(fromscript);
+		if(sql!=null && !sql.trim().equals("")){
+			return sql;
+		}
+		else {
+			if (queryString.getGroupByString() != null && !"".equals(queryString.getGroupByString())) {
+				buffer.append(" group by " + queryString.getGroupByString());
+				if (queryString.getHavingString() != null && !"".equals(queryString.getHavingString()))
+					buffer.append(" having " + queryString.getHavingString());
+			}
+			if (fromscript.toLowerCase().indexOf(" order by ") == -1) {
+				if (queryString.getOrderString() != null && !"".equals(queryString.getOrderString().trim()))
+					buffer.append(" order by " + queryString.getOrderString());
+				else if (queryString.getOrder() != null && !"".equals(queryString.getOrder()))
+					buffer.append(" order by " + queryString.getOrder()).append(queryString.getOrderDirection() == null ? "" : " " + queryString.getOrderDirection());
+			}
+			return buffer.toString();
+		}
+	}
 	public String getCountSqlByConfig(QueryString qs, PageQuery query) {
 		String querySQL = qs.getCountSql();		
 		Map<String, String> params = query.getParameters();
@@ -178,32 +205,19 @@ public abstract class AbstractSqlGen implements BaseSqlGen{
 	}
 	public String[] getResultColName(QueryString qs){
 		String field=qs.getField();
-		if(field==null || "".equals(field.trim()))
+		if(!field.contains(".*")) {
+			return getResultColName(field);
+		}else{
 			return null;
-		StringTokenizer token=new StringTokenizer(field,",");
-		 int fields_nums = token.countTokens();
-         String fields[] = new String[fields_nums];
-         int sqlTypes[] = new int[fields_nums];
-         for(int i = 0; i < fields_nums; i++)
-         {
-             fields[i] = token.nextToken().trim();
-             int asindex=fields[i].indexOf("as");
-             if(asindex==-1)
-            	 asindex=fields[i].indexOf("AS");
-             if(asindex!=-1){
-            	 int index = fields[i].lastIndexOf(" ");
-            	 if(index > -1)
-            		 fields[i] = fields[i].substring(index).trim();
-             }
-         }
-         return fields;
+		}
+
 	}
 	public String[] getResultColName(String field){
 		if(field==null || "".equals(field.trim()))
 			return null;
 		StringTokenizer token=new StringTokenizer(field,",");
 		 int fields_nums = token.countTokens();
-         String fields[] = new String[fields_nums];
+         String[] fields = new String[fields_nums];
          int sqlTypes[] = new int[fields_nums];
          for(int i = 0; i < fields_nums; i++)
          {
@@ -230,7 +244,18 @@ public abstract class AbstractSqlGen implements BaseSqlGen{
 		return builder.toString();
 	}
 	public abstract String returnTypeDef(String dataType,Map<String, Object> fieldMap);
-	
+	protected String getQueryFromPart(QueryString qs,PageQuery query){
+		StringBuilder builder=new StringBuilder();
+		String fromscript=qs.getFromSql();
+		String sql=qs.sql;
+		if(sql==null || sql.trim().equals("")){
+			String fields=qs.field;
+			builder.append(SELECT);
+			builder.append(fields).append(" ");
+			builder.append(fromscript);
+		}
+		return builder.toString();
+	}
 	
 	protected abstract String toSQLForDecimal(QueryParam param);
 	protected abstract String toSQLForInt(QueryParam param);

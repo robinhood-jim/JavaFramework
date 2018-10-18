@@ -15,16 +15,15 @@
  */
 package com.robin.core.base.dao;
 
-import java.io.Serializable;
-import java.sql.Date;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
+import com.robin.core.base.exception.DAOException;
+import com.robin.core.base.exception.QueryConfgNotFoundException;
+import com.robin.core.base.model.BaseObject;
+import com.robin.core.generic.util.GenericsUtils;
+import com.robin.core.query.extractor.SplitPageResultSetExtractor;
+import com.robin.core.query.util.PageQuery;
+import com.robin.core.query.util.QueryFactory;
+import com.robin.core.query.util.QueryString;
+import com.robin.core.sql.util.BaseSqlGen;
 import org.hibernate.Criteria;
 import org.hibernate.HibernateException;
 import org.hibernate.Query;
@@ -40,15 +39,15 @@ import org.springframework.jdbc.support.lob.DefaultLobHandler;
 import org.springframework.orm.hibernate3.HibernateCallback;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
-import com.robin.core.base.exception.DAOException;
-import com.robin.core.base.exception.QueryConfgNotFoundException;
-import com.robin.core.base.model.BaseObject;
-import com.robin.core.generic.util.GenericsUtils;
-import com.robin.core.query.extractor.SplitPageResultSetExtractor;
-import com.robin.core.query.util.PageQuery;
-import com.robin.core.query.util.QueryFactory;
-import com.robin.core.query.util.QueryString;
-import com.robin.core.sql.util.BaseSqlGen;
+import java.io.Serializable;
+import java.sql.Date;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> extends HibernateDaoSupport implements BaseGenricDao<T,ID> {
 	private JdbcTemplate jdbcTemplate;
@@ -140,7 +139,7 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
 	 */
 	public List<T> findByNamedParam(String hql,String[] fieldName,Object[] fieldValue) throws DAOException{
 		try{
-			return getHibernateTemplate().findByNamedParam(hql, fieldName, fieldValue);
+			return (List<T>)getHibernateTemplate().findByNamedParam(hql, fieldName, fieldValue);
 		}catch (HibernateException e) {
 			throw new DAOException(e);
 		}
@@ -151,11 +150,11 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
 		try{
 		if (fieldValue == null) {
 			hql = "from " + getClassName(entityClass) + " a where a." + fieldName + " is null";
-			return getHibernateTemplate().find(hql);
+			return (List<T>)getHibernateTemplate().find(hql);
 		}
 		else {
 			hql = "from " + getClassName(entityClass) + " a where a." + fieldName + "=:fieldValue";
-			return getHibernateTemplate().findByNamedParam(hql, "fieldValue", fieldValue);
+			return (List<T>)getHibernateTemplate().findByNamedParam(hql, "fieldValue", fieldValue);
 		}
 		}catch (HibernateException e) {
 			throw new DAOException(e);
@@ -172,11 +171,11 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
 		if (fieldValue == null) {
 			hql = "from " + getClassName(entityClass) + " a where a." + fieldName + " is null"+orderstr;
 			
-			return getHibernateTemplate().find(hql);
+			return (List<T>)getHibernateTemplate().find(hql);
 		}
 		else {
 			hql = "from " + getClassName(entityClass) + " a where a." + fieldName + "=:fieldValue"+orderstr;
-			return  getHibernateTemplate().findByNamedParam(hql, "fieldValue", fieldValue);
+			return  (List<T>)getHibernateTemplate().findByNamedParam(hql, "fieldValue", fieldValue);
 		}
 		}catch (HibernateException e) {
 			throw new DAOException(e);
@@ -237,7 +236,7 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
          }
          hql=buffer.toString();
          try{
-         return getHibernateTemplate().findByNamedParam(hql, fieldName, fieldValue);
+         return (List<T>)getHibernateTemplate().findByNamedParam(hql, fieldName, fieldValue);
 		}catch (HibernateException e) {
 			throw new DAOException(e);
 		}
@@ -279,7 +278,7 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
         }
 		hql=buffer.toString();
 		try{
-			return getHibernateTemplate().findByNamedParam(hql, fieldName, fieldValue);
+			return (List<T>)getHibernateTemplate().findByNamedParam(hql, fieldName, fieldValue);
 		}catch (HibernateException e) {
 			throw new DAOException(e);
 		}
@@ -315,7 +314,7 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
         }
 		hql=buffer.toString();
 		try{
-        return getHibernateTemplate().findByNamedParam(hql, fieldName, fieldValue);
+        return (List<T>)getHibernateTemplate().findByNamedParam(hql, fieldName, fieldValue);
 		}catch (HibernateException e) {
 			throw new DAOException(e);
 		}
@@ -372,7 +371,7 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
 	public List<T> findAll() throws DAOException {
 		
 		try{
-			return getHibernateTemplate().find("from " + getClassName(entityClass));
+			return (List<T>)getHibernateTemplate().find("from " + getClassName(entityClass));
 		}catch (HibernateException e) {
 			throw new DAOException(e);
 		}
@@ -388,11 +387,11 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
 		try{
 		if (fieldValue == null) {
 			hql = "from " + getClassName(entityClass) + " a where a." + fieldName + " is null";
-			return getHibernateTemplate().find(hql);
+			return (List<T>)getHibernateTemplate().find(hql);
 		}
 		else {
 			hql = "from " + getClassName(entityClass) + " a where a." + fieldName + "=:fieldValue";
-			return getHibernateTemplate().findByNamedParam(hql, "fieldValue", fieldValue);
+			return (List<T>)getHibernateTemplate().findByNamedParam(hql, "fieldValue", fieldValue);
 		}
 		}catch (HibernateException e) {
 			throw new DAOException(e);
@@ -409,7 +408,7 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
 			hql = "from " + getClassName(entityClass) + " a where a." + fieldName + "=:fieldValue";
 			//return (List) getHibernateTemplate().findByNamedParam(hql, "fieldValue", fieldValue);
 		}
-		return getHibernateTemplate().executeFind(new HibernateCallback<List<?>>(){
+		return (List<T>)getHibernateTemplate().executeFind(new HibernateCallback<List<?>>(){
 
 			public List<?> doInHibernate(Session session)
 					throws HibernateException, SQLException {
@@ -435,8 +434,8 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
 				else if(fieldValue instanceof java.sql.Timestamp){
 					query.setTimestamp(fieldName, (java.sql.Timestamp)fieldValue);
 				}
-				query.setFirstResult(startpos);//����ӵڼ�����ʼ��ѯ   
-	             query.setMaxResults(pageSize);//���巵�صļ�¼��   		             
+				query.setFirstResult(startpos);
+	             query.setMaxResults(pageSize);
 	             List<?> list = query.list();   
 	             return list;   
 			}
@@ -461,7 +460,7 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
 		else {
 			hql = "from " + getClassName(entityClass) + " a where a." + fieldName + "=:fieldValue"+orderstr;
 		}
-		return getHibernateTemplate().executeFind(new HibernateCallback<List<?>>(){
+		return (List<T>)getHibernateTemplate().executeFind(new HibernateCallback<List<?>>(){
 
 			public List<?> doInHibernate(Session session)
 					throws HibernateException, SQLException {
@@ -509,11 +508,11 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
 		if (fieldValue == null) {
 			hql = "from " + getClassName(entityClass) + " a where a." + fieldName + " is null"+orderstr;
 			
-			return getHibernateTemplate().find(hql);
+			return (List<T>)getHibernateTemplate().find(hql);
 		}
 		else {
 			hql = "from " + getClassName(entityClass) + " a where a." + fieldName + "=:fieldValue"+orderstr;
-			return getHibernateTemplate().findByNamedParam(hql, "fieldValue", fieldValue);
+			return (List<T>)getHibernateTemplate().findByNamedParam(hql, "fieldValue", fieldValue);
 		}
 		
 		}catch (HibernateException e) {
@@ -588,7 +587,7 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
         }
 		hql=buffer.toString();
 		try{
-        return getHibernateTemplate().findByNamedParam(hql, fieldName, fieldValue);
+        return (List<T>)getHibernateTemplate().findByNamedParam(hql, fieldName, fieldValue);
 		}catch (HibernateException e) {
 			throw new DAOException(e);
 		}
@@ -630,7 +629,7 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
         }
 		hql=buffer.toString();
 		try{
-			return getHibernateTemplate().findByNamedParam(hql, fieldName, fieldValue);
+			return (List<T>)getHibernateTemplate().findByNamedParam(hql, fieldName, fieldValue);
 		}catch (HibernateException e) {
 			throw new DAOException(e);
 		}
@@ -730,7 +729,7 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
          }
          hql=buffer.toString();
          try{
-        	 return getHibernateTemplate().findByNamedParam(hql, fieldName, fieldValue);
+        	 return (List<T>)getHibernateTemplate().findByNamedParam(hql, fieldName, fieldValue);
          }catch (HibernateException e) {
 			throw new DAOException(e);
 		}
@@ -738,14 +737,14 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
 
 	public List<T> findByHql(String hql) throws DAOException {
 		try{
-			return getHibernateTemplate().find(hql);
+			return (List<T>)getHibernateTemplate().find(hql);
 		}catch (Exception e) {
 			throw new DAOException(e);
 		}
 	}
 	public List<T> findByHqlPage(final String hql, final int startpox,final int pageSize) throws DAOException {
 		try{
-			return getHibernateTemplate().executeFind(new HibernateCallback<List<?>>(){
+			return (List<T>)getHibernateTemplate().executeFind(new HibernateCallback<List<?>>(){
 
 				public List<?> doInHibernate(Session session)
 						throws HibernateException, SQLException {
@@ -941,7 +940,7 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
 
 	public void saveOrUpdateAll(Collection<T> collection) throws DAOException {
 		try {
-			getHibernateTemplate().saveOrUpdateAll(collection);
+			getHibernateTemplate().save(collection);
 		}
 		catch (HibernateException e) {
 			throw new DAOException(e);
@@ -1061,7 +1060,7 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
 		this.queryFactory = queryFactory;
 	}
 	private List<T> doInHibernateQuery(final String hql,final String[] fieldName,final Object[] fieldValue,final int startpos,final int pageSize){
-		return getHibernateTemplate().executeFind(new HibernateCallback<List<T>>(){
+		return (List<T>)getHibernateTemplate().executeFind(new HibernateCallback<List<T>>(){
 
 			public List<T> doInHibernate(Session session)
 					throws HibernateException, SQLException {

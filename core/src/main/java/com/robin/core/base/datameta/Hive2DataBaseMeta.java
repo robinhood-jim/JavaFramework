@@ -18,7 +18,7 @@ package com.robin.core.base.datameta;
 import com.robin.core.sql.util.BaseSqlGen;
 import com.robin.core.sql.util.MysqlSqlGen;
 
-public class Hive2DataBaseMeta extends BaseDataBaseMeta{
+public class  Hive2DataBaseMeta extends BaseDataBaseMeta{
 
 	public Hive2DataBaseMeta(DataBaseParam param) {
 		super(param);

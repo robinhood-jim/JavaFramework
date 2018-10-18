@@ -38,9 +38,7 @@ public class PropertiesLoader {
 	}
 	
 
-	/**
-	 * 取锟斤拷Property锟斤拷
-	 */
+
 	private String getValue(String key) {
 		String systemProperty = System.getProperty(key);
 		if (systemProperty != null) {
@@ -49,9 +47,6 @@ public class PropertiesLoader {
 		return properties.getProperty(key);
 	}
 
-	/**
-	 * 取锟斤拷String锟斤拷锟酵碉拷Property,锟斤拷锟斤拷Null锟斤拷锟阶筹拷锟届常.
-	 */
 	public String getProperty(String key) {
 		String value = getValue(key);
 		if (value == null) {
@@ -60,17 +55,11 @@ public class PropertiesLoader {
 		return value;
 	}
 
-	/**
-	 * 取锟斤拷String锟斤拷锟酵碉拷Property.锟斤拷锟斤拷Null锟絫锟斤拷锟斤拷Default值.
-	 */
 	public String getProperty(String key, String defaultValue) {
 		String value = getValue(key);
 		return value != null ? value : defaultValue;
 	}
 
-	/**
-	 * 取锟斤拷Integer锟斤拷锟酵碉拷Property.锟斤拷锟斤拷Null锟斤拷锟斤拷锟捷达拷锟斤拷锟斤拷锟阶筹拷锟届常.
-	 */
 	public Integer getInteger(String key) {
 		String value = getValue(key);
 		if (value == null) {
@@ -79,17 +68,12 @@ public class PropertiesLoader {
 		return Integer.valueOf(value);
 	}
 
-	/**
-	 * 取锟斤拷Integer锟斤拷锟酵碉拷Property.锟斤拷锟斤拷Null锟絫锟斤拷锟斤拷Default值锟斤拷锟斤拷锟斤拷锟斤拷荽锟斤拷锟斤拷锟斤拷壮锟斤拷斐?
-	 */
 	public Integer getInteger(String key, Integer defaultValue) {
 		String value = getValue(key);
 		return value != null ? Integer.valueOf(value) : defaultValue;
 	}
 
-	/**
-	 * 取锟斤拷Double锟斤拷锟酵碉拷Property.锟斤拷锟斤拷Null锟斤拷锟斤拷锟捷达拷锟斤拷锟斤拷锟阶筹拷锟届常.
-	 */
+
 	public Double getDouble(String key) {
 		String value = getValue(key);
 		if (value == null) {
@@ -98,17 +82,12 @@ public class PropertiesLoader {
 		return Double.valueOf(value);
 	}
 
-	/**
-	 * 取锟斤拷Double锟斤拷锟酵碉拷Property.锟斤拷锟斤拷Null锟絫锟斤拷锟斤拷Default值锟斤拷锟斤拷锟斤拷锟斤拷荽锟斤拷锟斤拷锟斤拷壮锟斤拷斐?
-	 */
+
 	public Double getDouble(String key, Integer defaultValue) {
 		String value = getValue(key);
 		return value != null ? Double.valueOf(value) : defaultValue;
 	}
 
-	/**
-	 * 取锟斤拷Boolean锟斤拷锟酵碉拷Property.锟斤拷锟斤拷Null锟阶筹拷锟届常,锟斤拷锟斤拷锟斤拷莶锟斤拷锟絫rue/false锟津返伙拷false.
-	 */
 	public Boolean getBoolean(String key) {
 		String value = getValue(key);
 		if (value == null) {
@@ -117,17 +96,11 @@ public class PropertiesLoader {
 		return Boolean.valueOf(value);
 	}
 
-	/**
-	 * 取锟斤拷Boolean锟斤拷锟酵碉拷Propert.锟斤拷锟斤拷Null锟絫锟斤拷锟斤拷Default值,锟斤拷锟斤拷锟斤拷莶锟轿猼rue/false锟津返伙拷false.
-	 */
 	public Boolean getBoolean(String key, boolean defaultValue) {
 		String value = getValue(key);
 		return value != null ? Boolean.valueOf(value) : defaultValue;
 	}
 
-	/**
-	 * 锟斤拷锟斤拷锟斤拷锟侥硷拷, 锟侥硷拷路锟斤拷使锟斤拷Spring Resource锟斤拷式.
-	 */
 	private Properties loadProperties(String... resourcesPaths) {
 		Properties props = new Properties();
 

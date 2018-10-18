@@ -15,17 +15,20 @@
  */
 package com.robin.core.convert.util;
 
+import com.robin.core.base.model.BaseObject;
+import com.robin.core.base.util.Const;
+import com.robin.core.fileaccess.meta.DataCollectionMeta.DataSetColumnMeta;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.lang.reflect.Method;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.robin.core.base.model.BaseObject;
 
 public class ConvertUtil {
 
@@ -88,6 +91,7 @@ public class ConvertUtil {
 					else
 						retValue = parseParamenter(type, value);
 					methods[i].invoke(target, new Object[] { retValue });
+					break;
 				}
 			}
 		}
@@ -165,7 +169,7 @@ public class ConvertUtil {
 
 	public static void convertToModelForUpdateNew(BaseObject target, BaseObject src) throws Exception {
 		if (target == null || src == null) return;
-		if (!target.getClass().equals(src.getClass())) throw new Exception("");
+		if (!target.getClass().equals(src.getClass())) throw new RuntimeException("");
 		Map<String, Method> map = getAllSetMethodNames(target);
 
 		List<String> dirtyColumnList=src.getDirtyColumn();
@@ -185,7 +189,7 @@ public class ConvertUtil {
 	}
 	public static void convertToModelForUpdate(Object target, Object src) throws Exception {
 		if (target == null || src == null) return;
-		if (!target.getClass().equals(src.getClass())) throw new Exception("");
+		if (!target.getClass().equals(src.getClass())) throw new RuntimeException("");
 		try{
 		Map<String, Method> map = getAllSetMethodNames(target);
 		
@@ -326,5 +330,57 @@ public class ConvertUtil {
 			}
 		}
 		return ret;
+	}
+	public static Object convertStringToTargetObject(String value,DataSetColumnMeta meta,String defaultDateTimefromat) throws Exception{
+		 Object retObj;
+		 SimpleDateFormat dateformat=null;
+		 String dateformatstr=defaultDateTimefromat;
+		 if(dateformatstr==null || StringUtils.isEmpty(dateformatstr)){
+			 dateformatstr=Const.DEFAULT_DATETIME_FORMAT;
+		 }
+		 dateformat=new SimpleDateFormat(dateformatstr);
+		 String columnType=meta.getColumnType();
+		 retObj=translateValue(value, columnType, meta.getColumnName(), dateformat);
+		 if(retObj==null && meta.getDefaultNullValue()!=null){
+			 retObj=meta.getDefaultNullValue();
+		 }
+		 return retObj;
+	}
+	public static Object convertStringToTargetObject(String value,String columnType,String columnName,String defaultDateTimefromat) throws Exception{
+		 Object retObj;
+		 SimpleDateFormat dateformat=null;
+		 String dateformatstr=defaultDateTimefromat;
+		 if(dateformatstr==null || StringUtils.isEmpty(dateformatstr)){
+			 dateformatstr=Const.DEFAULT_DATETIME_FORMAT;
+		 }
+		 dateformat=new SimpleDateFormat(dateformatstr);
+		 retObj=translateValue(value, columnType, columnName,dateformat);
+		 return retObj;
+	}
+	private static Object translateValue(String value,String columnType,String columnName,SimpleDateFormat dateformat) throws Exception{
+		Object retObj;
+		try{
+			 if(value==null || StringUtils.isEmpty(value.trim()))
+				 return null;
+			 if(columnType.equals(Const.META_TYPE_INTEGER)){
+				 retObj=Integer.valueOf(value);
+			 }else if(columnType.equals(Const.META_TYPE_BIGINT))
+				 retObj=Long.valueOf(value);
+			 else if(columnType.equals(Const.META_TYPE_NUMERIC)){
+				 retObj=Double.valueOf(value);
+			 }else if(columnType.equals(Const.META_TYPE_DOUBLE)){
+				 retObj=Double.valueOf(value);
+			 }else if (columnType.equals(Const.META_TYPE_DATE)) {
+				retObj=dateformat.parse(value);
+			}
+			 else if(columnType.equals(Const.META_TYPE_TIMESTAMP)){
+				 retObj=new Timestamp(dateformat.parse(value).getTime());
+			 }else {
+				 retObj=value.toString();
+			 }
+		 }catch(Exception ex){
+			 throw new RuntimeException("columnName ="+columnName+",type="+columnType+" with value="+value+"failed! type mismatch,Please check!");
+		 }
+		return retObj;
 	}
 }

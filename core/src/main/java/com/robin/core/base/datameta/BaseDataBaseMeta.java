@@ -15,22 +15,34 @@
  */
 package com.robin.core.base.datameta;
 
+import com.robin.core.convert.util.ConvertUtil;
+import com.robin.core.sql.util.BaseSqlGen;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.robin.core.convert.util.ConvertUtil;
-import com.robin.core.sql.util.BaseSqlGen;
-
 public abstract class BaseDataBaseMeta implements DataBaseInterface {
+	//static fields
+	public static final String TYPE_MYSQL="MySql";
+	public static final String TYPE_ORACLE="Oracle";
+	public static final String TYPE_DB2="DB2";
+	public static final String TYPE_SYBASE="Sybase";
+	public static final String TYPE_SQLSERVER="SqlServer";
+	public static final String TYPE_H2="H2";
+	public static final String TYPE_DEBRY="Debry";
+	public static final String TYPE_PGSQL="PostgreSql";
+	public static final String TYPE_PHONEIX="Phoenix4";
+	public static final String TYPE_HIVE="Hive";
+	public static final String TYPE_HIVE2="Hive2";
+	public static final String TYPE_Impala="Impala";
 	protected DataBaseParam param;
 	//Enum type of all support DB
-	public static String[] dbTypeEnmu={"Oracle","MySql","DB2","SqlServer","Sybase","H2","Debry","PostgreSql","Phoenix","Phoenix4","Hive","Hive2","OracleRac"};
+	public static String[] dbTypeEnmu={"Oracle","MySql","DB2","SqlServer","Sybase","H2","Debry","PostgreSql","Phoenix","Hive","Hive2","OracleRac"};
 	//jdbc Url Template like jdbc:mysql://[hostName]:[port]/[databaseName]?useUnicode=true&characterEncoding=[encode]
-	protected static Pattern PATTERN_TEMPLATE_PARAM = Pattern.compile("\\[.*?\\]"); 
-	
+	protected static final Pattern PATTERN_TEMPLATE_PARAM = Pattern.compile("\\[.*?\\]");
 	public List<DataBaseTableMeta> listAllTable(String schema) throws Exception {
 		DataBaseUtil util=new DataBaseUtil();
 		util.connect(this,param);
@@ -68,9 +80,9 @@ public abstract class BaseDataBaseMeta implements DataBaseInterface {
 	public BaseDataBaseMeta(DataBaseParam param){
 		if(param!=null){
 			this.param=param;
-		}
-		if(param.getUrlTemplate()==null || param.getUrlTemplate().isEmpty()){
-			param.setUrlTemplate(getUrlTemplate());
+			if(param.getUrlTemplate()==null || param.getUrlTemplate().isEmpty()){
+				param.setUrlTemplate(getUrlTemplate());
+			}
 		}
 	}
 	public String getSQLNextSequenceValue(String sequenceName) {
@@ -99,4 +111,5 @@ public abstract class BaseDataBaseMeta implements DataBaseInterface {
 		}
 		return isequal;
 	}
+
 }

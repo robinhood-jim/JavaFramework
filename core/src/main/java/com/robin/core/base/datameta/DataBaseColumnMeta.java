@@ -28,7 +28,13 @@ public class DataBaseColumnMeta {
 	private boolean foreignKey;
 	private boolean nullable=true;
 	private boolean increment;
-
+	public DataBaseColumnMeta() {
+		
+	}
+	public DataBaseColumnMeta(String columnName,Integer columnType) {
+		this.columnName=columnName;
+		this.columnType=columnType;
+	}
 	public String getColumnName() {
 		return columnName;
 	}

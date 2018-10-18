@@ -82,12 +82,18 @@ public class Const {
 	public static final String SUFFIX_GZIP="gz";
 	public static final String SUFFIX_BZIP2="bz2";
 	public static final String SUFFIX_SNAPPY="snappy";
+	public static final String SUFFIX_LZO="lzo";
+	public static final String SUFFIX_LZMA="lzma";
+	public static final String SUFFIX_LZ4="lz4";
 	
 	//text fileType
 	public static final String FILETYPE_PLAINTEXT="1";
 	public static final String FILETYPE_JSON="2";
 	public static final String FILETYPE_XML="3";
 	public static final String FILETYPE_AVRO="4";
+	public static final String FILETYPE_PARQUET="5";
+
+	public static final String FILEWRITER_PARQUET_CLASSNAME="com.robin.comm.fileaccess.writer.ParquetFileWriter";
 	
 	
 	//InStream enum
@@ -111,5 +117,22 @@ public class Const {
 	
 	public static final String VALID="1";
 	public static final String INVALID="0";
-
+	public static final String DEFAULT_DATETIME_FORMAT="yyyy-MM-dd HH:mm:ss";
+	public enum CompressType{
+		COMPRESS_TYPE_GZ("gz"),
+		COMPRESS_TYPE_LZO("lzo"),
+		COMPRESS_TYPE_SNAPPY("snappy"),
+		COMPRESS_TYPE_ZIP("zip"),
+		COMPRESS_TYPE_BZ2("bz2"),
+		COMPRESS_TYPE_LZMA("lzma"),
+		COMPRESS_TYPE_NONE("none");
+		private String value;
+		private CompressType(String value){
+			this.value=value;
+		}
+		@Override
+		public String toString(){
+			return value;
+		}
+	}
 }

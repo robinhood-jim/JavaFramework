@@ -59,23 +59,23 @@ public class CollectionMapConvert<T> {
 	      }
 	      return retMap;
    }
-   public Map<String,T> convertListToMap(List<T> listobj, String identityCol) throws Exception {
-	      Map<String,T> retMap = new HashMap<String,T>();
-	      for(int i = 0; i < listobj.size(); i++) {
-	         T targerobj = (T) listobj.get(i);
-	         String colName=identityCol.substring(0,1).toUpperCase()+identityCol.substring(1,identityCol.length());
-	         Method method = targerobj.getClass().getMethod("get"+colName,null);
-	         Object obj=method.invoke(targerobj,null);
-	         
-	         String value = obj.toString();
-	         if(obj instanceof Double)
-	        	 value=String.valueOf(((Double)obj).intValue());
-	         if(obj instanceof Long)
-	        	 value=String.valueOf(((Long)obj).intValue());
-	         retMap.put(value,listobj.get(i));
-	      }
-	      return retMap;
-	   }
+
+	public Map<String, T> convertListToMap(List<T> listobj, String identityCol) throws Exception {
+		Map<String, T> retMap = new HashMap<String, T>();
+		for (int i = 0; i < listobj.size(); i++) {
+			T targerobj = (T) listobj.get(i);
+			String colName = identityCol.substring(0, 1).toUpperCase()+ identityCol.substring(1, identityCol.length());
+			Method method = targerobj.getClass().getMethod("get" + colName,null);
+			Object obj = method.invoke(targerobj, null);
+			String value = obj.toString();
+			if (obj instanceof Double)
+				value = String.valueOf(((Double) obj).intValue());
+			if (obj instanceof Long)
+				value = String.valueOf(((Long) obj).intValue());
+			retMap.put(value, listobj.get(i));
+		}
+		return retMap;
+	}
 
    public List<T> convertToList(Map<String,T> mapobj) throws Exception
    {
@@ -127,7 +127,6 @@ public class CollectionMapConvert<T> {
 	   }
 	   return retMap;
    }
-
    public Map<String,List<String>> convertToSingleValueMapByParentKey(List<T> listobj, String parentCol,String valueCol) throws Exception{
 	   Map<String,List<String>> retMap =new HashMap<String, List<String>>();
 	   for(T t:listobj){

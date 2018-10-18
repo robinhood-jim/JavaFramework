@@ -44,7 +44,7 @@ public class CommandLineExecutor {
 			throw ex;
 		}
 		if(runCode!=0){
-			throw new Exception("run script with error,output="+retStr);
+			throw new RuntimeException("run script with error,output="+retStr);
 		}
 		return retStr;
 	}
@@ -66,7 +66,7 @@ public class CommandLineExecutor {
 			processMap.remove(Long.valueOf(key));
 		}
 		if(runCode!=0){
-			throw new Exception("run script with error,output="+retStr);
+			throw new RuntimeException("run script with error,output="+retStr);
 		}
 		return retStr;
 	}
@@ -75,12 +75,13 @@ public class CommandLineExecutor {
 		boolean runOk=true;
 		try{
 			ProcessBuilder builder=new ProcessBuilder(cmd);
-			System.out.println(builder.command());
 			Process process=builder.start();
 			CommandOutputThread thread=new CommandOutputThread(process,false);
 			thread.start();
 			int runCode=process.waitFor();
+			logger.info("return code="+runCode);
 			thread.waitFor();
+			logger.info("execute tag="+thread.isExecuteOk());
 			if(runCode!=0 || !thread.isExecuteOk()){
 				runOk=false;
 			}
@@ -89,7 +90,7 @@ public class CommandLineExecutor {
 			throw ex;
 		}
 		if(!runOk){
-			throw new Exception("run script with error,output="+retStr);
+			throw new RuntimeException("run script with error,output="+retStr);
 		}
 		return retStr;
 	}
@@ -105,7 +106,6 @@ public class CommandLineExecutor {
 		String retStr=null;
 		try{
 			ProcessBuilder builder=new ProcessBuilder(cmd);
-			System.out.println(builder.command());
 			Process process=builder.start();
 			int pid=getPid(process);
 			processMap.put(Long.valueOf(key), pid);
@@ -121,7 +121,7 @@ public class CommandLineExecutor {
 			stopCmd(processMap.get(key));
 		}
 		if(runCode!=0){
-			throw new Exception("run script with error,output="+retStr);
+			throw new RuntimeException("run script with error,output="+retStr);
 		}
 		return retStr;
 	}
@@ -164,7 +164,7 @@ public class CommandLineExecutor {
 				Thread.sleep(1000*env.getWaitSecond());
 		}
 		if(runCode!=0){
-			throw new Exception("run script with error,output="+retStr);
+			throw new RuntimeException("run script with error,output="+retStr);
 		}
 		return retStr;
 	}
@@ -207,7 +207,7 @@ public class CommandLineExecutor {
 			}
 		}
 		if(runCode!=0){
-			throw new Exception("run script with error,output="+retStr);
+			throw new RuntimeException("run script with error,output="+retStr);
 		}
 		return retStr;
 	}
@@ -285,18 +285,17 @@ public class CommandLineExecutor {
 				builder.append(containList.get(i)).append(" ");
 			}
 			String killcmd="kill -9 "+builder.substring(0,builder.length()-1);
-			CommandLineExecutor.getInstance().executeCmd(killcmd);
+			executeCmd(killcmd);
 		}catch(Exception e){
 			logger.error("",e);
 		}finally {
-			processMap.remove(selpid);
+			processMap.remove(Long.valueOf(selpid));
 		}
 	}
 	private void naviagteTree(Map<Integer, List<Integer>> ppidMap,Integer ppid,List<Integer> containList){
 		if(ppidMap.containsKey(ppid)){
 			List<Integer> pidList=ppidMap.get(ppid);
 			for (int i = 0; i < pidList.size(); i++) {
-				System.out.println("get child pid="+pidList.get(i)+" at ppid"+ppid);
 				containList.add(pidList.get(i));
 				naviagteTree(ppidMap,pidList.get(i),containList);
 			}
@@ -363,12 +362,13 @@ public class CommandLineExecutor {
 					builder.append(line).append("\n");
 				}
 				while((line=errreader.readLine())!=null){
-					executeOk=false;
+					
 					if(enableOuptut)
 						logger.error("error="+line);
 					builder.append(line).append("\n");
 				}
 			}catch(Exception ex){
+				executeOk=false;
 				logger.error("",ex);
 			}finally{
 				try{
@@ -379,6 +379,7 @@ public class CommandLineExecutor {
 					errreader.close();
 				}
 				}catch(Exception ex){
+					executeOk=false;
 					logger.error("",ex);
 				}
 				finished=true;

@@ -39,6 +39,21 @@ public class CollectionBaseConvert {
 	      }
 	      return retMap;
 	}
+	public static Map<String,List<Map<String,Object>>> convertToMapByParentKeyWithObjVal(List<Map<String, Object>> listobj,String key) {
+		 Map<String,List<Map<String,Object>>> retMap =new HashMap<String, List<Map<String,Object>>>();
+	      for(int i = 0; i < listobj.size(); i++) {
+	    	  String parentKey=listobj.get(i).get(key).toString();
+	         if(retMap.get(parentKey)==null){
+	        	 List<Map<String,Object>> sublist=new ArrayList<Map<String,Object>>();
+	        	 sublist.add(listobj.get(i));
+	        	 retMap.put(parentKey, sublist);
+	         }else
+	         {
+	        	 retMap.get(parentKey).add(listobj.get(i));
+	         }
+	      }
+	      return retMap;
+	}
 	public static Map<String,List<Map<String,String>>> convertToMapObjByParentKey(List<Map<String, String>> listobj,String key) {
 		 Map<String,List<Map<String,String>>> retMap =new HashMap<String, List<Map<String,String>>>();
 	      for(int i = 0; i < listobj.size(); i++) {

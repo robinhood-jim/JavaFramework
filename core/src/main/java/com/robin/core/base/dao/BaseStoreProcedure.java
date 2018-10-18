@@ -45,7 +45,7 @@ public class BaseStoreProcedure extends StoredProcedure{
         setSql(sql); 
 	}
 	protected BaseStoreProcedure(JdbcTemplate jdbcTemplate, String sql,List<?> declareParameterList){
-		 setJdbcTemplate(jdbcTemplate); 
+		 setJdbcTemplate(jdbcTemplate);
 	        setSql(sql); 
 	        for(int i=0;i<declareParameterList.size();i++){ 
 	            SqlParameter parameter = (SqlParameter)declareParameterList.get(i); 

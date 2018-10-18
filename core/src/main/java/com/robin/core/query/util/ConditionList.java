@@ -37,7 +37,7 @@ public class ConditionList extends ArrayList {
 			if (condition.getState() == Condition.BETWEEN) {
 				if (condition.getValues().length < 2) {
 					continue;
-					// throw new Exception("锟斤拷锟斤拷锟斤拷示:锟斤拷询锟斤拷锟斤拷锟斤拷锟斤拷为锟秸ｏ拷(between "+values+")");
+					
 				}
 				if (condition.getValues()[0] != null || condition.getValues()[1] != null) {
 					sql.append(AND);

@@ -39,6 +39,9 @@ public class SpringContextHolder implements ApplicationContextAware, DisposableB
 	public static Object getBean(String beanName){
 		return context.getBean(beanName);
 	}
+	public static Object getBean(Class<?> clazzName){
+		return context.getBean(clazzName);
+	}
 	
 	public static Object getBean(String beanName, Class<?> clazz){
 		return context.getBean(beanName, clazz);

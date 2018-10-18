@@ -15,26 +15,18 @@
  */
 package com.robin.core.base.datameta;
 
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.Statement;
-import java.sql.Types;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.sql.DataSource;
-
+import com.robin.core.base.util.Const;
 import org.apache.commons.dbcp.BasicDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.support.JdbcUtils;
 
-import com.robin.core.base.util.Const;
+import javax.sql.DataSource;
+import java.sql.*;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DataBaseUtil {
 	private Connection connection;
@@ -316,6 +308,7 @@ public class DataBaseUtil {
 	            String scale = rs.getString("TABLE_SCHEM");
 	            
 	            DataBaseColumnMeta datameta = new DataBaseColumnMeta();
+				 //TODO SqlServer2005 may failed for not support  get AUTOINCREMENT  attribute
 	            if(!(basemeta instanceof OracleDataBaseMeta) && !(basemeta instanceof HiveDataBaseMeta) && !(basemeta instanceof PhoenixDataBaseMeta)){
 	            	String autoInc=rs.getString("IS_AUTOINCREMENT");
 	            	if(autoInc!=null && "YES".equals(autoInc))
@@ -471,7 +464,9 @@ public class DataBaseUtil {
 			 retStr=Const.META_TYPE_DATE;
 		 }else if (type==Types.TIME || type==Types.TIMESTAMP) {
 			 retStr=Const.META_TYPE_TIMESTAMP;
-		}
+		}else if(type==Types.BOOLEAN){
+		 	retStr=Const.META_TYPE_BOOLEAN;
+		 }
 		 else if(type==Types.BLOB || type==Types.BINARY ||type==Types.BIT ){
 			 retStr=Const.META_TYPE_BINARY;
 		 }else {

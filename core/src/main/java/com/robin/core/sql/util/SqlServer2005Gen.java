@@ -67,24 +67,7 @@ public class SqlServer2005Gen extends AbstractSqlGen implements BaseSqlGen{
 		return pagingSelect.toString();
 	}
 
-	
 
-	public String generateSqlBySelectId(QueryString qs, PageQuery queryString) {
-		
-		StringBuffer buffer = new StringBuffer();
-		String sqlscript=qs.sql;
-		buffer.append(sqlscript);
-		if (queryString.getGroupByString() != null && !"".equals(queryString.getGroupByString())) {
-			buffer.append(" group by " + queryString.getGroupByString());
-			if (queryString.getHavingString() != null && !"".equals(queryString.getHavingString())) buffer.append(" having " + queryString.getHavingString());
-		}
-		if (sqlscript.toLowerCase().indexOf(" order by ") == -1) {
-			if (queryString.getOrderString() != null && !"".equals(queryString.getOrderString().trim())) buffer.append(" order by " + queryString.getOrderString());
-			else if (queryString.getOrder() != null && !"".equals(queryString.getOrder()))
-				buffer.append(" order by " + queryString.getOrder()).append(queryString.getOrderDirection()==null?"":" "+queryString.getOrderDirection());
-		}
-		return buffer.toString();
-	}
 
 	private String getClassSql(List<QueryParam> queryList) {
 

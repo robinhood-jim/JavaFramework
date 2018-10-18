@@ -42,7 +42,8 @@ public class PageQuery {
 
 	protected String							orderDirection;	
 
-	protected Map<String, String>			parameters;		
+	protected Map<String, String>			parameters=new HashMap<String, String>();
+	protected Map<String,Object>         nameParameters=new HashMap<String, Object>();
 	protected Object[] 	parameterArr;
 	private Map<String, String>			columnTypes;
 
@@ -52,9 +53,9 @@ public class PageQuery {
 	
 	protected String 					querySql;			
 
-	public static String						ASC	= "asc";
+	public static final String						ASC	= "asc";
 
-	public static String						DESC	= "desc";
+	public static final String						DESC	= "desc";
 	public String                         pageToolBar;
 
 	public PageQuery() {
@@ -115,8 +116,10 @@ public class PageQuery {
 	}
 
 	public Map<String, String> getParameters() {
-		if (parameters == null) parameters = new HashMap<String, String>();
 		return parameters;
+	}
+	public void setParameterWithKey(String key,String value){
+		this.parameters.put(key,value);
 	}
 
 	public void setParameters(Map<String, String> parameters) {
@@ -197,6 +200,17 @@ public class PageQuery {
 	
 	public Object[] getParameterArr() {
 		return parameterArr;
+	}
+
+	public Map<String, Object> getNameParameters() {
+		return nameParameters;
+	}
+	public void setNameParameterWithKey(String key,Object value){
+		nameParameters.put(key,value);
+	}
+
+	public void setNameParameters(Map<String, Object> nameParameters) {
+		this.nameParameters = nameParameters;
 	}
 
 	public void setParameterArr(Object[] parameterArr) {

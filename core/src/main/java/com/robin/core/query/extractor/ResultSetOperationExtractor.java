@@ -15,27 +15,22 @@
  */
 package com.robin.core.query.extractor;
 
-import java.sql.Date;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.support.lob.LobHandler;
 
+import java.io.UnsupportedEncodingException;
+import java.sql.*;
+import java.util.HashMap;
+import java.util.Map;
+
 public abstract class ResultSetOperationExtractor implements ResultSetExtractor<Integer> {
 	private String dateFormat="yyyy-MM-dd";
 	private String timestampFormat="yyyy-MM-dd HH:mm:ss";
+	protected String encode="UTF-8";
 	private LobHandler lobHandler;
 	public ResultSetOperationExtractor(){
-		
+		init();
 	}
 	public ResultSetOperationExtractor(String dateFormat,String timestampFormat) {
 		if(dateFormat!=null)
@@ -66,33 +61,42 @@ public abstract class ResultSetOperationExtractor implements ResultSetExtractor<
 					className[k]="java.lang.String";
 				}
 			}
+			Object obj=null;
+			Date date=null;
+			Timestamp stamp=null;
+			String result=null;
 			while (rs.next()){
-				Map<String, Object> map = new HashMap<String, Object>();
+ 				Map<String, Object> map = new HashMap<String, Object>();
 				for (int i = 0; i < count; i++) {
-					Object obj=rs.getObject(i+1);
+					obj=rs.getObject(i+1);
 					if(rs.wasNull())
 					{
 						map.put(columnName[i], "");
 					}else if(typeName[i].equalsIgnoreCase("DATE"))
 					{
 						//SimpleDateFormat format=new SimpleDateFormat(dateFormat);
-						Date date=rs.getDate(i+1);
+						date=rs.getDate(i+1);
 						//String datestr=format.format(date);
 						map.put(columnName[i], date);
 					}else if(typeName[i].equalsIgnoreCase("TIMESTAMP") || typeName[i].equalsIgnoreCase("datetime"))
 					{
 						//SimpleDateFormat format=new SimpleDateFormat(timestampFormat);
-						Timestamp stamp=rs.getTimestamp(i+1);
+						stamp=rs.getTimestamp(i+1);
 						//String datestr=format.format(new Date(stamp.getTime()));
 						map.put(columnName[i], stamp);
 					}else if(className[i].contains("CLOB")){
-						if(lobHandler!=null){
-							String result=lobHandler.getClobAsString(rs, i+1);
+						try {
+							result = new String(rs.getBytes(i + 1), encode);
 							map.put(columnName[i], result);
+						}catch (UnsupportedEncodingException ex){
+							throw new SQLException(ex);
 						}
+					}else if(className[i].contains("BLOB") || className[i].equals("OBJECT")){
+						obj=rs.getBytes(i+1);
+						map.put(columnName[i], obj);
 					}
 					else
-						map.put(columnName[i], obj.toString());
+						map.put(columnName[i], obj);
 				}
 				if(executeAddtionalOperation(map, columnName, typeName, className)){
 					retVal++;
@@ -100,7 +104,9 @@ public abstract class ResultSetOperationExtractor implements ResultSetExtractor<
 		}
 		return retVal;
 	}
-	
+	public void setEncode(String encode){
+		this.encode=encode;
+	}
 	
 	public String getDateFormat() {
 		return dateFormat;
@@ -118,4 +124,5 @@ public abstract class ResultSetOperationExtractor implements ResultSetExtractor<
 		this.lobHandler = lobHandler;
 	}
 	public abstract boolean executeAddtionalOperation(Map<String,Object> map,String[] columnName,String[] typeName,String[] className) throws SQLException;
+	public abstract void init();
 }

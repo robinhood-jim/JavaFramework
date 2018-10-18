@@ -131,9 +131,9 @@ public class QueryFactory implements InitializingBean
             Element element = (Element)iter.next();
             id = element.attributeValue("ID");
             if(queryMap.containsKey(id))
-                throw new Exception((new StringBuilder()).append("锟截革拷锟斤拷selectId:").append(id).toString());
+                throw new Exception((new StringBuilder()).append("Duplicated selectId:").append(id).toString());
             
-            String sql = element.elementText("QUERY");
+            String sql = element.elementText("SQL");
             if(sql!=null){
             if(sql.indexOf("&lt;") > -1)
             	sql = sql.replaceAll("&lt;", "<");

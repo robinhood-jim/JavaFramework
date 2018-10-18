@@ -37,10 +37,11 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.cache.RemovalListener;
 import com.google.common.cache.RemovalNotification;
+import com.google.common.collect.MapMaker;
 
 public class BaseScriptExecutor  implements IscriptExecutor{
-	protected Map<String, String> scriptsrcMap=new HashMap<String, String>();
-	private List<String> keyList=new ArrayList<String>();
+	protected Map<String, String> scriptsrcMap=new MapMaker().makeMap();
+	private Map<String,String> keyMap=new MapMaker().makeMap();
 	private LoadingCache<String, CompiledScript> cache=null;
 	protected ScriptEngine scriptEngine;
 	protected Compilable compEngine;
@@ -74,11 +75,11 @@ public class BaseScriptExecutor  implements IscriptExecutor{
 	public CompiledScript returnScript(String names,String scripts) throws Exception{
 		CompiledScript script=null;
 		String key=null;
-		int pos=keyList.indexOf(names);
-		if(pos!=-1){
-			key=keyList.get(keyList.indexOf(names));
+	
+		if(keyMap.containsKey(names)){
+			key=keyMap.get(names);
 		}else{
-			keyList.add(names);
+			keyMap.put(names,names);
 			key=names;
 		}
 		getScript(key,scripts,false);
@@ -138,8 +139,8 @@ public class BaseScriptExecutor  implements IscriptExecutor{
 				cache.refresh(key);
 			}
 		}
-		if(compareKey && !keyList.contains(key)){
-			keyList.add(key);
+		if(compareKey && !keyMap.containsKey(key)){
+			keyMap.put(key,key);
 		}
 	}
 	protected class KeyRemoveListener implements RemovalListener<String, CompiledScript>{
@@ -148,7 +149,7 @@ public class BaseScriptExecutor  implements IscriptExecutor{
 				RemovalNotification<String, CompiledScript> notification) {
 			LOG.info("---- evict Cache by ----"+notification.getKey());
 			scriptsrcMap.remove(notification.getKey());
-			keyList.remove(notification.getKey());
+			keyMap.remove(notification.getKey());
 		}
 	}
 	

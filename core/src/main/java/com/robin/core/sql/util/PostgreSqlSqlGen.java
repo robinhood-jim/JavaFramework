@@ -73,30 +73,6 @@ public class PostgreSqlSqlGen extends AbstractSqlGen implements BaseSqlGen {
 	}
 
 	
-
-	public String generateSqlBySelectId(QueryString qs, PageQuery queryString) {
-
-		StringBuffer buffer = new StringBuffer();
-		String fromscript=qs.getFromSql();
-		String sql=qs.sql;
-		String fields=qs.field;
-		buffer.append(SELECT);
-		buffer.append(fields).append(" ");
-		buffer.append(fromscript);
-		if (queryString.getGroupByString() != null && !"".equals(queryString.getGroupByString())) {
-			buffer.append(" group by " + queryString.getGroupByString());
-			if (queryString.getHavingString() != null && !"".equals(queryString.getHavingString())) buffer.append(" having " + queryString.getHavingString());
-		}
-		if (fromscript.toLowerCase().indexOf(" order by ") == -1) {
-			if (queryString.getOrderString() != null && !"".equals(queryString.getOrderString().trim())) buffer.append(" order by " + queryString.getOrderString());
-			else if (queryString.getOrder() != null && !"".equals(queryString.getOrder())) buffer.append(" order by " + queryString.getOrder() + " " + queryString.getOrderDirection());
-		}
-		return buffer.toString();
-	}
-
-	
-
-	
 	private String getClassSql(List<QueryParam> queryList) {
 
 		return null;

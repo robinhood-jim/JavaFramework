@@ -37,7 +37,7 @@ public class PhoenixDataBaseMeta extends BaseDataBaseMeta {
 	}
 
 	public String getDriverClass() {
-		return "com.salesforce.phoenix.jdbc.PhoenixDriver";
+		return "org.apache.phoenix.queryserver.client.Driver";
 	}
 
 	public String getDropColumnStatement(String arg0, String arg1,
@@ -46,15 +46,15 @@ public class PhoenixDataBaseMeta extends BaseDataBaseMeta {
 		return null;
 	}
 
+	public String getUrlTemplate() {
+		return "jdbc:phoenix:thin:url=[hostName]:[port]";
+	}
 	/*public String getUrl(DataBaseParam param) {
 		if(param.getPort()==0){
 			param.setPort(getDefaultDatabasePort());
 		}
 		return "jdbc:phoenix:"+param.getHostName()+":"+param.getPort();
 	}*/
-	public String getUrlTemplate() {
-		return "jdbc:phoenix://[hostName]:[port]";
-	}
 
 	public boolean supportAutoInc() {
 		return false;

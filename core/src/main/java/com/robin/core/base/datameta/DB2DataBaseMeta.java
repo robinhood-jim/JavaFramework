@@ -28,14 +28,7 @@ public class DB2DataBaseMeta extends BaseDataBaseMeta implements DataBaseInterfa
 		return "com.ibm.db2.jcc.DB2Driver";
 	}
 
-	/*public String getUrl(DataBaseParam param) {
-		if(param.getUrl()==null){
-			if(param.getPort()==0)
-				param.setPort(getDefaultDatabasePort());
-			return "jdbc:db2://"+param.getHostName()+":"+param.getPort()+"/"+param.getDatabaseName();
-		}else
-			return param.getUrl();
-	}*/
+
 	public String getUrlTemplate() {
 		return "jdbc:db2://[hostName]:[port]/[dataBaseName]";
 	}

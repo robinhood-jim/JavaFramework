@@ -32,14 +32,7 @@ public class SybaseDataBaseMeta extends BaseDataBaseMeta{
 	public String getUrlTemplate() {
 		return "jdbc:sybase:Tds:[hostName]:[port]/[databaseName]";
 	}
-	/*public String getUrl(DataBaseParam param) {
-		if(param.getUrl()==null){
-			if(param.getPort()==0)
-				param.setPort(getDefaultDatabasePort());
-			return "jdbc:sybase:Tds:"+param.getHostName()+":"+param.getPort()+"/"+param.getDatabaseName();
-		}else
-			return param.getUrl();
-	}*/
+
 
 	public boolean suppportSequnce() {
 		return false;

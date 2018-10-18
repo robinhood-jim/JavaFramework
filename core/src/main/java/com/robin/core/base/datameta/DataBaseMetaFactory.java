@@ -25,7 +25,7 @@ public class DataBaseMetaFactory {
 		try{
 		List<String> dbTypes=Arrays.asList(BaseDataBaseMeta.dbTypeEnmu);
 		if(dbTypes.contains(type)){
-			String className="cn.com.talkweb.core.base.datameta."+type+"DataBaseMeta";
+			String className="com.robin.core.base.datameta."+type+"DataBaseMeta";
 			Class<?> clazz= Class.forName(className);
 			Constructor<?> construct=clazz.getDeclaredConstructor(new Class[]{DataBaseParam.class});
 			datameta=(BaseDataBaseMeta) construct.newInstance(param);

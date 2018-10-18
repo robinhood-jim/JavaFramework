@@ -15,28 +15,28 @@
  */
 package com.robin.core.sql.util;
 
-import java.util.List;
-import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.robin.core.base.exception.DAOException;
 import com.robin.core.base.util.Const;
 import com.robin.core.query.util.PageQuery;
 import com.robin.core.query.util.QueryParam;
 import com.robin.core.query.util.QueryString;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.List;
+import java.util.Map;
 
 public class MysqlSqlGen extends AbstractSqlGen implements BaseSqlGen{
 	private Logger log=LoggerFactory.getLogger(this.getClass());
 	public String generateCountSql(String strSQL) {
 
-		String str = strSQL.trim().toLowerCase();
+		String str = strSQL.trim();
 		str=str.replaceAll("\\n", "");
 		str=str.replaceAll("\\r", "");
-		int nFromPos = str.lastIndexOf(" from ");
-		int nOrderPos = str.lastIndexOf(" order by ");
-		int nGroupByPos=str.lastIndexOf("group by");
+		String sqllow=str.toLowerCase();
+		int nFromPos = sqllow.lastIndexOf(" from ");
+		int nOrderPos = sqllow.lastIndexOf(" order by ");
+		int nGroupByPos=sqllow.lastIndexOf("group by");
 		if(nGroupByPos==-1)
 			nGroupByPos=str.lastIndexOf("GROUP BY");
 		
@@ -70,28 +70,6 @@ public class MysqlSqlGen extends AbstractSqlGen implements BaseSqlGen{
 		pagingSelect.append(" limit "+nBegin+","+nums);
 		log.info("pageSql="+pagingSelect.toString());
 		return pagingSelect.toString();
-	}
-
-	
-
-	public String generateSqlBySelectId(QueryString qs, PageQuery queryString) {
-
-		StringBuffer buffer = new StringBuffer();
-		String fromscript=qs.getFromSql();
-		String sql=qs.sql;
-		String fields=qs.field;
-		buffer.append(SELECT);
-		buffer.append(fields).append(" ");
-		buffer.append(fromscript);
-		if (queryString.getGroupByString() != null && !"".equals(queryString.getGroupByString())) {
-			buffer.append(" group by " + queryString.getGroupByString());
-			if (queryString.getHavingString() != null && !"".equals(queryString.getHavingString())) buffer.append(" having " + queryString.getHavingString());
-		}
-		if (fromscript.toLowerCase().indexOf(" order by ") == -1) {
-			if (queryString.getOrderString() != null && !"".equals(queryString.getOrderString().trim())) buffer.append(" order by " + queryString.getOrderString());
-			else if (queryString.getOrder() != null && !"".equals(queryString.getOrder())) buffer.append(" order by " + queryString.getOrder() + " " + queryString.getOrderDirection());
-		}
-		return buffer.toString();
 	}
 
 	

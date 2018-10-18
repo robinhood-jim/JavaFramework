@@ -1,0 +1,38 @@
+{
+  "type" : "record",
+  "name" : "zhcxgpsinfo",
+  "fields" : [ {
+    "name" : "deviceId",
+    "type" : ["string","null"]
+  }, {
+    "name" : "deviceName",
+    "type" : ["int","null"]
+  }, {
+    "name" : "systemTime",
+	"type" : {"type":"long", "logicalType":"timestamp-millis"}
+  }, {
+    "name" : "ALARM_FLAG",
+    "type" : ["double","null"]
+  }, {
+    "name" : "STATUS",
+    "type" : ["double","null"]
+  }, {
+    "name" : "LATITUDE",
+    "type" : ["double","null"]
+  }, {
+    "name" : "LONGITUDE",
+    "type" : ["double","null"]
+  }, {
+    "name" : "HEIGHT",
+    "type" : ["double","null"]
+  }, {
+    "name" : "SPEED",
+    "type" : ["double","null"]
+  }, {
+    "name" : "DIRECTION",
+    "type" : ["double","null"]
+  }, {
+    "name" : "TIME",
+    "type" : {"type":"long", "logicalType":"timestamp-millis"}
+  }]
+}

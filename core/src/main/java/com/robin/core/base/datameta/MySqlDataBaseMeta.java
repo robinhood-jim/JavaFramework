@@ -31,14 +31,6 @@ public class MySqlDataBaseMeta extends BaseDataBaseMeta implements DataBaseInter
 		return "org.gjt.mm.mysql.Driver";
 	}
 
-	/*public String getUrl(DataBaseParam param) {
-		if(param.getUrl()==null){
-			if(param.getPort()==0)
-				param.setPort(getDefaultDatabasePort());
-			 return "jdbc:mysql://"+param.getHostName()+":"+param.getPort()+"/"+param.getDatabaseName()+"?useUnicode=true&characterEncoding="+param.getEncode()+"&zeroDateTimeBehavior=convertToNull";
-		}else
-			return param.getUrl();
-	}*/
 	public String getUrlTemplate() {
 		return "jdbc:mysql://[hostName]:[port]/[databaseName]?useUnicode=true&characterEncoding=[encode]&zeroDateTimeBehavior=convertToNull";
 	}

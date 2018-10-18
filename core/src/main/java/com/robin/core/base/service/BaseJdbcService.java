@@ -15,19 +15,6 @@
  */
 package com.robin.core.base.service;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.robin.core.base.dao.JdbcDao;
 import com.robin.core.base.exception.DAOException;
 import com.robin.core.base.exception.ServiceException;
@@ -36,13 +23,33 @@ import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.query.util.PageQuery;
 import com.robin.core.query.util.QueryParam;
 import com.robin.core.sql.util.BaseSqlGen;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.io.Serializable;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.*;
 
 public class BaseJdbcService <V extends BaseObject,P extends Serializable>{
 	private JdbcDao jdbcDao;
 	private BaseSqlGen sqlGen;
 	private Logger logger=LoggerFactory.getLogger(getClass());
+	Class<V> type;
 	public BaseJdbcService(){
-		
+		Type genericSuperClass = getClass().getGenericSuperclass();
+		ParameterizedType parametrizedType;
+		if (genericSuperClass instanceof ParameterizedType) { // class
+			parametrizedType = (ParameterizedType) genericSuperClass;
+		} else if (genericSuperClass instanceof Class) { // in case of CGLIB proxy
+			Class clazz=(Class<?>) genericSuperClass;
+			parametrizedType = (ParameterizedType) ((Class<?>) genericSuperClass).getGenericSuperclass();
+		} else {
+			throw new IllegalStateException("class " + getClass() + " is not subtype of ParametrizedType.");
+		}
+		type = (Class) parametrizedType.getActualTypeArguments()[0];
 	}
 	@Transactional(propagation=Propagation.REQUIRED,rollbackFor=RuntimeException.class)
 	public Long saveEntity(V vo) throws ServiceException{
