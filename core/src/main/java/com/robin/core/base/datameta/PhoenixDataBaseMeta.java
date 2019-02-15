@@ -22,6 +22,7 @@ public class PhoenixDataBaseMeta extends BaseDataBaseMeta {
 
 	public PhoenixDataBaseMeta(DataBaseParam param) {
 		super(param);
+		param.setDriverClassName("org.apache.phoenix.queryserver.client.Driver");
 	}
 
 
@@ -35,10 +36,7 @@ public class PhoenixDataBaseMeta extends BaseDataBaseMeta {
 	public int getDefaultDatabasePort() {
 		return 2181;
 	}
-
-	public String getDriverClass() {
-		return "org.apache.phoenix.queryserver.client.Driver";
-	}
+	
 
 	public String getDropColumnStatement(String arg0, String arg1,
 			DataBaseColumnMeta arg2, String arg3, boolean arg4, String arg5,
@@ -49,12 +47,7 @@ public class PhoenixDataBaseMeta extends BaseDataBaseMeta {
 	public String getUrlTemplate() {
 		return "jdbc:phoenix:thin:url=[hostName]:[port]";
 	}
-	/*public String getUrl(DataBaseParam param) {
-		if(param.getPort()==0){
-			param.setPort(getDefaultDatabasePort());
-		}
-		return "jdbc:phoenix:"+param.getHostName()+":"+param.getPort();
-	}*/
+
 
 	public boolean supportAutoInc() {
 		return false;

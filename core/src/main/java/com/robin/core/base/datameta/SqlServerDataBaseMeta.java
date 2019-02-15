@@ -22,23 +22,13 @@ public class SqlServerDataBaseMeta extends BaseDataBaseMeta {
 
 	public SqlServerDataBaseMeta(DataBaseParam param) {
 		super(param);
+		param.setDriverClassName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
 	}
 
-	public String getDriverClass() {
-		return "com.microsoft.sqlserver.jdbc.SQLServerDriver";
-	}
 
 	public String getUrlTemplate() {
 		return "jdbc:sqlserver://[hostName]:[port];DatabaseName=[databaseName]";
 	}
-	/*public String getUrl(DataBaseParam param) {
-		if(param.getUrl()==null){
-			if(param.getPort()==0)
-				param.setPort(getDefaultDatabasePort());
-			return "jdbc:sqlserver://"+param.getHostName()+":"+param.getPort()+";DatabaseName="+param.getDatabaseName();
-		}else
-			return param.getUrl();
-	}*/
 
 	public boolean suppportSequnce() {
 		return false;

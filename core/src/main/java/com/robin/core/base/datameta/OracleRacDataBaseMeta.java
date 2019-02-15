@@ -24,11 +24,9 @@ public class OracleRacDataBaseMeta  extends BaseDataBaseMeta implements DataBase
 
 	public OracleRacDataBaseMeta(DataBaseParam param) {
 		super(param);
+		param.setDriverClassName("oracle.jdbc.driver.OracleDriver");
 	}
 
-	public String getDriverClass() {
-		return "oracle.jdbc.driver.OracleDriver";
-	}
 	public String getUrlTemplate() {
 		return "jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=TCP)(HOST=[ip1])(PORT=[port]))(ADDRESS=(PROTOCOL=TCP)(HOST=[ip2])(PORT=[port])))(LOAD_BALANCE=yes)(CONNECT_DATA=(SERVER=DEDICATED)(SERVICE_NAME=[databaseName])))";
 	}

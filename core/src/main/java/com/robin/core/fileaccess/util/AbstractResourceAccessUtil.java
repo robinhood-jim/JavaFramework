@@ -96,6 +96,7 @@ public abstract class AbstractResourceAccessUtil {
 	protected BufferedWriter getWriterBySuffix(String suffix,OutputStream out,String encode) throws IOException{
 		return new BufferedWriter(new OutputStreamWriter(getOutputStreamBySuffix(suffix,out),encode));
 	}
+
 	private static OutputStream wrapOutputStream(OutputStream outputStream){
 		OutputStream out=null;
 		if(outputStream instanceof  BufferedOutputStream){
@@ -144,5 +145,6 @@ public abstract class AbstractResourceAccessUtil {
 	public abstract BufferedReader getInResourceByReader(DataCollectionMeta meta) throws Exception;
 	public abstract BufferedWriter getOutResourceByWriter(DataCollectionMeta meta) throws Exception;
 	public abstract OutputStream getOutResourceByStream(DataCollectionMeta meta) throws Exception;
+	public abstract OutputStream getRawOutputStream(DataCollectionMeta meta) throws Exception;
 	public abstract InputStream getInResourceByStream(DataCollectionMeta meta) throws Exception;
 }

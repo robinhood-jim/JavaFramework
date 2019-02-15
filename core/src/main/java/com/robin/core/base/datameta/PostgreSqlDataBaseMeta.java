@@ -22,10 +22,7 @@ public class PostgreSqlDataBaseMeta extends BaseDataBaseMeta{
 
 	public PostgreSqlDataBaseMeta(DataBaseParam param) {
 		super(param);
-	}
-
-	public String getDriverClass() {
-		return "org.postgresql.Driver";
+		param.setDriverClassName("org.postgresql.Driver");
 	}
 
 	public String getUrlTemplate() {

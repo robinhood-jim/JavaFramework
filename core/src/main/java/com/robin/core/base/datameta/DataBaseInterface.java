@@ -18,7 +18,7 @@ package com.robin.core.base.datameta;
 import java.util.List;
 
 public interface DataBaseInterface {
-	public String getDriverClass();
+	//public String getDriverClass();
 	public String getUrl(DataBaseParam param) throws Exception;
 	public boolean suppportSequnce();
 	public boolean supportAutoInc();

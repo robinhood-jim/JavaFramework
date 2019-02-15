@@ -15,6 +15,9 @@
  */
 package com.robin.core.base.util;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public class Const {
 	public static String	DEFAULT_PAGE_SIZE		= "10";
 	public static String	MAX_PAGE_SIZE			= "500";
@@ -77,6 +80,41 @@ public class Const {
 	public static final String PREFIX_SFTP="sftp";
 	public static final String PREFIX_HDFS="hdfs";
 	public static final String PREFIX_S3="s3";
+
+	public  enum ResourceType{
+		TYPE_LOCALFILE("0"),  //local
+		TYPE_HDFSFILE("1"),   //hdfs
+		TYPE_FTPFILE("2"),     //ftp
+		TYPE_SFTP("3"),   //
+		TYPE_DB("4"),
+		TYPE_WEBDAV("5"),
+		TYPE_AWS("6");
+		private String value;
+
+		private ResourceType(String value) {
+			this.value = value;
+		}
+
+		@Override
+		public String toString() {
+			return String.valueOf(this.value);
+		}
+	}
+	public enum FileFormat{
+		TYPE_CSV("1"),       //csv
+		TYPE_JSON("2"),   //json
+		TYPE_XLSX("3"),     //xlsx
+		TYPE_XML("4"),     //xml
+		TYPE_PARQUET("5"),  //parquet
+		TYPE_AVRO("6");   //avro
+		private String value;
+		private FileFormat(String value){this.value=value;}
+		public String toString() {
+			return String.valueOf(this.value);
+		}
+	}
+
+
 	//filesuffix
 	public static final String SUFFIX_ZIP="zip";
 	public static final String SUFFIX_GZIP="gz";
@@ -92,9 +130,20 @@ public class Const {
 	public static final String FILETYPE_XML="3";
 	public static final String FILETYPE_AVRO="4";
 	public static final String FILETYPE_PARQUET="5";
+	public static final String FILETYPE_PROTOBUF ="6";
+
+	public static final String FILESUFFIX_CSV="csv";
+	public static final String FILESUFFIX_JSON="json";
+	public static final String FILESUFFIX_XML="xml";
+	public static final String FILESUFFIX_AVRO="avro";
+	public static final String FILESUFFIX_PARQUET="parquet";
+	public static final String FILESUFFIX_PROTOBUF="proto";
+
 
 	public static final String FILEWRITER_PARQUET_CLASSNAME="com.robin.comm.fileaccess.writer.ParquetFileWriter";
-	
+	public static final String FILEWRITER_PROTOBUF_CLASSNAME="com.robin.comm.fileaccess.writer.ProtoBufFileWriter";
+	public static final String FILEITERATOR_PARQUET_CLASSNAME="com.robin.comm.fileaccess.iterator.ParquetFileIterator";
+	public static final String FILEITERATOR_PROTOBUF_CLASSNAME="com.robin.comm.fileaccess.iterator.ProtoBufFileIterator";
 	
 	//InStream enum
 	public static final String LOCAL_INSTREAM_CLASS="com.robin.core.local.LocalInStream";
@@ -118,6 +167,11 @@ public class Const {
 	public static final String VALID="1";
 	public static final String INVALID="0";
 	public static final String DEFAULT_DATETIME_FORMAT="yyyy-MM-dd HH:mm:ss";
+
+	public static final Pattern MATCHER_OF_PARAMETER= Pattern.compile("%\\[\\w+\\]");
+
+	public static final String MRFRAME_YARN="yarn";
+
 	public enum CompressType{
 		COMPRESS_TYPE_GZ("gz"),
 		COMPRESS_TYPE_LZO("lzo"),

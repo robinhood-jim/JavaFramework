@@ -37,16 +37,24 @@ public class TextFileIteratorFactory {
 	}
 	private static AbstractFileIterator getIter(String fileType,DataCollectionMeta colmeta){
 		AbstractFileIterator iterator=null;
-		if(fileType.equalsIgnoreCase(Const.FILETYPE_PLAINTEXT)){
-			iterator=new PlainTextFileIterator(colmeta);
-		}else if(fileType.equalsIgnoreCase(Const.FILETYPE_JSON)){
-			iterator = new GsonFileIterator(colmeta);
-		}else if(fileType.equalsIgnoreCase(Const.FILETYPE_XML)){
-			iterator = new XmlFileIterator(colmeta);
-		}else if(fileType.equalsIgnoreCase(Const.FILETYPE_AVRO)){
-			iterator=new AvroFileIterator(colmeta);
-		}else if(fileType.equalsIgnoreCase(Const.FILETYPE_PARQUET)){
-
+		try {
+			if (fileType.equalsIgnoreCase(Const.FILETYPE_PLAINTEXT)) {
+				iterator = new PlainTextFileIterator(colmeta);
+			} else if (fileType.equalsIgnoreCase(Const.FILETYPE_JSON)) {
+				iterator = new GsonFileIterator(colmeta);
+			} else if (fileType.equalsIgnoreCase(Const.FILETYPE_XML)) {
+				iterator = new XmlFileIterator(colmeta);
+			} else if (fileType.equalsIgnoreCase(Const.FILETYPE_AVRO)) {
+				iterator = new AvroFileIterator(colmeta);
+			} else if (fileType.equalsIgnoreCase(Const.FILETYPE_PARQUET)) {
+				Class<AbstractFileIterator> clazz = (Class<AbstractFileIterator>) Class.forName(Const.FILEITERATOR_PARQUET_CLASSNAME);
+				iterator = clazz.getConstructor(DataCollectionMeta.class).newInstance(colmeta);
+			}else if(fileType.equalsIgnoreCase(Const.FILETYPE_PROTOBUF)){
+				Class<AbstractFileIterator> clazz = (Class<AbstractFileIterator>) Class.forName(Const.FILEITERATOR_PROTOBUF_CLASSNAME);
+				iterator = clazz.getConstructor(DataCollectionMeta.class).newInstance(colmeta);
+			}
+		}catch (Exception ex){
+			ex.printStackTrace();
 		}
 		return iterator;
 	}

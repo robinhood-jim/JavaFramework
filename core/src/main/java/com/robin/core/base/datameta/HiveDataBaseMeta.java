@@ -25,11 +25,9 @@ public class HiveDataBaseMeta extends BaseDataBaseMeta{
 		if(param.getDatabaseName()==null || param.getDatabaseName().equals("")){
 			param.setDatabaseName("default");
 		}
+		param.setDriverClassName("org.apache.hadoop.hive.jdbc.HiveDriver");
 	}
 
-	public String getDriverClass() {
-		return "org.apache.hadoop.hive.jdbc.HiveDriver";
-	}
 	public String getUrlTemplate() {
 		return "jdbc:hive://[hostName]:[port]/[databaseName]";
 	}

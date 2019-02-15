@@ -26,20 +26,10 @@ public class OracleDataBaseMeta extends BaseDataBaseMeta implements DataBaseInte
 	public static String ORA_TYPE_CLUSTER="2";
 	public OracleDataBaseMeta(DataBaseParam param) {
 		super(param);
+		param.setDriverClassName("oracle.jdbc.driver.OracleDriver");
 	}
 
-	public String getDriverClass() {
-		return "oracle.jdbc.driver.OracleDriver";
-	}
 
-	/*public String getUrl(DataBaseParam param) {
-		if(param.getUrl()==null){
-			if(param.getPort()==0)
-				param.setPort(getDefaultDatabasePort());
-			return "jdbc:oracle:thin:@"+param.getHostName()+":"+param.getPort()+":"+param.getDatabaseName();
-		}else
-			return param.getUrl();
-	}*/
 	public String getUrlTemplate() {
 		String ret="";
 		if(param.getType()==null){

@@ -22,17 +22,32 @@ public class MySqlDataBaseMeta extends BaseDataBaseMeta implements DataBaseInter
 
 	public MySqlDataBaseMeta(DataBaseParam param) {
 		super(param);
+		if(param.getMainVersion()!=null && param.getMainVersion()!=0){
+			if(param.getMainVersion()<8){
+				param.setDriverClassName("com.mysql.jdbc.Driver");
+			}else if(param.getMainVersion()>=5){
+				param.setDriverClassName("com.mysql.cj.jdbc.Driver");
+			}else {
+				param.setDriverClassName("org.gjt.mm.mysql.Driver");
+			}
+		}else
+			param.setDriverClassName("com.mysql.jdbc.Driver");
 		if(param.getEncode()==null || !"".equals(param.getEncode().trim())){
 			param.setEncode("utf-8");
 		}
 	}
 
-	public String getDriverClass() {
-		return "org.gjt.mm.mysql.Driver";
-	}
+	
 
 	public String getUrlTemplate() {
-		return "jdbc:mysql://[hostName]:[port]/[databaseName]?useUnicode=true&characterEncoding=[encode]&zeroDateTimeBehavior=convertToNull";
+		if(param.getMainVersion()!=null && param.getMainVersion()!=0){
+			if(param.getMainVersion()<8){
+				return "jdbc:mysql://[hostName]:[port]/[databaseName]?useUnicode=true&characterEncoding=[encode]&zeroDateTimeBehavior=convertToNull&serverTimezone=[timeZone]";
+			}else{
+				return "jdbc:mysql://[hostName]:[port]/[databaseName]?useUnicode=true&characterEncoding=[encode]&zeroDateTimeBehavior=convertToNull&useSSL=false&serverTimezone=[timeZone]";
+			}
+		}else
+			return "jdbc:mysql://[hostName]:[port]/[databaseName]?useUnicode=true&characterEncoding=[encode]&zeroDateTimeBehavior=convertToNull&serverTimezone=[timeZone]";
 	}
 	public boolean suppportSequnce() {
 		return false;

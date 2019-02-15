@@ -58,10 +58,6 @@ public class GsonFileWriter extends WriterBasedFileWriter{
 		}
 	}
 
-	@Override
-	public void writeRecord(List<Object> list) throws IOException{
-		writeRecord(wrapListToMap(list));
-	}
 
 	@Override
 	public void finishWrite() throws IOException{

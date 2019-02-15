@@ -22,6 +22,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 
 public abstract class WriterBasedFileWriter extends AbstractFileWriter{
+	protected  int ioBufSize = 16 * 1024;
 
 	public WriterBasedFileWriter(DataCollectionMeta colmeta) {
 		super(colmeta);
@@ -36,6 +37,8 @@ public abstract class WriterBasedFileWriter extends AbstractFileWriter{
 		}
 
 	}
-	
 
+	public void setBufferSize(int size) {
+		this.ioBufSize = size;
+	}
 }

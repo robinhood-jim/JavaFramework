@@ -18,6 +18,7 @@ package com.robin.core.sql.util;
 import java.util.List;
 import java.util.Map;
 
+import com.robin.core.base.exception.QueryConfgNotFoundException;
 import com.robin.core.base.util.Const;
 import com.robin.core.query.util.PageQuery;
 import com.robin.core.query.util.QueryParam;
@@ -64,63 +65,6 @@ public class OracleSqlGen extends AbstractSqlGen implements BaseSqlGen {
 	private String getClassSql(List<QueryParam> queryList) {
 
 		return null;
-	}
-	@Override
-	protected String toSQLForInt(QueryParam param) {
-		StringBuffer sql = new StringBuffer("");
-		String retstr = "";
-		String nQueryModel = param.getQueryMode();
-		if (param.getQueryValue() == null || "".equals(param.getQueryValue().trim())) return "";
-		String value = param.getQueryValue();
-		String key = param.getColumnName();
-		if (param.getAliasName() != null && !"".equals(param.getAliasName())) key = param.getAliasName() + "." + key;
-		if (value != null && !"".equals(value.trim())) {
-			if (nQueryModel.equals(QueryParam.QUERYMODE_EQUAL)) sql.append(key + " = " + value);
-			else if (nQueryModel.equals(QueryParam.QUERYMODE_GT)) sql.append(key + " > " + value);
-			else if (nQueryModel.equals(QueryParam.QUERYMODE_LT)) sql.append(key + " < " + value);
-			else if (nQueryModel.equals(QueryParam.QUERYMODE_NOTEQUAL)) sql.append(key + " != " + value);
-			else if (nQueryModel.equals(QueryParam.QUERYMODE_GTANDEQUAL)) sql.append(key + " >= " + value);
-			else if (nQueryModel.equals(QueryParam.QUERYMODE_LTANDEQUAL)) sql.append(key + " <= " + value);
-			else if (nQueryModel.equals(QueryParam.QUERYMODE_IN)) sql.append(key + " IN (" + value + ")");
-			else if (nQueryModel.equals(QueryParam.QUERYMODE_HAVING)) sql.append(" having " + key + param.getQueryMode() + param.getQueryValue());
-			else if (nQueryModel.equals(QueryParam.QUERYMODE_BETWEEN) && !";".equals(value)) {
-				String beginvalue = value.substring(0, value.indexOf(";"));
-				String endvalue = value.substring(value.indexOf(";") + 1, value.length());
-				if(!"".equals(beginvalue)){
-					if(!"".equals(endvalue))
-						sql.append("(" + key + " between " + beginvalue + " and " + endvalue + ")");
-					else
-						sql.append("(" + key + ">=" + beginvalue + ")");
-				}else if(!"".equals(endvalue))
-					sql.append("(" + key + "<=" + endvalue + ")");
-			}
-		}
-
-		return sql.toString();
-	}
-	@Override
-	protected String toSQLForDecimal(QueryParam param) {
-		StringBuffer sql = new StringBuffer("");
-		String nQueryModel = param.getQueryMode();
-		if (param.getQueryValue() == null || "".equals(param.getQueryValue().trim())) return "";
-		String value = param.getQueryValue();
-		String key = param.getColumnName();
-		if (param.getAliasName() != null && !"".equals(param.getAliasName())) key = param.getAliasName() + "." + key;
-		if (value != null && !"".equals(value.trim())) {
-			if (nQueryModel.equals(QueryParam.QUERYMODE_EQUAL)) sql.append(key + " = " + value + " and ");
-			if (nQueryModel.equals(QueryParam.QUERYMODE_GT)) sql.append(key + " > " + value + " and ");
-			else if (nQueryModel.equals(QueryParam.QUERYMODE_LT)) sql.append(key + " < " + value + " and ");
-			else if (nQueryModel.equals(QueryParam.QUERYMODE_NOTEQUAL)) sql.append(key + " != " + value + " and ");
-			else if (nQueryModel.equals(QueryParam.QUERYMODE_GTANDEQUAL)) sql.append(key + " >= " + value + " and ");
-			else if (nQueryModel.equals(QueryParam.QUERYMODE_LTANDEQUAL)) sql.append(key + " <= " + value + " and ");
-			else if (nQueryModel.equals(QueryParam.QUERYMODE_HAVING)) sql.append(" having " + key + param.getQueryMode() + param.getQueryValue());
-			else if (nQueryModel.equals(QueryParam.QUERYMODE_BETWEEN)) {
-				String beginvalue = value.substring(0, value.indexOf(";"));
-				String endvalue = value.substring(value.indexOf(";") + 1, value.length());
-				sql.append("(" + key + " between " + beginvalue + " and " + endvalue + ")");
-			}
-		}
-		return sql.toString();
 	}
 
 	protected String toSQLForString(QueryParam param) {
@@ -169,8 +113,6 @@ public class OracleSqlGen extends AbstractSqlGen implements BaseSqlGen {
 		return sql.toString();
 	}
 
-
-
 	public String generateSingleRowSql(String querySql) {
 		// TODO Auto-generated method stub
 		return null;
@@ -217,6 +159,7 @@ public class OracleSqlGen extends AbstractSqlGen implements BaseSqlGen {
 		}else if(dataType.equals(Const.META_TYPE_BLOB)){
 			builder.append("BLOB");
 		}
+
 		return builder.toString();
 	}
 }

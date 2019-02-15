@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.Map;
 
 
-public abstract class AbstractFileWriter {
+public abstract class AbstractFileWriter implements IResourceWriter {
 	protected BufferedWriter writer;
 	protected DataCollectionMeta colmeta;
 	protected OutputStream out;
@@ -50,6 +50,10 @@ public abstract class AbstractFileWriter {
 	public void setOutputStream(OutputStream out){
 		this.out=out;
 	}
+
+	public void writeRecord(List<Object> map) throws IOException {
+		writeRecord(wrapListToMap(map));
+	}
 	
 	protected Map<String, Object> wrapListToMap(List<Object> list){
 		Map<String, Object> valuemap=new HashMap<String, Object>();
@@ -61,9 +65,13 @@ public abstract class AbstractFileWriter {
 		}
 		return valuemap;
 	}
+	@Override
+	public void initalize() throws IOException{
+		beginWrite();
+	}
 	public abstract void beginWrite() throws IOException;
 	public abstract void writeRecord(Map<String,?> map) throws IOException;
-	public abstract void writeRecord(List<Object> map) throws IOException;
+
 	public abstract void finishWrite() throws IOException;
 	public abstract void flush() throws IOException;
 	public void close() throws IOException{

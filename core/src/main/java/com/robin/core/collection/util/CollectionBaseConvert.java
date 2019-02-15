@@ -15,12 +15,7 @@
  */
 package com.robin.core.collection.util;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class CollectionBaseConvert {
 	
@@ -93,6 +88,22 @@ public class CollectionBaseConvert {
 				retList.add(map.get(key).toString());
 		}
 		return retList;
+	}
+	public static List<Map.Entry<String, ? extends Comparable>> sortMapByValue(Map<String,? extends Comparable> inputMap, final boolean order){
+		List<Map.Entry<String,? extends Comparable>> list=new LinkedList<Map.Entry<String, ? extends Comparable>>(inputMap.entrySet());
+		Collections.sort(list, new Comparator<Map.Entry<String,?>>() {
+			@Override
+			public int compare(Map.Entry<String, ?> o1, Map.Entry<String, ?> o2) {
+				if(order){
+					return ((Comparable) o1.getValue()).compareTo((Comparable) o2.getValue());
+
+				}else{
+					return ((Comparable)o2.getValue()).compareTo((Comparable)o1.getValue());
+				}
+			}
+		});
+		return list;
+
 	}
 
 }

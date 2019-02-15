@@ -25,25 +25,13 @@ public class  Hive2DataBaseMeta extends BaseDataBaseMeta{
 		if(param.getDatabaseName()==null || param.getDatabaseName().equals("")){
 			param.setDatabaseName("default");
 		}
+		param.setDriverClassName("org.apache.hive.jdbc.HiveDriver");
 	}
 
-	public String getDriverClass() {
-		return "org.apache.hive.jdbc.HiveDriver";
-	}
 	public String getUrlTemplate() {
 		return "jdbc:hive2://[hostName]:[port]/[databaseName]";
 	}
-	/*public String getUrl(DataBaseParam param) {
-		if(param.getUrl()==null){
-			if(param.getPort()==0)
-				param.setPort(getDefaultDatabasePort());
-			if(param.getDatabaseName()==null || param.getDatabaseName().equals("")){
-				param.setDatabaseName("default");
-			}
-			return "jdbc:hive2://"+param.getHostName()+":"+param.getPort()+"/"+param.getDatabaseName();
-		}else
-			return param.getUrl();
-	}*/
+
 
 	public boolean suppportSequnce() {
 		return false;

@@ -6,6 +6,8 @@ import com.robin.core.base.datameta.DataBaseMetaFactory;
 import com.robin.core.base.datameta.DataBaseParam;
 import com.robin.core.base.util.Const;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
+import com.robin.core.fileaccess.util.AbstractResourceAccessUtil;
+import com.robin.core.fileaccess.util.LocalResourceAccessUtils;
 import com.robin.core.fileaccess.writer.AbstractFileWriter;
 import com.robin.core.fileaccess.writer.TextFileWriterFactory;
 import com.robin.core.query.extractor.ResultSetOperationExtractor;
@@ -13,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -47,9 +50,10 @@ public class TestParquetWriter {
             colmeta.addColumnMeta("predict_time", Const.META_TYPE_TIMESTAMP, null);
             colmeta.setPath("/tmp/luoming/out.parquet");
             conn= SimpleJdbcDao.getConnection(meta, param);
-           // LocalResourceAccessUtils util=new LocalResourceAccessUtils();
-            //OutputStream stream=util.getOutResourceByStream(colmeta);
-            final AbstractFileWriter jwriter= TextFileWriterFactory.getFileWriterByType(Const.FILETYPE_PARQUET, colmeta,new FileOutputStream("/tmp/luoming/1.txt"));
+            LocalResourceAccessUtils util=new LocalResourceAccessUtils();
+            OutputStream stream=util.getRawOutputStream(colmeta);
+
+            final AbstractFileWriter jwriter= TextFileWriterFactory.getFileWriterByType(Const.FILETYPE_PARQUET, colmeta,stream);
 
             jwriter.beginWrite();
             ResultSetOperationExtractor extractor=new ResultSetOperationExtractor() {

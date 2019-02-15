@@ -22,11 +22,7 @@ public class SybaseDataBaseMeta extends BaseDataBaseMeta{
 
 	public SybaseDataBaseMeta(DataBaseParam param) {
 		super(param);
-	}
-
-	public String getDriverClass() {
-		
-		return "com.sybase.jdbc.SybDriver";
+		param.setDriverClassName("com.sybase.jdbc.SybDriver");
 	}
 
 	public String getUrlTemplate() {

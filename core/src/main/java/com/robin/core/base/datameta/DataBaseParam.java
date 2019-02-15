@@ -25,7 +25,11 @@ public class DataBaseParam {
 	private String encode;
 	private String urlTemplate;
 	private String type;
+	private Integer mainVersion;
 	private boolean readOnly=true;
+	private String driverClassName;
+	//defaultTimeZone
+	private String timeZone="Asia/Shanghai";
 	public String getHostName() {
 		return hostName;
 	}
@@ -89,12 +93,45 @@ public class DataBaseParam {
 	public void setType(String type) {
 		this.type = type;
 	}
-	public DataBaseParam(String hostName,int port,String databaseName,String userName,String passwd){
+
+	public Integer getMainVersion() {
+		return mainVersion;
+	}
+
+	public void setMainVersion(Integer mainVersion) {
+		this.mainVersion = mainVersion;
+	}
+
+	public String getDriverClassName() {
+		return driverClassName;
+	}
+
+	public void setDriverClassName(String driverClassName) {
+		this.driverClassName = driverClassName;
+	}
+
+	public String getTimeZone() {
+		return timeZone;
+	}
+
+	public void setTimeZone(String timeZone) {
+		this.timeZone = timeZone;
+	}
+
+	public DataBaseParam(String hostName, int port, String databaseName, String userName, String passwd){
 		this.hostName=hostName;
 		this.passwd=passwd;
 		this.port=port;
 		this.databaseName=databaseName;
 		this.userName=userName;
+	}
+	public DataBaseParam(String hostName,int port,String databaseName,String userName,String passwd,Integer mainVersion){
+		this.hostName=hostName;
+		this.passwd=passwd;
+		this.port=port;
+		this.databaseName=databaseName;
+		this.userName=userName;
+		this.mainVersion=mainVersion;
 	}
 	public DataBaseParam(String url,String userName,String passwd){
 		this.url=url;
@@ -106,7 +143,7 @@ public class DataBaseParam {
 		boolean isequal=false;
 		if(obj instanceof DataBaseParam){
 			DataBaseParam compareObj=(DataBaseParam) obj;
-			if(this.getDatabaseName().equals(compareObj.getDatabaseName()) && this.getHostName().equals(compareObj.getHostName()) && this.getUserName().equals(compareObj.getUserName()) && this.getUrl().equals(compareObj.getUrl()) && this.getPasswd().equals(compareObj.getPasswd())){
+			if(this.getDatabaseName().equals(compareObj.getDatabaseName()) && this.getHostName().equals(compareObj.getHostName()) && this.getUserName().equals(compareObj.getUserName()) && this.getUrl().equals(compareObj.getUrl()) && this.getPasswd().equals(compareObj.getPasswd()) && this.getDriverClassName().equals(compareObj.getDriverClassName())){
 				isequal=true;
 			}
 		}

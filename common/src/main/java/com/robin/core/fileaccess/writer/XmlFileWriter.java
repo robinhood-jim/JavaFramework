@@ -76,12 +76,6 @@ public class XmlFileWriter extends WriterBasedFileWriter{
 	}
 
 	@Override
-	public void writeRecord(List<Object> map) throws IOException {
-		
-		
-	}
-
-	@Override
 	public void finishWrite() throws IOException {
 		try{
 			streamWriter.writeEndElement();

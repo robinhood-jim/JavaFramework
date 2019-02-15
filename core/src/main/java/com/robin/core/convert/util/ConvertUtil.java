@@ -71,6 +71,20 @@ public class ConvertUtil {
 			}
 		}
 	}
+	public static void objectToMapObj(Map<String, Object> target, Object src) throws Exception {
+		if (src == null || target == null) return;
+
+		Method methods[] = src.getClass().getMethods();
+		for (int i = 0; i < methods.length; i++) {
+			String method = methods[i].getName();
+			if (method.startsWith("get") && !"getClass".equals(method)) {
+				String key = method.replaceFirst("get", "");
+				key = key.substring(0, 1).toLowerCase() + key.substring(1);
+				Object value = methods[i].invoke(src, (Object[]) null);
+				target.put(key, value == null ? "" : value);
+			}
+		}
+	}
 
 	public static void mapToObject(BaseObject target, Map<String, String> src) throws Exception {
 		if (src == null || target == null)

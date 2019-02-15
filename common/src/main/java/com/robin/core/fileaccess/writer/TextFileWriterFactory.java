@@ -51,6 +51,9 @@ public class TextFileWriterFactory {
 			} else if (fileType.equalsIgnoreCase(Const.FILETYPE_PARQUET)) {
 				Class<AbstractFileWriter> clazz = (Class<AbstractFileWriter>) Class.forName(Const.FILEWRITER_PARQUET_CLASSNAME);
 				fileWriter=clazz.getConstructor(DataCollectionMeta.class).newInstance(colmeta);
+			}else if(fileType.equalsIgnoreCase(Const.FILETYPE_PROTOBUF)){
+				Class<AbstractFileWriter> clazz = (Class<AbstractFileWriter>) Class.forName(Const.FILEWRITER_PROTOBUF_CLASSNAME);
+				fileWriter=clazz.getConstructor(DataCollectionMeta.class).newInstance(colmeta);
 			}
 		}catch (Exception ex){
 			logger.error("{}",ex);

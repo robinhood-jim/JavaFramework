@@ -34,7 +34,8 @@ public class FileUtils {
             if(pos!=-1){
                 String fileName=path.substring(pos+1,path.length());
                 String[] arr=fileName.split("\\.");
-                filePath=arr[0];
+                int lastpos=fileName.lastIndexOf(".");
+                filePath=fileName.substring(0,lastpos);
                 for(int i=arr.length-1;i>0;i--){
                     suffix.add(arr[i]);
                 }

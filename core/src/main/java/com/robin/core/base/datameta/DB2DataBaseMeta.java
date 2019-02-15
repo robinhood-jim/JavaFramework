@@ -22,10 +22,7 @@ public class DB2DataBaseMeta extends BaseDataBaseMeta implements DataBaseInterfa
 
 	public DB2DataBaseMeta(DataBaseParam param) {
 		super(param);
-	}
-
-	public String getDriverClass() {
-		return "com.ibm.db2.jcc.DB2Driver";
+		param.setDriverClassName("com.ibm.db2.jcc.DB2Driver");
 	}
 
 
@@ -43,9 +40,6 @@ public class DB2DataBaseMeta extends BaseDataBaseMeta implements DataBaseInterfa
 	public int getDefaultDatabasePort() {
 		return 50000;
 	}
-
-	
-
 
 	public boolean supportsSchemas() {
 		return true;

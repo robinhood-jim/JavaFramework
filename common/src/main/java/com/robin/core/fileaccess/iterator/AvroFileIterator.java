@@ -1,30 +1,34 @@
 package com.robin.core.fileaccess.iterator;
 
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
-import com.robin.core.fileaccess.util.AvroUtils;
 import org.apache.avro.Schema;
 import org.apache.avro.Schema.Field;
+import org.apache.avro.file.DataFileReader;
+import org.apache.avro.file.FileReader;
+import org.apache.avro.file.SeekableByteArrayInput;
+import org.apache.avro.file.SeekableInput;
 import org.apache.avro.generic.GenericDatumReader;
 import org.apache.avro.generic.GenericRecord;
-import org.apache.avro.io.BinaryDecoder;
-import org.apache.avro.io.DecoderFactory;
+import org.apache.zookeeper.common.IOUtils;
 
+import java.io.ByteArrayOutputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class AvroFileIterator extends AbstractFileIterator {
-	private BinaryDecoder decoder;
 	private Schema schema;
 	private GenericDatumReader<GenericRecord> dreader=null;
+	private FileReader<GenericRecord> fileReader;
 	public AvroFileIterator(DataCollectionMeta colmeta) {
 		super(colmeta);
 	}
 
+
 	@Override
 	public boolean hasNext() {
 		try{
-			return !decoder.isEnd();
+			return fileReader.hasNext();
 		}catch(Exception ex){
 			logger.error("",ex);
 		}
@@ -32,15 +36,22 @@ public class AvroFileIterator extends AbstractFileIterator {
 	}
 	@Override
 	public void init() {
-		schema= AvroUtils.getSchemaFromMeta(colmeta);
 		dreader=new GenericDatumReader<GenericRecord>(schema);
-		decoder=DecoderFactory.get().binaryDecoder(instream, null);
+		try {
+			ByteArrayOutputStream byteout=new ByteArrayOutputStream();
+			IOUtils.copyBytes(instream,byteout,8064);
+			SeekableInput input=new SeekableByteArrayInput(byteout.toByteArray());
+			fileReader=new DataFileReader<GenericRecord>(input,dreader);
+			schema=fileReader.getSchema();
+		}catch (Exception ex){
+
+		}
 	}
 	@Override
 	public Map<String, Object> next() {
 		Map<String,Object> retmap=new HashMap<String, Object>();
 		try{
-			GenericRecord record=dreader.read(null, decoder);
+			GenericRecord record=fileReader.next();
 			List<Field> flist=schema.getFields();
 			for (Field f:flist) {
 				retmap.put(f.name(), record.get(f.name()).toString());
@@ -51,10 +62,14 @@ public class AvroFileIterator extends AbstractFileIterator {
 		return retmap;
 	}
 
+	public Schema getSchema() {
+		return schema;
+	}
+
 	@Override
 	public void remove() {
 		try{
-		dreader.read(null,decoder);
+			fileReader.next();
 		}catch(Exception ex){
 			logger.error("",ex);
 		}

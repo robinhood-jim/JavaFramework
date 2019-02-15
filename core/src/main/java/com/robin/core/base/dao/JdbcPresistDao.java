@@ -36,7 +36,7 @@ public class JdbcPresistDao {
 	private Connection conn;
 	private String testSql="select 1";
 	public JdbcPresistDao(BaseDataBaseMeta meta, DataBaseParam param) throws DAOException {
-		this.driverName=meta.getDriverClass();
+		this.driverName=meta.getParam().getDriverClassName();
 		this.userName=param.getUserName();
 		this.passwd=param.getPasswd();
 		try{
@@ -122,7 +122,7 @@ public class JdbcPresistDao {
 	
 	private void getConnection(BaseDataBaseMeta meta,DataBaseParam param) throws DAOException{
 		try {
-			DbUtils.loadDriver(meta.getDriverClass());
+			DbUtils.loadDriver(meta.getParam().getDriverClassName());
 			Properties prop=new Properties();
 			prop.put("user", param.getUserName());
 			prop.put("password", param.getPasswd());

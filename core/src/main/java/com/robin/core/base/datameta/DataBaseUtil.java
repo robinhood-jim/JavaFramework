@@ -22,11 +22,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.support.JdbcUtils;
 
 import javax.sql.DataSource;
+import java.math.BigDecimal;
 import java.sql.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.Date;
 
 public class DataBaseUtil {
 	private Connection connection;
@@ -35,7 +36,7 @@ public class DataBaseUtil {
 	public void connect(BaseDataBaseMeta meta, DataBaseParam param) {
 		try {
 			if (connection == null) {
-				Class.forName(meta.getDriverClass());
+				Class.forName(meta.getParam().getDriverClassName());
 				String url=param.getUrl();
 				if(url==null ||"".equals(url))
 					url=meta.getUrl(param);
@@ -270,7 +271,7 @@ public class DataBaseUtil {
 	    		  logger.warn("getConnection failed!");
 	    	  }
 	    	  if(conn==null){
-	    		  Class.forName(basemeta.getDriverClass());
+	    		  Class.forName(basemeta.getParam().getDriverClassName());
 	    		  conn=DriverManager.getConnection(basemeta.getUrl(basemeta.getParam()), basemeta.getParam().getUserName(),basemeta.getParam().getPasswd());
 	    	  }
 	    	  return getTableMetaByTableName(conn, tablename, DbOrtablespacename, basemeta);
@@ -437,7 +438,7 @@ public class DataBaseUtil {
 	 }
 	 public static DataSource getDataSource(BaseDataBaseMeta meta,DataBaseParam param) throws Exception{
 		 BasicDataSource datasource=new BasicDataSource();
-		 datasource.setDriverClassName(meta.getDriverClass());
+		 datasource.setDriverClassName(meta.getParam().getDriverClassName());
 		 //Phoneix can not support this feature
 		 //if(param.isReadOnly())
 		//	 datasource.setDefaultReadOnly(true);
@@ -473,6 +474,50 @@ public class DataBaseUtil {
 			 retStr=Const.META_TYPE_STRING;
 		 }
 		 return retStr;
+	 }
+	 public static Map<String,Object> transformDbTypeByObj(Object obj){
+		Map<String,Object> retMap=new HashMap<String, Object>();
+		String type=null;
+		 SimpleDateFormat format=new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+		 SimpleDateFormat format1=new SimpleDateFormat("yyyyMMddhhmmss");
+		 SimpleDateFormat format2=new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.SSS");
+		 SimpleDateFormat format3=new SimpleDateFormat("yyyy-MM-dd");
+		 SimpleDateFormat targetFormat=null;
+		if(obj instanceof Long){
+			type= Const.META_TYPE_BIGINT;
+		}else if(obj instanceof Integer){
+			type=Const.META_TYPE_INTEGER;
+		}else if(obj instanceof Double || obj instanceof Float){
+			type= Const.META_TYPE_DOUBLE;
+		}else if(obj instanceof Date || obj instanceof Timestamp){
+			type= Const.META_TYPE_TIMESTAMP;
+		}else if(obj instanceof String){
+			if(isStringValueDate(obj.toString(),format)){
+				targetFormat=format;
+			}else if(isStringValueDate(obj.toString(),format1)){
+				targetFormat=format1;
+			}else if(isStringValueDate(obj.toString(),format2)){
+				targetFormat=format2;
+			}else if(isStringValueDate(obj.toString(),format3)){
+				targetFormat=format3;
+			}
+			if(targetFormat!=null)
+				type=Const.META_TYPE_TIMESTAMP;
+			else
+				type=Const.META_TYPE_STRING;
+		}
+		retMap.put("type",type);
+		retMap.put("dateFormat",targetFormat);
+		return retMap;
+	 }
+	 public static boolean isStringValueDate(String value,SimpleDateFormat format){
+		try{
+			format.parse(value);
+			return true;
+		}catch (Exception ex){
+
+		}
+		 return false;
 	 }
 	 public static Object translateValueByDBType(String value,String type) throws ParseException{	
 		 Object retObj;

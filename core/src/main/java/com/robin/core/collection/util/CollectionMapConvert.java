@@ -246,5 +246,6 @@ public class CollectionMapConvert<T> {
 		}
 		return retMap;
 	}
+
 }
 

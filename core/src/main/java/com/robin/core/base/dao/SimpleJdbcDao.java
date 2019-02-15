@@ -63,7 +63,7 @@ public class SimpleJdbcDao {
 	private DataBaseParam param;
 	private static  Logger logger=LoggerFactory.getLogger(SimpleJdbcDao.class);
 	public SimpleJdbcDao(BaseDataBaseMeta meta,DataBaseParam param) throws Exception{
-		this.driverName=meta.getDriverClass();
+		this.driverName=meta.getParam().getDriverClassName();
 		this.userName=param.getUserName();
 		this.passwd=param.getPasswd();
 		if(param.getUrl()!=null && !param.getUrl().isEmpty()){
@@ -74,7 +74,7 @@ public class SimpleJdbcDao {
 		this.param=param;
 	}
 	public SimpleJdbcDao(BaseDataBaseMeta meta,DataBaseParam param,long retryNums,int waitSecond,boolean getConnectionLoop) throws Exception{
-		this.driverName=meta.getDriverClass();
+		this.driverName=meta.getParam().getDriverClassName();
 		this.userName=param.getUserName();
 		this.passwd=param.getPasswd();
 		if(param.getUrl()!=null && !param.getUrl().isEmpty()){
@@ -121,7 +121,7 @@ public class SimpleJdbcDao {
 			if(param.getUrl()==null || param.getUrl().trim().isEmpty()){
 				param.setUrl(meta.getUrl(param));
 			}
-			DbUtils.loadDriver(meta.getDriverClass());
+			DbUtils.loadDriver(meta.getParam().getDriverClassName());
 			conn = DriverManager.getConnection(param.getUrl(), param.getUserName(), param.getPasswd());		
 		} catch (Exception e) {
 			throw new DAOException(e);
@@ -148,7 +148,7 @@ public class SimpleJdbcDao {
 				if(param.getUrl()==null || param.getUrl().trim().isEmpty()){
 					param.setUrl(meta.getUrl(param));
 				}
-				DbUtils.loadDriver(meta.getDriverClass());
+				DbUtils.loadDriver(meta.getParam().getDriverClassName());
 				conn = DriverManager.getConnection(param.getUrl(), param.getUserName(), param.getPasswd());
 			} catch (Exception e) {
 				logger.error("--get connection Error and retry "+curtryNum+"times.");

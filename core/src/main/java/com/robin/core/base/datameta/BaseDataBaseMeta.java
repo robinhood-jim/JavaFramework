@@ -105,11 +105,10 @@ public abstract class BaseDataBaseMeta implements DataBaseInterface {
 		boolean isequal=false;
 		if(obj instanceof BaseDataBaseMeta){
 			BaseDataBaseMeta compareObj=(BaseDataBaseMeta) obj;
-			if(this.getDriverClass().equals(compareObj.getDriverClass()) && this.getParam().equals(compareObj.getParam())){
+			if(param.getDriverClassName().equals(param.getDriverClassName()) && this.getParam().equals(compareObj.getParam())){
 				isequal=true;
 			}
 		}
 		return isequal;
 	}
-
 }
