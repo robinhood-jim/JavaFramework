@@ -53,7 +53,7 @@ public class TestParquetWriter {
             LocalResourceAccessUtils util=new LocalResourceAccessUtils();
             OutputStream stream=util.getRawOutputStream(colmeta);
 
-            final AbstractFileWriter jwriter= TextFileWriterFactory.getFileWriterByType(Const.FILETYPE_PARQUET, colmeta,stream);
+            final AbstractFileWriter jwriter= TextFileWriterFactory.getFileWriterByType(Const.FILESUFFIX_PARQUET, colmeta,stream);
 
             jwriter.beginWrite();
             ResultSetOperationExtractor extractor=new ResultSetOperationExtractor() {
