@@ -568,9 +568,8 @@
 			<dependency>
 				<groupId>net.sf.supercsv</groupId>
 				<artifactId>super-csv</artifactId>
-				<version>1.52</version>
-				<scope>system</scope>
-				<systemPath>e:/dev/mylib/SuperCSV-1.52.jar</systemPath>
+				<version>2.2.0</version>
+
 			</dependency>
 			<dependency>
 				<groupId>org.apache.poi</groupId>

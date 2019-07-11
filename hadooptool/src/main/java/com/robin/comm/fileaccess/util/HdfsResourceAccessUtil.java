@@ -48,6 +48,17 @@ public class HdfsResourceAccessUtil extends AbstractResourceAccessUtil {
 			throws Exception {
 		return null;
 	}
+
+	@Override
+	public OutputStream getRawOutputStream(DataCollectionMeta meta) throws Exception {
+		HDFSUtil util=getHdfsUtil(meta);
+		if(util.exists(meta.getPath())){
+			logger.error("output file "+meta.getPath()+" exist!,remove it");
+			util.delete(meta.getPath());
+		}
+		return util.getFileSystem().create(new Path(meta.getPath()));
+	}
+
 	@Override
 	public InputStream getInResourceByStream(DataCollectionMeta meta)
 			throws Exception {

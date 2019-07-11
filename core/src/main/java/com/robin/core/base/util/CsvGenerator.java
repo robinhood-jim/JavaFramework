@@ -61,7 +61,7 @@ public class CsvGenerator{
 		
 		int pos=0;
 		try{
-			ICsvListReader reader=new CsvListReader(new InputStreamReader(inputStream,"UTF-8"),new CsvPreference('"', separator, "\r\n"));
+			ICsvListReader reader=new CsvListReader(new InputStreamReader(inputStream,"UTF-8"),new CsvPreference.Builder('"', separator, "n").build());
 			List<CsvColumnConfig> columnList=config.getConfigList();
 			List<String> resultlist=new ArrayList<String>();
 			while((resultlist=reader.read())!=null){
@@ -83,7 +83,7 @@ public class CsvGenerator{
 		int pos=0;
 		try{
 			ICsvListReader reader=new CsvListReader(new InputStreamReader(inputStream,"UTF-8"),CsvPreference.STANDARD_PREFERENCE);
-			String[] header=reader.getCSVHeader(true);
+			String[] header=reader.getHeader(true);
 			if(header==null || header.length==0)
 				throw new Exception("no file");
 			List<String> resultlist=new ArrayList<String>();
@@ -104,8 +104,8 @@ public class CsvGenerator{
 		
 		int pos=0;
 		try{
-			ICsvListReader reader=new CsvListReader(new InputStreamReader(inputStream,"UTF-8"),new CsvPreference('"', seperator, "\r\n"));
-			String[] header=reader.getCSVHeader(true);
+			ICsvListReader reader=new CsvListReader(new InputStreamReader(inputStream,"UTF-8"),new CsvPreference.Builder('"', seperator, "n").build());
+			String[] header=reader.getHeader(true);
 			if(header==null || header.length==0)
 				throw new Exception("no file");
 
@@ -128,7 +128,7 @@ public class CsvGenerator{
 		int pos=0;
 		try{
 			ICsvListReader reader=new CsvListReader(ireader,CsvPreference.STANDARD_PREFERENCE);
-			String[] header=reader.getCSVHeader(true);
+			String[] header=reader.getHeader(true);
 			if(header==null || header.length==0)
 				throw new Exception("no file");
 			List<String> resultlist=new ArrayList<String>();
@@ -171,8 +171,8 @@ public class CsvGenerator{
 		
 		int pos=0;
 		try{
-			ICsvListReader reader=new CsvListReader(ireader,new CsvPreference('"', seperator, "\n"));
-			String[] header=reader.getCSVHeader(true);
+			ICsvListReader reader=new CsvListReader(ireader,new CsvPreference.Builder( '"', seperator, "n").build());
+			String[] header=reader.getHeader(true);
 			if(header==null || header.length==0)
 				throw new Exception("no file ");
 			List<String> resultlist=new ArrayList<String>();
@@ -192,7 +192,7 @@ public class CsvGenerator{
 	public static int ReadFile(Reader ireader,char seperator,CsvConfig config,List<Map<String,String>> columnResultList){
 		int pos=0;
 		try{
-			ICsvListReader reader=new CsvListReader(ireader,new CsvPreference('"', seperator, "\n"));
+			ICsvListReader reader=new CsvListReader(ireader,new CsvPreference.Builder( '"', seperator, "n").build());
 			List<String> resultlist=new ArrayList<String>();
 			List<CsvColumnConfig> columnList=config.getConfigList();
 
@@ -210,82 +210,17 @@ public class CsvGenerator{
 		}
 		return pos;
 	}
-	public static void WriteFile(PrintWriter pwriter,String[] header, List<String[]> resultList,String quotachar){
+	public static void WriteFile(PrintWriter pwriter,String[] header, List<String[]> resultList,String splitchar){
 		try{
-			ICsvListWriter writer=new CsvListWriter(pwriter,CsvPreference.STANDARD_PREFERENCE);
+			CsvPreference preference=new CsvPreference.Builder('"',splitchar.charAt(0), "n").build();
+			ICsvListWriter writer=new CsvListWriter(pwriter,preference);
 			writer.writeHeader(header);
-			if(quotachar!=null)
-			{
-				CsvPreference preference=new CsvPreference(quotachar.charAt(0),0,"\n");
-				writer.setPreferences(preference);
-			}
 			for(String[] strArr:resultList)
 				writer.write(strArr);
 			writer.close();
 			
 		}catch (Exception e) {
 			e.printStackTrace();
-		}
-	}
-	public static void WriteDataToFile(PrintWriter pwriter,String[] header,String[] columnName,List<Map<String, String>> list,String quotachar){
-		try{
-			ICsvListWriter writer=new CsvListWriter(pwriter,CsvPreference.STANDARD_PREFERENCE);
-			if(header!=null)
-				writer.writeHeader(header);
-			if(quotachar!=null)
-			{
-				CsvPreference preference=new CsvPreference('"',quotachar.charAt(0),"\n");
-				writer.setPreferences(preference);
-			}
-			for(Map<String, String> map:list){
-				String[] strArr=new String[header.length];
-				for(int i=0;i<columnName.length;i++){
-					strArr[i]=map.get(columnName[i]);
-				}
-				writer.write(strArr);  
-			}
-			writer.close();
-			
-		}catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-	public static void WriteDataToFile(String fileName,String[] header,String[] columnName,List<Map<String, String>> list,String quotachar){
-		PrintWriter pwriter=null;
-		ICsvListWriter writer=null;
-		try{
-			pwriter=new PrintWriter(new File(fileName));
-			writer=new CsvListWriter(pwriter,CsvPreference.STANDARD_PREFERENCE);
-			if(header!=null)
-				writer.writeHeader(header);
-			if(quotachar!=null)
-			{
-				CsvPreference preference=new CsvPreference('"',quotachar.charAt(0),"\n");
-				writer.setPreferences(preference);
-			}
-			for(Map<String, String> map:list){
-				String[] strArr=new String[columnName.length];
-				for(int i=0;i<columnName.length;i++){
-					if(map.get(columnName[i])!=null)
-						strArr[i]=map.get(columnName[i]);
-					else
-						strArr[i]="";
-				}
-				writer.write(strArr);  
-			}
-		}catch (Exception e) {
-			e.printStackTrace();
-		}finally{
-			try{
-				if (writer!=null) {
-					writer.close();
-				}
-				if(pwriter!=null)
-					pwriter.close();
-			}catch(Exception ex){
-				ex.printStackTrace();
-				logger.error("Encounter error",ex);
-			}
 		}
 	}
 

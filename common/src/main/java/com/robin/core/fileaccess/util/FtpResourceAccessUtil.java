@@ -107,6 +107,18 @@ public class FtpResourceAccessUtil extends AbstractResourceAccessUtil{
 	}
 
 	@Override
+	public OutputStream getRawOutputStream(DataCollectionMeta meta) throws Exception {
+		OutputStream out=null;
+		try{
+			FileObject fo=checkFtpFileExist(meta);
+			out = fo.getContent().getOutputStream();
+		}catch(Exception ex){
+			ex.printStackTrace();
+		}
+		return out;
+	}
+
+	@Override
 	public InputStream getInResourceByStream(DataCollectionMeta meta) throws Exception {
 		FtpParam param=new FtpParam();
 		ConvertUtil.convertToModel(param, meta.getResourceCfgMap());
