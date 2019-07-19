@@ -87,9 +87,9 @@ public class BaseJdbcService <V extends BaseObject,P extends Serializable>{
 		this.jdbcDao = jdbcDao;
 	}
 	@Transactional(readOnly=true)
-	public PageQuery queryBySelectId(PageQuery query) throws ServiceException{
+	public void queryBySelectId(PageQuery query) throws ServiceException{
 		try{
-			return jdbcDao.queryBySelectId(query);
+			jdbcDao.queryBySelectId(query);
 		}catch(DAOException ex){
 			throw new ServiceException(ex);
 		}

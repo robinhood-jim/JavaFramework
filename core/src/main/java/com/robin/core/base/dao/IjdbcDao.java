@@ -122,7 +122,7 @@ public interface IjdbcDao {
 	 * @return
 	 * @throws DAOException
 	 */
-	public PageQuery queryBySelectId(PageQuery pageQuery) throws DAOException;
+	public void queryBySelectId(PageQuery pageQuery) throws DAOException;
 	
 	/**
 	 * Complex Query with given countSql

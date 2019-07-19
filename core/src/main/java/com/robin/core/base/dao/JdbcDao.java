@@ -109,7 +109,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao{
 	 * Query by Config File selectId
 	 * @param pageQuery
 	 */
-	public PageQuery queryBySelectId(PageQuery pageQuery) throws DAOException {
+	public void queryBySelectId(PageQuery pageQuery) throws DAOException {
 		try {
 			if (pageQuery == null)
 				throw new DAOException("missing pagerQueryObject");
@@ -117,7 +117,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao{
 			if (selectId == null || selectId.trim().length() == 0)
 				throw new IllegalArgumentException("Selectid");
 			QueryString queryString1 = queryFactory.getQuery(selectId);
-			return queryByParamter(queryString1, pageQuery);
+			queryByParamter(queryString1, pageQuery);
 		} catch (QueryConfgNotFoundException e) {
 			logger.error("query ParamId not found");
 			throw new DAOException(e);
@@ -176,19 +176,17 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao{
 		}
 		//return -1;
 	}
-	public PageQuery queryByParamter(QueryString qs, PageQuery pageQuery) throws DAOException {
+	public void queryByParamter(QueryString qs, PageQuery pageQuery) throws DAOException {
 
 		String querySQL = sqlGen.generateSqlBySelectId(qs, pageQuery);
-		if (logger.isDebugEnabled()) logger.debug((new StringBuilder()).append("querySQL: ").append(querySQL).toString());
-		Map<String, String> params = pageQuery.getParameters();
+		if (logger.isDebugEnabled()) logger.debug((new StringBuilder().append("querySQL: ").append(querySQL).toString()));
 		if ((pageQuery.getParameterArr()!=null && pageQuery.getParameterArr().length>0 )|| !pageQuery.getNameParameters().isEmpty()) {
-			pageQuery = CommJdbcUtil.queryByPreparedParamter(this.getJdbcTemplate(),sqlGen,qs, pageQuery);
+			CommJdbcUtil.queryByPreparedParamter(this.getJdbcTemplate(),sqlGen,qs, pageQuery);
 		}
 		else {
-			pageQuery = CommJdbcUtil.queryByReplaceParamter(this.getJdbcTemplate(),sqlGen,qs, pageQuery);
+			CommJdbcUtil.queryByReplaceParamter(this.getJdbcTemplate(),sqlGen,qs, pageQuery);
 		}
 
-		return pageQuery;
 	}
 
 	public List<Map<String,Object>> queryByPageSql(String sqlstr,PageQuery pageQuery) throws DAOException {

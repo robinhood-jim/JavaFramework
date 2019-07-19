@@ -113,7 +113,7 @@ public interface BaseGenricDao<T extends BaseObject,ID extends Serializable> {
 	 * @return
 	 * @throws DAOException
 	 */
-	public PageQuery queryBySelectId(PageQuery queryString) throws DAOException;
+	public void queryBySelectId(PageQuery queryString) throws DAOException;
 
 	/**
 	 * save ModelVO to DB
@@ -306,7 +306,7 @@ public interface BaseGenricDao<T extends BaseObject,ID extends Serializable> {
 	 * @return
 	 * @throws DAOException
 	 */
-	public PageQuery queryByParamter(QueryString qs, PageQuery pageQuery) throws DAOException;
+	public void queryByParamter(QueryString qs, PageQuery pageQuery) throws DAOException;
 	/**
 	 * 
 	 * @param pageQuery

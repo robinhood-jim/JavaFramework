@@ -33,7 +33,7 @@ public interface GenericService<V extends BaseObject,P extends Serializable> {
 
 	public void remove(P id) throws ServiceException;
 	
-	public PageQuery query(PageQuery pageQuery) throws ServiceException;
+	public void query(PageQuery pageQuery) throws ServiceException;
    
 	public void removeByIds(Serializable[] ids) throws ServiceException;  
 	public List<V> findAll() throws ServiceException;
@@ -49,7 +49,7 @@ public interface GenericService<V extends BaseObject,P extends Serializable> {
 	
 	public PageQuery queryBySql(String querySQL,String countSql,String[] displayname,PageQuery pageQuery)throws ServiceException;
 	
-	public PageQuery queryByParamter(QueryString qs, PageQuery pageQuery) throws ServiceException;
+	public void queryByParamter(QueryString qs, PageQuery pageQuery) throws ServiceException;
 	
 	@Deprecated
 	public int executeSql(String sql)throws ServiceException;

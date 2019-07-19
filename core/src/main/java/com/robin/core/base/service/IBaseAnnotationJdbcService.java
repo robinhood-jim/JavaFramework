@@ -29,7 +29,7 @@ public interface IBaseAnnotationJdbcService<V extends BaseObject,P extends Seria
 	public int deleteEntity(P [] vo) throws ServiceException;
 	public int deleteByField(String field,Object value) throws ServiceException;
 	public V getEntity(P id) throws ServiceException;
-	public PageQuery queryBySelectId(PageQuery query) throws ServiceException;
+	public void queryBySelectId(PageQuery query) throws ServiceException;
 	public List<Map<String, Object>> queryByPageSql(String sql,PageQuery pageQuery) throws ServiceException;
 	public void executeBySelectId(PageQuery query) throws ServiceException;
 	public List<Map<String, Object>> queryBySql(String sqlstr) throws ServiceException;

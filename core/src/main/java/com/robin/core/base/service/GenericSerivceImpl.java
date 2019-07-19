@@ -43,10 +43,10 @@ public abstract class GenericSerivceImpl<V extends BaseObject,P extends Serializ
 		}
 	}
 
-	public PageQuery query(PageQuery pageQuery) throws ServiceException {
+	public void query(PageQuery pageQuery) throws ServiceException {
 	
 		try{
-			return genericDao.queryBySelectId(pageQuery);
+			genericDao.queryBySelectId(pageQuery);
 		}catch (DAOException e) {
 			
 			throw new ServiceException(e);
@@ -173,9 +173,9 @@ public abstract class GenericSerivceImpl<V extends BaseObject,P extends Serializ
 		}
 	}
 	
-	public PageQuery queryByParamter(QueryString qs, PageQuery pageQuery) throws ServiceException{
+	public void queryByParamter(QueryString qs, PageQuery pageQuery) throws ServiceException{
 		try{
-			return genericDao.queryByParamter(qs, pageQuery);
+			genericDao.queryByParamter(qs, pageQuery);
 		}catch (DAOException e) {
 			throw new ServiceException(e);
 		}

@@ -268,7 +268,7 @@ public class CommJdbcUtil {
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public static  PageQuery queryByPreparedParamter(JdbcTemplate jdbcTemplate,BaseSqlGen sqlGen,QueryString qs, PageQuery pageQuery) throws DAOException {
+	public static  void queryByPreparedParamter(JdbcTemplate jdbcTemplate,BaseSqlGen sqlGen,QueryString qs, PageQuery pageQuery) throws DAOException {
 		List list = null;
 		try {
 			String querySQL = sqlGen.generateSqlBySelectId(qs, pageQuery);
@@ -315,7 +315,7 @@ public class CommJdbcUtil {
 			throw new DAOException(e);
 		}
 		pageQuery.setRecordSet(list);
-		return pageQuery;
+
 	}
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public static PageQuery queryBySql(JdbcTemplate jdbcTemplate,BaseSqlGen sqlGen,String querySQL,String countSql,String[] displayname,PageQuery pageQuery)throws DAOException{

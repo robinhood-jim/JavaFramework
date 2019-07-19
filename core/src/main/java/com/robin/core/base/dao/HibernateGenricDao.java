@@ -36,8 +36,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.lob.DefaultLobHandler;
-import org.springframework.orm.hibernate3.HibernateCallback;
-import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
+import org.springframework.orm.hibernate5.HibernateCallback;
+import org.springframework.orm.hibernate5.support.HibernateDaoSupport;
 
 import java.io.Serializable;
 import java.sql.Date;
@@ -408,10 +408,10 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
 			hql = "from " + getClassName(entityClass) + " a where a." + fieldName + "=:fieldValue";
 			//return (List) getHibernateTemplate().findByNamedParam(hql, "fieldValue", fieldValue);
 		}
-		return (List<T>)getHibernateTemplate().executeFind(new HibernateCallback<List<?>>(){
+		return (List<T>)getHibernateTemplate().executeWithNativeSession(new HibernateCallback<List<?>>(){
 
 			public List<?> doInHibernate(Session session)
-					throws HibernateException, SQLException {
+					throws HibernateException {
 				org.hibernate.Query query = (org.hibernate.Query) session.createQuery(hql);          
 	             
 				if(fieldValue instanceof java.lang.String){
@@ -460,10 +460,10 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
 		else {
 			hql = "from " + getClassName(entityClass) + " a where a." + fieldName + "=:fieldValue"+orderstr;
 		}
-		return (List<T>)getHibernateTemplate().executeFind(new HibernateCallback<List<?>>(){
+		return (List<T>)getHibernateTemplate().executeWithNativeSession(new HibernateCallback<List<?>>(){
 
 			public List<?> doInHibernate(Session session)
-					throws HibernateException, SQLException {
+					throws HibernateException {
 				org.hibernate.Query query = (org.hibernate.Query) session.createQuery(hql);          
 				if(fieldValue instanceof java.lang.String){
 					query.setString(fieldName, fieldValue.toString());
@@ -744,10 +744,10 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
 	}
 	public List<T> findByHqlPage(final String hql, final int startpox,final int pageSize) throws DAOException {
 		try{
-			return (List<T>)getHibernateTemplate().executeFind(new HibernateCallback<List<?>>(){
+			return (List<T>)getHibernateTemplate().executeWithNativeSession(new HibernateCallback<List<?>>(){
 
 				public List<?> doInHibernate(Session session)
-						throws HibernateException, SQLException {
+						throws HibernateException {
 					 Query query = session.createQuery(hql);          
 		             query.setFirstResult(startpox);//record start pos  
 		             query.setMaxResults(pageSize);//page Size   		             
@@ -773,7 +773,7 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
 		return load(entityClass, id);
 	}
 
-	public PageQuery queryBySelectId(PageQuery pageQuery) throws DAOException {
+	public void queryBySelectId(PageQuery pageQuery) throws DAOException {
 		try{
 				if(pageQuery==null)
 					throw new DAOException("missing pagerQueryObject");
@@ -783,8 +783,8 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
 				if(queryFactory==null) throw new DAOException("queryFactory is null");
 				QueryString queryString1 = queryFactory.getQuery(selectId);
 				if(queryString1==null) throw new DAOException("query ID not found in config file!");
-				
-				return queryByParamter(queryString1, pageQuery);
+
+				queryByParamter(queryString1, pageQuery);
 			}catch (QueryConfgNotFoundException e) {
 				logger.error("query ParamId not found");
 				throw new DAOException(e);
@@ -805,11 +805,11 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
 			if(queryFactory==null) throw new DAOException("queryFactory is null");
 			QueryString queryString1 = queryFactory.getQuery(selectId);
 			if(queryString1==null) throw new DAOException("query ID not found in config file!");
-			
+
 			if(pageQuery.getParameterArr()!=null && pageQuery.getParameterArr().length>0){
 				return CommJdbcUtil.executeByPreparedParamter(jdbcTemplate,sqlGen,queryString1, pageQuery);
 			}
-					
+
 			}catch (QueryConfgNotFoundException e) {
 				logger.error("query ParamId not found");
 				throw new DAOException(e);
@@ -822,25 +822,24 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
 		return -1;
 	}
 	public PageQuery queryBySql(String querySQL,String countSql,String[] displayname,PageQuery pageQuery)throws DAOException{
-		return CommJdbcUtil.queryBySql(jdbcTemplate, sqlGen, querySQL, countSql, displayname, pageQuery);			
+		return CommJdbcUtil.queryBySql(jdbcTemplate, sqlGen, querySQL, countSql, displayname, pageQuery);
 	}
 	public Object queryBySingle(Class<?> clazz,String sql,Object... values) throws DAOException{
 		try{
 			return jdbcTemplate.queryForObject(sql,values,clazz);
-			
+
 		}catch (Exception e) {
 			throw new DAOException(e);
 		}
-		
+
 	}
-	public PageQuery queryByParamter(QueryString qs, PageQuery pageQuery) throws DAOException {
+	public void queryByParamter(QueryString qs, PageQuery pageQuery) throws DAOException {
 		if(pageQuery.getParameterArr()!=null && pageQuery.getParameterArr().length>0){
-			pageQuery = CommJdbcUtil.queryByPreparedParamter(jdbcTemplate,sqlGen,qs, pageQuery);
+			CommJdbcUtil.queryByPreparedParamter(jdbcTemplate,sqlGen,qs, pageQuery);
 		}
 		else {
-			pageQuery = CommJdbcUtil.queryByReplaceParamter(jdbcTemplate,sqlGen,qs, pageQuery);
+			CommJdbcUtil.queryByReplaceParamter(jdbcTemplate,sqlGen,qs, pageQuery);
 		}
-		return pageQuery;
 	}
 	public int  executeByParamter(QueryString qs, PageQuery pageQuery) throws DAOException {
 		if(pageQuery.getParameterArr()!=null && pageQuery.getParameterArr().length>0){
@@ -849,12 +848,12 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
 		return -1;
 	}
 
-	
+
 	public List<Map<String,Object>> queryBySql(String sql) throws DAOException {
 		try{
 			int start =0;
 			int end=0;
-			return jdbcTemplate.query(sql,new SplitPageResultSetExtractor(start,end) {	
+			return jdbcTemplate.query(sql,new SplitPageResultSetExtractor(start,end) {
 			});
 		}catch (Exception e) {
 			throw new DAOException(e);
@@ -863,7 +862,7 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
 	public List<Map<String,Object>> queryBySql(String sql,Object... args) throws DAOException {
 		try{
 			return jdbcTemplate.queryForList(sql, args);
-			
+
 		}catch (Exception e) {
 			throw new DAOException(e);
 		}
@@ -876,7 +875,7 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
 		}
 	}
 	public int queryForInt(String sumSQL) throws DAOException
-	{	
+	{
 		int count=-1;
 		try{
 			count =jdbcTemplate.query(sumSQL, new ResultSetExtractor<Integer>() {
@@ -1033,8 +1032,7 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
 			//jdbcTemplate.execute(sql);
 			ret=this.getHibernateTemplate().execute(new HibernateCallback<Integer>() {
 				
-				public Integer doInHibernate(Session session) throws HibernateException,
-						SQLException {
+				public Integer doInHibernate(Session session) throws HibernateException{
 					Query query=session.createSQLQuery(sql);
 					return query.executeUpdate();
 				}
@@ -1060,10 +1058,10 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
 		this.queryFactory = queryFactory;
 	}
 	private List<T> doInHibernateQuery(final String hql,final String[] fieldName,final Object[] fieldValue,final int startpos,final int pageSize){
-		return (List<T>)getHibernateTemplate().executeFind(new HibernateCallback<List<T>>(){
+		return (List<T>)getHibernateTemplate().executeWithNativeSession(new HibernateCallback<List<T>>(){
 
 			public List<T> doInHibernate(Session session)
-					throws HibernateException, SQLException {
+					throws HibernateException {
 				org.hibernate.Query query = (org.hibernate.Query) session.createQuery(hql); 
 				for(int i=0;i<fieldName.length;i++){
 					Object obj=fieldValue[i];
