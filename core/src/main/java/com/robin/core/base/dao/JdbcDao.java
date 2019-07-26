@@ -351,12 +351,12 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao{
 	public List<? extends BaseObject> queryByField(Class<? extends BaseObject> type,String fieldName,String oper,Object... fieldValues) throws DAOException{
 		List<BaseObject> retlist=new ArrayList<BaseObject>();
 		try{
-			StringBuffer buffer=new StringBuffer();
+			StringBuilder buffer=new StringBuilder();
 			BaseObject v=type.newInstance();
 			Map<String, String> tableMap=new HashMap<String, String>();
 	    	List<Map<String, Object>> list=new ArrayList<Map<String,Object>>();
 			buffer.append(getWholeSelectSql(v, tableMap, list));
-			StringBuffer queryBuffer=new StringBuffer();
+			StringBuilder queryBuffer=new StringBuilder();
 			Map<String,Map<String, Object>> map1=new HashMap<String, Map<String,Object>>();
 			for (Map<String, Object> map:list) {
 				map1.put(map.get("name").toString(), map);
@@ -390,12 +390,12 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao{
 	public List<? extends BaseObject> queryByFieldOrderBy(Class<? extends BaseObject> type,String orderByStr,String fieldName,String oper,Object... fieldValues) throws DAOException{
 		List<BaseObject> retlist=new ArrayList<BaseObject>();
 		try{
-			StringBuffer buffer=new StringBuffer();
+			StringBuilder buffer=new StringBuilder();
 			BaseObject v=type.newInstance();
 			Map<String, String> tableMap=new HashMap<String, String>();
 	    	List<Map<String, Object>> list=new ArrayList<Map<String,Object>>();
 			buffer.append(getWholeSelectSql(v, tableMap, list));
-			StringBuffer queryBuffer=new StringBuffer();
+			StringBuilder queryBuffer=new StringBuilder();
 			Map<String,Map<String, Object>> map1=new HashMap<String, Map<String,Object>>();
 			for (Map<String, Object> map:list) {
 				map1.put(map.get("name").toString(), map);
@@ -432,7 +432,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao{
 	public List<? extends BaseObject> queryAll(Class<? extends BaseObject> type) throws DAOException{
 		List<BaseObject> retlist = new ArrayList<BaseObject>();
 		try{
-			StringBuffer buffer=new StringBuffer();
+			StringBuilder buffer=new StringBuilder();
 			Map<String, String> tableMap = new HashMap<String, String>();
 			List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
 			buffer.append(getWholeSelectSql(type.newInstance(), tableMap, list));
@@ -465,7 +465,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao{
 			throws DAOException {
 		List<BaseObject> retlist = new ArrayList<BaseObject>();
 		try{
-		StringBuffer buffer=new StringBuffer();
+		StringBuilder buffer=new StringBuilder();
 		Map<String, String> tableMap = new HashMap<String, String>();
 		List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
 		buffer.append(getWholeSelectSql(type.newInstance(), tableMap, list));
@@ -515,7 +515,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao{
 	private List<Map<String,Object>> queryAllItemList(final String querySQL,final List<Map<String,Object>> mappingFieldList,Object[] obj) {
 		return this.getJdbcTemplate().query(querySQL,obj, new SplitPageResultSetExtractor(0,0,lobHandler,mappingFieldList) {});
 	}
-	private String generateQuerySqlBySingleFields(Map<String,Map<String, Object>> map1,String fieldName,String oper,StringBuffer queryBuffer){
+	private String generateQuerySqlBySingleFields(Map<String,Map<String, Object>> map1,String fieldName,String oper,StringBuilder queryBuffer){
 		String namedstr="";
 		Map<String, Object> columncfg=map1.get(fieldName);
 		if(oper.equals(BaseObject.OPER_EQ)){
@@ -767,13 +767,13 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao{
     public Long createVO(BaseObject obj) throws DAOException{
     	Map<String, String> tableMap=new HashMap<String, String>();
     	List<Map<String, Object>> fields=AnnotationRetrevior.getMappingFields(obj,tableMap,true);
-    	StringBuffer buffer=new StringBuffer();
+    	StringBuilder buffer=new StringBuilder();
     	buffer.append("insert into ");
     	if(tableMap.containsKey("schema"))
-    		buffer.append(tableMap.get("schema")).append(".");
+    		buffer.append(sqlGen.getSchemaName(tableMap.get("schema"))).append(".");
     	buffer.append(tableMap.get("tableName"));
-    	StringBuffer fieldBuffer=new StringBuffer();
-    	StringBuffer valuebuBuffer=new StringBuffer();
+    	StringBuilder fieldBuffer=new StringBuilder();
+    	StringBuilder valuebuBuffer=new StringBuilder();
     	//List<Object> objList=new ArrayList<Object>();
     	boolean hasincrementPk=false;
     	boolean containlob=false;
@@ -868,13 +868,13 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao{
     		}
     	}
     	int ret=-1;
-    	StringBuffer buffer=new StringBuffer();
+    	StringBuilder buffer=new StringBuilder();
     	buffer.append("update ");
     	if(tableMap.containsKey("schema"))
-    		buffer.append(tableMap.get("schema")).append(".");
+    		buffer.append(sqlGen.getSchemaName(tableMap.get("schema"))).append(".");
     	buffer.append(tableMap.get("tableName")).append(" set ");
-    	StringBuffer fieldBuffer=new StringBuffer();
-    	StringBuffer wherebuffer=new StringBuffer();
+    	StringBuilder fieldBuffer=new StringBuilder();
+    	StringBuilder wherebuffer=new StringBuilder();
     	List<Object> objList=new ArrayList<Object>();
     	Object pkObj=null;
     	for (Map<String, Object> map:list) {
@@ -921,12 +921,12 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao{
     	try{
     	Map<String, String> tableMap=new HashMap<String, String>();
     	List<Map<String, Object>> list=AnnotationRetrevior.getMappingFields((BaseObject)clazz.newInstance(),tableMap,false);
-    	StringBuffer buffer=new StringBuffer();
+    	StringBuilder buffer=new StringBuilder();
     	buffer.append("delete from ");
     	if(tableMap.containsKey("schema"))
-    		buffer.append(tableMap.get("schema")).append(".");
+    		buffer.append(sqlGen.getSchemaName(tableMap.get("schema"))).append(".");
     	buffer.append(tableMap.get("tableName")).append(" where ");
-    	StringBuffer fieldBuffer=new StringBuffer();
+    	StringBuilder fieldBuffer=new StringBuilder();
     	for (Map<String, Object> map:list) {
 			if(map.get("primary")!=null){
 				fieldBuffer.append(map.get("field").toString()).append(" in (:ids) ");
@@ -954,12 +954,12 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao{
     	try{
     	Map<String, String> tableMap=new HashMap<String, String>();
     	List<Map<String, Object>> list=AnnotationRetrevior.getMappingFields((BaseObject)clazz.newInstance(),tableMap,false);
-    	StringBuffer buffer=new StringBuffer();
+    	StringBuilder buffer=new StringBuilder();
     	buffer.append("delete from ");
     	if(tableMap.containsKey("schema"))
-    		buffer.append(tableMap.get("schema")).append(".");
+    		buffer.append(sqlGen.getSchemaName(tableMap.get("schema"))).append(".");
     	buffer.append(tableMap.get("tableName")).append(" where ");
-    	StringBuffer fieldBuffer=new StringBuffer();
+    	StringBuilder fieldBuffer=new StringBuilder();
     	for (Map<String, Object> map:list) {
 			if(map.get("name").equals(field)){
 				fieldBuffer.append(map.get("field").toString()).append("=?");
@@ -988,8 +988,8 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao{
     		BaseObject obj=(BaseObject) clazz.newInstance();
     		Map<String, String> tableMap=new HashMap<String, String>();
     		List<Map<String, Object>> list=AnnotationRetrevior.getMappingFields(obj,tableMap,false);
-    		StringBuffer sqlbuffer=new StringBuffer("select ");
-    		StringBuffer wherebuffer=new StringBuffer();
+    		StringBuilder sqlbuffer=new StringBuilder("select ");
+    		StringBuilder wherebuffer=new StringBuilder();
     		
     		Object[] objs=new Object[1];
     		objs[0]=id;
@@ -1001,7 +1001,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao{
     		}
     		sqlbuffer.deleteCharAt(sqlbuffer.length()-1).append(" from ");
     		if(tableMap.containsKey("schema"))
-    			sqlbuffer.append(tableMap.get("schema")).append(".");
+    			sqlbuffer.append(sqlGen.getSchemaName(tableMap.get("schema"))).append(".");
     		sqlbuffer.append(tableMap.get("tableName")).append(" where ");
     		sqlbuffer.append(wherebuffer);
     		List<Map<String, Object>> list1=queryBySql(sqlbuffer.toString(), list,objs);
@@ -1038,7 +1038,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao{
 			throw new DAOException("query VO must the same type of given Class");
 		}
 		try {
-			StringBuffer buffer = new StringBuffer();
+			StringBuilder buffer = new StringBuilder();
 			List<Object> params = new ArrayList<Object>();
 			Map<String, String> tableMap = new HashMap<String, String>();
 			List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
@@ -1081,7 +1081,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao{
 								params.add(additonMap.get(columncfg.get("field") + "_from"));
 								params.add(additonMap.get(columncfg.get("field") + "_to"));
 							} else if (oper.equals(BaseObject.OPER_IN)) {
-								StringBuffer tmpbuffer = new StringBuffer();
+								StringBuilder tmpbuffer = new StringBuilder();
 								List<Object> inobj = (List<Object>) additonMap.get(columncfg.get("field"));
 								for (int i = 0; i < inobj.size(); i++) {
 									if (i < inobj.size() - 1)
@@ -1121,13 +1121,13 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao{
     		tableMap=new HashMap<String, String>();
     		List<Map<String, Object>> list1=AnnotationRetrevior.getMappingFields(obj, tableMap, false);
     		list.addAll(list1);
-    		StringBuffer buffer=new StringBuffer("select ");
+    		StringBuilder buffer=new StringBuilder("select ");
     		for (Map<String, Object> map:list) {
     			buffer.append(map.get("field")).append(" as ").append(map.get("name")).append(",");
     		}
     		buffer.deleteCharAt(buffer.length()-1).append(" from ");
     		if(tableMap.containsKey("schema"))
-    			buffer.append(tableMap.get("schema")).append(".");
+    			buffer.append(sqlGen.getSchemaName(tableMap.get("schema"))).append(".");
     		buffer.append(tableMap.get("tableName")).append(" where ");
     		return buffer.toString();
     	}catch(Exception ex){

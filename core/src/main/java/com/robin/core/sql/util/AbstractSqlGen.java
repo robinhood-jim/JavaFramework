@@ -26,6 +26,7 @@ import com.robin.core.query.util.QueryParam;
 import com.robin.core.query.util.QueryString;
 
 public abstract class AbstractSqlGen implements BaseSqlGen{
+	public static final String illegal_SchemaChars="!@#$%^&*()+.";
 	protected static String SELECT="select ";
 	/**
 	 * 
@@ -366,5 +367,23 @@ public abstract class AbstractSqlGen implements BaseSqlGen{
 		}
 		return sql.toString();
 	}
-	
+
+	@Override
+	public String getSchemaName(String schema) {
+		if(isSchemaIllegal(schema))
+			return schema;
+		else{
+			return "\""+schema+"\"";
+		}
+	}
+	protected boolean isSchemaIllegal(String schema){
+		boolean is_illeagl=true;
+		for (int i=0;i<illegal_SchemaChars.length();i++) {
+			if(schema.contains(Character.toString(illegal_SchemaChars.charAt(i)))){
+				is_illeagl=false;
+				break;
+			}
+		}
+		return is_illeagl;
+	}
 }

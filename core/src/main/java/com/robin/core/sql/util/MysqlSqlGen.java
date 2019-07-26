@@ -140,4 +140,11 @@ public class MysqlSqlGen extends AbstractSqlGen implements BaseSqlGen{
 		return builder.toString();
 	}
 
+	@Override
+	public String getSchemaName(String schema) {
+		if(isSchemaIllegal(schema))
+			return schema;
+		else
+			return "`"+schema+"`";
+	}
 }

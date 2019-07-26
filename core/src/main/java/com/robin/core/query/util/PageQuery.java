@@ -15,11 +15,12 @@
  */
 package com.robin.core.query.util;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class PageQuery {
+public class PageQuery implements Serializable {
 	private String								groupByString;
 
 	private String								orderString;
