@@ -239,15 +239,15 @@ public class CommJdbcUtil {
                                     map.put(fields[i], datestr);
                                 else
                                     map.put(columnName, datestr);
-                            } else if (className.contains("Clob")) {
+                            } else if (className.toLowerCase().contains("clob")) {
                                 if (getLobHandler() != null) {
                                     String result = lobHandler.getClobAsString(rs, i + 1);
                                     map.put(fields[i], result);
                                 }
-                            } else if (className.contains("Blob")) {
+                            } else if (className.toLowerCase().contains("blob") ||typeName.toLowerCase().contains("blob") ) {
                                 if (getLobHandler() != null) {
                                     byte[] bytes = lobHandler.getBlobAsBytes(rs, i + 1);
-                                    map.put(fields[i], new String(bytes));
+                                    map.put(fields[i], bytes);
                                 }
                             } else {
                                 if (fields != null)

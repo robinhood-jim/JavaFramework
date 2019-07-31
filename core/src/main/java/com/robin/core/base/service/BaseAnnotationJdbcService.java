@@ -23,6 +23,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.robin.core.base.dao.util.AnnotationRetrevior;
+import com.robin.core.base.spring.SpringContextHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,8 +47,7 @@ import com.robin.core.sql.util.FilterCondition;
 
 public class BaseAnnotationJdbcService<V extends BaseObject,P extends Serializable> implements IBaseAnnotationJdbcService<V, P>
 {
-	@Autowired
-	@Qualifier("jdbcDao")
+	// autowire by construct, getBean from BaseObject annotation field MappingEntity jdbcDao
 	private JdbcDao jdbcDao;
 	@Autowired
 	private BaseSqlGen sqlGen;
@@ -64,6 +65,16 @@ public class BaseAnnotationJdbcService<V extends BaseObject,P extends Serializab
 		    throw new IllegalStateException("class " + getClass() + " is not subtype of ParametrizedType.");
 		}
         type = (Class) parametrizedType.getActualTypeArguments()[0];
+		//get JdbcDao by model annotation jdbcDao
+		if(type!=null){
+			Map<String,String> tableMap=AnnotationRetrevior.getMappingTable(type);
+			//if use JPA,can not use dynamic DataSource Property,then use Default JdbcDao
+			if(tableMap!=null && tableMap.containsKey("jdbcDao") && tableMap.get("jdbcDao")!=null){
+				jdbcDao= (JdbcDao) SpringContextHolder.getBean(tableMap.get("jdbcDao"));
+			}else{
+				jdbcDao= (JdbcDao) SpringContextHolder.getBean("jdbcDao");
+			}
+		}
 	}
 	
 	@Transactional(propagation=Propagation.REQUIRED,rollbackFor=RuntimeException.class)
