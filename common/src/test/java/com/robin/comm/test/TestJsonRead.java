@@ -1,4 +1,4 @@
-package com.robin.test;
+package com.robin.comm.test;
 
 import com.robin.core.base.util.Const;
 import com.robin.core.fileaccess.iterator.AbstractFileIterator;
@@ -20,13 +20,13 @@ public class TestJsonRead {
 		try{
 			DataCollectionMeta colmeta=new DataCollectionMeta();
 			Map<String, Object> ftpparam=new HashMap<String, Object>();
-			ftpparam.put("hostName", "172.16.200.62");
+			ftpparam.put("hostName", "localhost");
 			ftpparam.put("protocol", "sftp");
 			ftpparam.put("port", 22);
-			ftpparam.put("userName", "luoming");
-			ftpparam.put("password", "123456");
+			ftpparam.put("userName", "root");
+			ftpparam.put("password", "root");
 			colmeta.setResourceCfgMap(ftpparam);
-			colmeta.setPath("/tmp/luoming/testdata/test1.avro.gz");
+			colmeta.setPath("/tmp/robin/testdata/test1.avro.gz");
 			colmeta.setEncode("UTF-8");
 			//ftpparam.put("schemaContent", "{\"namespace\":\"com.robin.avro\",\"name\":\"Content\",\"type\":\"record\",\"fields\":[{\"name\":\"info_id\",\"type\":\"string\"},{\"name\":\"url\",\"type\":\"string\"},{\"name\":\"title\",\"type\":\"string\"},{\"name\":\"content\",\"type\":\"string\"}]}");
 			List<Map<String, Object>> list=new ArrayList<Map<String,Object>>();

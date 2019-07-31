@@ -17,18 +17,6 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * <p>Project:  frame</p>
- * <p>
- * <p>Description:基于Apache Commons Vfs的资源读取器，支持VFS所有读写格式</p>
- * <p>
- * <p>Copyright: Copyright (c) 2018 create at 2018年11月13日</p>
- * <p>
- * <p>Company: zhcx_DEV</p>
- *
- * @author robinjim
- * @version 1.0
- */
 public class ApacheVfsResourceAccessUtil extends AbstractResourceAccessUtil {
     public ApacheVfsResourceAccessUtil() {
         try {

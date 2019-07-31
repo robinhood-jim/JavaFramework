@@ -57,7 +57,8 @@ public class TestLobHandler extends TestCase {
 		query.setSelectParamId("GET_LOB");
 		query.getParameters().put("condition", "");
 		jdbcDao.queryBySelectId(query);
-		List<Map<String, Object>> list2=query.getRecordSet();
+		List<Map<String, Object>> rsList=query.getRecordSet();
+		assertNotNull(rsList);
 	}
 	@Test
 	public  void testQueryVO() throws Exception{

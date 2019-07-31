@@ -18,6 +18,9 @@ public class TestJPaModel extends BaseObject{
 	private String name;
 	@Column(name="code_desc")
 	private String description;
+	@Column(name = "cs_id")
+	private Integer csId;
+
 	public Long getId() {
 		return id;
 	}
@@ -36,7 +39,12 @@ public class TestJPaModel extends BaseObject{
 	public void setDescription(String description) {
 		this.description = description;
 	}
-	
-	
 
+	public Integer getCsId() {
+		return csId;
+	}
+
+	public void setCsId(Integer csId) {
+		this.csId = csId;
+	}
 }

@@ -1,4 +1,4 @@
-package com.robin.test;
+package com.robin.comm.test;
 
 import com.robin.comm.util.xls.*;
 import com.robin.core.base.dao.SimpleJdbcDao;
@@ -28,7 +28,6 @@ import java.util.Map;
 public class TestExcelReader {
     public static void main(String[] args){
         TestExcelReader reader=new TestExcelReader();
-        //reader.processFile("f:/work/20171110093632.xls");
         mock1();
     }
     public static void mock1(){
@@ -59,7 +58,7 @@ public class TestExcelReader {
         try {
             //System.in.read();
             System.out.println("start");
-            DataBaseParam param=new DataBaseParam("172.16.102.107",3388,"JB_awardsys_20171116","test","test123");
+            DataBaseParam param=new DataBaseParam("localhost",3306,"testdb","test","test123");
             BaseDataBaseMeta meta= DataBaseMetaFactory.getDataBaseMetaByType(BaseDataBaseMeta.TYPE_MYSQL,param);
             conn= SimpleJdbcDao.getConnection(meta,param);
             Workbook wb=ExcelGenerator.GenerateExcelFile(prop, header,conn,sql,null,new ExcelRsExtractor(prop,header));

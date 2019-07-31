@@ -5,6 +5,7 @@ import org.apache.poi.ss.usermodel.CreationHelper;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.Map;
 
@@ -33,19 +34,16 @@ public class ExcelRsExtractor extends ResultSetOperationExtractor {
         this.prop=prop;
         this.header=header;
         pos=prop.getStartRow();
+        super.init();
     }
 
     @Override
-    public boolean executeAddtionalOperation(Map<String, Object> map, String[] columnName, String[] typeName, String[] className) throws SQLException {
+    public boolean executeAdditionalOperation(Map<String, Object> map, ResultSetMetaData rsmd) throws SQLException {
         ExcelGenerator.processSingleLine(map, workbook,targetSheet,pos,prop,header,helper);
         pos++;
         return true;
     }
 
-    @Override
-    public void init() {
-
-    }
 
     public void setWorkbook(Workbook workbook) {
         this.workbook = workbook;

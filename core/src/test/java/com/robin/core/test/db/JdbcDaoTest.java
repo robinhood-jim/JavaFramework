@@ -3,8 +3,10 @@ package com.robin.core.test.db;
 import java.util.List;
 import java.util.Map;
 
+import com.robin.core.test.service.TestJpaModelService;
 import junit.framework.TestCase;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
@@ -44,12 +46,10 @@ public class JdbcDaoTest extends  TestCase {
 	
 	@Test
 	public void testJpaQuery(){
-		JdbcDao jdbcDao=(JdbcDao) SpringContextHolder.getBean("jdbcDao", JdbcDao.class);
-		BaseJdbcService<TestJPaModel, Long> service=new BaseJdbcService<TestJPaModel, Long>();
+		TestJpaModelService service= (TestJpaModelService) SpringContextHolder.getBean(TestJpaModelService.class);
 		//set dataSource
-		service.setJdbcDao(jdbcDao);
-		service.setSqlGen((BaseSqlGen)SpringContextHolder.getBean("sqlGen"));
-		List<TestJPaModel> list=service.queryByField(TestJPaModel.class,"name", BaseObject.OPER_EQ, "tttt");
+		List<TestJPaModel> list=service.queryByField("csId", BaseObject.OPER_EQ, 1);
+		Assert.assertNotNull(list);
 	}
 	@Test
 	public void testAnnotationInsert(){
@@ -58,7 +58,7 @@ public class JdbcDaoTest extends  TestCase {
 		 model.setName("OOOOOOOOOO");
 		 model.setDescription("FFFFFFFFFF");
 		 Long id=service.saveEntity(model);
-		 System.out.println(id);
+		 assertNotNull(id);
 	}
 	@Test
 	public void testPageQuery(){
@@ -68,7 +68,8 @@ public class JdbcDaoTest extends  TestCase {
 		query.setSelectParamId("GET_TEST_PAGE");
 		query.getParameters().put("queryString", "");
 		jdbcDao.queryBySelectId(query);
-		List<Map<String, Object>> list2=query.getRecordSet();
+		List<Map<String, Object>> rsList=query.getRecordSet();
+		assertNotNull(rsList);
 	}
 	@Test
 	public void testPageQueryWithReplaceAndPrepared(){
@@ -80,11 +81,12 @@ public class JdbcDaoTest extends  TestCase {
 		query.setParameterArr(new Object[]{"%e%",1});
 		query.setPageSize("2");
 		jdbcDao.queryBySelectId(query);
-		List<Map<String, Object>> list2=query.getRecordSet();
+		List<Map<String, Object>> fristPage=query.getRecordSet();
 		query.setPageNumber("2");
 		jdbcDao.queryBySelectId(query);
-		List<Map<String, Object>> list3=query.getRecordSet();
-
+		List<Map<String, Object>> secondPage=query.getRecordSet();
+		assertNotNull(fristPage);
+		assertNotNull(secondPage);
 	}
 	
 
