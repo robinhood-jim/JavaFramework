@@ -70,6 +70,22 @@ public class JdbcDaoTest extends  TestCase {
 		jdbcDao.queryBySelectId(query);
 		List<Map<String, Object>> list2=query.getRecordSet();
 	}
+	@Test
+	public void testPageQueryWithReplaceAndPrepared(){
+		JdbcDao jdbcDao=(JdbcDao) SpringContextHolder.getBean("jdbcDao", JdbcDao.class);
+		PageQuery query=new PageQuery();
+		query.setPageSize("0");
+		query.setSelectParamId("GET_TEST_PREPARE");
+		query.getParameters().put("queryString", "and name like ? and cs_id=?");
+		query.setParameterArr(new Object[]{"%e%",1});
+		query.setPageSize("2");
+		jdbcDao.queryBySelectId(query);
+		List<Map<String, Object>> list2=query.getRecordSet();
+		query.setPageNumber("2");
+		jdbcDao.queryBySelectId(query);
+		List<Map<String, Object>> list3=query.getRecordSet();
+
+	}
 	
 
 }
