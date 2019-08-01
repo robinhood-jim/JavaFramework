@@ -23,7 +23,6 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface MappingField {
-	String property() default "";
 	String field() default "";
 	String primary() default "0";
 	String increment() default "0";

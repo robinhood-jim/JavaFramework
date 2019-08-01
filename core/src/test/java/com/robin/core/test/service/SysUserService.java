@@ -21,16 +21,45 @@ import com.robin.core.base.service.BaseAnnotationJdbcService;
 import com.robin.core.test.model.SysUser;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * Table in another DataSource,So must use declared Transactional to override Super class method
+ */
 @Component
 @Scope(value="singleton")
 public class SysUserService extends BaseAnnotationJdbcService<SysUser,Long> {
-    @Transactional("another")
+    @Transactional(value="another",propagation= Propagation.REQUIRED,rollbackFor=RuntimeException.class)
     @Override
     public Long saveEntity(SysUser user){
         try{
             return getJdbcDao().createVO(user);
+        }catch (DAOException e) {
+            throw new ServiceException(e);
+        }
+    }
+    @Transactional(value="another",propagation=Propagation.REQUIRED,rollbackFor=RuntimeException.class)
+    @Override
+    public int updateEntity(SysUser sysUser){
+        try{
+            return getJdbcDao().updateVO(type,sysUser);
+        }catch (DAOException e) {
+            throw new ServiceException(e);
+        }
+    }
+    @Transactional(value="another",propagation=Propagation.REQUIRED,rollbackFor=RuntimeException.class)
+    public int deleteEntity(SysUser [] vo) throws ServiceException{
+        try{
+            return jdbcDao.deleteVO(type,vo);
+        }catch (DAOException e) {
+            throw new ServiceException(e);
+        }
+    }
+    @Transactional(value="another",propagation=Propagation.REQUIRED,rollbackFor=RuntimeException.class)
+    public int deleteByField(String field,Object value) throws ServiceException{
+        try{
+            return jdbcDao.deleteByField(type,field,value);
         }catch (DAOException e) {
             throw new ServiceException(e);
         }

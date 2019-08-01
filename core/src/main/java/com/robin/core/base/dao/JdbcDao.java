@@ -856,7 +856,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao{
     	
     	if(primarycol!=null){
     		BaseObject orgobj=getEntity(clazz, (Serializable) primarycol.get("value"));
-    		List<Map<String, Object>> list1=AnnotationRetrevior.getMappingFields(orgobj,tableMap,false);
+    		List<Map<String, Object>> list1=AnnotationRetrevior.getMappingFields(orgobj,tableMap,true);
     		for (Map<String, Object> map:list1) {
     			if(!map.containsKey("primary")){
     				if(map.get("value")!=null){

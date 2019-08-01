@@ -30,10 +30,13 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+/**
+ *Single Table Mapping Background Controller
+ */
 public abstract class BaseCrudController<O extends BaseObject,S extends BaseAnnotationJdbcService> extends BaseContorller implements InitializingBean {
     private Class<O> objectType;
     private Class<S> serviceType;
-    protected BaseAnnotationJdbcService service;
+    protected S service;
 
     public BaseCrudController()
     {
@@ -54,7 +57,14 @@ public abstract class BaseCrudController<O extends BaseObject,S extends BaseAnno
         this.objectType = ((Class)parametrizedType.getActualTypeArguments()[0]);
         this.serviceType = ((Class)parametrizedType.getActualTypeArguments()[1]);
     }
-    public Map<String, Object> doAdd(HttpServletRequest request, HttpServletResponse response)
+
+    /**
+     * Add Enitty
+     * @param request
+     * @param response
+     * @return
+     */
+    protected Map<String, Object> doAdd(HttpServletRequest request, HttpServletResponse response)
     {
         boolean finishTag = true;
         Long id = null;
@@ -73,6 +83,49 @@ public abstract class BaseCrudController<O extends BaseObject,S extends BaseAnno
         }
         wrapSaveResponse(response, finishTag, id, retMap);
         return retMap;
+    }
+    protected Map<String, Object> doView(HttpServletRequest request, HttpServletResponse response, Long id) {
+        Map<String, Object> retmap = new HashMap<String, Object>();
+        try {
+            BaseObject object = service.getEntity(id);
+            retmap=doOnView(request, response, object);
+            retmap.put("vo",object);
+            wrapSuccess(request,response,retmap);
+        } catch (Exception e) {
+            log.error("{}",e);
+            wrapFailed(request,response,retmap,e);
+        }
+        return retmap;
+    }
+    public Map<String, Object> doEdit(HttpServletRequest request, HttpServletResponse response, Long id) {
+        Map<String, Object> retmap = new HashMap<String, Object>();
+        try {
+            BaseObject object = service.getEntity(id);
+            retmap=doOnEdit(request, response, object);
+            wrapSuccess(request,response,retmap);
+        } catch (Exception e) {
+
+        }
+        return retmap;
+    }
+    public Map<String,Object> doUpdate(HttpServletRequest request, HttpServletResponse response,Long id){
+        Map<String,Object> retmap=new HashMap<>();
+        boolean finsiTag=true;
+        try {
+            Map<String, String> valueMap = wrapRequest(request);
+            BaseObject object = objectType.newInstance();
+            BaseObject updateObj=service.getEntity(id);
+            ConvertUtil.convertToModel(object, valueMap);
+            ConvertUtil.convertToModelForUpdateNew(updateObj, object);
+            service.updateEntity(updateObj);
+            retmap=doOnUpdate(request,response,object);
+
+        }catch (Exception ex){
+            log.error("{}",ex);
+            finsiTag=false;
+        }
+        retmap.put("success",finsiTag);
+        return retmap;
     }
     protected Map<String, String> wrapSaveRequest(HttpServletRequest request)
     {
@@ -165,7 +218,7 @@ public abstract class BaseCrudController<O extends BaseObject,S extends BaseAnno
     public void afterPropertiesSet() throws Exception
     {
         if (this.serviceType != null) {
-            this.service = ((BaseAnnotationJdbcService) SpringContextHolder.getBean(this.serviceType));
+            this.service = (S) SpringContextHolder.getBean(this.serviceType);
         }
     }
     protected Long[] wrapPrimaryKeys(String keys)

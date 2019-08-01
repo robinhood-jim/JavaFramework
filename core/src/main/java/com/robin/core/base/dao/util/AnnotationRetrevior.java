@@ -38,6 +38,7 @@ import com.robin.core.base.annotation.MappingField;
 import com.robin.core.base.exception.DAOException;
 import com.robin.core.base.model.BaseObject;
 import com.robin.core.base.util.Const;
+import org.apache.commons.lang.math.NumberUtils;
 
 public class AnnotationRetrevior {
     public static List<Map<String, Object>> getMappingFields(BaseObject obj, Map<String, String> tableMap, boolean needValidate) throws DAOException {
@@ -136,16 +137,18 @@ public class AnnotationRetrevior {
             MappingField mapfield = field.getAnnotation(MappingField.class);
             String name = field.getName();
             map.put("name", name);
-            map.put("precise", mapfield.precise());
-            map.put("scale", mapfield.scale());
-            map.put("length", mapfield.length());
-            name = name.substring(0, 1).toUpperCase() + name.substring(1, name.length());
+            if(mapfield.precise()!=0)
+                map.put("precise", mapfield.precise());
+            if(mapfield.scale()!=0)
+                map.put("scale", mapfield.scale());
+            if(mapfield.length()!=0)
+                map.put("length", mapfield.length());
+            name = name.substring(0, 1).toUpperCase() + name.substring(1);
             Method method = obj.getClass().getMethod("get" + name, null);
             Type type = method.getReturnType();
             Object value = method.invoke(obj, null);
-            String property = "";
+
             if (mapfield != null) {
-                property = mapfield.property();
                 String colfield = mapfield.field();
                 String datatype = mapfield.datatype();
                 if (colfield != null && !"".equals(colfield.trim())) {
@@ -196,7 +199,17 @@ public class AnnotationRetrevior {
                 if (mapfield != null) {
                     boolean required = mapfield.required();
                     if (value == null && required && needValidate) {
-                        throw new DAOException("column " + property + " must not be null!");
+                        throw new DAOException("column " + name + " must not be null!");
+                    }
+                    if(map.containsKey("scale") || map.containsKey("precise")){
+                        if(value!=null && !NumberUtils.isNumber(value.toString())){
+                            throw new DAOException("column " + name + " is not number!");
+                        }
+                    }
+                    if(map.containsKey("length")){
+                        if(value!=null && value.toString().length()>mapfield.length()){
+                            throw new DAOException("column " + name + " is large than max length="+mapfield.length());
+                        }
                     }
                 }
             }
