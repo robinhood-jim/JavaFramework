@@ -16,13 +16,7 @@
             </list>
         </property>
     </bean>
-    
-    <!-- JNDI DataSource for J2EE environments -->
-    <!--  
-       <bean id="dataSource" class="org.springframework.jndi.JndiObjectFactoryBean">
-          <property name="jndiName"><value>java:comp/env/jdbc/dataAppPlatfrom</value></property>
-       </bean>
-    --> 
+
       
     <!-- JDBC DataSource -->
     <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource">
@@ -38,16 +32,41 @@
         <property name="removeAbandonedTimeout" value="60"/>
         <property name="logAbandoned" value="true"/>
     </bean>
-   <!--  <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate"  autowire="byName" /> -->
+    <bean id="dataSource1" class="org.apache.commons.dbcp.BasicDataSource">
+        <property name="driverClassName" value="${jdbc.another.driver}"/>
+        <property name="url" value="${jdbc.another.url}"/>
+        <property name="username" value="${jdbc.another.username}"/>
+        <property name="password" value="${jdbc.another.password}"/>
+        <property name="maxActive" value="20"/>
+        <property name="maxIdle" value="5"/>
+        <property name="maxWait" value="1000"/>
+        <property name="defaultAutoCommit" value="false"/>
+        <property name="removeAbandoned" value="true"/>
+        <property name="removeAbandonedTimeout" value="60"/>
+        <property name="logAbandoned" value="true"/>
+    </bean>
+
     <context:annotation-config /> 
    <bean id="lobHandler" class="org.springframework.jdbc.support.lob.DefaultLobHandler" lazy-init="false" />                                        
 	                                       
-     <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">                                        
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
         <property name="dataSource" ref="dataSource"/>                                        
-    </bean>   
-    <tx:annotation-driven transaction-manager="transactionManager" proxy-target-class="true"/>                  
-    
-  	<bean id="jdbcDao" class="com.robin.core.base.dao.JdbcDao" autowire="byName" />
+    </bean>
+    <!-- transaction in another dataSource -->
+    <bean id="transactionManager1" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource1"/>
+        <qualifier value="another" />
+    </bean>
+    <tx:annotation-driven transaction-manager="transactionManager" proxy-target-class="true"/>
+
+
+    <bean id="jdbcDao" class="com.robin.core.base.dao.JdbcDao" autowire="byName" />
+    <bean id="jdbcDao1" class="com.robin.core.base.dao.JdbcDao">
+        <property name="dataSource" ref="dataSource1" />
+        <property name="sqlGen" ref="sqlGen" />
+        <property name="lobHandler" ref="lobHandler" />
+        <property name="queryFactory" ref="queryFactory" />
+    </bean>
 
     <bean id="sqlGen" class="com.robin.core.sql.util.MysqlSqlGen" autowire="byName"></bean>
     <bean id="queryFactory" class="com.robin.core.query.util.QueryFactory" autowire="byName">

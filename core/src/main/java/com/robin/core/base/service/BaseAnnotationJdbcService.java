@@ -23,6 +23,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.robin.core.base.dao.util.AnnotationRetrevior;
+import com.robin.core.base.spring.SpringContextHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,15 +45,14 @@ import com.robin.core.sql.util.FilterCondition;
  * <p>Description:<b>Auto wired Service With defalut methold</b></p>
  */
 
-public class BaseAnnotationJdbcService<V extends BaseObject,P extends Serializable> implements IBaseAnnotationJdbcService<V, P>
+public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends Serializable> implements IBaseAnnotationJdbcService<V, P>
 {
+	// autowire by construct, getBean from BaseObject annotation field MappingEntity jdbcDao
+	protected JdbcDao jdbcDao;
 	@Autowired
-	@Qualifier("jdbcDao")
-	private JdbcDao jdbcDao;
-	@Autowired
-	private BaseSqlGen sqlGen;
-	private Class<V> type;
-	private Logger logger=LoggerFactory.getLogger(getClass());
+	protected BaseSqlGen sqlGen;
+	protected Class<V> type;
+	protected Logger logger=LoggerFactory.getLogger(getClass());
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public BaseAnnotationJdbcService(){
 		Type genericSuperClass = getClass().getGenericSuperclass();
@@ -64,6 +65,16 @@ public class BaseAnnotationJdbcService<V extends BaseObject,P extends Serializab
 		    throw new IllegalStateException("class " + getClass() + " is not subtype of ParametrizedType.");
 		}
         type = (Class) parametrizedType.getActualTypeArguments()[0];
+		//get JdbcDao by model annotation jdbcDao
+		if(type!=null){
+			Map<String,String> tableMap=AnnotationRetrevior.getMappingTable(type);
+			//if use JPA,can not use dynamic DataSource Property,then use Default JdbcDao
+			if(tableMap!=null && tableMap.containsKey("jdbcDao") && tableMap.get("jdbcDao")!=null){
+				jdbcDao= (JdbcDao) SpringContextHolder.getBean(tableMap.get("jdbcDao"));
+			}else{
+				jdbcDao= (JdbcDao) SpringContextHolder.getBean("jdbcDao");
+			}
+		}
 	}
 	
 	@Transactional(propagation=Propagation.REQUIRED,rollbackFor=RuntimeException.class)
@@ -179,7 +190,6 @@ public class BaseAnnotationJdbcService<V extends BaseObject,P extends Serializab
 	}
 	/**
 	 *
-	 * @param clazz
 	 * @param orderByStr
 	 * @param fieldName
 	 * @param oper
@@ -190,7 +200,7 @@ public class BaseAnnotationJdbcService<V extends BaseObject,P extends Serializab
 	@SuppressWarnings("unchecked")
 	@Transactional(readOnly=true)
 	public List<V> queryByFieldOrderBy(String orderByStr,String fieldName,String oper,Object... fieldValues) throws ServiceException{
-		List<V> retlist=new ArrayList<V>();
+		List<V> retlist;
 		try{	
 			retlist=(List<V>) jdbcDao.queryByFieldOrderBy(type, orderByStr, fieldName, oper, fieldValues);
 		}
@@ -228,7 +238,7 @@ public class BaseAnnotationJdbcService<V extends BaseObject,P extends Serializab
 	@Transactional(readOnly=true)
 	public List<V> queryByVO(V vo,Map<String, Object> additonMap, String orderByStr)
 			throws ServiceException {
-		List<V> retlist = new ArrayList<V>();
+		List<V> retlist;
 		try {
 			retlist=(List<V>) jdbcDao.queryByVO(type, vo, additonMap, orderByStr);
 		} catch (DAOException ex) {
@@ -239,7 +249,7 @@ public class BaseAnnotationJdbcService<V extends BaseObject,P extends Serializab
 	@Transactional(readOnly=true)
 	public List<V> queryByCondition(List<FilterCondition> conditions,String orderByStr)
 			throws ServiceException {
-		List<V> retlist = new ArrayList();
+		List<V> retlist ;
 		try{
 			retlist=(List<V>) jdbcDao.queryByCondition(type, conditions, orderByStr);
 		}catch (DAOException e) {

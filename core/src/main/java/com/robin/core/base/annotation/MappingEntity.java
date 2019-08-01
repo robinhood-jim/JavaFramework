@@ -25,5 +25,5 @@ import java.lang.annotation.Target;
 public @interface MappingEntity {
 	String table() default "";
 	String schema() default "";
-	String dataSource() default "";
+	String jdbcDao() default "jdbcDao";
 }

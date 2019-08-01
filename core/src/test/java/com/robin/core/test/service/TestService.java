@@ -25,8 +25,8 @@ import com.robin.core.base.dao.JdbcDao;
 public class TestService {
 
 	@Transactional(propagation=Propagation.REQUIRED,rollbackFor=RuntimeException.class)
-	public void execute(JdbcDao jdbcDao){
-		jdbcDao.executeUpdate("insert into t_test values (7,'DFGS','ssss' )");
+	public void testQueryWithException(JdbcDao jdbcDao){
+		jdbcDao.executeUpdate("insert into t_test values (11,'DFGS','ssss',1 )");
 		jdbcDao.executeUpdate("update t_test set name='CCCCC' where id=5");
 		jdbcDao.queryBySql("select * from t_test");
 		jdbcDao.executeUpdate("update t_test set name='DDDDDD' where id=6");
