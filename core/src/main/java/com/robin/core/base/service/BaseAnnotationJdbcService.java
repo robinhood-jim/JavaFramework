@@ -183,7 +183,7 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 	@SuppressWarnings("unchecked")
 	@Transactional(readOnly=true)
 	public List<V> queryByField(String fieldName,String oper,Object... fieldValues) throws ServiceException{
-		List<V> retlist=new ArrayList<V>();
+		List<V> retlist;
 		try{	
 			retlist=(List<V>) jdbcDao.queryByField(type, fieldName, oper, fieldValues);
 		}

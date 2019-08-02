@@ -228,7 +228,7 @@ public class RunningJobInfoUtil extends AbstractJobInfoUtil {
 		RunningJob job=jobClient.getJob(getJobID(jobId));
 		List<JobTaskInfo> retList=new ArrayList<JobTaskInfo>();
 		String file=job.getJobFile();
-		if(job!=null){
+		if(file!=null){
 			if(type.equalsIgnoreCase("map")){
 				TaskReport[] reports=jobClient.getMapTaskReports(getJobID(jobId));
 				for (int i = startIndex; i < reports.length; i++) {

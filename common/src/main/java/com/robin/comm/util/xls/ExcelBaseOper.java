@@ -32,10 +32,8 @@ import org.slf4j.LoggerFactory;
 import java.awt.Color;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.sql.Timestamp;
+import java.util.*;
 
 public class ExcelBaseOper {
 	public static String TYPE_EXCEL2003="xls";
@@ -58,7 +56,7 @@ public class ExcelBaseOper {
 		if(TYPE_EXCEL2003.equalsIgnoreCase(fileext))
 			wb=new HSSFWorkbook();
 		else if(TYPE_EXCEL2007.equalsIgnoreCase(fileext))
-			wb=new SXSSFWorkbook(100);
+			wb=new XSSFWorkbook();
 		return wb;
 	}
 
@@ -128,11 +126,14 @@ public class ExcelBaseOper {
 
         cs.setLeftBorderColor(IndexedColors.BLACK.getIndex());
         cs.setBorderRight(CellStyle.BORDER_THIN);
+        cs.setBorderBottom(CellStyle.BORDER_THIN);
+		cs.setBorderTop(CellStyle.BORDER_THIN);
 
         cs.setRightBorderColor(IndexedColors.BLACK.getIndex());
-        cs.setBorderTop(CellStyle.BORDER_THIN);  
+        cs.setBorderTop(CellStyle.BORDER_THIN);
 
         cs.setTopBorderColor(IndexedColors.BLACK.getIndex());
+
 //        String color=region.getForegroundcolor();
 //        if(color!=null &&!"".equals(color.trim())){
 //        	int[] rgb=hex2rgb(color);
@@ -186,7 +187,6 @@ public class ExcelBaseOper {
     		int rows=header.getHeaderColumnList().size();
     		
     		int startrow=prop.getStartRow()-1;
-    		int startcol=prop.getStartCol()-1;
     		for(int i=0;i<rows;i++){
     			List<ExcelHeaderColumn> clist=header.getHeaderColumnList().get(i);
     			for(ExcelHeaderColumn col:clist){
@@ -274,17 +274,16 @@ public class ExcelBaseOper {
 					}
 					if (nums > totallength) {
 						if (isColumnTheFristChild(collength, listabove, i, row, count)) {
-							// Ҷ�ӽڵ��ǵ�һ���ڵ�
 								startColArr[row][pos] = startColArr[row - 1][i];
 							
 						} else {
-							// Ҷ�ӽڵ㲻�ǵ�һ���ڵ�
+
 							startColArr[row][pos] = startColArr[row][pos - 1] + header.getHeaderColumnList().get(row).get(pos - 1).getColspan();
 						}
 						break;
 
 					}else if(nums==totallength && i<listabove.size()-1){
-						//ѭ���ж���һ����Ԫ���Ƿ��Ǹ��׽ڵ�
+
 						int temp1=i+1;
 						while(header.getHeaderColumnList().get(row-1).get(temp1).getRowspan()+row-1==count){
 							temp1++;
@@ -337,7 +336,7 @@ public class ExcelBaseOper {
     	Cell cell=null;
     	if(colType.equals(Const.META_TYPE_STRING))
 			cell=createCell(row1,  j, cellStyle,helper,value);
-		else if(colType.equals(Const.META_TYPE_NUMERIC)){ 
+		else if(colType.equals(Const.META_TYPE_NUMERIC) || colType.equals(Const.META_TYPE_DOUBLE)){
 		   if(!"".equals(value))
 				cell=createCell(row1,  j,cellStyle,helper,Double.parseDouble(value));
 		}
@@ -345,7 +344,7 @@ public class ExcelBaseOper {
 			if(!"".equals(value))
 				cell=createCell(row1,  j,cellStyle,helper,Integer.parseInt(value));
 		}
-		else if(colType.equals(Const.META_TYPE_DATE)){
+		else if(colType.equals(Const.META_TYPE_DATE) || colType.equals(Const.META_TYPE_TIMESTAMP)){
 			if(!"".equals(value))
 				cell=createCellDate(row1,  j, cellStyle,helper, value);
 		}else
@@ -367,7 +366,7 @@ public class ExcelBaseOper {
     {
         Cell cell = row.createCell(column);
         
-        cellStyle.setDataFormat(helper.createDataFormat().getFormat("#,##0.0"));
+        cellStyle.setDataFormat(helper.createDataFormat().getFormat("#,##0.000"));
       
         cell.setCellValue(value);
         cell.setCellStyle(cellStyle);
@@ -388,7 +387,7 @@ public class ExcelBaseOper {
         Cell cell = row.createCell(column);
         cellStyle.setDataFormat(helper.createDataFormat().getFormat("yyyy-MM-dd hh:mm:ss"));
       
-        cell.setCellValue(value);
+        cell.setCellValue(new Date(Long.valueOf(value)));
         cell.setCellStyle(cellStyle);
         return cell;
     }

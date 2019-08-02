@@ -6,34 +6,49 @@ import com.robin.core.base.datameta.BaseDataBaseMeta;
 import com.robin.core.base.datameta.DataBaseMetaFactory;
 import com.robin.core.base.datameta.DataBaseParam;
 import com.robin.core.base.util.Const;
+import com.robin.core.base.util.StringUtils;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.junit.Test;
 
 import java.io.FileOutputStream;
 import java.sql.Connection;
-import java.util.List;
-import java.util.Map;
-
-/**
- * <p>Project:  frame</p>
- * <p>
- * <p>Description:com.robin.test</p>
- * <p>
- * <p>Copyright: Copyright (c) 2017 create at 2017年11月10日</p>
- * <p>
- * <p>Company: zhcx_DEV</p>
- *
- * @author robinjim
- * @version 1.0
- */
+import java.util.*;
 
 public class TestExcelReader {
-    public static void main(String[] args){
-        TestExcelReader reader=new TestExcelReader();
-        mock1();
+
+    @Test
+    public void testGenerate() throws Exception{
+        Long startTs=System.currentTimeMillis()-3600*24*1000;
+        String str= StringUtils.generateRandomChar(32);
+        ExcelSheetProp prop=new ExcelSheetProp();
+        prop.setFileext("xlsx");
+        prop.setStartCol(1);
+        prop.setStartRow(1);
+        prop.setSheetName("test");
+        prop.addColumnProp(new ExcelColumnProp("name","name",Const.META_TYPE_STRING,false));
+        prop.addColumnProp(new ExcelColumnProp("time","time",Const.META_TYPE_TIMESTAMP,false));
+        prop.addColumnProp(new ExcelColumnProp("intcol","intcol",Const.META_TYPE_INTEGER,false));
+        prop.addColumnProp(new ExcelColumnProp("dval","dval",Const.META_TYPE_DOUBLE,false));
+        TableHeaderProp header=new TableHeaderProp();
+        header.setContainrow(1);
+        List<Map<String,String>> list=new ArrayList<Map<String, String>>();
+        Random random=new Random(12312321321312L);
+        for(int i=0;i<1000;i++){
+            Map<String,String> map=new HashMap<String, String>();
+            map.put("name",StringUtils.generateRandomChar(12));
+            map.put("time",String.valueOf(startTs+i*1000));
+            map.put("intcol",String.valueOf(random.nextInt(1000)));
+            map.put("dval",String.valueOf(random.nextDouble()*1000));
+            list.add(map);
+        }
+        prop.setColumnList(list);
+        Workbook wb=ExcelGenerator.GenerateExcelFile(prop,header);
+        FileOutputStream out=new FileOutputStream("d:/test1.xlsx");
+        wb.write(out);
+        out.close();
     }
-    public static void mock1(){
-
-
+    @Test
+    public void testWithQuery(){
         ExcelSheetProp prop=new ExcelSheetProp();
         prop.setFileext("xlsx");
         prop.setStartCol(1);
@@ -59,7 +74,7 @@ public class TestExcelReader {
         try {
             //System.in.read();
             System.out.println("start");
-            DataBaseParam param=new DataBaseParam("localhost",3306,"testdb","test","test123");
+            DataBaseParam param=new DataBaseParam("localhost",3306,"test","test","test");
             BaseDataBaseMeta meta= DataBaseMetaFactory.getDataBaseMetaByType(BaseDataBaseMeta.TYPE_MYSQL,param);
             conn= SimpleJdbcDao.getConnection(meta,param);
             Workbook wb=ExcelGenerator.GenerateExcelFile(prop, header,conn,sql,null,new ExcelRsExtractor(prop,header));
@@ -71,15 +86,13 @@ public class TestExcelReader {
         }catch (Exception ex){
             ex.printStackTrace();
         }finally {
-            try {
-                System.in.read();
-            }catch (Exception ex){
-                ex.printStackTrace();
-            }
+
         }
 
     }
-    public void processFile(String filePath){
+    @Test
+    public void processReadFile(){
+        String filePath="";
         ExcelSheetProp prop=new ExcelSheetProp();
         prop.addColumnProp(new ExcelColumnProp("id","id", Const.META_TYPE_BIGINT,false));
         prop.addColumnProp(new ExcelColumnProp("sno","sno",Const.META_TYPE_STRING,false));

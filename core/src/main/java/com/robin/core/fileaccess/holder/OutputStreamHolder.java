@@ -43,7 +43,6 @@ public class OutputStreamHolder extends AbstractResourceHolder {
 			if(out!=null){
 				out.close();
 			}
-			out=null;
 		}catch(IOException ex){
 			throw ex;
 		}finally{

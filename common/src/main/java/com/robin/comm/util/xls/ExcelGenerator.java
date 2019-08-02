@@ -22,6 +22,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.FileInputStream;
@@ -251,12 +254,18 @@ public class ExcelGenerator {
 	 * @return
 	 */
 
-	public static HSSFWorkbook GenerateExcelFile(ExcelSheetProp prop,String suffix){
-		HSSFWorkbook wb = new HSSFWorkbook();
+	public static Workbook GenerateExcelFile(ExcelSheetProp prop,String suffix){
+		boolean is2007=ExcelBaseOper.TYPE_EXCEL2007.equalsIgnoreCase(prop.getFileext());
+		Workbook wb =null;
+		if(!is2007)
+			wb=new HSSFWorkbook();
+		else{
+			wb=new XSSFWorkbook();
+		}
 		String sheetname=prop.getSheetName();
 		if(suffix!=null && suffix.length()>0)
 			sheetname+="_"+suffix;
-		HSSFSheet sheet = wb.createSheet(sheetname);
+		Sheet sheet = wb.createSheet(sheetname);
 		GenerateHeader(sheet,wb,prop);
 		
 		FillColumns(wb,sheet,prop);
@@ -275,7 +284,7 @@ public class ExcelGenerator {
 		Sheet sheet = wb.createSheet(sheetname);
 		CreationHelper helper=wb.getCreationHelper();
 		int count=0;
-		if(!header.getHeaderList().isEmpty()){
+		if(!prop.getColumnPropList().isEmpty()){
 			GenerateHeader(sheet, wb, prop,header);
 			count=prop.getColumnList().size();
 		}
@@ -344,14 +353,14 @@ public class ExcelGenerator {
 		return wb;
 	}
 	
-	private static void GenerateHeader(HSSFSheet targetsheet,HSSFWorkbook wb,ExcelSheetProp prop)
+	private static void GenerateHeader(Sheet targetsheet,Workbook wb,ExcelSheetProp prop)
 	{
-		HSSFRow row = targetsheet.createRow(0);
+		Row row = targetsheet.createRow(0);
 		for (int i = 0; i < prop.getHeaderName().length; i++) {
 			String values = prop.getHeaderName()[i];
 			if(values!=null&& !"".equals(values))
 			{
-				HSSFCell cel=row.createCell(i);
+				Cell cel=row.createCell(i);
 				
 				CellStyle cellStyle = ExcelBaseOper.getStyle(wb, 1, CellStyle.ALIGN_CENTER,null);
 				cellStyle.setAlignment(HSSFCellStyle.ALIGN_CENTER);
@@ -360,6 +369,7 @@ public class ExcelGenerator {
 			}
 		}
 	}
+
 
 	private static void GenerateHeader(Sheet targetsheet,Workbook wb,ExcelSheetProp prop,TableHeaderProp header)
 	{
@@ -410,6 +420,9 @@ public class ExcelGenerator {
 					createCellRegion(targetsheet, wb, header, header.getHeaderColumnList().get(i).get(j), headerRow, helper);
 				}
 			}
+		}else if(!prop.getColumnPropList().isEmpty()){
+			GenerateHeader(targetsheet,wb,prop,header);
+			tmpcount=prop.getStartRow();
 		}
 		for (int i = 0; i < header.getHeaderList().size(); i++) {
 			TableMergeRegion region=header.getHeaderList().get(i);
@@ -482,20 +495,10 @@ public class ExcelGenerator {
 				headerrow=header.getContainrow();
 			else
 				throw new Exception("Excel Header is null");
-			
-		//int startRow=prop.getStartRow()+header.getHeaderRows()-1;
-		//int startCol=prop.getStartCol()-1;
-		//int fieldCount=prop.getColumnPropList().size();
-		//String[] valueArr=new String[fieldCount];
-		//int[] fromPos=new int[fieldCount];
-		//boolean [] shallMergin=new boolean[fieldCount];
-		//ExcelCellStyleUtil util=ExcelCellStyleUtil.getInstance();
-		//for(int pos=0;pos<fieldCount;pos++)
-		//	fromPos[pos]=-1;
 		if(prop.getColumnPropList().size()!=0){
 			List<Map<String, String>> list=prop.getColumnList();
 			for(int i=0;i<list.size();i++){
-				processSingleLine(list.get(i),wb,targetsheet,i,prop,header,helper);
+				processSingleLine(list.get(i),wb,targetsheet,i+1,prop,header,helper);
 			}
 		}
 		}catch (Exception e) {
@@ -617,7 +620,7 @@ public class ExcelGenerator {
 		}
 		return false;
 	}
-	private static void FillColumns(HSSFWorkbook wb,HSSFSheet targetsheet,ExcelSheetProp prop)
+	private static void FillColumns(Workbook wb,Sheet targetsheet,ExcelSheetProp prop)
 	{
 		if(prop.getColumnList().size()!=0)
 		{
@@ -627,7 +630,7 @@ public class ExcelGenerator {
 			while(it.hasNext())
 			{
 				Map<String,String> map=it.next();
-				HSSFRow row1 = targetsheet.createRow(i+1);
+				Row row1 = targetsheet.createRow(i+1);
 				
 				for (int j = 0; j < prop.getColumnName().length; j++) {
 					String columname = prop.getColumnName()[j];
@@ -669,11 +672,11 @@ public class ExcelGenerator {
 		}
 		
 	}
-	
-	
-	private static void createCell(HSSFCellStyle cellStyle,HSSFRow row, int column, short align,String objvalue)
+
+
+	private static void createCell(CellStyle cellStyle,Row row, int column, short align,String objvalue)
     {
-        HSSFCell cell = row.createCell(column);
+        Cell cell = row.createCell(column);
         //cellStyle.setAlignment(align);
         cell.setCellStyle(cellStyle);
         //cell.setEncoding(HSSFCell.ENCODING_UTF_16);
@@ -682,17 +685,17 @@ public class ExcelGenerator {
         	value=objvalue.toString();
         cell.setCellValue(value);
     }
-	private static void createCell(HSSFCellStyle cellStyle, HSSFRow row, int column, short align,double value)
+	private static void createCell(CellStyle cellStyle, Row row, int column, short align,double value)
     {
-        HSSFCell cell = row.createCell(column);
+        Cell cell = row.createCell(column);
         cell.setCellStyle(cellStyle);
         cell.setCellValue(value);
     }
-	private static void createCellDate(HSSFCellStyle cellStyle, HSSFRow row, int column, short align,String value)
+	private static void createCellDate(CellStyle cellStyle, Row row, int column, short align,String value)
     {
-        HSSFCell cell = row.createCell(column);
+        Cell cell = row.createCell(column);
         //cellStyle.setAlignment(align);
-        //cellStyle.setDataFormat(HSSFDataFormat.getBuiltinFormat("yyyy-MM-dd hh:mm:ss"));
+        cellStyle.setDataFormat(HSSFDataFormat.getBuiltinFormat("yyyy-MM-dd hh:mm:ss"));
         cell.setCellStyle(cellStyle);
         cell.setCellValue(value);
     }

@@ -4,18 +4,6 @@ import java.util.concurrent.ConcurrentMap;
 
 import com.google.common.collect.MapMaker;
 
-/**
- * <p>Project:  common</p>
- *
- * <p>Description:TestMapMarker.java</p>
- *
- * <p>Copyright: Copyright (c) 2016 create at 2016年1月11日</p>
- *
- * <p>Company: TW_DEV</p>
- *
- * @author robinjim
- * @version 1.0
- */
 public class TestMapMarker {
 	public ConcurrentMap<String, Long> scriptMap=new MapMaker().initialCapacity(1000).weakKeys().makeMap();
 	public static void main(String[] args){
