@@ -37,7 +37,7 @@ public class TestLobHandler extends TestCase {
         lob.setName("test" + String.valueOf(System.currentTimeMillis()));
         BufferedReader reader = new BufferedReader(new InputStreamReader(getClass().getClassLoader().getResourceAsStream("LICENSE")));
         StringBuilder builder = new StringBuilder();
-        String line = null;
+        String line;
         while ((line = reader.readLine()) != null) {
             builder.append(line).append("\n");
         }

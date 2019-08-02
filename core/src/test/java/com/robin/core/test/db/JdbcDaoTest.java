@@ -60,7 +60,6 @@ public class JdbcDaoTest extends TestCase {
     @Test
     public void testJpaQuery() {
         TestJpaModelService service = (TestJpaModelService) SpringContextHolder.getBean(TestJpaModelService.class);
-        //set dataSource
         List<TestJPaModel> list = service.queryByField("csId", BaseObject.OPER_EQ, 1);
         Assert.assertNotNull(list);
     }

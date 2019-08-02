@@ -54,7 +54,6 @@ public class TestResourceGen {
 			colmeta.setResourceCfgMap(hdfsparam);
 			colmeta.setPath("/testdata/test1.gz");
 			colmeta.setEncode("UTF-8");
-			//LocalResourceAccessUtils util=new LocalResourceAccessUtils();
 			BufferedWriter writer=util.getOutResourceByWriter(colmeta);
 			AbstractFileWriter jwriter=TextFileWriterFactory.getFileWriterByType(Const.FILETYPE_JSON, colmeta, writer);
 			System.out.println(new Date());

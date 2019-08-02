@@ -8,7 +8,7 @@
 	<version>1.0-SNAPSHOT</version>
 	<name>frame</name>
 	<description>Simple Java Frame.</description>
-	<url>https://github.com/robinhood-jim/JavaFrame</url>
+	<url>https://github.com/robinhood-jim/JavaFrameWork</url>
 
 	<issueManagement>
 		<system>Github Issue</system>

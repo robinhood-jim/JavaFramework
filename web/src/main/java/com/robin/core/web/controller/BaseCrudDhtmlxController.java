@@ -20,6 +20,7 @@ import com.robin.core.base.service.BaseAnnotationJdbcService;
 import com.robin.core.query.util.PageQuery;
 import com.robin.core.web.codeset.Code;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -28,7 +29,7 @@ import java.util.Map;
 /**
  *use Chinese Alter msg.Later will change to i18n
  */
-public abstract class BaseCrudDhtmlxController<O extends BaseObject,S extends BaseAnnotationJdbcService> extends BaseCrudController<O,S> {
+public abstract class BaseCrudDhtmlxController<O extends BaseObject,P extends Serializable,S extends BaseAnnotationJdbcService> extends BaseCrudController<O,P,S> {
     public Map<String, Object> wrapYesNoComobo(boolean insertNullVal)
     {
         Map<String, Object> map = new HashMap();
