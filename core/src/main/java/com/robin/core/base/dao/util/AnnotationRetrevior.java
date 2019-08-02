@@ -86,13 +86,13 @@ public class AnnotationRetrevior {
             tableMap.put("jdbcDao", entity.jdbcDao());
             return tableMap;
         } else {
-            flag=clazz.isAnnotationPresent(Entity.class);
-            if(flag){
-                Table table =clazz.getAnnotation(Table.class);
+            flag = clazz.isAnnotationPresent(Entity.class);
+            if (flag) {
+                Table table = clazz.getAnnotation(Table.class);
                 tableMap.put("tableName", table.name());
-                tableMap.put("schema",table.schema());
+                tableMap.put("schema", table.schema());
                 return tableMap;
-            }else
+            } else
                 throw new DAOException("must using MappingEnity or JPA annotation");
         }
     }
@@ -137,11 +137,11 @@ public class AnnotationRetrevior {
             MappingField mapfield = field.getAnnotation(MappingField.class);
             String name = field.getName();
             map.put("name", name);
-            if(mapfield.precise()!=0)
+            if (mapfield.precise() != 0)
                 map.put("precise", mapfield.precise());
-            if(mapfield.scale()!=0)
+            if (mapfield.scale() != 0)
                 map.put("scale", mapfield.scale());
-            if(mapfield.length()!=0)
+            if (mapfield.length() != 0)
                 map.put("length", mapfield.length());
             name = name.substring(0, 1).toUpperCase() + name.substring(1);
             Method method = obj.getClass().getMethod("get" + name, null);
@@ -195,23 +195,19 @@ public class AnnotationRetrevior {
                     }
                 }
             }
-            if (needValidate) {
-                if (mapfield != null) {
-                    boolean required = mapfield.required();
-                    if (value == null && required && needValidate) {
-                        throw new DAOException("column " + name + " must not be null!");
-                    }
-                    if(map.containsKey("scale") || map.containsKey("precise")){
-                        if(value!=null && !NumberUtils.isNumber(value.toString())){
-                            throw new DAOException("column " + name + " is not number!");
-                        }
-                    }
-                    if(map.containsKey("length")){
-                        if(value!=null && value.toString().length()>mapfield.length()){
-                            throw new DAOException("column " + name + " is large than max length="+mapfield.length());
-                        }
-                    }
+            if (needValidate && mapfield != null) {
+
+                boolean required = mapfield.required();
+                if (value == null && required && needValidate) {
+                    throw new DAOException("column " + name + " must not be null!");
                 }
+                if ((map.containsKey("scale") || map.containsKey("precise")) && value != null && !NumberUtils.isNumber(value.toString())) {
+                    throw new DAOException("column " + name + " is not number!");
+                }
+                if (map.containsKey("length") && value != null && value.toString().length() > mapfield.length()) {
+                    throw new DAOException("column " + name + " is large than max length=" + mapfield.length());
+                }
+
             }
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -282,14 +278,8 @@ public class AnnotationRetrevior {
                 map.put("datatype", "timestamp");
             }
 
-
-            if (needValidate) {
-                if (mapfield != null) {
-                    boolean required = !mapfield.nullable();
-                    if (value == null && required && needValidate) {
-                        throw new DAOException("column " + property + " must not be null!");
-                    }
-                }
+            if (mapfield != null && !mapfield.nullable() && value == null && needValidate) {
+                throw new DAOException("column " + property + " must not be null!");
             }
         } catch (Exception ex) {
             ex.printStackTrace();

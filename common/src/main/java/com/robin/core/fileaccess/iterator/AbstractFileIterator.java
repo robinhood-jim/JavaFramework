@@ -45,10 +45,8 @@ public abstract class AbstractFileIterator implements Iterator<Map<String,Object
 		this.instream=stream;
 	}
 	public void initReader() throws UnsupportedEncodingException{
-		if (reader == null) {
-			if (instream != null) {
-				reader = new BufferedReader(new InputStreamReader(instream, colmeta.getEncode()));
-			}
+		if (reader == null && instream!=null) {
+			reader = new BufferedReader(new InputStreamReader(instream, colmeta.getEncode()));
 		}
 	}
 
