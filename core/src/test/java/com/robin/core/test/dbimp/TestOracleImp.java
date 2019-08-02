@@ -1,4 +1,4 @@
-package com.robin.core.test;
+package com.robin.core.test.dbimp;
 
 import java.util.List;
 
@@ -11,18 +11,6 @@ import com.robin.core.base.datameta.DataBaseUtil;
 import com.robin.core.dbimp.DataBaseImportParam;
 import com.robin.core.dbimp.OracleDataBaseImportor;
 
-/**
- * <p>Project:  core</p>
- *
- * <p>Description:TestOracleImp.java</p>
- *
- * <p>Copyright: Copyright (c) 2015 create at 2015年12月23日</p>
- *
- * <p>Company: TW_DEV</p>
- *
- * @author robinjim
- * @version 1.0
- */
 public class TestOracleImp {
 	
 	public static void main(String[] args) {

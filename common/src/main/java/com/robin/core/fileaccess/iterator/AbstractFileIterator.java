@@ -16,7 +16,7 @@
 package com.robin.core.fileaccess.iterator;
 
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
-import com.robin.core.fileaccess.meta.DataCollectionMeta.DataSetColumnMeta;
+import com.robin.core.fileaccess.meta.DataSetColumnMeta;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

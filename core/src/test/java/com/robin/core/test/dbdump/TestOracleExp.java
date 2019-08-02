@@ -1,4 +1,4 @@
-package com.robin.core.test;
+package com.robin.core.test.dbdump;
 
 import com.robin.core.base.datameta.BaseDataBaseMeta;
 import com.robin.core.base.datameta.DataBaseMetaFactory;

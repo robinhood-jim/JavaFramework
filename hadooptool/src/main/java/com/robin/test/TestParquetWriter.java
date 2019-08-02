@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.FileOutputStream;
 import java.sql.Connection;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Map;
@@ -57,9 +58,8 @@ public class TestParquetWriter {
                 public void init() {
 
                 }
-                @Override
-                public boolean executeAddtionalOperation(Map<String, Object> map,
-                                                         String[] columnName, String[] typeName, String[] className)
+                public boolean executeAdditionalOperation(Map<String, Object> map,
+                                                         ResultSetMetaData rsmd)
                         throws SQLException {
                     try{
                         Timestamp t=(Timestamp) map.get("predict_time");

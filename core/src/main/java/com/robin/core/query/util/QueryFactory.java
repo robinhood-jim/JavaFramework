@@ -64,7 +64,7 @@ public class QueryFactory implements InitializingBean {
                 throw new Exception("no query XML found!");
             }
             File[] files = file.listFiles();
-            System.out.println("file size=" + files.length);
+            log.debug("file size=" + files.length);
             for (int i = 0; i < files.length; i++) {
                 File subfile = files[i];
                 if (subfile.getName().endsWith("xml"))

@@ -1,6 +1,7 @@
 package com.robin.core.fileaccess.writer;
 
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
+import com.robin.core.fileaccess.meta.DataSetColumnMeta;
 import org.apache.avro.Schema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,7 +32,7 @@ public abstract class AbstractStreamWriter implements IResourceWriter{
     public AbstractStreamWriter(DataCollectionMeta colmeta){
         this.colmeta=colmeta;
 
-        for (DataCollectionMeta.DataSetColumnMeta meta:colmeta.getColumnList()) {
+        for (DataSetColumnMeta meta:colmeta.getColumnList()) {
             columnList.add(meta.getColumnName());
             columnMap.put(meta.getColumnName(), null);
         }

@@ -101,7 +101,7 @@ public class CommJdbcUtil {
             sumSQL = sqlGen.generateCountSql(querySQL);
         else
             sumSQL = sqlGen.getCountSqlByConfig(qs, pageQuery);
-        if (logger.isInfoEnabled()) logger.info("countSql" + sumSQL);
+        if (logger.isInfoEnabled()) logger.info("countSql: " + sumSQL);
 
         int pageSize = 0;
         //set pageSize by PageQuery Object

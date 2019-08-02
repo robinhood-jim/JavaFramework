@@ -12,7 +12,7 @@
 
 	<issueManagement>
 		<system>Github Issue</system>
-		<url>https://github.com/robinhood-jim/JavaFrame/issues</url>
+		<url>https://github.com/robinhood-jim/JavaFrameWork/issues</url>
 	</issueManagement>
 	<licenses>
 		<license>
@@ -109,7 +109,6 @@
 		<lzocore.version>1.0.4</lzocore.version>
 		<snappy.version>1.1.2.6</snappy.version>
 		<xz.version>1.6</xz.version>
-
 	</properties>
 
 	<repositories>

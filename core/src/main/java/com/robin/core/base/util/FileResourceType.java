@@ -1,6 +1,6 @@
 package com.robin.core.base.util;
 
-import com.robin.core.fileaccess.meta.DataCollectionMeta;
+import com.robin.core.fileaccess.meta.DataSetColumnMeta;
 
 import java.util.List;
 
@@ -23,7 +23,7 @@ public class FileResourceType {
     private String path;
     private boolean hasHeader=false;
     private List<String> columns;
-    private List<DataCollectionMeta.DataSetColumnMeta> columnMetas;
+    private List<DataSetColumnMeta> columnMetas;
 
     public String getSourceType() {
         return sourceType;
@@ -73,11 +73,11 @@ public class FileResourceType {
         this.columns = columns;
     }
 
-    public List<DataCollectionMeta.DataSetColumnMeta> getColumnMetas() {
+    public List<DataSetColumnMeta> getColumnMetas() {
         return columnMetas;
     }
 
-    public void setColumnMetas(List<DataCollectionMeta.DataSetColumnMeta> columnMetas) {
+    public void setColumnMetas(List<DataSetColumnMeta> columnMetas) {
         this.columnMetas = columnMetas;
     }
 }
