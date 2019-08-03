@@ -25,19 +25,20 @@ import org.springframework.beans.factory.InitializingBean;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.Serializable;
+import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 /**
  *Single Table Mapping Background Controller
  */
 public abstract class BaseCrudController<O extends BaseObject,P extends Serializable,S extends BaseAnnotationJdbcService> extends BaseContorller implements InitializingBean {
     private Class<O> objectType;
+    private Class<P> pkType;
     private Class<S> serviceType;
     protected S service;
+    protected Method valueOfMethod;
 
     public BaseCrudController()
     {
@@ -56,7 +57,13 @@ public abstract class BaseCrudController<O extends BaseObject,P extends Serializ
             }
         }
         this.objectType = ((Class)parametrizedType.getActualTypeArguments()[0]);
-        this.serviceType = ((Class)parametrizedType.getActualTypeArguments()[1]);
+        this.pkType=((Class)parametrizedType.getActualTypeArguments()[1]);
+        this.serviceType = ((Class)parametrizedType.getActualTypeArguments()[2]);
+        try {
+            valueOfMethod = this.pkType.getMethod("valueOf", String.class);
+        }catch (Exception ex){
+            log.error("{}",ex);
+        }
     }
 
     /**
@@ -297,6 +304,25 @@ public abstract class BaseCrudController<O extends BaseObject,P extends Serializ
             ex.printStackTrace();
         }
         return query;
+    }
+    protected P[] parseId(String[] ids) throws Exception {
+        if (ids == null || ids.length == 0) {
+            throw new Exception("ID not exists!");
+        }
+        List<P> list=new ArrayList<P>();
+        try {
+            for (int i = 0; i < ids.length; i++) {
+                P p=pkType.newInstance();
+                valueOfMethod.invoke(p,ids[i]);
+                list.add(p);
+            }
+        } catch (Exception ex) {
+            log.error("{}",ex);
+        }
+        if(list.isEmpty()){
+            return null;
+        }else
+            return (P[])list.toArray();
     }
 
 }

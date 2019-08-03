@@ -2,79 +2,50 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
-		<artifactId>frame</artifactId>
+		<artifactId>example</artifactId>
 		<groupId>com.robin</groupId>
 		<version>1.0-SNAPSHOT</version>
 	</parent>
-	<artifactId>hadooptool</artifactId>
+	<artifactId>boot-example</artifactId>
 	<packaging>jar</packaging>
 
-	<name>hadooptool</name>
+	<name>boot-example</name>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
 	<dependencies>
+
 		<dependency>
 			<groupId>com.robin</groupId>
-			<artifactId>common</artifactId>
+			<artifactId>base-example</artifactId>
 			<version>${frm.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>com.robin</groupId>
-			<artifactId>core</artifactId>
-			<version>${frm.version}</version>
-		</dependency>
-	   <dependency>
-			  <groupId>org.apache.hadoop</groupId>
-			  <artifactId>hadoop-mapreduce-client-core</artifactId>
-		</dependency>
-		<dependency>
-			  <groupId>org.apache.hadoop</groupId>
-			  <artifactId>hadoop-mapreduce-client-common</artifactId>
-			</dependency>
-        <dependency>
-            <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-common</artifactId>
-            
-        </dependency>
-        <dependency>
-            <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-hdfs</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-auth</artifactId>
-            
-        </dependency>
-        
-        <dependency>
-			<groupId>org.apache.hbase</groupId>
-			<artifactId>hbase-client</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.hbase</groupId>
-			<artifactId>hbase-common</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.hbase</groupId>
-			<artifactId>hbase-server</artifactId>
-		</dependency>		
-		<!--<dependency>
-			<groupId>org.apache.phoenix</groupId>
-			<artifactId>phoenix-core</artifactId>
-		</dependency>-->
-		<dependency>
-			<groupId>org.apache.hive</groupId>
-			<artifactId>hive-jdbc</artifactId>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+			<version>${spring.boot.version}</version>
 			<exclusions>
 				<exclusion>
-					<groupId>org.apache.hive</groupId>
-					<artifactId>hive-exec</artifactId>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-logging</artifactId>
+				</exclusion>
+				<exclusion>
+					<artifactId>ch.qos.logback</artifactId>
+					<groupId>logback-classic</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>ch.qos.logback</artifactId>
+					<groupId>logback-core</groupId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.apache.zookeeper</groupId>
+					<artifactId>zookeeper</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
+	  
 		
 		<dependency>
 			<groupId>org.slf4j</groupId>
@@ -153,10 +124,7 @@
 			<groupId>org.apache.avro</groupId>
 			<artifactId>avro</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>com.datastax.cassandra</groupId>
-			<artifactId>cassandra-driver-core</artifactId>
-		</dependency>
+	
 	</dependencies>
 	
 
