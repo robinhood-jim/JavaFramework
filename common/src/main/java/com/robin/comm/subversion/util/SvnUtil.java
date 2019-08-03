@@ -59,15 +59,7 @@ public class SvnUtil {
 	        clientManager = SVNClientManager.newInstance(options,  
 	                authManager);  
 	    }  
-	 /** 
-	     * Make directory in svn repository 
-	     * @param clientManager 
-	     * @param url  
-	     *          eg: http://svn.ambow.com/wlpt/bsp/trunk  
-	     * @param commitMessage 
-	     * @return 
-	     * @throws SVNException 
-	     */  
+
 	    public  SVNCommitInfo makeDirectory(SVNURL url, String commitMessage) {  
 	        try {  
 	            return clientManager.getCommitClient().doMkDir(  
@@ -77,20 +69,7 @@ public class SvnUtil {
 	        }  
 	        return null;  
 	    }  
-	    /** 
-	     * Imports an unversioned directory into a repository location denoted by a 
-	     *  destination URL 
-	     * @param clientManager 
-	     * @param localPath 
-	     *          a local unversioned directory or singal file that will be imported into a  
-	     *          repository; 
-	     * @param dstURL 
-	     *          a repository location where the local unversioned directory/file will be  
-	     *          imported into 
-	     * @param commitMessage 
-	     * @param isRecursive 
-	     * @return 
-	     */  
+
 	    public SVNCommitInfo importDirectory(File localPath, String commitMessage,  
 	            boolean isRecursive) {  
 	        try {  
@@ -102,13 +81,7 @@ public class SvnUtil {
 	        }  
 	        return null;  
 	    }  
-	    /** 
-	     * Puts directories and files under version control 
-	     * @param clientManager 
-	     *          SVNClientManager 
-	     * @param wcPath  
-	     *          work copy path 
-	     */  
+
 	    public void addEntry(File wcPath) {  
 	        try {  
 	            clientManager.getWCClient().doAdd(new File[] { wcPath },true,false, false, SVNDepth.INFINITY, false, false,true);  
@@ -116,18 +89,7 @@ public class SvnUtil {
 	            logger.error(e.getMessage(),e.getErrorMessage());  
 	        }  
 	    }  
-	    /** 
-	     * Collects status information on a single Working Copy item 
-	     * @param clientManager 
-	     * @param wcPath 
-	     *          local item's path 
-	     * @param remote 
-	     *          true to check up the status of the item in the repository,  
-	     *          that will tell if the local item is out-of-date (like '-u' option in the SVN client's  
-	     *          'svn status' command), otherwise false 
-	     * @return 
-	     * @throws SVNException 
-	     */  
+
 	    public SVNStatus showStatus(File wcPath, boolean remote) {  
 	        SVNStatus status = null;  
 	        try {  
@@ -137,18 +99,7 @@ public class SvnUtil {
 	        }  
 	        return status;  
 	    }  
-	    /** 
-	     * Commit work copy's change to svn 
-	     * @param clientManager 
-	     * @param wcPath  
-	     *          working copy paths which changes are to be committed 
-	     * @param keepLocks 
-	     *          whether to unlock or not files in the repository 
-	     * @param commitMessage 
-	     *          commit log message 
-	     * @return 
-	     * @throws SVNException 
-	     */  
+
 	    public SVNCommitInfo commit(File wcPath, boolean keepLocks, String commitMessage) {  
 	        try {  
 	            return clientManager.getCommitClient().doCommit(  
@@ -165,18 +116,7 @@ public class SvnUtil {
 		public void setReposUrl(SVNURL reposUrl) {
 			this.reposUrl = reposUrl;
 		}  
-		/** 
-	     * Updates a working copy (brings changes from the repository into the working copy). 
-	     * @param clientManager 
-	     * @param wcPath 
-	     *          working copy path 
-	     * @param updateToRevision 
-	     *          revision to update to 
-	     * @param depth 
-	     *        
-	     * @return 
-	     * @throws SVNException 
-	     */  
+
 	    public long update(File wcPath,SVNRevision updateToRevision, SVNDepth depth) {  
 	        SVNUpdateClient updateClient = clientManager.getUpdateClient();  
 	  
@@ -196,20 +136,7 @@ public class SvnUtil {
 	        return 0;  
 	    }  
 	      
-	    /** 
-	     * recursively checks out a working copy from url into wcDir 
-	     * @param clientManager 
-	     * @param url 
-	     *          a repository location from where a Working Copy will be checked out 
-	     * @param revision 
-	     *          the desired revision of the Working Copy to be checked out 
-	     * @param destPath 
-	     *          the local path where the Working Copy will be placed 
-	     * @param depth 
-	     *          checkout����ȣ�Ŀ¼����Ŀ¼���ļ� 
-	     * @return 
-	     * @throws SVNException 
-	     */  
+
 	    public long checkout(SVNURL url,SVNRevision revision, File destPath, SVNDepth depth) {  
 	  
 	        SVNUpdateClient updateClient = clientManager.getUpdateClient();  
@@ -228,11 +155,7 @@ public class SvnUtil {
 	        return 0;  
 	    }  
 	      
-	    /** 
-	     * ȷ��path�Ƿ���һ�������ռ� 
-	     * @param path 
-	     * @return 
-	     */  
+
 	    public boolean isWorkingCopy(File path){  
 	        if(!path.exists()){  
 	            logger.warn("'" + path + "' not exist!");  
@@ -248,11 +171,7 @@ public class SvnUtil {
 	        return true;  
 	    }  
 	      
-	    /** 
-	     * ȷ��һ��URL��SVN���Ƿ���� 
-	     * @param url 
-	     * @return 
-	     */  
+
 	    public static boolean isURLExist(SVNURL url,String username,String password){  
 	        try {  
 	            SVNRepository svnRepository = SVNRepositoryFactory.create(url);  
