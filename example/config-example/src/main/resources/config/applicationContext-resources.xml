@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"  
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+	<bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="locations">
+            <list>
+                <value>classpath:application.properties</value>
+            </list>
+        </property>
+    </bean>
+    
+    <!-- JNDI DataSource for J2EE environments -->
+    <!--  
+       <bean id="dataSource" class="org.springframework.jndi.JndiObjectFactoryBean">
+          <property name="jndiName"><value>java:comp/env/jdbc/dataAppPlatfrom</value></property>
+       </bean>
+    --> 
+      
+    <!-- JDBC DataSource -->
+   <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+        <property name="driverClassName" value="${jdbc.driver}"/>
+      <property name="url" value="${jdbc.url}"/>
+        <property name="username" value="${jdbc.username}"/>
+        <property name="password" value="${jdbc.password}"/>
+        <property name="maxActive" value="20"/>
+        <property name="maxIdle" value="5"/>
+        <property name="maxWait" value="1000"/>
+        <property name="defaultAutoCommit" value="true"/>
+    </bean>
+     <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">                                        
+        <property name="dataSource" ref="dataSource"/>                                        
+    </bean>   
+    
+  
+    <bean id="sqlGen" class="com.robin.core.sql.util.MysqlSqlGen" autowire="byName"></bean>
+    <bean id="queryFactory" class="com.robin.core.query.util.QueryFactory" autowire="byName">
+    	<property name="xmlConfigPath" value="classpath:config/queryConfig" />
+    </bean>
+	<bean id="springInit" class="com.robin.core.base.spring.SpringContextHolder"  ></bean>
+	<context:component-scan base-package="com.robin" />
+	<bean id="jdbcDao" class="com.robin.core.base.dao.JdbcDao" autowire="byName" />
+</beans>
