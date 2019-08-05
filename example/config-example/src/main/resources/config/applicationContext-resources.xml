@@ -1,8 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:context="http://www.springframework.org/schema/context"  
-	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:cache="http://www.springframework.org/schema/cache"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:c="http://www.springframework.org/schema/c"
+       xsi:schemaLocation="http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/cache http://www.springframework.org/schema/cache/spring-cache.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
 	<bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
         <property name="locations">
             <list>
@@ -10,13 +19,7 @@
             </list>
         </property>
     </bean>
-    
-    <!-- JNDI DataSource for J2EE environments -->
-    <!--  
-       <bean id="dataSource" class="org.springframework.jndi.JndiObjectFactoryBean">
-          <property name="jndiName"><value>java:comp/env/jdbc/dataAppPlatfrom</value></property>
-       </bean>
-    --> 
+
       
     <!-- JDBC DataSource -->
    <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
@@ -41,4 +44,28 @@
 	<bean id="springInit" class="com.robin.core.base.spring.SpringContextHolder"  ></bean>
 	<context:component-scan base-package="com.robin" />
 	<bean id="jdbcDao" class="com.robin.core.base.dao.JdbcDao" autowire="byName" />
+    <!--Cache -->
+    <cache:annotation-driven cache-manager="cacheManager" />
+
+    <bean id="lettuceConnectionFactory" class="org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory">
+        <constructor-arg index="0" value="172.16.101.139" />
+        <constructor-arg index="1" ref="port" />
+    </bean>
+    <bean id="redisTemplate" class="org.springframework.data.redis.core.RedisTemplate">
+        <property name="connectionFactory" ref="lettuceConnectionFactory" />
+    </bean>
+    <bean id="ttl" class=" java.time.Duration" c:seconds="60" c:nanos="0"></bean>
+    <bean id="port" class="java.lang.Integer" >
+        <constructor-arg value="6379" />
+    </bean>
+    <bean id="cacheManager" class="org.springframework.data.redis.cache.RedisCacheManager" >
+        <constructor-arg index="0">
+            <ref bean="redisTemplate" />
+        </constructor-arg>
+    </bean>
+    <bean id="messageSource" class="org.springframework.context.support.ResourceBundleMessageSource"  lazy-init="false">
+        <property name="basename" value="messages" />
+        <property name="defaultEncoding" value="UTF-8" />
+        <property name="useCodeAsDefaultMessage" value="true" />
+    </bean>
 </beans>

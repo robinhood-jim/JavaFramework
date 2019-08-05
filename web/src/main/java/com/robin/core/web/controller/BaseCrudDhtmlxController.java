@@ -23,6 +23,7 @@ import com.robin.core.query.util.PageQuery;
 import com.robin.core.query.util.QueryFactory;
 import com.robin.core.query.util.QueryString;
 import com.robin.core.web.codeset.Code;
+import com.robin.core.web.international.Translator;
 import com.robin.core.web.util.CodeSetUtil;
 
 import javax.servlet.http.HttpServletRequest;
@@ -36,24 +37,7 @@ import java.util.Map;
  *use Chinese Alter msg.Later will change to i18n
  */
 public abstract class BaseCrudDhtmlxController<O extends BaseObject,P extends Serializable,S extends BaseAnnotationJdbcService> extends BaseCrudController<O,P,S> {
-    public Map<String, Object> wrapYesNoComobo(boolean insertNullVal)
-    {
-        Map<String, Object> map = new HashMap();
-        List<Map<String, Object>> list = new ArrayList();
-        if (insertNullVal) {
-            insertNullSelect(list);
-        }
-        Map<String, Object> tmap = new HashMap();
-        tmap.put("value", "1");
-        tmap.put("text", "是");
-        list.add(tmap);
-        Map<String, Object> tmap1 = new HashMap();
-        tmap.put("value", "0");
-        tmap.put("text", "否");
-        list.add(tmap1);
-        map.put("options", list);
-        return map;
-    }
+
 
     public Map<String, Object> wrapComobo(List<Map<String, Object>> rsList, String keyColumn, String valueColumn, boolean insertNullVal)
     {
@@ -94,13 +78,7 @@ public abstract class BaseCrudDhtmlxController<O extends BaseObject,P extends Se
         return map;
     }
 
-    public void insertNullSelect(List<Map<String, Object>> list)
-    {
-        Map<String, Object> tmap = new HashMap();
-        tmap.put("value", "");
-        tmap.put("text", "--请选择--");
-        list.add(tmap);
-    }
+
 
     public void wrapStatusBar(PageQuery query)
     {
@@ -202,7 +180,7 @@ public abstract class BaseCrudDhtmlxController<O extends BaseObject,P extends Se
     private Map<String, String> addNullSelection() {
         Map<String, String> map = new HashMap<String, String>();
         map.put("value", "");
-        map.put("text", "--请选择--");
+        map.put("text", Translator.toLocale("message.NullDisplay"));
         return map;
     }
     public Map<String, Object> wrapDhtmlxGridOutput(PageQuery query) {

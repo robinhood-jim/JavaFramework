@@ -45,7 +45,7 @@ public abstract class BaseObject implements Serializable,Cloneable{
     }
 	/**
 	 * Make dirty to update
-	 * @param keySet
+	 * @param key
 	 */
 	public void AddDirtyColumn(String key){
 		dirtyColumnList.add(key);	

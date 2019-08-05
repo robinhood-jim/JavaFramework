@@ -11,15 +11,7 @@ import java.util.Map;
  *
  */
 public class ConditionBuilder {
-	/**
-	 * 锟斤拷锟斤拷Bean1锟斤拷锟斤拷锟斤拷锟斤拷缘锟紹ean2锟斤拷锟斤拷 只锟斤拷锟斤拷Methods锟斤拷锟节碉拷锟斤拷锟斤拷锟斤拷锟?
-	 * 锟斤拷锟斤拷锟斤拷set锟斤拷锟斤拷锟叫讹拷值锟斤拷锟斤拷
-	 * @param obj1 锟斤拷锟斤拷源锟斤拷锟斤拷
-	 * @param obj2 锟斤拷锟斤拷目锟斤拷锟斤拷锟?
-	 * @param emtpy 0 Null锟斤拷锟絅ull全锟斤拷锟斤拷锟狡ｏ拷1 锟斤拷锟斤拷锟狡凤拷锟斤拷值为Null锟斤拷锟斤拷锟斤拷 2 锟斤拷锟斤拷锟狡凤拷锟斤拷值为Null锟斤拷""锟斤拷0锟斤拷0.0锟斤拷锟斤拷List,锟斤拷Map锟斤拷锟斤拷锟斤拷 
-	 * @param methods 锟斤拷要锟斤拷锟狡碉拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷椋拷锟斤拷诖硕锟斤拷锟斤拷锟斤拷械锟斤拷锟斤拷锟斤拷虿槐锟斤拷锟斤拷疲锟斤拷锟斤拷硕锟斤拷锟轿拷锟斤拷锟矫慈拷锟斤拷锟斤拷锟?put("UserName",Condidtion.EQUALS),put("UserPasswd",Condidtion.LIKE)
-	 * @throws Exception
-	 */
+
 	public static ConditionList build(Object obj1,int empty,Map methods)
 		throws Exception {
 		if(obj1 == null){

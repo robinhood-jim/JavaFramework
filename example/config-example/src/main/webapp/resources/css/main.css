@@ -1,0 +1,400 @@
+body {
+	background-color: #f8f8f8;
+	cursor: default;
+	scroll: none;
+	border: 0;
+	margin: 0;
+	font: 12px "Microsoft YaHei",Arial, Verdana, Geneva, sans-serif;
+	color: #333;
+}
+form {
+	margin: 0;
+}
+.special-padding {
+	padding: 3px 2px;
+}
+.textC {
+	text-align: center !important;
+}
+.textR {
+	text-align: right !important;
+}
+.textL {
+	text-align: left !important;
+}
+.textRT {
+	text-align: right !important;
+	
+	text-valign: top !important;
+}
+.btnStyle {
+	font-size: 12px;
+	color: #000;
+	text-decoration: none;
+	cursor: pointer;
+	display: inline-block;
+	background: url(btnBg.gif) no-repeat right top;
+	height: 23px;
+	line-height: 23px;
+	text-align: center;
+	padding-right: 20px;
+}
+.btnStyle strong {
+	font-weight: normal;
+	background: url(btnBg.gif) no-repeat left top;
+	display: inline-block;
+	padding-left: 20px;
+	letter-spacing: 1px;
+}
+.btnStyle:hover {
+	background-position: right -23px;
+}
+.btnStyle:hover strong {
+	background-position: left -23px;
+}
+/* --------------formTable S------------------ */
+.formTable {
+	width: 100%;
+	border: 1px solid #becfe1;
+	border-bottom: none;
+	border-right: none;
+	table-layout: fixed;
+	background: #becfe1;
+}
+.formTable tr {
+	height: 26px;
+	line-height: 26px;
+	text-align: left;
+}
+.formTable td {
+	background: #d6e8fe;
+	border-left: 1px solid #e7f1fa;
+	border-top: 1px solid #edf5fe;
+	border-bottom: 1px solid #becfe1;
+	border-right: 1px solid #becfe1;
+	padding: 0 7px 0 2px;
+	text-align: right;
+	line-height:1.2em;
+	line-height:1.2em;
+}
+.formTable th {
+	background: #fafcfe url(table-th-bg.gif) repeat-x bottom;
+	border-right: 1px solid #fafcfe;
+	border-top: 1px solid #fff;
+	height: 28px;
+	line-height: 28px;
+	padding-left: 5px;
+}
+.formTable input, .formTable select, .formTable textarea {
+	width: 100%;
+	border: 1px solid #b1b1b1;
+	border-right: 1px solid #dfdfdf;
+	border-bottom: 1px solid #dfdfdf;
+}
+.formTable textarea {
+	overflow: auto;
+	height:80px;
+}
+.formTable .checkbox, .formTable .radio {
+	width: auto;
+	border: none;
+}
+.formTable .sel {
+	padding: 0 2px 0 2px;
+}
+.formTable td table {
+	border: none;
+	width: 100%;
+	height: 100%;
+	padding: 0;
+	margin: 0;
+	background: red;
+}
+.formTable td table td {
+	border: none;
+	padding: 0;
+}
+.formTable .btnTr td {
+	height: 34px;
+	background: #d6e8fe url(formTable-btn-bg.gif) repeat-x bottom;
+}
+.hover {
+	background: #fff0c8 url(listTable-hover-bg.gif) repeat-x bottom  !important;
+}
+.formFiledset {
+	padding:1px 0 0 0;
+	border:1px solid #becfe1;
+	margin:5px 0
+}
+.formLegend {
+	padding:0 5px;
+	margin-left:8px;
+}
+.fieldsetBorder {
+	border:1px solid #edf5fe;
+	padding:2px 3px;
+	border-top:none;
+}
+/* --------------formTable E------------------ */
+.sbuBtnStyle, .sbuBtnStyle:hover, .sbuBtnStyle:hover strong {
+	display: inline-block;
+	height: 23px;
+	line-height: 23px;
+}
+.sbuBtnStyle {
+	font-size: 12px;
+	text-decoration: none;
+	cursor: pointer;
+	color: #103f79;
+	padding: 0 8px;
+}
+.sbuBtnStyle:hover {
+	background: url(btnBg.gif) no-repeat left -98px;
+	padding: 0;
+	padding-left: 8px;
+}
+.sbuBtnStyle:hover strong {
+	background: url(btnBg.gif) no-repeat right -76px;
+	padding-right: 8px;
+	color: #ec8500
+}
+
+.sbuBtnStyle strong span {
+	background: url(../images/icon_list.gif) no-repeat;
+	width: 18px;
+	height: 16px;
+	float: left;
+	overflow: hidden;
+	margin-top: 3px;
+}
+.sbuBtnStyle strong span.addIcon {
+	background-position: left 2px;
+}
+.sbuBtnStyle strong span.subIcon {
+	background-position: left -146px;
+}
+.sbuBtnStyle strong span.delIcon {
+	background-position: left -198px;
+}
+.sbuBtnStyle strong span.stopIcon {
+	background-position: left -48px;
+}
+.sbuBtnStyle strong span.playIcon {
+	background-position: 3px -98px;
+}
+.sbuBtnStyle strong span.refIcon {
+	background-position: left -248px;
+}
+.sbuBtnStyle strong span.assignIcon {
+	background-position: -100px -247px;
+}
+.sbuBtnStyle strong span.verifyIcon {
+	background-position: left -283px;
+}
+.sbuBtnStyle strong span.resetIcon {
+	background-position: -100px -282px;
+}
+.sbuBtnStyle strong span.openIcon {
+	background-position: -97px -318px;
+}
+.sbuBtnStyle strong span.saveIcon {
+	background-position: left -318px;
+}
+
+.gap8 {
+	height: 12px;
+	line-height: 0;
+	font-size: 0;
+	background: url(gap12.gif) repeat-x center -1px;
+}
+/* --------------listTable S------------------ */
+.listTable {
+	width: 100%;
+	border: 1px solid #d9d9d9;
+	border-bottom: none;
+	table-layout: fixed;
+	background: #fff;
+}
+.listTable tr {
+	height: 23px;
+	line-height: 23px;
+}
+.listTable .trBg { 
+	background: #f7f7f7;
+}
+.selectItem {
+	background: #fff0c8 url(listTable-hover-bg.gif) repeat-x bottom  !important;
+}
+.listTable tr:hover {
+	background: #ffdf9b url(listTable-hover-bg.gif) repeat-x;
+	background-position: center top;
+*  background-position: center bottom;
+}
+.listTable th {
+	background: #fafcfe url(table-th-bg.gif) repeat-x bottom;
+	border-right: 1px solid #e2e2e2;
+	border-left: 1px solid #fff;
+	border-bottom: 1px solid #d9d9d9;
+	border-top: 1px solid #fff;
+	height: 23px;
+	line-height: 23px;
+}
+.listTable td {
+	padding: 0px 5px 0px 5px;
+	border-top: 1px solid #fff;
+	border-bottom: 1px solid #ededed;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.listTable .HLight {
+	color: #0965bb;
+	text-decoration: none
+}
+.listTable .HLight:hover {
+	text-decoration: underline
+}
+.controlTable {
+	width: 100%;
+	border: 1px solid #bcd2e8;
+	border-bottom: none;
+	table-layout: fixed;
+	height: 26px;
+	margin-bottom: -2px;
+}
+.controlTable td {
+	background: #fff url(controlTable-bg.gif) repeat-x center top;
+	border-top: 1px solid #e0ebf8;
+	height: 24px;
+}
+/* --------------listTable E------------------ */
+	/* --------------pageTurn S------------------ */
+.pageTurn {
+	width: 100%;
+	background: #c9dbeb;
+	border-bottom: 1px solid #bcd2e8;
+	border-left: 1px solid #d9d9d9;
+	border-right: 1px solid #d9d9d9;
+	height: 24px;
+	margin-top: -2px
+}
+.pageTurn td {
+	background: #fff url(table-pg-bg.gif) repeat-x bottom;
+	padding: 0 8px 2px 8px;
+	vertical-align: bottom;
+}
+.pageTurn .pTextStyle {
+	border-right: 1px solid #f5f5f5;
+	border-bottom: 1px solid #f5f5f5;
+	width: 20px;
+	height: 15px;
+}
+.pageTurn .pageTurnWrap {
+	float: right;
+	margin-right: 15px;
+	margin-bottom: 3px
+}
+.leftPageMore, .rightPageMore, .rightPage, .leftPage, .greyleftPageMore, .greyrightPageMore, .greyrightPage, .greyleftPage {
+	width: 16px;
+	height: 16px;
+	background: url(page-icon.gif) no-repeat;
+	float: left;
+	font-size: 30em;
+	overflow: hidden;
+	margin: 0 5px;
+}
+.leftPageMore {
+	background-position: 0 -18px;
+}
+.rightPageMore {
+	background-position: 0 top;
+}
+.rightPage {
+	background-position: 0 -54px;
+}
+.leftPage {
+	background-position: 0 -36px;
+}
+.leftPageMore:hover {
+	background-position: -18px -17px;
+}
+.rightPageMore:hover {
+	background-position: -18px 1px;
+}
+.rightPage:hover {
+	background-position: -18px -53px;
+}
+.leftPage:hover {
+	background-position: -18px -35px;
+}
+.greyleftPageMore {
+	background-position: -36px -18px;
+	cursor:default!important;
+}
+.greyrightPageMore {
+	background-position: -36px top;
+	cursor:default!important;
+}
+.greyrightPage {
+	background-position: -36px -54px;
+	cursor:default!important;
+}
+.greyleftPage {
+	background-position: -36px -36px;
+	cursor:default!important;
+}
+
+
+.searchTable {
+	width: 100%;
+	border: 1px solid #d9d9d9;
+	border-bottom: none;
+	background: #d6e8fe;
+}
+.searchTable tr {
+	height: 23px;
+	line-height: 23px;
+}
+.searchTable th {
+	background: #fafcfe url(table-th-bg.gif) repeat-x bottom;
+	border-right: 1px solid #e2e2e2;
+	border-left: 1px solid #fff;
+	
+	border-top: 1px solid #fff;
+	height: 23px;
+	line-height: 23px;
+}
+.searchTable td {
+	padding: 0px 5px 0px 5px;
+	border-top: 1px solid #becfe1;
+	border-bottom: 1px solid #edf5fe;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.searchTable input, .searchTable select, .searchTable textarea {
+	width:100%;
+	border:1px solid #b1b1b1;
+	border-right:1px solid #dfdfdf;
+	border-bottom:1px solid #dfdfdf;
+}
+
+.searchTable table td{
+	border:none
+	}
+/* --------------searchTable E------------------ */
+.formDiv {
+	position: absolute;
+	left: 2px;
+	top: 3px;
+	text-align: center;
+	overflow-x: hidden;
+	overflow-y: auto;
+}
+.btnDiv {
+	position: absolute;
+	left: 2px;
+	height: 35px;
+	text-align: center;
+	margin: 0 auto;
+}

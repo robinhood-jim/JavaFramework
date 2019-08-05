@@ -74,12 +74,7 @@ public class RunningJobInfoUtil extends AbstractJobInfoUtil {
 		}
 		return retList;
 	}
-	/**
-	 * 
-	 * @param status JobStatus 枚举型
-	 * @return
-	 * @throws Exception
-	 */
+
 	public List<JobSummary> getAllJob(int[] jobstatus) throws Exception {
 		JobClient jobClient =getJobClient();
 		JobStatus[] status=jobClient.getAllJobs();

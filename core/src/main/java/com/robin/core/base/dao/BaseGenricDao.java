@@ -212,7 +212,6 @@ public interface BaseGenricDao<T extends BaseObject,ID extends Serializable> {
 	 * 
 	 * @param sql
 	 * @param resultList
-	 * @param columnpoolList
 	 * @throws DAOException
 	 */
 	public void batchUpdate(String sql,List<Map<String,String>> resultList,List<Map<String,String>> columnTypeMapList) throws DAOException;

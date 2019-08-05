@@ -40,6 +40,7 @@ public abstract class BaseCrudController<O extends BaseObject,P extends Serializ
     protected S service;
     protected Method valueOfMethod;
 
+
     public BaseCrudController()
     {
         Type genericSuperClass = getClass().getGenericSuperclass();
@@ -137,26 +138,6 @@ public abstract class BaseCrudController<O extends BaseObject,P extends Serializ
         }
         return retMap;
     }
-    protected void wrapResponse(Map<String,Object> retmap,Exception ex){
-        if(ex!=null){
-            wrapFailed(retmap,ex);
-        }else
-        {
-            wrapSuccess(retmap,"success");
-        }
-    }
-
-
-    protected void wrapSuccess(Map<String, Object> retMap)
-    {
-        retMap.put("success", true);
-    }
-
-    protected void wrapFailed( Map<String, Object> retMap, Exception ex)
-    {
-        retMap.put("success", false);
-        retMap.put("_message", ex.getMessage());
-    }
 
     protected void doAfterAdd(HttpServletRequest request, HttpServletResponse response,BaseObject obj,Map<String,Object> retMap)
     {
@@ -229,82 +210,7 @@ public abstract class BaseCrudController<O extends BaseObject,P extends Serializ
             this.service = (S) SpringContextHolder.getBean(this.serviceType);
         }
     }
-    protected Long[] wrapPrimaryKeys(String keys)
-    {
-        String[] ids = keys.split(",");
-        Long[] idArr = new Long[ids.length];
-        for (int i = 0; i < idArr.length; i++) {
-            idArr[i] = Long.valueOf(ids[i]);
-        }
-        return idArr;
-    }
 
-    protected Map<String, Object> wrapSuccess(String displayMsg)
-    {
-        Map<String, Object> retmap = new HashMap();
-        retmap.put("success", true);
-        retmap.put("message", displayMsg);
-        return retmap;
-    }
-
-    protected void wrapSuccess(Map<String, Object> retmap, String displayMsg)
-    {
-        retmap.put("success", true);
-        retmap.put("message", displayMsg);
-    }
-
-    protected Map<String, Object> wrapObject(Object object)
-    {
-        Map<String, Object> retmap = new HashMap();
-        retmap.put("success", true);
-        retmap.put("data", object);
-        return retmap;
-    }
-
-    protected Map<String, Object> wrapError(Exception ex)
-    {
-        Map<String, Object> retmap = new HashMap();
-        retmap.put("success", false);
-        retmap.put("message", ex.getMessage());
-        return retmap;
-    }
-
-    public Map<String, String> wrapRequest(HttpServletRequest request)
-    {
-        Map<String, String> map = new HashMap();
-        Iterator<String> iter = request.getParameterMap().keySet().iterator();
-        while (iter.hasNext())
-        {
-            String key = (String)iter.next();
-            map.put(key, request.getParameter(key));
-        }
-        return map;
-    }
-
-
-    public PageQuery wrapPageQuery(HttpServletRequest request)
-    {
-        PageQuery query = new PageQuery();
-        Map map = request.getParameterMap();
-        Iterator<String> iter = map.keySet().iterator();
-        Map<String, Object> tmpmap = new HashMap();
-        while (iter.hasNext())
-        {
-            String key = iter.next();
-            if (key.startsWith("query.")) {
-                tmpmap.put(key.substring(6, key.length()), request.getParameter(key));
-            }
-        }
-        try
-        {
-            ConvertUtil.mapToObject(query, tmpmap);
-        }
-        catch (Exception ex)
-        {
-            ex.printStackTrace();
-        }
-        return query;
-    }
     protected P[] parseId(String[] ids) throws Exception {
         if (ids == null || ids.length == 0) {
             throw new Exception("ID not exists!");

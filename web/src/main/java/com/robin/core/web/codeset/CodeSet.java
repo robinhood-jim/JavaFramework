@@ -17,10 +17,11 @@ package com.robin.core.web.codeset;
 
 import lombok.Data;
 
+import java.io.Serializable;
 import java.util.List;
 
 @Data
-public class CodeSet {
+public class CodeSet implements Serializable {
     protected String codeSetId;
     protected String codeSetNo;
     protected String name;

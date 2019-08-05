@@ -77,7 +77,7 @@
 			<FIELD>id,user_name as name,user_account as account,dept_id as deptId,org_id as orgId</FIELD>
 	</SQLSCRIPT>
 	<SQLSCRIPT ID="$_GETCODESET">
-		<FROMSQL>from t_sys_code a,t_sys_codeset b where a.CS_ID=b.ID and ${queryString}</FROMSQL>
+		<FROMSQL>from t_sys_code a,t_sys_codeset b where a.CS_ID=b.ID and en_name=?</FROMSQL>
 		<FIELD>a.ITEM_NAME as ITEMNAME,a.ITEM_VALUE as ITEMVALUE</FIELD>
 	</SQLSCRIPT>
 

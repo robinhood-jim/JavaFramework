@@ -40,13 +40,7 @@ public class FilterCondition {
 		this.operator = operator;
 		this.columnCode = columnCode;
 	}
-	
-	/**
-	 * 
-	 * @param name  
-	 * @param state  
-	 * @param value
-	 */
+
 	public FilterCondition(String columnCode,String operator,Object value){
 		this.columnCode = columnCode;
 		this.operator = operator;
