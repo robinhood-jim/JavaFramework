@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<QUERY>
+
+	<SQLSCRIPT ID="GET_LINE_TRACE">
+		<FROMSQL>from t_line_trace a where 1=1 ${queryString}</FROMSQL>
+		<FIELD>a.line_id as lineId,a.line_direct as lineDirect,a.gps_content as content</FIELD>
+	</SQLSCRIPT>
+	<SQLSCRIPT ID="$_GETCODESET">
+		<FROMSQL>from t_sys_code a,t_sys_codeset b where a.CS_ID=b.ID and ${queryString}</FROMSQL>
+		<FIELD>a.ITEM_NAME as ITEMNAME,a.ITEM_VALUE as ITEMVALUE</FIELD>
+	</SQLSCRIPT>
+	<SQLSCRIPT ID="GET_RESOURCEINFO">
+		<FROMSQL>from (select a.* from t_sys_resource_info a,t_sys_resource_role_r b where a.ID=b.RES_ID and b.ROLE_ID in (${roleIds}) and a.STATUS=1
+			union all
+			select c.* from t_sys_resource_info c,t_sys_resource_user_r d where c.id=d.res_id and d.USER_ID=${userId} and c.STATUS=1)e order by res_code</FROMSQL>
+		<FIELD>id,res_name as name,url,is_leaf as leafTag,res_code as code,pid,seq_no as seqNo</FIELD>
+	</SQLSCRIPT>
+
+</QUERY>

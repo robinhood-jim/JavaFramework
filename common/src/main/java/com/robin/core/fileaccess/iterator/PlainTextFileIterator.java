@@ -18,7 +18,7 @@ package com.robin.core.fileaccess.iterator;
 import com.robin.core.base.util.StringUtils;
 import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
-import com.robin.core.fileaccess.meta.DataCollectionMeta.DataSetColumnMeta;
+import com.robin.core.fileaccess.meta.DataSetColumnMeta;
 
 import java.util.HashMap;
 import java.util.Map;

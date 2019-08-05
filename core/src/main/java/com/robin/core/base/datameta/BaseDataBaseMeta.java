@@ -111,4 +111,9 @@ public abstract class BaseDataBaseMeta implements DataBaseInterface {
 		}
 		return isequal;
 	}
+
+	@Override
+	public int hashCode() {
+		return super.hashCode();
+	}
 }

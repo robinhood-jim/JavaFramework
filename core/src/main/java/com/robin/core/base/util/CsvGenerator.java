@@ -109,7 +109,7 @@ public class CsvGenerator{
 			if(header==null || header.length==0)
 				throw new Exception("no file");
 
-			List<String> resultlist=new ArrayList<String>();
+			List<String> resultlist;
 			while((resultlist=reader.read())!=null){
 				pos++;
 				Map<String, String> resultMap=new HashMap<String, String>();

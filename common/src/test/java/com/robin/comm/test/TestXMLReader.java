@@ -8,18 +8,7 @@ import com.robin.core.fileaccess.util.LocalResourceAccessUtils;
 
 import java.io.BufferedReader;
 
-/**
- * <p>Project:  frame</p>
- * <p>
- * <p>Description:TestXMLReader</p>
- * <p>
- * <p>Copyright: Copyright (c) 2016 create at 2016年12月29日</p>
- * <p>
- * <p>Company: TW_DEV</p>
- *
- * @author robinjim
- * @version 1.0
- */
+
 public class TestXMLReader {
     public static void main(String[] args){
         DataCollectionMeta colmeta=new DataCollectionMeta();

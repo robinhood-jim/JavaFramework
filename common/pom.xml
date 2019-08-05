@@ -1,368 +1,369 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<parent>
-		<groupId>com.robin</groupId>
-		<artifactId>frame</artifactId>
-		<version>1.0-SNAPSHOT</version>
-	</parent>
-	<artifactId>common</artifactId>
-	<packaging>jar</packaging>
-	<name>common</name>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.robin</groupId>
+        <artifactId>frame</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+    <artifactId>common</artifactId>
+    <packaging>jar</packaging>
+    <name>common</name>
 
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-	</properties>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
 
-	<dependencies>
-		<dependency>
-			<groupId>com.robin</groupId>
-			<artifactId>core</artifactId>
-			<version>${frm.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-log4j12</artifactId>
-		</dependency>
+    <dependencies>
+        <dependency>
+            <groupId>com.robin</groupId>
+            <artifactId>core</artifactId>
+            <version>${frm.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+        </dependency>
 
-		<dependency>
+        <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
         </dependency>
-		<dependency>
-			<groupId>commons-lang</groupId>
-			<artifactId>commons-lang</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>mysql</groupId>
-			<artifactId>mysql-connector-java</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>commons-pool</groupId>
-			<artifactId>commons-pool</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>commons-io</groupId>
-			<artifactId>commons-io</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>commons-dbcp</groupId>
-			<artifactId>commons-dbcp</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>commons-codec</groupId>
-			<artifactId>commons-codec</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>commons-beanutils</groupId>
-			<artifactId>commons-beanutils</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>commons-net</groupId>
-			<artifactId>commons-net</artifactId>
-		</dependency>
-		<dependency>
-				<groupId>org.apache.commons</groupId>
-				<artifactId>commons-vfs2</artifactId>
-		</dependency>
-		<dependency>
-			  <groupId>org.apache.commons</groupId>
-			  <artifactId>commons-compress</artifactId>
-		</dependency>
-		<dependency>
-		  <groupId>com.google.guava</groupId>
-		  <artifactId>guava</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-		</dependency>
-		
-		<dependency>
-			  <groupId>commons-dbutils</groupId>
-			  <artifactId>commons-dbutils</artifactId>
-		</dependency>
-		<dependency>
-				<groupId>dom4j</groupId>
-				<artifactId>dom4j</artifactId>
-		</dependency>
-		
-		<dependency>
-			  <groupId>cglib</groupId>
-			  <artifactId>cglib-nodep</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-core</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-context</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-tx</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-orm</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-jdbc</artifactId>
-		</dependency>
-		<dependency>
-			  <groupId>javax.persistence</groupId>
-			  <artifactId>com.springsource.javax.persistence</artifactId>
-		</dependency>	 
-		<dependency>
-			  <groupId>org.xeustechnologies</groupId>
-			  <artifactId>jcl-core</artifactId>
-		</dependency>
-		<dependency>
+        <dependency>
+            <groupId>commons-lang</groupId>
+            <artifactId>commons-lang</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>commons-pool</groupId>
+            <artifactId>commons-pool</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>commons-dbcp</groupId>
+            <artifactId>commons-dbcp</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>commons-beanutils</groupId>
+            <artifactId>commons-beanutils</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>commons-net</groupId>
+            <artifactId>commons-net</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-vfs2</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-compress</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>commons-dbutils</groupId>
+            <artifactId>commons-dbutils</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>dom4j</groupId>
+            <artifactId>dom4j</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>cglib</groupId>
+            <artifactId>cglib-nodep</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-tx</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-orm</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-jdbc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>javax.persistence</groupId>
+            <artifactId>com.springsource.javax.persistence</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.xeustechnologies</groupId>
+            <artifactId>jcl-core</artifactId>
+        </dependency>
+        <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>servlet-api</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>
-			<groupId>net.sf.supercsv</groupId>
-			<artifactId>super-csv</artifactId>
-		</dependency>
+            <groupId>net.sf.supercsv</groupId>
+            <artifactId>super-csv</artifactId>
+        </dependency>
 
-		<dependency>
-			  <groupId>org.apache.poi</groupId>
-			  <artifactId>poi</artifactId>
-			</dependency>
-			<dependency>
-			  <groupId>org.apache.poi</groupId>
-			  <artifactId>poi-ooxml</artifactId>
-			</dependency>
-			<dependency>
-			  <groupId>org.apache.poi</groupId>
-			  <artifactId>poi-ooxml-schemas</artifactId>
-			</dependency>
-			<dependency>
-			  <groupId>org.apache.poi</groupId>
-			  <artifactId>poi-scratchpad</artifactId>
-			</dependency>
-			<dependency>
-			  <groupId>net.sf.json-lib</groupId>
-			  <artifactId>json-lib</artifactId>
-			  <classifier>jdk15</classifier>
-			</dependency>
-			<dependency>
-			  <groupId>com.lowagie</groupId>
-			  <artifactId>itext</artifactId>
-			</dependency>
-			<dependency>
-			  <groupId>com.lowagie</groupId>
-			  <artifactId>itext-rtf</artifactId>
-			</dependency>
-			<dependency>
-			  <groupId>com.itextpdf</groupId>
-			  <artifactId>itext-asian</artifactId>
-			</dependency>
-			<dependency>
-			  <groupId>net.sf.jtidy</groupId>
-			  <artifactId>jtidy</artifactId>
-			</dependency>
-			<dependency>
-			  <groupId>org.xhtmlrenderer</groupId>
-			  <artifactId>core-renderer</artifactId>
-			</dependency>
-			<dependency>
-			 	 <groupId>com.google.guava</groupId>
-			  	<artifactId>guava</artifactId>
-			</dependency>
-			<dependency>
-				<groupId>com.jcraft</groupId>
-				<artifactId>jsch</artifactId>
-				<version>0.1.50</version>
-			</dependency>
-			<dependency>
-			  <groupId>org.apache.avro</groupId>
-			  <artifactId>avro</artifactId>
-			</dependency>
-			<dependency>
-			  <groupId>org.tmatesoft.svnkit</groupId>
-			  <artifactId>svnkit</artifactId>
-			</dependency>
-		<dependency>
-			<groupId>redis.clients</groupId>
-			<artifactId>jedis</artifactId>
-			<version>2.1.0</version>
-		</dependency>
-		<dependency>
-			<groupId>org.tukaani</groupId>
-			<artifactId>xz</artifactId>
-			<version>1.6</version>
-		</dependency>
-		<dependency>
-			<groupId>org.postgresql</groupId>
-			<artifactId>postgresql</artifactId>
-			<version>9.4.1207</version>
-		</dependency>
-		<dependency>
-			<groupId>com.esri.geometry</groupId>
-			<artifactId>esri-geometry-api</artifactId>
-			<version>1.1</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.parquet</groupId>
-			<artifactId>parquet-avro</artifactId>
-			<version>1.8.2</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.hadoop</groupId>
-			<artifactId>hadoop-common</artifactId>
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml-schemas</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-scratchpad</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.sf.json-lib</groupId>
+            <artifactId>json-lib</artifactId>
+            <classifier>jdk15</classifier>
+        </dependency>
+        <dependency>
+            <groupId>com.lowagie</groupId>
+            <artifactId>itext</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.lowagie</groupId>
+            <artifactId>itext-rtf</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.itextpdf</groupId>
+            <artifactId>itext-asian</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.sf.jtidy</groupId>
+            <artifactId>jtidy</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.xhtmlrenderer</groupId>
+            <artifactId>core-renderer</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.jcraft</groupId>
+            <artifactId>jsch</artifactId>
+            <version>0.1.50</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.avro</groupId>
+            <artifactId>avro</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.tmatesoft.svnkit</groupId>
+            <artifactId>svnkit</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jgit</groupId>
+            <artifactId>org.eclipse.jgit</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>redis.clients</groupId>
+            <artifactId>jedis</artifactId>
+            <version>2.1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.tukaani</groupId>
+            <artifactId>xz</artifactId>
+            <version>1.6</version>
+        </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>9.4.1207</version>
+        </dependency>
+        <dependency>
+            <groupId>com.esri.geometry</groupId>
+            <artifactId>esri-geometry-api</artifactId>
+            <version>1.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.parquet</groupId>
+            <artifactId>parquet-avro</artifactId>
+            <version>1.8.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-common</artifactId>
 
-		</dependency>
-		<dependency>
-			<groupId>org.apache.hadoop</groupId>
-			<artifactId>hadoop-hdfs</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.hadoop</groupId>
-			<artifactId>hadoop-auth</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-hdfs</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-auth</artifactId>
 
-		</dependency>
+        </dependency>
 
-			
-	</dependencies>
-	
 
-	<build>
-		<sourceDirectory>src/main/java</sourceDirectory>
-		<resources>
-			<resource>
-				<directory>src/main/resources</directory>
-				<excludes>
-					<exclude>**/*</exclude>
-				</excludes>
-			</resource>
-		</resources>
-		<plugins>
-			<plugin>
-			  <artifactId>maven-compiler-plugin</artifactId>
-			  <version>3.1</version>
-			  <configuration>
-			    <source>1.6</source>
-			    <target>1.6</target>
-			  </configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jar-plugin</artifactId>
-				<configuration>
-					<archive>
-						<manifest>
-							<addClasspath>true</addClasspath>
-							<classpathPrefix>lib/</classpathPrefix>
-						</manifest>
-					</archive>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-dependency-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>copy</id>
-						<phase>install</phase>
-						<goals>
-							<goal>copy-dependencies</goal>
-						</goals>
-						<configuration>
-							<outputDirectory>
-								${project.build.directory}/lib
+    </dependencies>
+
+
+    <build>
+        <sourceDirectory>src/main/java</sourceDirectory>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <excludes>
+                    <exclude>**/*</exclude>
+                </excludes>
+            </resource>
+        </resources>
+        <plugins>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addClasspath>true</addClasspath>
+                            <classpathPrefix>lib/</classpathPrefix>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>
+                                ${project.build.directory}/lib
                             </outputDirectory>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-resources-plugin</artifactId>
-				<configuration>
-					<encoding>UTF-8</encoding>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>com.github.wvengen</groupId>
-				<artifactId>proguard-maven-plugin</artifactId>
-				<version>2.0.10</version>
-				<executions>
-					<execution>
-						<phase>package</phase>
-						<goals>
-							<goal>proguard</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<proguardVersion>5.1</proguardVersion>
-					<injar>common-1.0-SNAPSHOT.jar</injar>
-					<outjar>common-1.0.0.jar</outjar>
-					<!--<attach>true</attach>-->
-					<!--<attachArtifactClassifier>pg</attachArtifactClassifier>-->
-					<!-- attach 的作用是在 install 与 deploy 时将生成的 pg 文件也安装与部署 -->
-					<options> <!-- 详细配置方式参考 ProGuard 官方文档 -->
-						<!--<option>-dontobfuscate</option>-->
-						<option>-keepattributes Signature</option>
-						<option>-keepattributes Exceptions</option>
-						<option><![CDATA[-keep public class * {public protected <fields>;public protected <methods>;}]]></option>
-						<option>-keep public class * implements java.io.Serializable{public protected private *;}</option>
-						<option>-keep public class * extends com.robin.core.base.model.BaseObject{
-							public protected private *;
-							}</option>
-						<option>-ignorewarnings</option> <!--忽略所有告警-->
-						<option>-dontshrink</option>   <!--不做 shrink -->
-						<option>-printmapping out.map</option>
-						<!--<option>-dontoptimize</option>--><!--不做 optimize -->
-						<!--		<option>-dontskipnonpubliclibraryclasses</option>
-                                <option>-dontskipnonpubliclibraryclassmembers</option>-->
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <configuration>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>com.github.wvengen</groupId>
+                <artifactId>proguard-maven-plugin</artifactId>
+                <version>2.0.10</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>proguard</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <proguardVersion>5.1</proguardVersion>
+                    <injar>common-1.0-SNAPSHOT.jar</injar>
+                    <!--<attach>true</attach>-->
+                    <!--<attachArtifactClassifier>pg</attachArtifactClassifier>-->
+                    <!-- attach 的作用是在 install 与 deploy 时将生成的 pg 文件也安装与部署 -->
+                    <libs>
+                        <lib>${java.home}/lib/rt.jar</lib>
+                    </libs>
+                    <options> <!-- 详细配置方式参考 ProGuard 官方文档 -->
+                        <!--<option>-dontobfuscate</option>-->
+                        <option>-keepattributes Signature,InnerClasses,Exceptions</option>
+                        <option>
+                            <![CDATA[-keep public class * {public protected <fields>;public protected <methods>;}]]></option>
+                        <option>-keep public class * implements java.io.Serializable{public protected private *;}
+                        </option>
+                        <option>-keep public class * extends com.robin.core.base.model.BaseObject{
+                            public protected private *;
+                            }
+                        </option>
+                        <option>-ignorewarnings</option> <!--忽略所有告警-->
+                        <option>-dontshrink</option>   <!--不做 shrink -->
+                        <option>-printmapping out.map</option>
+                        <!--平行包结构（重构包层次），所有混淆的类放在 pg 包下-->
 
-						<!--	<option>-repackageclasses org.noahx.proguard.example.project2.pg</option>-->
-						<!--平行包结构（重构包层次），所有混淆的类放在 pg 包下-->
-
-						<!-- 以下为 Keep，哪些内容保持不变，因为有一些内容混淆后（a,b,c）导致反射或按类名字符串相关的操作失效 -->
-						<option>-optimizations !code/allocation/variable</option>
-						<option>-keep class **.package-info</option>
-						<!--保持包注解类-->
-
-
-						<!--JAXB NEED，具体原因不明，不加会导致 JAXB 出异常，如果不使用 JAXB 根据需要修改-->
-						<!-- Jaxb requires generics to be available to perform xml parsing and without this option ProGuard was not retaining that information after obfuscation. That was causing the exception above. -->
-
-						<option>-keepattributes SourceFile,LineNumberTable,*Annotation*</option>
-						<!--保持源码名与行号（异常时有明确的栈信息），注解（默认会过滤掉所有注解，会影响框架的注解）-->
+                        <!-- 以下为 Keep，哪些内容保持不变，因为有一些内容混淆后（a,b,c）导致反射或按类名字符串相关的操作失效 -->
+                        <option>-optimizations !code/allocation/variable</option>
+                        <option>-keep class **.package-info</option>
+                        <option>-keep enum * { *; }</option>
+                        <option><![CDATA[-keepclassmembers enum * {
+							<fields>;
+							public static **[] values();
+    						public static ** valueOf(java.lang.String);
+						}]]></option>
+                        <!--保持包注解类-->
 
 
-						<!--保持枚举中的名子，确保枚举 valueOf 可以使用-->
+                        <!--JAXB NEED，具体原因不明，不加会导致 JAXB 出异常，如果不使用 JAXB 根据需要修改-->
+                        <!-- Jaxb requires generics to be available to perform xml parsing and without this option ProGuard was not retaining that information after obfuscation. That was causing the exception above. -->
 
-						<option>-keep public class com.robin.core.base.**</option>
-						<!--保持 Bean 类，（由于很多框架会对 Bean 中的内容做反射处理，请根据自己的业务调整） -->
+                        <option>-keepattributes SourceFile,LineNumberTable,*Annotation*</option>
+                        <!--保持源码名与行号（异常时有明确的栈信息），注解（默认会过滤掉所有注解，会影响框架的注解）-->
 
 
-						<option>
-							-keepclasseswithmembers public class * {
-							public static void main(java.lang.String[]);
-							}
-						</option>
-						<!-- 保持对外的接口性质类对外的类名与方法名不变 -->
+                        <!--保持枚举中的名子，确保枚举 valueOf 可以使用-->
 
-					</options>
-					<outjar>${project.build.finalName}-pg</outjar>
-					<libs>
-						<lib>${java.home}/lib/rt.jar</lib>
-					</libs>
+                        <option>-keep public class com.robin.core.base.**</option>
+                        <!--保持 Bean 类，（由于很多框架会对 Bean 中的内容做反射处理，请根据自己的业务调整） -->
 
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
+
+                        <option>
+                            -keepclasseswithmembers public class * {
+                            public static void main(java.lang.String[]);
+                            }
+                        </option>
+                        <!-- 保持对外的接口性质类对外的类名与方法名不变 -->
+
+                    </options>
+
+
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>

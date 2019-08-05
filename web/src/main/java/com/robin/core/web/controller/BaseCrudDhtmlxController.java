@@ -17,9 +17,17 @@ package com.robin.core.web.controller;
 
 import com.robin.core.base.model.BaseObject;
 import com.robin.core.base.service.BaseAnnotationJdbcService;
+import com.robin.core.base.spring.SpringContextHolder;
+import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.query.util.PageQuery;
+import com.robin.core.query.util.QueryFactory;
+import com.robin.core.query.util.QueryString;
 import com.robin.core.web.codeset.Code;
+import com.robin.core.web.international.Translator;
+import com.robin.core.web.util.CodeSetUtil;
 
+import javax.servlet.http.HttpServletRequest;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -28,25 +36,8 @@ import java.util.Map;
 /**
  *use Chinese Alter msg.Later will change to i18n
  */
-public abstract class BaseCrudDhtmlxController<O extends BaseObject,S extends BaseAnnotationJdbcService> extends BaseCrudController<O,S> {
-    public Map<String, Object> wrapYesNoComobo(boolean insertNullVal)
-    {
-        Map<String, Object> map = new HashMap();
-        List<Map<String, Object>> list = new ArrayList();
-        if (insertNullVal) {
-            insertNullSelect(list);
-        }
-        Map<String, Object> tmap = new HashMap();
-        tmap.put("value", "1");
-        tmap.put("text", "是");
-        list.add(tmap);
-        Map<String, Object> tmap1 = new HashMap();
-        tmap.put("value", "0");
-        tmap.put("text", "否");
-        list.add(tmap1);
-        map.put("options", list);
-        return map;
-    }
+public abstract class BaseCrudDhtmlxController<O extends BaseObject,P extends Serializable,S extends BaseAnnotationJdbcService> extends BaseCrudController<O,P,S> {
+
 
     public Map<String, Object> wrapComobo(List<Map<String, Object>> rsList, String keyColumn, String valueColumn, boolean insertNullVal)
     {
@@ -87,13 +78,7 @@ public abstract class BaseCrudDhtmlxController<O extends BaseObject,S extends Ba
         return map;
     }
 
-    public void insertNullSelect(List<Map<String, Object>> list)
-    {
-        Map<String, Object> tmap = new HashMap();
-        tmap.put("value", "");
-        tmap.put("text", "--请选择--");
-        list.add(tmap);
-    }
+
 
     public void wrapStatusBar(PageQuery query)
     {
@@ -135,6 +120,119 @@ public abstract class BaseCrudDhtmlxController<O extends BaseObject,S extends Ba
             str = "";
         }
         query.setPageToolBar(str);
+    }
+    public Map<String, Object> wrapDhtmlxGridOutputWithNoCheck(List<Map<String, String>> list, String queryKeys, String idColumn) {
+        return wrapDhtmlxGridOutputWithCheck(list,queryKeys,idColumn,false);
+    }
+    private Map<String, Object> wrapDhtmlxGridOutputWithCheck(List<Map<String, String>> list, String queryKeys, String idColumn,boolean withcheck) {
+        Map<String, Object> retMap = new HashMap<String, Object>();
+        try {
+            String[] fieldNames = queryKeys.split(",");
+            List<Map<String, Object>> retList = new ArrayList<Map<String, Object>>();
+            PageQuery tquery = new PageQuery();
+            tquery.setRecordCount(String.valueOf(list.size()));
+            tquery.setPageSize("0");
+            for (Map<String, String> map : list) {
+                Map<String, Object> tmap = new HashMap<String, Object>();
+                List<String> tmpList = new ArrayList<String>();
+                for (String key : fieldNames) {
+                    if (withcheck && key.equals(idColumn)) {
+                        tmpList.add("0");
+                    } else if (map.containsKey(key)) {
+                        tmpList.add(map.get(key));
+                    }
+                }
+                tmap.put("data", tmpList);
+                tmap.put("id", map.get(idColumn));
+
+                retList.add(tmap);
+            }
+            retMap.put("rows", retList);
+            retMap.put("query", tquery);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return retMap;
+    }
+    protected void wrapObjectWithRequest(HttpServletRequest request, BaseObject obj) throws Exception {
+        ConvertUtil.mapToObject(obj, wrapRequest(request));
+    }
+    protected Map<String, Object> returnCodeSetDhtmlxCombo(String codeSetNo, boolean allowNulls) {
+        setCode(codeSetNo);
+        Map<String, Object> retmap = new HashMap<String, Object>();
+        List<Map<String, String>> list = new ArrayList<Map<String, String>>();
+        CodeSetUtil util= (CodeSetUtil) SpringContextHolder.getBean(CodeSetUtil.class);
+        List<Code> codeList=util.getCacheCode(codeSetNo);
+        if (codeList!=null) {
+            if (allowNulls) {
+                list.add(addNullSelection());
+            }
+            for (Code set : codeList) {
+                Map<String, String> map = new HashMap<String, String>();
+                map.put("value", set.getValue());
+                map.put("text", set.getCodeName());
+                list.add(map);
+            }
+        }
+        retmap.put("options", list);
+        return retmap;
+    }
+    private Map<String, String> addNullSelection() {
+        Map<String, String> map = new HashMap<String, String>();
+        map.put("value", "");
+        map.put("text", Translator.toLocale("message.NullDisplay"));
+        return map;
+    }
+    public Map<String, Object> wrapDhtmlxGridOutput(PageQuery query) {
+        List<Map<String, Object>> list = query.getRecordSet();
+        Map<String, Object> retMap = new HashMap<String, Object>();
+        PageQuery tquery = query;
+        tquery.setRecordSet(null);
+        tquery.getParameters().clear();
+        try {
+            QueryFactory factory = (QueryFactory) SpringContextHolder.getBean("queryFactory");
+            QueryString queryObj = factory.getQuery(query.getSelectParamId());
+            String field = queryObj.getField();
+            String[] arr = field.split(",");
+            List<String> fieldName = new ArrayList<String>();
+            String idColumn = null;
+            for (int i = 0; i < arr.length; i++) {
+                String colname = null;
+                if (arr[i].contains(" as")) {
+                    String[] arr1 = arr[i].split(" as");
+                    colname = arr1[1].trim();
+                } else if (arr[i].contains(" AS")) {
+                    String[] arr1 = arr[i].split(" AS");
+                    colname = arr1[1].trim();
+                } else {
+                    colname = arr[i].trim();
+                }
+                if (i == 0) {
+                    idColumn = colname;
+                }
+                fieldName.add(colname);
+            }
+            List<Map<String, Object>> retList = new ArrayList<Map<String, Object>>();
+            for (Map<String, Object> map : list) {
+                Map<String, Object> tmap = new HashMap<String, Object>();
+                List<String> tmpList = new ArrayList<String>();
+                for (String key : fieldName) {
+                    if (key.equals(idColumn)) {
+                        tmpList.add("0");
+                    } else if (map.containsKey(key)) {
+                        tmpList.add(map.get(key).toString());
+                    }
+                }
+                tmap.put("data", tmpList);
+                tmap.put("id", map.get(idColumn));
+                retList.add(tmap);
+            }
+            retMap.put("rows", retList);
+            retMap.put("query", tquery);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return retMap;
     }
 
 }

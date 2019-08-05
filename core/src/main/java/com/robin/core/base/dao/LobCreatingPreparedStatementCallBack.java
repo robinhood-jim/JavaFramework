@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2015,robinjim(robinjim@126.com)
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -31,79 +31,79 @@ import org.springframework.jdbc.support.lob.LobHandler;
 import com.robin.core.base.model.BaseObject;
 
 public class LobCreatingPreparedStatementCallBack extends
-		AbstractLobCreatingPreparedStatementCallback {
-	private BaseObject obj;
-	private List<Map<String, Object>> fields;
+        AbstractLobCreatingPreparedStatementCallback {
+    private BaseObject obj;
+    private List<Map<String, Object>> fields;
 
-	public LobCreatingPreparedStatementCallBack(LobHandler lobHandler) {
-		super(lobHandler);
+    public LobCreatingPreparedStatementCallBack(LobHandler lobHandler) {
+        super(lobHandler);
 
-	}
+    }
 
-	public void setObj(BaseObject obj) {
-		this.obj = obj;
-	}
-	
-	public BaseObject getObj() {
-		return obj;
-	}
+    public void setObj(BaseObject obj) {
+        this.obj = obj;
+    }
 
-	public void setFields(List<Map<String, Object>> fields) {
-		this.fields = fields;
-	}
+    public BaseObject getObj() {
+        return obj;
+    }
 
-	@Override
-	protected void setValues(PreparedStatement ps, LobCreator lobCreator)
-			throws SQLException, DataAccessException {
-		int pos = 1;
-		for (Map<String, Object> map : fields) {
-			if (!map.containsKey("increment")) {
-				if (map.get("value") != null) {
-					String datatype = map.get("datatype").toString();
-					if (datatype.equalsIgnoreCase("clob")) {
-						 lobCreator.setClobAsString(ps, pos, map.get("value").toString());
-					} else if (datatype.equalsIgnoreCase("blob")) {
-						lobCreator.setBlobAsBytes(ps, pos, (byte[])map.get("value"));
-					} else {
-						setValue(ps, pos, map.get("value"));
-					}
-					pos++;
-				}
-			}
-		}
+    public void setFields(List<Map<String, Object>> fields) {
+        this.fields = fields;
+    }
 
-	}
+    @Override
+    protected void setValues(PreparedStatement ps, LobCreator lobCreator)
+            throws SQLException, DataAccessException {
+        int pos = 1;
+        for (Map<String, Object> map : fields) {
+            if (!map.containsKey("increment") && map.get("value") != null) {
 
-	private void setValue(PreparedStatement ps, int pos, Object value) {
-		try {
-			Class clazz = value.getClass();
-			if (clazz.equals(Long.class)) {
-				ps.setLong(pos, (Long) value);
-			} else if (clazz.equals(Integer.class)) {
-				ps.setInt(pos, Integer.parseInt(value.toString()));
-			} else if (clazz.equals(String.class)) {
-				ps.setString(pos, value.toString());
-			} else if (clazz.equals(Date.class)) {
-				SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-				Timestamp date = new Timestamp(format.parse(value.toString()).getTime());
-				ps.setTimestamp(pos, date);
-			} else if (clazz.equals(Timestamp.class)) {
-				SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-				Timestamp date = new Timestamp(format.parse(value.toString()).getTime());
-				ps.setTimestamp(pos, date);
-			} else if (clazz.equals(java.sql.Date.class)) {
-				SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-				java.sql.Date date = new java.sql.Date(format.parse(value.toString()).getTime());
-				ps.setDate(pos, date);
-			} else if (clazz.equals(Double.class)) {
-				ps.setDouble(pos, Double.valueOf(value.toString()));
-			} else if (clazz.equals(Float.class)) {
-				ps.setFloat(pos, Float.valueOf(value.toString()));
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+                String datatype = map.get("datatype").toString();
+                if (datatype.equalsIgnoreCase("clob")) {
+                    lobCreator.setClobAsString(ps, pos, map.get("value").toString());
+                } else if (datatype.equalsIgnoreCase("blob")) {
+                    lobCreator.setBlobAsBytes(ps, pos, (byte[]) map.get("value"));
+                } else {
+                    setValue(ps, pos, map.get("value"));
+                }
+                pos++;
 
-	}
+            }
+        }
+
+    }
+
+    private void setValue(PreparedStatement ps, int pos, Object value) {
+        try {
+            Class clazz = value.getClass();
+            if (clazz.equals(Long.class)) {
+                ps.setLong(pos, (Long) value);
+            } else if (clazz.equals(Integer.class)) {
+                ps.setInt(pos, Integer.parseInt(value.toString()));
+            } else if (clazz.equals(String.class)) {
+                ps.setString(pos, value.toString());
+            } else if (clazz.equals(Date.class)) {
+                SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                Timestamp date = new Timestamp(format.parse(value.toString()).getTime());
+                ps.setTimestamp(pos, date);
+            } else if (clazz.equals(Timestamp.class)) {
+                SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                Timestamp date = new Timestamp(format.parse(value.toString()).getTime());
+                ps.setTimestamp(pos, date);
+            } else if (clazz.equals(java.sql.Date.class)) {
+                SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+                java.sql.Date date = new java.sql.Date(format.parse(value.toString()).getTime());
+                ps.setDate(pos, date);
+            } else if (clazz.equals(Double.class)) {
+                ps.setDouble(pos, Double.valueOf(value.toString()));
+            } else if (clazz.equals(Float.class)) {
+                ps.setFloat(pos, Float.valueOf(value.toString()));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
 
 }

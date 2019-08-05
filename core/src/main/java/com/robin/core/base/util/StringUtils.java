@@ -19,10 +19,14 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import org.apache.commons.lang.text.StrBuilder;
 
 public class StringUtils {
+	public static final int ASCII_VISABLE_START=48;
+	public static final int ASCII_VISABLE_END=122;
+
 	/**
 	 * custom String split 
 	 * @param str   
@@ -200,6 +204,17 @@ public class StringUtils {
 			return input.substring(0,1).toLowerCase()+input.substring(1,input.length());
 		else
 			return null;
+	}
+	public static String generateRandomChar(int length){
+		StringBuilder builder=new StringBuilder();
+		Random random=new Random();
+		for(int i=0;i<length;i++){
+			builder.append((char)(48+getRandomChar(random)));
+		}
+		return builder.toString();
+	}
+	private static int getRandomChar(Random random){
+		return random.nextInt(ASCII_VISABLE_END-ASCII_VISABLE_START+1);
 	}
 
 }

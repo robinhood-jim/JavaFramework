@@ -960,11 +960,11 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
 				try {
 					Query query = session.createQuery(hql);
 					query.executeUpdate();
-					return new Boolean(true);
+					return true;
 				}
 				catch (Exception e) {
 					e.printStackTrace();
-					return new Boolean(false);
+					return false;
 				}
 			}
 		};

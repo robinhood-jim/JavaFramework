@@ -24,19 +24,22 @@ import org.springframework.beans.factory.InitializingBean;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.Serializable;
+import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 /**
  *Single Table Mapping Background Controller
  */
-public abstract class BaseCrudController<O extends BaseObject,S extends BaseAnnotationJdbcService> extends BaseContorller implements InitializingBean {
+public abstract class BaseCrudController<O extends BaseObject,P extends Serializable,S extends BaseAnnotationJdbcService> extends BaseContorller implements InitializingBean {
     private Class<O> objectType;
+    private Class<P> pkType;
     private Class<S> serviceType;
     protected S service;
+    protected Method valueOfMethod;
+
 
     public BaseCrudController()
     {
@@ -55,7 +58,13 @@ public abstract class BaseCrudController<O extends BaseObject,S extends BaseAnno
             }
         }
         this.objectType = ((Class)parametrizedType.getActualTypeArguments()[0]);
-        this.serviceType = ((Class)parametrizedType.getActualTypeArguments()[1]);
+        this.pkType=((Class)parametrizedType.getActualTypeArguments()[1]);
+        this.serviceType = ((Class)parametrizedType.getActualTypeArguments()[2]);
+        try {
+            valueOfMethod = this.pkType.getMethod("valueOf", String.class);
+        }catch (Exception ex){
+            log.error("{}",ex);
+        }
     }
 
     /**
@@ -72,45 +81,48 @@ public abstract class BaseCrudController<O extends BaseObject,S extends BaseAnno
         try
         {
             BaseObject obj = this.objectType.newInstance();
-            ConvertUtil.mapToObject(obj, wrapSaveRequest(request));
+            ConvertUtil.mapToObject(obj, wrapRequest(request));
             id = this.service.saveEntity(obj);
-            retMap = doOnAdd(request, response, obj);
+            wrapSuccess(retMap);
+            doAfterAdd(request, response, obj,retMap);
         }
         catch (Exception ex)
         {
             this.log.error("{}", ex);
             finishTag = false;
+            wrapResponse(retMap,ex);
         }
-        wrapSaveResponse(response, finishTag, id, retMap);
+        if(finishTag)
+            wrapResponse(retMap,null);
         return retMap;
     }
     protected Map<String, Object> doView(HttpServletRequest request, HttpServletResponse response, Long id) {
-        Map<String, Object> retmap = new HashMap<String, Object>();
+        Map<String, Object> retMap = new HashMap<String, Object>();
         try {
             BaseObject object = service.getEntity(id);
-            retmap=doOnView(request, response, object);
-            retmap.put("vo",object);
-            wrapSuccess(request,response,retmap);
+            retMap=wrapSuccess("success");
+            doAfterView(request, response, object,retMap);
+            wrapSuccess(retMap);
         } catch (Exception e) {
             log.error("{}",e);
-            wrapFailed(request,response,retmap,e);
+            wrapFailed(retMap,e);
         }
-        return retmap;
+        return retMap;
     }
-    public Map<String, Object> doEdit(HttpServletRequest request, HttpServletResponse response, Long id) {
-        Map<String, Object> retmap = new HashMap<String, Object>();
+    public Map<String, Object> doEdit(HttpServletRequest request, HttpServletResponse response, P id) {
+        Map<String, Object> retMap = new HashMap<String, Object>();
         try {
             BaseObject object = service.getEntity(id);
-            retmap=doOnEdit(request, response, object);
-            wrapSuccess(request,response,retmap);
+            doAfterEdit(request, response, object,retMap);
+            wrapSuccess(retMap);
         } catch (Exception e) {
-
+            log.error("{}",e);
+            wrapFailed(retMap,e);
         }
-        return retmap;
+        return retMap;
     }
-    public Map<String,Object> doUpdate(HttpServletRequest request, HttpServletResponse response,Long id){
-        Map<String,Object> retmap=new HashMap<>();
-        boolean finsiTag=true;
+    public Map<String,Object> doUpdate(HttpServletRequest request, HttpServletResponse response,P id){
+        Map<String,Object> retMap=new HashMap<>();
         try {
             Map<String, String> valueMap = wrapRequest(request);
             BaseObject object = objectType.newInstance();
@@ -118,184 +130,105 @@ public abstract class BaseCrudController<O extends BaseObject,S extends BaseAnno
             ConvertUtil.convertToModel(object, valueMap);
             ConvertUtil.convertToModelForUpdateNew(updateObj, object);
             service.updateEntity(updateObj);
-            retmap=doOnUpdate(request,response,object);
-
+            doAfterUpdate(request,response,object,retMap);
+            wrapSuccess(retMap);
         }catch (Exception ex){
             log.error("{}",ex);
-            finsiTag=false;
+            wrapFailed(retMap,ex);
         }
-        retmap.put("success",finsiTag);
-        return retmap;
-    }
-    protected Map<String, String> wrapSaveRequest(HttpServletRequest request)
-    {
-        return wrapRequest(request);
+        return retMap;
     }
 
-    protected void wrapSaveResponse(HttpServletResponse response, boolean finishTag, Long id, Map<String, Object> retmap)
+    protected void doAfterAdd(HttpServletRequest request, HttpServletResponse response,BaseObject obj,Map<String,Object> retMap)
     {
-        retmap.put("ok", Boolean.valueOf(finishTag));
-        retmap.put("id", id);
+
     }
 
-    protected void wrapSuccess(HttpServletRequest request, HttpServletResponse response, Map<String, Object> retMap)
-    {
-        retMap.put("success", Boolean.valueOf(true));
-    }
-
-    protected void wrapFailed(HttpServletRequest request, HttpServletResponse response, Map<String, Object> retMap, Exception ex)
-    {
-        retMap.put("success", Boolean.valueOf(false));
-        retMap.put("message", ex.getMessage());
-    }
-
-    protected Map<String, Object> doOnAdd(HttpServletRequest request, HttpServletResponse response, BaseObject obj)
-    {
-        Map<String, Object> retmap = new HashMap();
-        retmap.put("vo", obj);
-        return retmap;
-    }
-
-    protected Map<String, Object> doOnView(HttpServletRequest request, HttpServletResponse response, BaseObject obj)
+    protected void doAfterView(HttpServletRequest request, HttpServletResponse response, BaseObject obj,Map<String,Object> retMap)
             throws Exception
     {
-        Map<String, Object> retmap = new HashMap();
-        ConvertUtil.objectToMapObj(retmap, obj);
-        return retmap;
+        retMap.put("model",obj);
     }
 
-    protected Map<String, Object> doOnEdit(HttpServletRequest request, HttpServletResponse response, BaseObject obj)
+    protected void doAfterEdit(HttpServletRequest request, HttpServletResponse response, BaseObject obj,Map<String,Object> retMap)
             throws Exception
     {
-        Map<String, Object> retmap = new HashMap();
-        ConvertUtil.objectToMapObj(retmap, obj);
-        return retmap;
+        retMap.put("model",obj);
     }
 
-    protected Map<String, Object> doOnUpdate(HttpServletRequest request, HttpServletResponse response, BaseObject obj)
+    protected void doAfterUpdate(HttpServletRequest request, HttpServletResponse response, BaseObject obj,Map<String,Object> retMap)
     {
-        Map<String, Object> retmap = new HashMap();
-        retmap.put("vo", obj);
-        return retmap;
     }
 
-    protected Map<String, Object> doOnQuery(HttpServletRequest request, HttpServletResponse response, PageQuery query)
+    protected void doAfterQuery(HttpServletRequest request, HttpServletResponse response, PageQuery query, Map<String,Object> retMap)
     {
-        Map<String, Object> retmap = new HashMap();
-        this.service.queryBySelectId(query);
-        retmap.put("query", query);
-        return retmap;
+        retMap.put("query", query);
     }
 
-    protected void doOnDelete(HttpServletRequest request, HttpServletResponse response, Long[] ids) {}
+    protected void doAfterDelete(HttpServletRequest request, HttpServletResponse response, P[] ids,Map<String,Object> retMap) {
+
+    }
 
 
-    public Map<String, Object> doDelete(HttpServletRequest request, HttpServletResponse response, Long[] ids)
+    public Map<String, Object> doDelete(HttpServletRequest request, HttpServletResponse response, P[] ids)
     {
         Map<String, Object> retMap = new HashMap();
         try
         {
             this.service.deleteEntity(ids);
-            doOnDelete(request, response, ids);
-            wrapSuccess(request, response, retMap);
+            doAfterDelete(request, response, ids,retMap);
+            wrapSuccess(retMap);
         }
         catch (Exception ex)
         {
-            wrapFailed(request, response, retMap, ex);
+            wrapFailed(retMap, ex);
         }
         return retMap;
     }
 
     public Map<String, Object> doQuery(HttpServletRequest request, HttpServletResponse response, PageQuery query)
     {
-        Map<String, String> valueMap = wrapRequest(request);
-        if (query.getParameters().isEmpty()) {
-            query.setParameters(valueMap);
-        }
-        return doOnQuery(request, response, query);
-    }
+        Map<String,Object> retMap=new HashMap<>();
+        try {
+            Map<String, String> valueMap = wrapRequest(request);
 
+            if (query.getParameters().isEmpty()) {
+                query.setParameters(valueMap);
+            }
+            this.service.queryBySelectId(query);
+            doAfterQuery(request, response, query,retMap);
+            wrapSuccess(retMap);
+        }catch (Exception ex){
+            wrapFailed(retMap,ex);
+        }
+        return retMap;
+    }
+    @SuppressWarnings(value = "uncheck")
     public void afterPropertiesSet() throws Exception
     {
         if (this.serviceType != null) {
             this.service = (S) SpringContextHolder.getBean(this.serviceType);
         }
     }
-    protected Long[] wrapPrimaryKeys(String keys)
-    {
-        String[] ids = keys.split(",");
-        Long[] idArr = new Long[ids.length];
-        for (int i = 0; i < idArr.length; i++) {
-            idArr[i] = Long.valueOf(ids[i]);
+
+    protected P[] parseId(String[] ids) throws Exception {
+        if (ids == null || ids.length == 0) {
+            throw new Exception("ID not exists!");
         }
-        return idArr;
-    }
-
-    protected Map<String, Object> wrapSuccess(String displayMsg)
-    {
-        Map<String, Object> retmap = new HashMap();
-        retmap.put("success", true);
-        retmap.put("message", displayMsg);
-        return retmap;
-    }
-
-    protected void wrapSuccess(Map<String, Object> retmap, String displayMsg)
-    {
-        retmap.put("success", true);
-        retmap.put("message", displayMsg);
-    }
-
-    protected Map<String, Object> wrapObject(Object object)
-    {
-        Map<String, Object> retmap = new HashMap();
-        retmap.put("success", true);
-        retmap.put("data", object);
-        return retmap;
-    }
-
-    protected Map<String, Object> wrapError(Exception ex)
-    {
-        Map<String, Object> retmap = new HashMap();
-        retmap.put("success", false);
-        retmap.put("message", ex.getMessage());
-        return retmap;
-    }
-
-    public Map<String, String> wrapRequest(HttpServletRequest request)
-    {
-        Map<String, String> map = new HashMap();
-        Iterator<String> iter = request.getParameterMap().keySet().iterator();
-        while (iter.hasNext())
-        {
-            String key = (String)iter.next();
-            map.put(key, request.getParameter(key));
-        }
-        return map;
-    }
-
-
-    public PageQuery wrapPageQuery(HttpServletRequest request)
-    {
-        PageQuery query = new PageQuery();
-        Map map = request.getParameterMap();
-        Iterator<String> iter = map.keySet().iterator();
-        Map<String, Object> tmpmap = new HashMap();
-        while (iter.hasNext())
-        {
-            String key = (String)iter.next();
-            if (key.startsWith("query.")) {
-                tmpmap.put(key.substring(6, key.length()), request.getParameter(key));
+        List<P> list=new ArrayList<P>();
+        try {
+            for (int i = 0; i < ids.length; i++) {
+                P p=pkType.newInstance();
+                valueOfMethod.invoke(p,ids[i]);
+                list.add(p);
             }
+        } catch (Exception ex) {
+            log.error("{}",ex);
         }
-        try
-        {
-            ConvertUtil.mapToObject(query, tmpmap);
-        }
-        catch (Exception ex)
-        {
-            ex.printStackTrace();
-        }
-        return query;
+        if(list.isEmpty()){
+            return null;
+        }else
+            return (P[])list.toArray();
     }
 
 }

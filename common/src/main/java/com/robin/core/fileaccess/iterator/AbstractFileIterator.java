@@ -16,7 +16,7 @@
 package com.robin.core.fileaccess.iterator;
 
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
-import com.robin.core.fileaccess.meta.DataCollectionMeta.DataSetColumnMeta;
+import com.robin.core.fileaccess.meta.DataSetColumnMeta;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,10 +45,8 @@ public abstract class AbstractFileIterator implements Iterator<Map<String,Object
 		this.instream=stream;
 	}
 	public void initReader() throws UnsupportedEncodingException{
-		if (reader == null) {
-			if (instream != null) {
-				reader = new BufferedReader(new InputStreamReader(instream, colmeta.getEncode()));
-			}
+		if (reader == null && instream!=null) {
+			reader = new BufferedReader(new InputStreamReader(instream, colmeta.getEncode()));
 		}
 	}
 

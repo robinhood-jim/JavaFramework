@@ -382,16 +382,7 @@ public class SimpleJdbcDao {
 		}
 		return map;
 	}
-	/**
-	 * 获取连接失败后重试到获取成功为止,添加持续连接参数
-	 * @param sql
-	 * @param handler
-	 * @param retryNums 重试次数
-	 * @param waitSecond 休眠时间
-	 * @param getConnectLoop 持续连接参数
-	 * @return
-	 * @throws DAOException
-	 */
+
 	public Serializable queryByHandler(final String sql,ResultSetHandler<? extends Serializable> handler) throws DAOException{
 		Connection conn=null;
 		Statement stmt=null;
@@ -767,16 +758,7 @@ public class SimpleJdbcDao {
 		}
 
 	}
-	/**
-	 * 按照sql导入数据到文件到数据库  
-	 * @param file
-	 * @param split
-	 * @param columns 字段，用分号隔开，不填为所有字段
-	 * @param tableName
-	 * @param dateFormat
-	 * @param reader
-	 * @return
-	 */
+
 	public boolean importByFile(String columns,String tableName,String split,String dateFormat,BufferedReader reader) throws DAOException{
 		Connection conn=getConnection();
 		boolean runOk=true;

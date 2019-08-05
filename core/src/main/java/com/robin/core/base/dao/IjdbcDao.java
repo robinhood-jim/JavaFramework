@@ -134,13 +134,7 @@ public interface IjdbcDao {
 	 * @throws DAOException
 	 */
 	public PageQuery queryBySql(String querySQL,String countSql,String[] displayname,PageQuery pageQuery)throws DAOException;
-	/**
-	 * 
-	 * @param sql
-	 * @param objects
-	 * @return
-	 * @throws DAOException
-	 */
+
 	public long executeSqlWithReturn(List<Map<String, Object>> field,String sql) throws DAOException;
 	public Long createVO(BaseObject obj) throws DAOException;
 	public int updateVO(Class<? extends BaseObject> clazz,BaseObject obj) throws DAOException;

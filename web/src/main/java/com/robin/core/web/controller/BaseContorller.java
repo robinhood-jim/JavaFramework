@@ -15,28 +15,27 @@
  */
 package com.robin.core.web.controller;
 
-import com.robin.core.base.dao.JdbcDao;
-import com.robin.core.base.exception.DAOException;
 import com.robin.core.base.spring.SpringContextHolder;
+import com.robin.core.base.util.Const;
 import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.query.util.PageQuery;
-import com.robin.core.query.util.QueryFactory;
 import com.robin.core.web.codeset.Code;
+import com.robin.core.web.international.Translator;
+import com.robin.core.web.util.CodeSetUtil;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.cache.annotation.CachePut;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import javax.servlet.http.HttpServletRequest;
+import java.util.*;
 
 
 public abstract class BaseContorller
 {
 
     protected Logger log = LoggerFactory.getLogger(getClass());
+    protected static final String COL_MESSAGE="message";
+    protected static final String COL_SUCCESS="success";
 
     protected List<Map<String, String>> convertObjToMapList(List<?> orglist)
             throws Exception
@@ -60,13 +59,13 @@ public abstract class BaseContorller
             return;
         }
         String[] codes;
-        if (codeSetNos.indexOf(";") > 0)
+        if (codeSetNos.indexOf(";") !=-1)
         {
             codes = codeSetNos.split(";");
         }
         else
         {
-            if (codeSetNos.indexOf(",") > 0)
+            if (codeSetNos.indexOf(",") !=-1)
             {
                 codes = codeSetNos.split(",");
             }
@@ -76,70 +75,17 @@ public abstract class BaseContorller
                 codes[0] = codeSetNos;
             }
         }
+        CodeSetUtil util= (CodeSetUtil) SpringContextHolder.getBean(CodeSetUtil.class);
         for (int i = 0; i < codes.length; i++)
         {
-            getCacheCode(codes[i]);
+            util.getCacheCode(codes[i]);
         }
     }
-    @CachePut(value = "codeSetCache",key = "#codeSetNo")
-    public List<Code> getCacheCode(String codeSetNo) throws DAOException {
-        return getCodeSetDefault(codeSetNo);
-    }
-    protected List<Code> getCodeSetDefault(String codeSetNo){
-        JdbcDao jdbcDao= (JdbcDao) SpringContextHolder.getBean(JdbcDao.class);
-        QueryFactory factory= (QueryFactory) SpringContextHolder.getBean(QueryFactory.class);
-        List<Code> codeList=new ArrayList<>();
-        if(factory.isSelectIdExists("$_GETCODESET")){
-            PageQuery query=new PageQuery();
-            query.setPageSize("0");
-            query.setSelectParamId("$_GETCODESET");
-            query.getParameters().put("queryString"," and codeSetNo=?");
-            query.setParameterArr(new Object[]{codeSetNo});
-            jdbcDao.queryBySelectId(query);
-            if(!query.getRecordSet().isEmpty()){
-                for(Map<String,Object> map:query.getRecordSet()){
-                    codeList.add(new Code(map.get("ITEMNAME").toString(),map.get("ITEMVALUE").toString()));
-                }
-            }
-            return codeList;
-        }else{
-            throw new DAOException(" Query Parameter $_GETCODESET not config,Please config queryConfig xml");
-        }
+    protected void setCode(String codeSetNo, List<?> codes, String label, String value) {
+        CodeSetUtil util= (CodeSetUtil) SpringContextHolder.getBean(CodeSetUtil.class);
+        util.setCode(codeSetNo,codes,label,value);
     }
 
-
-    @CachePut(value = "codeSetCache",key = "#codeSetNo")
-    public List<Code> setCode(String codeSetNo, List<?> codes, String label, String value)
-    {
-        if (codes == null) {
-            return null;
-        }
-        List<Code> al = new ArrayList();
-        for (int i = 0; i < codes.size(); i++)
-        {
-            Code code = new Code();
-            Object objtmp = codes.get(i);
-            Object ol ;
-            Object ov;
-            try
-            {
-                ol = PropertyUtils.getProperty(objtmp, label);
-                ov = PropertyUtils.getProperty(objtmp, value);
-            }
-            catch (Exception e)
-            {
-                ol = null;
-                ov = null;
-            }
-            if ((ol != null) && (ov != null))
-            {
-                code.setCodeName(ol.toString());
-                code.setValue(ov.toString());
-                al.add(code);
-            }
-        }
-        return al;
-    }
 
     protected void filterListByCodeSet(PageQuery query, String columnName, String codeNo)
     {
@@ -173,7 +119,8 @@ public abstract class BaseContorller
 
     protected String findCodeName(String codeNo, String value)
     {
-        List<Code> list = getCacheCode(codeNo);
+        CodeSetUtil util= (CodeSetUtil) SpringContextHolder.getBean(CodeSetUtil.class);
+        List<Code> list = util.getCacheCode(codeNo);
         if (value == null) {
             return "";
         }
@@ -189,6 +136,144 @@ public abstract class BaseContorller
         }
         return "";
     }
+    protected List<Code> findCodeSetArr(String codeSetNo){
+        CodeSetUtil util= (CodeSetUtil) SpringContextHolder.getBean(CodeSetUtil.class);
+        return util.getCacheCode(codeSetNo);
+    }
+    protected void insertNullSelect(List<Map<String, Object>> list)
+    {
+        Map<String, Object> tmap = new HashMap();
+        tmap.put("value", "");
+        String message=Translator.toLocale("combo.NullDisplay");
+        tmap.put("text", message);
+        list.add(tmap);
+    }
+    protected List<Map<String,Object>> wrapYesNoCombo(boolean insertNullVal){
+        List<Map<String,Object>> list=new ArrayList<>();
+        if (insertNullVal) {
+            insertNullSelect(list);
+        }
+        Map<String, Object> tmap = new HashMap();
+        tmap.put("value", Const.VALID);
+        tmap.put("text", Translator.toLocale("combo.yesDisplay"));
+        list.add(tmap);
+        Map<String, Object> tmap1 = new HashMap();
+        tmap1.put("value", "0");
+        tmap1.put("text", Translator.toLocale("combo.noDisplay"));
+        list.add(tmap1);
+        return list;
+    }
+    protected List<Map<String,Object>> wrapCodeSet(String codeSetNo){
+        List<Map<String,Object>> list=new ArrayList<>();
+        CodeSetUtil util= (CodeSetUtil) SpringContextHolder.getBean(CodeSetUtil.class);
+        List<Code> codeList=util.getCacheCode(codeSetNo);
+        for(Code code:codeList){
+            Map<String, Object> tmap = new HashMap();
+            tmap.put("value", code.getValue());
+            tmap.put("text", code.getCodeName());
+            list.add(tmap);
+        }
+        return list;
+    }
+    protected void wrapResponse(Map<String,Object> retmap,Exception ex){
+        if(ex!=null){
+            wrapFailed(retmap,ex);
+        }else
+        {
+            wrapSuccess(retmap,"success");
+        }
+    }
 
+
+    protected void wrapSuccess(Map<String, Object> retMap)
+    {
+        retMap.put(COL_SUCCESS, true);
+    }
+
+    protected void wrapFailed( Map<String, Object> retMap, Exception ex)
+    {
+        retMap.put(COL_SUCCESS, false);
+        retMap.put(COL_MESSAGE, ex.getMessage());
+    }
+    protected Long[] wrapPrimaryKeys(String keys)
+    {
+        String[] ids = keys.split(",");
+        Long[] idArr = new Long[ids.length];
+        for (int i = 0; i < idArr.length; i++) {
+            idArr[i] = Long.valueOf(ids[i]);
+        }
+        return idArr;
+    }
+
+    protected Map<String, Object> wrapSuccess(String displayMsg)
+    {
+        Map<String, Object> retmap = new HashMap();
+        retmap.put(COL_SUCCESS, true);
+        retmap.put(COL_MESSAGE, displayMsg);
+        return retmap;
+    }
+
+    protected void wrapSuccess(Map<String, Object> retmap, String displayMsg)
+    {
+        retmap.put(COL_SUCCESS, true);
+        retmap.put(COL_MESSAGE, displayMsg);
+    }
+    protected void  wrapError(Map<String, Object> retmap,String message)
+    {
+        retmap.put(COL_SUCCESS, false);
+        retmap.put(COL_MESSAGE, message);
+    }
+    protected Map<String, Object> wrapObject(Object object)
+    {
+        Map<String, Object> retmap = new HashMap();
+        retmap.put(COL_SUCCESS, true);
+        retmap.put("data", object);
+        return retmap;
+    }
+
+    protected Map<String, Object> wrapError(Exception ex)
+    {
+        Map<String, Object> retmap = new HashMap();
+        retmap.put(COL_SUCCESS, false);
+        retmap.put(COL_MESSAGE, ex.getMessage());
+        return retmap;
+    }
+
+    public Map<String, String> wrapRequest(HttpServletRequest request)
+    {
+        Map<String, String> map = new HashMap();
+        Iterator<String> iter = request.getParameterMap().keySet().iterator();
+        while (iter.hasNext())
+        {
+            String key = (String)iter.next();
+            map.put(key, request.getParameter(key));
+        }
+        return map;
+    }
+
+
+    public PageQuery wrapPageQuery(HttpServletRequest request)
+    {
+        PageQuery query = new PageQuery();
+        Map map = request.getParameterMap();
+        Iterator<String> iter = map.keySet().iterator();
+        Map<String, Object> tmpmap = new HashMap();
+        while (iter.hasNext())
+        {
+            String key = iter.next();
+            if (key.startsWith("query.")) {
+                tmpmap.put(key.substring(6, key.length()), request.getParameter(key));
+            }
+        }
+        try
+        {
+            ConvertUtil.mapToObject(query, tmpmap);
+        }
+        catch (Exception ex)
+        {
+            ex.printStackTrace();
+        }
+        return query;
+    }
 
 }

@@ -17,8 +17,10 @@ package com.robin.core.web.codeset;
 
 import lombok.Data;
 
+import java.io.Serializable;
+
 @Data
-public class Code {
+public class Code implements Serializable {
     private String codeName;
     private String value;
     private String parentCodeId;

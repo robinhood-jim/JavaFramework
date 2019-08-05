@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<QUERY>
+ 
+<!-- 查询用户:SysUserAction 开始 -->
+	<SQLSCRIPT ID="GET_SYSUSER_PAGE">  
+		<FROMSQL>from t_sys_user_info a 
+		       where 1=1 ${queryString}
+		 </FROMSQL>
+		 <FIELD>a.id AS id, a.user_name AS userName, a.user_account AS userAccount, a.account_type as accountType,
+		              a.org_id AS orgId,a.dept_id AS deptId,a.user_status AS userStatus, a.remark AS remark</FIELD>
+	</SQLSCRIPT>
+	<SQLSCRIPT ID="GET_SYSORG_PAGE">  
+		<FROMSQL>from t_sys_org_info a where 1=1 ${queryString}
+		 </FROMSQL>
+		 <FIELD>a.id AS id, a.org_name AS orgName, a.org_code AS orgCode, a.remark as remark</FIELD>
+	</SQLSCRIPT>
+	<SQLSCRIPT ID="GET_SYSROLE_PAGE">  
+		<FROMSQL>from t_sys_role_info a where 1=1 ${queryString}
+		 </FROMSQL>
+		 <FIELD>a.id AS id, a.role_name AS name, a.role_type AS type, a.role_status as status</FIELD>
+	</SQLSCRIPT>
+	<SQLSCRIPT ID="get_expert_question">  
+		<FROMSQL>select a.id as qid,b.name as cname,b.id as cid,a.title as qtitle from ask_question a , ask_category b where a.cid = b.id
+			 where 1=1
+		 </FROMSQL>
+		 <FIELD>a.id as qid,b.name as cname,b.id as cid,a.title as qtitle</FIELD>
+	</SQLSCRIPT>
+	
+	<SQLSCRIPT ID="QUERY_LEMMA">  
+		<FROMSQL>from shw.lore_lexicalentry as a, shw.lore_item_info as b 
+				where b.lore_model_id = a.lore_type_id and item_code like '${itemCode}%'
+		 </FROMSQL>
+		 <FIELD>a.LEMMA_ID as lemmaId ,a.LEMMA_VERSION_ID as version , a.LORE_TYPE_ID as typeId ,a.LEMMA_CREATE_PER as creator,a.LEMMA_TITLE as title , a.LEMMA_CREATE_TIME as time , a.LEMMA_LAST_UPDATE_TIME as updateTime , a.LEMMA_LAST_UPDATE_PRE as updatePer,a.LEMMA_GRADE as grade , a.LEMMA_ASSESS_SCORE as score ,a.LEMMA_STATE as state , a.LEMMA_CONTEXT as context </FIELD>
+	</SQLSCRIPT>
+	<SQLSCRIPT ID="QUESTIONS_PAGE">  
+		<FROMSQL>from ask_question a , ask_category b 
+				where 1 = 1 and a.cid = b.id ${queryString}
+		 </FROMSQL>
+		 <FIELD>a.id as qid,a.answers as answers,a.price as price,b.name as cname,b.id as cid,a.title as qtitle,a.time as qtime,a.status as qstatus</FIELD>
+	</SQLSCRIPT>
+	<SQLSCRIPT ID="GET_DATASOURCE">  
+		<FROMSQL>from t_base_datasource 
+				where 1 = 1 ${queryString}
+		 </FROMSQL>
+		 <FIELD>id,name,driver_id as driverId,database_name as databaseName,db_type as dbType</FIELD>
+	</SQLSCRIPT>
+	<SQLSCRIPT ID="GET_PROJECTINFO">  
+		<FROMSQL>from t_base_projectinfo a,t_base_datasource b  
+				where a.datasource_id=b.id ${queryString}
+		 </FROMSQL>
+		 <FIELD>a.id as id,a.proj_name as name,a.proj_code as code,a.presist_type as presist,a.webframe_id as webFrame,b.name as datasourceName</FIELD>
+	</SQLSCRIPT>
+	<SQLSCRIPT ID="GET_RESOURCEINFO">
+		<FROMSQL>from (select a.* from t_sys_resource_info a,t_sys_resource_role_r b where a.ID=b.RES_ID and b.ROLE_ID in (${roleIds}) and a.STATUS=1
+			union 
+			select c.* from t_sys_resource_info c,t_sys_resource_user_r d where c.id=d.res_id and d.USER_ID=${userId} and c.STATUS=1)e order by res_code</FROMSQL>
+			<FIELD>id,res_name as name,url,is_leaf as leafTag,res_code as code,pid,seq_no as seqNo</FIELD>
+	</SQLSCRIPT>
+	<SQLSCRIPT ID="GET_DEPTINFO">
+		<FROMSQL>from t_sys_dept_info</FROMSQL>
+			<FIELD>id as value,dept_name as text</FIELD>
+	</SQLSCRIPT>
+	<SQLSCRIPT ID="GET_ORGINFO">
+		<FROMSQL>from t_sys_org_info</FROMSQL>
+			<FIELD>id as value,org_name as text</FIELD>
+	</SQLSCRIPT>
+	<SQLSCRIPT ID="GET_SUBORG">
+		<FROMSQL>from t_sys_org_info where up_org_id=${id} and org_status=1 order by tree_code</FROMSQL>
+		<FIELD>id as id,org_name as text</FIELD>
+	</SQLSCRIPT>
+	<SQLSCRIPT ID="GET_ORGMAXCODE">
+		<FROMSQL>from t_sys_org_info where up_org_id=${id}</FROMSQL>
+		<FIELD>max(tree_code) as code</FIELD>
+	</SQLSCRIPT>
+	<SQLSCRIPT ID="GET_SYSUSERINFO">
+		<FROMSQL>from t_sys_user_info  where 1=1 ${queryCondition}</FROMSQL>
+			<FIELD>id,user_name as name,user_account as account,dept_id as deptId,org_id as orgId</FIELD>
+	</SQLSCRIPT>
+	<SQLSCRIPT ID="$_GETCODESET">
+		<FROMSQL>from t_sys_code a,t_sys_codeset b where a.CS_ID=b.ID and en_name=?</FROMSQL>
+		<FIELD>a.ITEM_NAME as ITEMNAME,a.ITEM_VALUE as ITEMVALUE</FIELD>
+	</SQLSCRIPT>
+
+	
+</QUERY>

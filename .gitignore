@@ -1,0 +1,54 @@
+# maven #
+target
+
+logs
+
+# eclipse #
+.settings
+.project
+.classpath
+.log
+.logs
+
+# windows #
+Thumbs.db
+
+# Mac #
+.DS_Store
+
+# Package Files #
+*.war
+*.ear
+
+# idea #
+.idea
+*.iml
+
+
+*.class
+
+# Package Files #
+*.jar
+out.map
+backup
+
+*.bak
+*.tmp
+*.log
+/bin/
+make.bat
+integration-repo
+/build/
+
+# IDEA metadata and output dirs
+*.ipr
+*.iws
+
+/webapp/WEB-INF/classes/
+/webapp/WEB-INF/test-classes/
+/webapp/WEB-INF/target/
+
+
+
+
+

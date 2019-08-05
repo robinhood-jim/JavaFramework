@@ -28,7 +28,7 @@ public class ExcelRsExtractor extends ResultSetOperationExtractor {
     TableHeaderProp header;
     CreationHelper helper;
 
-    int pos = 2;
+    int pos;
 
     public ExcelRsExtractor(ExcelSheetProp prop,TableHeaderProp header) {
         this.prop=prop;

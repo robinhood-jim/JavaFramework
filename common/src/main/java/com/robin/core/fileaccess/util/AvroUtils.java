@@ -4,6 +4,7 @@ import com.robin.core.base.datameta.DataBaseColumnMeta;
 import com.robin.core.base.util.Const;
 import com.robin.core.exception.ConfigIncorrectException;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
+import com.robin.core.fileaccess.meta.DataSetColumnMeta;
 import org.apache.avro.LogicalTypes;
 import org.apache.avro.Protocol;
 import org.apache.avro.Schema;
@@ -83,7 +84,7 @@ public class AvroUtils {
             if(colmeta.getColumnList()!=null){
                 SchemaBuilder.FieldAssembler<Schema> fields=SchemaBuilder.record(colmeta.getValueClassName()).namespace(colmeta.getClassNamespace()).fields();
 
-                for(DataCollectionMeta.DataSetColumnMeta meta:colmeta.getColumnList()){
+                for(DataSetColumnMeta meta:colmeta.getColumnList()){
                     if(meta.getColumnType().equals(Const.META_TYPE_BIGINT)) {
                         fields=fields.name(meta.getColumnName()).type().nullable().longType().noDefault();
                     }

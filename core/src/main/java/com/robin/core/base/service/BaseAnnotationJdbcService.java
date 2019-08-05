@@ -27,8 +27,10 @@ import com.robin.core.base.dao.util.AnnotationRetrevior;
 import com.robin.core.base.spring.SpringContextHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,8 +46,7 @@ import com.robin.core.sql.util.FilterCondition;
 /**
  * <p>Description:<b>Auto wired Service With defalut methold</b></p>
  */
-
-public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends Serializable> implements IBaseAnnotationJdbcService<V, P>
+public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends Serializable> implements IBaseAnnotationJdbcService<V, P>, InitializingBean
 {
 	// autowire by construct, getBean from BaseObject annotation field MappingEntity jdbcDao
 	protected JdbcDao jdbcDao;
@@ -53,30 +54,35 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 	protected BaseSqlGen sqlGen;
 	protected Class<V> type;
 	protected Logger logger=LoggerFactory.getLogger(getClass());
+	protected Map<String,String> tableMap;
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public BaseAnnotationJdbcService(){
 		Type genericSuperClass = getClass().getGenericSuperclass();
 		ParameterizedType parametrizedType;
 		if (genericSuperClass instanceof ParameterizedType) { // class
-		    parametrizedType = (ParameterizedType) genericSuperClass;
+			parametrizedType = (ParameterizedType) genericSuperClass;
 		} else if (genericSuperClass instanceof Class) { // in case of CGLIB proxy
-		    parametrizedType = (ParameterizedType) ((Class<?>) genericSuperClass).getGenericSuperclass();
+			parametrizedType = (ParameterizedType) ((Class<?>) genericSuperClass).getGenericSuperclass();
 		} else {
-		    throw new IllegalStateException("class " + getClass() + " is not subtype of ParametrizedType.");
+			throw new IllegalStateException("class " + getClass() + " is not subtype of ParametrizedType.");
 		}
-        type = (Class) parametrizedType.getActualTypeArguments()[0];
+		type = (Class) parametrizedType.getActualTypeArguments()[0];
 		//get JdbcDao by model annotation jdbcDao
 		if(type!=null){
-			Map<String,String> tableMap=AnnotationRetrevior.getMappingTable(type);
-			//if use JPA,can not use dynamic DataSource Property,then use Default JdbcDao
-			if(tableMap!=null && tableMap.containsKey("jdbcDao") && tableMap.get("jdbcDao")!=null){
-				jdbcDao= (JdbcDao) SpringContextHolder.getBean(tableMap.get("jdbcDao"));
-			}else{
-				jdbcDao= (JdbcDao) SpringContextHolder.getBean("jdbcDao");
-			}
+			tableMap=AnnotationRetrevior.getMappingTable(type);
 		}
 	}
-	
+
+	@Override
+	public void afterPropertiesSet() {
+		//if use JPA,can not use dynamic DataSource Property,then use Default JdbcDao
+		if(tableMap!=null && tableMap.containsKey("jdbcDao") && !tableMap.get("jdbcDao").isEmpty()){
+			jdbcDao= (JdbcDao) SpringContextHolder.getBean(tableMap.get("jdbcDao"));
+		}else{
+			jdbcDao= (JdbcDao) SpringContextHolder.getBean("jdbcDao");
+		}
+	}
+
 	@Transactional(propagation=Propagation.REQUIRED,rollbackFor=RuntimeException.class)
 	public Long saveEntity(V vo) throws ServiceException{
 		try{
@@ -177,7 +183,7 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 	@SuppressWarnings("unchecked")
 	@Transactional(readOnly=true)
 	public List<V> queryByField(String fieldName,String oper,Object... fieldValues) throws ServiceException{
-		List<V> retlist=new ArrayList<V>();
+		List<V> retlist;
 		try{	
 			retlist=(List<V>) jdbcDao.queryByField(type, fieldName, oper, fieldValues);
 		}

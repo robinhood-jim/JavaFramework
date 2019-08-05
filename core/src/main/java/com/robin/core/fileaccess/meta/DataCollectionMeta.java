@@ -31,53 +31,7 @@ public class DataCollectionMeta {
 	private String primaryKeys="";
 	private Map<String,Void> columnNameMap=new HashMap<String, Void>();
 	
-	public static class DataSetColumnMeta{
-		private String columnName;
-		private String columnType;
-		private Object defaultNullValue;
-		private boolean required;
-		protected DataSetColumnMeta(String columnName,String columnType,Object defaultNullValue){
-			this.columnName=columnName;
-			this.columnType=columnType;
-			if(defaultNullValue!=null){
-				this.defaultNullValue=defaultNullValue;
-			}else{
-				this.defaultNullValue="";
-			}
-		}
-		protected DataSetColumnMeta(String columnName,String columnType,Object defaultNullValue,boolean required){
-			this.columnName=columnName;
-			this.columnType=columnType;
-			if(defaultNullValue!=null){
-				this.defaultNullValue=defaultNullValue;
-			}else{
-				this.defaultNullValue="";
-			}
-			this.required=required;
-		}
-		public String getColumnName() {
-			return columnName;
-		}
-		public void setColumnName(String columnName) {
-			this.columnName = columnName;
-		}
-		public String getColumnType() {
-			return columnType;
-		}
-		public void setColumnType(String columnType) {
-			this.columnType = columnType;
-		}
-		public Object getDefaultNullValue() {
-			return defaultNullValue;
-		}
-		public void setDefaultNullValue(Object defaultNullValue) {
-			this.defaultNullValue = defaultNullValue;
-		}
 
-		public boolean isRequired() {
-			return required;
-		}
-	}
 	public void addColumnMeta(String columnName,String columnType,String defaultNullValue){
 		this.columnList.add(new DataSetColumnMeta(columnName, columnType, defaultNullValue));
 		columnNameMap.put(columnName,null);

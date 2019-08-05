@@ -17,7 +17,7 @@ package com.robin.core.convert.util;
 
 import com.robin.core.base.model.BaseObject;
 import com.robin.core.base.util.Const;
-import com.robin.core.fileaccess.meta.DataCollectionMeta.DataSetColumnMeta;
+import com.robin.core.fileaccess.meta.DataSetColumnMeta;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -21,10 +21,16 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Component;
+
 
 public class SpringContextHolder implements ApplicationContextAware, DisposableBean{
 	private static ApplicationContext context;
 	private Logger logger=LoggerFactory.getLogger(getClass());
+	public SpringContextHolder(){
+
+	}
 	
 	public static void injectApplicationContext(ApplicationContext appcontext){
 		if (context == null){
@@ -51,9 +57,8 @@ public class SpringContextHolder implements ApplicationContextAware, DisposableB
 	public void setApplicationContext(ApplicationContext appcontext)
 			throws BeansException {
 		logger.info("begin to initalize context!!!");
-		logger.info("context=",appcontext);
-		System.err.println("appcontent="+appcontext);
 		injectApplicationContext(appcontext);
+		logger.info("end to initalize context!!!");
 	}
 
 

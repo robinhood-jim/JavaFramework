@@ -1,354 +1,328 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<parent>
-		<groupId>com.robin</groupId>
-		<artifactId>frame</artifactId>
-		<version>1.0-SNAPSHOT</version>
-	</parent>
-	<artifactId>core</artifactId>
-	<packaging>jar</packaging>
-	<name>core</name>
-	<url>http://maven.apache.org</url>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.robin</groupId>
+        <artifactId>frame</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+    <artifactId>core</artifactId>
+    <packaging>jar</packaging>
+    <name>core</name>
+    <url>http://maven.apache.org</url>
 
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-	</properties>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
 
-	<dependencies>
-		<!-- Apache commons start -->
-		<dependency>
-			<groupId>commons-lang</groupId>
-			<artifactId>commons-lang</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>commons-pool</groupId>
-			<artifactId>commons-pool</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>commons-io</groupId>
-			<artifactId>commons-io</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>commons-dbcp</groupId>
-			<artifactId>commons-dbcp</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>commons-codec</groupId>
-			<artifactId>commons-codec</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>commons-beanutils</groupId>
-			<artifactId>commons-beanutils</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>commons-dbutils</groupId>
-			<artifactId>commons-dbutils</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-compress</artifactId>
-		</dependency>
-		<!-- Apache commons end -->
-		<!-- Spring start -->
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-core</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-context</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-tx</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-orm</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-jdbc</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-test</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>javax.persistence</groupId>
-			<artifactId>com.springsource.javax.persistence</artifactId>
-		</dependency>
-		<!-- Spring end -->
-		<dependency>
-			<groupId>postgresql</groupId>
-			<artifactId>postgresql</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-log4j12</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.google.code.gson</groupId>
-			<artifactId>gson</artifactId>
-		</dependency>
+    <dependencies>
+        <!-- Apache commons start -->
+        <dependency>
+            <groupId>commons-lang</groupId>
+            <artifactId>commons-lang</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>commons-pool</groupId>
+            <artifactId>commons-pool</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>commons-dbcp</groupId>
+            <artifactId>commons-dbcp</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>commons-beanutils</groupId>
+            <artifactId>commons-beanutils</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>commons-dbutils</groupId>
+            <artifactId>commons-dbutils</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-compress</artifactId>
+        </dependency>
+        <!-- Apache commons end -->
+        <!-- Spring start -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-tx</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-orm</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-jdbc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>javax.persistence</groupId>
+            <artifactId>com.springsource.javax.persistence</artifactId>
+        </dependency>
+        <!-- Spring end -->
+        <dependency>
+            <groupId>postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+        </dependency>
 
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<scope>test</scope>
-		</dependency>
-
-
-		<dependency>
-			<groupId>dom4j</groupId>
-			<artifactId>dom4j</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>cglib</groupId>
-			<artifactId>cglib-nodep</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.xeustechnologies</groupId>
-			<artifactId>jcl-core</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>servlet-api</artifactId>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>net.sf.supercsv</groupId>
-			<artifactId>super-csv</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>mysql</groupId>
-			<artifactId>mysql-connector-java</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.oracle</groupId>
-			<artifactId>ojdbc14</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.hibernate</groupId>
-			<artifactId>hibernate-core</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.google.guava</groupId>
-			<artifactId>guava</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.freemarker</groupId>
-			<artifactId>freemarker</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-vfs2</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.aspectj</groupId>
-			<artifactId>aspectjlib</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.scannotation</groupId>
-			<artifactId>scannotation</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.anarres.lzo</groupId>
-			<artifactId>lzo-core</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.anarres.lzo</groupId>
-			<artifactId>lzo-hadoop</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.xerial.snappy</groupId>
-			<artifactId>snappy-java</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.tukaani</groupId>
-			<artifactId>xz</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.microsoft.sqlserver</groupId>
-			<artifactId>mssql-jdbc</artifactId>
-			<exclusions>
-				<exclusion>
-					<artifactId>azure-keyvault</artifactId>
-					<groupId>com.microsoft.azure</groupId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>org.lz4</groupId>
-			<artifactId>lz4-java</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.projectlombok</groupId>
-			<artifactId>lombok</artifactId>
-		</dependency>
-
-	</dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
 
 
-	<build>
-		<sourceDirectory>src/main/java</sourceDirectory>
-		<resources>
-			<resource>
-				<directory>src/main/resources</directory>
-				<!--<excludes>
-					<exclude>**/*</exclude>
-				</excludes>-->
-			</resource>
-		</resources>
-		<plugins>
-			<plugin>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.1</version>
-				<configuration>
-					<source>1.6</source>
-					<target>1.6</target>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jar-plugin</artifactId>
-				<configuration>
-					<archive>
-						<manifest>
-							<addClasspath>true</addClasspath>
-							<classpathPrefix>lib/</classpathPrefix>
-						</manifest>
-					</archive>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-dependency-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>copy</id>
-						<phase>install</phase>
-						<goals>
-							<goal>copy-dependencies</goal>
-						</goals>
-						<configuration>
-							<outputDirectory>
-								${project.build.directory}/lib
-							</outputDirectory>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-resources-plugin</artifactId>
-				<configuration>
-					<encoding>UTF-8</encoding>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>com.github.wvengen</groupId>
-				<artifactId>proguard-maven-plugin</artifactId>
-				<version>2.0.14</version>
-				<executions>
-					<execution>
-						<phase>package</phase>
-						<goals>
-							<goal>proguard</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<proguardVersion>5.1</proguardVersion>
-					<injar>core-1.0-SNAPSHOT.jar</injar>
-					<outjar>core-assembly.jar</outjar>
-					<!--<attach>true</attach>-->
-					<!--<attachArtifactClassifier>pg</attachArtifactClassifier>-->
-					<!-- attach 的作用是在 install 与 deploy 时将生成的 pg 文件也安装与部署 -->
-					<options> <!-- 详细配置方式参考 ProGuard 官方文档 -->
-						<!--<option>-dontobfuscate</option>-->
-						<option>-keepattributes Signature</option>
-						<option>-keepattributes Exceptions</option>
-						<option><![CDATA[-keep public class * {public protected <fields>;public protected <methods>;}]]></option>
-						<option>-keep public class * implements java.io.Serializable{public protected private *;}</option>
-						<option>-keep public class * extends com.robin.core.base.model.BaseObject{
-							public protected private *;
-							}</option>
-						<!--<option>-keep  class * implements org.apache.commons.dbutils.ResultSetHandler{
-							public protected private *;
-							}</option>-->
-						<option><![CDATA[-keepclassmembers class * implements org.apache.commons.dbutils.ResultSetHandler {
+        <dependency>
+            <groupId>dom4j</groupId>
+            <artifactId>dom4j</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>cglib</groupId>
+            <artifactId>cglib-nodep</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.xeustechnologies</groupId>
+            <artifactId>jcl-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>servlet-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>net.sf.supercsv</groupId>
+            <artifactId>super-csv</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.oracle</groupId>
+            <artifactId>ojdbc14</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.freemarker</groupId>
+            <artifactId>freemarker</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-vfs2</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjlib</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.scannotation</groupId>
+            <artifactId>scannotation</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.anarres.lzo</groupId>
+            <artifactId>lzo-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.anarres.lzo</groupId>
+            <artifactId>lzo-hadoop</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.xerial.snappy</groupId>
+            <artifactId>snappy-java</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.tukaani</groupId>
+            <artifactId>xz</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.microsoft.sqlserver</groupId>
+            <artifactId>mssql-jdbc</artifactId>
+            <exclusions>
+                <exclusion>
+                    <artifactId>azure-keyvault</artifactId>
+                    <groupId>com.microsoft.azure</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.lz4</groupId>
+            <artifactId>lz4-java</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+        </dependency>
+
+
+    </dependencies>
+
+
+    <build>
+        <sourceDirectory>src/main/java</sourceDirectory>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <excludes>
+                    <exclude>**/*</exclude>
+                </excludes>
+            </resource>
+        </resources>
+        <plugins>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addClasspath>true</addClasspath>
+                            <classpathPrefix>lib/</classpathPrefix>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>
+                                ${project.build.directory}/lib
+                            </outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <configuration>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>com.github.wvengen</groupId>
+                <artifactId>proguard-maven-plugin</artifactId>
+                <version>2.0.14</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>proguard</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <proguardVersion>5.1</proguardVersion>
+                    <injar>core-1.0-SNAPSHOT.jar</injar>
+                    <addMavenDescriptor>true</addMavenDescriptor>
+                    <injarNotExistsSkip>true</injarNotExistsSkip>
+                    <libs>
+                        <lib>${java.home}/lib/rt.jar</lib>
+                    </libs>
+
+                    <options> <!-- Detail see ProGuard Config -->
+
+                        <option>-keepattributes Signature,InnerClasses,Exceptions,SourceFile,LineNumberTable,*Annotation*</option>
+                        <option>
+                            <![CDATA[-keep public class * {public protected <fields>;public protected <methods>;}]]></option>
+                        <option>-keep public class * implements java.io.Serializable{public protected private *;}
+                        </option>
+
+                        <option>-keep public class * extends com.robin.core.base.model.BaseObject{ public protected
+                            private *; }
+                        </option>
+                        <option>-keep enum * { *; }</option>
+
+                        <option><![CDATA[-keepclassmembers enum * {
+							<fields>;
+							public static **[] values();
+    						public static ** valueOf(java.lang.String);
+						}]]></option>
+                        <option><![CDATA[-keepclassmembers class * implements org.apache.commons.dbutils.ResultSetHandler {
 							<methods>;
 							}]]></option>
-						<option><![CDATA[-keepclassmembers class * implements org.springframework.orm.hibernate3.HibernateCallback {
+                        <option><![CDATA[-keepclassmembers class * implements org.springframework.orm.hibernate3.HibernateCallback {
 							<methods>;
 							}]]></option>
-						<option><![CDATA[-keepclassmembers class * implements org.springframework.jdbc.core.RowMapper {
+                        <option><![CDATA[-keepclassmembers class * implements org.springframework.jdbc.core.RowMapper {
 							<methods>;
 							}]]></option>
-						<option><![CDATA[-keepclassmembers class * extends com.robin.core.query.extractor.SplitPageResultSetExtractor {
+                        <option><![CDATA[-keepclassmembers class * extends com.robin.core.query.extractor.SplitPageResultSetExtractor {
 							<methods>;
 							}]]></option>
-						<option><![CDATA[-keepclassmembers class * implements org.springframework.jdbc.core.ResultSetExtractor {
+                        <option><![CDATA[-keepclassmembers class * implements org.springframework.jdbc.core.ResultSetExtractor {
 							<methods>;
 							}]]></option>
-						<option><![CDATA[-keepclassmembers class * implements java.util.Comparator {
+                        <option><![CDATA[-keepclassmembers class * implements java.util.Comparator {
 							<methods>;
 							}]]></option>
-						<option><![CDATA[-keepclassmembers class * implements org.springframework.jdbc.core.PreparedStatementSetter {
+                        <option><![CDATA[-keepclassmembers class * implements org.springframework.jdbc.core.PreparedStatementSetter {
 							<methods>;
 							}]]></option>
-						<option>-ignorewarnings</option> <!--忽略所有告警-->
-						<option>-dontshrink</option>   <!--不做 shrink -->
-						<option>-printmapping out.map</option>
-						<!--<option>-dontoptimize</option>--><!--不做 optimize -->
-						<!--		<option>-dontskipnonpubliclibraryclasses</option>
-                                <option>-dontskipnonpubliclibraryclassmembers</option>-->
-
-						<!--	<option>-repackageclasses org.noahx.proguard.example.project2.pg</option>-->
-						<!--平行包结构（重构包层次），所有混淆的类放在 pg 包下-->
-
-						<!-- 以下为 Keep，哪些内容保持不变，因为有一些内容混淆后（a,b,c）导致反射或按类名字符串相关的操作失效 -->
-						<option>-optimizations !code/allocation/variable</option>
-						<option>-keep class **.package-info</option>
-						<!--保持包注解类-->
-
-
-						<!--JAXB NEED，具体原因不明，不加会导致 JAXB 出异常，如果不使用 JAXB 根据需要修改-->
-						<!-- Jaxb requires generics to be available to perform xml parsing and without this option ProGuard was not retaining that information after obfuscation. That was causing the exception above. -->
-
-						<option>-keepattributes SourceFile,LineNumberTable,*Annotation*</option>
-						<!--保持源码名与行号（异常时有明确的栈信息），注解（默认会过滤掉所有注解，会影响框架的注解）-->
-
-
-						<!--保持枚举中的名子，确保枚举 valueOf 可以使用-->
-
-						<option>-keep public class com.robin.core.base.**</option>
-						<!--保持 Bean 类，（由于很多框架会对 Bean 中的内容做反射处理，请根据自己的业务调整） -->
-
-
-						<option>
-							-keepclasseswithmembers public class * {
-							public static void main(java.lang.String[]);
-							}
-						</option>
-						<!-- 保持对外的接口性质类对外的类名与方法名不变 -->
-
-					</options>
-					<outjar>${project.build.finalName}-pg</outjar>
-					<libs>
-						<lib>${java.home}/lib/rt.jar</lib>
-					</libs>
-
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
+                        <option>-ignorewarnings</option>
+                        <option>-dontshrink</option>
+                        <option>-printmapping out.map</option>
+                        <option>-optimizations !code/allocation/variable</option>
+                        <option>-keep class **.package-info</option>
+                        <option>-keep public class com.robin.core.base.**</option>
+                        <option>
+                            -keepclasseswithmembers public class * {
+                            public static void main(java.lang.String[]);
+                            }
+                        </option>
+                    </options>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>
