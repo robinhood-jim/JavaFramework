@@ -54,6 +54,7 @@ public class Const {
 	public static String	META_TYPE_TIMESTAMP		= "9";
 	public static String	META_TYPE_CLOB		= "10";
 	public static String	META_TYPE_BLOB		= "11";
+	public static String	META_TYPE_OBJECT		= "12";
 	//filter type
 	public static String	FILTER_OPER_BETWEEN	= "BT";
 	public static String	FILTER_OPER_LIKE		= "LK";
@@ -171,6 +172,7 @@ public class Const {
 	public static final Pattern MATCHER_OF_PARAMETER= Pattern.compile("%\\[\\w+\\]");
 
 	public static final String MRFRAME_YARN="yarn";
+	public static final String SQL_SELECT="SELECT ";
 
 	public enum CompressType{
 		COMPRESS_TYPE_GZ("gz"),

@@ -15,6 +15,7 @@
  */
 package com.robin.core.base.datameta;
 
+import com.robin.core.base.dao.JdbcDao;
 import com.robin.core.base.util.Const;
 import org.apache.commons.dbcp.BasicDataSource;
 import org.slf4j.Logger;
@@ -22,6 +23,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.support.JdbcUtils;
 
 import javax.sql.DataSource;
+import javax.sql.PooledConnection;
 import java.math.BigDecimal;
 import java.sql.*;
 import java.text.ParseException;
@@ -262,24 +264,38 @@ public class DataBaseUtil {
 	      }
 	      return columnlist;
 	   }
-	 public static List<DataBaseColumnMeta> getTableMetaByTableName(DataSource source,String tablename, String DbOrtablespacename,BaseDataBaseMeta basemeta) throws Exception {
-		 Connection conn=null;
+	 public static List<DataBaseColumnMeta> getTableMetaByTableName(DataSource source,String tablename, String DbOrtablespacename,BaseDataBaseMeta basemeta) throws RuntimeException {
+		 Connection conn;
 	      try {
 	    	  try{
 	    		  conn=source.getConnection();
 	    	  }catch(Exception ex){
-	    		  logger.warn("getConnection failed!");
-	    	  }
-	    	  if(conn==null){
-	    		  Class.forName(basemeta.getParam().getDriverClassName());
-	    		  conn=DriverManager.getConnection(basemeta.getUrl(basemeta.getParam()), basemeta.getParam().getUserName(),basemeta.getParam().getPasswd());
+	    		  throw new RuntimeException("failed to get Connection from "+ex.getMessage());
 	    	  }
 	    	  return getTableMetaByTableName(conn, tablename, DbOrtablespacename, basemeta);
 	      }catch(Exception ex){
 	    	  ex.printStackTrace();
-	      }
+	      }finally {
+
+		  }
 	      return null;
 	 }
+	public static List<DataBaseColumnMeta> getTableMetaByTableName(JdbcDao dao, String tablename, String DbOrtablespacename, BaseDataBaseMeta basemeta) throws RuntimeException {
+		Connection conn;
+		try {
+			try{
+				conn=dao.getDataSource().getConnection();
+			}catch(Exception ex){
+				throw new RuntimeException("failed to get Connection from "+ex.getMessage());
+			}
+			return getTableMetaByTableName(conn, tablename, DbOrtablespacename, basemeta);
+		}catch(Exception ex){
+			ex.printStackTrace();
+		}finally {
+
+		}
+		return null;
+	}
 	 public static List<DataBaseColumnMeta> getTableMetaByTableName(Connection conn,String tablename, String DbOrtablespacename,BaseDataBaseMeta basemeta) throws Exception {
 	      List<DataBaseColumnMeta> columnlist = new ArrayList<DataBaseColumnMeta>();
 	     

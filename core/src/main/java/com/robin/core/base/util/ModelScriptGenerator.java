@@ -19,12 +19,9 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
+import org.apache.commons.lang.StringUtils;
 import org.scannotation.AnnotationDB;
 import org.scannotation.ClasspathUrlFinder;
 import org.springframework.context.ApplicationContext;
@@ -77,30 +74,48 @@ public class ModelScriptGenerator {
         StringBuilder builder=new StringBuilder();
         String name="";
         Map<String, String> tableMap = new HashMap<String, String>();
-        BaseObject obj = (BaseObject) Class.forName(clazzName).newInstance();
-        List<Map<String, Object>> fields = AnnotationRetrevior.getMappingFields(obj, tableMap, true);
-        Map<String, Object> primarycol=AnnotationRetrevior.getPrimaryField(fields);
+        Class<? extends BaseObject> clazz= (Class<? extends BaseObject>) Class.forName(clazzName);
+        AnnotationRetrevior.EntityContent tableDef = AnnotationRetrevior.getMappingTableByCache(clazz);
+        List<AnnotationRetrevior.FieldContent> fields = AnnotationRetrevior.getMappingFieldsCache(clazz);
+        AnnotationRetrevior.FieldContent primarycol=AnnotationRetrevior.getPrimaryField(fields);
         builder.append("create table ");
         if (tableMap.containsKey("schema"))
             builder.append(tableMap.get("schema")).append(".");
         builder.append(tableMap.get("tableName")).append("(").append("\n");
-        for (Map<String, Object> field : fields) {
-            if (field.get("datatype") != null) {
-                builder.append("\t").append(sqlGen.getCreateFieldPart(field).toLowerCase()).append(",\n");
+        for (AnnotationRetrevior.FieldContent field : fields) {
+            if(field.isPrimary()){
+                if(field.getPrimaryKeys()!=null){
+                    builder.append("\t").append(sqlGen.getCreateFieldPart(fieldContentToMap(field)).toLowerCase()).append(",\n");
+                }
             }
-            if(field.get("increment")!=null){
-
+            if (field.getDataType() != null) {
+                builder.append("\t").append(sqlGen.getCreateFieldPart(fieldContentToMap(field)).toLowerCase()).append(",\n");
             }
         }
-        if(primarycol!=null && !primarycol.isEmpty()){
-            name=primarycol.get("field").toString();
-            if(name==null || name.isEmpty()){
-                name=primarycol.get("name").toString();
+        if(primarycol!=null){
+            List<String> pkColumns=new ArrayList<>();
+            if(primarycol.getPrimaryKeys()!=null){
+                for(AnnotationRetrevior.FieldContent fieldContent:primarycol.getPrimaryKeys()){
+                    pkColumns.add(fieldContent.getFieldName());
+                }
+
+            }else{
+                pkColumns.add(primarycol.getFieldName());
             }
-            builder.append("\tPRIMARY KEY(").append(name).append(")");
+
+            builder.append("\tPRIMARY KEY(").append(StringUtils.join(pkColumns,",")).append(")");
         }else
             builder.deleteCharAt(builder.length() - 2);
         builder.append(");\n");
         return builder.toString();
+    }
+    private static Map<String,Object> fieldContentToMap(AnnotationRetrevior.FieldContent fieldContent){
+        Map<String,Object> retMap=new HashMap<>();
+        retMap.put("field",fieldContent.getFieldName());
+        retMap.put("datatype",fieldContent.getDataType());
+        retMap.put("precise",String.valueOf(fieldContent.getPrecise()));
+        retMap.put("scale",String.valueOf(fieldContent.getScale()));
+        retMap.put("length",String.valueOf(fieldContent.getLength()));
+        return retMap;
     }
 }

@@ -100,7 +100,7 @@
                 var barstr = tobj.query.pageToolBar;
                 statusbar.setText(barstr);
             });
-        } else if (name = "reset") {
+        } else if (name == 'reset' ) {
             this.reset();
         }
     });
@@ -133,7 +133,7 @@
         } else if (id == 'delete') {
             goDelete();
         } else if (id == 'assign') {
-            //goAssign();
+            goAssign();
         }
     });
 

@@ -1,5 +1,5 @@
 CREATE DATABASE IF NOT EXISTS test DEFAULT CHARSET utf8 COLLATE utf8_general_ci;
-CREATE DATABASE IF NOT EXISTS frameset DEFAULT CHARSET utf8 COLLATE utf8_general_ci;
+
 use test;
 DROP TABLE IF EXISTS `t_test`;
 CREATE TABLE `t_test` (
@@ -28,6 +28,14 @@ CREATE TABLE `t_test_pkvarchar` (
   `ts` timestamp NULL default NULL on update CURRENT_TIMESTAMP,
   PRIMARY KEY  (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+CREATE TABLE `t_test_mutilkey` (
+  `id` bigint(20) NOT NULL auto_increment,
+  `tname` varchar(32) NOT NULL,
+  `tcode` int(11) NOT NULL,
+  `outputval` double default NULL,
+  `time` timestamp NULL default NULL on update CURRENT_TIMESTAMP,
+  PRIMARY KEY  (`id`,`tname`,`tcode`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8
 
 use framset;
 CREATE TABLE `t_sys_user_info` (
@@ -43,5 +51,6 @@ CREATE TABLE `t_sys_user_info` (
   `REMARK` varchar(256) default NULL,
   PRIMARY KEY  (`ID`)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 
 INSERT INTO `t_sys_user_info`(USER_ACCOUNT,USER_PASSWORD,USER_NAME,ACCOUNT_TYPE,USER_STATUS,ORDER_NO) VALUES("admin","admin","adminstrator",1,1,1),("guest","guest","guest",2,1,1)

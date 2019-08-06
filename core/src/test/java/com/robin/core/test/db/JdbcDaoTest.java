@@ -20,8 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.robin.core.base.util.Const;
-import com.robin.core.test.model.SysUser;
-import com.robin.core.test.model.TestPkChar;
+import com.robin.core.test.model.*;
 import com.robin.core.test.service.*;
 import junit.framework.TestCase;
 
@@ -35,8 +34,6 @@ import com.robin.core.base.dao.JdbcDao;
 import com.robin.core.base.model.BaseObject;
 import com.robin.core.base.spring.SpringContextHolder;
 import com.robin.core.query.util.PageQuery;
-import com.robin.core.test.model.TestJPaModel;
-import com.robin.core.test.model.TestModel;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = "classpath:applicationContext-test.xml")
@@ -126,7 +123,32 @@ public class JdbcDaoTest extends TestCase {
         vo.setTid(1);
         vo.setTs(new Timestamp(System.currentTimeMillis()));
         Long id=service.saveEntity(vo);
-        assertNull(id);
+        assertNotNull(id);
+    }
+    @Test
+    public void testInsertWithMutilPk(){
+        TestMutilPKService service=(TestMutilPKService)SpringContextHolder.getBean(TestMutilPKService.class);
+        TestMutilPK obj=new TestMutilPK();
+        TestPkObj tobj=new TestPkObj();
+        tobj.setTcode(11);
+        tobj.setTname("test");
+        obj.setTobj(tobj);
+        obj.setOutputval(1.1);
+        obj.setTime(new Timestamp(System.currentTimeMillis()));
+        Long id=service.saveEntity(obj);
+        assertNotNull(id);
+
+    }
+    @Test
+    public void testQueryWithEntity(){
+        TestMutilPKService service=(TestMutilPKService)SpringContextHolder.getBean(TestMutilPKService.class);
+
+        TestPkObj tobj=new TestPkObj();
+        tobj.setTcode(11);
+        tobj.setTname("test");
+        tobj.setId(4L);
+        TestMutilPK obj=service.getEntity(tobj);
+        assertNotNull(obj);
     }
 
 }

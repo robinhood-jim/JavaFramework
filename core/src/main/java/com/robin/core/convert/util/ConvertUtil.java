@@ -289,7 +289,7 @@ public class ConvertUtil {
 		return map;
 	}
 
-	private static Object parseParamenter(Class type, Object strValue) throws Exception {
+	public static Object parseParamenter(Class type, Object strValue) throws Exception {
 		String typeName = type.getName();
 		if(type.equals(byte[].class)){
 			typeName="byte";
