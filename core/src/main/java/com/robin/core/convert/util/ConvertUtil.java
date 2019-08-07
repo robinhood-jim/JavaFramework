@@ -290,6 +290,9 @@ public class ConvertUtil {
 	}
 
 	public static Object parseParamenter(Class type, Object strValue) throws Exception {
+		if(strValue==null){
+			return null;
+		}
 		String typeName = type.getName();
 		if(type.equals(byte[].class)){
 			typeName="byte";
@@ -336,9 +339,13 @@ public class ConvertUtil {
 				strValue = value;
 			}
 			if(!typeName.equals("byte")){
-				Method method = type.getMethod("valueOf", new Class[] { "java.lang.String".getClass() });
-				if(method!=null)
-					ret = method.invoke(type, new Object[] { strValue.toString() });
+				if(!strValue.toString().isEmpty()) {
+					Method method = type.getMethod("valueOf", new Class[]{"java.lang.String".getClass()});
+					if (method != null)
+						ret = method.invoke(type, new Object[]{strValue.toString()});
+				}else{
+					ret=null;
+				}
 			}else{
 				ret=strValue;
 			}

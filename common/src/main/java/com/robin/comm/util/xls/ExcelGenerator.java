@@ -285,8 +285,6 @@ public class ExcelGenerator {
             GenerateHeader(sheet, wb, prop, header);
             count = prop.getColumnList().size();
         } else {
-            int rows = header.getContainrow();
-
             count = GenerateHeader(sheet, wb, prop, header, helper);
         }
         FillColumns(wb, sheet, prop, header, helper);

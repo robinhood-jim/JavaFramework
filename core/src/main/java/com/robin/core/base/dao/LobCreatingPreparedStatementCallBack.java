@@ -41,10 +41,11 @@ public class LobCreatingPreparedStatementCallBack extends
         super(lobHandler);
 
     }
-    public LobCreatingPreparedStatementCallBack(LobHandler lobHandler, List<AnnotationRetrevior.FieldContent> fields,BaseObject object) {
+
+    public LobCreatingPreparedStatementCallBack(LobHandler lobHandler, List<AnnotationRetrevior.FieldContent> fields, BaseObject object) {
         super(lobHandler);
-        this.obj=object;
-        this.fields=fields;
+        this.obj = object;
+        this.fields = fields;
     }
 
 
@@ -61,31 +62,30 @@ public class LobCreatingPreparedStatementCallBack extends
             for (AnnotationRetrevior.FieldContent field : fields) {
                 Object value = field.getGetMethod().invoke(obj, null);
                 if (!field.isIncrement() && !field.isSequential() && value != null) {
-                    boolean needDo=true;
-                    if(field.isPrimary()){
-                        if(field.getPrimaryKeys()!=null){
-                            needDo=false;
-                            for(AnnotationRetrevior.FieldContent fieldContent:field.getPrimaryKeys()){
-                                setValueByDataType(ps,value,lobCreator,field.getDataType(),pos);
-                                pos++;
-                            }
+                    boolean needDo = true;
+                    if (field.isPrimary() && field.getPrimaryKeys() != null) {
+                        needDo = false;
+                        for (AnnotationRetrevior.FieldContent fieldContent : field.getPrimaryKeys()) {
+                            setValueByDataType(ps, value, lobCreator, field.getDataType(), pos);
+                            pos++;
                         }
                     }
-                    if(needDo) {
-                        setValueByDataType(ps,value,lobCreator,field.getDataType(),pos);
+                    if (needDo) {
+                        setValueByDataType(ps, value, lobCreator, field.getDataType(), pos);
                         pos++;
                     }
                 }
 
             }
-        }catch (IllegalAccessException ex){
+        } catch (IllegalAccessException ex) {
 
-        }catch (InvocationTargetException ex1){
+        } catch (InvocationTargetException ex1) {
 
         }
 
     }
-    private void setValueByDataType(PreparedStatement ps,Object value,LobCreator lobCreator,String dataType,int pos) throws SQLException{
+
+    private void setValueByDataType(PreparedStatement ps, Object value, LobCreator lobCreator, String dataType, int pos) throws SQLException {
         if (dataType.equalsIgnoreCase("clob")) {
             lobCreator.setClobAsString(ps, pos, value.toString());
         } else if (dataType.equalsIgnoreCase("blob")) {

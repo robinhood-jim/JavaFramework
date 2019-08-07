@@ -822,7 +822,7 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
 		return -1;
 	}
 	public PageQuery queryBySql(String querySQL,String countSql,String[] displayname,PageQuery pageQuery)throws DAOException{
-		return CommJdbcUtil.queryBySql(jdbcTemplate, sqlGen, querySQL, countSql, displayname, pageQuery);
+		return CommJdbcUtil.queryBySql(jdbcTemplate,lobHandler, sqlGen, querySQL, countSql, displayname, pageQuery);
 	}
 	public Object queryBySingle(Class<?> clazz,String sql,Object... values) throws DAOException{
 		try{
@@ -835,10 +835,10 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
 	}
 	public void queryByParamter(QueryString qs, PageQuery pageQuery) throws DAOException {
 		if(pageQuery.getParameterArr()!=null && pageQuery.getParameterArr().length>0){
-			CommJdbcUtil.queryByPreparedParamter(jdbcTemplate,sqlGen,qs, pageQuery);
+			CommJdbcUtil.queryByPreparedParamter(jdbcTemplate,lobHandler,sqlGen,qs, pageQuery);
 		}
 		else {
-			CommJdbcUtil.queryByReplaceParamter(jdbcTemplate,sqlGen,qs, pageQuery);
+			CommJdbcUtil.queryByReplaceParamter(jdbcTemplate,lobHandler,sqlGen,qs, pageQuery);
 		}
 	}
 	public int  executeByParamter(QueryString qs, PageQuery pageQuery) throws DAOException {

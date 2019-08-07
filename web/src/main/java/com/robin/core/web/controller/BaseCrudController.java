@@ -82,7 +82,7 @@ public abstract class BaseCrudController<O extends BaseObject,P extends Serializ
         {
             BaseObject obj = this.objectType.newInstance();
             ConvertUtil.mapToObject(obj, wrapRequest(request));
-            id = this.service.saveEntity(obj);
+            this.service.saveEntity(obj);
             wrapSuccess(retMap);
             doAfterAdd(request, response, obj,retMap);
         }

@@ -219,7 +219,7 @@ public abstract class AbstractSqlGen implements BaseSqlGen{
 		StringTokenizer token=new StringTokenizer(field,",");
 		 int fields_nums = token.countTokens();
          String[] fields = new String[fields_nums];
-         int sqlTypes[] = new int[fields_nums];
+         Integer sqlTypes[] = new Integer[fields_nums];
          for(int i = 0; i < fields_nums; i++)
          {
              fields[i] = token.nextToken().trim();

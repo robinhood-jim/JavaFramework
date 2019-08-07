@@ -37,7 +37,6 @@ import java.util.*;
 
 public class CommJdbcUtil {
     private static Logger logger = LoggerFactory.getLogger(CommJdbcUtil.class);
-    private static LobHandler lobHandler;
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     private static List getResultItemsByPrepared(JdbcTemplate jdbcTemplate, final PageQuery pageQuery, final String pageSQL) {
@@ -78,20 +77,20 @@ public class CommJdbcUtil {
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    private static List getResultItemsByPreparedSimple(JdbcTemplate jdbcTemplate, final BaseSqlGen sqlGen, final QueryString qs, final PageQuery pageQuery, final String pageSQL) {
+    private static List getResultItemsByPreparedSimple(JdbcTemplate jdbcTemplate,LobHandler lobHandler, final BaseSqlGen sqlGen, final QueryString qs, final PageQuery pageQuery, final String pageSQL) {
         final String[] fields = sqlGen.getResultColName(qs);
         if (pageQuery.getNameParameters().isEmpty()) {
             //Preparedstatment
-            return (List) jdbcTemplate.query(pageSQL, pageQuery.getParameterArr(), getDefaultExtract(fields));
+            return (List) jdbcTemplate.query(pageSQL, pageQuery.getParameterArr(), getDefaultExtract(fields,lobHandler));
         } else {
             //NamedParameter
             NamedParameterJdbcTemplate template = new NamedParameterJdbcTemplate(jdbcTemplate);
-            return (List) template.query(pageSQL, pageQuery.getNameParameters(), getDefaultExtract(fields));
+            return (List) template.query(pageSQL, pageQuery.getNameParameters(), getDefaultExtract(fields,lobHandler));
         }
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    public static PageQuery queryByReplaceParamter(JdbcTemplate jdbcTemplate, BaseSqlGen sqlGen, QueryString qs, PageQuery pageQuery) throws DAOException {
+    public static PageQuery queryByReplaceParamter(JdbcTemplate jdbcTemplate,LobHandler lobHandler, BaseSqlGen sqlGen, QueryString qs, PageQuery pageQuery) throws DAOException {
         List list = null;
         String querySQL = getReplacementSql(sqlGen, qs, pageQuery);
         if (logger.isInfoEnabled()) logger.info((new StringBuilder()).append("querySQL: ").append(querySQL).toString());
@@ -110,12 +109,12 @@ public class CommJdbcUtil {
         } catch (Exception e) {
             pageSize = Integer.parseInt(Const.DEFAULT_PAGE_SIZE);
         }
-        list = getResultList(jdbcTemplate, sqlGen, qs, pageQuery, querySQL, sumSQL, pageSize);
+        list = getResultList(jdbcTemplate,lobHandler, sqlGen, qs, pageQuery, querySQL, sumSQL, pageSize);
         pageQuery.setRecordSet(list);
         return pageQuery;
     }
 
-    private static List getResultList(JdbcTemplate jdbcTemplate, BaseSqlGen sqlGen, QueryString qs, PageQuery pageQuery, String querySQL, String sumSQL, int pageSize) throws DAOException {
+    private static List getResultList(JdbcTemplate jdbcTemplate,LobHandler lobHandler, BaseSqlGen sqlGen, QueryString qs, PageQuery pageQuery, String querySQL, String sumSQL, int pageSize) throws DAOException {
         List list;
         if (pageSize != 0) {
             if (pageSize < Integer.parseInt(Const.MIN_PAGE_SIZE))
@@ -144,13 +143,13 @@ public class CommJdbcUtil {
                     logger.debug((new StringBuilder()).append("sumSQL: ").append(sumSQL).toString());
                     logger.debug((new StringBuilder()).append("pageSQL: ").append(pageSQL).toString());
                 }
-                list = getResultItems(jdbcTemplate, sqlGen, pageQuery, qs, pageSQL);
+                list = getResultItems(jdbcTemplate,lobHandler, sqlGen, pageQuery, qs, pageSQL);
             } else {
                 list = new ArrayList();
                 pageQuery.setPageCount("0");
             }
         } else {
-            list = getResultItems(jdbcTemplate, sqlGen, pageQuery, qs, querySQL);
+            list = getResultItems(jdbcTemplate,lobHandler, sqlGen, pageQuery, qs, querySQL);
             pageQuery.setRecordCount(String.valueOf(list.size()));
             pageQuery.setPageCount("1");
         }
@@ -183,10 +182,10 @@ public class CommJdbcUtil {
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private static List getResultItems(JdbcTemplate jdbcTemplate, BaseSqlGen sqlGen, final PageQuery query, final QueryString qs, final String pageSQL) {
+    private static List getResultItems(JdbcTemplate jdbcTemplate,LobHandler lobHandler, BaseSqlGen sqlGen, final PageQuery query, final QueryString qs, final String pageSQL) {
         //getResultColumn from QueryString
         final String[] fields = sqlGen.getResultColName(qs);
-        Object ret = jdbcTemplate.query(pageSQL, getDefaultExtract(fields));
+        Object ret = jdbcTemplate.query(pageSQL, getDefaultExtract(fields,lobHandler));
         return (List) ret;
     }
 
@@ -201,7 +200,7 @@ public class CommJdbcUtil {
     }
 
     @SuppressWarnings("rawtypes")
-    private static ResultSetExtractor getDefaultExtract(final String[] fields) {
+    private static ResultSetExtractor getDefaultExtract(final String[] fields,final LobHandler lobHandler) {
         return new ResultSetExtractor() {
             public Object extractData(ResultSet rs) throws SQLException, DataAccessException {
                 List<Map> list = new ArrayList<Map>();
@@ -240,12 +239,12 @@ public class CommJdbcUtil {
                                 else
                                     map.put(columnName, datestr);
                             } else if (className.toLowerCase().contains("clob")) {
-                                if (getLobHandler() != null) {
+                                if (lobHandler != null) {
                                     String result = lobHandler.getClobAsString(rs, i + 1);
                                     map.put(fields[i], result);
                                 }
                             } else if (className.toLowerCase().contains("blob") ||typeName.toLowerCase().contains("blob") ) {
-                                if (getLobHandler() != null) {
+                                if (lobHandler != null) {
                                     byte[] bytes = lobHandler.getBlobAsBytes(rs, i + 1);
                                     map.put(fields[i], bytes);
                                 }
@@ -266,7 +265,7 @@ public class CommJdbcUtil {
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    public static void queryByPreparedParamter(JdbcTemplate jdbcTemplate, BaseSqlGen sqlGen, QueryString qs, PageQuery pageQuery) throws DAOException {
+    public static void queryByPreparedParamter(JdbcTemplate jdbcTemplate,LobHandler lobHandler, BaseSqlGen sqlGen, QueryString qs, PageQuery pageQuery) throws DAOException {
         List list = null;
         try {
             String querySQL = getReplacementSql(sqlGen,qs,pageQuery);
@@ -291,14 +290,14 @@ public class CommJdbcUtil {
                     int pages = total / Integer.parseInt(pageQuery.getPageSize());
                     if (total % Integer.parseInt(pageQuery.getPageSize()) != 0) pages++;
                     pageQuery.setPageCount(String.valueOf(pages));
-                    list = getResultItemsByPreparedSimple(jdbcTemplate, sqlGen, qs, pageQuery, pageSQL);
+                    list = getResultItemsByPreparedSimple(jdbcTemplate,lobHandler, sqlGen, qs, pageQuery, pageSQL);
                     //getResultItemsByPrepared(jdbcTemplate,pageQuery, pageSQL);
                 } else {
                     list = new ArrayList();
                     pageQuery.setPageCount("0");
                 }
             } else {
-                list = getResultItemsByPreparedSimple(jdbcTemplate, sqlGen, qs, pageQuery, querySQL);
+                list = getResultItemsByPreparedSimple(jdbcTemplate,lobHandler, sqlGen, qs, pageQuery, querySQL);
                 //getResultItemsByPrepared(jdbcTemplate,pageQuery, querySQL);
                 int len1 = list.size();
                 pageQuery.setRecordCount(String.valueOf(len1));
@@ -316,7 +315,7 @@ public class CommJdbcUtil {
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    public static PageQuery queryBySql(JdbcTemplate jdbcTemplate, BaseSqlGen sqlGen, String querySQL, String countSql, String[] displayname, PageQuery pageQuery) throws DAOException {
+    public static PageQuery queryBySql(JdbcTemplate jdbcTemplate,LobHandler lobHandler, BaseSqlGen sqlGen, String querySQL, String countSql, String[] displayname, PageQuery pageQuery) throws DAOException {
         String sumSQL = "";
         if (countSql == null || countSql.trim().equals(""))
             sumSQL = sqlGen.generateCountSql(querySQL);
@@ -351,7 +350,7 @@ public class CommJdbcUtil {
         } catch (Exception e) {
             pageSize = Integer.parseInt(Const.DEFAULT_PAGE_SIZE);
         }
-        List list = getResultList(jdbcTemplate, sqlGen, qs, pageQuery, querySQL, sumSQL, pageSize);
+        List list = getResultList(jdbcTemplate,lobHandler, sqlGen, qs, pageQuery, querySQL, sumSQL, pageSize);
         pageQuery.setRecordSet(list);
         return pageQuery;
     }
@@ -504,16 +503,6 @@ public class CommJdbcUtil {
             throw new DAOException(e);
         }
 
-    }
-
-    public void setLobHandler(LobHandler lobHandler) {
-        CommJdbcUtil.lobHandler = lobHandler;
-    }
-
-    public static LobHandler getLobHandler() {
-        if (CommJdbcUtil.lobHandler == null)
-            CommJdbcUtil.lobHandler = (LobHandler) SpringContextHolder.getBean("lobHandler");
-        return CommJdbcUtil.lobHandler;
     }
 
 

@@ -57,7 +57,7 @@ public class SplitPageResultSetExtractor implements ResultSetExtractor<List<Map<
 			DataAccessException {
 		return wrapMapper(rs, start, len);
 	}
-	public List<Map<String,Object>> wrapMapper(ResultSet rs,int start,int len) throws SQLException,DataAccessException {
+	private List<Map<String,Object>> wrapMapper(ResultSet rs,int start,int len) throws SQLException,DataAccessException {
 		int end = start + len;
 		boolean allcode=false;
 		if(end==0)
@@ -142,12 +142,11 @@ public class SplitPageResultSetExtractor implements ResultSetExtractor<List<Map<
 		return list;
 	}
 	private void assignVal(AnnotationRetrevior.FieldContent fieldContent,ResultSetMetaData rsmd,String[] columnName, String[] typeName, String[] className, int colpos) throws SQLException{
-		columnName[colpos]=fieldContent.getFieldName();
+		columnName[colpos]=fieldContent.getPropertyName();
 		typeName[colpos] = rsmd.getColumnTypeName(colpos+ 1);
 		String fullclassName = rsmd.getColumnClassName(colpos + 1);
 		int pos = fullclassName.lastIndexOf(".");
 		className[colpos] = fullclassName.substring(pos + 1).toUpperCase();
-		colpos++;
 	}
 	public Map<String, Object> wrapResultRecord(int count,ResultSet rs,String[] columnName,String[] typeName,String[] className) throws SQLException{
 		Map<String, Object> map = new HashMap<String, Object>();

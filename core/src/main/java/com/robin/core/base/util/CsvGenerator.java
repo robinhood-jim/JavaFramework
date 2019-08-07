@@ -63,7 +63,7 @@ public class CsvGenerator{
 		try{
 			ICsvListReader reader=new CsvListReader(new InputStreamReader(inputStream,"UTF-8"),new CsvPreference.Builder('"', separator, "n").build());
 			List<CsvColumnConfig> columnList=config.getConfigList();
-			List<String> resultlist=new ArrayList<String>();
+			List<String> resultlist;
 			while((resultlist=reader.read())!=null){
 				pos++;
 				Map<String, String> resultMap=new HashMap<String, String>();
@@ -86,7 +86,7 @@ public class CsvGenerator{
 			String[] header=reader.getHeader(true);
 			if(header==null || header.length==0)
 				throw new Exception("no file");
-			List<String> resultlist=new ArrayList<String>();
+			List<String> resultlist;
 			while((resultlist=reader.read())!=null){
 				pos++;
 				Map<String, String> resultMap=new HashMap<String, String>();
@@ -131,7 +131,7 @@ public class CsvGenerator{
 			String[] header=reader.getHeader(true);
 			if(header==null || header.length==0)
 				throw new Exception("no file");
-			List<String> resultlist=new ArrayList<String>();
+			List<String> resultlist;
 			while((resultlist=reader.read())!=null){
 				pos++;
 				Map<String, String> resultMap=new HashMap<String, String>();
@@ -152,7 +152,7 @@ public class CsvGenerator{
 			ICsvListReader reader=new CsvListReader(ireader,CsvPreference.STANDARD_PREFERENCE);
 			List<CsvColumnConfig> columnList=config.getConfigList();
 
-			List<String> resultlist=new ArrayList<String>();
+			List<String> resultlist;
 			while((resultlist=reader.read())!=null){
 				pos++;
 				Map<String, String> resultMap=new HashMap<String, String>();
@@ -175,7 +175,7 @@ public class CsvGenerator{
 			String[] header=reader.getHeader(true);
 			if(header==null || header.length==0)
 				throw new Exception("no file ");
-			List<String> resultlist=new ArrayList<String>();
+			List<String> resultlist;
 			while((resultlist=reader.read())!=null){
 				pos++;
 				Map<String, String> resultMap=new HashMap<String, String>();

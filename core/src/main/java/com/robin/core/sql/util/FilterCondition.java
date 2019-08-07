@@ -1,5 +1,7 @@
 package com.robin.core.sql.util;
 
+import com.robin.core.base.dao.util.AnnotationRetrevior;
+
 import java.util.Map;
 
 public class FilterCondition {
@@ -19,7 +21,7 @@ public class FilterCondition {
 	public static final String LIKE = "LIKE";
 	public static final String LEFT_LIKE="LLIKE";
 	public static final String RIGHT_LIKE="RLIKE";
-	public static final String EQUALS = "EQUALS";
+	public static final String EQS = "EQUALS";
     public static final String NOT_EQUALS = "NOT_EQUALS";
 	public static final String IS_NOT_NULL = "NOT_NULL";
 	public static final String IS_NULL = "IS_NULL";
@@ -27,12 +29,12 @@ public class FilterCondition {
 	public static final String IN = "IN";
 	public static final String NOT = "NOT";
 	public static final String NOTIN = "NOTIN";
-	private Map<String,Map<String, Object>> fieldMap;
-	public Map<String,Map<String, Object>> getFieldMap() {
+	private Map<String, AnnotationRetrevior.FieldContent> fieldMap;
+	public Map<String, AnnotationRetrevior.FieldContent> getFieldMap() {
 		return fieldMap;
 	}
 
-	public void setFieldMap(Map<String,Map<String, Object>> fieldMap) {
+	public void setFieldMap(Map<String, AnnotationRetrevior.FieldContent> fieldMap) {
 		this.fieldMap = fieldMap;
 	}
 
@@ -59,7 +61,7 @@ public class FilterCondition {
 		StringBuffer sbSQLStr = new StringBuffer();
 		String realColumn=columnCode;
 		if(fieldMap.containsKey(columnCode))
-			realColumn=fieldMap.get(columnCode).get("field").toString();
+			realColumn=fieldMap.get(columnCode).getFieldName();
 		if (BETWEEN.equals(operator)){
 			if (values.length < 2){
 			}
@@ -73,7 +75,7 @@ public class FilterCondition {
 			sbSQLStr.append(" like ?)");
 		}
 		else 
-		if (EQUALS.equals(operator)){
+		if (EQS.equals(operator)){
 			sbSQLStr.append(" (");
 			sbSQLStr.append(realColumn);
 			sbSQLStr.append("=?) ");

@@ -220,20 +220,9 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 	
 	@Transactional(readOnly=true)
 	public List<V> queryAll() throws ServiceException{
-		List<V> retlist = new ArrayList<V>();
+		List<V> retlist;
 		try{
-		StringBuffer buffer=new StringBuffer();
-		Map<String, String> tableMap = new HashMap<String, String>();
-		List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
-		buffer.append(jdbcDao.getWholeSelectSql(type));
-		String sql=buffer.substring(0,buffer.length()-5);
-		logger.info("querySql="+sql);
-		List<Map<String, Object>> rsList = this.getJdbcDao().queryBySql(sql);
-		for (int i = 0; i < rsList.size(); i++) {
-			V obj = (V) type.newInstance();
-			ConvertUtil.convertToModel(obj, rsList.get(i));
-			retlist.add(obj);
-		}
+			retlist=(List<V>)jdbcDao.queryAll(type);
 		}catch (Exception e) {
 			throw new ServiceException(e);
 		}
@@ -241,7 +230,7 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
     }
 	
 	@SuppressWarnings("unchecked")
-	/*@Transactional(readOnly=true)
+	@Transactional(readOnly=true)
 	public List<V> queryByVO(V vo,Map<String, Object> additonMap, String orderByStr)
 			throws ServiceException {
 		List<V> retlist;
@@ -262,7 +251,7 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 			throw new ServiceException(e);
 		}
 		return retlist;
-	}*/
+	}
 	
 	public JdbcDao getJdbcDao() {
 		return jdbcDao;

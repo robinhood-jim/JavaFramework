@@ -29,13 +29,6 @@ import com.robin.core.query.util.PageQuery;
 
 public interface IjdbcDao {
 	/**
-	 * Return query count
-	 * @param querySQL   
-	 * @return
-	 * @throws DAOException
-	 */	
-	public int queryCountBySql(String querySQL) throws DAOException;
-	/**
 	 * Return ResultSet frist Integer
 	 * @param querySQL   
 	 * @return

@@ -149,6 +149,9 @@ public class JdbcDaoTest extends TestCase {
         tobj.setId(4L);
         TestMutilPK obj=service.getEntity(tobj);
         assertNotNull(obj);
+        List<TestMutilPK> list=service.queryByFieldOrderBy("time desc","outputval",BaseObject.OPER_IN,1.1);
+        List<TestMutilPK> list1=service.queryAll();
+        assertNotNull(list);
     }
 
 }

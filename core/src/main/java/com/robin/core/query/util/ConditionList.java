@@ -56,7 +56,7 @@ public class ConditionList extends ArrayList {
 					sql.append(valueToString(condition.getValues()[1]));
 				}
 			}
-			// EQUALS
+			// EQS
 			if (condition.getState() == Condition.EQUALS) {
 				if (condition.getValue() == null) {
 					continue;
