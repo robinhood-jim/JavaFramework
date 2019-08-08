@@ -21,13 +21,13 @@ import java.util.List;
 import java.util.Map;
 
 public class PageQuery implements Serializable {
-	private String								groupByString;
+	protected String								groupByString;
 
-	private String								orderString;
+	protected String								orderString;
 
-	private String								havingString;
+	protected String								havingString;
 
-	private String								whereString;
+	protected String								whereString;
 
 	protected String							pageSize;			
 
@@ -35,9 +35,9 @@ public class PageQuery implements Serializable {
 
 	protected String							recordCount;		
 
-	protected String							pageCount;			
+	protected String							pageCount;
 
-	private String								selectParamId;
+	protected String								selectParamId;
 
 	protected String							order;				
 

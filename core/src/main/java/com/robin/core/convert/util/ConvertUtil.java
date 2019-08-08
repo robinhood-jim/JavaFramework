@@ -320,7 +320,7 @@ public class ConvertUtil {
 			ret = strValue.toString();
 		}
 		else {
-			if (typeName.equals("java.sql.Timestamp") && strValue != null) {
+			if (typeName.equals("java.sql.Timestamp")) {
 				String value = strValue.toString().trim();
 				int len = value.trim().length();
 				if (len > 7 && len < 11) {

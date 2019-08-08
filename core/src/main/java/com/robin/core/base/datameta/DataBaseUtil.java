@@ -59,8 +59,7 @@ public class DataBaseUtil {
 			} catch (Exception e) {
 
 			} finally {
-				if (connection != null)
-					connection = null;
+				connection = null;
 			}
 		}
 	}

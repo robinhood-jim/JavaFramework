@@ -42,7 +42,7 @@ public class CsvGenerator{
 		try{
 			ICsvListReader reader=new CsvListReader(new InputStreamReader(inputStream,"UTF-8"),CsvPreference.STANDARD_PREFERENCE);
 			List<CsvColumnConfig> columnList=config.getConfigList();
-			List<String> resultlist=new ArrayList<String>();
+			List<String> resultlist;
 			while((resultlist=reader.read())!=null){
 				pos++;
 				Map<String, String> resultMap=new HashMap<String, String>();
@@ -193,7 +193,7 @@ public class CsvGenerator{
 		int pos=0;
 		try{
 			ICsvListReader reader=new CsvListReader(ireader,new CsvPreference.Builder( '"', seperator, "n").build());
-			List<String> resultlist=new ArrayList<String>();
+			List<String> resultlist;
 			List<CsvColumnConfig> columnList=config.getConfigList();
 
 			while((resultlist=reader.read())!=null){

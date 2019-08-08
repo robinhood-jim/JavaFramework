@@ -48,9 +48,9 @@ public class CommJdbcUtil {
                     for (int i = 1; i <= len; i++) {
                         String columnType = pageQuery.getColumnTypes().get(String.valueOf(i - 1));
                         String value = pageQuery.getParameters().get(String.valueOf(i));
-                        if (columnType.equals(QueryParam.COLUMN_TYPE_INT)) ps.setInt(i, new Integer(value));
-                        else if (columnType.equals(QueryParam.COLUMN_TYPE_DOUBLE)) ps.setDouble(i, new Double(value));
-                        else if (columnType.equals(QueryParam.COLUMN_TYPE_LONG)) ps.setLong(i, new Long(value));
+                        if (columnType.equals(QueryParam.COLUMN_TYPE_INT)) ps.setInt(i, Integer.parseInt(value));
+                        else if (columnType.equals(QueryParam.COLUMN_TYPE_DOUBLE)) ps.setDouble(i,Double.parseDouble(value));
+                        else if (columnType.equals(QueryParam.COLUMN_TYPE_LONG)) ps.setLong(i, Long.parseLong(value));
                         else if (columnType.equals(QueryParam.COLUMN_TYPE_DATE)) {
                             SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
                             Date date = new Date(format.parse(value).getTime());
@@ -60,7 +60,7 @@ public class CommJdbcUtil {
                             Date date = new Date(format.parse(value).getTime());
                             ps.setDate(i, date);
                         } else if (columnType.equals(QueryParam.COLUMN_TYPE_STRING))
-                            ps.setString(i, new String(value));
+                            ps.setString(i, value);
                     }
                 } catch (Exception e) {
                     throw new SQLException(e.getMessage());
@@ -218,41 +218,29 @@ public class CommJdbcUtil {
                                 continue;
                             rs.getObject(i + 1);
                             if (rs.wasNull()) {
-                                if (fields != null)
-                                    map.put(fields[i], "");
-                                else
-                                    map.put(columnName, "");
+                                putValue(fields,i,columnName,null,map);
                             } else if (typeName.equalsIgnoreCase("DATE")) {
                                 SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
                                 Date date = rs.getDate(i + 1);
                                 String datestr = format.format(date);
-                                if (fields != null)
-                                    map.put(fields[i], datestr);
-                                else
-                                    map.put(columnName, datestr);
+                                putValue(fields,i,columnName,datestr,map);
                             } else if (typeName.equalsIgnoreCase("TIMESTAMP")) {
                                 SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                                 Timestamp stamp = rs.getTimestamp(i + 1);
                                 String datestr = format.format(new Date(stamp.getTime()));
-                                if (fields != null)
-                                    map.put(fields[i], datestr);
-                                else
-                                    map.put(columnName, datestr);
+                                putValue(fields,i,columnName,datestr,map);
                             } else if (className.toLowerCase().contains("clob")) {
                                 if (lobHandler != null) {
                                     String result = lobHandler.getClobAsString(rs, i + 1);
-                                    map.put(fields[i], result);
+                                    putValue(fields,i,columnName,result,map);
                                 }
                             } else if (className.toLowerCase().contains("blob") ||typeName.toLowerCase().contains("blob") ) {
-                                if (lobHandler != null) {
+                                if (lobHandler != null && fields!=null) {
                                     byte[] bytes = lobHandler.getBlobAsBytes(rs, i + 1);
-                                    map.put(fields[i], bytes);
+                                    putValue(fields,i,columnName,bytes,map);
                                 }
                             } else {
-                                if (fields != null)
-                                    map.put(fields[i], rs.getObject(i + 1).toString().trim());
-                                else
-                                    map.put(columnName, rs.getObject(i + 1).toString().trim());
+                                putValue(fields,i,columnName,rs.getObject(i + 1).toString().trim(),map);
                             }
                         }
                         list.add(map);
@@ -262,6 +250,12 @@ public class CommJdbcUtil {
                 return list;
             }
         };
+    }
+    private static void putValue(String[] fields,int pos,String columnName,Object obj,Map<String,Object> map){
+        if (fields != null)
+            map.put(fields[pos], "");
+        else
+            map.put(columnName, "");
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})

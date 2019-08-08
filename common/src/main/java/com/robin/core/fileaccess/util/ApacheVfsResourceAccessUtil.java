@@ -131,7 +131,6 @@ public class ApacheVfsResourceAccessUtil extends AbstractResourceAccessUtil {
     public OutputStream getRawOutputStream(DataCollectionMeta meta) throws Exception {
         OutputStream out;
         FileObject fo = checkFileExist(meta);
-        String suffix = getFileSuffix(meta.getPath());
         out = fo.getContent().getOutputStream();
         return out;
     }

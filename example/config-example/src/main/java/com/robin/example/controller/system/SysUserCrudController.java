@@ -99,7 +99,6 @@ public class SysUserCrudController extends BaseCrudDhtmlxController<SysUser,Long
     @ResponseBody
     public Map<String,Object> deleteUser(HttpServletRequest request,
                                          HttpServletResponse response) {
-        Map<String, String> retmap = new HashMap<String, String>();
         Long[] ids=wrapPrimaryKeys(request.getParameter("ids"));
         return doDelete(request,response,ids);
     }

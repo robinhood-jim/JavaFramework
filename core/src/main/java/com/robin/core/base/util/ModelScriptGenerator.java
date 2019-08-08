@@ -75,7 +75,6 @@ public class ModelScriptGenerator {
         String name="";
         Map<String, String> tableMap = new HashMap<String, String>();
         Class<? extends BaseObject> clazz= (Class<? extends BaseObject>) Class.forName(clazzName);
-        AnnotationRetrevior.EntityContent tableDef = AnnotationRetrevior.getMappingTableByCache(clazz);
         List<AnnotationRetrevior.FieldContent> fields = AnnotationRetrevior.getMappingFieldsCache(clazz);
         AnnotationRetrevior.FieldContent primarycol=AnnotationRetrevior.getPrimaryField(fields);
         builder.append("create table ");

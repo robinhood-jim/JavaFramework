@@ -124,7 +124,6 @@ public class DB2SqlGen extends AbstractSqlGen implements BaseSqlGen{
 		if (nQueryModel.equals(QueryParam.QUERYMODE_GTANDEQUAL)) sql.append(key + ">=" + "'" + value + "'");
 		else if (nQueryModel.equals(QueryParam.QUERYMODE_LTANDEQUAL)) sql.append(key + "<=" + "'" + value + "'");
 		else if (nQueryModel.equals(QueryParam.QUERYMODE_BETWEEN) && !"".equals(value) && !";".equals(value)) {
-			String[] str=value.split(";");
 			String begindate = value.substring(0, value.indexOf(";"));
 			String enddate = value.substring(value.indexOf(";") + 1, value.length());
 			if(!"".equals(begindate)){
@@ -142,9 +141,7 @@ public class DB2SqlGen extends AbstractSqlGen implements BaseSqlGen{
 	public String generateSingleRowSql(String querySql) {
 		String str= querySql.trim();
 		str=str.replaceAll("\\n", "").replaceAll("\\r", "").replaceAll("\\t", " ");
-		
-		//int nFromPos = str.lastIndexOf("from");
-		int nFromPos = str.indexOf("from");
+
 		int nOrderPos = str.lastIndexOf("order by");
 		if (nOrderPos == -1) nOrderPos = str.length();
 		StringBuffer pagingSelect = new StringBuffer();

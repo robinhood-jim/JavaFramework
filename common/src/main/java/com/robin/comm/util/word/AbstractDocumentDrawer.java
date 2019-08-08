@@ -77,9 +77,9 @@ public abstract class AbstractDocumentDrawer {
 		table.setWidths(tabDef.getColWidthPercent());
 		table.setWidth(tabDef.getTableWidth());
 		table.setAlignment(tabDef.getTableAligement());
-		table.setAutoFillEmptyCells(true); // �Զ�����  
-	    table.setBorderWidth(tabDef.getBorderWidth()); // �߿���  
-	    table.setBorderColor(new Color(0, 125, 255)); // �߿���ɫ  
+		table.setAutoFillEmptyCells(true);
+	    table.setBorderWidth(tabDef.getBorderWidth());
+	    table.setBorderColor(new Color(0, 125, 255));
 	    headerfont=WordBaseUtil.createFont(tabDef.getBaseFont(), cfg.getFontSize(), Font.BOLD);
 		}catch (Exception e) {
 			logger.error("Encounter Error ",e);

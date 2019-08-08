@@ -339,7 +339,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
                                         tmpbuffer.append("?");
                                 }
                                 buffer.append(field.getFieldName() + " in ("+ tmpbuffer + ")");
-                                inobj.addAll(inobj);
+                                params.addAll(inobj);
                             }
                         }
                     }
@@ -443,7 +443,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
             return this.getJdbcTemplate().queryForObject(querySQL, new RowMapper<Integer>() {
                 public Integer mapRow(ResultSet rs, int pos) throws SQLException, DataAccessException {
                     rs.next();
-                    return new Integer(rs.getInt(1));
+                    return rs.getInt(1);
                 }
             });
         } catch (Exception e) {
@@ -485,14 +485,13 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
         List<BaseObject> retlist = new ArrayList<BaseObject>();
         try {
             StringBuilder buffer = new StringBuilder();
-            AnnotationRetrevior.EntityContent tableDef = AnnotationRetrevior.getMappingTableByCache(type);
             List<AnnotationRetrevior.FieldContent> fields = AnnotationRetrevior.getMappingFieldsCache(type);
             buffer.append(getWholeSelectSql(type)).append(" where ");
             StringBuilder queryBuffer = new StringBuilder();
             Map<String, AnnotationRetrevior.FieldContent> map1 =AnnotationRetrevior.getMappingFieldsMapCache(type);
 
 
-            List<Map<String, Object>> rsList = null;
+            List<Map<String, Object>> rsList ;
             if (map1.containsKey(fieldName)) {
                 String namedstr = "";
                 namedstr = generateQuerySqlBySingleFields(map1.get(fieldName), fieldName, oper, queryBuffer);
@@ -502,7 +501,6 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
                 rsList = executeQueryByParam(oper, namedstr, sql, fieldValues);
                 for (int i = 0; i < rsList.size(); i++) {
                     BaseObject obj = type.newInstance();
-                    //ConvertUtil.convertToModel(obj, rsList.get(i));
                     wrapResultToModel(obj,rsList.get(i),fields);
                     retlist.add(obj);
                 }
@@ -541,7 +539,6 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
             List<Map<String, Object>> rsList = queryBySql(sql);
             for (int i = 0; i < rsList.size(); i++) {
                 BaseObject obj = type.newInstance();
-                //ConvertUtil.convertToModel(obj, rsList.get(i));
                 wrapResultToModel(obj,rsList.get(i),fields);
                 retlist.add(obj);
             }
@@ -826,16 +823,18 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
                             fieldBuffer.append(content.getFieldName()).append(",");
                             valuebuBuffer.append("?,");
                         } else {
-                            incrementcolumn = content;
                             List<AnnotationRetrevior.FieldContent> pkList = content.getPrimaryKeys();
                             if (pkList != null) {
+                                //Composite Primary Key
                                 for (AnnotationRetrevior.FieldContent field : pkList) {
                                     if (field.isIncrement()) {
                                         hasincrementPk = true;
+                                        incrementcolumn=field;
                                     }
                                     else{
                                         if (field.isSequential()) {
                                             hasincrementPk = true;
+                                            seqfield = content.getFieldName();
                                             valuebuBuffer.append(sqlGen.getSequnceScript(field.getSequenceName())).append(",");
                                         }else {
                                             valuebuBuffer.append("?,");
@@ -851,7 +850,10 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
                     }
                 } else {
                     hasincrementPk = true;
-                    incrementcolumn = content;
+                    if(content.isIncrement()){
+                        hasincrementPk = true;
+                        incrementcolumn=content;
+                    }
                     //Oracle Sequence
                     if (content.isSequential()) {
                         valuebuBuffer.append(sqlGen.getSequnceScript(content.getSequenceName())).append(",");
@@ -866,12 +868,11 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
             if (logger.isDebugEnabled())
                 logger.debug("insert sql=" + insertSql);
 
-
             if (hasincrementPk) {
                 if (sqlGen instanceof OracleSqlGen) {
-                    retval = new Long(executeOracleSqlWithReturn(fields, insertSql, seqfield, obj));
+                    retval = executeOracleSqlWithReturn(fields, insertSql, seqfield, obj);
                 } else {
-                    retval = new Long(executeSqlWithReturn(fields, insertSql, obj));
+                    retval =executeSqlWithReturn(fields, insertSql, obj);
                 }
                 if (incrementcolumn != null) {
                     AnnotationRetrevior.FieldContent pkColumn=AnnotationRetrevior.getPrimaryField(fields);
@@ -889,8 +890,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
                 if (!containlob)
                     executeUpdate(insertSql, fields, obj);
                 else {
-                    LobCreatingPreparedStatementCallBack back = null;
-                    back = new LobCreatingPreparedStatementCallBack(lobHandler, fields, obj);
+                    LobCreatingPreparedStatementCallBack back = new LobCreatingPreparedStatementCallBack(lobHandler, fields, obj);
                     this.getJdbcTemplate().execute(insertSql, back);
                 }
             }
@@ -1169,7 +1169,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
                 if (pos != 0)
                     stmt.setNull(pos, Types.VARCHAR);
             } else if (obj instanceof Integer) {
-                stmt.setInt(pos, Integer.valueOf(obj.toString()));
+                stmt.setInt(pos, Integer.parseInt(obj.toString()));
             } else if (obj instanceof Double) {
                 stmt.setDouble(pos, Double.valueOf(obj.toString()));
             } else if (obj instanceof java.util.Date) {

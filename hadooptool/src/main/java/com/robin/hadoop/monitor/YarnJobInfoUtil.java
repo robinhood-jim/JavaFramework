@@ -165,11 +165,9 @@ public class YarnJobInfoUtil extends AbstractJobInfoUtil{
 		 JobStatus status=runner.getJobStatus(id);
 		 YarnJobDetail summary=new YarnJobDetail();
 		 summary.setUser(status.getUsername());
-		 SimpleDateFormat format=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		 summary.setStartTime(status.getStartTime());
 		 summary.setFinishTime(status.getFinishTime());
 		 summary.setName(status.getJobName());
-		 String path=status.getHistoryFile();
 		 summary.setMapPrecent(status.getMapProgress());
 		 summary.setReducePrecent(status.getReduceProgress());
 		 TaskReport[] reports=runner.getTaskReports(id, TaskType.MAP);
@@ -224,7 +222,6 @@ public class YarnJobInfoUtil extends AbstractJobInfoUtil{
 		 BufferedReader reader=new BufferedReader(new StringReader(bodyhtml));
 		 JobDetail summary=new JobDetail();
 		 String str=reader.readLine();
-		 Document doc1=Jsoup.parse(str);
 		 System.out.println(str);
 		 List<String> fielddisplaynames=Arrays.asList(new String[]{"User Name:","Job Name:","State:","Uberized:","Started:","Finished:","Elapsed:","Average Map Time","Average Reduce Time","Killed:","Failed:"});
 		 String[] methodNames={"user","name","state","uberized","startTime","finishTime","elapsed","avgMaptime","avgReducetime","killed","failed"};

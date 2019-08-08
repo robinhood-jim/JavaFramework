@@ -99,7 +99,6 @@ public class OracleSqlGen extends AbstractSqlGen implements BaseSqlGen {
 		else if (nQueryModel.equals(QueryParam.QUERYMODE_GTANDEQUAL)) sql.append(key + ">=" + "to_date('" + value + "','YYYY-MM-DD')");
 		else if (nQueryModel.equals(QueryParam.QUERYMODE_LTANDEQUAL)) sql.append(key + "<=" + "to_date('" + value + "','YYYY-MM-DD')");
 		else if (nQueryModel.equals(QueryParam.QUERYMODE_BETWEEN) && !"".equals(value) && !";".equals(value)) {
-			String[] str=value.split(";");
 			String begindate = value.substring(0, value.indexOf(";"));
 			String enddate = value.substring(value.indexOf(";") + 1, value.length());
 			if(!"".equals(begindate)){

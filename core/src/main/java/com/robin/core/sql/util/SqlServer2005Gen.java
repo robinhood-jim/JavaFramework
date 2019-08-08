@@ -78,7 +78,6 @@ public class SqlServer2005Gen extends AbstractSqlGen implements BaseSqlGen{
 	public String generateSingleRowSql(String querySql) {
 		String str= querySql.trim();
 		str=str.replaceAll("\\n", "").replaceAll("\\r", "").replaceAll("\\t", " ");
-		int nFromPos = str.indexOf("from");
 		int nOrderPos = str.lastIndexOf("order by");
 		if (nOrderPos == -1) nOrderPos = str.length();
 		StringBuffer pagingSelect = new StringBuffer();

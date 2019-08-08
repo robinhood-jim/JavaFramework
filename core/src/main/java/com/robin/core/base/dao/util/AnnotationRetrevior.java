@@ -21,7 +21,6 @@ import com.robin.core.base.exception.DAOException;
 import com.robin.core.base.model.BaseObject;
 import com.robin.core.base.model.BasePrimaryObject;
 import com.robin.core.base.util.Const;
-import lombok.Data;
 import org.springframework.jdbc.support.lob.LobHandler;
 
 import javax.persistence.*;
@@ -365,7 +364,7 @@ public class AnnotationRetrevior {
     public static int replacementPrepared(PreparedStatement ps, LobHandler lobHandler, AnnotationRetrevior.FieldContent field, BaseObject object, int pos) throws SQLException {
         int tmppos = pos;
         Object value = getvalueFromVO(field, object);
-        if (!field.isSequential() && !field.isSequential() && value != null) {
+        if (!field.isIncrement() && !field.isSequential() && value != null) {
             if (!field.isPrimary()) {
                 wrapValue(ps, lobHandler, field, object, pos);
                 tmppos++;

@@ -34,7 +34,6 @@ public class CompressDecoder {
     public static InputStream getInputStreamByCompressType(String path, InputStream rawstream) throws IOException{
         InputStream inputStream=null;
         List<String> suffixList=new ArrayList<String>();
-        String fileName= FileUtils.parseFileFormat(path,suffixList);
         Const.CompressType type=FileUtils.getFileCompressType(suffixList);
         if(!type.equals(Const.CompressType.COMPRESS_TYPE_NONE)){
             if(type.equals(Const.CompressType.COMPRESS_TYPE_GZ)){
