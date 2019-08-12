@@ -38,7 +38,8 @@ public class ResourceConst {
         TYPE_XLSX("3"),     //xlsx
         TYPE_XML("4"),     //xml
         TYPE_PARQUET("5"),  //parquet
-        TYPE_AVRO("6");   //avro
+        TYPE_AVRO("6"),   //avro
+        TYPE_PROTO("7");
         private String value;
         FileFormat(String value){this.value=value;}
         public String toString() {
