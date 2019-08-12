@@ -22,8 +22,8 @@ import java.util.List;
 
 @Data
 public class CodeSet implements Serializable {
-    protected String codeSetId;
-    protected String codeSetNo;
-    protected String name;
-    protected List<Code> codes;
+    private String codeSetId;
+    private String codeSetNo;
+    private String name;
+    private List<Code> codes;
 }

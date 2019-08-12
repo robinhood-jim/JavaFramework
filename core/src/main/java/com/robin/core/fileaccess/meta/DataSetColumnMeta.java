@@ -16,8 +16,9 @@ public class DataSetColumnMeta{
     private String columnName;
     private String columnType;
     private Object defaultNullValue;
+    private String dateFormat;
     private boolean required;
-    protected DataSetColumnMeta(String columnName,String columnType,Object defaultNullValue){
+    public DataSetColumnMeta(String columnName,String columnType,Object defaultNullValue){
         this.columnName=columnName;
         this.columnType=columnType;
         if(defaultNullValue!=null){
@@ -26,7 +27,18 @@ public class DataSetColumnMeta{
             this.defaultNullValue="";
         }
     }
-    protected DataSetColumnMeta(String columnName,String columnType,Object defaultNullValue,boolean required){
+    public DataSetColumnMeta(String columnName,String columnType,Object defaultNullValue,boolean required,String dateFormat){
+        this.columnName=columnName;
+        this.columnType=columnType;
+        if(defaultNullValue!=null){
+            this.defaultNullValue=defaultNullValue;
+        }else{
+            this.defaultNullValue="";
+        }
+        this.required=required;
+        this.dateFormat=dateFormat;
+    }
+    public DataSetColumnMeta(String columnName,String columnType,Object defaultNullValue,boolean required){
         this.columnName=columnName;
         this.columnType=columnType;
         if(defaultNullValue!=null){

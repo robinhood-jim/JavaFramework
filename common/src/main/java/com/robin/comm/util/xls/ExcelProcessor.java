@@ -32,8 +32,8 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Pattern;
 
-public class ExcelGenerator {
-    private static Log log = LogFactory.getLog(ExcelGenerator.class);
+public class ExcelProcessor {
+    private static Log log = LogFactory.getLog(ExcelProcessor.class);
 
     public static void ReadExcelFile(String filename, ExcelSheetProp prop) throws Exception {
         InputStream myxls = new FileInputStream(filename);
@@ -285,8 +285,6 @@ public class ExcelGenerator {
             GenerateHeader(sheet, wb, prop, header);
             count = prop.getColumnList().size();
         } else {
-            int rows = header.getContainrow();
-
             count = GenerateHeader(sheet, wb, prop, header, helper);
         }
         FillColumns(wb, sheet, prop, header, helper);

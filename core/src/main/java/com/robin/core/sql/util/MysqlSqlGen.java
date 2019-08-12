@@ -85,7 +85,6 @@ public class MysqlSqlGen extends AbstractSqlGen implements BaseSqlGen{
 		String str = querySql.trim().toLowerCase();
 		str=str.replaceAll("\\n", "");
 		str=str.replaceAll("\\r", "");
-		int nFromPos = str.lastIndexOf(" from ");
 		int nOrderPos = str.lastIndexOf(" order by ");
 		if (nOrderPos == -1) nOrderPos = str.length();
 		StringBuffer strBuf = new StringBuffer();

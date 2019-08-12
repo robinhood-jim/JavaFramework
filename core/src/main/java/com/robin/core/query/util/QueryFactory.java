@@ -33,7 +33,7 @@ import com.robin.core.base.exception.QueryConfgNotFoundException;
 public class QueryFactory implements InitializingBean {
     private String xmlConfigPath = "";
     private static Log log = LogFactory.getLog(QueryFactory.class);
-    private static Map<String, QueryString> queryMap;
+    private static Map<String, QueryString> queryMap=new HashMap<>();
 
     public QueryFactory() {
 
@@ -41,7 +41,6 @@ public class QueryFactory implements InitializingBean {
 
     public void init() {
         try {
-            queryMap = new HashMap<String, QueryString>();
             String xmlpath = xmlConfigPath;
             log.info("begin to parser xml query files");
             if (xmlpath == null || "".equals(xmlpath)) {

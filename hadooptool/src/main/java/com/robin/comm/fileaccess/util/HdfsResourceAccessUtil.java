@@ -24,10 +24,7 @@ public class HdfsResourceAccessUtil extends AbstractResourceAccessUtil {
 	public BufferedReader getInResourceByReader(DataCollectionMeta meta)
 			throws Exception {
 		HDFSUtil util=getHdfsUtil(meta);
-		if(util.exists(meta.getPath())){
-			logger.error("output file "+meta.getPath()+" exist!,remove it");
-			util.delete(meta.getPath());
-		}
+
 		String suffix=getFileSuffix(meta.getPath());
 		return getReaderBySuffix(suffix, util.getFileSystem().open(new Path(meta.getPath())), meta.getEncode());
 	}

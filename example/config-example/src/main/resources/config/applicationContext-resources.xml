@@ -48,7 +48,7 @@
     <cache:annotation-driven cache-manager="cacheManager" />
 
     <bean id="lettuceConnectionFactory" class="org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory">
-        <constructor-arg index="0" value="172.16.101.139" />
+        <constructor-arg index="0" value="127.0.0.1" />
         <constructor-arg index="1" ref="port" />
     </bean>
     <bean id="redisTemplate" class="org.springframework.data.redis.core.RedisTemplate">

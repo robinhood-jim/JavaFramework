@@ -15,6 +15,7 @@
  */
 package com.robin.core.base.dao;
 
+import java.lang.reflect.InvocationTargetException;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -23,6 +24,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import com.robin.core.base.dao.util.AnnotationRetrevior;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.support.AbstractLobCreatingPreparedStatementCallback;
 import org.springframework.jdbc.support.lob.LobCreator;
@@ -33,45 +35,64 @@ import com.robin.core.base.model.BaseObject;
 public class LobCreatingPreparedStatementCallBack extends
         AbstractLobCreatingPreparedStatementCallback {
     private BaseObject obj;
-    private List<Map<String, Object>> fields;
+    private List<AnnotationRetrevior.FieldContent> fields;
 
     public LobCreatingPreparedStatementCallBack(LobHandler lobHandler) {
         super(lobHandler);
 
     }
 
-    public void setObj(BaseObject obj) {
-        this.obj = obj;
+    public LobCreatingPreparedStatementCallBack(LobHandler lobHandler, List<AnnotationRetrevior.FieldContent> fields, BaseObject object) {
+        super(lobHandler);
+        this.obj = object;
+        this.fields = fields;
     }
+
 
     public BaseObject getObj() {
         return obj;
     }
 
-    public void setFields(List<Map<String, Object>> fields) {
-        this.fields = fields;
-    }
 
     @Override
     protected void setValues(PreparedStatement ps, LobCreator lobCreator)
             throws SQLException, DataAccessException {
         int pos = 1;
-        for (Map<String, Object> map : fields) {
-            if (!map.containsKey("increment") && map.get("value") != null) {
-
-                String datatype = map.get("datatype").toString();
-                if (datatype.equalsIgnoreCase("clob")) {
-                    lobCreator.setClobAsString(ps, pos, map.get("value").toString());
-                } else if (datatype.equalsIgnoreCase("blob")) {
-                    lobCreator.setBlobAsBytes(ps, pos, (byte[]) map.get("value"));
-                } else {
-                    setValue(ps, pos, map.get("value"));
+        try {
+            for (AnnotationRetrevior.FieldContent field : fields) {
+                Object value = field.getGetMethod().invoke(obj, null);
+                if (!field.isIncrement() && !field.isSequential() && value != null) {
+                    boolean needDo = true;
+                    if (field.isPrimary() && field.getPrimaryKeys() != null) {
+                        needDo = false;
+                        for (AnnotationRetrevior.FieldContent fieldContent : field.getPrimaryKeys()) {
+                            setValueByDataType(ps, value, lobCreator, field.getDataType(), pos);
+                            pos++;
+                        }
+                    }
+                    if (needDo) {
+                        setValueByDataType(ps, value, lobCreator, field.getDataType(), pos);
+                        pos++;
+                    }
                 }
-                pos++;
 
             }
+        } catch (IllegalAccessException ex) {
+
+        } catch (InvocationTargetException ex1) {
+
         }
 
+    }
+
+    private void setValueByDataType(PreparedStatement ps, Object value, LobCreator lobCreator, String dataType, int pos) throws SQLException {
+        if (dataType.equalsIgnoreCase("clob")) {
+            lobCreator.setClobAsString(ps, pos, value.toString());
+        } else if (dataType.equalsIgnoreCase("blob")) {
+            lobCreator.setBlobAsBytes(ps, pos, (byte[]) value);
+        } else {
+            setValue(ps, pos, value);
+        }
     }
 
     private void setValue(PreparedStatement ps, int pos, Object value) {

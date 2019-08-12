@@ -23,7 +23,7 @@ Slightly Framework design to  support Spring based java or Bigdata program.
  2.Development
  
     I.Model Layer:Simple ORM tool, Support JAVA JPA or my BaseObject Annotation
-        Demostration：(only support One primary key) 
+        Demostration：(support Composite primary key) 
         1.Model Class
             exmaple: core/src/test/java/com/robin/core/test/model
             TestJPaModel Model annotation with java JPA
@@ -54,6 +54,8 @@ Slightly Framework design to  support Spring based java or Bigdata program.
                 |length              |length                                                            |
                 ----------------------------------------------------------------------------------------
              when save or update,Entity will verify use Annotation
+             
+             Composite Primary Key,see example core/src/test/java/com/robin/core/test/model/TestMutiPK
                 
         2.Dao Layer:
             use com.robin.core.base.dao.JdbcDao,no need to Generate new Class

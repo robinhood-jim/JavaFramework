@@ -289,7 +289,10 @@ public class ConvertUtil {
 		return map;
 	}
 
-	private static Object parseParamenter(Class type, Object strValue) throws Exception {
+	public static Object parseParamenter(Class type, Object strValue) throws Exception {
+		if(strValue==null){
+			return null;
+		}
 		String typeName = type.getName();
 		if(type.equals(byte[].class)){
 			typeName="byte";
@@ -317,7 +320,7 @@ public class ConvertUtil {
 			ret = strValue.toString();
 		}
 		else {
-			if (typeName.equals("java.sql.Timestamp") && strValue != null) {
+			if (typeName.equals("java.sql.Timestamp")) {
 				String value = strValue.toString().trim();
 				int len = value.trim().length();
 				if (len > 7 && len < 11) {
@@ -336,9 +339,13 @@ public class ConvertUtil {
 				strValue = value;
 			}
 			if(!typeName.equals("byte")){
-				Method method = type.getMethod("valueOf", new Class[] { "java.lang.String".getClass() });
-				if(method!=null)
-					ret = method.invoke(type, new Object[] { strValue.toString() });
+				if(!strValue.toString().isEmpty()) {
+					Method method = type.getMethod("valueOf", new Class[]{"java.lang.String".getClass()});
+					if (method != null)
+						ret = method.invoke(type, new Object[]{strValue.toString()});
+				}else{
+					ret=null;
+				}
 			}else{
 				ret=strValue;
 			}

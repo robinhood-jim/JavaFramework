@@ -58,7 +58,6 @@ public class SimpleJdbcDao {
 	long retryNums=1;
 	int waitSecond=0;
 	boolean getConnectLoop=false;
-	//private DataSource source;
 	private BaseDataBaseMeta meta;
 	private DataBaseParam param;
 	private static  Logger logger=LoggerFactory.getLogger(SimpleJdbcDao.class);
@@ -199,11 +198,7 @@ public class SimpleJdbcDao {
 		}catch(Exception ex){
 			throw new DAOException(ex);
 		}finally{
-			try{
-			stmt.close();
-			}catch(Exception ex){
-				
-			}
+			DbUtils.closeQuietly(stmt);
 		}
 	}
 	public static Serializable callProcedure(final Connection conn,final String sql,ScalarHandler<? extends Serializable> hander,Object... param) throws DAOException{
@@ -216,11 +211,7 @@ public class SimpleJdbcDao {
 		}catch(Exception ex){
 			throw new DAOException(ex);
 		}finally{
-			try{
-			stmt.close();
-			}catch(Exception ex){
-				
-			}
+			DbUtils.closeQuietly(stmt);
 		}
 	}
 	public int queryByInt(final String sql) throws DAOException{
@@ -264,7 +255,6 @@ public class SimpleJdbcDao {
 			QueryRunner qRunner=new QueryRunner();
 			return qRunner.query(conn, sql, handler);
 		}catch(Exception ex){
-			//logger.error("",ex);
 			throw new DAOException(ex);
 		}finally{
 		}
@@ -335,7 +325,7 @@ public class SimpleJdbcDao {
 			throw new DAOException(e);
 		}finally{
 		}
-		//throw new Exception("db operator error");
+
 	}
 	private static List<Map<String,String>> queryHandler(final QueryRunner runner,Connection conn,String sql) throws Exception{
 		return runner.query(conn, sql, new ResultSetHandler<List<Map<String,String>>>(){
@@ -373,7 +363,6 @@ public class SimpleJdbcDao {
 			throw new DAOException(e);
 		}finally{
 		}
-		//throw new Exception("db operator error");
 	}
 	public static final Map<String, String> wrapResultSet(ResultSet rs,ResultSetMetaData meta) throws SQLException{
 		Map<String, String> map = new HashMap<String, String>();
@@ -837,7 +826,6 @@ public class SimpleJdbcDao {
 			qRunner.batch(conn, insertSqlbuilder.toString(), objs);
 		}catch(Exception ex){
 			runOk=false;
-			//logger.error("",ex);
 			throw new DAOException(ex);
 		}finally{
 			try{

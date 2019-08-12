@@ -37,7 +37,7 @@ public class PptBaseUtil {
 			 slideHeaders.setHeaderText(section.getHeaderStr());
 		 
 		 slideHeaders.setSlideNumberVisible(true);
-		 slideHeaders.setDateTimeText("����");
+		 slideHeaders.setDateTimeText("日期");
 		 if(section.getFooterStr()!=null && !"".equals(section.getFooterStr()))
 			 slideHeaders.setFootersText(section.getFooterStr());
 		 HeadersFooters notesHeaders  = show.getNotesHeadersFooters();
@@ -51,11 +51,7 @@ public class PptBaseUtil {
 		int width=prop.getContainrow();
 		int rows=prop.getTotalCol();
 		Table celltab=new Table(width,rows);
-//		int[][] posArr=null;
-//		if(prop.getHeaderColumnList()!=null){
-//			posArr=MergeCellUtil.caculateHeaderRowStartcol(prop);
-//		}
-		//Ŀǰppt��table��֧�ֺϲ���Ԫ��
+
 		List<TableHeaderColumn> list=prop.getHeaderColumnList().get(0);
 		for(int i=0;i<list.size();i++){
 			TableHeaderColumn col=list.get(i);
@@ -111,7 +107,7 @@ public class PptBaseUtil {
 		slide.addShape(pic);
 	}
 	public static void insertText(Slide slide,PptPragraph pragraph){
-		AutoShape _autoShape = new AutoShape(ShapeTypes.Rectangle); //������״  
+		AutoShape _autoShape = new AutoShape(ShapeTypes.Rectangle);
         TextRun _autoText = _autoShape.createTextRun();  
         _autoText.setRawText(pragraph.getContext());  
         _autoShape.setAnchor(new Rectangle(pragraph.getPosx(),pragraph.getPosy(),pragraph.getPosx()+pragraph.getWidth(),pragraph.getPosy()+pragraph.getHeight()));  

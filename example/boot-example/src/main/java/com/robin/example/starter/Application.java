@@ -8,7 +8,6 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @SpringBootApplication
 @EnableTransactionManagement(proxyTargetClass = true)
 @ComponentScan("com.robin")
-
 public class Application {
     public static  void main(String[] args) throws Exception{
         try {

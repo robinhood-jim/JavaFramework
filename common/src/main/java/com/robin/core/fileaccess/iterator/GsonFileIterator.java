@@ -94,6 +94,12 @@ public class GsonFileIterator extends AbstractFileIterator{
 			
 		}
 	}
-	
 
+	@Override
+	public void close() throws IOException {
+		if(jreader!=null){
+			jreader.close();
+		}
+		super.close();
+	}
 }

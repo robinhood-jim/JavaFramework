@@ -54,7 +54,7 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 	protected BaseSqlGen sqlGen;
 	protected Class<V> type;
 	protected Logger logger=LoggerFactory.getLogger(getClass());
-	protected Map<String,String> tableMap;
+	protected AnnotationRetrevior.EntityContent entityContent;
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public BaseAnnotationJdbcService(){
 		Type genericSuperClass = getClass().getGenericSuperclass();
@@ -69,15 +69,15 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 		type = (Class) parametrizedType.getActualTypeArguments()[0];
 		//get JdbcDao by model annotation jdbcDao
 		if(type!=null){
-			tableMap=AnnotationRetrevior.getMappingTable(type);
+			entityContent=AnnotationRetrevior.getMappingTableByCache(type);
 		}
 	}
 
 	@Override
 	public void afterPropertiesSet() {
 		//if use JPA,can not use dynamic DataSource Property,then use Default JdbcDao
-		if(tableMap!=null && tableMap.containsKey("jdbcDao") && !tableMap.get("jdbcDao").isEmpty()){
-			jdbcDao= (JdbcDao) SpringContextHolder.getBean(tableMap.get("jdbcDao"));
+		if(entityContent!=null && entityContent.getJdbcDao()!=null && !entityContent.getJdbcDao().isEmpty()){
+			jdbcDao= (JdbcDao) SpringContextHolder.getBean(entityContent.getJdbcDao());
 		}else{
 			jdbcDao= (JdbcDao) SpringContextHolder.getBean("jdbcDao");
 		}
@@ -220,20 +220,9 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 	
 	@Transactional(readOnly=true)
 	public List<V> queryAll() throws ServiceException{
-		List<V> retlist = new ArrayList<V>();
+		List<V> retlist;
 		try{
-		StringBuffer buffer=new StringBuffer();
-		Map<String, String> tableMap = new HashMap<String, String>();
-		List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
-		buffer.append(jdbcDao.getWholeSelectSql(type.newInstance(), tableMap, list));
-		String sql=buffer.substring(0,buffer.length()-5);
-		logger.info("querySql="+sql);
-		List<Map<String, Object>> rsList = this.getJdbcDao().queryBySql(sql);
-		for (int i = 0; i < rsList.size(); i++) {
-			V obj = (V) type.newInstance();
-			ConvertUtil.convertToModel(obj, rsList.get(i));
-			retlist.add(obj);
-		}
+			retlist=(List<V>)jdbcDao.queryAll(type);
 		}catch (Exception e) {
 			throw new ServiceException(e);
 		}

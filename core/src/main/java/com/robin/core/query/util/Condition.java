@@ -24,7 +24,7 @@ public class Condition implements ICondition{
 	public static final String GREATNESS_AND_EQUALS = "GREATNESS_AND_EQUALS";
 	public static final String SMALLNESS_AND_EQUALS = "SMALLNESS_AND_EQUALS";
 	public static final String LIKE = "LIKE";
-	public static final String EQUALS = "EQUALS";
+	public static final String EQUALS = "EQS";
     public static final String NOT_EQUALS = "NOT_EQUALS";
 	public static final String IS_NOT_NULL = "NOT_NULL";
 	public static final String IS_NULL = "IS_NULL";

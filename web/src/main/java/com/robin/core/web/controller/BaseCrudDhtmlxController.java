@@ -24,7 +24,7 @@ import com.robin.core.query.util.QueryFactory;
 import com.robin.core.query.util.QueryString;
 import com.robin.core.web.codeset.Code;
 import com.robin.core.web.international.Translator;
-import com.robin.core.web.util.CodeSetUtil;
+import com.robin.core.web.codeset.CodeSetService;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.Serializable;
@@ -161,7 +161,7 @@ public abstract class BaseCrudDhtmlxController<O extends BaseObject,P extends Se
         setCode(codeSetNo);
         Map<String, Object> retmap = new HashMap<String, Object>();
         List<Map<String, String>> list = new ArrayList<Map<String, String>>();
-        CodeSetUtil util= (CodeSetUtil) SpringContextHolder.getBean(CodeSetUtil.class);
+        CodeSetService util= (CodeSetService) SpringContextHolder.getBean(CodeSetService.class);
         List<Code> codeList=util.getCacheCode(codeSetNo);
         if (codeList!=null) {
             if (allowNulls) {

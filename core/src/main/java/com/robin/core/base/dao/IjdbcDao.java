@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
+import com.robin.core.base.dao.util.AnnotationRetrevior;
 import org.springframework.jdbc.core.SqlParameter;
 
 import com.robin.core.base.exception.DAOException;
@@ -27,13 +28,6 @@ import com.robin.core.query.util.PageQuery;
 
 
 public interface IjdbcDao {
-	/**
-	 * Return query count
-	 * @param querySQL   
-	 * @return
-	 * @throws DAOException
-	 */	
-	public int queryCountBySql(String querySQL) throws DAOException;
 	/**
 	 * Return ResultSet frist Integer
 	 * @param querySQL   
@@ -48,7 +42,6 @@ public interface IjdbcDao {
 	 * @return
 	 * @throws DAOException
 	 */
-	@Deprecated
 	public List queryByPageSql(String sqlstr,PageQuery pageQuery) throws DAOException;
 	/**
 	 * query by sql
@@ -135,7 +128,7 @@ public interface IjdbcDao {
 	 */
 	public PageQuery queryBySql(String querySQL,String countSql,String[] displayname,PageQuery pageQuery)throws DAOException;
 
-	public long executeSqlWithReturn(List<Map<String, Object>> field,String sql) throws DAOException;
+	public long executeSqlWithReturn(List<AnnotationRetrevior.FieldContent> field, String sql,BaseObject object) throws DAOException;
 	public Long createVO(BaseObject obj) throws DAOException;
 	public int updateVO(Class<? extends BaseObject> clazz,BaseObject obj) throws DAOException;
 	public int deleteVO(Class<? extends BaseObject> clazz,Serializable[] value) throws DAOException;

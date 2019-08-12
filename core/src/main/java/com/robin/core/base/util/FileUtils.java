@@ -3,11 +3,15 @@ package com.robin.core.base.util;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class FileUtils {
-    public static final List<String> avaiableCompressSuffixs = Arrays.asList(new String[]{Const.CompressType.COMPRESS_TYPE_GZ.toString(), Const.CompressType.COMPRESS_TYPE_LZO.toString(), Const.CompressType.COMPRESS_TYPE_BZ2.toString(), Const.CompressType.COMPRESS_TYPE_SNAPPY.toString(), Const.CompressType.COMPRESS_TYPE_ZIP.toString(), Const.CompressType.COMPRESS_TYPE_LZMA.toString()});
-    public static final Const.CompressType[] compressTypeEnum = {Const.CompressType.COMPRESS_TYPE_GZ, Const.CompressType.COMPRESS_TYPE_LZO, Const.CompressType.COMPRESS_TYPE_BZ2, Const.CompressType.COMPRESS_TYPE_SNAPPY, Const.CompressType.COMPRESS_TYPE_ZIP, Const.CompressType.COMPRESS_TYPE_LZMA};
+    public static final List<String> avaiableCompressSuffixs = Collections.unmodifiableList(Arrays.asList(new String[]{Const.CompressType.COMPRESS_TYPE_GZ.toString(),
+            Const.CompressType.COMPRESS_TYPE_LZO.toString(), Const.CompressType.COMPRESS_TYPE_BZ2.toString(), Const.CompressType.COMPRESS_TYPE_SNAPPY.toString(),
+            Const.CompressType.COMPRESS_TYPE_ZIP.toString(), Const.CompressType.COMPRESS_TYPE_LZMA.toString()}));
+    public static final List<Const.CompressType> compressTypeEnum =Collections.unmodifiableList(Arrays.asList(new Const.CompressType[]{Const.CompressType.COMPRESS_TYPE_GZ, Const.CompressType.COMPRESS_TYPE_LZO,
+            Const.CompressType.COMPRESS_TYPE_BZ2, Const.CompressType.COMPRESS_TYPE_SNAPPY, Const.CompressType.COMPRESS_TYPE_ZIP, Const.CompressType.COMPRESS_TYPE_LZMA}));
 
     public static String parseFileFormat(String path, List<String> suffix) {
         String filePath = null;
@@ -35,7 +39,7 @@ public class FileUtils {
     public static Const.CompressType getFileCompressType(List<String> suffixList) {
         Const.CompressType type = Const.CompressType.COMPRESS_TYPE_NONE;
         if (!suffixList.isEmpty() && avaiableCompressSuffixs.contains(suffixList.get(0).toLowerCase())) {
-            type = compressTypeEnum[avaiableCompressSuffixs.indexOf(suffixList.get(0))];
+            type = compressTypeEnum.get(avaiableCompressSuffixs.indexOf(suffixList.get(0)));
         }
         return type;
     }
