@@ -87,10 +87,8 @@ public class SourceFileExplorer {
                 Iterator<String> iter=map.keySet().iterator();
                 while(iter.hasNext()){
                     String column=iter.next();
-                    if(columnPos==1){
-                        if(!columns.contains(column)){
-                            columns.add(column);
-                        }
+                    if(columnPos==1 && !columns.contains(column)){
+                        columns.add(column);
                     }
                     getTypeByData(map.get(column).toString(),column,typeMap,dateFormatMap);
                 }

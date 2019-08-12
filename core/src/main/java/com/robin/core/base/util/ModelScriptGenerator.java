@@ -82,10 +82,8 @@ public class ModelScriptGenerator {
             builder.append(tableMap.get("schema")).append(".");
         builder.append(tableMap.get("tableName")).append("(").append("\n");
         for (AnnotationRetrevior.FieldContent field : fields) {
-            if(field.isPrimary()){
-                if(field.getPrimaryKeys()!=null){
-                    builder.append("\t").append(sqlGen.getCreateFieldPart(fieldContentToMap(field)).toLowerCase()).append(",\n");
-                }
+            if(field.isPrimary() && field.getPrimaryKeys()!=null){
+                builder.append("\t").append(sqlGen.getCreateFieldPart(fieldContentToMap(field)).toLowerCase()).append(",\n");
             }
             if (field.getDataType() != null) {
                 builder.append("\t").append(sqlGen.getCreateFieldPart(fieldContentToMap(field)).toLowerCase()).append(",\n");
