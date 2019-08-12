@@ -1,4 +1,4 @@
-package com.robin.core.web.util;
+package com.robin.core.web.codeset;
 
 import com.robin.core.base.dao.JdbcDao;
 import com.robin.core.base.exception.DAOException;
@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 @Component
-public class CodeSetUtil {
+public class CodeSetService {
     @Cacheable(value = "codeSetCache",key = "#codeSetNo")
     public List<Code> getCacheCode(String codeSetNo) throws DAOException {
         return getCodeSetDefault(codeSetNo);

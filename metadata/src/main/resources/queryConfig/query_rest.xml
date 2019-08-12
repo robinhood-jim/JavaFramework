@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<QUERY>
+
+	<SQLSCRIPT ID="GET_LINE_TRACE">
+		<FROMSQL>from t_line_trace a where 1=1 ${queryString}</FROMSQL>
+		<FIELD>a.line_id as lineId,a.line_direct as lineDirect,a.gps_content as content</FIELD>
+	</SQLSCRIPT>
+	<SQLSCRIPT ID="$_GETCODESET">
+		<FROMSQL>from t_sys_code a,t_sys_codeset b where a.CS_ID=b.ID and ${queryString}</FROMSQL>
+		<FIELD>a.ITEM_NAME as ITEMNAME,a.ITEM_VALUE as ITEMVALUE</FIELD>
+	</SQLSCRIPT>
+
+</QUERY>

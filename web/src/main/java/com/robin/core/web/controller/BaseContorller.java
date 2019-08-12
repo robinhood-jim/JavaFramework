@@ -21,7 +21,7 @@ import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.query.util.PageQuery;
 import com.robin.core.web.codeset.Code;
 import com.robin.core.web.international.Translator;
-import com.robin.core.web.util.CodeSetUtil;
+import com.robin.core.web.codeset.CodeSetService;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,14 +75,14 @@ public abstract class BaseContorller
                 codes[0] = codeSetNos;
             }
         }
-        CodeSetUtil util= (CodeSetUtil) SpringContextHolder.getBean(CodeSetUtil.class);
+        CodeSetService util= (CodeSetService) SpringContextHolder.getBean(CodeSetService.class);
         for (int i = 0; i < codes.length; i++)
         {
             util.getCacheCode(codes[i]);
         }
     }
     protected void setCode(String codeSetNo, List<?> codes, String label, String value) {
-        CodeSetUtil util= (CodeSetUtil) SpringContextHolder.getBean(CodeSetUtil.class);
+        CodeSetService util= (CodeSetService) SpringContextHolder.getBean(CodeSetService.class);
         util.setCode(codeSetNo,codes,label,value);
     }
 
@@ -119,7 +119,7 @@ public abstract class BaseContorller
 
     protected String findCodeName(String codeNo, String value)
     {
-        CodeSetUtil util= (CodeSetUtil) SpringContextHolder.getBean(CodeSetUtil.class);
+        CodeSetService util= (CodeSetService) SpringContextHolder.getBean(CodeSetService.class);
         List<Code> list = util.getCacheCode(codeNo);
         if (value == null) {
             return "";
@@ -137,7 +137,7 @@ public abstract class BaseContorller
         return "";
     }
     protected List<Code> findCodeSetArr(String codeSetNo){
-        CodeSetUtil util= (CodeSetUtil) SpringContextHolder.getBean(CodeSetUtil.class);
+        CodeSetService util= (CodeSetService) SpringContextHolder.getBean(CodeSetService.class);
         return util.getCacheCode(codeSetNo);
     }
     protected void insertNullSelect(List<Map<String, Object>> list)
@@ -165,7 +165,7 @@ public abstract class BaseContorller
     }
     protected List<Map<String,Object>> wrapCodeSet(String codeSetNo){
         List<Map<String,Object>> list=new ArrayList<>();
-        CodeSetUtil util= (CodeSetUtil) SpringContextHolder.getBean(CodeSetUtil.class);
+        CodeSetService util= (CodeSetService) SpringContextHolder.getBean(CodeSetService.class);
         List<Code> codeList=util.getCacheCode(codeSetNo);
         for(Code code:codeList){
             Map<String, Object> tmap = new HashMap();

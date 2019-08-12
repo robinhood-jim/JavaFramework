@@ -27,43 +27,68 @@ public class CollectionsUtil {
 		Collections.sort(l, new Comparator<Map.Entry<String, Long>>() {
 			public int compare(Map.Entry<String, Long> o1,
 					Map.Entry<String, Long> o2) {
-				int retval = 0;
-				if (o2.getValue() > o1.getValue()){
-					if(asc)
-						retval=-1;
-					else
-						retval = 1;
-				}
-				else if (o2.getValue() < o1.getValue()){
-					if(asc)
-						retval=1;
-					else
-						retval = -1;
-				}
-				return retval;
+				return getCompareVal(o1, o2,asc);
 			}
 		});
 		return l;
+	}
+	private static int getCompareVal(Map.Entry<String, ?> o1, Map.Entry<String, ?> o2,boolean asc) {
+		int retval = 0;
+		if(o1.getValue() instanceof Long) {
+			if ((Long) o2.getValue() > (Long) o1.getValue()) {
+				if (asc)
+					retval = -1;
+				else
+					retval = 1;
+			} else if ((Long)o2.getValue() < (Long)o1.getValue()) {
+				if (asc)
+					retval = 1;
+				else
+					retval = -1;
+			}
+		}else if(o1.getValue() instanceof Integer){
+			if ((Integer) o2.getValue() > (Integer) o1.getValue()) {
+				if (asc)
+					retval = -1;
+				else
+					retval = 1;
+			} else if ((Integer)o2.getValue() < (Integer) o1.getValue()) {
+				if (asc)
+					retval = 1;
+				else
+					retval = -1;
+			}
+		}else if(o1.getValue() instanceof Double){
+			if ((Double) o2.getValue() > (Double) o1.getValue()) {
+				if (asc)
+					retval = -1;
+				else
+					retval = 1;
+			} else if ((Double)o2.getValue() < (Double) o1.getValue()) {
+				if (asc)
+					retval = 1;
+				else
+					retval = -1;
+			}
+		}
+		return retval;
 	}
 	public static ArrayList<Map.Entry<String,Integer>> getSortedMapByIntValue(Map<String,Integer> h,final boolean asc) {
 		ArrayList<Map.Entry<String, Integer>> l = new ArrayList<Map.Entry<String, Integer>>(h.entrySet());
 		Collections.sort(l, new Comparator<Map.Entry<String, Integer>>() {
 			public int compare(Map.Entry<String, Integer> o1,
 					Map.Entry<String, Integer> o2) {
-				int retval = 0;
-				if (o2.getValue() > o1.getValue()){
-					if(asc)
-						retval=-1;
-					else
-						retval = 1;
-				}
-				else if (o2.getValue() < o1.getValue()){
-					if(asc)
-						retval=1;
-					else
-						retval = -1;
-				}
-				return retval;
+				return getCompareVal(o1,o2,asc);
+			}
+		});
+		return l;
+	}
+	public static ArrayList<Map.Entry<String,Double>> getSortedMapByDoubleValue(Map<String,Double> h,final boolean asc) {
+		ArrayList<Map.Entry<String, Double>> l = new ArrayList<Map.Entry<String, Double>>(h.entrySet());
+		Collections.sort(l, new Comparator<Map.Entry<String, Double>>() {
+			public int compare(Map.Entry<String, Double> o1,
+							   Map.Entry<String, Double> o2) {
+				return getCompareVal(o1,o2,asc);
 			}
 		});
 		return l;

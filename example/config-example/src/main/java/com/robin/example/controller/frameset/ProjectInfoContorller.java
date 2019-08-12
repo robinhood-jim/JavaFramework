@@ -12,7 +12,7 @@ import com.robin.core.query.util.PageQuery;
 import com.robin.core.template.util.FreeMarkerUtil;
 import com.robin.core.web.codeset.Code;
 import com.robin.core.web.controller.BaseCrudDhtmlxController;
-import com.robin.core.web.util.CodeSetUtil;
+import com.robin.core.web.codeset.CodeSetService;
 import com.robin.example.model.frameset.DataSource;
 import com.robin.example.model.frameset.DbDriver;
 import com.robin.example.model.frameset.ProjectInfo;
@@ -50,7 +50,7 @@ public class ProjectInfoContorller extends BaseCrudDhtmlxController<ProjectInfo,
     @Autowired
     private DataSourceService dataSourceService;
     @Autowired
-    private CodeSetUtil codeSetUtil;
+    private CodeSetService codeSetUtil;
 
 
     private String projId;

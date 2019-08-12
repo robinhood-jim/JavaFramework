@@ -15,12 +15,10 @@
  */
 package com.robin.core.base.util;
 
-import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.Reader;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,8 +31,8 @@ import org.supercsv.io.ICsvListReader;
 import org.supercsv.io.ICsvListWriter;
 import org.supercsv.prefs.CsvPreference;
 
-public class CsvGenerator{
-	private static Logger logger=LoggerFactory.getLogger(CsvGenerator.class);
+public class CsvProcessor {
+	private static Logger logger=LoggerFactory.getLogger(CsvProcessor.class);
 
 	public static int ReadFile(InputStream inputStream,CsvConfig config,List<Map<String,String>> columnResultList){
 		
@@ -57,7 +55,7 @@ public class CsvGenerator{
 		}
 		return pos;
 	}
-	public static int ReadFile(InputStream inputStream,CsvConfig config,char separator,List<Map<String,String>> columnResultList){
+	public static int readFile(InputStream inputStream,CsvConfig config,char separator,List<Map<String,String>> columnResultList){
 		
 		int pos=0;
 		try{
@@ -78,7 +76,7 @@ public class CsvGenerator{
 		}
 		return pos;
 	}
-	public static int ReadFile(InputStream inputStream,List<Map<String,String>> columnResultList){
+	public static int readFile(InputStream inputStream,List<Map<String,String>> columnResultList){
 	
 		int pos=0;
 		try{
@@ -100,7 +98,7 @@ public class CsvGenerator{
 		}
 		return pos;
 	}
-	public static int ReadFile(InputStream inputStream,char seperator,List<Map<String,String>> columnResultList){
+	public static int readFile(InputStream inputStream,char seperator,List<Map<String,String>> columnResultList){
 		
 		int pos=0;
 		try{
@@ -123,7 +121,7 @@ public class CsvGenerator{
 		}
 		return pos;
 	}
-	public static int ReadFile(Reader ireader,List<Map<String,String>> columnResultList){
+	public static int readFile(Reader ireader,List<Map<String,String>> columnResultList){
 		
 		int pos=0;
 		try{
@@ -145,7 +143,7 @@ public class CsvGenerator{
 		}
 		return pos;
 	}
-	public static int ReadFile(Reader ireader,CsvConfig config,List<Map<String,String>> columnResultList){
+	public static int readFile(Reader ireader,CsvConfig config,List<Map<String,String>> columnResultList){
 		
 		int pos=0;
 		try{
@@ -167,7 +165,7 @@ public class CsvGenerator{
 		}
 		return pos;
 	}
-	public static int ReadFile(Reader ireader,char seperator,List<Map<String,String>> columnResultList){
+	public static int readFile(Reader ireader,char seperator,List<Map<String,String>> columnResultList){
 		
 		int pos=0;
 		try{
@@ -189,7 +187,7 @@ public class CsvGenerator{
 		}
 		return pos;
 	}
-	public static int ReadFile(Reader ireader,char seperator,CsvConfig config,List<Map<String,String>> columnResultList){
+	public static int readFile(Reader ireader,char seperator,CsvConfig config,List<Map<String,String>> columnResultList){
 		int pos=0;
 		try{
 			ICsvListReader reader=new CsvListReader(ireader,new CsvPreference.Builder( '"', seperator, "n").build());
@@ -210,7 +208,7 @@ public class CsvGenerator{
 		}
 		return pos;
 	}
-	public static void WriteFile(PrintWriter pwriter,String[] header, List<String[]> resultList,String splitchar){
+	public static void writeFile(PrintWriter pwriter,String[] header, List<String[]> resultList,String splitchar){
 		try{
 			CsvPreference preference=new CsvPreference.Builder('"',splitchar.charAt(0), "n").build();
 			ICsvListWriter writer=new CsvListWriter(pwriter,preference);

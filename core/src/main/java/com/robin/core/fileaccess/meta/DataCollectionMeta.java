@@ -15,12 +15,13 @@
  */
 package com.robin.core.fileaccess.meta;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class DataCollectionMeta {
+public class DataCollectionMeta implements Serializable {
 	private String split;
 	private String encode="UTF-8";
 	private List<DataSetColumnMeta> columnList=new ArrayList<DataSetColumnMeta>();
@@ -38,6 +39,10 @@ public class DataCollectionMeta {
 	}
 	public void addColumnMeta(String columnName,String columnType,String defaultNullValue,boolean required){
 		this.columnList.add(new DataSetColumnMeta(columnName, columnType, defaultNullValue,required));
+		columnNameMap.put(columnName,null);
+	}
+	public void addColumnMeta(String columnName,String columnType,String defaultNullValue,boolean required,String dateFormat){
+		this.columnList.add(new DataSetColumnMeta(columnName, columnType, defaultNullValue,required,dateFormat));
 		columnNameMap.put(columnName,null);
 	}
 	public String getSplit() {
@@ -94,7 +99,7 @@ public class DataCollectionMeta {
 	public void setPrimaryKeys(String primaryKeys) {
 		this.primaryKeys = primaryKeys;
 	}
-	public  DataSetColumnMeta getColumnMeta(String columnName,String columnType,Object defaultNullValue){
+	public  DataSetColumnMeta createColumnMeta(String columnName,String columnType,Object defaultNullValue){
 		return new DataSetColumnMeta(columnName,columnType,defaultNullValue);
 	}
 	public Map<String,Void> getColumnNameMap(){

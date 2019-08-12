@@ -358,7 +358,8 @@ public class HDFSCallUtil {
 			FileStatus[] status=fs.listStatus(path);
 			Path[] listPaths=FileUtil.stat2Paths(status);
 			for (int i = 0; i < listPaths.length; i++) {
-				hdfsUrlList.add(listPaths[i].toString());
+				if(!listPaths[i].toString().endsWith("_SUCCESS"))
+					hdfsUrlList.add(listPaths[i].toString());
 			}
 		}catch (Exception e) {
 			e.printStackTrace();

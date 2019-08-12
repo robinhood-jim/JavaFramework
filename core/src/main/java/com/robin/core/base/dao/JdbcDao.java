@@ -93,7 +93,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
                 pageQuery.setPageCount(String.valueOf(pages));
                 list = queryItemList(pageQuery, pageSQL);
             } else {
-                list = new ArrayList<Map<String, Object>>();
+                list = new ArrayList<>();
                 pageQuery.setPageCount("0");
             }
         } else {
@@ -294,13 +294,13 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
 
         try {
             StringBuffer buffer = new StringBuffer();
-            List<Object> params = new ArrayList<Object>();
+            List<Object> params = new ArrayList<>();
 
             buffer.append(getWholeSelectSql(type)).append(" where ");
             List<AnnotationRetrevior.FieldContent> fields=AnnotationRetrevior.getMappingFieldsCache(type);
 
             for (AnnotationRetrevior.FieldContent field:fields) {
-                Object obj=field.getGetMethod().invoke(vo,null);
+                Object obj=field.getGetMethod().invoke(vo,new Object[]{});
                 if (obj != null) {
                     if (additonMap == null) {
                         buffer.append(field.getFieldName()).append("=?");
@@ -366,7 +366,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
     }
     public List<? extends BaseObject> queryByCondition(Class<? extends BaseObject>type,List<FilterCondition> conditions,String orderByStr)
             throws DAOException {
-        List<BaseObject> retlist = new ArrayList<BaseObject>();
+        List<BaseObject> retlist = new ArrayList<>();
         try{
             StringBuffer buffer=new StringBuffer();
             buffer.append(getWholeSelectSql(type)).append(" where ");
@@ -452,7 +452,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
     }
 
     public List<? extends BaseObject> queryByField(Class<? extends BaseObject> type, String fieldName, String oper, Object... fieldValues) throws DAOException {
-        List<BaseObject> retlist = new ArrayList<BaseObject>();
+        List<BaseObject> retlist = new ArrayList<>();
         try {
             StringBuilder buffer = new StringBuilder();
             buffer.append(getWholeSelectSql(type)).append(" where ");
@@ -482,7 +482,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
 
 
     public List<? extends BaseObject> queryByFieldOrderBy(Class<? extends BaseObject> type, String orderByStr, String fieldName, String oper, Object... fieldValues) throws DAOException {
-        List<BaseObject> retlist = new ArrayList<BaseObject>();
+        List<BaseObject> retlist = new ArrayList<>();
         try {
             StringBuilder buffer = new StringBuilder();
             List<AnnotationRetrevior.FieldContent> fields = AnnotationRetrevior.getMappingFieldsCache(type);
@@ -516,7 +516,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
     private List<Map<String, Object>> executeQueryByParam(String oper, String namedstr, String sql, Object[] fieldValues) {
         List<Map<String, Object>> rsList;
         if (oper.equals(BaseObject.OPER_IN)) {
-            Map<String, List<Object>> map = new HashMap<String, List<Object>>();
+            Map<String, List<Object>> map = new HashMap<>();
             List<Object> vallist = Arrays.asList(fieldValues);
             map.put(namedstr, vallist);
             rsList = queryByNamedParam(sql, map);
@@ -527,7 +527,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
     }
 
     public List<? extends BaseObject> queryAll(Class<? extends BaseObject> type) throws DAOException {
-        List<BaseObject> retlist = new ArrayList<BaseObject>();
+        List<BaseObject> retlist = new ArrayList<>();
         List<AnnotationRetrevior.FieldContent> fields=AnnotationRetrevior.getMappingFieldsCache(type);
         try {
             StringBuilder buffer = new StringBuilder();
@@ -696,7 +696,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
         BaseStoreProcedure xsp = new BaseStoreProcedure(this.getJdbcTemplate(), sql);
         try {
             for (int i = 0; i < declaredParameters.size(); i++) {
-                SqlParameter parameter = (SqlParameter) declaredParameters.get(i);
+                SqlParameter parameter = declaredParameters.get(i);
                 if (parameter instanceof SqlOutParameter) {
                     xsp.setOutParameter(parameter.getName(), parameter.getSqlType());
                 } else if (parameter instanceof SqlInOutParameter) {
@@ -755,7 +755,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
             int pos = 1;
             try {
                 for (AnnotationRetrevior.FieldContent field : fields) {
-                    Object value = field.getGetMethod().invoke(object, null);
+                    Object value = field.getGetMethod().invoke(object, new Object[]{});
                     if (!field.isIncrement() && value != null) {
                         AnnotationRetrevior.setParameter(ps, pos, value);
                         pos++;
@@ -813,7 +813,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
         AnnotationRetrevior.FieldContent incrementcolumn = null;
         try {
             for (AnnotationRetrevior.FieldContent content : fields) {
-                Object value = content.getGetMethod().invoke(obj, null);
+                Object value = content.getGetMethod().invoke(obj, new Object[]{});
                 if (content.getDataType().equals(Const.META_TYPE_BLOB) || content.getDataType().equals(Const.META_TYPE_CLOB)) {
                     containlob = true;
                 }
@@ -881,7 +881,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
                     }else{
                         for(AnnotationRetrevior.FieldContent field:pkColumn.getPrimaryKeys()){
                             if(field.isIncrement() || field.isSequential()){
-                                field.getSetMethod().invoke(incrementcolumn.getGetMethod().invoke(obj,null),retval);
+                                field.getSetMethod().invoke(incrementcolumn.getGetMethod().invoke(obj,new Object[]{}),retval);
                             }
                         }
                     }

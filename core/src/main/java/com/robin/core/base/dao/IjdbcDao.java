@@ -42,7 +42,6 @@ public interface IjdbcDao {
 	 * @return
 	 * @throws DAOException
 	 */
-	@Deprecated
 	public List queryByPageSql(String sqlstr,PageQuery pageQuery) throws DAOException;
 	/**
 	 * query by sql

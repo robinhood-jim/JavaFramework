@@ -12,6 +12,7 @@ import org.apache.avro.generic.GenericRecord;
 import org.apache.zookeeper.common.IOUtils;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -75,4 +76,11 @@ public class AvroFileIterator extends AbstractFileIterator {
 		}
 	}
 
+	@Override
+	public void close() throws IOException {
+		if(fileReader!=null){
+			fileReader.close();
+		}
+		super.close();
+	}
 }

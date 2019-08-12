@@ -7,6 +7,7 @@ import com.robin.core.base.datameta.DataBaseMetaFactory;
 import com.robin.core.base.datameta.DataBaseParam;
 import com.robin.core.base.util.Const;
 import com.robin.core.base.util.StringUtils;
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.junit.Test;
 
@@ -42,7 +43,7 @@ public class TestExcelReader {
             list.add(map);
         }
         prop.setColumnList(list);
-        Workbook wb=ExcelGenerator.GenerateExcelFile(prop,header);
+        Workbook wb= ExcelProcessor.GenerateExcelFile(prop,header);
         FileOutputStream out=new FileOutputStream("d:/test1.xlsx");
         wb.write(out);
         out.close();
@@ -74,10 +75,10 @@ public class TestExcelReader {
         try {
             //System.in.read();
             System.out.println("start");
-            DataBaseParam param=new DataBaseParam("localhost",3306,"test","test","test");
+            DataBaseParam param=new DataBaseParam("172.16.200.218",3388,"awardsys2","awardsys","MiCUWcYcJI2EcM1k");
             BaseDataBaseMeta meta= DataBaseMetaFactory.getDataBaseMetaByType(BaseDataBaseMeta.TYPE_MYSQL,param);
             conn= SimpleJdbcDao.getConnection(meta,param);
-            Workbook wb=ExcelGenerator.GenerateExcelFile(prop, header,conn,sql,null,new ExcelRsExtractor(prop,header));
+            Workbook wb= ExcelProcessor.GenerateExcelFile(prop, header,conn,sql,null,new ExcelRsExtractor(prop,header));
             FileOutputStream out=new FileOutputStream("d:/test.xlsx");
             wb.write(out);
             out.close();
@@ -86,7 +87,9 @@ public class TestExcelReader {
         }catch (Exception ex){
             ex.printStackTrace();
         }finally {
-
+            if(conn!=null){
+                DbUtils.closeQuietly(conn);
+            }
         }
 
     }
@@ -110,7 +113,7 @@ public class TestExcelReader {
         prop.addColumnProp(new ExcelColumnProp("other","other",Const.META_TYPE_STRING,false));
 
         try {
-            ExcelGenerator.ReadExcelFile(filePath, prop);
+            ExcelProcessor.ReadExcelFile(filePath, prop);
             List<Map<String,String>> list=prop.getColumnList();
             System.out.println(list);
         }catch (Exception ex){

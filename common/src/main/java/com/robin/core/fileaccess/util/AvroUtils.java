@@ -92,7 +92,7 @@ public class AvroUtils {
                        fields=fields.name(meta.getColumnName()).type().nullable().intType().noDefault();
                     }else if(meta.getColumnType().equals(Const.META_TYPE_DOUBLE) || meta.getColumnType().equals(Const.META_TYPE_NUMERIC)){
                         fields=fields.name(meta.getColumnName()).type().nullable().doubleType().noDefault();
-                    }else if(meta.getColumnType().equals(Const.META_TYPE_TIMESTAMP)){
+                    }else if(meta.getColumnType().equals(Const.META_TYPE_TIMESTAMP) || meta.getColumnType().equals(Const.META_TYPE_DATE)){
                         Schema timestampMilliType = LogicalTypes.timestampMillis().addToSchema(Schema.create(Schema.Type.LONG));
                         fields=fields.name(meta.getColumnName()).type(timestampMilliType).noDefault();
                     }else if(meta.getColumnType().equals(Const.META_TYPE_BOOLEAN)) {

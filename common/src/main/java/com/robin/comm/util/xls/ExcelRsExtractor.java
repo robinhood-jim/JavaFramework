@@ -39,7 +39,7 @@ public class ExcelRsExtractor extends ResultSetOperationExtractor {
 
     @Override
     public boolean executeAdditionalOperation(Map<String, Object> map, ResultSetMetaData rsmd) throws SQLException {
-        ExcelGenerator.processSingleLine(map, workbook,targetSheet,pos,prop,header,helper);
+        ExcelProcessor.processSingleLine(map, workbook,targetSheet,pos,prop,header,helper);
         pos++;
         return true;
     }
