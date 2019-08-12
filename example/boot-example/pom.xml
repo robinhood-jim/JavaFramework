@@ -22,8 +22,56 @@
 			<version>${frm.version}</version>
 			<exclusions>
 				<exclusion>
-					<groupId>org.apache.commons</groupId>
-					<artifactId>commons-vfs2</artifactId>
+					<groupId>javax.servlet</groupId>
+					<artifactId>servlet-api</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>javax.servlet.jsp</groupId>
+					<artifactId>jsp-api</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-log4j12</artifactId>
+				</exclusion>
+				<!-- <exclusion>
+                     <groupId>log4j</groupId>
+                     <artifactId>log4j</artifactId>
+                 </exclusion>-->
+				<exclusion>
+					<groupId>org.apache.hive</groupId>
+					<artifactId>hive-jdbc</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.apache.hbase</groupId>
+					<artifactId>hbase-client</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.apache.hbase</groupId>
+					<artifactId>hbase-server</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.apache.hbase</groupId>
+					<artifactId>hbase-common</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.oracle</groupId>
+					<artifactId>ojdbc14</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.hibernate</groupId>
+					<artifactId>hibernate-core</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.datastax.cassandra</groupId>
+					<artifactId>cassandra-driver-core</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>tomcat</groupId>
+					<artifactId>jasper-compiler</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>tomcat</groupId>
+					<artifactId>jasper-runtime</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
@@ -39,14 +87,27 @@
 		</dependency>
 
 		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-core</artifactId>
-			<version>2.9.7</version>
-		</dependency>
-		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-databind</artifactId>
-			<version>2.9.7</version>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+			<version>${spring.boot.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-logging</artifactId>
+				</exclusion>
+				<exclusion>
+					<artifactId>ch.qos.logback</artifactId>
+					<groupId>logback-classic</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>ch.qos.logback</artifactId>
+					<groupId>logback-core</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>hibernate-validator</artifactId>
+					<groupId>org.hibernate.validator</groupId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>commons-fileupload</groupId>
@@ -74,11 +135,7 @@
 			<artifactId>spring-boot-starter-data-redis</artifactId>
 			<version>${spring.boot.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>biz.paluch.redis</groupId>
-			<artifactId>lettuce</artifactId>
-			<version>4.5.0.Final</version>
-		</dependency>
+
 
 	</dependencies>
 

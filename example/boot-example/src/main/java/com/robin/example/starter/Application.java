@@ -2,10 +2,11 @@ package com.robin.example.starter;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.freemarker.FreeMarkerAutoConfiguration;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
-@SpringBootApplication
+@SpringBootApplication(exclude = FreeMarkerAutoConfiguration.class)
 @EnableTransactionManagement(proxyTargetClass = true)
 @ComponentScan("com.robin")
 public class Application {

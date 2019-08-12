@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.*;
+import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.jdbc.support.lob.DefaultLobHandler;
 import org.springframework.jdbc.support.lob.LobHandler;
 
@@ -82,6 +83,15 @@ public class DbConfig {
         dao.setSqlGen(sqlGen);
         return dao;
     }
+    @Bean
+    public ResourceBundleMessageSource getMessageSource(){
+        ResourceBundleMessageSource messageSource=new ResourceBundleMessageSource();
+        messageSource.setBasename("messages");
+        messageSource.setDefaultEncoding("UTF-8");
+        messageSource.setUseCodeAsDefaultMessage(true);
+        return messageSource;
+    }
+
 
 
 
