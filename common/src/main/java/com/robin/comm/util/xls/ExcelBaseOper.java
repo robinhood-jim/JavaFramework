@@ -36,10 +36,10 @@ import java.sql.Timestamp;
 import java.util.*;
 
 public class ExcelBaseOper {
-	public static String TYPE_EXCEL2003="xls";
-	public static String TYPE_EXCEL2007="xlsx";
-	private static String defaultFontName="Microsoft YaHei";
-	private static Logger logger=LoggerFactory.getLogger(ExcelBaseOper.class);
+	public static final String TYPE_EXCEL2003="xls";
+	public static final String TYPE_EXCEL2007="xlsx";
+	private static final String defaultFontName="Microsoft YaHei";
+	private static final Logger logger=LoggerFactory.getLogger(ExcelBaseOper.class);
 	
 	public static Sheet createSheet(Workbook wb,String sheetName,ExcelSheetProp prop){
 		Sheet sheet=null;
@@ -55,8 +55,12 @@ public class ExcelBaseOper {
 		String fileext=prop.getFileext();
 		if(TYPE_EXCEL2003.equalsIgnoreCase(fileext))
 			wb=new HSSFWorkbook();
-		else if(TYPE_EXCEL2007.equalsIgnoreCase(fileext))
-			wb=new XSSFWorkbook();
+		else if(TYPE_EXCEL2007.equalsIgnoreCase(fileext)) {
+			if(!prop.isBatchInsert())
+				wb = new XSSFWorkbook();
+			else
+				wb=new SXSSFWorkbook(prop.getBatchRows());
+		}
 		return wb;
 	}
 
@@ -93,7 +97,7 @@ public class ExcelBaseOper {
         	if(header.getFontName()!=null && header.getFontName().equals(""))
         		font.setFontName(header.getFontName());
         	else
-        		font.setFontName(defaultFontName);
+        		font.setFontName((header.getFontName()==null || header.getFontName().isEmpty())?defaultFontName:header.getFontName());
         	if(header.isBold())
         	{
         		font.setBoldweight((short)2);
@@ -145,7 +149,7 @@ public class ExcelBaseOper {
              	if(header.getFontName()!=null && header.getFontName().equals(""))
              		font.setFontName(header.getFontName());
              	else
-             		font.setFontName(defaultFontName);
+             		font.setFontName((header.getFontName()==null || header.getFontName().isEmpty())?defaultFontName:header.getFontName());
              	if(header.isBold())
              	{
              		font.setBoldweight((short)2);

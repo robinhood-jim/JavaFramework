@@ -64,7 +64,7 @@ public class ExcelCellStyleUtil {
 	             	if(header.getFontName()!=null && header.getFontName().equals(""))
 	             		font.setFontName(header.getFontName());
 	             	else
-	             		font.setFontName(defaultFontName);
+	             		font.setFontName((header.getFontName()==null || header.getFontName().isEmpty())?defaultFontName:header.getFontName());
 	             	if(header.isBold())
 	             	{
 	             		font.setBoldweight((short)2);

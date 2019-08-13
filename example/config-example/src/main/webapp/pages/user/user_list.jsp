@@ -190,7 +190,7 @@
                         closedialog(true);
                         reload();
                     } else {
-                        openMsgDialog("<spring:message code="message.SaveFailed" />", "<spring:message code="message.ErrorMsg" />:" + tobj.message, 300, 200);
+                        openMsgDialog("<spring:message code="message.SaveFailed" />", "<spring:message code="message.ErrorMsg" />:" + tobj.message);
                     }
                 });
             } else if (name == 'cmdCancel') {
@@ -213,7 +213,7 @@
                         closedialog(true);
                         reload();
                     } else {
-                        openMsgDialog("<spring:message code="message.updateFailed" />", "<spring:message code="message.ErrorMsg" />:" + tobj.message, 300, 200);
+                        openMsgDialog("<spring:message code="message.updateFailed" />", "<spring:message code="message.ErrorMsg" />:" + tobj.message);
                     }
                 });
             } else if (name == 'cmdCancel') {
@@ -229,9 +229,9 @@
     function goAssign() {
         var list = myGrid.getCheckedRows(0);
         if (list == '') {
-            openMsgDialog("<spring:message code="sysUser.AssignRight" />", "<spring:message code="message.alertSelectAtLeastOneRow" />", 300, 150);
+            openMsgDialog("<spring:message code="sysUser.AssignRight" />", "<spring:message code="message.alertSelectAtLeastOneRow" />");
         } else if (list.indexOf(",") != -1) {
-            openMsgDialog("<spring:message code="sysUser.AssignRight" />", "<spring:message code="message.alertSelectMutilRow" />", 300, 150);
+            openMsgDialog("<spring:message code="sysUser.AssignRight" />", "<spring:message code="message.alertSelectMutilRow" />");
         } else {
             var form = openWindow("<spring:message code="sysUser.AssignRight" />", ctx + "system/user/showright?userId=" + list, 550, 400);
         }

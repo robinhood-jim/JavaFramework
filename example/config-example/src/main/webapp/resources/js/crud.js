@@ -60,7 +60,7 @@ function closedialog(ret) {
 	editMode = "";
 }
 
-function openMsgDialog(title, msg, width, height, func) {
+function openMsgDialog(title, msg, func) {
 	dhtmlx.message({
 		title : title,
 		type : "alert-warning",

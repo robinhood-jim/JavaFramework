@@ -22,6 +22,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.streaming.SXSSFSheet;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.FileInputStream;
@@ -35,11 +37,11 @@ import java.util.regex.Pattern;
 public class ExcelProcessor {
     private static Log log = LogFactory.getLog(ExcelProcessor.class);
 
-    public static void ReadExcelFile(String filename, ExcelSheetProp prop) throws Exception {
+    public static void readExcelFile(String filename, ExcelSheetProp prop) throws Exception {
         InputStream myxls = new FileInputStream(filename);
 
         try {
-            ReadExcelFile(myxls, prop);
+            readExcelFile(myxls, prop);
         } catch (Exception e) {
             e.printStackTrace();
             log.error(e);
@@ -48,7 +50,7 @@ public class ExcelProcessor {
     }
 
 
-    public static void ReadExcelFile(InputStream myxls, ExcelSheetProp prop) throws Exception {
+    public static void readExcelFile(InputStream myxls, ExcelSheetProp prop) throws Exception {
         boolean is2007 = ExcelBaseOper.TYPE_EXCEL2007.equalsIgnoreCase(prop.getFileext());
         Workbook wb = null;
         if (is2007) {
@@ -124,7 +126,7 @@ public class ExcelProcessor {
         prop.setColumnList(columnValueList);
     }
 
-    public static int ReadExcelFile(InputStream myxls, int sheetIndex, Map<String, DataTypeEnum> columnMap, String startPos, String endPos, ExcelSheetProp prop) {
+    public static int readExcelFile(InputStream myxls, int sheetIndex, Map<String, DataTypeEnum> columnMap, String startPos, String endPos, ExcelSheetProp prop) {
         int pos = 0;
         List<Map<String, String>> columnValueList = new ArrayList<Map<String, String>>();
         try {
@@ -251,22 +253,26 @@ public class ExcelProcessor {
      * @return
      */
 
-    public static Workbook GenerateExcelFile(ExcelSheetProp prop, String suffix) {
+    public static Workbook generateExcelFile(ExcelSheetProp prop, String suffix) {
         boolean is2007 = ExcelBaseOper.TYPE_EXCEL2007.equalsIgnoreCase(prop.getFileext());
         Workbook wb = null;
         if (!is2007)
             wb = new HSSFWorkbook();
         else {
-            wb = new XSSFWorkbook();
+            if(!prop.isBatchInsert())
+                wb = new XSSFWorkbook();
+            else{
+                wb=new SXSSFWorkbook(prop.getBatchRows());
+            }
         }
         String sheetname = prop.getSheetName();
         if (suffix != null && suffix.length() > 0)
             sheetname += "_" + suffix;
         Sheet sheet = wb.createSheet(sheetname);
-        GenerateHeader(sheet, wb, prop);
+        generateHeader(sheet, wb, prop);
 
-        FillColumns(wb, sheet, prop);
-        autoSizeSheet(sheet, prop.getColumnName().length);
+        fillColumns(wb, sheet, prop);
+        autoSizeSheet(prop,sheet, prop.getColumnName().length);
         return wb;
     }
 
@@ -275,24 +281,24 @@ public class ExcelProcessor {
      * @param header
      * @return
      */
-    public static Workbook GenerateExcelFile(ExcelSheetProp prop, TableHeaderProp header) throws Exception {
+    public static Workbook generateExcelFile(ExcelSheetProp prop, TableHeaderProp header) throws Exception {
         Workbook wb = ExcelBaseOper.creatWorkBook(prop);
         String sheetname = prop.getSheetName();
         Sheet sheet = wb.createSheet(sheetname);
         CreationHelper helper = wb.getCreationHelper();
         int count = 0;
         if (!prop.getColumnPropList().isEmpty()) {
-            GenerateHeader(sheet, wb, prop, header);
+            generateHeader(sheet, wb, prop, header);
             count = prop.getColumnList().size();
         } else {
-            count = GenerateHeader(sheet, wb, prop, header, helper);
+            count = generateHeader(sheet, wb, prop, header, helper);
         }
-        FillColumns(wb, sheet, prop, header, helper);
-        autoSizeSheet(sheet, count);
+        fillColumns(wb, sheet, prop, header, helper);
+        autoSizeSheet(prop,sheet, count);
         return wb;
     }
 
-    public static Workbook GenerateExcelFile(ExcelSheetProp prop, TableHeaderProp header, Connection conn, String querySql, Object[] queryParam, ExcelRsExtractor extractor) throws Exception {
+    public static Workbook generateExcelFile(ExcelSheetProp prop, TableHeaderProp header, Connection conn, String querySql, Object[] queryParam, ExcelRsExtractor extractor) throws Exception {
         Workbook wb = ExcelBaseOper.creatWorkBook(prop);
         String sheetname = prop.getSheetName();
         Sheet sheet = wb.createSheet(sheetname);
@@ -302,35 +308,35 @@ public class ExcelProcessor {
         extractor.setHelper(helper);
         int count = 0;
         if (!header.getHeaderList().isEmpty()) {
-            GenerateHeader(sheet, wb, prop, header);
+            generateHeader(sheet, wb, prop, header);
             count = prop.getColumnList().size();
         } else {
-            GenerateHeader(sheet, wb, prop, header);
+            generateHeader(sheet, wb, prop, header);
         }
         try {
             SimpleJdbcDao.executeOperationWithQuery(conn, querySql, queryParam, extractor);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-        autoSizeSheet(sheet, count + 1);
+        autoSizeSheet(prop,sheet, count + 1);
         return wb;
     }
 
-    private static void GenerateExcelFile(Workbook wb, ExcelSheetProp prop, TableHeaderProp header) throws Exception {
+    private static void generateExcelFile(Workbook wb, ExcelSheetProp prop, TableHeaderProp header) throws Exception {
         String sheetname = prop.getSheetName();
         Sheet sheet = wb.createSheet(sheetname);
         CreationHelper helper = wb.getCreationHelper();
         int count = 0;
         if (header == null) {
-            GenerateHeader(sheet, wb, prop, header);
+            generateHeader(sheet, wb, prop, header);
             count = prop.getColumnList().size();
         } else {
             int containrow = header.getContainrow();
-            count = GenerateHeader(sheet, wb, prop, header, helper);
+            count = generateHeader(sheet, wb, prop, header, helper);
             header.setContainrow(containrow);
         }
-        FillColumns(wb, sheet, prop, header, helper);
-        autoSizeSheet(sheet, count);
+        fillColumns(wb, sheet, prop, header, helper);
+        autoSizeSheet(prop,sheet, count);
     }
 
     /**
@@ -339,16 +345,16 @@ public class ExcelProcessor {
      * @param propList
      * @return
      */
-    public static Workbook GenerateExcelFileWithMutilSheet(List<ExcelProperty> propList) throws Exception {
+    public static Workbook generateExcelFileWithMutilSheet(List<ExcelProperty> propList) throws Exception {
         Workbook wb = ExcelBaseOper.creatWorkBook(propList.get(0).getSheetProp());
 
         for (ExcelProperty prop : propList) {
-            GenerateExcelFile(wb, prop.getSheetProp(), prop.getTableProp());
+            generateExcelFile(wb, prop.getSheetProp(), prop.getTableProp());
         }
         return wb;
     }
 
-    private static void GenerateHeader(Sheet targetsheet, Workbook wb, ExcelSheetProp prop) {
+    private static void generateHeader(Sheet targetsheet, Workbook wb, ExcelSheetProp prop) {
         Row row = targetsheet.createRow(0);
         for (int i = 0; i < prop.getHeaderName().length; i++) {
             String values = prop.getHeaderName()[i];
@@ -364,7 +370,7 @@ public class ExcelProcessor {
     }
 
 
-    private static void GenerateHeader(Sheet targetsheet, Workbook wb, ExcelSheetProp prop, TableHeaderProp header) {
+    private static void generateHeader(Sheet targetsheet, Workbook wb, ExcelSheetProp prop, TableHeaderProp header) {
         Row row = targetsheet.createRow(prop.getStartRow() - 1);
         for (int i = 0; i < prop.getColumnPropList().size(); i++) {
             String values = prop.getColumnPropList().get(i).getColumnName();
@@ -379,7 +385,7 @@ public class ExcelProcessor {
         }
     }
 
-    private static int GenerateHeader(Sheet targetsheet, Workbook wb, ExcelSheetProp prop, TableHeaderProp header, CreationHelper helper) {
+    private static int generateHeader(Sheet targetsheet, Workbook wb, ExcelSheetProp prop, TableHeaderProp header, CreationHelper helper) {
         int startcol = prop.getStartCol() - 1;
         int startrow = prop.getStartRow() - 1;
 
@@ -410,7 +416,7 @@ public class ExcelProcessor {
                 }
             }
         } else if (!prop.getColumnPropList().isEmpty()) {
-            GenerateHeader(targetsheet, wb, prop, header);
+            generateHeader(targetsheet, wb, prop, header);
             tmpcount = prop.getStartRow();
         }
         for (int i = 0; i < header.getHeaderList().size(); i++) {
@@ -476,7 +482,7 @@ public class ExcelProcessor {
         }
     }
 
-    private static void FillColumns(Workbook wb, Sheet targetsheet, ExcelSheetProp prop, TableHeaderProp header, CreationHelper helper) throws Exception {
+    private static void fillColumns(Workbook wb, Sheet targetsheet, ExcelSheetProp prop, TableHeaderProp header, CreationHelper helper) throws Exception {
         try {
             int headerrow = 1;
             if (header != null)
@@ -487,6 +493,9 @@ public class ExcelProcessor {
                 List<Map<String, String>> list = prop.getColumnList();
                 for (int i = 0; i < list.size(); i++) {
                     processSingleLine(list.get(i), wb, targetsheet, i + 1, prop, header, helper);
+                    if(prop.isBatchInsert() && (i+1) % prop.getBatchRows()==0){
+                        ((SXSSFSheet)targetsheet).flushRows(prop.getBatchRows());
+                    }
                 }
             }
         } catch (Exception e) {
@@ -594,9 +603,15 @@ public class ExcelProcessor {
         }
     }
 
-    private static void autoSizeSheet(Sheet sheet, int count) {
+    private static void autoSizeSheet(ExcelSheetProp prop, Sheet sheet, int count) {
         for (int i = 0; i < count; i++) {
-            sheet.autoSizeColumn(i);
+            if(!prop.isBatchInsert())
+                sheet.autoSizeColumn(i);
+            else{
+                if(i==0)
+                    ((SXSSFSheet) sheet).trackAllColumnsForAutoSizing();
+                sheet.autoSizeColumn(i);
+            }
         }
 
     }
@@ -610,7 +625,7 @@ public class ExcelProcessor {
         return false;
     }
 
-    private static void FillColumns(Workbook wb, Sheet targetsheet, ExcelSheetProp prop) {
+    private static void fillColumns(Workbook wb, Sheet targetsheet, ExcelSheetProp prop) {
         if (prop.getColumnList().size() != 0) {
             int i = 0;
             Iterator<Map<String, String>> it = prop.getColumnList().iterator();

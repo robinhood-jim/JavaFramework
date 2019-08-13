@@ -9,6 +9,7 @@ import com.robin.core.base.util.Const;
 import com.robin.core.base.util.StringUtils;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.junit.Test;
 
 import java.io.FileOutputStream;
@@ -43,7 +44,7 @@ public class TestExcelReader {
             list.add(map);
         }
         prop.setColumnList(list);
-        Workbook wb= ExcelProcessor.GenerateExcelFile(prop,header);
+        Workbook wb= ExcelProcessor.generateExcelFile(prop,header);
         FileOutputStream out=new FileOutputStream("d:/test1.xlsx");
         wb.write(out);
         out.close();
@@ -66,23 +67,27 @@ public class TestExcelReader {
         prop.addColumnProp(new ExcelColumnProp("model","model",Const.META_TYPE_STRING,false));
         prop.addColumnProp(new ExcelColumnProp("engine","engine",Const.META_TYPE_STRING,false));
         prop.addColumnProp(new ExcelColumnProp("img","img",Const.META_TYPE_STRING,false));
-
+        prop.setBatchInsert(true);
+        prop.setBatchRows(3000);
         TableHeaderProp header=new TableHeaderProp();
         header.setContainrow(1);
+        header.setFontName("微软雅黑");
         
         Connection conn=null;
         String sql="select uuid,corp_id as corpId,car_num as carNum,vin,car_brand as brand,time_modified as modifier,car_color as color,manufacturer as maufactor,car_model as model,engine_type as engine,registcert_img1 as img from t_zhcx_car_vehiclelicence";
         try {
             //System.in.read();
             System.out.println("start");
+            Long ts1=System.currentTimeMillis();
             DataBaseParam param=new DataBaseParam("172.16.200.218",3388,"awardsys2","awardsys","MiCUWcYcJI2EcM1k");
             BaseDataBaseMeta meta= DataBaseMetaFactory.getDataBaseMetaByType(BaseDataBaseMeta.TYPE_MYSQL,param);
             conn= SimpleJdbcDao.getConnection(meta,param);
-            Workbook wb= ExcelProcessor.GenerateExcelFile(prop, header,conn,sql,null,new ExcelRsExtractor(prop,header));
+            Workbook wb= ExcelProcessor.generateExcelFile(prop, header,conn,sql,null,new ExcelRsExtractor(prop,header));
             FileOutputStream out=new FileOutputStream("d:/test.xlsx");
             wb.write(out);
             out.close();
-            System.out.println("--finish--");
+            ((SXSSFWorkbook)wb).dispose();
+            System.out.println("--finish--"+String.valueOf(System.currentTimeMillis()-ts1));
 
         }catch (Exception ex){
             ex.printStackTrace();
@@ -113,7 +118,7 @@ public class TestExcelReader {
         prop.addColumnProp(new ExcelColumnProp("other","other",Const.META_TYPE_STRING,false));
 
         try {
-            ExcelProcessor.ReadExcelFile(filePath, prop);
+            ExcelProcessor.readExcelFile(filePath, prop);
             List<Map<String,String>> list=prop.getColumnList();
             System.out.println(list);
         }catch (Exception ex){

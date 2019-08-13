@@ -30,6 +30,8 @@ public class ExcelSheetProp {
 	private int startRow=2;   
 	private int startCol=1;  
 	private Integer tableId;
+	private boolean batchInsert;
+	private Integer batchRows;
 	
 	public List<Map<String,String>> getColumnList() {
 		return columnList;
@@ -99,5 +101,21 @@ public class ExcelSheetProp {
 	}
 	public void setColumnPropList(List<ExcelColumnProp> columnPropList) {
 		this.columnPropList = columnPropList;
+	}
+
+	public boolean isBatchInsert() {
+		return batchInsert;
+	}
+
+	public void setBatchInsert(boolean batchInsert) {
+		this.batchInsert = batchInsert;
+	}
+
+	public Integer getBatchRows() {
+		return batchRows;
+	}
+
+	public void setBatchRows(Integer batchRows) {
+		this.batchRows = batchRows;
 	}
 }

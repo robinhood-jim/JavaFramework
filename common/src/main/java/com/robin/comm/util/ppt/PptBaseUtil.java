@@ -1,37 +1,8 @@
 package com.robin.comm.util.ppt;
 
 
-import java.awt.Color;
-import java.awt.Rectangle;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.List;
-import java.util.Map;
-
-import javax.imageio.ImageIO;
-
-import org.apache.poi.hslf.model.AutoShape;
-import org.apache.poi.hslf.model.Fill;
-import org.apache.poi.hslf.model.HeadersFooters;
-import org.apache.poi.hslf.model.Line;
-import org.apache.poi.hslf.model.Picture;
-import org.apache.poi.hslf.model.ShapeTypes;
-import org.apache.poi.hslf.model.Slide;
-import org.apache.poi.hslf.model.SlideMaster;
-import org.apache.poi.hslf.model.Table;
-import org.apache.poi.hslf.model.TableCell;
-import org.apache.poi.hslf.model.TextRun;
-import org.apache.poi.hslf.usermodel.RichTextRun;
-import org.apache.poi.hslf.usermodel.SlideShow;
-
-import com.robin.comm.util.xls.TableHeaderColumn;
-import com.robin.comm.util.xls.TableHeaderProp;
-
-
 public class PptBaseUtil {
-	public static void adjustHeaderFooter(SlideShow show,PptHeaderFooterSection section){
+	/*public static void adjustHeaderFooter(HSLFSlideShow show,PptHeaderFooterSection section){
 		 HeadersFooters slideHeaders = show.getSlideHeadersFooters();
 		 if(section.getHeaderStr()!=null && !"".equals(section.getHeaderStr()))
 			 slideHeaders.setHeaderText(section.getHeaderStr());
@@ -46,11 +17,11 @@ public class PptBaseUtil {
 		 if(section.getNodeHeaderStr()!=null && !"".equals(section.getNodeHeaderStr()))
 			 notesHeaders.setHeaderText(section.getNodeHeaderStr());
 	}
-	public static void insertTable(Slide slide,PptTableDef def,List<Map<String, String>> resultList){
+	public static void insertTable(HSLFSlide slide,PptTableDef def,List<Map<String, String>> resultList){
 		TableHeaderProp prop=def.getHeaderProp();
 		int width=prop.getContainrow();
 		int rows=prop.getTotalCol();
-		Table celltab=new Table(width,rows);
+		HSLFTable celltab=new HSLFTable(width,rows,null);
 
 		List<TableHeaderColumn> list=prop.getHeaderColumnList().get(0);
 		for(int i=0;i<list.size();i++){
@@ -133,6 +104,6 @@ public class PptBaseUtil {
         int idx = show.addPicture(new File(path), pic_type);
         fill.setFillType(Fill.FILL_PICTURE);
         fill.setPictureData(idx);
-	}
+	}*/
 
 }
