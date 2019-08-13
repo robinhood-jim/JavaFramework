@@ -71,6 +71,7 @@ public class ProjectInfo extends BaseObject {
 	private String teamUrl;
 	@MappingField(field = "jar_man_type")
 	private String jarmanType;
-	
+	@MappingField(field = "credential_id")
+	private Long credentialId;
 
 }

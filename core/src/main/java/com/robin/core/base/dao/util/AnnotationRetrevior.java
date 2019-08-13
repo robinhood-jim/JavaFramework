@@ -189,7 +189,7 @@ public class AnnotationRetrevior {
                 if (entry.getValue().isSequential() || entry.getValue().isIncrement()) {
                     break;
                 }
-                if (entry.getValue().isRequired() && (value == null) || value.toString().isEmpty()) {
+                if (entry.getValue().isRequired() && value == null) {
                     throw new DAOException("column " + entry.getKey() + " must not be null!");
                 }
                 if (entry.getValue().getScale() > 0 || entry.getValue().getPrecise() > 0 && value != null

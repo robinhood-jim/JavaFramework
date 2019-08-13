@@ -94,9 +94,13 @@ public abstract class BaseContorller
             List<Map<String, Object>> list = query.getRecordSet();
             for (Map<String, Object> map : list)
             {
-                String name = findCodeName(codeNo, map.get(columnName).toString());
-                if ((name != null) && (!"".equals(name))) {
-                    map.put(columnName, name);
+                if(map.get(columnName)!=null) {
+                    String name = findCodeName(codeNo, map.get(columnName).toString());
+                    if ((name != null) && (!"".equals(name))) {
+                        map.put(columnName, name);
+                    }
+                }else{
+                    map.put(columnName,"");
                 }
             }
         }

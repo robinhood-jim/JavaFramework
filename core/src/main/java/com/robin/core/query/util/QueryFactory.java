@@ -51,7 +51,7 @@ public class QueryFactory implements InitializingBean {
 
             } else {
                 if (xmlpath.contains("classpath:")) {
-                    String relativePath = xmlpath.substring(10, xmlpath.length());
+                    String relativePath = xmlpath.substring(10);
                     xmlpath = this.getClass().getClassLoader().getResource("").toURI().getPath();
                     xmlpath += relativePath;
                 }
@@ -160,7 +160,7 @@ public class QueryFactory implements InitializingBean {
     public boolean isSelectIdExists(String selectId){
         if (selectId != null && !selectId.isEmpty() && queryMap.containsKey(selectId)){
             return true;
-        }else{
+        } else {
             return false;
         }
     }

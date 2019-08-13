@@ -55,6 +55,10 @@ public class DB2SqlGen extends AbstractSqlGen implements BaseSqlGen{
 		return strBuf.toString();
 	}
 
+	@Override
+	public String getCountSqlBySubQuery(QueryString qs, PageQuery query) {
+		return super.getCountSqlBySubQuery(qs, query)+" with ur";
+	}
 
 	public String generatePageSql(String strSQL, PageQuery pageQuery) {
 
