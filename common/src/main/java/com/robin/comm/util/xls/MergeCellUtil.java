@@ -149,5 +149,4 @@ public class MergeCellUtil {
 	    	}
 	    	return count;
 	    }
-
 }

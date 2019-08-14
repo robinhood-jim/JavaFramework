@@ -85,7 +85,8 @@ public class ExcelCellStyleUtil {
 			}
 	        cellMap.put("C_"+rowspan+"_"+colspan+"_"+metaType, cs);
 		}
-		return cs;  
+		return cs;
+
 	}
 	
 

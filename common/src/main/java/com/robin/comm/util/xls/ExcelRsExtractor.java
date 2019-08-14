@@ -55,4 +55,5 @@ public class ExcelRsExtractor extends ResultSetOperationExtractor {
     public void setHelper(CreationHelper helper) {
         this.helper = helper;
     }
+
 }
