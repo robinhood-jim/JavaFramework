@@ -15,21 +15,13 @@
  */
 package com.robin.comm.util.xls;
 
+import lombok.Data;
+
+@Data
 public class ExcelProperty {
 	private ExcelSheetProp sheetProp;
-	private TableHeaderProp tableProp;
-	public ExcelSheetProp getSheetProp() {
-		return sheetProp;
-	}
-	public void setSheetProp(ExcelSheetProp sheetProp) {
-		this.sheetProp = sheetProp;
-	}
-	public TableHeaderProp getTableProp() {
-		return tableProp;
-	}
-	public void setTableProp(TableHeaderProp tableProp) {
-		this.tableProp = tableProp;
-	}
+	private TableConfigProp tableProp;
+
 
 
 }

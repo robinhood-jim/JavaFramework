@@ -15,6 +15,9 @@
  */
 package com.robin.comm.util.xls;
 
+import lombok.Data;
+
+@Data
 public class TableHeaderColumn {
 	private String columnName;
 	private String columnCode;
@@ -31,41 +34,6 @@ public class TableHeaderColumn {
 		this.colspan=colspan;
 		this.columnCode=columnCode;
 	}
-	public String getColumnName() {
-		return columnName;
-	}
-	public void setColumnName(String columnName) {
-		this.columnName = columnName;
-	}
-	public int getRowspan() {
-		return rowspan;
-	}
-	public void setRowspan(int rowspan) {
-		this.rowspan = rowspan;
-	}
-	public int getColspan() {
-		return colspan;
-	}
-	public void setColspan(int colspan) {
-		this.colspan = colspan;
-	}
-	public int getStartcol() {
-		return startcol;
-	}
-	public void setStartcol(int startcol) {
-		this.startcol = startcol;
-	}
-	public int getStartrow() {
-		return startrow;
-	}
-	public void setStartrow(int startrow) {
-		this.startrow = startrow;
-	}
-	public String getColumnCode() {
-		return columnCode;
-	}
-	public void setColumnCode(String columnCode) {
-		this.columnCode = columnCode;
-	}
+
 
 }

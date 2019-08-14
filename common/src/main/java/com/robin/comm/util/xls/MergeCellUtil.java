@@ -18,7 +18,7 @@ package com.robin.comm.util.xls;
 import java.util.List;
 
 public class MergeCellUtil {
-	  public static int[][] caculateHeaderRowStartcol(TableHeaderProp header){
+	  public static int[][] caculateHeaderRowStartcol(TableConfigProp header){
 	    	int rows=header.getHeaderColumnList().size();
 	    	
 	    	int[][] startCol=new int[rows][header.getTotalCol()];
@@ -37,7 +37,7 @@ public class MergeCellUtil {
 	    	return startCol;
 	    }
 	   
-	    private static void caculateStartColofRow(int row,int pos,TableHeaderProp header,int[][] startColArr){
+	    private static void caculateStartColofRow(int row, int pos, TableConfigProp header, int[][] startColArr){
 	    	try{
 	    	if (row == 0) {
 				if (pos == 0)
@@ -141,7 +141,8 @@ public class MergeCellUtil {
 	    	return isfrist;
 	    	
 	    }
-	    private static int getTotalCount(TableHeaderProp header){
+
+	    private static int getTotalCount(TableConfigProp header){
 	    	List<TableHeaderColumn> fristrow = header.getHeaderColumnList().get(0);
 	    	int count=0;
 	    	for(TableHeaderColumn col:fristrow){

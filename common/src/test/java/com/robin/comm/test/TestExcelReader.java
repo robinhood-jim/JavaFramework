@@ -31,7 +31,7 @@ public class TestExcelReader {
         prop.addColumnProp(new ExcelColumnProp("time","time",Const.META_TYPE_TIMESTAMP,false));
         prop.addColumnProp(new ExcelColumnProp("intcol","intcol",Const.META_TYPE_INTEGER,false));
         prop.addColumnProp(new ExcelColumnProp("dval","dval",Const.META_TYPE_DOUBLE,false));
-        TableHeaderProp header=new TableHeaderProp();
+        TableConfigProp header=new TableConfigProp();
         header.setContainrow(1);
         List<Map<String,String>> list=new ArrayList<Map<String, String>>();
         Random random=new Random(12312321321312L);
@@ -69,9 +69,9 @@ public class TestExcelReader {
         prop.addColumnProp(new ExcelColumnProp("img","img",Const.META_TYPE_STRING,false));
         prop.setBatchInsert(true);
         prop.setBatchRows(3000);
-        TableHeaderProp header=new TableHeaderProp();
+        TableConfigProp header=new TableConfigProp();
         header.setContainrow(1);
-        header.setFontName("微软雅黑");
+        header.setContentFontName("微软雅黑");
         
         Connection conn=null;
         String sql="select uuid,corp_id as corpId,car_num as carNum,vin,car_brand as brand,time_modified as modifier,car_color as color,manufacturer as maufactor,car_model as model,engine_type as engine,registcert_img1 as img from t_zhcx_car_vehiclelicence";

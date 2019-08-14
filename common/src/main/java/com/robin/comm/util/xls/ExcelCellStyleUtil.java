@@ -26,23 +26,16 @@ import org.apache.poi.ss.usermodel.Workbook;
 
 import com.robin.core.base.util.Const;
 
+import javax.swing.*;
+
 public class ExcelCellStyleUtil {
-	private static volatile ExcelCellStyleUtil util;
-	private Map<String,CellStyle> cellMap=new HashMap<String, CellStyle>();
-	private static String defaultFontName="Microsoft YaHei";
+
+	private static final String defaultFontName= java.awt.Font.SANS_SERIF;
 	private ExcelCellStyleUtil(){
-		
+
 	}
-	public static ExcelCellStyleUtil getInstance(){
-		if(util==null){
-			synchronized (ExcelCellStyleUtil.class) {
-				if(util==null)
-					util=new ExcelCellStyleUtil();
-			}
-		}
-		return util;
-	}
-	public CellStyle getCellStyle(Workbook wb,int rowspan,int colspan,String metaType,TableHeaderProp header){
+
+	public static CellStyle getCellStyle(Workbook wb, int rowspan, int colspan, String metaType, TableConfigProp header,Map<String,CellStyle> cellMap){
 		CellStyle cs=null;
 		if(cellMap.containsKey("C_"+rowspan+"_"+colspan+"_"+metaType)){
 			cs= cellMap.get("C_"+rowspan+"_"+colspan+"_"+metaType);
@@ -61,10 +54,7 @@ public class ExcelCellStyleUtil {
 	        cs.setFillForegroundColor(IndexedColors.WHITE.getIndex());
 	        	 if(header!=null){
 	             	Font font=wb.createFont();
-	             	if(header.getFontName()!=null && header.getFontName().equals(""))
-	             		font.setFontName(header.getFontName());
-	             	else
-	             		font.setFontName((header.getFontName()==null || header.getFontName().isEmpty())?defaultFontName:header.getFontName());
+					 font.setFontName((header.getContentFontName()==null || header.getContentFontName().isEmpty())?defaultFontName:header.getContentFontName());
 	             	if(header.isBold())
 	             	{
 	             		font.setBoldweight((short)2);
@@ -86,7 +76,6 @@ public class ExcelCellStyleUtil {
 	        cellMap.put("C_"+rowspan+"_"+colspan+"_"+metaType, cs);
 		}
 		return cs;
-
 	}
 	
 
