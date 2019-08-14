@@ -17,7 +17,7 @@ package com.robin.core.base.datameta;
 
 import com.robin.core.base.dao.JdbcDao;
 import com.robin.core.base.util.Const;
-import org.apache.commons.dbcp.BasicDataSource;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.support.JdbcUtils;
@@ -451,20 +451,7 @@ public class DataBaseUtil {
 	      }
 	      return columnlist;
 	 }
-	 public static DataSource getDataSource(BaseDataBaseMeta meta,DataBaseParam param) throws Exception{
-		 BasicDataSource datasource=new BasicDataSource();
-		 datasource.setDriverClassName(meta.getParam().getDriverClassName());
-		 //Phoneix can not support this feature
-		 //if(param.isReadOnly())
-		//	 datasource.setDefaultReadOnly(true);
-		 if(param.getUrl()!=null && !"".equals(param.getUrl().trim())){
-			 datasource.setUrl(param.getUrl());
-		 }else
-			 datasource.setUrl(meta.getUrl(param));
-		 datasource.setUsername(param.getUserName());
-		 datasource.setPassword(param.getPasswd());
-		 return datasource;
-	 }
+
 	 public static String translateDbType(Integer dbType){
 		 int type=dbType.intValue();
 		 String retStr="";

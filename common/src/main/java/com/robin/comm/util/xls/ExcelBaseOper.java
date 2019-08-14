@@ -57,10 +57,10 @@ public class ExcelBaseOper {
         if (TYPE_EXCEL2003.equalsIgnoreCase(fileext))
             wb = new HSSFWorkbook();
         else if (TYPE_EXCEL2007.equalsIgnoreCase(fileext)) {
-            if (!prop.isBatchInsert())
+            if (!prop.isStreamInsert())
                 wb = new XSSFWorkbook();
             else
-                wb = new SXSSFWorkbook(prop.getBatchRows());
+                wb = new SXSSFWorkbook(prop.getStreamRows());
         }
         return wb;
     }

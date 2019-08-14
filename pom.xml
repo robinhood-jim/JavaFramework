@@ -76,7 +76,7 @@
         <beanutils.version>1.9.2</beanutils.version>
         <db2jcc.version>1.4.2</db2jcc.version>
         <ik.version>1.0.0</ik.version>
-        <comm.dbutil>1.5</comm.dbutil>
+        <comm.dbutil>1.6</comm.dbutil>
         <xstream.version>1.4.4</xstream.version>
         <sqlserver.version>4.0</sqlserver.version>
         <hbase.version>1.2.1</hbase.version>

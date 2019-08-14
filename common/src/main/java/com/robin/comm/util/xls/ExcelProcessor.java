@@ -259,10 +259,10 @@ public class ExcelProcessor {
         if (!is2007)
             wb = new HSSFWorkbook();
         else {
-            if (!prop.isBatchInsert())
+            if (!prop.isStreamInsert())
                 wb = new XSSFWorkbook();
             else {
-                wb = new SXSSFWorkbook(prop.getBatchRows());
+                wb = new SXSSFWorkbook(prop.getStreamRows());
             }
         }
         String sheetname = prop.getSheetName();
@@ -497,8 +497,8 @@ public class ExcelProcessor {
                 Map<String, CellStyle> cellMap = new HashMap<String, CellStyle>();
                 for (int i = 0; i < list.size(); i++) {
                     processSingleLine(list.get(i), wb, targetsheet, i + 1, prop, header, helper,cellMap);
-                    if (prop.isBatchInsert() && (i + 1) % prop.getBatchRows() == 0) {
-                        ((SXSSFSheet) targetsheet).flushRows(prop.getBatchRows());
+                    if (prop.isStreamInsert() && (i + 1) % prop.getStreamRows() == 0) {
+                        ((SXSSFSheet) targetsheet).flushRows(prop.getStreamRows());
                     }
                 }
             }
@@ -609,7 +609,7 @@ public class ExcelProcessor {
 
     private static void autoSizeSheet(ExcelSheetProp prop, Sheet sheet, int count) {
         for (int i = 0; i < count; i++) {
-            if (!prop.isBatchInsert())
+            if (!prop.isStreamInsert())
                 sheet.autoSizeColumn(i);
             else {
                 if (i == 0)

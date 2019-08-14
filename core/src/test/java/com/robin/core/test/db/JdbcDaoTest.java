@@ -49,14 +49,14 @@ public class JdbcDaoTest extends TestCase {
 
     @Test
     public void testTransactionWithRollBack() {
-        JdbcDao jdbcDao = (JdbcDao) SpringContextHolder.getBean("jdbcDao", JdbcDao.class);
+        JdbcDao jdbcDao = SpringContextHolder.getBean("jdbcDao", JdbcDao.class);
         TestService tranrollbackservice = (TestService) SpringContextHolder.getBean("testService");
         tranrollbackservice.testQueryWithException(jdbcDao);
     }
 
     @Test
     public void testJpaQuery() {
-        TestJpaModelService service = (TestJpaModelService) SpringContextHolder.getBean(TestJpaModelService.class);
+        TestJpaModelService service = SpringContextHolder.getBean(TestJpaModelService.class);
         List<TestJPaModel> list = service.queryByField("csId", BaseObject.OPER_EQ, 1);
         Assert.assertNotNull(list);
     }
@@ -74,7 +74,7 @@ public class JdbcDaoTest extends TestCase {
 
     @Test
     public void testPageQuery() {
-        JdbcDao jdbcDao = (JdbcDao) SpringContextHolder.getBean("jdbcDao", JdbcDao.class);
+        JdbcDao jdbcDao = SpringContextHolder.getBean("jdbcDao", JdbcDao.class);
         PageQuery query = new PageQuery();
         query.setPageSize("0");
         query.setSelectParamId("GET_TEST_PAGE");
@@ -86,7 +86,7 @@ public class JdbcDaoTest extends TestCase {
 
     @Test
     public void testPageQueryWithReplaceAndPrepared() {
-        JdbcDao jdbcDao = (JdbcDao) SpringContextHolder.getBean("jdbcDao", JdbcDao.class);
+        JdbcDao jdbcDao = SpringContextHolder.getBean("jdbcDao", JdbcDao.class);
         PageQuery query = new PageQuery();
         query.setPageSize("0");
         query.setSelectParamId("GET_TEST_PREPARE");
@@ -104,7 +104,7 @@ public class JdbcDaoTest extends TestCase {
 
     @Test
     public void testInsertWithSecondaryDataSource() {
-        SysUserService sysUserService = (SysUserService) SpringContextHolder.getBean(SysUserService.class);
+        SysUserService sysUserService = SpringContextHolder.getBean(SysUserService.class);
         SysUser user = new SysUser();
         user.setUserAccount("test");
         user.setUserName("test");
@@ -114,43 +114,46 @@ public class JdbcDaoTest extends TestCase {
         sysUserService.saveEntity(user);
         assertNotNull(user.getId());
     }
+
     @Test
-    public void testInsertAssignVarcharKeyTable(){
-        TestPkCharService service= (TestPkCharService) SpringContextHolder.getBean(TestPkCharService.class);
-        TestPkChar vo=new TestPkChar();
+    public void testInsertAssignVarcharKeyTable() {
+        TestPkCharService service = SpringContextHolder.getBean(TestPkCharService.class);
+        TestPkChar vo = new TestPkChar();
         vo.setName("test1");
         vo.setCode("t2");
         vo.setTid(1);
         vo.setTs(new Timestamp(System.currentTimeMillis()));
-        Long id=service.saveEntity(vo);
+        Long id = service.saveEntity(vo);
         assertNotNull(id);
     }
+
     @Test
-    public void testInsertWithMutilPk(){
-        TestMutilPKService service=(TestMutilPKService)SpringContextHolder.getBean(TestMutilPKService.class);
-        TestMutilPK obj=new TestMutilPK();
-        TestPkObj tobj=new TestPkObj();
+    public void testInsertWithMutilPk() {
+        TestMutilPKService service = SpringContextHolder.getBean(TestMutilPKService.class);
+        TestMutilPK obj = new TestMutilPK();
+        TestPkObj tobj = new TestPkObj();
         tobj.setTcode(11);
         tobj.setTname("test");
         obj.setTobj(tobj);
         obj.setOutputval(1.1);
         obj.setTime(new Timestamp(System.currentTimeMillis()));
-        Long id=service.saveEntity(obj);
+        Long id = service.saveEntity(obj);
         assertNotNull(id);
 
     }
-    @Test
-    public void testQueryWithEntity(){
-        TestMutilPKService service=(TestMutilPKService)SpringContextHolder.getBean(TestMutilPKService.class);
 
-        TestPkObj tobj=new TestPkObj();
+    @Test
+    public void testQueryWithEntity() {
+        TestMutilPKService service = SpringContextHolder.getBean(TestMutilPKService.class);
+
+        TestPkObj tobj = new TestPkObj();
         tobj.setTcode(11);
         tobj.setTname("test");
         tobj.setId(4L);
-        TestMutilPK obj=service.getEntity(tobj);
+        TestMutilPK obj = service.getEntity(tobj);
         assertNotNull(obj);
-        List<TestMutilPK> list=service.queryByFieldOrderBy("time desc","outputval",BaseObject.OPER_IN,1.1);
-        List<TestMutilPK> list1=service.queryAll();
+        List<TestMutilPK> list = service.queryByFieldOrderBy("time desc", "outputval", BaseObject.OPER_IN, 1.1);
+        List<TestMutilPK> list1 = service.queryAll();
         assertNotNull(list);
     }
 

@@ -207,7 +207,7 @@ public abstract class BaseCrudController<O extends BaseObject,P extends Serializ
     public void afterPropertiesSet() throws Exception
     {
         if (this.serviceType != null) {
-            this.service = (S) SpringContextHolder.getBean(this.serviceType);
+            this.service = SpringContextHolder.getBean(this.serviceType);
         }
     }
 

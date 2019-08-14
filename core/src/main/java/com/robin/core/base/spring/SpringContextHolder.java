@@ -45,23 +45,25 @@ public class SpringContextHolder implements ApplicationContextAware, DisposableB
 	public static Object getBean(String beanName){
 		return context.getBean(beanName);
 	}
-	public static Object getBean(Class<?> clazzName){
+	public static <T> T  getBean(Class<T> clazzName){
 		return context.getBean(clazzName);
 	}
 	
-	public static Object getBean(String beanName, Class<?> clazz){
+	public static <T> T getBean(String beanName, Class<T> clazz){
 		return context.getBean(beanName, clazz);
 	}
 
 
 	public void setApplicationContext(ApplicationContext appcontext)
 			throws BeansException {
-		logger.info("begin to initalize context!!!");
+		if(logger.isDebugEnabled())
+			logger.debug("begin to initalize context!!!");
 		injectApplicationContext(appcontext);
-		logger.info("end to initalize context!!!");
+		if(logger.isDebugEnabled())
+			logger.debug("end to initalize context!!!");
 	}
 
-
+	@Override
 	public void destroy() throws Exception {
 		context = null;
 	}

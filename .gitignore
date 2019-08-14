@@ -43,6 +43,7 @@ integration-repo
 # IDEA metadata and output dirs
 *.ipr
 *.iws
+*.rar
 
 /webapp/WEB-INF/classes/
 /webapp/WEB-INF/test-classes/

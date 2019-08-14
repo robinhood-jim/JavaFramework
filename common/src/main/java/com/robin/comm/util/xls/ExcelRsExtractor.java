@@ -38,8 +38,8 @@ public class ExcelRsExtractor extends ResultSetOperationExtractor {
         pos++;
         processRows++;
         try {
-            if (prop.isBatchInsert() && (processRows) % prop.getBatchRows() == 0) {
-                ((SXSSFSheet) targetSheet).flushRows(prop.getBatchRows());
+            if (prop.isStreamInsert() && (processRows) % prop.getStreamRows() == 0) {
+                ((SXSSFSheet) targetSheet).flushRows(prop.getStreamRows());
             }
 
         }catch (Exception ex){

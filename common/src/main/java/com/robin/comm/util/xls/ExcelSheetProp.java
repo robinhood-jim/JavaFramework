@@ -30,8 +30,9 @@ public class ExcelSheetProp {
 	private int startRow=2;   
 	private int startCol=1;  
 	private Integer tableId;
-	private boolean batchInsert;
-	private Integer batchRows;
+	// using SXSSFWorkbook with streamingWrite
+	private boolean streamInsert;
+	private Integer streamRows;
 	
 	public List<Map<String,String>> getColumnList() {
 		return columnList;
@@ -103,19 +104,19 @@ public class ExcelSheetProp {
 		this.columnPropList = columnPropList;
 	}
 
-	public boolean isBatchInsert() {
-		return batchInsert;
+	public boolean isStreamInsert() {
+		return streamInsert;
 	}
 
-	public void setBatchInsert(boolean batchInsert) {
-		this.batchInsert = batchInsert;
+	public void setStreamInsert(boolean streamInsert) {
+		this.streamInsert = streamInsert;
 	}
 
-	public Integer getBatchRows() {
-		return batchRows;
+	public Integer getStreamRows() {
+		return streamRows;
 	}
 
-	public void setBatchRows(Integer batchRows) {
-		this.batchRows = batchRows;
+	public void setStreamRows(Integer streamRows) {
+		this.streamRows = streamRows;
 	}
 }

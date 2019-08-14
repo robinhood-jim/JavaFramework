@@ -16,7 +16,7 @@ import java.io.FileOutputStream;
 import java.sql.Connection;
 import java.util.*;
 
-public class TestExcelReader {
+public class TestExcelOperation {
 
     @Test
     public void testGenerate() throws Exception{
@@ -50,7 +50,7 @@ public class TestExcelReader {
         out.close();
     }
     @Test
-    public void testWithQuery(){
+    public void testGenWithQuery(){
         ExcelSheetProp prop=new ExcelSheetProp();
         prop.setFileext("xlsx");
         prop.setStartCol(1);
@@ -67,8 +67,8 @@ public class TestExcelReader {
         prop.addColumnProp(new ExcelColumnProp("model","model",Const.META_TYPE_STRING,false));
         prop.addColumnProp(new ExcelColumnProp("engine","engine",Const.META_TYPE_STRING,false));
         prop.addColumnProp(new ExcelColumnProp("img","img",Const.META_TYPE_STRING,false));
-        prop.setBatchInsert(true);
-        prop.setBatchRows(3000);
+        prop.setStreamInsert(true);
+        prop.setStreamRows(3000);
         TableConfigProp header=new TableConfigProp();
         header.setContainrow(1);
         header.setContentFontName("微软雅黑");
