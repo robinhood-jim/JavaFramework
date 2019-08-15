@@ -35,4 +35,8 @@ public class MainContorller {
 		else
 			return "../main";
 	}
+	@RequestMapping("login")
+	public String login(HttpServletRequest request,HttpServletResponse response){
+		return "../login";
+	}
 }

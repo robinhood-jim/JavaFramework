@@ -105,7 +105,9 @@ function login(myForm){
             var retjson=eval(retval);
             if(retjson.success==true){
                 window.location.href=ctx+'main/index';
-            }
+            }else{
+                openMsgDialog("<spring:message code="login.failed" />","<spring:message code="message.ErrorMsg" />"+retjson.message,300,200);
+			}
         });
 }
 function showmsg(){
