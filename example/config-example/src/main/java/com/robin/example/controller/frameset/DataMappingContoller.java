@@ -195,7 +195,6 @@ public class DataMappingContoller extends BaseCrudDhtmlxController<ProjectInfo,L
 			//ret=DhtmxTreeWrapper.WrappObjectTreeRetXml(list,schema,"tableName","remark",null);
 			
 		}catch(Exception ex){
-			ex.printStackTrace();
 			request.setAttribute("err", ex);
 			return null;
 		}

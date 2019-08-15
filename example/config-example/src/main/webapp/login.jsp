@@ -94,7 +94,7 @@ function goValidate(myForm){
         login(myForm);
     }
     else {
-        openMsgDialog("<spring:message code="login.failed" />","<spring:message code="message.ErrorMsg" />"+msg,300,200);
+        openMsgDialog("<spring:message code="login.failed" />","<spring:message code="message.errorMsg" />"+msg,300,200);
     }
 }
 
@@ -106,14 +106,14 @@ function login(myForm){
             if(retjson.success==true){
                 window.location.href=ctx+'main/index';
             }else{
-                openMsgDialog("<spring:message code="login.failed" />","<spring:message code="message.ErrorMsg" />"+retjson.message,300,200);
+                openMsgDialog("<spring:message code="login.failed" />","<spring:message code="message.errorMsg" />"+retjson.message,300,200);
 			}
         });
 }
 function showmsg(){
     var msg='<%=request.getAttribute("errMsg")%>';
     if(msg!='null'){
-        openMsgDialog("<spring:message code="login.failed" />","<spring:message code="message.ErrorMsg" />"+msg,300,200);
+        openMsgDialog("<spring:message code="login.failed" />","<spring:message code="message.errorMsg" />"+msg,300,200);
     }
     doOnLoad();
 }

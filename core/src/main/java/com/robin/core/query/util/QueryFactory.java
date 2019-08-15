@@ -153,7 +153,6 @@ public class QueryFactory implements InitializingBean {
                 throw new QueryConfgNotFoundException(new Exception("query id not found"));
             }
         } catch (Exception e) {
-            e.printStackTrace();
             throw new QueryConfgNotFoundException(new Exception("query id not found"));
         }
     }

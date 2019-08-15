@@ -160,17 +160,15 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
             }
 
         } catch (QueryConfgNotFoundException e) {
-            System.out.println("query ParamId not found");
+            logger.error("query ParamId not found");
             throw new DAOException(e);
         } catch (DAOException e) {
-            e.printStackTrace();
             if (logger.isDebugEnabled())
                 logger.debug("Encounter Error", e);
             else
                 logger.error("Encounter Error", e);
             throw e;
         } catch (Exception e) {
-            e.printStackTrace();
             if (logger.isDebugEnabled())
                 logger.debug("Encounter Error", e);
             else

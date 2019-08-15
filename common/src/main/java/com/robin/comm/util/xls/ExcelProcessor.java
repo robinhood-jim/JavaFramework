@@ -224,8 +224,7 @@ public class ExcelProcessor {
                     columnValueList.add(listMap);
             }
         } catch (Exception e) {
-            e.printStackTrace();
-            System.out.println("pos=" + pos + "column size=" + columnValueList.size());
+            log.error("encounter error!pos=" + pos + "column size=" + columnValueList.size());
             log.error(e);
         }
 

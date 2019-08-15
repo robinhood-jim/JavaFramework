@@ -17,11 +17,12 @@ package com.robin.core.fileaccess.iterator;
 
 import com.robin.core.base.util.Const;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
 
-
+@Slf4j
 public class TextFileIteratorFactory {
 	public static AbstractFileIterator getProcessIteratorByType(String fileType,DataCollectionMeta colmeta,BufferedReader reader) throws Exception{
 		AbstractFileIterator iterator=getIter(fileType,colmeta);;
@@ -54,7 +55,7 @@ public class TextFileIteratorFactory {
 				iterator = new PlainTextFileIterator(colmeta);
 			}
 		}catch (Exception ex){
-			ex.printStackTrace();
+			log.error("",ex);
 		}
 		return iterator;
 	}
