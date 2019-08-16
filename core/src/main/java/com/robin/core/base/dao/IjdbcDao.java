@@ -34,7 +34,7 @@ public interface IjdbcDao {
 	 * @return
 	 * @throws DAOException
 	 */
-	public int queryByInt(String querySQL) throws DAOException;
+	int queryByInt(String querySQL) throws DAOException;
 	/**
 	 * Query With page
 	 * @param sqlstr
@@ -42,14 +42,14 @@ public interface IjdbcDao {
 	 * @return
 	 * @throws DAOException
 	 */
-	public List queryByPageSql(String sqlstr,PageQuery pageQuery) throws DAOException;
+	List queryByPageSql(String sqlstr,PageQuery pageQuery) throws DAOException;
 	/**
 	 * query by sql
 	 * @param sqlstr
 	 * @return
 	 * @throws DAOException
 	 */
-	public List<Map<String,Object>> queryBySql(String sqlstr) throws DAOException;
+	List<Map<String,Object>> queryBySql(String sqlstr) throws DAOException;
 	/**
 	 * Batch update Records
 	 * @param sql               
@@ -58,7 +58,7 @@ public interface IjdbcDao {
 	 * @param batchsize          
 	 * @throws DAOException
 	 */
-	public void batchUpdate(final String sql,final List<Map<String,String>> resultList,final List<Map<String,String>> columnMetaList,final int batchsize) throws DAOException;
+	void batchUpdate(final String sql,final List<Map<String,String>> resultList,final List<Map<String,String>> columnMetaList,final int batchsize) throws DAOException;
 	/**
 	 * Call Procedure 
 	 * @param procedurename   
@@ -67,39 +67,39 @@ public interface IjdbcDao {
 	 * @return
 	 * @throws DAOException
 	 */
-	public Map<String,Object> executeCall(String procedurename, List<SqlParameter> declaredParameters, Map<String,Object> inPara) throws DAOException;
+	Map<String,Object> executeCall(String procedurename, List<SqlParameter> declaredParameters, Map<String,Object> inPara) throws DAOException;
 	/**
 	 * Call function
-	 * @param procedurename            
-	 * @param declaredParameters        
-	 * @param inPara                    
+	 * @param procedurename
+	 * @param declaredParameters
+	 * @param inPara
 	 * @param function    is Function?
 	 * @return
 	 * @throws DAOException
 	 */
-	public Map<String,Object> executeCall(String procedurename, List<SqlParameter> declaredParameters, Map<String,Object> inPara,boolean function) throws DAOException;
+	Map<String,Object> executeCall(String procedurename, List<SqlParameter> declaredParameters, Map<String,Object> inPara,boolean function) throws DAOException;
 	/**
 	 * Call Procedure with cursor Output
-	 * @param procedurename      
-	 * @param declaredParameters  
-	 * @param inPara              
+	 * @param procedurename
+	 * @param declaredParameters
+	 * @param inPara
 	 * @return
 	 * @throws DAOException
 	 */
-	public Map<String,Object> executeCallResultList(String procedurename, List<SqlParameter> declaredParameters, Map<String,Object> inPara) throws DAOException;
+	Map<String,Object> executeCallResultList(String procedurename, List<SqlParameter> declaredParameters, Map<String,Object> inPara) throws DAOException;
 	/**
 	 * Execute SQL
 	 * @param sql
 	 * @throws DAOException
 	 */
-	public void executeUpdate(String sql) throws DAOException;
+	void executeUpdate(String sql) throws DAOException;
 	/**
 	 * Execute Update with PreparedStmt
 	 * @param sql
 	 * @param objs
 	 * @throws DAOException
 	 */
-	public int executeUpdate(String sql,Object[] objs) throws DAOException;
+	int executeUpdate(String sql,Object[] objs) throws DAOException;
 	/**
 	 * Query by page
 	 * @param sqlstr
@@ -107,15 +107,23 @@ public interface IjdbcDao {
 	 * @return
 	 * @throws DAOException
 	 */
-	public PageQuery queryByPageQuery(String sqlstr, PageQuery pageQuery) throws DAOException;
-	public List<Map<String,Object>> queryBySql(String sqlstr,Object[] obj) throws DAOException;
+	PageQuery queryByPageQuery(String sqlstr, PageQuery pageQuery) throws DAOException;
+
+	/**
+	 * Query with Plain Sql
+	 * @param sqlstr
+	 * @param obj
+	 * @return
+	 * @throws DAOException
+	 */
+	List<Map<String,Object>> queryBySql(String sqlstr,Object[] obj) throws DAOException;
 	/**
 	 * Query With PageQuery
 	 * @param pageQuery
 	 * @return
 	 * @throws DAOException
 	 */
-	public void queryBySelectId(PageQuery pageQuery) throws DAOException;
+	void queryBySelectId(PageQuery pageQuery) throws DAOException;
 	
 	/**
 	 * Complex Query with given countSql
@@ -126,17 +134,46 @@ public interface IjdbcDao {
 	 * @return
 	 * @throws DAOException
 	 */
-	public PageQuery queryBySql(String querySQL,String countSql,String[] displayname,PageQuery pageQuery)throws DAOException;
+	PageQuery queryBySql(String querySQL,String countSql,String[] displayname,PageQuery pageQuery)throws DAOException;
 
-	public long executeSqlWithReturn(List<AnnotationRetrevior.FieldContent> field, String sql,BaseObject object) throws DAOException;
-	public Long createVO(BaseObject obj) throws DAOException;
-	public int updateVO(Class<? extends BaseObject> clazz,BaseObject obj) throws DAOException;
-	public int deleteVO(Class<? extends BaseObject> clazz,Serializable[] value) throws DAOException;
-	public BaseObject getEntity(Class<? extends BaseObject> clazz,Serializable value) throws DAOException;
 	/**
-	 * 
+	 * Create Record by ORM
+	 * @param obj
+	 * @return
+	 * @throws DAOException
+	 */
+	Long createVO(BaseObject obj) throws DAOException;
+
+	/**
+	 * Update Record by ORM
+	 * @param clazz
+	 * @param obj
+	 * @return
+	 * @throws DAOException
+	 */
+	int updateVO(Class<? extends BaseObject> clazz,BaseObject obj) throws DAOException;
+
+	/**
+	 * Delete Records by PK array
+	 * @param clazz
+	 * @param value
+	 * @return
+	 * @throws DAOException
+	 */
+	int deleteVO(Class<? extends BaseObject> clazz,Serializable[] value) throws DAOException;
+
+	/**
+	 * Get Record by Primary Keys
+	 * @param clazz
+	 * @param value
+	 * @return
+	 * @throws DAOException
+	 */
+	BaseObject getEntity(Class<? extends BaseObject> clazz,Serializable value) throws DAOException;
+	/**
+	 * Execute Sql with Config query
 	 * @param pageQuery
 	 * @throws DAOException
 	 */
-	public int executeBySelectId(PageQuery pageQuery) throws DAOException;
+	int executeBySelectId(PageQuery pageQuery) throws DAOException;
 }
