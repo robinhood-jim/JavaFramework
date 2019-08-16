@@ -3,11 +3,11 @@ package com.robin.core.query.util;
 
 public interface ICondition {
 	
-    public Object getValue();
+    Object getValue();
 
-    public Object[] getValues();
+    Object[] getValues();
 
-    public String getState();
+    String getState();
     
-    public String getName();
+    String getName();
 }

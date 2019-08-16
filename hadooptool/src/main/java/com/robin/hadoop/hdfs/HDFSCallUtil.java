@@ -132,38 +132,13 @@ public class HDFSCallUtil {
 		return toUrl;
 	}
 	public static String uploadByInputStream(final Configuration config,InputStream in,String toUrl,int bufferSize, String fromCharset, String toCharset) throws HdfsException, IOException{
-		//String url="";
 		FSDataOutputStream fsdo = null;
 		InputStreamReader isr = null;
 		try{
-//			String hdfsUrl="";
-//			if(toUrl!=null && !toUrl.equals(""))
-//				hdfsUrl=toUrl;
-//			logger.info("uploadByInputStream----hdfsUrl---->"+ hdfsUrl);
-//			int pos=0;
-//			pos=hdfsUrl.lastIndexOf("/");
-//			String hdfsUrlPath=hdfsUrl.substring(0,pos);
-//			logger.info("uploadByInputStream----hdfsUrlPath---->"+ hdfsUrlPath);
+
 			FileSystem fs=FileSystem.get(config);
 			Path dfs = new Path(toUrl);
 	        fsdo = fs.create(dfs);
-	        int len = 0;
-//	        byte[] buffer = new byte[bufferSize <= 0 ? BUFFER_SIZE : bufferSize];
-//	        while ((len = in.read(buffer)) > 0) {
-//	        	fsdo.write(buffer, 0, len);
-//	        }
-	        
-
-//			BufferedReader br = new BufferedReader(new InputStreamReader(in, fromCharset));
-//			char[] buffer_c = new char[bufferSize <= 0 ? BUFFER_SIZE : bufferSize];
-//	        while ((len = br.read(buffer_c)) > 0) {
-//	        	fsdo.write(getBytes(buffer_c, toCharset), 0, len);
-//	        }
-
-//			String line = "";
-//			while ((line = br.readLine()) != null) {
-//				fsdo.write(new String(line.getBytes(), toCharset).getBytes());
-//			}
 	        
 	        char[] buf = new char[bufferSize];
 	        StringBuilder strb = new StringBuilder();
@@ -178,8 +153,7 @@ public class HDFSCallUtil {
 			}
 			if(strb.length()>0)
 				fsdo.write(strb.toString().getBytes(toCharset));
-	        
-//			url = hdfsUrl;
+
 		}catch (Exception e) {
 			e.printStackTrace();
 			throw new HdfsException(e);

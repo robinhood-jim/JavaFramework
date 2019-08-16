@@ -21,7 +21,7 @@ import javax.script.Bindings;
 import javax.script.CompiledScript;
 
 public interface IscriptExecutor {
-	public CompiledScript returnScript(String stepId,String scripts) throws Exception;
-	public Bindings createBindings();
-	public Object invokeFunction(Map<String, Object> contextMap,String function,String name,Object[] params) throws Exception;
+	CompiledScript returnScript(String stepId,String scripts) throws Exception;
+	Bindings createBindings();
+	Object invokeFunction(Map<String, Object> contextMap,String function,String name,Object[] params) throws Exception;
 }

@@ -111,7 +111,7 @@ public class MultiThreadFtp extends SimpleFtp {
             setJobFinshTag(executeMap, part, success, totalpart, boolTag);
         }
 
-        private boolean doDownloadPart(int part, long partsize, long totalsize, String remote, String local, int retryNums) {
+        private boolean doDownloadPart(int part, long partsize, long totalsize, String remote, String local, int retryTimes) {
             long formsize = part * partsize;
             long tosize = (part + 1) * partsize;
             int processsize = 0;

@@ -626,7 +626,6 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
     public BaseObject getEntity(Class<? extends BaseObject> clazz, Serializable id) throws DAOException {
         try {
             BaseObject obj = clazz.newInstance();
-            AnnotationRetrevior.EntityContent tableDef = AnnotationRetrevior.getMappingTableByCache(clazz);
             List<AnnotationRetrevior.FieldContent> fields = AnnotationRetrevior.getMappingFieldsCache(clazz);
             EntityMappingUtil.SelectSegment segment = EntityMappingUtil.getSelectPkSegment(clazz, id, sqlGen);
             List<Map<String, Object>> list1 = queryBySql(segment.getSelectSql(), fields, segment.getValues().toArray());

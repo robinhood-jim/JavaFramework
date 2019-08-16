@@ -43,7 +43,7 @@ public class XmlFileWriter extends WriterBasedFileWriter{
 		try {
 			factory=XMLOutputFactory.newFactory();
 			streamWriter=factory.createXMLStreamWriter(writer);
-			XMLEvent event=ef.createStartDocument(colmeta.getEncode(),"1.0");
+			ef.createStartDocument(colmeta.getEncode(),"1.0");
 			streamWriter.writeStartDocument(colmeta.getEncode(),"1.0");
 			streamWriter.writeCharacters("\n");
 			streamWriter.writeStartElement("records");

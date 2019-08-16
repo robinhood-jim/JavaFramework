@@ -18,5 +18,5 @@ package com.robin.core.base.service;
 import com.robin.core.query.util.PageQuery;
 
 public interface BaseService {
-	 public PageQuery query(PageQuery queryString) throws Exception;
+	 PageQuery query(PageQuery queryString) throws Exception;
 }

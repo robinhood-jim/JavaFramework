@@ -81,23 +81,15 @@ public class MergeCellUtil {
                         totallength += list.get(i).getColspan();
                         collength[i] = totallength;
                     }
-                    int step = 0;
 
                     for (int i = 0; i < listabove.size(); i++) {
-                        int substep = 0;
                         TableHeaderColumn column = listabove.get(i);
                         int rowspan = column.getRowspan();
                         int colspan = column.getColspan();
                         if (rowspan + row - 1 != count) {
                             nums += colspan;
-                            step++;
                         }
-                        for (int j = 0; j < collength.length; j++) {
-                            if (collength[j] >= nums)
-                                substep = 0;
-                            else
-                                substep++;
-                        }
+
                         if (nums > totallength) {
                             if (isColumnTheFristChild(collength, listabove, i, row, count)) {
                                 startColArr[row][pos] = startColArr[row - 1][i];
