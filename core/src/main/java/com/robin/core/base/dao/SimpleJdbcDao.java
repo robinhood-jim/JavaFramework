@@ -90,7 +90,7 @@ public class SimpleJdbcDao {
 		Connection conn=null;
 		long curtryNum=0;
 		Exception ex=null;
-		while(getConnectLoop ||(!getConnectLoop && curtryNum<retryNums)){
+		while(getConnectLoop ||curtryNum<retryNums){
 			curtryNum++;
 			try {
 				DbUtils.loadDriver(driverName);

@@ -1,5 +1,6 @@
 package com.robin.core.fileaccess.iterator;
 
+import com.robin.core.base.util.IOUtils;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import org.apache.avro.Schema;
 import org.apache.avro.Schema.Field;
@@ -9,7 +10,7 @@ import org.apache.avro.file.SeekableByteArrayInput;
 import org.apache.avro.file.SeekableInput;
 import org.apache.avro.generic.GenericDatumReader;
 import org.apache.avro.generic.GenericRecord;
-import org.apache.zookeeper.common.IOUtils;
+
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

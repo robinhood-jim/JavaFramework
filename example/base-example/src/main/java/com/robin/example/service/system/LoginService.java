@@ -135,4 +135,8 @@ public class LoginService {
         }
         session.setPrivileges(privMap);
     }
+
+    public void setJdbcDao(JdbcDao jdbcDao) {
+        this.jdbcDao = jdbcDao;
+    }
 }
