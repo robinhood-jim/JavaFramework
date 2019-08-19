@@ -178,7 +178,7 @@ public class SourceFileExplorer {
                 isok=true;
             }
         }catch(Exception ex){
-            log.error("",ex);
+
         }
         return isok;
     }

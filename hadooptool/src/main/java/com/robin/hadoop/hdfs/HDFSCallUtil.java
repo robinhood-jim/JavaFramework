@@ -1,16 +1,12 @@
 package com.robin.hadoop.hdfs;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.DataInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.*;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.io.IOUtils;
+
+import java.io.*;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
@@ -24,31 +20,10 @@ import java.util.zip.GZIPOutputStream;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FSDataInputStream;
-import org.apache.hadoop.fs.FSDataOutputStream;
-import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.FileUtil;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.IOUtils;
-import org.apache.log4j.Logger;
 
-
-/**
- * <p>Project:  lmtest</p>
- *
- * <p>Description:HDFS工具类基础调用</p>
- *
- * <p>Copyright: Copyright (c) 2014 create at 2014-8-18</p>
- *
- * <p>Company: TW_DEV</p>
- *
- * @author robinjim
- * @version 1.0
- */
+@Slf4j
 public class HDFSCallUtil {
-	private static Logger logger=Logger.getLogger(HDFSCallUtil.class);
+
 	private static final int BUFFER_SIZE = 100 * 1024;
 	
 	public static String uploadFile(Configuration config,String filePath) throws HdfsException{
@@ -62,7 +37,7 @@ public class HDFSCallUtil {
 			}
 		}catch (Exception e) {
 			e.printStackTrace();
-			logger.error(e);
+			log.error("",e);
 			throw new HdfsException(e);
 		}
 		return buffer.toString();
@@ -101,14 +76,6 @@ public class HDFSCallUtil {
 		//String url="";
 		FSDataOutputStream fsdo = null;
 		try{
-//			String hdfsUrl="";
-//			if(toUrl!=null && !toUrl.equals(""))
-//				hdfsUrl=toUrl;
-//			logger.info("uploadByInputStream----hdfsUrl---->"+ hdfsUrl);
-//			int pos=0;
-//			pos=hdfsUrl.lastIndexOf("/");
-//			String hdfsUrlPath=hdfsUrl.substring(0,pos);
-//			logger.info("uploadByInputStream----hdfsUrlPath---->"+ hdfsUrlPath);
 			FileSystem fs=FileSystem.get(config);
 			Path dfs = new Path(toUrl);
 	        fsdo = fs.create(dfs);
@@ -117,9 +84,6 @@ public class HDFSCallUtil {
 	        while ((len = in.read(buffer)) > 0) {
 	        	fsdo.write(buffer, 0, len);
 	        }
-	        
-	        
-//			url = hdfsUrl;
 		}catch (Exception e) {
 			e.printStackTrace();
 			throw new HdfsException(e);
@@ -194,7 +158,7 @@ public class HDFSCallUtil {
 			}
 		}catch (Exception e) {
 			e.printStackTrace();
-			logger.error(e);
+			log.error("",e);
 			throw new HdfsException(e);
 		}
 	}
@@ -218,7 +182,7 @@ public class HDFSCallUtil {
 					fs.rename(new Path(frompath+fileName), new Path(topath+fileName));
 				}
 			}else{
-				logger.error("source file does not exists,mv ignore!");
+				log.error("source file does not exists,mv ignore!");
 			}
 		}catch (Exception e) {
 			throw new HdfsException(e);
@@ -250,7 +214,7 @@ public class HDFSCallUtil {
 			}
 		}catch (Exception e) {
 			e.printStackTrace();
-			logger.error(e);
+			log.error("",e);
 			throw new HdfsException(e);
 		}
 		return hdfsUrlList;
@@ -270,7 +234,7 @@ public class HDFSCallUtil {
 			return status.getLen();
 		}catch (Exception e) {
 			e.printStackTrace();
-			logger.error(e);
+			log.error("",e);
 			throw new HdfsException(e);
 		}
 	}
@@ -296,7 +260,7 @@ public class HDFSCallUtil {
 			}
 		}catch (Exception e) {
 			e.printStackTrace();
-			logger.error(e);
+			log.error("",e);
 			throw new HdfsException(e);
 		}
 		return hdfsUrlList;
@@ -309,7 +273,7 @@ public class HDFSCallUtil {
 				isd= fs.getFileStatus(sourcePath).isDirectory();
 		}catch (Exception e) {
 			e.printStackTrace();
-			logger.error(e);
+			log.error("",e);
 		}
 		return isd;
 	}
@@ -337,7 +301,7 @@ public class HDFSCallUtil {
 			}
 		}catch (Exception e) {
 			e.printStackTrace();
-			logger.error(e);
+			log.error("",e);
 			throw new HdfsException(e);
 		}
 		return hdfsUrlList;
@@ -352,7 +316,7 @@ public class HDFSCallUtil {
 			
 		}catch (Exception e) {
 			e.printStackTrace();
-			logger.error(e);
+			log.error("",e);
 		}
 	}
 	public static  void mkdir(final Configuration config,String relativeName) throws HdfsException{
@@ -361,7 +325,7 @@ public class HDFSCallUtil {
 		      fs.mkdirs(new Path(relativeName));  
 		}catch (Exception e) {
 			e.printStackTrace();
-			logger.error(e);
+			log.error("",e);
 		}
 	}
 	public static boolean isDirectory(final Configuration config,String hdfsUrl) throws HdfsException{
@@ -373,7 +337,7 @@ public class HDFSCallUtil {
 				isd= fs.getFileStatus(path).isDirectory();
 		}catch (Exception e) {
 			e.printStackTrace();
-			logger.error(e);
+			log.error("",e);
 		}
 		return isd;
 	}
@@ -386,7 +350,7 @@ public class HDFSCallUtil {
 				}
 			}
 		}catch(Exception ex){
-			logger.error(ex);
+			log.error("",ex);
 			throw new HdfsException(ex);
 		}
 	}
@@ -398,7 +362,7 @@ public class HDFSCallUtil {
 				fs.delete(path, true);
 			}
 		}catch (Exception e) {
-			logger.error(e);
+			log.error("",e);
 			throw new HdfsException(e);
 		}
 	}
@@ -418,7 +382,7 @@ public class HDFSCallUtil {
 			Path path=new Path(hdfsUrl);
 			return fs.exists(path);
 		}catch (Exception e) {
-			logger.error(e);
+			log.error("",e);
 			throw new HdfsException(e);
 		}
 	}
@@ -439,7 +403,7 @@ public class HDFSCallUtil {
 			}
 			
 		}catch (Exception e) {
-			logger.error(e);
+			log.error("",e);
 			throw new HdfsException(e);
 		}
 		return retStr;
@@ -463,7 +427,7 @@ public class HDFSCallUtil {
 				return null;
 			
 		}catch (Exception e) {
-			logger.error(e);
+			log.error("",e);
 			throw new HdfsException(e);
 		}
 	}
@@ -478,7 +442,7 @@ public class HDFSCallUtil {
 				return out;
 			}
 		}catch (Exception e) {
-			logger.error(e);
+			log.error("",e);
 			e.printStackTrace();
 		}
 		return null;
@@ -487,7 +451,7 @@ public class HDFSCallUtil {
 		try{
 		out.writeUTF(outStr);
 		}catch (Exception e) {
-			logger.error(e);
+			log.error("",e);
 		}
 	}
 	public static BufferedReader readStream(final Configuration config,String hdfsUrl,DataInputStream dis,String encode) throws HdfsException{
@@ -609,7 +573,7 @@ public class HDFSCallUtil {
 			stream.writeUTF(txt);
 			stream.close();
 		}catch (Exception e) {
-			logger.error(e);
+			log.error("",e);
 			throw new HdfsException(e);
 		}
 	}
