@@ -18,7 +18,7 @@ package com.robin.core.fileaccess.holder;
 import java.io.BufferedReader;
 import java.io.IOException;
 
-import com.robin.core.exception.oper.OperationInWorkException;
+import com.robin.core.base.exception.OperationInWorkException;
 import com.robin.core.fileaccess.cache.CacheHolder;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.util.AbstractResourceAccessUtil;

@@ -15,25 +15,28 @@
  */
 package com.robin.core.query.util;
 
+import com.robin.core.base.exception.MissingConfigExecption;
+import com.robin.core.base.exception.QueryConfgNotFoundException;
+import org.dom4j.Document;
+import org.dom4j.Element;
+import org.dom4j.io.SAXReader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+
 import java.io.File;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.dom4j.Document;
-import org.dom4j.Element;
-import org.dom4j.io.SAXReader;
-import org.springframework.beans.factory.InitializingBean;
-
-import com.robin.core.base.exception.QueryConfgNotFoundException;
 
 public class QueryFactory implements InitializingBean {
     private String xmlConfigPath = "";
-    private static Log log = LogFactory.getLog(QueryFactory.class);
-    private static Map<String, QueryString> queryMap=new HashMap<>();
+    private static Logger log = LoggerFactory.getLogger(QueryFactory.class);
+    private static Map<String, QueryString> queryMap = new HashMap<>();
 
     public QueryFactory() {
 
@@ -43,52 +46,62 @@ public class QueryFactory implements InitializingBean {
         try {
             String xmlpath = xmlConfigPath;
             log.info("begin to parser xml query files");
-            if (xmlpath == null || "".equals(xmlpath)) {
-                xmlpath = this.getClass().getClassLoader().getResource("").toURI().getPath();//ClassLoaderUtil.getRelativeClassFilePath("../config/queryConfig");
-                System.out.println("parse file path=" + xmlpath);
-                int pos = xmlpath.indexOf("classes");
-                xmlpath = xmlpath.substring(0, pos) + "config/queryConfig";
 
+            String classesPath = null;
+            PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
+            //default config at queryConfig in classpath
+            if (xmlpath == null || "".equals(xmlpath)) {
+                classesPath = "queryConfig";
             } else {
-                if (xmlpath.contains("classpath:")) {
+                if (xmlpath.startsWith("classpath:")) {
                     String relativePath = xmlpath.substring(10);
-                    xmlpath = this.getClass().getClassLoader().getResource("").toURI().getPath();
-                    xmlpath += relativePath;
+                    classesPath = relativePath;
+                }else if(xmlpath.startsWith("jarpath:")){
+                    //read config at relative folder where jar present
+                    String relativePath=xmlpath.substring(8);
+                    String jarRelativePath=this.getClass().getClassLoader().getResource("").toURI().toString();
+                    int pos=jarRelativePath.indexOf("file:/");
+                    String path=jarRelativePath.substring(pos+6);
+                    pos=path.indexOf("jar!/");
+                    if(pos!=-1){
+                        path=path.substring(0,pos);
+                        pos=path.lastIndexOf("/");
+                        path=path.substring(0,pos);
+                        xmlpath=path+"/"+relativePath;
+                    }
                 }
             }
-            log.info("parse file path=" + xmlpath);
+            log.info("parse file path={}", classesPath == null ? xmlpath : "classpath:"+classesPath);
+            if (classesPath != null) {
+                Resource[] configFiles = resolver.getResources("classpath:" + classesPath + "/*.xml");
+                for (Resource configFile : configFiles) {
+                    parseXML(configFile.getInputStream());
+                }
+            } else {
+                File file = new File(xmlpath);
+                if (!file.isDirectory()) {
+                    throw new MissingConfigExecption("no query XML found!");
+                }
+                File[] files = file.listFiles();
+                for (int i = 0; i < files.length; i++) {
+                    File subfile = files[i];
+                    if (subfile.getName().toLowerCase().endsWith("xml"))
+                        parseXML(subfile);
+                }
+            }
 
-            File file = new File(xmlpath);
-            if (!file.isDirectory()) {
-                throw new Exception("no query XML found!");
-            }
-            File[] files = file.listFiles();
-            log.debug("file size=" + files.length);
-            for (int i = 0; i < files.length; i++) {
-                File subfile = files[i];
-                if (subfile.getName().endsWith("xml"))
-                    parseXML(subfile);
-            }
+
         } catch (Exception e) {
-            log.error(e);
+            log.error("", e);
             e.printStackTrace();
             System.out.println(e.getMessage());
+        } finally {
+
         }
     }
 
 
-    public void parseXML(String xmlfile)
-            throws Exception {
-        if (xmlfile == null || xmlfile.trim().length() == 0) {
-            throw new IllegalArgumentException("No xml files!");
-        } else {
-            Document document = (new SAXReader()).read(new File(xmlfile));
-            putQueryMap(document);
-            return;
-        }
-    }
-
-    public void parseXML(File file) throws Exception {
+    private void parseXML(File file) throws Exception {
         if (file == null || !file.isFile()) {
             throw new IllegalArgumentException("xml file missing!");
         } else {
@@ -98,7 +111,7 @@ public class QueryFactory implements InitializingBean {
         }
     }
 
-    public void parseXML(InputStream is) throws Exception {
+    private void parseXML(InputStream is) throws Exception {
         if (is == null) {
             throw new IllegalArgumentException("parseXML(InputStream is null)!");
         } else {
@@ -107,6 +120,7 @@ public class QueryFactory implements InitializingBean {
             return;
         }
     }
+
 
     private void putQueryMap(Document document) throws Exception {
         Element root = document.getRootElement();
@@ -156,8 +170,9 @@ public class QueryFactory implements InitializingBean {
             throw new QueryConfgNotFoundException(new Exception("query id not found"));
         }
     }
-    public boolean isSelectIdExists(String selectId){
-        if (selectId != null && !selectId.isEmpty() && queryMap.containsKey(selectId)){
+
+    public boolean isSelectIdExists(String selectId) {
+        if (selectId != null && !selectId.isEmpty() && queryMap.containsKey(selectId)) {
             return true;
         } else {
             return false;
@@ -167,7 +182,6 @@ public class QueryFactory implements InitializingBean {
 
     public void afterPropertiesSet() throws Exception {
         init();
-
     }
 
 

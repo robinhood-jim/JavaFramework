@@ -20,6 +20,11 @@ public class ResourceAuthroize extends BaseObject {
     private Long resId;
     @MappingField(field = "corp_id",required = true)
     private Long corpId;
+    @MappingField(field = "dept_id")
+    private Long deptId;
+    @MappingField(field = "org_id")
+    private Long orgId;
+
     @MappingField(field = "credential_id")
     private Long credentialId;
     @MappingField(required = true)

@@ -1,4 +1,4 @@
-package com.robin.core.exception.oper;
+package com.robin.core.base.exception;
 
 public class OperationInWorkException extends RuntimeException{
 	/**

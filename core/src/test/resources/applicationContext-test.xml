@@ -58,7 +58,7 @@
 
     <bean id="sqlGen" class="com.robin.core.sql.util.MysqlSqlGen" autowire="byName"></bean>
     <bean id="queryFactory" class="com.robin.core.query.util.QueryFactory" autowire="byName">
-    	<property name="xmlConfigPath" value="classpath:query"></property>
+    	<!--<property name="xmlConfigPath" value="classpath:query/queryConfig"></property>-->
     </bean>
 	<bean id="springContextHolder" class="com.robin.core.base.spring.SpringContextHolder" lazy-init="false"></bean>
 	

@@ -130,7 +130,7 @@ public class LoginService {
             }
             else
             {
-                ((List)privMap.get(map.get("pid").toString())).add(map);
+                (privMap.get(map.get("pid").toString())).add(map);
             }
         }
         session.setPrivileges(privMap);

@@ -17,11 +17,15 @@ package com.robin.core.base.util;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
 import org.apache.commons.lang.text.StrBuilder;
+
+import javax.xml.bind.DatatypeConverter;
 
 public class StringUtils {
 	public static final int ASCII_VISABLE_START=48;
@@ -215,6 +219,11 @@ public class StringUtils {
 	}
 	private static int getRandomChar(Random random){
 		return random.nextInt(ASCII_VISABLE_END-ASCII_VISABLE_START+1);
+	}
+	public static String getMd5Encry(String inputStr) throws NoSuchAlgorithmException {
+		MessageDigest md=MessageDigest.getInstance("MD5");
+		md.update(inputStr.getBytes());
+		return DatatypeConverter.printHexBinary(md.digest()).toUpperCase();
 	}
 
 }
