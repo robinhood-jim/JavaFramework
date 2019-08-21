@@ -80,6 +80,10 @@ Slightly Framework design to  support Spring based java or Bigdata program.
                     <bean id="queryFactory" class="com.robin.core.query.util.QueryFactory" autowire="byName">
                         	<property name="xmlConfigPath" value="classpath:query"></property>
                     </bean>
+                xmlConfigPath support three input
+                    I.if not assign value,read config xml from classpath:queryConfig
+                    II. classpath:query  
+                    III.jarpath:query    read config from jar base Path with relative path
                     
                 using config class
                     @Bean(name="queryFactory")
