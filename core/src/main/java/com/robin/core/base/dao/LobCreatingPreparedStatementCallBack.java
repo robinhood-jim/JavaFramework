@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.Map;
 
 import com.robin.core.base.dao.util.AnnotationRetrevior;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.support.AbstractLobCreatingPreparedStatementCallback;
 import org.springframework.jdbc.support.lob.LobCreator;
@@ -36,6 +38,7 @@ public class LobCreatingPreparedStatementCallBack extends
         AbstractLobCreatingPreparedStatementCallback {
     private BaseObject obj;
     private List<AnnotationRetrevior.FieldContent> fields;
+    private Logger logger= LoggerFactory.getLogger(getClass());
 
     public LobCreatingPreparedStatementCallBack(LobHandler lobHandler) {
         super(lobHandler);
@@ -122,7 +125,7 @@ public class LobCreatingPreparedStatementCallBack extends
                 ps.setFloat(pos, Float.valueOf(value.toString()));
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("",e);
         }
 
     }

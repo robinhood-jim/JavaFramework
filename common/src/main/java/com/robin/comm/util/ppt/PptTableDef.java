@@ -1,18 +1,17 @@
 package com.robin.comm.util.ppt;
 
 
+import com.robin.comm.util.xls.TableConfigProp;
 
 import java.util.List;
 import java.util.Map;
-
-import com.robin.comm.util.xls.TableHeaderProp;
 
 public class PptTableDef {
 	
 	private int colwidth;
 	private int headerrows;
 	private int rows;
-	private TableHeaderProp headerProp;
+	private TableConfigProp headerProp;
 	private List<Map<String, String>> resultList; 
 	
 
@@ -40,11 +39,11 @@ public class PptTableDef {
 		this.headerrows = headerrows;
 	}
 
-	public TableHeaderProp getHeaderProp() {
+	public TableConfigProp getHeaderProp() {
 		return headerProp;
 	}
 
-	public void setHeaderProp(TableHeaderProp headerProp) {
+	public void setHeaderProp(TableConfigProp headerProp) {
 		this.headerProp = headerProp;
 	}
 

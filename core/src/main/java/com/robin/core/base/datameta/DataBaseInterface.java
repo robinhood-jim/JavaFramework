@@ -19,17 +19,17 @@ import java.util.List;
 
 public interface DataBaseInterface {
 	//public String getDriverClass();
-	public String getUrl(DataBaseParam param) throws Exception;
-	public boolean suppportSequnce();
-	public boolean supportAutoInc();
-	public int getDefaultDatabasePort();
-	public String getSQLNextSequenceValue(String sequenceName);
-	public String getSQLCurrentSequenceValue(String sequenceName);
-	public String getSQLSequenceExists(String sequenceName);
-	public boolean supportsSchemas();
-	public List<DataBaseTableMeta> listAllTable(String schema) throws Exception;
-	public String getAddColumnStatement(String tablename, String schema,DataBaseColumnMeta v, String tk, boolean use_autoinc, String pk, boolean semicolon);
-	public String getDropColumnStatement(String tablename,String schema, DataBaseColumnMeta v, String tk, boolean use_autoinc, String pk, boolean semicolon);
-	public DataBaseParam getParam();
-	public String getUrlTemplate();
+	String getUrl(DataBaseParam param) throws Exception;
+	boolean suppportSequnce();
+	boolean supportAutoInc();
+	int getDefaultDatabasePort();
+	String getSQLNextSequenceValue(String sequenceName);
+	String getSQLCurrentSequenceValue(String sequenceName);
+	String getSQLSequenceExists(String sequenceName);
+	boolean supportsSchemas();
+	List<DataBaseTableMeta> listAllTable(String schema) throws Exception;
+	String getAddColumnStatement(String tablename, String schema,DataBaseColumnMeta v, String tk, boolean use_autoinc, String pk, boolean semicolon);
+	String getDropColumnStatement(String tablename,String schema, DataBaseColumnMeta v, String tk, boolean use_autoinc, String pk, boolean semicolon);
+	DataBaseParam getParam();
+	String getUrlTemplate();
 }

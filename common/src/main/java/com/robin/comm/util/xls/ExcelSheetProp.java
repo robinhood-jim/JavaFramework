@@ -30,6 +30,9 @@ public class ExcelSheetProp {
 	private int startRow=2;   
 	private int startCol=1;  
 	private Integer tableId;
+	// using SXSSFWorkbook with streamingWrite
+	private boolean streamInsert;
+	private Integer streamRows;
 	
 	public List<Map<String,String>> getColumnList() {
 		return columnList;
@@ -99,5 +102,21 @@ public class ExcelSheetProp {
 	}
 	public void setColumnPropList(List<ExcelColumnProp> columnPropList) {
 		this.columnPropList = columnPropList;
+	}
+
+	public boolean isStreamInsert() {
+		return streamInsert;
+	}
+
+	public void setStreamInsert(boolean streamInsert) {
+		this.streamInsert = streamInsert;
+	}
+
+	public Integer getStreamRows() {
+		return streamRows;
+	}
+
+	public void setStreamRows(Integer streamRows) {
+		this.streamRows = streamRows;
 	}
 }

@@ -18,7 +18,7 @@ package com.robin.core.fileaccess.holder;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import com.robin.core.exception.oper.OperationInWorkException;
+import com.robin.core.base.exception.OperationInWorkException;
 
 public class OutputStreamHolder extends AbstractResourceHolder {
 	protected OutputStream out;

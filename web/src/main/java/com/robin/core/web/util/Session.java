@@ -8,18 +8,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * <p>Project:  frame</p>
- * <p>
- * <p>Description:com.robin.webui.util</p>
- * <p>
- * <p>Copyright: Copyright (c) 2019 create at 2019年08月01日</p>
- * <p>
- * <p>Company: zhcx_DEV</p>
- *
- * @author robinjim
- * @version 1.0
- */
 @Data
 public class Session implements Serializable {
     private Long userId;

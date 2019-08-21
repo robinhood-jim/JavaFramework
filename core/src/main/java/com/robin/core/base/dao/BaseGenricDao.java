@@ -30,17 +30,17 @@ import com.robin.core.query.util.QueryString;
 public interface BaseGenricDao<T extends BaseObject,ID extends Serializable> {
 	
 	
-	public T get(ID id) throws DAOException;
-	public T load(ID id) throws DAOException;
-	public void save(T obj) throws DAOException;
-	public void update(T obj) throws DAOException;
+	T get(ID id) throws DAOException;
+	T load(ID id) throws DAOException;
+	void save(T obj) throws DAOException;
+	void update(T obj) throws DAOException;
 	/**
 	 * count All
 	 * 
 	 * @return count of record
 	 * @throws DAOException
 	 */
-	public long count() throws DAOException;
+	long count() throws DAOException;
 
 	
 	/**
@@ -51,7 +51,7 @@ public interface BaseGenricDao<T extends BaseObject,ID extends Serializable> {
 	 * @return
 	 * @throws DAOException
 	 */
-	public long countByField(String fieldName, Object fieldValue) throws DAOException;
+	long countByField(String fieldName, Object fieldValue) throws DAOException;
 
 	/**
 	 * remove record By primary Key
@@ -59,7 +59,7 @@ public interface BaseGenricDao<T extends BaseObject,ID extends Serializable> {
 	 * @param id
 	 * @throws DAOException
 	 */
-	public int remove(ID id) throws DAOException;
+	int remove(ID id) throws DAOException;
 	
 	
 
@@ -68,7 +68,7 @@ public interface BaseGenricDao<T extends BaseObject,ID extends Serializable> {
 	 * 
 	 * @throws DAOException
 	 */
-	public int removeAll() throws DAOException;
+	int removeAll() throws DAOException;
 
 	/**
 	 * remove record By Key Array
@@ -76,7 +76,7 @@ public interface BaseGenricDao<T extends BaseObject,ID extends Serializable> {
 	 * @param ids key Array
 	 * @throws DAOException
 	 */
-	public int removeAll(Serializable[] ids) throws DAOException;
+	int removeAll(Serializable[] ids) throws DAOException;
 
 	
 	/**
@@ -85,7 +85,7 @@ public interface BaseGenricDao<T extends BaseObject,ID extends Serializable> {
 	 * @param fieldValue
 	 * @throws DAOException
 	 */
-	public int removeByField(String fieldName, Object fieldValue) throws DAOException;
+	int removeByField(String fieldName, Object fieldValue) throws DAOException;
 
 
 	/**
@@ -93,7 +93,7 @@ public interface BaseGenricDao<T extends BaseObject,ID extends Serializable> {
 	 * @return all record
 	 * @throws DAOException
 	 */
-	public List<T> findAll() throws DAOException;
+	List<T> findAll() throws DAOException;
 
 
 
@@ -104,7 +104,7 @@ public interface BaseGenricDao<T extends BaseObject,ID extends Serializable> {
 	 * @return List<T>
 	 * @throws DAOException
 	 */
-	public List<T> findByField(String fieldName, Object fieldValue) throws DAOException;
+	List<T> findByField(String fieldName, Object fieldValue) throws DAOException;
 
 	
 	/**
@@ -113,42 +113,42 @@ public interface BaseGenricDao<T extends BaseObject,ID extends Serializable> {
 	 * @return
 	 * @throws DAOException
 	 */
-	public void queryBySelectId(PageQuery queryString) throws DAOException;
+	void queryBySelectId(PageQuery queryString) throws DAOException;
 
 	/**
 	 * save ModelVO to DB
 	 * @param obj
 	 * @throws DAOException
 	 */
-	public void saveOrUpdate(final Object obj) throws DAOException;
+	void saveOrUpdate(final Object obj) throws DAOException;
 	/**
 	 * query result return integer
 	 * @param sql
 	 * @return
 	 * @throws DAOException
 	 */
-	public int queryForInt(String sql) throws DAOException;
+	int queryForInt(String sql) throws DAOException;
 	
 	
 	
 	/**
 	 * return tableName
 	 */
-	public String getTableName();
+	String getTableName();
 	/**
 	 * execute Hibernate Hql
 	 * @param hql
 	 * @return
 	 * @throws DAOException
 	 */
-	public List<T> findByHql(String hql) throws DAOException;
+	List<T> findByHql(String hql) throws DAOException;
 	/**
 	 * return Query result
 	 * @param sql
 	 * @return
 	 * @throws DAOException
 	 */
-	public List<Map<String,Object>> queryBySql(String sql) throws DAOException;
+	List<Map<String,Object>> queryBySql(String sql) throws DAOException;
 	
 	/**
 	 * return result with defined RowMapper
@@ -157,7 +157,7 @@ public interface BaseGenricDao<T extends BaseObject,ID extends Serializable> {
 	 * @return
 	 * @throws DAOException
 	 */
-	public List<?> queryByRowWapper(String sql,RowMapper<?> rowMapper) throws DAOException;
+	List<?> queryByRowWapper(String sql,RowMapper<?> rowMapper) throws DAOException;
 	
 	/**
 	 * query
@@ -168,7 +168,7 @@ public interface BaseGenricDao<T extends BaseObject,ID extends Serializable> {
 	 * @return
 	 * @throws DAOException
 	 */
-	public List<T> findByField(String fieldName, Object fieldValue,String orderName,boolean ascending) throws DAOException;
+	List<T> findByField(String fieldName, Object fieldValue,String orderName,boolean ascending) throws DAOException;
 	
 	/**
 	 * 
@@ -177,7 +177,7 @@ public interface BaseGenricDao<T extends BaseObject,ID extends Serializable> {
 	 * @return
 	 * @throws DAOException
 	 */
-	public List<T> findByFields(String[] fieldName, Object[] fieldValue) throws DAOException;
+	List<T> findByFields(String[] fieldName, Object[] fieldValue) throws DAOException;
 	
 	/**
 	 * 
@@ -188,7 +188,7 @@ public interface BaseGenricDao<T extends BaseObject,ID extends Serializable> {
 	 * @return
 	 * @throws DAOException
 	 */
-	public List<T> findByFields(String[] fieldName, Object[] fieldValue,String orderName,boolean ascending) throws DAOException;
+	List<T> findByFields(String[] fieldName, Object[] fieldValue,String orderName,boolean ascending) throws DAOException;
 	
 	/**
 	 * 
@@ -199,14 +199,14 @@ public interface BaseGenricDao<T extends BaseObject,ID extends Serializable> {
 	 * @return
 	 * @throws DAOException
 	 */
-	public List<T> findByFields(String[] fieldName, Object[] fieldValue,String[] orderName,boolean[] ascending) throws DAOException;
+	List<T> findByFields(String[] fieldName, Object[] fieldValue,String[] orderName,boolean[] ascending) throws DAOException;
 	/**
 	 * 
 	 * @param sql    
 	 * @throws DAOException
 	 */
 	@Deprecated
-	public int executeSqlUpdate(final String sql) throws DAOException;
+	int executeSqlUpdate(final String sql) throws DAOException;
 	
 	/**
 	 * 
@@ -214,7 +214,7 @@ public interface BaseGenricDao<T extends BaseObject,ID extends Serializable> {
 	 * @param resultList
 	 * @throws DAOException
 	 */
-	public void batchUpdate(String sql,List<Map<String,String>> resultList,List<Map<String,String>> columnTypeMapList) throws DAOException;
+	void batchUpdate(String sql,List<Map<String,String>> resultList,List<Map<String,String>> columnTypeMapList) throws DAOException;
 	/**
 	 * HQL Query
 	 * @param hql
@@ -223,7 +223,7 @@ public interface BaseGenricDao<T extends BaseObject,ID extends Serializable> {
 	 * @return
 	 * @throws DAOException
 	 */
-	public List<T> findByHqlPage(final String hql, final int startpox,final int pageSize) throws DAOException;
+	List<T> findByHqlPage(final String hql, final int startpox,final int pageSize) throws DAOException;
 	/**
 	 * find result using page
 	 * @param fieldName  
@@ -233,7 +233,7 @@ public interface BaseGenricDao<T extends BaseObject,ID extends Serializable> {
 	 * @return
 	 * @throws DAOException
 	 */
-	public List<T> findByFieldPage(final String fieldName, final Object fieldValue,final int startpos,final int pageSize) throws DAOException ;
+	List<T> findByFieldPage(final String fieldName, final Object fieldValue,final int startpos,final int pageSize) throws DAOException ;
 	/**
 	 * 
 	 * @param fieldName
@@ -245,7 +245,7 @@ public interface BaseGenricDao<T extends BaseObject,ID extends Serializable> {
 	 * @return
 	 * @throws DAOException
 	 */
-	public List<T> findByFieldPage(final String fieldName,final Object fieldValue, String orderName, boolean ascending,final int startpos,final int pageSize) throws DAOException ;
+	List<T> findByFieldPage(final String fieldName,final Object fieldValue, String orderName, boolean ascending,final int startpos,final int pageSize) throws DAOException ;
 	/**
 	 * query with more field and value by and
 	 * @param fieldName
@@ -255,7 +255,7 @@ public interface BaseGenricDao<T extends BaseObject,ID extends Serializable> {
 	 * @return
 	 * @throws DAOException
 	 */
-	public List<T> findByFieldsPage(final String[] fieldName,final Object[] fieldValue,final int startpos,final int pageSize) throws DAOException ;
+	List<T> findByFieldsPage(final String[] fieldName,final Object[] fieldValue,final int startpos,final int pageSize) throws DAOException ;
 	/**
 	 * 
 	 * @param fieldName
@@ -267,7 +267,7 @@ public interface BaseGenricDao<T extends BaseObject,ID extends Serializable> {
 	 * @return
 	 * @throws DAOException
 	 */
-	public List<T> findByFieldsPage(final String[] fieldName,final Object[] fieldValue, String orderName, boolean ascending,final int startpos,final int pageSize) throws DAOException ;
+	List<T> findByFieldsPage(final String[] fieldName,final Object[] fieldValue, String orderName, boolean ascending,final int startpos,final int pageSize) throws DAOException ;
 	/**
 	 * 
 	 * @param clazz
@@ -275,7 +275,7 @@ public interface BaseGenricDao<T extends BaseObject,ID extends Serializable> {
 	 * @param values
 	 * @return
 	 */
-	public Object queryBySingle(Class<?> clazz,String sql,Object... values) throws DAOException;
+	Object queryBySingle(Class<?> clazz,String sql,Object... values) throws DAOException;
 	/**
 	 * 
 	 * @param sql
@@ -283,10 +283,10 @@ public interface BaseGenricDao<T extends BaseObject,ID extends Serializable> {
 	 * @return
 	 * @throws DAOException
 	 */
-	public List<Map<String,Object>> queryBySql(String sql,Object... args) throws DAOException;
+	List<Map<String,Object>> queryBySql(String sql,Object... args) throws DAOException;
 	
-	public List<T> findByNamedParam(String hql,String[] fieldName,Object[] fieldValue) throws DAOException;
-	public void removeByFields(String[] fieldName, Object[] fieldValue) throws DAOException;
+	List<T> findByNamedParam(String hql,String[] fieldName,Object[] fieldValue) throws DAOException;
+	void removeByFields(String[] fieldName, Object[] fieldValue) throws DAOException;
 	
 	/**
 	 * 
@@ -297,7 +297,7 @@ public interface BaseGenricDao<T extends BaseObject,ID extends Serializable> {
 	 * @return
 	 * @throws DAOException
 	 */
-	public PageQuery queryBySql(String querySQL,String countSql,String[] displayname,PageQuery pageQuery)throws DAOException;
+	PageQuery queryBySql(String querySQL,String countSql,String[] displayname,PageQuery pageQuery)throws DAOException;
 	/**
 	 * 
 	 * @param qs
@@ -305,11 +305,11 @@ public interface BaseGenricDao<T extends BaseObject,ID extends Serializable> {
 	 * @return
 	 * @throws DAOException
 	 */
-	public void queryByParamter(QueryString qs, PageQuery pageQuery) throws DAOException;
+	void queryByParamter(QueryString qs, PageQuery pageQuery) throws DAOException;
 	/**
 	 * 
 	 * @param pageQuery
 	 * @throws DAOException
 	 */
-	public int executeBySelectId(PageQuery pageQuery) throws DAOException;
+	int executeBySelectId(PageQuery pageQuery) throws DAOException;
 }

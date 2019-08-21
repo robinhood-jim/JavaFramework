@@ -22,15 +22,13 @@
 
       
     <!-- JDBC DataSource -->
-   <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+   <bean id="dataSource" class="com.zaxxer.hikari.HikariDataSource">
         <property name="driverClassName" value="${jdbc.driver}"/>
-      <property name="url" value="${jdbc.url}"/>
+      <property name="jdbcUrl" value="${jdbc.url}"/>
         <property name="username" value="${jdbc.username}"/>
         <property name="password" value="${jdbc.password}"/>
-        <property name="maxActive" value="20"/>
-        <property name="maxIdle" value="5"/>
-        <property name="maxWait" value="1000"/>
-        <property name="defaultAutoCommit" value="true"/>
+        <property name="maxLifetime" value="20"/>
+
     </bean>
      <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">                                        
         <property name="dataSource" ref="dataSource"/>                                        

@@ -20,11 +20,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.google.gson.Gson;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * <p>Description:<b>Model VO BaseObject,All DataObject should Override this class</b></p>
  *
  */
+@Slf4j
 public abstract class BaseObject implements Serializable,Cloneable{
 	private static final long serialVersionUID = -1156095048376157515L;
 	private List<String> dirtyColumnList=new ArrayList<String>();
@@ -59,7 +61,7 @@ public abstract class BaseObject implements Serializable,Cloneable{
 		try{
 		str=gson.toJson(this);
 		}catch(Exception ex){
-			ex.printStackTrace();
+			log.error("",ex);
 		}
 		return str;
 	}

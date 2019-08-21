@@ -15,5 +15,5 @@ import org.apache.hadoop.conf.Configuration;
  * @version 1.0
  */
 public interface HDFSSecurityProxy {
-	public Object run(final Configuration config);
+	Object run(final Configuration config);
 }

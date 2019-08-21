@@ -135,18 +135,7 @@ ol, ul {
    	if(confirm('<spring:message code="confirmLogOut" />')==true)
    		window.location.href='<%=CONTEXT_PATH%>user/logout';
    }
-   function checklogin(){
-   		var url='<%=CONTEXT_PATH%>user/checklogin';
-   		var loader=dhx.ajax.postSync(url,'');
-   		var value = loader.xmlDoc.responseText;
-   		if(value!='OK'){
-   			alert('<spring:message code="notLoginAlert" />');
-   			window.location.href=ct_nodes+'user/showlogin';
-   		}
-   }
-   $(document).ready(function(){
-	   checklogin();
-	});
+
 </script>
 
 </head>

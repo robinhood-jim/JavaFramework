@@ -61,6 +61,23 @@ public class GlobalResource extends BaseObject {
 	private String clusterCode;
 	@MappingField(field = "record_content")
 	private String recordContent;
+	@MappingField(field = "authorize_type")
+	private Integer authType;
 
+	public static enum AuthorizeType{
+		TYPE_PULIC(1),
+		TYPE_PULICTOORG(2),
+		TYPE_PUBLICTODEPT(3),
+		TYPE_PUBLICTOCORP(4),
+		TYPE_AUTH(5);
+		private Integer value;
+		private AuthorizeType(Integer value){
+			this.value=value;
+		}
+		@Override
+		public String toString(){
+			return value.toString();
+		}
+	}
 }
 

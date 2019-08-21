@@ -96,7 +96,6 @@ public class DateConverter implements Converter {
             try {
                 return df.format(value);
             } catch (Exception e) {
-                e.printStackTrace();
                 throw new ConversionException("Error converting Date to String");
             }
         } else {

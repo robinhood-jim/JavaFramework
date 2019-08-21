@@ -34,23 +34,20 @@ import java.util.List;
 import java.util.Map;
 
 /**
- *use Chinese Alter msg.Later will change to i18n
+ * use Chinese Alter msg.Later will change to i18n
  */
-public abstract class BaseCrudDhtmlxController<O extends BaseObject,P extends Serializable,S extends BaseAnnotationJdbcService> extends BaseCrudController<O,P,S> {
+public abstract class BaseCrudDhtmlxController<O extends BaseObject, P extends Serializable, S extends BaseAnnotationJdbcService> extends BaseCrudController<O, P, S> {
 
 
-    public Map<String, Object> wrapComobo(List<Map<String, Object>> rsList, String keyColumn, String valueColumn, boolean insertNullVal)
-    {
+    public Map<String, Object> wrapComobo(List<Map<String, Object>> rsList, String keyColumn, String valueColumn, boolean insertNullVal) {
         Map<String, Object> map = new HashMap();
         List<Map<String, Object>> list = new ArrayList();
         if (insertNullVal) {
             insertNullSelect(list);
         }
-        for (Map<String, Object> tmap : rsList)
-        {
+        for (Map<String, Object> tmap : rsList) {
             Map<String, Object> rmap = new HashMap();
-            if (tmap.containsKey(keyColumn))
-            {
+            if (tmap.containsKey(keyColumn)) {
                 rmap.put("text", tmap.get(valueColumn).toString());
                 rmap.put("value", tmap.get(keyColumn).toString());
                 list.add(rmap);
@@ -60,15 +57,13 @@ public abstract class BaseCrudDhtmlxController<O extends BaseObject,P extends Se
         return map;
     }
 
-    public Map<String, Object> wrapComoboWithCode(List<Code> rsList, boolean insertNullVal)
-    {
+    public Map<String, Object> wrapComoboWithCode(List<Code> rsList, boolean insertNullVal) {
         Map<String, Object> map = new HashMap();
         List<Map<String, Object>> list = new ArrayList();
         if (insertNullVal) {
             insertNullSelect(list);
         }
-        for (Code code : rsList)
-        {
+        for (Code code : rsList) {
             Map<String, Object> rmap = new HashMap();
             rmap.put("text", code.getCodeName());
             rmap.put("value", code.getValue());
@@ -79,9 +74,7 @@ public abstract class BaseCrudDhtmlxController<O extends BaseObject,P extends Se
     }
 
 
-
-    public void wrapStatusBar(PageQuery query)
-    {
+    public void wrapStatusBar(PageQuery query) {
         String str = "";
         int pageNo = Integer.parseInt(query.getPageNumber());
         int totalCount = Integer.parseInt(query.getRecordCount());
@@ -93,21 +86,15 @@ public abstract class BaseCrudDhtmlxController<O extends BaseObject,P extends Se
         str = str + "<table width=\"100%\" height=\"20\" cellpadding=\"0\" cellspacing=\"0\" >";
         str = str + "<td align='left' width='70%'>共&nbsp;" + totalCount + "&nbsp;条,第&nbsp;" + pageNo + "页/共&nbsp;" + totalPage + " 页&nbsp;<input type=\"textbox\" size=3 align=\"right\" class=\"pTextStyle\" name=\"pageSize\" id=\"pageSize\" value=\"" + query.getPageSize() + "\" onKeyPress=\"javascript:setpagesize();\">" + "条/页&nbsp;</td>";
         str = str + " <td align=\"right\" width=\"30%\" ><div style=\"text-align: right;overflow: hidden;\">";
-        if (pageNo <= 1)
-        {
+        if (pageNo <= 1) {
             str = str + "<span class='greyleftPageMore'>首页</span><span class='greyleftPage'>上一页</span>";
-        }
-        else
-        {
+        } else {
             str = str + "<span><a class='leftPageMore' href='javascript:goFirstPage()'>首页</a></span>";
             str = str + "<span><a class='leftPage' href='javascript:goPreviousPage()'>上一页</a></span>";
         }
-        if ((totalPage == pageNo) || (totalPage == 0))
-        {
+        if ((totalPage == pageNo) || (totalPage == 0)) {
             str = str + "<span class='greyrightPage'>下一页</span><span class='greyrightPageMore'>尾页</span>";
-        }
-        else
-        {
+        } else {
             str = str + "<span><a class='rightPage' href='javascript:goNextPage()'>下一页</a></span>";
             str = str + "<span><a class='rightPageMore' href='javascript:goLasePage()'>尾页</a></span>";
         }
@@ -121,10 +108,12 @@ public abstract class BaseCrudDhtmlxController<O extends BaseObject,P extends Se
         }
         query.setPageToolBar(str);
     }
+
     public Map<String, Object> wrapDhtmlxGridOutputWithNoCheck(List<Map<String, String>> list, String queryKeys, String idColumn) {
-        return wrapDhtmlxGridOutputWithCheck(list,queryKeys,idColumn,false);
+        return wrapDhtmlxGridOutputWithCheck(list, queryKeys, idColumn, false);
     }
-    private Map<String, Object> wrapDhtmlxGridOutputWithCheck(List<Map<String, String>> list, String queryKeys, String idColumn,boolean withcheck) {
+
+    private Map<String, Object> wrapDhtmlxGridOutputWithCheck(List<Map<String, String>> list, String queryKeys, String idColumn, boolean withcheck) {
         Map<String, Object> retMap = new HashMap<String, Object>();
         try {
             String[] fieldNames = queryKeys.split(",");
@@ -154,16 +143,18 @@ public abstract class BaseCrudDhtmlxController<O extends BaseObject,P extends Se
         }
         return retMap;
     }
+
     protected void wrapObjectWithRequest(HttpServletRequest request, BaseObject obj) throws Exception {
         ConvertUtil.mapToObject(obj, wrapRequest(request));
     }
+
     protected Map<String, Object> returnCodeSetDhtmlxCombo(String codeSetNo, boolean allowNulls) {
         setCode(codeSetNo);
         Map<String, Object> retmap = new HashMap<String, Object>();
         List<Map<String, String>> list = new ArrayList<Map<String, String>>();
-        CodeSetService util= (CodeSetService) SpringContextHolder.getBean(CodeSetService.class);
-        List<Code> codeList=util.getCacheCode(codeSetNo);
-        if (codeList!=null) {
+        CodeSetService util = SpringContextHolder.getBean(CodeSetService.class);
+        List<Code> codeList = util.getCacheCode(codeSetNo);
+        if (codeList != null) {
             if (allowNulls) {
                 list.add(addNullSelection());
             }
@@ -177,12 +168,14 @@ public abstract class BaseCrudDhtmlxController<O extends BaseObject,P extends Se
         retmap.put("options", list);
         return retmap;
     }
+
     private Map<String, String> addNullSelection() {
         Map<String, String> map = new HashMap<String, String>();
         map.put("value", "");
         map.put("text", Translator.toLocale("message.NullDisplay"));
         return map;
     }
+
     public Map<String, Object> wrapDhtmlxGridOutput(PageQuery query) {
         List<Map<String, Object>> list = query.getRecordSet();
         Map<String, Object> retMap = new HashMap<String, Object>();

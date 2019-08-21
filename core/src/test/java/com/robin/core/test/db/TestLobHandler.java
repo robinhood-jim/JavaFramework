@@ -51,7 +51,7 @@ public class TestLobHandler extends TestCase {
 
     @Test
     public void testQuerylob() {
-        JdbcDao jdbcDao = (JdbcDao) SpringContextHolder.getBean("jdbcDao", JdbcDao.class);
+        JdbcDao jdbcDao = SpringContextHolder.getBean("jdbcDao", JdbcDao.class);
         PageQuery query = new PageQuery();
         query.setPageSize("1");
         query.setSelectParamId("GET_LOB");

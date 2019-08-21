@@ -11,6 +11,9 @@
     <title><spring:message code="userContr" /> </title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta http-equiv="pragma" content="no-cache">
+    <meta http-equiv="cache-control" content="no-cache">
+    <meta http-equiv="expires" content="0">
     <link rel="stylesheet" type="text/css" href="<%=CONTEXT_PATH%>component/dhtmlxSuite/skins/skyblue/dhtmlx.css"/>
     <link rel="stylesheet" type="text/css" href="<%=CONTEXT_PATH%>component/dhtmlxSuite/codebase/dhtmlx.css"/>
     <link rel="stylesheet" type="text/css"
@@ -18,7 +21,6 @@
     <link rel="stylesheet" type="text/css" href="<%=CONTEXT_PATH%>resources/css/main.css"/>
     <script src="<%=CONTEXT_PATH%>component/dhtmlxSuite/codebase/dhtmlx.js"></script>
     <script language="javascript" src="<%= CONTEXT_PATH %>resources/js/jquery.js"></script>
-    <script type="text/javascript" src="<%=CONTEXT_PATH%>resources/js/jqueryui.js"></script>
     <script language="javascript" src="<%= CONTEXT_PATH %>resources/js/Array.js"></script>
     <script language="javascript" src="<%= CONTEXT_PATH %>resources/js/control.js"></script>
     <script src="<%=CONTEXT_PATH%>resources/js/validate.js"></script>
@@ -39,14 +41,17 @@
     </script>
 
 </head>
-<body onload="">
 
+<body onload="">
+<script type="text/javascript" src="<%=CONTEXT_PATH%>resources/js/crud.js"></script>
 <script type="text/javascript">
     var ctx = "<%=CONTEXT_PATH%>";
     var imgPath = "<%=CONTEXT_PATH%>component/dhtmlxSuite/dhtmlx/imgs/icon/";
     var dhxLayout = new dhtmlXLayoutObject(document.body, "2E");
     var topPanel = dhxLayout.cells("a");
     var bottomPanel = dhxLayout.cells("b");
+    var width=document.body.clientWidth;
+
     topPanel.setHeight(130);
     topPanel.setText("");
 
@@ -56,10 +61,10 @@
     var queryUrl = ctx + "system/user/list";
     var userFrm = [
         {
-            type: "block", lable: "<spring:message code="sysUser.info" />", width: 900, list: [
-                {type: "settings", position: "label-left", labelWidth: 130, inputWidth: 120, offsetLeft: 10},
+            type: "block", lable: "<spring:message code="sysUser.info" />", width: width-40, list: [
+                {type: "settings", position: "label-left", labelWidth: 120, inputWidth: 120, offsetLeft: 10},
                 {
-                    type: "fieldset", labelAlign: "left", label: "<spring:message code="sysUser.info" />", inputWidth: "900", list: [
+                    type: "fieldset", labelAlign: "left", label: "<spring:message code="sysUser.info" />", inputWidth: width-80, list: [
                         {type: "hidden", name: "query.order", value: ""},
                         {type: "hidden", name: "query.orderDirection", value: ""},
                         {type: "hidden", name: "query.pageCount", value: ""},
@@ -67,12 +72,16 @@
                         {type: "hidden", name: "query.pageSize", value: "10"},
                         {type: "input", label: "<spring:message code="sysUser.accountName" />", name: "userName", offsetTop: 10},
                         {type: "newcolumn", offset: 20},
-                        {type: "combo", label: "<spring:message code="sysUser.Dept" />", name: "deptId"},
+                        {type: "select", label: "<spring:message code="sysUser.Dept" />", name: "deptId",connector:ctx + "system/dept/listjson?allowNull=true"},
                         {type: "newcolumn", offset: 20},
-                        {type: "combo", label: "<spring:message code="sysUser.Org" />", name: "orgId"},
-                        {type: "newcolumn", offset: 20},
-                        {type: "button", name: "submit", value: "<spring:message code="btn.submit"/> "},
-                        {type: "newcolumn", offset: 40},
+                        {type: "select", label: "<spring:message code="sysUser.Org" />", name: "orgId",connector:ctx + "system/org/listjson?allowNull=true"},
+
+                    ]
+                }, {
+                    type: "block", inputWidth: width-80, list: [
+                        {type: "settings", offsetTop: 5},
+                        {type: "button", name: "submit", value: "<spring:message code="btn.submit" />",offsetLeft:width/2-220},
+                        {type: "newcolumn"},
                         {type: "button", name: "reset", value: "<spring:message code="btn.clear" />"}
                     ]
                 }
@@ -83,14 +92,7 @@
     bottomPanel.hideHeader();
     topPanel.fixSize(true, true);
     myForm.loadStruct(userFrm);
-    var deptCombo = myForm.getCombo("deptId");
-    $.post(ctx + "system/dept/listjson", {}, function (retval) {
-        deptCombo.load(retval);
-    });
-    var orgCombo = myForm.getCombo("orgId");
-    $.post(ctx + "system/org/listjson", {}, function (retval) {
-        orgCombo.load(retval);
-    });
+
     myForm.attachEvent("onButtonClick", function (name) {
         if (name == 'submit') {
             this.send(ctx + "system/user/list", function (loader, response) {
@@ -118,7 +120,7 @@
     myGrid.enableAutoHeight(true);
     myGrid.init();
     var dhxToobar = bottomPanel.attachToolbar();
-    //dhxToobar.setSkin("dhx_skyblue");
+
     dhxToobar.setIconsPath(ctx + "component/dhtmlxSuite/comm/imgsmat/");
     dhxToobar.addButton("new", 0, "<spring:message code="btn.add" />", "new.gif", "new_dis.gif");
     dhxToobar.addButton("edit", 1, "<spring:message code="btn.modi" />", "open.gif", "open_dis.gif");
@@ -150,22 +152,22 @@
 
 
     var editFormContent = [
-        {type: "settings", position: "label-left", lableWidth: 100, inputWidth: 100},
+        {type: "settings", position: "label-left", lableWidth: 120, inputWidth: 120},
         {
-            type: "fieldset", label: "<spring:message code="sysUser.info" />", offsetLeft: 10, inputWidth: 500, lableWidth: 100, list: [
+            type: "fieldset", label: "<spring:message code="sysUser.info" />", offsetLeft: 10,offsetRight: 20, inputWidth: 495, lableWidth: 100, list: [
                 {type: "hidden", name: "id", value: ""},
                 {type: "input", name: "userName", label: "<spring:message code="sysUser.userName" />:", validate: "NotEmpty"},
                 {
-                    type: "combo", name: "accountType", label: "<spring:message code="sysUser.accountType" />:", validate: "NotEmpty"
+                    type: "select", name: "accountType", label: "<spring:message code="sysUser.accountType" />:", validate: "NotEmpty",connector: ctx + "system/codecombo?codeSetNo=USERTYPE"
                 },
-                {type: "combo", name: "orgId", label: "<spring:message code="sysUser.Org" />:", validate: "NotEmpty"},
+                {type: "select", name: "orgId", label: "<spring:message code="sysUser.Org" />:", validate: "NotEmpty",connector:ctx + "system/org/listjson?allowNull=false"},
                 {type: "newcolumn", offset: 20},
                 {type: "input", name: "userAccount", label: "<spring:message code="sysUser.accountName" />:", validate: "NotEmpty"},
-                {type: "combo", name: "deptId", label: "<spring:message code="sysUser.Dept" />:", validate: "NotEmpty"}
+                {type: "select", name: "deptId", label: "<spring:message code="sysUser.Dept" />:", validate: "NotEmpty",connector:ctx + "system/dept/listjson?allowNull=false"}
             ]
         },
         {
-            type: "block", inputWidth: 410, list: [
+            type: "block", inputWidth: 490, list: [
                 {type: "settings", offsetTop: 10},
                 {type: "button", name: "cmdOK", value: "<spring:message code="btn.confirm" />", offsetLeft: 175},
                 {type: "newcolumn"},
@@ -175,15 +177,12 @@
     ];
 
     function addInit(form) {
-        initCombo(form.getCombo("deptId"), ctx + "system/dept/listjson?allowNull=false");
-        initCombo(form.getCombo("orgId"), ctx + "system/org/listjson?allowNull=false");
-        initCombo(form.getCombo("accountType"), ctx + "system/codecombo?codeSetNo=USERTYPE");
         form.attachEvent("onButtonClick", function (name, command) {
             form.validate();
             if (name == "cmdOK") {
                 this.send(ctx + "system/user/save", function (loader, response) {
                     var tobj = eval('(' + response + ')');
-                    if (tobj.success == 'true') {
+                    if (tobj.success == true) {
                         dhtmlx.message({
                             text: "<spring:message code="message.saveSuccess" />",
                             expire: -1
@@ -191,7 +190,7 @@
                         closedialog(true);
                         reload();
                     } else {
-                        openMsgDialog("<spring:message code="message.SaveFailed" />", "<spring:message code="message.ErrorMsg" />:" + tobj.message, 300, 200);
+                        openMsgDialog("<spring:message code="message.SaveFailed" />", "<spring:message code="message.ErrorMsg" />:" + tobj.message);
                     }
                 });
             } else if (name == 'cmdCancel') {
@@ -201,14 +200,12 @@
     }
 
     function editInit(form) {
-        initCombo(form.getCombo("deptId"), ctx + "system/dept/listjson?allowNull=false");
-        initCombo(form.getCombo("orgId"), ctx + "system/org/listjson?allowNull=false");
-        initCombo(form.getCombo("accountType"), ctx + "system/codecombo?codeSetNo=USERTYPE");
+
         form.attachEvent("onButtonClick", function (name, command) {
             if (name == "cmdOK") {
-                this.send(contextpath + "system/sysuser/update", function (loader, response) {
+                this.send(contextpath + "system/user/update", function (loader, response) {
                     var tobj = eval('(' + response + ')');
-                    if (tobj.success == 'true') {
+                    if (tobj.success == true) {
                         dhtmlx.message({
                             text: "<spring:message code="message.updateSuccess" />",
                             expire: -1
@@ -216,7 +213,7 @@
                         closedialog(true);
                         reload();
                     } else {
-                        openMsgDialog("<spring:message code="message.updateFailed" />", "<spring:message code="message.ErrorMsg" />:" + tobj.message, 300, 200);
+                        openMsgDialog("<spring:message code="message.updateFailed" />", "<spring:message code="message.ErrorMsg" />:" + tobj.message);
                     }
                 });
             } else if (name == 'cmdCancel') {
@@ -232,9 +229,9 @@
     function goAssign() {
         var list = myGrid.getCheckedRows(0);
         if (list == '') {
-            openMsgDialog("<spring:message code="sysUser.AssignRight" />", "<spring:message code="message.alertSelectAtLeastOneRow" />", 300, 150);
+            openMsgDialog("<spring:message code="sysUser.AssignRight" />", "<spring:message code="message.alertSelectAtLeastOneRow" />");
         } else if (list.indexOf(",") != -1) {
-            openMsgDialog("<spring:message code="sysUser.AssignRight" />", "<spring:message code="message.alertSelectMutilRow" />", 300, 150);
+            openMsgDialog("<spring:message code="sysUser.AssignRight" />", "<spring:message code="message.alertSelectMutilRow" />");
         } else {
             var form = openWindow("<spring:message code="sysUser.AssignRight" />", ctx + "system/user/showright?userId=" + list, 550, 400);
         }
@@ -253,11 +250,11 @@
                     if (result) {
                         $.ajax({
                             type: "get",
-                            url: ctx + "system/sysuser/delete?ids=" + list,
+                            url: ctx + "system/user/delete?ids=" + list,
                             dataType: "json",
                             success: function (data) {
                                 var obj = eval(data);
-                                if (obj.success == 'true') {
+                                if (obj.success == true) {
                                     dhtmlx.message({
                                         text: "<spring:message code="message.deleteSuccess" />",
                                         expire: 10
@@ -282,7 +279,6 @@
             openMsgDialog("<spring:message code="title.editUser" />", "<spring:message code="message.alertSelectMutilRow" />", 300, 150);
         } else {
             var form = openWindowForEdit("<spring:message code="title.editUser" />", editFormContent, 530, 270, editInit);
-            //form.load(contextpath+"system/sysuser/edit?id="+list);
             $.ajax({
                 type: "get",
                 url: ctx + "system/user/edit?id=" + list,
@@ -300,9 +296,9 @@
         }
     }
 
+
 </script>
-<script type="text/javascript" src="<%=CONTEXT_PATH%>resources/js/crud.js"></script>
-<script type="text/javascript" src="<%=CONTEXT_PATH%>resources/js/window.js"></script>
+
 
 
 </body>

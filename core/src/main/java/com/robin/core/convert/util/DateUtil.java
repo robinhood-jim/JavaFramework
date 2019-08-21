@@ -35,13 +35,7 @@ public class DateUtil {
       return defaultDatePattern;
    }
 
-   /**
-    * 锟斤拷锟斤拷菘锟斤拷卸锟饺★拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷转锟斤拷锟斤拷缺省锟侥革拷式锟斤拷
-    * 
-    * @param date
-    *           要转锟斤拷锟斤拷锟斤拷锟斤拷
-    * @return 锟街凤拷锟绞斤拷锟斤拷锟斤拷锟?
-    */
+
    public static final String getDate(Date date) {
       SimpleDateFormat df = null;
       String returnValue = "";
@@ -54,17 +48,6 @@ public class DateUtil {
       return (returnValue);
    }
 
-   /**
-    * 锟斤拷锟斤拷一锟斤拷锟斤拷锟节革拷式锟斤拷一锟斤拷锟街凤拷转锟斤拷锟斤拷锟斤拷锟节★拷
-    * 
-    * @param mask
-    *           锟斤拷锟节革拷式
-    * @param strdate
-    *           要转锟斤拷锟斤拷锟街凤拷
-    * @return 转锟斤拷锟缴碉拷锟斤拷锟斤拷
-    * @see java.text.SimpleDateFormat
-    * @throws ParseException
-    */
    public static final Date convertStringToDate(String mask, String strdate) throws ParseException {
       SimpleDateFormat df = null;
       Date date = null;
@@ -93,12 +76,7 @@ public class DateUtil {
       return getDateTime(timePattern, time);
    }
 
-   /**
-    * 转锟斤拷锟斤拷锟斤拷锟斤拷锟节碉拷锟街凤拷锟绞?
-    * 
-    * @return 锟斤拷锟斤拷锟斤拷锟节ｏ拷锟斤拷式MM/dd/yyyy
-    * @throws ParseException
-    */
+
    public static Calendar getToday() throws ParseException {
       Date today = new Date();
       SimpleDateFormat df = new SimpleDateFormat(getDatePattern());

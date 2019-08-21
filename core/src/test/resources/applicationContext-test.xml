@@ -19,31 +19,19 @@
 
       
     <!-- JDBC DataSource -->
-    <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource">
+    <bean id="dataSource" class="com.zaxxer.hikari.HikariDataSource">
         <property name="driverClassName" value="${jdbc.driver}"/>
-      <property name="url" value="${jdbc.url}"/>
+      <property name="jdbcUrl" value="${jdbc.url}"/>
         <property name="username" value="${jdbc.username}"/>
         <property name="password" value="${jdbc.password}"/>
-        <property name="maxActive" value="20"/>
-        <property name="maxIdle" value="5"/>
-        <property name="maxWait" value="1000"/>
-        <property name="defaultAutoCommit" value="false"/>
-        <property name="removeAbandoned" value="true"/>
-        <property name="removeAbandonedTimeout" value="60"/>
-        <property name="logAbandoned" value="true"/>
+
     </bean>
-    <bean id="dataSource1" class="org.apache.commons.dbcp.BasicDataSource">
+    <bean id="dataSource1" class="com.zaxxer.hikari.HikariDataSource">
         <property name="driverClassName" value="${jdbc.another.driver}"/>
-        <property name="url" value="${jdbc.another.url}"/>
+        <property name="jdbcUrl" value="${jdbc.another.url}"/>
         <property name="username" value="${jdbc.another.username}"/>
         <property name="password" value="${jdbc.another.password}"/>
-        <property name="maxActive" value="20"/>
-        <property name="maxIdle" value="5"/>
-        <property name="maxWait" value="1000"/>
-        <property name="defaultAutoCommit" value="false"/>
-        <property name="removeAbandoned" value="true"/>
-        <property name="removeAbandonedTimeout" value="60"/>
-        <property name="logAbandoned" value="true"/>
+        <property name="autoCommit" value="false"/>
     </bean>
 
     <context:annotation-config /> 
@@ -70,7 +58,7 @@
 
     <bean id="sqlGen" class="com.robin.core.sql.util.MysqlSqlGen" autowire="byName"></bean>
     <bean id="queryFactory" class="com.robin.core.query.util.QueryFactory" autowire="byName">
-    	<property name="xmlConfigPath" value="classpath:query"></property>
+    	<!--<property name="xmlConfigPath" value="classpath:query/queryConfig"></property>-->
     </bean>
 	<bean id="springContextHolder" class="com.robin.core.base.spring.SpringContextHolder" lazy-init="false"></bean>
 	

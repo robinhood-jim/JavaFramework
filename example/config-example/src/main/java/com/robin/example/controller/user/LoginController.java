@@ -18,10 +18,8 @@ package com.robin.example.controller.user;
 import com.robin.core.base.exception.ServiceException;
 import com.robin.core.base.util.Const;
 import com.robin.core.web.controller.BaseContorller;
-
 import com.robin.core.web.util.Session;
 import com.robin.example.service.system.LoginService;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;

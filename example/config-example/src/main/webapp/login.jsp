@@ -14,9 +14,9 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 <link rel="stylesheet" type="text/css" href="<%=CONTEXT_PATH%>component/dhtmlxSuite/codebase/dhtmlx.css" />
 <link rel="stylesheet" type="text/css" href="<%=CONTEXT_PATH%>component/dhtmlxSuite/skins/terrace/dhtmlx.css"/>
-<script src="<%=CONTEXT_PATH%>component/dhtmlxSuite/codebase/dhtmlx.js"></script>
-<script src="<%=CONTEXT_PATH%>resources/js/jquery.js"></script>
-
+<script src="<%=CONTEXT_PATH%>component/dhtmlxSuite/codebase/dhtmlx.js" />
+<script src="<%=CONTEXT_PATH%>resources/js/jquery.js" />
+<script type="application/javascript" src="<%=CONTEXT_PATH%>resources/js/md5.min.js" />
 <style type="text/css">
 table {
 	border-collapse: collapse;
@@ -94,24 +94,27 @@ function goValidate(myForm){
         login(myForm);
     }
     else {
-        openMsgDialog("<spring:message code="login.failed" />","<spring:message code="message.ErrorMsg" />"+msg,300,200);
+        openMsgDialog("<spring:message code="login.failed" />","<spring:message code="message.errorMsg" />"+msg,300,200);
     }
 }
 
 function login(myForm){
+    alert(md5($("#password").val()))
     $.post(ctx+'user/login',
         {accountName:$("#userName").val(),password:$("#password").val()}
         ,function(retval){
             var retjson=eval(retval);
             if(retjson.success==true){
                 window.location.href=ctx+'main/index';
-            }
+            }else{
+                openMsgDialog("<spring:message code="login.failed" />","<spring:message code="message.errorMsg" />"+retjson.message,300,200);
+			}
         });
 }
 function showmsg(){
     var msg='<%=request.getAttribute("errMsg")%>';
     if(msg!='null'){
-        openMsgDialog("<spring:message code="login.failed" />","<spring:message code="message.ErrorMsg" />"+msg,300,200);
+        openMsgDialog("<spring:message code="login.failed" />","<spring:message code="message.errorMsg" />"+msg,300,200);
     }
     doOnLoad();
 }

@@ -1,14 +1,7 @@
 package com.robin.comm.util.ppt;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.poi.hslf.model.Slide;
-import org.apache.poi.hslf.usermodel.SlideShow;
-
 public class PptGenerater {
-	public static void GeneratePpt(SlideShow show,PptConfig config){
+	/*public static void GeneratePpt(SlideShow show,PptConfig config){
 		List<List<PptSection>> sectionList=config.getSectionList();
 		PptHeaderFooterSection headerFooter=config.getHeaderFooter();
 		if(config.getBackgroundPic()!=null)
@@ -43,6 +36,6 @@ public class PptGenerater {
 		}catch (Exception e) {
 			e.printStackTrace();
 		}
-	}
+	}*/
 
 }

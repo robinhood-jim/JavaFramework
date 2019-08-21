@@ -240,7 +240,7 @@ public class CommJdbcUtil {
                                     putValue(fields,i,columnName,bytes,map);
                                 }
                             } else {
-                                putValue(fields,i,columnName,rs.getObject(i + 1).toString().trim(),map);
+                                putValue(fields,i,columnName,rs.getObject(i + 1),map);
                             }
                         }
                         list.add(map);
@@ -253,7 +253,7 @@ public class CommJdbcUtil {
     }
     private static void putValue(String[] fields,int pos,String columnName,Object obj,Map<String,Object> map){
         if (fields != null)
-            map.put(fields[pos], "");
+            map.put(fields[pos], obj);
         else
             map.put(columnName, "");
     }
