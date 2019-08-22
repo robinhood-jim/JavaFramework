@@ -35,4 +35,16 @@ public class JdbcDaoDynamicBean extends DataSourceDynamicBean{
      	.append("</bean>");
 		return dataSourceXml+xmlBuf.toString();
 	}
+
+	public void setSqlGenName(String sqlGenName) {
+		this.sqlGenName = sqlGenName;
+	}
+
+	public void setLobHandlerName(String lobHandlerName) {
+		this.lobHandlerName = lobHandlerName;
+	}
+
+	public void setQueryFactoryName(String queryFactoryName) {
+		this.queryFactoryName = queryFactoryName;
+	}
 }
