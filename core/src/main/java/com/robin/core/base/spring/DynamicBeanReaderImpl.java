@@ -18,6 +18,7 @@ package com.robin.core.base.spring;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.xml.ResourceEntityResolver;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
@@ -25,32 +26,34 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ConfigurableApplicationContext;
 
-public class DynamicBeanReaderImpl implements DynamicBeanReader,ApplicationContextAware {
+public class DynamicBeanReaderImpl implements DynamicBeanReader,ApplicationContextAware, InitializingBean {
 	 private static Log logger = LogFactory.getLog(DynamicBeanReaderImpl.class);
 	private XmlBeanDefinitionReader beanDefinitionReader;  
     
-    private ConfigurableApplicationContext applicationContext = null;    
-      
-	
-	public void init(){  
-        beanDefinitionReader = new XmlBeanDefinitionReader((BeanDefinitionRegistry)  
-                applicationContext.getBeanFactory());    
-        beanDefinitionReader.setEntityResolver(new ResourceEntityResolver(applicationContext));    
-    }  
+    private ConfigurableApplicationContext applicationContext = null;
+
+    @Override
+    public void afterPropertiesSet() {
+        beanDefinitionReader = new XmlBeanDefinitionReader((BeanDefinitionRegistry)
+                applicationContext.getBeanFactory());
+        beanDefinitionReader.setEntityResolver(new ResourceEntityResolver(applicationContext));
+    }
+
 
 	public void setApplicationContext(ApplicationContext context)
 			throws BeansException {
 		this.applicationContext=(ConfigurableApplicationContext) context;
 		
 	}
-	public void loadBean(DynamicBean dynamicBean){   
+	public void loadBean(DynamicBean dynamicBean){
         long startTime = System.currentTimeMillis();  
         String beanName = dynamicBean.getBeanName();  
         if(applicationContext.containsBean(beanName)){  
             logger.warn("bean Name"+beanName+"already Exist!");  
             return;  
         }  
-        beanDefinitionReader.loadBeanDefinitions(new DynamicResource(dynamicBean));  
+        beanDefinitionReader.loadBeanDefinitions(new DynamicResource(dynamicBean));
+
         logger.info("load bean"+dynamicBean.getBeanName()+" cost time "+(System.currentTimeMillis()-startTime)+"Second.");  
     }   
 	

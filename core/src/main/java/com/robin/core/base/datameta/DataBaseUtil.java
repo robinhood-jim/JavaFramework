@@ -34,14 +34,14 @@ public class DataBaseUtil {
     private Connection connection;
     private static Logger logger = LoggerFactory.getLogger(DataBaseUtil.class);
 
-    public void connect(BaseDataBaseMeta meta, DataBaseParam param) {
+    public void connect(BaseDataBaseMeta meta) {
         try {
             if (connection == null) {
                 Class.forName(meta.getParam().getDriverClassName());
-                String url = param.getUrl();
+                String url = meta.getParam().getUrl();
                 if (url == null || "".equals(url))
-                    url = meta.getUrl(param);
-                connection = DriverManager.getConnection(url, param.getUserName(), param.getPasswd());
+                    url = meta.getUrl();
+                connection = DriverManager.getConnection(url, meta.getParam().getUserName(), meta.getParam().getPasswd());
             }
         } catch (Exception e) {
             e.printStackTrace();

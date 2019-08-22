@@ -46,7 +46,7 @@ public class JdbcPresistDao {
 			if(param.getUrl()!=null && !param.getUrl().isEmpty()){
 				this.jdbcUrl=param.getUrl();
 			}else
-				this.jdbcUrl=meta.getUrl(param);
+				this.jdbcUrl=meta.getUrl();
 		}catch(Exception ex){
 			throw new DAOException(ex);
 		}

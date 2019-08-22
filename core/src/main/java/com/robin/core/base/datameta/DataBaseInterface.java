@@ -19,7 +19,7 @@ import java.util.List;
 
 public interface DataBaseInterface {
 	//public String getDriverClass();
-	String getUrl(DataBaseParam param) throws Exception;
+	String getUrl() throws Exception;
 	boolean suppportSequnce();
 	boolean supportAutoInc();
 	int getDefaultDatabasePort();

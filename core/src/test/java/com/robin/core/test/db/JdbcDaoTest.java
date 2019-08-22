@@ -19,6 +19,11 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 
+import com.robin.core.base.datameta.BaseDataBaseMeta;
+import com.robin.core.base.datameta.DataBaseMetaFactory;
+import com.robin.core.base.datameta.DataBaseParam;
+import com.robin.core.base.spring.DynamicBeanReader;
+import com.robin.core.base.spring.JdbcDaoDynamicBean;
 import com.robin.core.base.util.Const;
 import com.robin.core.test.model.*;
 import com.robin.core.test.service.*;
@@ -154,6 +159,17 @@ public class JdbcDaoTest extends TestCase {
         assertNotNull(obj);
         List<TestMutilPK> list = service.queryByFieldOrderBy("time desc", "outputval", BaseObject.OPER_IN, 1.1);
         List<TestMutilPK> list1 = service.queryAll();
+        assertNotNull(list);
+    }
+    @Test
+    public void testDynamicDataSource(){
+        DynamicBeanReader reader=SpringContextHolder.getBean(DynamicBeanReader.class);
+        JdbcDaoDynamicBean bean=new JdbcDaoDynamicBean("testSource");
+        BaseDataBaseMeta meta= DataBaseMetaFactory.getDataBaseMetaByType(BaseDataBaseMeta.TYPE_MYSQL,new DataBaseParam("172.16.102.107",3388,"frameset","test","test123"));
+        bean.setMeta(meta);
+        reader.loadBean(bean);
+        JdbcDao dao=SpringContextHolder.getBean("testSource",JdbcDao.class);
+        List<Map<String,Object>> list= dao.queryBySql("select * from t_base_jar");
         assertNotNull(list);
     }
 

@@ -45,7 +45,6 @@ public class QueryFactory implements InitializingBean {
     public void init() {
         try {
             String xmlpath = xmlConfigPath;
-            log.info("begin to parser xml query files");
 
             String classesPath = null;
             PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
@@ -56,22 +55,22 @@ public class QueryFactory implements InitializingBean {
                 if (xmlpath.startsWith("classpath:")) {
                     String relativePath = xmlpath.substring(10);
                     classesPath = relativePath;
-                }else if(xmlpath.startsWith("jarpath:")){
+                } else if (xmlpath.startsWith("jarpath:")) {
                     //read config at relative folder where jar present
-                    String relativePath=xmlpath.substring(8);
-                    String jarRelativePath=this.getClass().getClassLoader().getResource("").toURI().toString();
-                    int pos=jarRelativePath.indexOf("file:/");
-                    String path=jarRelativePath.substring(pos+6);
-                    pos=path.indexOf("jar!/");
-                    if(pos!=-1){
-                        path=path.substring(0,pos);
-                        pos=path.lastIndexOf("/");
-                        path=path.substring(0,pos);
-                        xmlpath=path+"/"+relativePath;
+                    String relativePath = xmlpath.substring(8);
+                    String jarRelativePath = this.getClass().getClassLoader().getResource("").toURI().toString();
+                    int pos = jarRelativePath.indexOf("file:/");
+                    String path = jarRelativePath.substring(pos + 6);
+                    pos = path.indexOf("jar!/");
+                    if (pos != -1) {
+                        path = path.substring(0, pos);
+                        pos = path.lastIndexOf("/");
+                        path = path.substring(0, pos);
+                        xmlpath = path + "/" + relativePath;
                     }
                 }
             }
-            log.info("parse file path={}", classesPath == null ? xmlpath : "classpath:"+classesPath);
+            log.info("parse config queryMap file from path={}", classesPath == null ? xmlpath : "classpath:" + classesPath);
             if (classesPath != null) {
                 Resource[] configFiles = resolver.getResources("classpath:" + classesPath + "/*.xml");
                 for (Resource configFile : configFiles) {
@@ -80,7 +79,7 @@ public class QueryFactory implements InitializingBean {
             } else {
                 File file = new File(xmlpath);
                 if (!file.isDirectory()) {
-                    throw new MissingConfigExecption("no query XML found!");
+                    throw new MissingConfigExecption("no query XML found in path!");
                 }
                 File[] files = file.listFiles();
                 for (int i = 0; i < files.length; i++) {
@@ -89,7 +88,6 @@ public class QueryFactory implements InitializingBean {
                         parseXML(subfile);
                 }
             }
-
 
         } catch (Exception e) {
             log.error("", e);
@@ -102,12 +100,9 @@ public class QueryFactory implements InitializingBean {
 
 
     private void parseXML(File file) throws Exception {
-        if (file == null || !file.isFile()) {
-            throw new IllegalArgumentException("xml file missing!");
-        } else {
-            Document document = (new SAXReader()).read(file);
+        if (file != null && file.isFile()) {
+            Document document = new SAXReader().read(file);
             putQueryMap(document);
-            return;
         }
     }
 
@@ -115,9 +110,8 @@ public class QueryFactory implements InitializingBean {
         if (is == null) {
             throw new IllegalArgumentException("parseXML(InputStream is null)!");
         } else {
-            Document document = (new SAXReader()).read(is);
+            Document document = new SAXReader().read(is);
             putQueryMap(document);
-            return;
         }
     }
 
@@ -130,25 +124,13 @@ public class QueryFactory implements InitializingBean {
             Element element = (Element) iter.next();
             id = element.attributeValue("ID");
             if (queryMap.containsKey(id))
-                throw new Exception((new StringBuilder()).append("Duplicated selectId:").append(id).toString());
+                throw new MissingConfigExecption((new StringBuilder()).append("Duplicated selectId:").append(id).toString());
 
-            String sql = element.elementText("SQL");
-            if (sql != null) {
-                if (sql.indexOf("&lt;") > -1)
-                    sql = sql.replaceAll("&lt;", "<");
-                else if (sql.indexOf("&gt;") > -1)
-                    sql = sql.replaceAll("&gt;", ">");
-            }
-
+            String sql = decodeSql(element.elementText("SQL"));
             String field = element.elementText("FIELD");
             String countSql = element.elementText("COUNTSQL");
-            String fromSql = element.elementText("FROMSQL");
-            if (fromSql != null) {
-                if (fromSql.indexOf("&lt;") > -1)
-                    fromSql = fromSql.replaceAll("&lt;", "<");
-                else if (fromSql.indexOf("&gt;") > -1)
-                    fromSql = fromSql.replaceAll("&gt;", ">");
-            }
+            String fromSql = decodeSql(element.elementText("FROMSQL"));
+
             QueryString qs = new QueryString();
             qs.setSql(sql);
             qs.setField(field);
@@ -157,6 +139,17 @@ public class QueryFactory implements InitializingBean {
             queryMap.put(id, qs);
         }
 
+    }
+
+    private String decodeSql(String sql) {
+        String tmpSql = sql;
+        if (tmpSql != null) {
+            if (tmpSql.indexOf("&lt;") > -1)
+                tmpSql = tmpSql.replaceAll("&lt;", "<");
+            else if (tmpSql.indexOf("&gt;") > -1)
+                tmpSql = tmpSql.replaceAll("&gt;", ">");
+        }
+        return tmpSql;
     }
 
     public QueryString getQuery(String selectId) throws QueryConfgNotFoundException {

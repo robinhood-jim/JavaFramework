@@ -17,17 +17,26 @@ package com.robin.core.base.datameta;
 
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class DataBaseMetaFactory {
+	private static Map<String,Constructor> constructorMap=new HashMap<>();
 	public static BaseDataBaseMeta getDataBaseMetaByType(String type,DataBaseParam param){
 		BaseDataBaseMeta datameta=null;
 		try{
 		List<String> dbTypes=Arrays.asList(BaseDataBaseMeta.dbTypeEnmu);
 		if(dbTypes.contains(type)){
-			String className="com.robin.core.base.datameta."+type+"DataBaseMeta";
-			Class<?> clazz= Class.forName(className);
-			Constructor<?> construct=clazz.getDeclaredConstructor(new Class[]{DataBaseParam.class});
+			Constructor<?> construct=null;
+			if(!constructorMap.containsKey(type)){
+				String className="com.robin.core.base.datameta."+type+"DataBaseMeta";
+				Class<?> clazz= Class.forName(className);
+				construct=clazz.getDeclaredConstructor(new Class[]{DataBaseParam.class});
+				constructorMap.put(type,construct);
+			}else{
+				construct=constructorMap.get(type);
+			}
 			datameta=(BaseDataBaseMeta) construct.newInstance(param);
 		}
 		}catch(Exception ex){

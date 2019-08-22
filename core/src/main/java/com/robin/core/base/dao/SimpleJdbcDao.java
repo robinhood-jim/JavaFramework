@@ -68,7 +68,7 @@ public class SimpleJdbcDao {
 		if(param.getUrl()!=null && !param.getUrl().isEmpty()){
 			this.jdbcUrl=param.getUrl();
 		}else
-			this.jdbcUrl=meta.getUrl(param);
+			this.jdbcUrl=meta.getUrl();
 		this.meta=meta;
 		this.param=param;
 	}
@@ -79,7 +79,7 @@ public class SimpleJdbcDao {
 		if(param.getUrl()!=null && !param.getUrl().isEmpty()){
 			this.jdbcUrl=param.getUrl();
 		}else
-			this.jdbcUrl=meta.getUrl(param);
+			this.jdbcUrl=meta.getUrl();
 		this.meta=meta;
 		this.param=param;
 		this.retryNums=retryNums;
@@ -118,7 +118,7 @@ public class SimpleJdbcDao {
 		Connection conn=null;
 		try {
 			if(param.getUrl()==null || param.getUrl().trim().isEmpty()){
-				param.setUrl(meta.getUrl(param));
+				param.setUrl(meta.getUrl());
 			}
 			DbUtils.loadDriver(meta.getParam().getDriverClassName());
 			conn = DriverManager.getConnection(param.getUrl(), param.getUserName(), param.getPasswd());		
@@ -145,7 +145,7 @@ public class SimpleJdbcDao {
 			curtryNum++;
 			try {
 				if(param.getUrl()==null || param.getUrl().trim().isEmpty()){
-					param.setUrl(meta.getUrl(param));
+					param.setUrl(meta.getUrl());
 				}
 				DbUtils.loadDriver(meta.getParam().getDriverClassName());
 				conn = DriverManager.getConnection(param.getUrl(), param.getUserName(), param.getPasswd());

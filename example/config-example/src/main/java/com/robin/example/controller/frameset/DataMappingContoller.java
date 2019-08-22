@@ -94,7 +94,7 @@ public class DataMappingContoller extends BaseCrudDhtmlxController<ProjectInfo,L
 			DataBaseParam param=new DataBaseParam(source.getHostIp(),Integer.valueOf(source.getPort()),source.getDatabaseName(), source.getUserName(), source.getPassword());
 			BaseDataBaseMeta meta=DataBaseMetaFactory.getDataBaseMetaByType(type, param);
 			util=new DataBaseUtil();
-			util.connect(meta, param);
+			util.connect(meta);
 			List<String> list=util.getAllShcema();
 			ret= DhtmxTreeWrapper.WrappSingleTreeXml(list);
 		}catch(Exception ex){
@@ -118,7 +118,7 @@ public class DataMappingContoller extends BaseCrudDhtmlxController<ProjectInfo,L
 			DataBaseParam param=new DataBaseParam(source.getHostIp(),Integer.valueOf(source.getPort()),source.getDatabaseName(), source.getUserName(), source.getPassword());
 			BaseDataBaseMeta meta=DataBaseMetaFactory.getDataBaseMetaByType(type, param);
 			util=new DataBaseUtil();
-			util.connect(meta,param);
+			util.connect(meta);
 			List<DataBaseTableMeta> list=util.getAllTable(schema, meta);
 			ret=DhtmxTreeWrapper.WrappObjectTreeRetXml(list,schema,"tableName","remark",null,false);
 		}catch(Exception ex){
@@ -144,7 +144,7 @@ public class DataMappingContoller extends BaseCrudDhtmlxController<ProjectInfo,L
 			DataBaseParam param=new DataBaseParam(source.getHostIp(),Integer.valueOf(source.getPort()),source.getDatabaseName(), source.getUserName(), source.getPassword());
 			BaseDataBaseMeta meta=DataBaseMetaFactory.getDataBaseMetaByType(type, param);
 			util=new DataBaseUtil();
-			util.connect(meta,param);
+			util.connect(meta);
 			List<DataBaseColumnMeta> collist=util.getTableMetaByTableName(table, schema, meta);
 			for (int i = 0; i < collist.size(); i++) {
 				DataBaseColumnMeta meta1=collist.get(i);
@@ -216,7 +216,7 @@ public class DataMappingContoller extends BaseCrudDhtmlxController<ProjectInfo,L
 			DataBaseParam param=new DataBaseParam(source.getHostIp(),Integer.valueOf(source.getPort()),source.getDatabaseName(), source.getUserName(), source.getPassword());
 			BaseDataBaseMeta meta=DataBaseMetaFactory.getDataBaseMetaByType(type, param);
 			util=new DataBaseUtil();
-			util.connect(meta,param);
+			util.connect(meta);
 			List<DataBaseColumnMeta> collist=util.getTableMetaByTableName(table, schema, meta);
 			String mappingId=request.getParameter("mappingId");
 			if(mappingId!=null && !mappingId.isEmpty()){
@@ -254,7 +254,7 @@ public class DataMappingContoller extends BaseCrudDhtmlxController<ProjectInfo,L
 			DataBaseParam param=new DataBaseParam(source.getHostIp(),Integer.valueOf(source.getPort()),source.getDatabaseName(), source.getUserName(), source.getPassword());
 			BaseDataBaseMeta meta=DataBaseMetaFactory.getDataBaseMetaByType(type, param);
 			util=new DataBaseUtil();
-			util.connect(meta,param);
+			util.connect(meta);
 			List<DataBaseColumnMeta> collist=util.getTableMetaByTableName(table, schema, meta);
 		
 			String columnName=request.getParameter("columnName");
