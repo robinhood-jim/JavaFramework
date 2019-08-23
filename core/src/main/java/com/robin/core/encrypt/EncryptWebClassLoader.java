@@ -45,6 +45,7 @@ public class EncryptWebClassLoader extends URLClassLoader {
 	private final Field parentField=null;
 	private Vector<Class> pclasses;
 	private Vector<Class> curclasses;
+	public static final int XorKey[] = { 0xB2, 0x09, 0xAA, 0x55, 0x93, 0x6D, 0x84,0x47 };
 	//private Map<String,byte[]> decryptMap=new HashMap<String, byte[]>();
 	public static void init(){
 		
@@ -62,8 +63,7 @@ public class EncryptWebClassLoader extends URLClassLoader {
 	
 	protected EncryptWebClassLoader(URLClassLoader loader) {
 		super(loader.getURLs(), EncryptWebClassLoader.class.getClassLoader().getParent());
-		
-		//super(new URL[0],null);
+
 		this.superloader =loader;
 		DataInputStream instream = null;
 		try {
@@ -105,8 +105,9 @@ public class EncryptWebClassLoader extends URLClassLoader {
 			if (instream != null) {
 				while (instream.available() > 0) {
 					String keystr = decrypt(instream.readUTF());
-					//instream.readBoolean();
+					instream.read(m_datapadding);
 					String className=decrypt(instream.readUTF());
+					instream.readByte();
 					classMappingMap.put(keystr, className);
 					String val1 = decrypt(instream.readUTF());
 					instream.read(m_datapadding);
@@ -426,7 +427,7 @@ public class EncryptWebClassLoader extends URLClassLoader {
 	}
 
 	public static String decrypt(String inputStr) {
-		 int XorKey[] = { 0xB2, 0x09, 0xAA, 0x55, 0x93, 0x6D, 0x84,0x47 };
+
 		StringBuilder builder = new StringBuilder();
 		for (int i = 0; i < inputStr.length() / 2; i++) {
 			int keypos = i % 8;

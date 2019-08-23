@@ -52,7 +52,7 @@ public class QueryParam {
 	public final static String TYPE_AND="and";
 	public final static String TYPE_OR="or";
 	
-	public QueryParam(String columnName,String columnType,String queryMode,String queryValue,String... otherparams){
+	public QueryParam(String columnName,String columnType,String queryMode,String queryValue,String[] otherparams){
 		this.columnName=columnName;
 		this.columnType=columnType;
 		this.queryMode=queryMode;

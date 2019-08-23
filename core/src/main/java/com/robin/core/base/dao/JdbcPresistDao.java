@@ -29,10 +29,10 @@ import java.util.Map;
 import java.util.Properties;
 
 public class JdbcPresistDao {
-	String driverName;
-	String jdbcUrl;
-	String userName;
-	String passwd;
+	private String driverName;
+	private String jdbcUrl;
+	private String userName;
+	private String passwd;
 	private BaseDataBaseMeta meta;
 	private DataBaseParam param;
 	//private static  Logger logger=LoggerFactory.getLogger(JdbcOperDao.class);

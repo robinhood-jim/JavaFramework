@@ -322,7 +322,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
         }
     }
 
-    public List<? extends BaseObject> queryByField(Class<? extends BaseObject> type, String fieldName, String oper, Object... fieldValues) throws DAOException {
+    public List<? extends BaseObject> queryByField(Class<? extends BaseObject> type, String fieldName, String oper, Object[] fieldValues) throws DAOException {
         List<BaseObject> retlist = new ArrayList<>();
         try {
             StringBuilder buffer = new StringBuilder();
@@ -349,7 +349,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
         return retlist;
     }
 
-    public List<? extends BaseObject> queryByFieldOrderBy(Class<? extends BaseObject> type, String orderByStr, String fieldName, String oper, Object... fieldValues) throws DAOException {
+    public List<? extends BaseObject> queryByFieldOrderBy(Class<? extends BaseObject> type, String orderByStr, String fieldName, String oper, Object[] fieldValues) throws DAOException {
         List<BaseObject> retlist = new ArrayList<>();
         try {
             StringBuilder buffer = new StringBuilder();
