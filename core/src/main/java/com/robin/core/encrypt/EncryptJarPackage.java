@@ -6,6 +6,8 @@ import com.thoughtworks.qdox.model.*;
 import com.thoughtworks.qdox.model.impl.DefaultJavaParameterizedType;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.DirectoryFileFilter;
+import org.apache.commons.io.filefilter.FileFilterUtils;
 
 import javax.tools.*;
 import java.io.*;
@@ -32,23 +34,29 @@ public class EncryptJarPackage {
     private static char[] avaiablechar = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '-', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '/'};
     private static byte[] m_datapadding = {0x00};
     private static String[] str = {"0", "O", "I", "l", "1"};
+    private static final String parameterPrefix="$";
 
     public static void main(String[] args) {
-        String sourcePath="e:/dev/workspacenew/JavaFrame/core/src/main/java";
-        String compileclassPath=".;e:/dev/workspacenew/JavaFrame/core/target/lib;e:/dev/workspacenew/JavaFrame/core/target/core-1.0-SNAPSHOT.jar";
+        String sourcePath="e:/dev/workspaceframe/JavaFramework/core/src/main/java";
+        String compileclassPath=".;e:/dev/workspaceframe/JavaFramework/core/target/lib/servlet-api-2.5.jar;e:/dev/workspaceframe/JavaFramework/core/target/core-1.0-SNAPSHOT.jar";
+        String srcPath = "d:/tmp/corencrypt/src/";
         JavaProjectBuilder builder = new JavaProjectBuilder();
         builder.addSourceFolder(new File(sourcePath));
+        Collection<File> col = FileUtils.listFiles(new File(sourcePath), FileFilterUtils.suffixFileFilter("java"), DirectoryFileFilter.DIRECTORY);
 
         DataOutputStream dout = null;
-
+        Iterator<File> iter = col.iterator();
         try {
+            while (iter.hasNext()) {
+                File tpFile = iter.next();
+                builder.addSource(tpFile);
+            }
             Collection<JavaSource> sources = builder.getSources();
             Iterator<JavaSource> iter1 = sources.iterator();
-            String srcPath = "d:/tmp/corencrypt/src/";
 
             //bin encrypt key file init
             dout = new DataOutputStream(new FileOutputStream(new File(srcPath+"config.bin")));
-            ZipOutputStream outputStream = getJarClasses("e:/dev/workspacenew/JavaFrame/core/target/core-1.0-SNAPSHOT.jar", "encryptcls/", dout);
+            ZipOutputStream outputStream = getJarClasses("e:/dev/workspaceframe/JavaFramework/core/target/core-1.0-SNAPSHOT.jar", "encryptcls/", dout);
             while (iter1.hasNext()) {
                 StringBuilder buffer = new StringBuilder();
                 JavaSource source = iter1.next();
@@ -72,6 +80,7 @@ public class EncryptJarPackage {
                     name = clazz.getName();
                     fullName = (packagename + "." + name);
                     boolean isinterface=clazz.isInterface();
+                    boolean hasgenric=false;
                     getClassDef(clazz,buffer);
 
                     if (annotaions != null && !annotaions.isEmpty()) {
@@ -97,6 +106,7 @@ public class EncryptJarPackage {
                             List<JavaType> types = ((DefaultJavaParameterizedType) interfaces.get(j)).getActualTypeArguments();
                             buffer.append(interfaces.get(j).getFullyQualifiedName());
                             if(types!=null && !types.isEmpty()){
+                                hasgenric=true;
                                 buffer.append("<");
                                 if(tmpBuilder.length()==0) tmpBuilder.delete(0,tmpBuilder.length());
                                 for(JavaType type:types){
@@ -140,24 +150,18 @@ public class EncryptJarPackage {
                     for (int j = 0; j < methods.size(); j++) {
                         JavaMethod method = methods.get(j);
 
-
                         StringBuilder tmpbuffer = new StringBuilder(getDeclaration(method));
                         if (method.isStatic()) {
                             tmpbuffer.append("static ");
                         }
                         String methodname = method.getName();
-                        List<JavaParameter> paramters = method.getParameters();
+                        List<JavaParameter> parameters = method.getParameters();
                         String rettype = method.getReturnType().getValue();
-                        tmpbuffer.append(rettype).append(" ").append(methodname).append("(");
-                        String tmpst = "$";
-                        int pos = 1;
-                        for (int k = 0; k < paramters.size(); k++) {
-                            JavaParameter parameter = paramters.get(k);
-                            tmpbuffer.append(parameter.getValue()).append(" ");
-                            tmpbuffer.append(tmpst).append(pos++);
-                            if (k != paramters.size() - 1)
-                                tmpbuffer.append(",");
+                        if(!hasgenric && method.getReturnType().getValue().equals(method.getReturnType().getValue().toUpperCase())){
+                            rettype="<"+method.getReturnType().getGenericValue()+"> "+rettype;
                         }
+                        tmpbuffer.append(rettype).append(" ").append(methodname).append("(");
+                        getParameters(parameters,tmpbuffer);
                         tmpbuffer.append(")");
                         if (!isinterface) {
                             tmpbuffer.append("{");
@@ -296,7 +300,7 @@ public class EncryptJarPackage {
         private CharSequence content;
 
         public MyJavaFileObject(String className, CharSequence content) {
-            this(URI.create("string:///" + className.replace('.', '/') + JavaFileObject.Kind.SOURCE.extension), Kind.SOURCE);
+            this(URI.create("string:///" + className.replace('.', '/') + Kind.SOURCE.extension), Kind.SOURCE);
             this.content = content;
         }
 
@@ -360,7 +364,7 @@ public class EncryptJarPackage {
         ZipEntry entry = null;
         int range = avaiablechar.length;
         Random random = new Random(range);
-        ZipOutputStream outputStream = new ZipOutputStream(new FileOutputStream(new File("f:/output.zip")));
+        ZipOutputStream outputStream = new ZipOutputStream(new FileOutputStream(new File("f:/output.jar")));
         List<String> randomFolders = new ArrayList<>();
         for (int i = 0; i < 8; i++) {
             generateRandomFolder(9, 3, randomFolders);
@@ -438,6 +442,42 @@ public class EncryptJarPackage {
             }
         }
         return pathbuilder.toString();
+    }
+    private static void getParameters(List<JavaParameter> parameters,StringBuilder builder){
+        int pos = 1;
+        for (int k = 0; k < parameters.size(); k++) {
+            JavaParameter parameter = parameters.get(k);
+            if(parameter.getType().getValue().equalsIgnoreCase("Map")){
+                getActualType(parameter.getType(),builder);
+            }else if(parameter.getType().getValue().equalsIgnoreCase("List")){
+                getActualType(parameter.getType(),builder);
+            }else
+                builder.append(parameter.getValue());
+            builder.append(" ");
+            builder.append(parameterPrefix).append(pos++);
+            if (k != parameters.size() - 1)
+                builder.append(",");
+        }
+    }
+    private static void getActualType(JavaType type,StringBuilder builder){
+        if(type instanceof DefaultJavaParameterizedType) {
+            List<JavaType> list = ((DefaultJavaParameterizedType) type).getActualTypeArguments();
+            if (!list.isEmpty()) {
+                builder.append(type.getValue()).append("<");
+                for (int i = 0; i < list.size(); i++) {
+                    JavaType type1 = list.get(i);
+                    getActualType(type1, builder);
+                    if (i < list.size() - 1) {
+                        builder.append(",");
+                    }
+                }
+                builder.append(">");
+            } else {
+                builder.append(type.getValue());
+            }
+        }else{
+            builder.append(type.getValue());
+        }
     }
 
     private static String getRandomName(int length, Random random) {
