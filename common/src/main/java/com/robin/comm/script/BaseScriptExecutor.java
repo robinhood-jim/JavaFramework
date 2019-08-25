@@ -42,7 +42,7 @@ import com.google.common.collect.MapMaker;
 public class BaseScriptExecutor  implements IscriptExecutor{
 	protected Map<String, String> scriptsrcMap=new MapMaker().makeMap();
 	private Map<String,String> keyMap=new MapMaker().makeMap();
-	private LoadingCache<String, CompiledScript> cache=null;
+	private LoadingCache<String, CompiledScript> cache;
 	protected ScriptEngine scriptEngine;
 	protected Compilable compEngine;
 	private final Logger LOG=LoggerFactory.getLogger(getClass());

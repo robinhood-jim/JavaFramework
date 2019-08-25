@@ -18,18 +18,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
-/**
- * <p>Project:  talkwebfrm</p>
- *
- * <p>Description:</p>
- *
- * <p>Copyright: Copyright (c) 2014 modified at 2014-1-16</p>
- *
- * <p>Company: TW_DEV</p>
- *
- * @author robinjim
- * @version 1.0
- */
+
 public class EncryptJarPackage {
     private static char[] avaiablechar = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '-', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '/'};
     private static byte[] m_datapadding = {0x00};
