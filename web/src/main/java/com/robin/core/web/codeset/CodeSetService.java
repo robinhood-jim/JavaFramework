@@ -5,8 +5,7 @@ import com.robin.core.base.exception.DAOException;
 import com.robin.core.base.spring.SpringContextHolder;
 import com.robin.core.query.util.PageQuery;
 import com.robin.core.query.util.QueryFactory;
-import com.robin.core.web.codeset.Code;
-import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.commons.beanutils.BeanUtils;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
@@ -56,8 +55,8 @@ public class CodeSetService {
             Object ol;
             Object ov;
             try {
-                ol = PropertyUtils.getProperty(objtmp, label);
-                ov = PropertyUtils.getProperty(objtmp, value);
+                ol = BeanUtils.getProperty(objtmp, label);
+                ov = BeanUtils.getProperty(objtmp, value);
             } catch (Exception e) {
                 ol = null;
                 ov = null;

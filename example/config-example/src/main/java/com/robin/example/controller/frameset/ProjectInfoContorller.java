@@ -378,7 +378,6 @@ public class ProjectInfoContorller extends BaseCrudDhtmlxController<ProjectInfo,
             setCode("PRESISTTYPE,WEBFRAME,YNTYPE");
             filterListByCodeSet(pageQuery, "presist", "PRESISTTYPE");
             filterListByCodeSet(pageQuery, "webFrame", "WEBFRAME");
-            wrapStatusBar(pageQuery);
             retmap = wrapDhtmlxGridOutput(pageQuery);
         } catch (Exception e) {
             retmap.put("success", false);

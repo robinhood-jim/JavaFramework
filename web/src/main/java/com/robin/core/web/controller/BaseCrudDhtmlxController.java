@@ -74,40 +74,6 @@ public abstract class BaseCrudDhtmlxController<O extends BaseObject, P extends S
     }
 
 
-    public void wrapStatusBar(PageQuery query) {
-        String str = "";
-        int pageNo = Integer.parseInt(query.getPageNumber());
-        int totalCount = Integer.parseInt(query.getRecordCount());
-        int totalPage = Integer.parseInt(query.getPageCount());
-        int prevPage = pageNo > 1 ? pageNo - 1 : 1;
-        int nextPage = pageNo + 1 >= totalPage ? totalPage : pageNo + 1;
-
-        str = str + "<div class='dhx_toolbar_material dhxtoolbar_icons_18 dhx_toolbar_shadow'>";
-        str = str + "<table width=\"100%\" height=\"20\" cellpadding=\"0\" cellspacing=\"0\" >";
-        str = str + "<td align='left' width='70%'>共&nbsp;" + totalCount + "&nbsp;条,第&nbsp;" + pageNo + "页/共&nbsp;" + totalPage + " 页&nbsp;<input type=\"textbox\" size=3 align=\"right\" class=\"pTextStyle\" name=\"pageSize\" id=\"pageSize\" value=\"" + query.getPageSize() + "\" onKeyPress=\"javascript:setpagesize();\">" + "条/页&nbsp;</td>";
-        str = str + " <td align=\"right\" width=\"30%\" ><div style=\"text-align: right;overflow: hidden;\">";
-        if (pageNo <= 1) {
-            str = str + "<span class='greyleftPageMore'>首页</span><span class='greyleftPage'>上一页</span>";
-        } else {
-            str = str + "<span><a class='leftPageMore' href='javascript:goFirstPage()'>首页</a></span>";
-            str = str + "<span><a class='leftPage' href='javascript:goPreviousPage()'>上一页</a></span>";
-        }
-        if ((totalPage == pageNo) || (totalPage == 0)) {
-            str = str + "<span class='greyrightPage'>下一页</span><span class='greyrightPageMore'>尾页</span>";
-        } else {
-            str = str + "<span><a class='rightPage' href='javascript:goNextPage()'>下一页</a></span>";
-            str = str + "<span><a class='rightPageMore' href='javascript:goLasePage()'>尾页</a></span>";
-        }
-        str = str + "<span>跳转到<input type='text' name='jumpNum' id='jumpNum' value='" + pageNo + "' size='2' maxlength='9'>" + "页";
-        str = str + "<input type='button' name='jumpPage' value='GO' onclick='goPage()' class='dhxform_btn_txt' ></span>";
-
-        str = str + "</div></td></table>";
-        str = str + "</div>";
-        if (totalCount == 0) {
-            str = "";
-        }
-        query.setPageToolBar(str);
-    }
 
     public Map<String, Object> wrapDhtmlxGridOutputWithNoCheck(List<Map<String, String>> list, String queryKeys, String idColumn) {
         return wrapDhtmlxGridOutputWithCheck(list, queryKeys, idColumn, false);

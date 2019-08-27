@@ -199,6 +199,11 @@ public abstract class BaseContorller
         retMap.put(COL_SUCCESS, false);
         retMap.put(COL_MESSAGE, ex.getMessage());
     }
+    protected void wrapFailed( Map<String, Object> retMap, String message)
+    {
+        retMap.put(COL_SUCCESS, false);
+        retMap.put(COL_MESSAGE, message);
+    }
     protected Long[] wrapPrimaryKeys(String keys)
     {
         String[] ids = keys.split(",");

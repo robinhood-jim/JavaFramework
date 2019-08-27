@@ -18,7 +18,6 @@
 <script src="<%=CONTEXT_PATH%>component/dhtmlxSuite/codebase/dhtmlx.js"></script>
 
 <script language="javascript" src="<%= CONTEXT_PATH %>resources/js/jquery.js"></script>
-<script type="text/javascript" src="<%=CONTEXT_PATH%>resources/js/jqueryui.js"></script>
 <script language="javascript" src="<%= CONTEXT_PATH %>resources/js/Array.js"></script>
 <script language="javascript" src="<%= CONTEXT_PATH %>resources/js/control.js"></script>
 <style type="text/css">
@@ -206,7 +205,6 @@ ol, ul {
    
 </script>
 <script type="text/javascript" src="<%=CONTEXT_PATH%>resources/js/main.js"> </script>
-<script type="text/javascript" src="<%=CONTEXT_PATH%>resources/js/window.js"> </script>
 
 
 </body>

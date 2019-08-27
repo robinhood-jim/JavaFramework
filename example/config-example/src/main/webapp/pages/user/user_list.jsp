@@ -100,13 +100,13 @@
                 myGrid.clearAll();
                 myGrid.parse(tobj, "json");
                 var barstr = tobj.query.pageToolBar;
-                statusbar.setText(barstr);
+                statusbar.setText(constructPaging(tobj.query));
             });
         } else if (name == 'reset' ) {
             this.reset();
         }
     });
-    var statusbar = bottomPanel.attachStatusBar({height: 25});
+    var statusbar = bottomPanel.attachStatusBar({height: 36});
     statusbar.setText("<div id='recinfoArea'></div>");
 
     var myGrid = bottomPanel.attachGrid();
@@ -119,14 +119,16 @@
     myGrid.enableAutoWidth(true);
     myGrid.enableAutoHeight(true);
     myGrid.init();
+
     var dhxToobar = bottomPanel.attachToolbar();
 
     dhxToobar.setIconsPath(ctx + "component/dhtmlxSuite/comm/imgsmat/");
     dhxToobar.addButton("new", 0, "<spring:message code="btn.add" />", "new.gif", "new_dis.gif");
     dhxToobar.addButton("edit", 1, "<spring:message code="btn.modi" />", "open.gif", "open_dis.gif");
     dhxToobar.addButton("delete", 2, "<spring:message code="btn.delete" />", "close.gif", "close_dis.gif");
-    dhxToobar.addButton("editpwd", 3, "<spring:message code="btn.changepwd" />", "open.gif", "open_dis.gif");
-    dhxToobar.addButton("assign", 4, "<spring:message code="btn.assingRight" />", "open.gif", "open_dis.gif");
+    dhxToobar.addButton("changepwd", 3, "<spring:message code="btn.changepwd" />", "open.gif", "open_dis.gif");
+    dhxToobar.addButton("active", 4, "<spring:message code="btn.active" />", "open.gif", "open_dis.gif");
+    dhxToobar.addButton("assign", 5, "<spring:message code="btn.assingRight" />", "open.gif", "open_dis.gif");
     dhxToobar.attachEvent("onClick", function (id) {
         if (id == 'new') {
             goAdd();
@@ -136,6 +138,10 @@
             goDelete();
         } else if (id == 'assign') {
             goAssign();
+        }else if(id =='changepwd'){
+            goChangePwd();
+        }else if(id=='active'){
+            goActive();
         }
     });
 
@@ -190,7 +196,7 @@
                         closedialog(true);
                         reload();
                     } else {
-                        openMsgDialog("<spring:message code="message.SaveFailed" />", "<spring:message code="message.ErrorMsg" />:" + tobj.message);
+                        openMsgDialog("<spring:message code="message.SaveFailed" />", "<spring:message code="message.errorMsg" />:" + tobj.message);
                     }
                 });
             } else if (name == 'cmdCancel') {
@@ -213,7 +219,7 @@
                         closedialog(true);
                         reload();
                     } else {
-                        openMsgDialog("<spring:message code="message.updateFailed" />", "<spring:message code="message.ErrorMsg" />:" + tobj.message);
+                        openMsgDialog("<spring:message code="message.updateFailed" />", "<spring:message code="message.errorMsg" />:" + tobj.message);
                     }
                 });
             } else if (name == 'cmdCancel') {
@@ -261,7 +267,7 @@
                                     });
                                     reload();
                                 } else {
-                                    openMsgDialog("<spring:message code="message.deleteFailed" />", "<spring:message code="message.ErrorMsg" />:" + obj.message, 300, 200);
+                                    openMsgDialog("<spring:message code="message.deleteFailed" />", "<spring:message code="message.errorMsg" />:" + obj.message, 300, 200);
                                 }
                             }
                         });
@@ -269,6 +275,113 @@
                 }
             });
         }
+    }
+    function goActive() {
+        var list = myGrid.getCheckedRows(0);
+        if (list == '') {
+            openMsgDialog("<spring:message code="title.activeUser" />", "<spring:message code="message.alertSelectAtLeastOneRow" />", 300, 200);
+        }
+        else if (list.indexOf(",") != -1) {
+            openMsgDialog("<spring:message code="title.activeUser" />", "<spring:message code="message.alertSelectMutilRow" />", 300, 150);
+        }
+        else {
+            dhtmlx.confirm({
+                title: "<spring:message code="title.activeUser" />",
+                type: "confirm-warning",
+                text: "<spring:message code="message.confirm" />",
+                callback: function (result) {
+                    if (result) {
+                        $.ajax({
+                            type: "get",
+                            url: ctx + "system/user/active?id=" + list,
+                            dataType: "json",
+                            success: function (data) {
+                                var obj = eval(data);
+                                if (obj.success == true) {
+                                    dhtmlx.message({
+                                        text: "<spring:message code="message.saveSuccess" />",
+                                        expire: 10
+                                    });
+                                    reload();
+                                } else {
+                                    openMsgDialog("<spring:message code="message.SaveFailed" />", "<spring:message code="message.errorMsg" />:" + obj.message, 300, 200);
+                                }
+                            }
+                        });
+                    }
+                }
+            });
+        }
+    }
+    function goChangePwd(){
+
+        var haspasswd=true;
+        var list = myGrid.getCheckedRows(0);
+        if (list == '') {
+            openMsgDialog("<spring:message code="title.editUser" />", "<spring:message code="message.alertSelectAtLeastOneRow" />", 300, 150);
+        } else if (list.indexOf(",") != -1) {
+            openMsgDialog("<spring:message code="title.editUser" />", "<spring:message code="message.alertSelectMutilRow" />", 300, 150);
+        } else {
+            $.ajax({
+                type: "get",
+                url: ctx + "system/user/edit?id=" + list,
+                dataType: "json",
+                success: function (data) {
+                    var obj = eval(data);
+                    if (obj.success == true) {
+                        if(obj.model.userPassword==null || obj.model.userPassword==''){
+                            haspasswd=false;
+                        }
+                    }
+                    var content=constructChangePwdForm(list,haspasswd)
+                    openWindowForAdd("<spring:message code="title.changePwd" />", content, 520, 250, changePwd);
+                }
+            });
+
+        }
+
+    }
+    function constructChangePwdForm(id,haspasswd) {
+        var content='[{type: "settings", position: "label-left", lableWidth: 120, inputWidth: 120},{'
+            +'type: "fieldset", label: "<spring:message code="sysUser.info" />", offsetLeft: 10,offsetRight: 20, inputWidth: 495, lableWidth: 100, list: ['
+        +'{type: "hidden", name: "id", value: "'+id+'"},';
+        if(haspasswd)
+            content+='{type: "input", name: "orgPwd", label: "<spring:message code="sysUser.orgPwd" />:", validate: "NotEmpty"},';
+
+        content+='{type: "input", name: "newPwd", label: "<spring:message code="sysUser.newPwd" />:", validate: "NotEmpty"},'
+        +'{type: "input", name: "confirmPwd", label: "<spring:message code="sysUser.confirmPwd" />:", validate: "NotEmpty"},'
+    +']},{'
+        +'type: "block", inputWidth: 490, list: ['
+        +'{type: "settings", offsetTop: 10},'
+        +'{type: "button", name: "cmdOK", value: "<spring:message code="btn.confirm" />", offsetLeft: 175},'
+        +'{type: "newcolumn"},'
+        +'{type: "button", name: "cmdCancel", value: "<spring:message code="btn.cancel" />"}'
+    +']}]';
+        return content;
+    }
+    function changePwd(form) {
+        form.attachEvent("onButtonClick", function (name, command) {
+            if (name == "cmdOK") {
+                if(this.getItemValue("newPwd")!=null && this.getItemValue("confirmPwd")!=null && this.getItemValue("newPwd")==this.getItemValue("confirmPwd")) {
+                    this.send(ctx + "system/user/changepwd", function (loader, response) {
+                        var tobj = eval('(' + response + ')');
+                        if (tobj.success == true) {
+                            dhtmlx.message({
+                                text: "<spring:message code="message.saveSuccess" />",
+                                expire: -1
+                            });
+                            closedialog(true);
+                            reload();
+                        } else {
+                            openMsgDialog("<spring:message code="message.SaveFailed" />", "<spring:message code="message.errorMsg" />:" + tobj.message);
+                        }
+
+                    });
+                }else{
+                    openMsgDialog("<spring:message code="title.changePwd" />", "<spring:message code="message.passwordNotMatch" />", 300, 200);
+                }
+            }
+        });
     }
 
     function goEdit() {
@@ -295,11 +408,7 @@
             });
         }
     }
-
-
 </script>
-
-
 
 </body>
 </html>

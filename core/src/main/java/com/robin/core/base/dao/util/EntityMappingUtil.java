@@ -144,7 +144,7 @@ public class EntityMappingUtil {
                 }
             }
         }
-        objList.add(whereObjects);
+        objList.addAll(whereObjects);
         updateSegment.setFieldStr(fieldBuffer.substring(0, fieldBuffer.length() - 1));
         updateSegment.setWhereStr(wherebuffer.substring(0, wherebuffer.length() - 1));
         updateSegment.setParams(objList);

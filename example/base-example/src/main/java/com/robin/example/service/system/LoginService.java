@@ -59,6 +59,7 @@ public class LoginService {
         SysUser user=new SysUser();
         user.setUserAccount(accountName);
         user.setUserPassword(password);
+        user.setUserStatus(Const.VALID);
         List<SysUser> users=sysUserService.queryByVO(user,null,null);
         if(users.isEmpty()){
             throw new ServiceException("AccountName or password incorrect!Please retry");

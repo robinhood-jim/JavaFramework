@@ -235,3 +235,34 @@ function openMsgPopUp(title,msg,width,height,func){
         callback: function() {if(func!=null)eval(func)}
     });
 }
+function constructPaging(query) {
+	var pageSize=query.pageSize;
+	var pageNo=query.pageNumber;
+	var totalCount=query.recordCount;
+	var totalPage=query.pageCount;
+    var prevPage = pageNo > 1 ? pageNo - 1 : 1;
+    var nextPage = pageNo + 1 >= totalPage ? totalPage : pageNo + 1;
+    var str="";
+    str = str + "<div class='dhx_toolbar_material dhxtoolbar_icons_18 dhx_toolbar_shadow'>";
+    str = str + "<div style='overflow: hidden;'><div style='float: left;display:inline'>共&nbsp;" + totalCount + "&nbsp;条,第&nbsp;" + pageNo + "页/共&nbsp;" + totalPage + " 页&nbsp;<input type=\"textbox\" size=3 align=\"right\" class=\"pTextStyle\" name=\"pageSize\" id=\"pageSize\" value=\"" + query.pageSize + "\" onKeyPress=\"javascript:setpagesize();\">" + "条/页&nbsp;</div>";
+    str = str + " <div style=\"text-align: right;padding-left:300px;float:right;overflow: hidden;display:inline\">";
+    if (pageNo <= 1) {
+        str = str + "<span class='greyleftPageMore'>首页</span><span class='greyleftPage'>上一页</span>";
+    } else {
+        str = str + "<span><a class='leftPageMore' href='javascript:goFirstPage()'>首页</a></span>";
+        str = str + "<span><a class='leftPage' href='javascript:goPreviousPage()'>上一页</a></span>";
+    }
+    if ((totalPage == pageNo) || (totalPage == 0)) {
+        str = str + "<span class='greyrightPage'>下一页</span><span class='greyrightPageMore'>尾页</span>";
+    } else {
+        str = str + "<span><a class='rightPage' href='javascript:goNextPage()'>下一页</a></span>";
+        str = str + "<span><a class='rightPageMore' href='javascript:goLasePage()'>尾页</a></span>";
+    }
+    str = str + "跳转到<input type='text' name='jumpNum' id='jumpNum' value='" + pageNo + "' size='2' maxlength='9'>" + "页";
+    str = str + "<input type='button' name='jumpPage' value='GO' onclick='goPage()' class='dhxform_btn_txt' >";
+
+    str = str + "</div>";
+    str = str + "</div>";
+    return str;
+
+}

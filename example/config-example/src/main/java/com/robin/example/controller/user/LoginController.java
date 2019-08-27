@@ -43,7 +43,7 @@ public class LoginController extends BaseContorller {
     public Map<String, Object> login(HttpServletRequest request, HttpServletResponse response, @RequestParam String accountName, @RequestParam String password) {
         Map<String, Object> map = new HashMap();
         try {
-            Session session = this.loginService.doLogin(accountName, password);
+            Session session = this.loginService.doLogin(accountName, password.toUpperCase());
             request.getSession().setAttribute(Const.SESSION, session);
             map.put("success", true);
             response.addCookie(new Cookie("userName",session.getUserName()));

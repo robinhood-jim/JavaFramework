@@ -1,6 +1,7 @@
 package com.robin.core.web.util;
 
 import com.robin.core.base.util.Const;
+import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.PropertyUtils;
 
 import javax.servlet.http.HttpServletRequest;
@@ -91,8 +92,8 @@ public class DhtmxTreeWrapper {
 			arr=userdatakeys.split(",");
 		for (int i = 0; i < list.size(); i++) {
 			Object org=list.get(i);
-			Object keyobj=PropertyUtils.getProperty(org, key);
-			Object valueobj=PropertyUtils.getProperty(org, value);
+			Object keyobj= BeanUtils.getProperty(org, key);
+			Object valueobj=BeanUtils.getProperty(org, value);
 			sb.append("<item id=\"" + keyobj.toString() + "\" text=\"" + valueobj.toString() + "\"");
 			if(hasChild)
 				sb.append(" child=\"1\">");
@@ -101,7 +102,7 @@ public class DhtmxTreeWrapper {
 			sb.append("<userdata name=\"parentid\">"+parentkey+"</userdata>");
 			if(arr!=null && arr.length>0){
 				for (int j = 0; j < arr.length; j++) {
-					Object val1=PropertyUtils.getProperty(org, arr[j]);
+					Object val1=BeanUtils.getProperty(org, arr[j]);
 					sb.append("<userdata name=\""+arr[j]+"\">"+val1.toString()+"</userdata>");
 				}
 			}
