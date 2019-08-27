@@ -137,8 +137,7 @@ function reloadGrid() {
 		var tobj = eval('(' + response + ')');
 		myGrid.clearAll();
 		myGrid.parse(tobj, "json");
-		var barstr = tobj.query.pageToolBar;
-		statusbar.setText(barstr);
+		statusbar.setText(constructPaging(tobj.query));
 	});
 
 }

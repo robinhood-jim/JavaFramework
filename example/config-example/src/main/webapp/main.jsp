@@ -59,32 +59,6 @@ html, body {
 	background:url(<%=CONTEXT_PATH%>resources/images/loginIFBg.jpg) no-repeat left top;
 	width:100%;
 }
-#header .headerBtn {
-	cursor:pointer;
-	background:url(<%=CONTEXT_PATH%>images/icon_list.gif) no-repeat right;
-	width:65px;
-	height:18px;
-	line-height:18px;
-	border:none;
-	margin-right:3px;
-	margin-top:44px;
-	font-size:12px;
-	color:#fff;
-	padding:2px 0 0 0px;
-	text-align:right;
-}
-#header #topHome {
-	background-position: -90px -151px;
-}
-#header #topHelp {
-	background-position: -90px -100px;
-}
-#header #topExit {
-	background-position: -90px 2px;
-}
-#header .headerBtn:hover {
-	color:#e3f3f8
-}
 
 
 #manuloper {
