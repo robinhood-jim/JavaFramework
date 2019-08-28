@@ -107,7 +107,7 @@ public abstract class BaseCrudController<O extends BaseObject, P extends Seriali
         return retMap;
     }
 
-    public Map<String, Object> doEdit(HttpServletRequest request, HttpServletResponse response, P id) {
+    protected Map<String, Object> doEdit(HttpServletRequest request, HttpServletResponse response, P id) {
         Map<String, Object> retMap = new HashMap<String, Object>();
         try {
             BaseObject object = service.getEntity(id);
@@ -120,7 +120,7 @@ public abstract class BaseCrudController<O extends BaseObject, P extends Seriali
         return retMap;
     }
 
-    public Map<String, Object> doUpdate(HttpServletRequest request, HttpServletResponse response, P id) {
+    protected Map<String, Object> doUpdate(HttpServletRequest request, HttpServletResponse response, P id) {
         Map<String, Object> retMap = new HashMap<>();
         try {
             Map<String, String> valueMap = wrapRequest(request);
@@ -164,7 +164,7 @@ public abstract class BaseCrudController<O extends BaseObject, P extends Seriali
     }
 
 
-    public Map<String, Object> doDelete(HttpServletRequest request, HttpServletResponse response, P[] ids) {
+    protected Map<String, Object> doDelete(HttpServletRequest request, HttpServletResponse response, P[] ids) {
         Map<String, Object> retMap = new HashMap();
         try {
             this.service.deleteEntity(ids);
@@ -176,7 +176,7 @@ public abstract class BaseCrudController<O extends BaseObject, P extends Seriali
         return retMap;
     }
 
-    public Map<String, Object> doQuery(HttpServletRequest request, HttpServletResponse response, PageQuery query) {
+    protected Map<String, Object> doQuery(HttpServletRequest request, HttpServletResponse response, PageQuery query) {
         Map<String, Object> retMap = new HashMap<>();
         try {
             Map<String, String> valueMap = wrapRequest(request);

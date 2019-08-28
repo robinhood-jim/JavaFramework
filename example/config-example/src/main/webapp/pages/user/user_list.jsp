@@ -50,21 +50,20 @@
     var dhxLayout = new dhtmlXLayoutObject(document.body, "2E");
     var topPanel = dhxLayout.cells("a");
     var bottomPanel = dhxLayout.cells("b");
-    var width=document.body.clientWidth;
+
 
     topPanel.setHeight(130);
     topPanel.setText("");
 
     var myForm = topPanel.attachForm();
-    //myForm.setSkin("dhx_skyblue");
     var cwidth = document.body.clientWidth;
     var queryUrl = ctx + "system/user/list";
     var userFrm = [
         {
-            type: "block", lable: "<spring:message code="sysUser.info" />", width: width-40, list: [
+            type: "block", lable: "<spring:message code="sysUser.info" />", width: cwidth-40, list: [
                 {type: "settings", position: "label-left", labelWidth: 120, inputWidth: 120, offsetLeft: 10},
                 {
-                    type: "fieldset", labelAlign: "left", label: "<spring:message code="sysUser.info" />", inputWidth: width-80, list: [
+                    type: "fieldset", labelAlign: "left", label: "<spring:message code="sysUser.info" />", inputWidth: cwidth-80, list: [
                         {type: "hidden", name: "query.order", value: ""},
                         {type: "hidden", name: "query.orderDirection", value: ""},
                         {type: "hidden", name: "query.pageCount", value: ""},
@@ -78,9 +77,9 @@
 
                     ]
                 }, {
-                    type: "block", inputWidth: width-80, list: [
+                    type: "block", inputWidth: cwidth-80, list: [
                         {type: "settings", offsetTop: 5},
-                        {type: "button", name: "submit", value: "<spring:message code="btn.submit" />",offsetLeft:width/2-220},
+                        {type: "button", name: "submit", value: "<spring:message code="btn.submit" />",offsetLeft:cwidth/2-220},
                         {type: "newcolumn"},
                         {type: "button", name: "reset", value: "<spring:message code="btn.clear" />"}
                     ]

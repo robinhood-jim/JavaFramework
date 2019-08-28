@@ -99,7 +99,7 @@ function goValidate(myForm){
 }
 
 function login(myForm){
-    $.post(ctx+'user/login',
+    $.post(ctx+'login',
         {accountName:$("#userName").val(),password:md5($("#password").val())}
         ,function(retval){
             var retjson=eval(retval);

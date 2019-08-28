@@ -39,6 +39,10 @@ public class LoginInterceptor extends HandlerInterceptorAdapter {
                 pos=resourcePath.lastIndexOf(".");
                 if(pos!=-1){
                     resourcePath=resourcePath.substring(pos+1);
+                    pos=resourcePath.indexOf("?");
+                    if(pos!=-1){
+                        resourcePath=resourcePath.substring(0,pos);
+                    }
                 }
             }
             if(ignoreUrls.contains(contentPath)  || ignoreResources.contains(resourcePath))

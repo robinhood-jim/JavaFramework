@@ -15,6 +15,7 @@
  */
 package com.robin.core.web.controller;
 
+import com.robin.core.base.exception.DAOException;
 import com.robin.core.base.spring.SpringContextHolder;
 import com.robin.core.base.util.Const;
 import com.robin.core.convert.util.ConvertUtil;
@@ -25,6 +26,7 @@ import com.robin.core.web.codeset.CodeSetService;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.Cacheable;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
@@ -124,25 +126,23 @@ public abstract class BaseContorller
     protected String findCodeName(String codeNo, String value)
     {
         CodeSetService util= SpringContextHolder.getBean(CodeSetService.class);
-        List<Code> list = util.getCacheCode(codeNo);
+        Map<String,String> codeMap = util.getCacheCode(codeNo);
         if (value == null) {
             return "";
         }
-        if (list == null) {
+        if (codeMap == null || codeMap.isEmpty()) {
             return "";
         }
-        for (int i = 0; i < list.size(); i++)
-        {
-            Code code = (Code)list.get(i);
-            if (value.equals(code.getValue())) {
-                return code.getCodeName();
-            }
+
+        if (codeMap.containsKey(value)) {
+            return codeMap.get(value);
         }
         return "";
     }
+
     protected List<Code> findCodeSetArr(String codeSetNo){
         CodeSetService util= SpringContextHolder.getBean(CodeSetService.class);
-        return util.getCacheCode(codeSetNo);
+        return getCodeList(util.getCacheCode(codeSetNo));
     }
     protected void insertNullSelect(List<Map<String, Object>> list)
     {
@@ -170,7 +170,7 @@ public abstract class BaseContorller
     protected List<Map<String,Object>> wrapCodeSet(String codeSetNo){
         List<Map<String,Object>> list=new ArrayList<>();
         CodeSetService util= SpringContextHolder.getBean(CodeSetService.class);
-        List<Code> codeList=util.getCacheCode(codeSetNo);
+        List<Code> codeList=getCodeList(util.getCacheCode(codeSetNo));
         for(Code code:codeList){
             Map<String, Object> tmap = new HashMap();
             tmap.put("value", code.getValue());
@@ -178,6 +178,15 @@ public abstract class BaseContorller
             list.add(tmap);
         }
         return list;
+    }
+    protected List<Code> getCodeList(Map<String,String> codeMap){
+        List<Code> retlist=new ArrayList<>();
+        Iterator<Map.Entry<String,String>> iter= codeMap.entrySet().iterator();
+        while(iter.hasNext()){
+            Map.Entry<String,String> entry=iter.next();
+            retlist.add(new Code(entry.getValue(),entry.getKey()));
+        }
+        return retlist;
     }
     protected void wrapResponse(Map<String,Object> retmap,Exception ex){
         if(ex!=null){
@@ -248,7 +257,7 @@ public abstract class BaseContorller
         return retmap;
     }
 
-    public Map<String, String> wrapRequest(HttpServletRequest request)
+    protected Map<String, String> wrapRequest(HttpServletRequest request)
     {
         Map<String, String> map = new HashMap();
         Iterator<String> iter = request.getParameterMap().keySet().iterator();
@@ -261,7 +270,7 @@ public abstract class BaseContorller
     }
 
 
-    public PageQuery wrapPageQuery(HttpServletRequest request)
+    protected PageQuery wrapPageQuery(HttpServletRequest request)
     {
         PageQuery query = new PageQuery();
         Map map = request.getParameterMap();

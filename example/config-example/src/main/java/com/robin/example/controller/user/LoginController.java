@@ -29,11 +29,11 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
 
 @Controller
-@RequestMapping("/user")
 public class LoginController extends BaseContorller {
     @Autowired
     private LoginService loginService;
@@ -46,8 +46,8 @@ public class LoginController extends BaseContorller {
             Session session = this.loginService.doLogin(accountName, password.toUpperCase());
             request.getSession().setAttribute(Const.SESSION, session);
             map.put("success", true);
-            response.addCookie(new Cookie("userName",session.getUserName()));
-        } catch (ServiceException ex) {
+            response.addCookie(new Cookie("userName", URLEncoder.encode(session.getUserName(),"UTF-8")));
+        } catch (Exception ex) {
             map.put("success", false);
             map.put("message", ex.getMessage());
         }

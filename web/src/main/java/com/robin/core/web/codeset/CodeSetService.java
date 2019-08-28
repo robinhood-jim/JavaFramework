@@ -10,21 +10,20 @@ import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Component
 public class CodeSetService {
     @Cacheable(value = "codeSetCache", key = "#codeSetNo")
-    public List<Code> getCacheCode(String codeSetNo) throws DAOException {
+    public Map<String,String> getCacheCode(String codeSetNo) throws DAOException {
         return getCodeSetDefault(codeSetNo);
     }
 
-    protected List<Code> getCodeSetDefault(String codeSetNo) {
+
+    protected Map<String,String> getCodeSetDefault(String codeSetNo) {
         JdbcDao jdbcDao = SpringContextHolder.getBean(JdbcDao.class);
         QueryFactory factory = SpringContextHolder.getBean(QueryFactory.class);
-        List<Code> codeList = new ArrayList<>();
+        Map<String,String> codeMap=new HashMap<>();
         if (factory.isSelectIdExists("$_GETCODESET")) {
             PageQuery query = new PageQuery();
             query.setPageSize("0");
@@ -33,24 +32,23 @@ public class CodeSetService {
             jdbcDao.queryBySelectId(query);
             if (!query.getRecordSet().isEmpty()) {
                 for (Map<String, Object> map : query.getRecordSet()) {
-                    codeList.add(new Code(map.get("ITEMNAME").toString(), map.get("ITEMVALUE").toString()));
+                    codeMap.put(map.get("ITEMVALUE").toString(),map.get("ITEMNAME").toString());
                 }
             }
-            return codeList;
+            return codeMap;
         } else {
             throw new DAOException(" Query Parameter $_GETCODESET not config,Please config queryConfig xml");
         }
     }
 
 
-    @CachePut(value = "codeSetCache", key = "#codeSetNo")
-    public List<Code> setCode(String codeSetNo, List<?> codes, String label, String value) {
+    @Cacheable(value = "codeSetCache", key = "#codeSetNo")
+    public Map<String,String> setCode(String codeSetNo, List<?> codes, String label, String value) {
         if (codes == null) {
             return null;
         }
-        List<Code> al = new ArrayList();
+        Map<String,String> map=new HashMap<>();
         for (int i = 0; i < codes.size(); i++) {
-            Code code = new Code();
             Object objtmp = codes.get(i);
             Object ol;
             Object ov;
@@ -62,11 +60,11 @@ public class CodeSetService {
                 ov = null;
             }
             if ((ol != null) && (ov != null)) {
-                code.setCodeName(ol.toString());
-                code.setValue(ov.toString());
-                al.add(code);
+                map.put(ov.toString(),ol.toString());
+                //code.setCodeName(ol.toString());
+                //code.setValue(ov.toString());
             }
         }
-        return al;
+        return map;
     }
 }

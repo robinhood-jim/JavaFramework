@@ -39,7 +39,7 @@ import java.util.Map;
 public abstract class BaseCrudDhtmlxController<O extends BaseObject, P extends Serializable, S extends BaseAnnotationJdbcService> extends BaseCrudController<O, P, S> {
 
 
-    public Map<String, Object> wrapComobo(List<Map<String, Object>> rsList, String keyColumn, String valueColumn, boolean insertNullVal) {
+    protected Map<String, Object> wrapComobo(List<Map<String, Object>> rsList, String keyColumn, String valueColumn, boolean insertNullVal) {
         Map<String, Object> map = new HashMap();
         List<Map<String, Object>> list = new ArrayList();
         if (insertNullVal) {
@@ -57,7 +57,7 @@ public abstract class BaseCrudDhtmlxController<O extends BaseObject, P extends S
         return map;
     }
 
-    public Map<String, Object> wrapComoboWithCode(List<Code> rsList, boolean insertNullVal) {
+    protected Map<String, Object> wrapComoboWithCode(List<Code> rsList, boolean insertNullVal) {
         Map<String, Object> map = new HashMap();
         List<Map<String, Object>> list = new ArrayList();
         if (insertNullVal) {
@@ -75,7 +75,7 @@ public abstract class BaseCrudDhtmlxController<O extends BaseObject, P extends S
 
 
 
-    public Map<String, Object> wrapDhtmlxGridOutputWithNoCheck(List<Map<String, String>> list, String queryKeys, String idColumn) {
+    protected Map<String, Object> wrapDhtmlxGridOutputWithNoCheck(List<Map<String, String>> list, String queryKeys, String idColumn) {
         return wrapDhtmlxGridOutputWithCheck(list, queryKeys, idColumn, false);
     }
 
@@ -119,7 +119,7 @@ public abstract class BaseCrudDhtmlxController<O extends BaseObject, P extends S
         Map<String, Object> retmap = new HashMap<String, Object>();
         List<Map<String, String>> list = new ArrayList<Map<String, String>>();
         CodeSetService util = SpringContextHolder.getBean(CodeSetService.class);
-        List<Code> codeList = util.getCacheCode(codeSetNo);
+        List<Code> codeList =getCodeList(util.getCacheCode(codeSetNo));
         if (codeList != null) {
             if (allowNulls) {
                 list.add(addNullSelection());
@@ -142,7 +142,7 @@ public abstract class BaseCrudDhtmlxController<O extends BaseObject, P extends S
         return map;
     }
 
-    public Map<String, Object> wrapDhtmlxGridOutput(PageQuery query) {
+    protected Map<String, Object> wrapDhtmlxGridOutput(PageQuery query) {
         List<Map<String, Object>> list = query.getRecordSet();
         Map<String, Object> retMap = new HashMap<String, Object>();
         PageQuery tquery = query;

@@ -81,28 +81,28 @@ public class ProjectInfoContorller extends BaseCrudDhtmlxController<ProjectInfo,
     @RequestMapping("/presisttype")
     @ResponseBody
     public Map<String, Object> getPresistType(HttpServletRequest request, HttpServletResponse response) {
-        List<Code> list = codeSetUtil.getCacheCode("PRESISTTYPE");
+        List<Code> list = getCodeList(codeSetUtil.getCacheCode("PRESISTTYPE"));
         return wrapComoboWithCode(list, false);
     }
 
     @RequestMapping("/webframe")
     @ResponseBody
     public Map<String, Object> getWebFrame(HttpServletRequest request, HttpServletResponse response) {
-        List<Code> list = codeSetUtil.getCacheCode("WEBFRAME");
+        List<Code> list = getCodeList(codeSetUtil.getCacheCode("WEBFRAME"));
         return wrapComoboWithCode(list, false);
     }
 
     @RequestMapping("/projecttype")
     @ResponseBody
     public Map<String, Object> getProjectType(HttpServletRequest request, HttpServletResponse response) {
-        List<Code> list = codeSetUtil.getCacheCode("PROJECTTYPE");
+        List<Code> list = getCodeList(codeSetUtil.getCacheCode("PROJECTTYPE"));
         return wrapComoboWithCode(list, false);
     }
 
     @RequestMapping("/teamtype")
     @ResponseBody
     public Map<String, Object> getTeamType(HttpServletRequest request, HttpServletResponse response) {
-        List<Code> list = codeSetUtil.getCacheCode("TEAMTYPE");
+        List<Code> list = getCodeList(codeSetUtil.getCacheCode("TEAMTYPE"));
         return wrapComoboWithCode(list, false);
     }
 
