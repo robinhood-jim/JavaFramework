@@ -29,10 +29,10 @@ import java.util.Map;
 import java.util.Properties;
 
 public class JdbcPresistDao {
-	String driverName;
-	String jdbcUrl;
-	String userName;
-	String passwd;
+	private String driverName;
+	private String jdbcUrl;
+	private String userName;
+	private String passwd;
 	private BaseDataBaseMeta meta;
 	private DataBaseParam param;
 	//private static  Logger logger=LoggerFactory.getLogger(JdbcOperDao.class);
@@ -46,7 +46,7 @@ public class JdbcPresistDao {
 			if(param.getUrl()!=null && !param.getUrl().isEmpty()){
 				this.jdbcUrl=param.getUrl();
 			}else
-				this.jdbcUrl=meta.getUrl(param);
+				this.jdbcUrl=meta.getUrl();
 		}catch(Exception ex){
 			throw new DAOException(ex);
 		}

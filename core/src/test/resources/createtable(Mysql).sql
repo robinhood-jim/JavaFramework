@@ -41,7 +41,7 @@ use framset;
 CREATE TABLE `t_sys_user_info` (
   `ID` int(11) NOT NULL auto_increment,
   `USER_ACCOUNT` varchar(64) default NULL,
-  `USER_PASSWORD` varchar(32) default NULL,
+  `USER_PASSWORD` varchar(64) default NULL,
   `USER_NAME` varchar(64) default NULL,
   `ACCOUNT_TYPE` char(1) default NULL,
   `USER_STATUS` char(1) default NULL,
@@ -53,4 +53,4 @@ CREATE TABLE `t_sys_user_info` (
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
-INSERT INTO `t_sys_user_info`(USER_ACCOUNT,USER_PASSWORD,USER_NAME,ACCOUNT_TYPE,USER_STATUS,ORDER_NO) VALUES("admin","admin","adminstrator",1,1,1),("guest","guest","guest",2,1,1)
+INSERT INTO `t_sys_user_info`(USER_ACCOUNT,USER_PASSWORD,USER_NAME,ACCOUNT_TYPE,USER_STATUS,ORDER_NO) VALUES("admin","E10ADC3949BA59ABBE56E057F20F883E","adminstrator",1,1,1),("guest","E10ADC3949BA59ABBE56E057F20F883E","guest",2,1,1)

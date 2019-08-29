@@ -14,9 +14,9 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 <link rel="stylesheet" type="text/css" href="<%=CONTEXT_PATH%>component/dhtmlxSuite/codebase/dhtmlx.css" />
 <link rel="stylesheet" type="text/css" href="<%=CONTEXT_PATH%>component/dhtmlxSuite/skins/terrace/dhtmlx.css"/>
-<script src="<%=CONTEXT_PATH%>component/dhtmlxSuite/codebase/dhtmlx.js" />
-<script src="<%=CONTEXT_PATH%>resources/js/jquery.js" />
-<script type="application/javascript" src="<%=CONTEXT_PATH%>resources/js/md5.min.js" />
+<script src="<%=CONTEXT_PATH%>component/dhtmlxSuite/codebase/dhtmlx.js"></script>
+<script src="<%=CONTEXT_PATH%>resources/js/jquery.js"></script>
+<script src="<%=CONTEXT_PATH%>resources/js/md5.min.js"></script>
 <style type="text/css">
 table {
 	border-collapse: collapse;
@@ -99,9 +99,8 @@ function goValidate(myForm){
 }
 
 function login(myForm){
-    alert(md5($("#password").val()))
-    $.post(ctx+'user/login',
-        {accountName:$("#userName").val(),password:$("#password").val()}
+    $.post(ctx+'login',
+        {accountName:$("#userName").val(),password:md5($("#password").val())}
         ,function(retval){
             var retjson=eval(retval);
             if(retjson.success==true){

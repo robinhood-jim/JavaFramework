@@ -17,16 +17,34 @@ package com.robin.core.base.spring;
 
 public class JdbcDaoDynamicBean extends DataSourceDynamicBean{
 	private String sourceName;
+	private String sqlGenName="sqlGen";
+	private String lobHandlerName="lobHandler";
+	private String queryFactoryName="queryFactory";
 	public JdbcDaoDynamicBean(String beanName) {
-		super(beanName+"source");
+		super(beanName+"Source");
 		sourceName=beanName;
 	}
 	protected String getBeanXml() {
 		String dataSourceXml=super.getBeanXml();
 		StringBuffer xmlBuf = new StringBuffer();  
-		 xmlBuf.append("\n<bean id=\""+sourceName+"\" class=\"cn.com.talkweb.core.base.JdbcDao\" >")  
-         .append("<property name=\"dataSource\" ref=\""+sourceName+"source"+"\"/>")  
-     	.append("</bean>");   
+		 xmlBuf.append("<bean id=\""+sourceName+"\" class=\"com.robin.core.base.dao.JdbcDao\" >\n")
+         .append("	<property name=\"dataSource\" ref=\""+sourceName+"Source"+"\" />\n")
+				 .append("	<property name=\"sqlGen\" ref=\""+sqlGenName+"\" />\n")
+				 .append("	<property name=\"lobHandler\" ref=\""+lobHandlerName+"\" />\n")
+				 .append("	<property name=\"queryFactory\" ref=\""+queryFactoryName+"\" />\n")
+     	.append("</bean>");
 		return dataSourceXml+xmlBuf.toString();
+	}
+
+	public void setSqlGenName(String sqlGenName) {
+		this.sqlGenName = sqlGenName;
+	}
+
+	public void setLobHandlerName(String lobHandlerName) {
+		this.lobHandlerName = lobHandlerName;
+	}
+
+	public void setQueryFactoryName(String queryFactoryName) {
+		this.queryFactoryName = queryFactoryName;
 	}
 }

@@ -149,7 +149,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
         }
     }
 
-    protected void queryByParamter(QueryString qs, PageQuery pageQuery) throws DAOException {
+    private void queryByParamter(QueryString qs, PageQuery pageQuery) throws DAOException {
 
         String querySQL = sqlGen.generateSqlBySelectId(qs, pageQuery);
         if (logger.isDebugEnabled())
@@ -322,7 +322,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
         }
     }
 
-    public List<? extends BaseObject> queryByField(Class<? extends BaseObject> type, String fieldName, String oper, Object... fieldValues) throws DAOException {
+    public List<? extends BaseObject> queryByField(Class<? extends BaseObject> type, String fieldName, String oper, Object[] fieldValues) throws DAOException {
         List<BaseObject> retlist = new ArrayList<>();
         try {
             StringBuilder buffer = new StringBuilder();
@@ -349,7 +349,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
         return retlist;
     }
 
-    public List<? extends BaseObject> queryByFieldOrderBy(Class<? extends BaseObject> type, String orderByStr, String fieldName, String oper, Object... fieldValues) throws DAOException {
+    public List<? extends BaseObject> queryByFieldOrderBy(Class<? extends BaseObject> type, String orderByStr, String fieldName, String oper, Object[] fieldValues) throws DAOException {
         List<BaseObject> retlist = new ArrayList<>();
         try {
             StringBuilder buffer = new StringBuilder();
@@ -555,6 +555,13 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
         return ret;
     }
 
+    /**
+     * now only support Single primary key
+     * @param clazz
+     * @param value
+     * @return
+     * @throws DAOException
+     */
     public int deleteVO(Class<? extends BaseObject> clazz, Serializable[] value) throws DAOException {
         try {
             AnnotationRetrevior.EntityContent tableDef = AnnotationRetrevior.getMappingTableByCache(clazz);
@@ -641,7 +648,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
 
     }
 
-    public String getWholeSelectSql(Class<? extends BaseObject> clazz) throws DAOException {
+    private String getWholeSelectSql(Class<? extends BaseObject> clazz) throws DAOException {
         try {
             AnnotationRetrevior.EntityContent tableDef = AnnotationRetrevior.getMappingTableByCache(clazz);
             List<AnnotationRetrevior.FieldContent> fields = AnnotationRetrevior.getMappingFieldsCache(clazz);

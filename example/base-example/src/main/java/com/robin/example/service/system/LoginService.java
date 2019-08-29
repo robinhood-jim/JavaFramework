@@ -29,6 +29,7 @@ import com.robin.example.model.user.SysUser;
 import com.robin.example.model.user.SysUserRole;
 import com.robin.example.service.user.SysUserService;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -59,6 +60,7 @@ public class LoginService {
         SysUser user=new SysUser();
         user.setUserAccount(accountName);
         user.setUserPassword(password);
+        user.setUserStatus(Const.VALID);
         List<SysUser> users=sysUserService.queryByVO(user,null,null);
         if(users.isEmpty()){
             throw new ServiceException("AccountName or password incorrect!Please retry");
@@ -68,11 +70,9 @@ public class LoginService {
             throw new ServiceException("Account is locked,Please contact admin");
         }
         Session session=new Session();
-        session.setAccountName(queryUser.getUserAccount());
         session.setUserId(queryUser.getId());
         session.setLoginTime(new Date());
-        session.setOrgId(queryUser.getOrgId());
-        session.setDeptId(queryUser.getDeptId());
+        BeanUtils.copyProperties(queryUser,session);
         return session;
     }
     private void getRights(Session session)

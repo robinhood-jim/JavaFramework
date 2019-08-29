@@ -63,6 +63,7 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
 	public HibernateGenricDao() {
 		entityClass = GenericsUtils.getSuperClassGenricType(getClass());
 	}
+
 	public  T get(Class<T> entityClass, Serializable id) {
 		try{
 			return (T) getHibernateTemplate().get(entityClass, id);
@@ -824,7 +825,7 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
 	public PageQuery queryBySql(String querySQL,String countSql,String[] displayname,PageQuery pageQuery)throws DAOException{
 		return CommJdbcUtil.queryBySql(jdbcTemplate,lobHandler, sqlGen, querySQL, countSql, displayname, pageQuery);
 	}
-	public Object queryBySingle(Class<?> clazz,String sql,Object... values) throws DAOException{
+	public Object queryBySingle(Class<?> clazz,String sql,Object[] values) throws DAOException{
 		try{
 			return jdbcTemplate.queryForObject(sql,values,clazz);
 
@@ -859,7 +860,7 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
 			throw new DAOException(e);
 		}
 	}
-	public List<Map<String,Object>> queryBySql(String sql,Object... args) throws DAOException {
+	public List<Map<String,Object>> queryBySql(String sql,Object[] args) throws DAOException {
 		try{
 			return jdbcTemplate.queryForList(sql, args);
 

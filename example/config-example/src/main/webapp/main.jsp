@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html;charset=UTF-8" %>
 <%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
 <%
 	String path = request.getContextPath();
@@ -18,7 +19,6 @@
 <script src="<%=CONTEXT_PATH%>component/dhtmlxSuite/codebase/dhtmlx.js"></script>
 
 <script language="javascript" src="<%= CONTEXT_PATH %>resources/js/jquery.js"></script>
-<script type="text/javascript" src="<%=CONTEXT_PATH%>resources/js/jqueryui.js"></script>
 <script language="javascript" src="<%= CONTEXT_PATH %>resources/js/Array.js"></script>
 <script language="javascript" src="<%= CONTEXT_PATH %>resources/js/control.js"></script>
 <style type="text/css">
@@ -30,12 +30,13 @@ html, body {
 }
 #sysName {
 	background:url(<%=CONTEXT_PATH%>resources/images/headerBg.jpg) no-repeat -1px top;
-	height:64px;
+	height:50px;
 }
 #topBanner {
 	background:url(<%=CONTEXT_PATH%>resources/images/headerBg.jpg) repeat-x center top;
 	height:64px;
 	position:relative;
+    overflow: hidden;
 }
 #header {
 	width:100%;
@@ -61,30 +62,30 @@ html, body {
 	width:100%;
 }
 #header .headerBtn {
-	cursor:pointer;
-	background:url(<%=CONTEXT_PATH%>images/icon_list.gif) no-repeat right;
-	width:65px;
-	height:18px;
-	line-height:18px;
-	border:none;
-	margin-right:3px;
-	margin-top:44px;
-	font-size:12px;
-	color:#fff;
-	padding:2px 0 0 0px;
-	text-align:right;
+    cursor:pointer;
+    background:url(<%=CONTEXT_PATH%>resources/images/icon_list.gif) no-repeat right;
+    width:65px;
+    height:18px;
+    line-height:18px;
+    border:none;
+    margin-right:3px;
+    margin-top:44px;
+    font-size:12px;
+    color:#fff;
+    padding:2px 0 0 0px;
+    text-align:right;
 }
 #header #topHome {
-	background-position: -90px -151px;
+    background-position: -90px -151px;
 }
 #header #topHelp {
-	background-position: -90px -100px;
+    background-position: -90px -100px;
 }
 #header #topExit {
-	background-position: -90px 2px;
+    background-position: -90px 2px;
 }
 #header .headerBtn:hover {
-	color:#e3f3f8
+    color:#e3f3f8
 }
 
 
@@ -129,21 +130,34 @@ ol, ul {
    	  dhxToolbar.addText("title", 0,t);
    }
    function showmain(){
-   		window.location.href='<%=CONTEXT_PATH%>main.jsp';
+   		window.location.href='<%=CONTEXT_PATH%>main/index';
    }
    function logout(){
-   	if(confirm('<spring:message code="confirmLogOut" />')==true)
-   		window.location.href='<%=CONTEXT_PATH%>user/logout';
+       dhtmlx.confirm({
+           title: "<spring:message code="title.alert" />",
+           type: "confirm-warning",
+           text: "<spring:message code="confirmLogOut" />",
+           callback: function (result) {
+               if(result) {
+                   window.location.href = '<%=CONTEXT_PATH%>/logout';
+               }
+           }
+       });
+   }
+   function showUser() {
+       $("#userName").text(decodeURI('${cookie.userName.value}'));
    }
 
 </script>
 
 </head>
-<body onload="">
+<body onload="showUser()">
 <div id="topBanner">
     <h1 id="sysName"><spring:message code="appName" /></h1>
     <div id="header">
-        <div id="logSate"><spring:message code="currentUser" />：<span>${cookie['userName']}</span></div>
+        <div id="logSate"><spring:message code="currentUser" />：
+            <span id="userName"></span>
+        </div>
         <div id="hInput">
             <button name="topPage" id="topHome"  type="button" onClick="" class="headerBtn"><spring:message code="btn.main" /></button>
             <button id="topHelp" type="button" onClick=""  class="headerBtn"><spring:message code="btn.help" /></button>
@@ -156,13 +170,12 @@ ol, ul {
 	 var topPanel=dhxLayout.cells("a");
 	 var leftPanel=dhxLayout.cells("b");
 	 var centerPanel=dhxLayout.cells("c");
-	 topPanel.setHeight(66);
+	 topPanel.setHeight(70);
 	 topPanel.setText("");
 	 topPanel.hideHeader();
 	 topPanel.attachObject("topBanner");
 	 topPanel.fixSize(true,true);
-	 
-	
+
 	 leftPanel.setWidth(136);
 	 leftPanel.setText("");
 	 var dhxAccord = leftPanel.attachAccordion();
@@ -206,7 +219,6 @@ ol, ul {
    
 </script>
 <script type="text/javascript" src="<%=CONTEXT_PATH%>resources/js/main.js"> </script>
-<script type="text/javascript" src="<%=CONTEXT_PATH%>resources/js/window.js"> </script>
 
 
 </body>

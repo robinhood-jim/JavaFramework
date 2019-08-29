@@ -36,7 +36,7 @@ import com.google.common.cache.LoadingCache;
 
 public class ScriptExecutorDecorate {
 	private ConcurrentMap<String, BaseScriptExecutor> scriptExecutorMap=new ConcurrentHashMap<String, BaseScriptExecutor>();
-	private List<String> scriptNameList=new ArrayList<String>();
+	private List<String> scriptNameList;
 	public static ScriptExecutorDecorate util=null;
 	private ScriptExecutorDecorate(){
 		scriptNameList=getAllScriptEngineNames();

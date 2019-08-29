@@ -275,7 +275,7 @@ public interface BaseGenricDao<T extends BaseObject,ID extends Serializable> {
 	 * @param values
 	 * @return
 	 */
-	Object queryBySingle(Class<?> clazz,String sql,Object... values) throws DAOException;
+	Object queryBySingle(Class<?> clazz,String sql,Object[] values) throws DAOException;
 	/**
 	 * 
 	 * @param sql
@@ -283,7 +283,7 @@ public interface BaseGenricDao<T extends BaseObject,ID extends Serializable> {
 	 * @return
 	 * @throws DAOException
 	 */
-	List<Map<String,Object>> queryBySql(String sql,Object... args) throws DAOException;
+	List<Map<String,Object>> queryBySql(String sql,Object[] args) throws DAOException;
 	
 	List<T> findByNamedParam(String hql,String[] fieldName,Object[] fieldValue) throws DAOException;
 	void removeByFields(String[] fieldName, Object[] fieldValue) throws DAOException;

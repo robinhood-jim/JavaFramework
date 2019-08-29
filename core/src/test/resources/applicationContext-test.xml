@@ -61,7 +61,7 @@
     	<!--<property name="xmlConfigPath" value="classpath:query/queryConfig"></property>-->
     </bean>
 	<bean id="springContextHolder" class="com.robin.core.base.spring.SpringContextHolder" lazy-init="false"></bean>
-	
+	<bean id="dynamicBeanLoader" class="com.robin.core.base.spring.DynamicBeanReaderImpl" />
 	<context:component-scan base-package="com.robin"  />
 	
 </beans>

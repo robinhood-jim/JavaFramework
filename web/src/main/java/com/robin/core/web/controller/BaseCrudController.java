@@ -28,12 +28,15 @@ import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
- *Single Table Mapping Background Controller
+ * Single Table Mapping Background Controller
  */
-public abstract class BaseCrudController<O extends BaseObject,P extends Serializable,S extends BaseAnnotationJdbcService> extends BaseContorller implements InitializingBean {
+public abstract class BaseCrudController<O extends BaseObject, P extends Serializable, S extends BaseAnnotationJdbcService> extends BaseContorller implements InitializingBean {
     private Class<O> objectType;
     private Class<P> pkType;
     private Class<S> serviceType;
@@ -41,154 +44,140 @@ public abstract class BaseCrudController<O extends BaseObject,P extends Serializ
     protected Method valueOfMethod;
 
 
-    public BaseCrudController()
-    {
+    public BaseCrudController() {
         Type genericSuperClass = getClass().getGenericSuperclass();
         ParameterizedType parametrizedType;
-        if ((genericSuperClass instanceof ParameterizedType))
-        {
-            parametrizedType = (ParameterizedType)genericSuperClass;
-        }
-        else
-        {
+        if ((genericSuperClass instanceof ParameterizedType)) {
+            parametrizedType = (ParameterizedType) genericSuperClass;
+        } else {
             if ((genericSuperClass instanceof Class)) {
-                parametrizedType = (ParameterizedType)((Class)genericSuperClass).getGenericSuperclass();
+                parametrizedType = (ParameterizedType) ((Class) genericSuperClass).getGenericSuperclass();
             } else {
                 throw new IllegalStateException("class " + getClass() + " is not subtype of ParametrizedType.");
             }
         }
-        this.objectType = ((Class)parametrizedType.getActualTypeArguments()[0]);
-        this.pkType=((Class)parametrizedType.getActualTypeArguments()[1]);
-        this.serviceType = ((Class)parametrizedType.getActualTypeArguments()[2]);
+        this.objectType = ((Class) parametrizedType.getActualTypeArguments()[0]);
+        this.pkType = ((Class) parametrizedType.getActualTypeArguments()[1]);
+        this.serviceType = ((Class) parametrizedType.getActualTypeArguments()[2]);
         try {
             valueOfMethod = this.pkType.getMethod("valueOf", String.class);
-        }catch (Exception ex){
-            log.error("{}",ex);
+        } catch (Exception ex) {
+            log.error("{}", ex);
         }
     }
 
     /**
      * Add Enitty
+     *
      * @param request
      * @param response
      * @return
      */
-    protected Map<String, Object> doAdd(HttpServletRequest request, HttpServletResponse response)
-    {
+    protected Map<String, Object> doAdd(HttpServletRequest request, HttpServletResponse response) {
         boolean finishTag = true;
         Long id = null;
         Map<String, Object> retMap = new HashMap();
-        try
-        {
+        try {
             BaseObject obj = this.objectType.newInstance();
             ConvertUtil.mapToObject(obj, wrapRequest(request));
             this.service.saveEntity(obj);
             wrapSuccess(retMap);
-            doAfterAdd(request, response, obj,retMap);
-        }
-        catch (Exception ex)
-        {
+            doAfterAdd(request, response, obj, retMap);
+        } catch (Exception ex) {
             this.log.error("{}", ex);
             finishTag = false;
-            wrapResponse(retMap,ex);
+            wrapResponse(retMap, ex);
         }
-        if(finishTag)
-            wrapResponse(retMap,null);
+        if (finishTag)
+            wrapResponse(retMap, null);
         return retMap;
     }
+
     protected Map<String, Object> doView(HttpServletRequest request, HttpServletResponse response, Long id) {
         Map<String, Object> retMap = new HashMap<String, Object>();
         try {
             BaseObject object = service.getEntity(id);
-            retMap=wrapSuccess("success");
-            doAfterView(request, response, object,retMap);
+            retMap = wrapSuccess("success");
+            doAfterView(request, response, object, retMap);
             wrapSuccess(retMap);
         } catch (Exception e) {
-            log.error("{}",e);
-            wrapFailed(retMap,e);
+            log.error("{}", e);
+            wrapFailed(retMap, e);
         }
         return retMap;
     }
-    public Map<String, Object> doEdit(HttpServletRequest request, HttpServletResponse response, P id) {
+
+    protected Map<String, Object> doEdit(HttpServletRequest request, HttpServletResponse response, P id) {
         Map<String, Object> retMap = new HashMap<String, Object>();
         try {
             BaseObject object = service.getEntity(id);
-            doAfterEdit(request, response, object,retMap);
+            doAfterEdit(request, response, object, retMap);
             wrapSuccess(retMap);
         } catch (Exception e) {
-            log.error("{}",e);
-            wrapFailed(retMap,e);
+            log.error("{}", e);
+            wrapFailed(retMap, e);
         }
         return retMap;
     }
-    public Map<String,Object> doUpdate(HttpServletRequest request, HttpServletResponse response,P id){
-        Map<String,Object> retMap=new HashMap<>();
+
+    protected Map<String, Object> doUpdate(HttpServletRequest request, HttpServletResponse response, P id) {
+        Map<String, Object> retMap = new HashMap<>();
         try {
             Map<String, String> valueMap = wrapRequest(request);
             BaseObject object = objectType.newInstance();
-            BaseObject updateObj=service.getEntity(id);
+            BaseObject updateObj = service.getEntity(id);
             ConvertUtil.convertToModel(object, valueMap);
             ConvertUtil.convertToModelForUpdateNew(updateObj, object);
             service.updateEntity(updateObj);
-            doAfterUpdate(request,response,object,retMap);
+            doAfterUpdate(request, response, object, retMap);
             wrapSuccess(retMap);
-        }catch (Exception ex){
-            log.error("{}",ex);
-            wrapFailed(retMap,ex);
-        }
-        return retMap;
-    }
-
-    protected void doAfterAdd(HttpServletRequest request, HttpServletResponse response,BaseObject obj,Map<String,Object> retMap)
-    {
-
-    }
-
-    protected void doAfterView(HttpServletRequest request, HttpServletResponse response, BaseObject obj,Map<String,Object> retMap)
-            throws Exception
-    {
-        retMap.put("model",obj);
-    }
-
-    protected void doAfterEdit(HttpServletRequest request, HttpServletResponse response, BaseObject obj,Map<String,Object> retMap)
-            throws Exception
-    {
-        retMap.put("model",obj);
-    }
-
-    protected void doAfterUpdate(HttpServletRequest request, HttpServletResponse response, BaseObject obj,Map<String,Object> retMap)
-    {
-    }
-
-    protected void doAfterQuery(HttpServletRequest request, HttpServletResponse response, PageQuery query, Map<String,Object> retMap)
-    {
-        retMap.put("query", query);
-    }
-
-    protected void doAfterDelete(HttpServletRequest request, HttpServletResponse response, P[] ids,Map<String,Object> retMap) {
-
-    }
-
-
-    public Map<String, Object> doDelete(HttpServletRequest request, HttpServletResponse response, P[] ids)
-    {
-        Map<String, Object> retMap = new HashMap();
-        try
-        {
-            this.service.deleteEntity(ids);
-            doAfterDelete(request, response, ids,retMap);
-            wrapSuccess(retMap);
-        }
-        catch (Exception ex)
-        {
+        } catch (Exception ex) {
+            log.error("{}", ex);
             wrapFailed(retMap, ex);
         }
         return retMap;
     }
 
-    public Map<String, Object> doQuery(HttpServletRequest request, HttpServletResponse response, PageQuery query)
-    {
-        Map<String,Object> retMap=new HashMap<>();
+    protected void doAfterAdd(HttpServletRequest request, HttpServletResponse response, BaseObject obj, Map<String, Object> retMap) {
+
+    }
+
+    protected void doAfterView(HttpServletRequest request, HttpServletResponse response, BaseObject obj, Map<String, Object> retMap)
+            throws Exception {
+        retMap.put("model", obj);
+    }
+
+    protected void doAfterEdit(HttpServletRequest request, HttpServletResponse response, BaseObject obj, Map<String, Object> retMap)
+            throws Exception {
+        retMap.put("model", obj);
+    }
+
+    protected void doAfterUpdate(HttpServletRequest request, HttpServletResponse response, BaseObject obj, Map<String, Object> retMap) {
+    }
+
+    protected void doAfterQuery(HttpServletRequest request, HttpServletResponse response, PageQuery query, Map<String, Object> retMap) {
+        retMap.put("query", query);
+    }
+
+    protected void doAfterDelete(HttpServletRequest request, HttpServletResponse response, P[] ids, Map<String, Object> retMap) {
+
+    }
+
+
+    protected Map<String, Object> doDelete(HttpServletRequest request, HttpServletResponse response, P[] ids) {
+        Map<String, Object> retMap = new HashMap();
+        try {
+            this.service.deleteEntity(ids);
+            doAfterDelete(request, response, ids, retMap);
+            wrapSuccess(retMap);
+        } catch (Exception ex) {
+            wrapFailed(retMap, ex);
+        }
+        return retMap;
+    }
+
+    protected Map<String, Object> doQuery(HttpServletRequest request, HttpServletResponse response, PageQuery query) {
+        Map<String, Object> retMap = new HashMap<>();
         try {
             Map<String, String> valueMap = wrapRequest(request);
 
@@ -196,16 +185,16 @@ public abstract class BaseCrudController<O extends BaseObject,P extends Serializ
                 query.setParameters(valueMap);
             }
             this.service.queryBySelectId(query);
-            doAfterQuery(request, response, query,retMap);
+            doAfterQuery(request, response, query, retMap);
             wrapSuccess(retMap);
-        }catch (Exception ex){
-            wrapFailed(retMap,ex);
+        } catch (Exception ex) {
+            wrapFailed(retMap, ex);
         }
         return retMap;
     }
+
     @SuppressWarnings(value = "uncheck")
-    public void afterPropertiesSet() throws Exception
-    {
+    public void afterPropertiesSet() throws Exception {
         if (this.serviceType != null) {
             this.service = SpringContextHolder.getBean(this.serviceType);
         }
@@ -215,20 +204,20 @@ public abstract class BaseCrudController<O extends BaseObject,P extends Serializ
         if (ids == null || ids.length == 0) {
             throw new Exception("ID not exists!");
         }
-        List<P> list=new ArrayList<P>();
+        List<P> list = new ArrayList<P>();
         try {
             for (int i = 0; i < ids.length; i++) {
-                P p=pkType.newInstance();
-                valueOfMethod.invoke(p,ids[i]);
+                P p = pkType.newInstance();
+                valueOfMethod.invoke(p, ids[i]);
                 list.add(p);
             }
         } catch (Exception ex) {
-            log.error("{}",ex);
+            log.error("{}", ex);
         }
-        if(list.isEmpty()){
+        if (list.isEmpty()) {
             return null;
-        }else
-            return (P[])list.toArray();
+        } else
+            return (P[]) list.toArray();
     }
 
 }

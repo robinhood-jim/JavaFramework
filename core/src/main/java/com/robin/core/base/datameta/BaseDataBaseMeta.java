@@ -45,12 +45,12 @@ public abstract class BaseDataBaseMeta implements DataBaseInterface {
 	protected static final Pattern PATTERN_TEMPLATE_PARAM = Pattern.compile("\\[.*?\\]");
 	public List<DataBaseTableMeta> listAllTable(String schema) throws Exception {
 		DataBaseUtil util=new DataBaseUtil();
-		util.connect(this,param);
+		util.connect(this);
 		List<DataBaseTableMeta> list=util.getAllTable(schema, this);
 		util.closeConnection();
 		return list;
 	}
-	public String getUrl(DataBaseParam param) throws Exception{
+	public String getUrl() throws Exception{
 		try{
 			if(param.getUrl()==null){
 				if(param.getPort()==0)
