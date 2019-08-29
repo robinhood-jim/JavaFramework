@@ -23,7 +23,7 @@ import lombok.Data;
 @MappingEntity(table="t_base_projectinfo")
 @Data
 public class ProjectInfo extends BaseObject {
-	@MappingField(increment="1",primary="1")
+	@MappingField(increment=true,primary=true)
 	private Long id;
 	@MappingField(field="proj_name")
 	private String  projName;

@@ -61,4 +61,9 @@ public class SybaseDataBaseMeta extends BaseDataBaseMeta{
 	public BaseSqlGen getSqlGen() {
 		return new SybaseSqlGen();
 	}
+
+	@Override
+	public String getCatalog(String schema) {
+		return schema;
+	}
 }

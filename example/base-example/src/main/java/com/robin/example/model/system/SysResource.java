@@ -21,7 +21,7 @@ import com.robin.core.base.model.BaseObject;
 
 @MappingEntity(table="t_sys_resource_info")
 public class SysResource extends BaseObject {
-	@MappingField(primary="1",increment="1")
+	@MappingField(primary=true,increment=true)
 	private Long id;
 	@MappingField(field="res_name")
 	private String name;

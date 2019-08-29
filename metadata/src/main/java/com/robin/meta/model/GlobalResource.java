@@ -25,7 +25,7 @@ import lombok.Data;
 @MappingEntity(table="t_meta_global_resource")
 @Data
 public class GlobalResource extends BaseObject {
-	@MappingField(increment="1",primary="1")
+	@MappingField(increment=true,primary=true)
 	private Long id;
 	@MappingField(field="res_type")
 	private Long resType;

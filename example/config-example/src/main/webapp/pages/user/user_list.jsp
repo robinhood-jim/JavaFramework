@@ -50,6 +50,7 @@
     var dhxLayout = new dhtmlXLayoutObject(document.body, "2E");
     var topPanel = dhxLayout.cells("a");
     var bottomPanel = dhxLayout.cells("b");
+    var orgId='${orgId}';
 
 
     topPanel.setHeight(130);
@@ -73,7 +74,7 @@
                         {type: "newcolumn", offset: 20},
                         {type: "select", label: "<spring:message code="sysUser.Dept" />", name: "deptId",connector:ctx + "system/dept/listjson?allowNull=true"},
                         {type: "newcolumn", offset: 20},
-                        {type: "select", label: "<spring:message code="sysUser.Org" />", name: "orgId",connector:ctx + "system/org/listjson?allowNull=true"},
+                        {type: "select", label: "<spring:message code="sysUser.Org" />", name: "orgId",connector:ctx + "system/org/listjson?allowNull=true"${disabletxt}},
 
                     ]
                 }, {
@@ -91,6 +92,9 @@
     bottomPanel.hideHeader();
     topPanel.fixSize(true, true);
     myForm.loadStruct(userFrm);
+    if(orgId!=undefined){
+        myForm.setItemValue("orgId",orgId);
+    }
 
     myForm.attachEvent("onButtonClick", function (name) {
         if (name == 'submit') {
@@ -110,7 +114,7 @@
 
     var myGrid = bottomPanel.attachGrid();
     myGrid.setImagePath(ctx + "component/dhtmlxSuite/codebase/imgs/");
-    myGrid.setHeader("#master_checkbox,img:[" + ctx + "resources/images/icon/men.gif]<b><spring:message code="sysUser.accountName" /></b>,<spring:message code="sysUser.accountType" />,<spring:message code="sysUser.Dept" />,<spring:message code="sysUser.Org" />", null, ["text-align:center", "text-align:center", "text-align:center", "text-align:center", "text-align:center"]);//the headers of columns
+    myGrid.setHeader("#master_checkbox,img:[" + ctx + "resources/images/icon/men.gif]<b><spring:message code="sysUser.userName" /></b>,<spring:message code="sysUser.accountName" />,<spring:message code="sysUser.Dept" />,<spring:message code="sysUser.Org" />", null, ["text-align:center", "text-align:center", "text-align:center", "text-align:center", "text-align:center"]);//the headers of columns
     myGrid.setInitWidths("35,150,200,200,200");          //the widths of columns
     myGrid.setColAlign("center,center,center,center,center");       //the alignment of columns
     myGrid.setColTypes("ch,ro,ro,ro,ro");                //the types of columns
@@ -207,7 +211,7 @@
 
         form.attachEvent("onButtonClick", function (name, command) {
             if (name == "cmdOK") {
-                this.send(contextpath + "system/user/update", function (loader, response) {
+                this.send(ctx + "system/user/update", function (loader, response) {
                     var tobj = eval('(' + response + ')');
                     if (tobj.success == true) {
                         dhtmlx.message({

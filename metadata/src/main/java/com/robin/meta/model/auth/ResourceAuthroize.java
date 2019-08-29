@@ -14,7 +14,7 @@ import lombok.Data;
 @MappingEntity(table = "t_meta_resource_authorize")
 @Data
 public class ResourceAuthroize extends BaseObject {
-    @MappingField(primary = "1")
+    @MappingField(primary = true)
     private Long id;
     @MappingField(field = "resource_id",required = true)
     private Long resId;

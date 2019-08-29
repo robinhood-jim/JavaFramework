@@ -25,7 +25,7 @@ import lombok.Data;
 @MappingEntity(table="t_meta_hadoop_cfg")
 @Data
 public class HadoopClusterDef extends BaseObject{
-	@MappingField(increment="1",primary="1")
+	@MappingField(increment=true,primary=true)
 	private Long id;
 	@MappingField
 	private String name;

@@ -44,6 +44,7 @@ public abstract class BaseCrudController<O extends BaseObject, P extends Seriali
     protected Method valueOfMethod;
 
 
+
     public BaseCrudController() {
         Type genericSuperClass = getClass().getGenericSuperclass();
         ParameterizedType parametrizedType;
@@ -73,16 +74,20 @@ public abstract class BaseCrudController<O extends BaseObject, P extends Seriali
      * @param response
      * @return
      */
-    protected Map<String, Object> doAdd(HttpServletRequest request, HttpServletResponse response) {
+    protected Map<String, Object> doSave(HttpServletRequest request, HttpServletResponse response,Object... obj) {
         boolean finishTag = true;
-        Long id = null;
         Map<String, Object> retMap = new HashMap();
         try {
-            BaseObject obj = this.objectType.newInstance();
-            ConvertUtil.mapToObject(obj, wrapRequest(request));
-            this.service.saveEntity(obj);
+            BaseObject object=null;
+            if(obj==null) {
+                object=this.objectType.newInstance();
+                ConvertUtil.mapToObject(object, wrapRequest(request));
+            }else if(obj[0] instanceof BaseObject){
+                object=(BaseObject) obj[0];
+            }
+            this.service.saveEntity(object);
             wrapSuccess(retMap);
-            doAfterAdd(request, response, obj, retMap);
+            doAfterAdd(request, response, object, retMap);
         } catch (Exception ex) {
             this.log.error("{}", ex);
             finishTag = false;

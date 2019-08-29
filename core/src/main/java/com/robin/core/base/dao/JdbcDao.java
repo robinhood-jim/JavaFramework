@@ -290,10 +290,8 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
             if (orderByStr != null && !"".equals(orderByStr))
                 sql += " order by " + orderByStr;
 
-            Object[] objs = new Object[objList.size()];
-            for (int i = 0; i < objList.size(); i++) {
-                objs[i] = objList.get(i);
-            }
+            Object[] objs = objList.toArray();
+
             if (logger.isDebugEnabled())
                 logger.debug("querySql=" + sql);
             List<Map<String, Object>> rsList = queryBySql(sql, objs);
@@ -719,6 +717,8 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
         } else if (oper.equals(BaseObject.OPER_IN)) {
             namedstr = columncfg.getFieldName() + "val";
             queryBuffer.append(columncfg.getFieldName() + " in (:" + columncfg.getFieldName() + "val)");
+        }else if(oper.equals(BaseObject.OPER_LEFT_LK) || oper.equals(BaseObject.OPER_RIGHT_LK)){
+            queryBuffer.append(columncfg.getFieldName() + " like ?");
         }
         return namedstr;
     }

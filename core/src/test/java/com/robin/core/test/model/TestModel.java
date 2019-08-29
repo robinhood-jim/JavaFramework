@@ -8,7 +8,7 @@ import lombok.Data;
 @MappingEntity(table="t_test")
 @Data
 public class TestModel extends BaseObject{
-	@MappingField(primary="1",increment="1")
+	@MappingField(primary=true,increment=true)
 	private Long id;
 	@MappingField(required=true,field="name")
 	private String name;

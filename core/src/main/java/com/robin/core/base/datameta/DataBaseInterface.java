@@ -32,4 +32,5 @@ public interface DataBaseInterface {
 	String getDropColumnStatement(String tablename,String schema, DataBaseColumnMeta v, String tk, boolean use_autoinc, String pk, boolean semicolon);
 	DataBaseParam getParam();
 	String getUrlTemplate();
+	String getCatalog(String schema);
 }

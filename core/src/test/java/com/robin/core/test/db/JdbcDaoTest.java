@@ -16,6 +16,7 @@
 package com.robin.core.test.db;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -25,6 +26,9 @@ import com.robin.core.base.datameta.DataBaseParam;
 import com.robin.core.base.spring.DynamicBeanReader;
 import com.robin.core.base.spring.JdbcDaoDynamicBean;
 import com.robin.core.base.util.Const;
+import com.robin.core.base.util.StringUtils;
+import com.robin.core.query.util.Condition;
+import com.robin.core.sql.util.FilterCondition;
 import com.robin.core.test.model.*;
 import com.robin.core.test.service.*;
 import junit.framework.TestCase;
@@ -171,6 +175,22 @@ public class JdbcDaoTest extends TestCase {
         JdbcDao dao=SpringContextHolder.getBean("testSource",JdbcDao.class);
         List<Map<String,Object>> list= dao.queryBySql("select * from t_base_jar");
         assertNotNull(list);
+    }
+    @Test
+    public void testUpdate(){
+        SysUserService sysUserService=SpringContextHolder.getBean(SysUserService.class);
+        SysUser user=sysUserService.getEntity(25L);
+        user.setUserPassword("1222");
+        sysUserService.updateEntity(user);
+    }
+    @Test
+    public void testCondition() throws Exception{
+        List<FilterCondition> condList=new ArrayList<FilterCondition>();
+        SysUserService sysUserService=SpringContextHolder.getBean(SysUserService.class);
+        condList.add(new FilterCondition("userAccount", Condition.EQUALS,"admin"));
+        condList.add(new FilterCondition("userPassword", Condition.EQUALS, StringUtils.getMd5Encry("123456")));
+        condList.add(new FilterCondition("accountType", Condition.EQUALS,"1"));
+        List<SysUser> list=sysUserService.queryByCondition(condList,"");
     }
 
 }

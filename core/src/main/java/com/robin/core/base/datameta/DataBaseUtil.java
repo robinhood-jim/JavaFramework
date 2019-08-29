@@ -18,6 +18,7 @@ package com.robin.core.base.datameta;
 import com.robin.core.base.dao.JdbcDao;
 import com.robin.core.base.util.Const;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.dbutils.DbUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.support.JdbcUtils;
@@ -33,9 +34,11 @@ import java.util.*;
 public class DataBaseUtil {
     private Connection connection;
     private static Logger logger = LoggerFactory.getLogger(DataBaseUtil.class);
+    private BaseDataBaseMeta dataBaseMeta;
 
     public void connect(BaseDataBaseMeta meta) {
         try {
+            dataBaseMeta=meta;
             if (connection == null) {
                 Class.forName(meta.getParam().getDriverClassName());
                 String url = meta.getParam().getUrl();
@@ -54,13 +57,7 @@ public class DataBaseUtil {
 
     public void closeConnection() {
         if (connection != null) {
-            try {
-                connection.close();
-            } catch (Exception e) {
-
-            } finally {
-                connection = null;
-            }
+            DbUtils.closeQuietly(connection);
         }
     }
 
@@ -140,7 +137,7 @@ public class DataBaseUtil {
         try {
             stmt = connection.createStatement();
             DatabaseMetaData meta = connection.getMetaData();
-            ResultSet rs = meta.getColumns(null, DbOrtablespacename, tablename, null);
+            ResultSet rs = meta.getColumns(dataBaseMeta.getCatalog(DbOrtablespacename), DbOrtablespacename, tablename, null);
             // all pk column
             List<String> pklist = this.getAllPrimaryKeyByTableName(tablename, DbOrtablespacename);
             while (rs.next()) {
@@ -288,7 +285,7 @@ public class DataBaseUtil {
         ResultSet rs1 = null;
         try {
             DatabaseMetaData meta = connection.getMetaData();
-            rs1 = meta.getPrimaryKeys(null, schema, tableName);
+            rs1 = meta.getPrimaryKeys(dataBaseMeta.getCatalog(schema), schema, tableName);
             while (rs1.next()) {
                 String columnName = rs1.getString("COLUMN_NAME");
                 tablelist.add(columnName);
@@ -474,7 +471,7 @@ public class DataBaseUtil {
         ResultSet rs1 = null;
         try {
             DatabaseMetaData meta = connection.getMetaData();
-            rs1 = meta.getTables(null, schema, null, new String[]{"TABLE", "VIEW"});
+            rs1 = meta.getTables(datameta.getCatalog(schema), schema, null, new String[]{"TABLE", "VIEW"});
             int pos = 1;
             while (rs1.next()) {
                 String tablename = rs1.getString("TABLE_NAME") == null ? "" : rs1.getString("TABLE_NAME");

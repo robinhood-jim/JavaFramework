@@ -24,7 +24,7 @@ import lombok.Data;
 @Data
 public class SysUser extends BaseObject {
     private static final long serialVersionUID = 1L;
-    @MappingField(primary="1", increment="1")
+    @MappingField(primary=true, increment=true)
     private Long id;
     @MappingField(field="dept_id")
     private Long deptId;

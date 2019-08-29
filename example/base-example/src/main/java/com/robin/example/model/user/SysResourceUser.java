@@ -26,7 +26,7 @@ public class SysResourceUser extends BaseObject {
 	private static final long serialVersionUID = 1L;
 
 	// primary key
-	@MappingField(primary = "1", increment = "1")
+	@MappingField(primary = true, increment = true)
 	private Long id; //
 
 	// fields

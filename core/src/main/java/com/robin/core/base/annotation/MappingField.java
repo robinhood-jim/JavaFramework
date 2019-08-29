@@ -24,8 +24,8 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface MappingField {
 	String field() default "";
-	String primary() default "0";
-	String increment() default "0";
+	boolean primary() default false;
+	boolean increment() default false;
 	String sequenceName() default "";
 	boolean required() default false;
 	String datatype() default "";

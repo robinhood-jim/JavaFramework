@@ -295,10 +295,10 @@ public class AnnotationRetrevior {
                     content.setScale(mapfield.scale());
                 if (mapfield.length() != 0)
                     content.setLength(mapfield.length());
-                if (mapfield.increment().equals("1")) {
+                if (mapfield.increment()) {
                     content.setIncrement(true);
                 }
-                if (mapfield.primary().equals("1")) {
+                if (mapfield.primary()) {
                     content.setPrimary(true);
                     parsePrimaryKey(content, type);
                 }

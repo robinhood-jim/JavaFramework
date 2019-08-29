@@ -197,6 +197,10 @@ public class DataMappingContoller extends BaseCrudDhtmlxController<ProjectInfo,L
 		}catch(Exception ex){
 			request.setAttribute("err", ex);
 			return null;
+		}finally {
+			if(util!=null){
+				util.closeConnection();
+			}
 		}
 		return retmap;
 	}

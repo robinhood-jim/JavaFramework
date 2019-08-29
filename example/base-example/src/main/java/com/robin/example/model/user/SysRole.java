@@ -26,7 +26,7 @@ import lombok.Data;
 public class SysRole extends BaseObject
 {
     private static final long serialVersionUID = 1L;
-    @MappingField(primary="1", increment="1")
+    @MappingField(primary=true, increment=true)
     private Long id;
     @MappingField(field="role_name")
     private String roleName;

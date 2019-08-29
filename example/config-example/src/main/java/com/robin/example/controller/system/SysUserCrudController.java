@@ -55,6 +55,12 @@ public class SysUserCrudController extends BaseCrudDhtmlxController<SysUser, Lon
 
     @RequestMapping("/show")
     public String userList(HttpServletRequest request, HttpServletResponse response) {
+        if(request.getParameter("lockorg")!=null && request.getParameter("lockorg").equals(Const.VALID)){
+            request.setAttribute("disabletxt",",disabled:true");
+            request.setAttribute("orgId",request.getParameter("orgId"));
+        }else{
+            request.setAttribute("disabletxt","");
+        }
         return "/user/user_list";
     }
 
@@ -65,7 +71,11 @@ public class SysUserCrudController extends BaseCrudDhtmlxController<SysUser, Lon
         if (query == null)
             query = new PageQuery();
         query.setSelectParamId("GET_SYSUSERINFO");
-        query.getParameters().put("queryCondition", wrapQuery(request));
+        String orgIds=null;
+        if(request.getParameter("orgId")!=null){
+            orgIds=sysOrgService.getSubIdByParentOrgId(Long.valueOf(request.getParameter("orgId")));
+        }
+        query.getParameters().put("queryCondition", wrapQuery(request,orgIds));
         doQuery(request, response, query);
         List<SysDept> deptList = sysDeptService.queryByField("deptStatus", BaseObject.OPER_EQ, Const.VALID);
         setCode("DEPT", deptList, "deptName", "id");
@@ -94,7 +104,7 @@ public class SysUserCrudController extends BaseCrudDhtmlxController<SysUser, Lon
         if(!list.isEmpty()){
             return wrapError(new WebException(messageSource.getMessage("message.userNameExists",null,Locale.getDefault())));
         }else
-            return doAdd(request, response);
+            return doSave(request, response);
     }
 
     @RequestMapping("/update")
@@ -102,7 +112,12 @@ public class SysUserCrudController extends BaseCrudDhtmlxController<SysUser, Lon
     public Map<String, Object> updateUser(HttpServletRequest request,
                                           HttpServletResponse response) {
         Long id = Long.valueOf(request.getParameter("id"));
-        return doUpdate(request, response, id);
+        //check userAccount unique
+        List<SysUser> list=this.service.queryByField("userAccount",BaseObject.OPER_EQ,request.getParameter("userAccount"));
+        if((list.size()==1 && id.equals(list.get(0).getId())) || list.isEmpty()){
+            return doUpdate(request, response, id);
+        }else
+            return wrapError(new WebException(messageSource.getMessage("message.userNameExists",null,Locale.getDefault())));
     }
 
     @RequestMapping("/delete")
@@ -156,13 +171,16 @@ public class SysUserCrudController extends BaseCrudDhtmlxController<SysUser, Lon
         return retMap;
     }
 
-    public String wrapQuery(HttpServletRequest request) {
+    public String wrapQuery(HttpServletRequest request,String orgIds) {
         StringBuilder builder = new StringBuilder();
         if (request.getParameter("userName") != null && !"".equals(request.getParameter("userName"))) {
             builder.append(" and user_account like '%" + request.getParameter("userName") + "%'");
         }
         if (request.getParameter("deptId") != null && !"".equals(request.getParameter("deptId"))) {
             builder.append(" and dept_id =" + request.getParameter("deptId"));
+        }
+        if(orgIds!=null && !orgIds.isEmpty()){
+            builder.append(" and dept_id in ("+orgIds+")");
         }
         return builder.toString();
     }

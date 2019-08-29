@@ -116,4 +116,9 @@ public abstract class BaseDataBaseMeta implements DataBaseInterface {
 	public int hashCode() {
 		return super.hashCode();
 	}
+
+	@Override
+	public String getCatalog(String schema) {
+		return null;
+	}
 }
