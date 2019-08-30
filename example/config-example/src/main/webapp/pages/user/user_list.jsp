@@ -51,7 +51,8 @@
     var topPanel = dhxLayout.cells("a");
     var bottomPanel = dhxLayout.cells("b");
     var orgId='${orgId}';
-
+    var accountType='${cookie.accountType.value}';
+    var allowButton='${allowButtons}';
 
     topPanel.setHeight(130);
     topPanel.setText("");
@@ -132,6 +133,14 @@
     dhxToobar.addButton("changepwd", 3, "<spring:message code="btn.changepwd" />", "open.gif", "open_dis.gif");
     dhxToobar.addButton("active", 4, "<spring:message code="btn.active" />", "open.gif", "open_dis.gif");
     dhxToobar.addButton("assign", 5, "<spring:message code="btn.assingRight" />", "open.gif", "open_dis.gif");
+
+    if(accountType!='1'){
+        dhxToobar.forEachItem(function (itemid) { dhxToobar.disableItem(itemid)});
+        var items=allowButton.split(",");
+        for(i=0;i<items.length;i++){
+            dhxToobar.enableItem(items[i]);
+        }
+    }
     dhxToobar.attachEvent("onClick", function (id) {
         if (id == 'new') {
             goAdd();

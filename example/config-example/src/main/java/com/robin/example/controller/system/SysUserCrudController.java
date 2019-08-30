@@ -72,7 +72,7 @@ public class SysUserCrudController extends BaseCrudDhtmlxController<SysUser, Lon
             query = new PageQuery();
         query.setSelectParamId("GET_SYSUSERINFO");
         String orgIds=null;
-        if(request.getParameter("orgId")!=null){
+        if(request.getParameter("orgId")!=null && !request.getParameter("orgId").isEmpty()){
             orgIds=sysOrgService.getSubIdByParentOrgId(Long.valueOf(request.getParameter("orgId")));
         }
         query.getParameters().put("queryCondition", wrapQuery(request,orgIds));

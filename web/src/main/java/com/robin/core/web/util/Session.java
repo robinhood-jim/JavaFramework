@@ -32,6 +32,7 @@ public class Session implements Serializable {
     private String deptNumber;
     private Date loginTime;
     private String cityCode;
+    private String accountType;
     private Map<Integer, String> roles = new HashMap();
     private Map<Integer, String> modules = new HashMap();
     private Map<String, List<Map<String, Object>>> privileges = new HashMap();

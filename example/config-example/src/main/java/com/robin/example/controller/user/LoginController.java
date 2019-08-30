@@ -47,6 +47,7 @@ public class LoginController extends BaseContorller {
             request.getSession().setAttribute(Const.SESSION, session);
             map.put("success", true);
             response.addCookie(new Cookie("userName", URLEncoder.encode(session.getUserName(),"UTF-8")));
+            response.addCookie(new Cookie("accountType",session.getAccountType()));
         } catch (Exception ex) {
             map.put("success", false);
             map.put("message", ex.getMessage());
