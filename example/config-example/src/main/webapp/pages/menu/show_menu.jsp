@@ -1,6 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %>
  <%
 	String path = request.getContextPath();
 	String CONTEXT_PATH = request.getScheme() + "://"+ request.getServerName() + ":" + request.getServerPort()+ path + "/";
@@ -50,10 +51,10 @@
 	 dhxLayout.cells("a").setText("");
 	 dhxLayout.cells("a").hideHeader();
 	 dhxToobar.setIconsPath(ctx+"component/dhtmlxSuite/comm/imgs/");
-	 dhxToobar.addButton("new", 0, "新增", "new.gif", "new_dis.gif");
-	 dhxToobar.addButton("edit", 1, "修改","open.gif", "open_dis.gif");
-	 dhxToobar.addButton("delete", 2, "删除","close.gif", "close_dis.gif");
-	 dhxToobar.addButton("assign", 3, "赋权","open.gif", "open_dis.gif");
+	 dhxToobar.addButton("new", 0, '<spring:message code="btn.add" />', "new.gif", "new_dis.gif");
+	 dhxToobar.addButton("edit", 1, '<spring:message code="btn.modi" />',"open.gif", "open_dis.gif");
+	 dhxToobar.addButton("delete", 2, '<spring:message code="btn.delete" />',"close.gif", "close_dis.gif");
+	 dhxToobar.addButton("assign", 3, '<spring:message code="btn.add" />',"open.gif", "open_dis.gif");
 	 var dhxTree=dhxLayout.cells("a").attachTree();
 	 dhxTree.setImagePath(ctx+"component/dhtmlxSuite/codebase/imgs/dhxtree_material/");
 	 dhxTree.enableTreeLines(true);
@@ -103,14 +104,14 @@
 			        	  var tobj= eval('(' + response + ')'); 
 			        	  if(tobj.success=='true'){
 			        		  dhtmlx.message({
-									text: "保存成功",
+									text: <spring:message code="message.saveSuccess" />,
 									expire: 10
 								});
 			        		  var menu=tobj.menu;
 			        		  dhxTree.insertNewChild(pid,menu.id,menu.resName,0,0,0,0,"CHILD");
 			        	  	 closedialog(true);
 			        	  }else{
-			        		  openMsgDialog("保存用户失败","错误信息:"+tobj.message,300,200);
+			        		  openMsgDialog("<spring:message code="message.SaveFailed" />","<spring:message code="message.errorMsg" />"+tobj.message,300,200);
 			        	  }
 			          });      
 			    }else if(name=='cmdCancel'){

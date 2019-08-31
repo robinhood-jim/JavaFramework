@@ -26,7 +26,7 @@ public class CodeSetService {
         Map<String,String> codeMap=new HashMap<>();
         if (factory.isSelectIdExists("$_GETCODESET")) {
             PageQuery query = new PageQuery();
-            query.setPageSize("0");
+            query.setPageSize(0);
             query.setSelectParamId("$_GETCODESET");
             query.setParameterArr(new Object[]{codeSetNo});
             jdbcDao.queryBySelectId(query);

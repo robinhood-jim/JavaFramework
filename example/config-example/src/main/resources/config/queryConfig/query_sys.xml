@@ -80,6 +80,10 @@
 		<FROMSQL>from t_sys_code a,t_sys_codeset b where a.CS_ID=b.ID and en_name=?</FROMSQL>
 		<FIELD>a.ITEM_NAME as ITEMNAME,a.ITEM_VALUE as ITEMVALUE</FIELD>
 	</SQLSCRIPT>
+	<SQLSCRIPT ID="GETUSER_ORG">
+		<FROMSQL> from t_sys_org_info a,t_sys_user_org_r b where a.id=b.org_id and b.user_id=?</FROMSQL>
+		<FIELD>a.id as value,a.org_name as text</FIELD>
+	</SQLSCRIPT>
 
 	
 </QUERY>

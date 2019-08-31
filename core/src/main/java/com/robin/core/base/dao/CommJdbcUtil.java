@@ -105,7 +105,7 @@ public class CommJdbcUtil {
         int pageSize = 0;
         //set pageSize by PageQuery Object
         try {
-            pageSize = Integer.parseInt(pageQuery.getPageSize());
+            pageSize = pageQuery.getPageSize();
         } catch (Exception e) {
             pageSize = Integer.parseInt(Const.DEFAULT_PAGE_SIZE);
         }
@@ -121,23 +121,23 @@ public class CommJdbcUtil {
                 pageSize = Integer.parseInt(Const.DEFAULT_PAGE_SIZE);
             else if (pageSize > Integer.parseInt(Const.MAX_PAGE_SIZE))
                 pageSize = Integer.parseInt(Const.MAX_PAGE_SIZE);
-            pageQuery.setPageSize(String.valueOf(pageSize));
+            pageQuery.setPageSize(pageSize);
             int total = (Integer) jdbcTemplate.query(sumSQL, new ResultSetExtractor() {
                 public Object extractData(ResultSet rs) throws SQLException, DataAccessException {
                     rs.next();
                     return new Integer(rs.getInt(1));
                 }
             });
-            pageQuery.setRecordCount(String.valueOf(total));
+            pageQuery.setRecordCount(total);
             if (total > 0) {
-                int pages = total / Integer.parseInt(pageQuery.getPageSize());
-                if (total % Integer.parseInt(pageQuery.getPageSize()) != 0) pages++;
-                pageQuery.setPageCount(String.valueOf(pages));
+                int pages = total / pageQuery.getPageSize();
+                if (total % pageQuery.getPageSize() != 0) pages++;
+                pageQuery.setPageCount(pages);
                 //adjust pageNumber
-                if (Integer.parseInt(pageQuery.getPageNumber()) > pages)
-                    pageQuery.setPageNumber(String.valueOf(pages));
-                else if (Integer.parseInt(pageQuery.getPageNumber()) < 1)
-                    pageQuery.setPageNumber("1");
+                if (pageQuery.getPageNumber() > pages)
+                    pageQuery.setPageNumber(pages);
+                else if (pageQuery.getPageNumber() < 1)
+                    pageQuery.setPageNumber(1);
                 String pageSQL = sqlGen.generatePageSql(querySQL, pageQuery);
                 if (logger.isDebugEnabled()) {
                     logger.debug((new StringBuilder()).append("sumSQL: ").append(sumSQL).toString());
@@ -146,12 +146,12 @@ public class CommJdbcUtil {
                 list = getResultItems(jdbcTemplate,lobHandler, sqlGen, pageQuery, qs, pageSQL);
             } else {
                 list = new ArrayList();
-                pageQuery.setPageCount("0");
+                pageQuery.setPageCount(0);
             }
         } else {
             list = getResultItems(jdbcTemplate,lobHandler, sqlGen, pageQuery, qs, querySQL);
-            pageQuery.setRecordCount(String.valueOf(list.size()));
-            pageQuery.setPageCount("1");
+            pageQuery.setRecordCount(list.size());
+            pageQuery.setPageCount(1);
         }
         return list;
     }
@@ -265,7 +265,7 @@ public class CommJdbcUtil {
             String querySQL = getReplacementSql(sqlGen,qs,pageQuery);
             if (logger.isInfoEnabled())
                 logger.info((new StringBuilder()).append("querySQL: ").append(querySQL).toString());
-            if (Integer.parseInt(pageQuery.getPageSize()) > 0) {
+            if (pageQuery.getPageSize() > 0) {
                 String sumSQL = "";
                 if (qs.getCountSql() == null || qs.getCountSql().trim().equals(""))
                     sumSQL = sqlGen.generateCountSql(querySQL);
@@ -274,28 +274,28 @@ public class CommJdbcUtil {
 
                 Object[] paramobj = pageQuery.getParameterArr();
                 Integer total = (Integer) jdbcTemplate.queryForObject(sumSQL, paramobj, Integer.class);
-                pageQuery.setRecordCount(String.valueOf(total));
+                pageQuery.setRecordCount(total);
                 String pageSQL = sqlGen.generatePageSql(querySQL, pageQuery);
                 if (logger.isDebugEnabled()) {
                     logger.debug((new StringBuilder()).append("sumSQL: ").append(sumSQL).toString());
                     logger.debug((new StringBuilder()).append("pageSQL: ").append(pageSQL).toString());
                 }
                 if (total > 0) {
-                    int pages = total / Integer.parseInt(pageQuery.getPageSize());
-                    if (total % Integer.parseInt(pageQuery.getPageSize()) != 0) pages++;
-                    pageQuery.setPageCount(String.valueOf(pages));
+                    int pages = total / pageQuery.getPageSize();
+                    if (total % pageQuery.getPageSize() != 0) pages++;
+                    pageQuery.setPageCount(pages);
                     list = getResultItemsByPreparedSimple(jdbcTemplate,lobHandler, sqlGen, qs, pageQuery, pageSQL);
                     //getResultItemsByPrepared(jdbcTemplate,pageQuery, pageSQL);
                 } else {
                     list = new ArrayList();
-                    pageQuery.setPageCount("0");
+                    pageQuery.setPageCount(0);
                 }
             } else {
                 list = getResultItemsByPreparedSimple(jdbcTemplate,lobHandler, sqlGen, qs, pageQuery, querySQL);
                 //getResultItemsByPrepared(jdbcTemplate,pageQuery, querySQL);
                 int len1 = list.size();
-                pageQuery.setRecordCount(String.valueOf(len1));
-                pageQuery.setPageCount("1");
+                pageQuery.setRecordCount(len1);
+                pageQuery.setPageCount(1);
             }
         } catch (Exception e) {
             if (logger.isDebugEnabled())
@@ -340,7 +340,7 @@ public class CommJdbcUtil {
         qs.setField(selectSql);
 
         try {
-            pageSize = Integer.parseInt(pageQuery.getPageSize());
+            pageSize = pageQuery.getPageSize();
         } catch (Exception e) {
             pageSize = Integer.parseInt(Const.DEFAULT_PAGE_SIZE);
         }

@@ -139,7 +139,7 @@ ol, ul {
            text: "<spring:message code="confirmLogOut" />",
            callback: function (result) {
                if(result) {
-                   window.location.href = '<%=CONTEXT_PATH%>/logout';
+                   window.location.href = '<%=CONTEXT_PATH%>logout';
                }
            }
        });

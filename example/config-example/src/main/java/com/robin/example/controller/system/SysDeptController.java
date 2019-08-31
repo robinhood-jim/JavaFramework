@@ -32,7 +32,7 @@ public class SysDeptController extends BaseContorller {
 		}
 		PageQuery query=new PageQuery();
 		query.setSelectParamId("GET_DEPTINFO");
-		query.setPageSize("0");
+		query.setPageSize(0);
 		jdbcDao.queryBySelectId(query);
 		Map<String, Object> map=new HashMap<String, Object>();
 		List<Map<String, Object>> list=new ArrayList<Map<String,Object>>();

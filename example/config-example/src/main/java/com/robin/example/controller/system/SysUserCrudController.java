@@ -23,6 +23,7 @@ import com.robin.core.base.util.StringUtils;
 import com.robin.core.collection.util.CollectionBaseConvert;
 import com.robin.core.query.util.PageQuery;
 import com.robin.core.web.controller.BaseCrudDhtmlxController;
+import com.robin.core.web.util.Session;
 import com.robin.example.model.system.SysDept;
 import com.robin.example.model.system.SysOrg;
 import com.robin.example.model.system.SysResource;
@@ -35,6 +36,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
@@ -119,6 +122,43 @@ public class SysUserCrudController extends BaseCrudDhtmlxController<SysUser, Lon
         }else
             return wrapError(new WebException(messageSource.getMessage("message.userNameExists",null,Locale.getDefault())));
     }
+    @RequestMapping(value = "/setDefaultOrg",method = RequestMethod.POST)
+    @ResponseBody
+    public Map<String,Object> setDefaultOrg(HttpServletRequest request,@RequestParam Long userId,@RequestParam Long orgId){
+        Map<String,Object> retMap=new HashMap<>();
+        if(request.getSession().getAttribute(Const.SESSION)!=null){
+            Session session=(Session) request.getSession().getAttribute(Const.SESSION);
+            if(session.getUserId().equals(userId)){
+                session.setCurOrgId(orgId);
+                request.getSession().setAttribute(Const.SESSION,session);
+                wrapSuccess(retMap);
+            }else{
+                wrapFailed(retMap,messageSource.getMessage("login.require",null,Locale.getDefault()));
+            }
+        }else{
+            wrapFailed(retMap,messageSource.getMessage("login.require",null,Locale.getDefault()));
+        }
+        return retMap;
+    }
+    @RequestMapping("/listorg")
+    @ResponseBody
+    public Map<String,Object> listUserOrg(HttpServletRequest request){
+        Map<String,Object> retMap=new HashMap<>();
+        if(request.getSession().getAttribute(Const.SESSION)!=null){
+            Session session=(Session) request.getSession().getAttribute(Const.SESSION);
+            PageQuery query=new PageQuery();
+            query.setPageSize(0);
+            query.setSelectParamId("GETUSER_ORG");
+            query.setParameterArr(new Object[]{session.getUserId()});
+            service.queryBySelectId(query);
+            retMap.put("options",query.getRecordSet());
+            wrapSuccess(retMap);
+        }else{
+            wrapFailed(retMap,messageSource.getMessage("login.require",null,Locale.getDefault()));
+        }
+        return retMap;
+    }
+
 
     @RequestMapping("/delete")
     @ResponseBody

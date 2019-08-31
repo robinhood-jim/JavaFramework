@@ -29,13 +29,13 @@ public class PageQuery implements Serializable {
 
 	protected String								whereString;
 
-	protected String							pageSize;			
+	protected int							pageSize;
 
-	protected String							pageNumber;		
+	protected int							pageNumber;
 
-	protected String							recordCount;		
+	protected int							recordCount;
 
-	protected String							pageCount;
+	protected int							pageCount;
 
 	protected String								selectParamId;
 
@@ -60,8 +60,8 @@ public class PageQuery implements Serializable {
 	public String                         pageToolBar;
 
 	public PageQuery() {
-		pageNumber = "1";
-		pageSize = "10";
+		pageNumber = 1;
+		pageSize = 10;
 	}
 
 	public String getGroupByString() {
@@ -127,35 +127,35 @@ public class PageQuery implements Serializable {
 		this.parameters = parameters;
 	}
 
-	public String getPageCount() {
+	public int getPageCount() {
 		return pageCount;
 	}
 
-	public void setPageCount(String pageCount) {
+	public void setPageCount(int pageCount) {
 		this.pageCount = pageCount;
 	}
 
-	public String getPageNumber() {
+	public int getPageNumber() {
 		return pageNumber;
 	}
 
-	public void setPageNumber(String pageNumber) {
+	public void setPageNumber(int pageNumber) {
 		this.pageNumber = pageNumber;
 	}
 
-	public String getPageSize() {
+	public int getPageSize() {
 		return pageSize;
 	}
 
-	public void setPageSize(String pageSize) {
+	public void setPageSize(int pageSize) {
 		this.pageSize = pageSize;
 	}
 
-	public String getRecordCount() {
+	public int getRecordCount() {
 		return recordCount;
 	}
 
-	public void setRecordCount(String recordCount) {
+	public void setRecordCount(int recordCount) {
 		this.recordCount = recordCount;
 	}
 

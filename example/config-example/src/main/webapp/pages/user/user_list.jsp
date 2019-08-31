@@ -8,7 +8,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-    <title><spring:message code="userContr" /> </title>
+    <title><spring:message code="title.userContr" /> </title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
     <meta http-equiv="pragma" content="no-cache">
@@ -43,6 +43,7 @@
 </head>
 
 <body onload="">
+<div id="orgDiv" style="width: 150px;height: 200px;overflow: hidden" />
 <script type="text/javascript" src="<%=CONTEXT_PATH%>resources/js/crud.js"></script>
 <script type="text/javascript">
     var ctx = "<%=CONTEXT_PATH%>";
@@ -71,11 +72,12 @@
                         {type: "hidden", name: "query.pageCount", value: ""},
                         {type: "hidden", name: "query.pageNumber", value: "1"},
                         {type: "hidden", name: "query.pageSize", value: "10"},
+                        {type: "hidden", name: "orgId", value: ""},
                         {type: "input", label: "<spring:message code="sysUser.accountName" />", name: "userName", offsetTop: 10},
                         {type: "newcolumn", offset: 20},
                         {type: "select", label: "<spring:message code="sysUser.Dept" />", name: "deptId",connector:ctx + "system/dept/listjson?allowNull=true"},
                         {type: "newcolumn", offset: 20},
-                        {type: "select", label: "<spring:message code="sysUser.Org" />", name: "orgId",connector:ctx + "system/org/listjson?allowNull=true"${disabletxt}},
+                        {type: "input", label: "<spring:message code="sysUser.Org" />", name: "orgName",readonly:true},
 
                     ]
                 }, {
@@ -96,6 +98,15 @@
     if(orgId!=undefined){
         myForm.setItemValue("orgId",orgId);
     }
+    var myPop=new dhtmlXPopup({form:myForm,id:["orgName"]});
+    var myTreeView=myPop.attachTreeView(150,200,{json:ctx+"system/org/listAll?id={id}"});
+    //myTreeView.loadStruct(ctx+"system/org/listAll")
+    myTreeView.attachEvent("onClick",function (id) {
+        var txt=myTreeView.getItemText(id);
+        myForm.setItemValue("orgName",txt);
+        myForm.setItemValue("orgId",id);
+        myPop.hide();
+    })
 
     myForm.attachEvent("onButtonClick", function (name) {
         if (name == 'submit') {
@@ -110,6 +121,7 @@
             this.reset();
         }
     });
+
     var statusbar = bottomPanel.attachStatusBar({height: 36});
     statusbar.setText("<div id='recinfoArea'></div>");
 
@@ -156,6 +168,7 @@
             goActive();
         }
     });
+
 
     function goSearch() {
         myForm.send(ctx + "system/user/list", function (loader, response) {

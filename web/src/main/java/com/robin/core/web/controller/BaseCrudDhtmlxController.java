@@ -85,8 +85,8 @@ public abstract class BaseCrudDhtmlxController<O extends BaseObject, P extends S
             String[] fieldNames = queryKeys.split(",");
             List<Map<String, Object>> retList = new ArrayList<Map<String, Object>>();
             PageQuery tquery = new PageQuery();
-            tquery.setRecordCount(String.valueOf(list.size()));
-            tquery.setPageSize("0");
+            tquery.setRecordCount(list.size());
+            tquery.setPageSize(0);
             for (Map<String, String> map : list) {
                 Map<String, Object> tmap = new HashMap<String, Object>();
                 List<String> tmpList = new ArrayList<String>();

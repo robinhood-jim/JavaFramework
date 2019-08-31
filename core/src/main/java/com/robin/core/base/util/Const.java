@@ -195,6 +195,46 @@ public class Const {
 			return value;
 		}
 	}
+	public enum ACCOUNT_TYPE{
+		SYSUSER("1"),  //System User,can operator system menu
+		ORGUSER("2"),  // Org User,can access Org right menu and menu Assign by system user
+		FREEUSER("3"); // User not include in Any Org
+		private String value;
+		private ACCOUNT_TYPE(String value){
+			this.value=value;
+		}
+		@Override
+		public String toString(){
+			return value;
+		}
+	}
+	public enum RESPONSEBILITY_TYPE{
+		SYS_RESP("1"),
+		ORG_RESP("2");
+		private String value;
+		private RESPONSEBILITY_TYPE(String value){
+			this.value=value;
+		}
+
+		@Override
+		public String toString() {
+			return value;
+		}
+	}
+	public enum RESTYPE{
+		MENU("1"),
+		BUTTON("2");
+
+		private String value;
+
+		RESTYPE(String value){
+			this.value=value;
+		}
+		@Override
+		public String toString() {
+			return value;
+		}
+	}
 	public final static List<String> ESCAPE_CHARACTERS = new ArrayList<String>(
 			Arrays.asList(new String[] { "$", "(", ")", "*", "+", ".", "[",
 					"?", "\\", "^", "{", "|" }));

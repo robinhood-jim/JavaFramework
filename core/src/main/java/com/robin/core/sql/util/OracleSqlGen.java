@@ -40,8 +40,8 @@ public class OracleSqlGen extends AbstractSqlGen implements BaseSqlGen {
 	}
 
 	public String generatePageSql(String strSQL, PageQuery pageQuery) {
-
-		int nBegin = (Integer.parseInt(pageQuery.getPageNumber()) - 1) * Integer.parseInt(pageQuery.getPageSize());
+		Integer[] startEnd=getStartEndRecord(pageQuery);
+		int nBegin = startEnd[0];
 		boolean hasOffset = nBegin > 0;
 		strSQL = strSQL.trim();
 		boolean isForUpdate = false;
@@ -53,9 +53,7 @@ public class OracleSqlGen extends AbstractSqlGen implements BaseSqlGen {
 		if (hasOffset) pagingSelect.append("select * from ( select row_.*, rownum rownum_ from ( ");
 		else pagingSelect.append("select * from ( ");
 		pagingSelect.append(strSQL);
-		int tonums=nBegin + Integer.parseInt(pageQuery.getPageSize());
-		if(Integer.parseInt(pageQuery.getRecordCount())< tonums)
-			tonums= Integer.parseInt(pageQuery.getRecordCount());
+		int tonums=startEnd[1];
 		if (hasOffset) pagingSelect.append(" ) row_ ) where rownum_ <= ").append(tonums).append(" and rownum_ > ").append(nBegin);
 		else pagingSelect.append(" ) where rownum <= ").append(pageQuery.getPageSize());
 		if (isForUpdate) pagingSelect.append(" for update");

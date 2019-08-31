@@ -68,8 +68,8 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
                     return rs.getInt(1);
                 }
             });
-            pageQuery.setRecordCount(String.valueOf(total));
-            if (Integer.parseInt(pageQuery.getPageSize()) > 0) {
+            pageQuery.setRecordCount(total);
+            if (pageQuery.getPageSize() > 0) {
                 String pageSQL = sqlGen.generatePageSql(querySQL, pageQuery);
                 if (pageQuery.getOrder() != null && !"".equals(pageQuery.getOrder()))
                     pageSQL += " order by " + pageQuery.getOrder() + " " + pageQuery.getOrderDirection();
@@ -78,22 +78,22 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
                     logger.debug((new StringBuilder()).append("pageSQL: ").append(pageSQL).toString());
                 }
                 if (total > 0) {
-                    int pages = total / Integer.parseInt(pageQuery.getPageSize());
-                    if (total % Integer.parseInt(pageQuery.getPageSize()) != 0) pages++;
-                    int pageNumber = Integer.parseInt(pageQuery.getPageNumber());
+                    int pages = total / pageQuery.getPageSize();
+                    if (total % pageQuery.getPageSize() != 0) pages++;
+                    int pageNumber = pageQuery.getPageNumber();
                     //Over Last pages
                     if (pageNumber > pages)
-                        pageQuery.setPageNumber(String.valueOf(pages));
-                    pageQuery.setPageCount(String.valueOf(pages));
+                        pageQuery.setPageNumber(pages);
+                    pageQuery.setPageCount(pages);
                     list = queryItemList(pageQuery, pageSQL);
                 } else {
                     list = new ArrayList<>();
-                    pageQuery.setPageCount("0");
+                    pageQuery.setPageCount(0);
                 }
             } else {
                 list = queryItemList(pageQuery, querySQL);
-                pageQuery.setRecordCount(String.valueOf(list.size()));
-                pageQuery.setPageCount("1");
+                pageQuery.setRecordCount(list.size());
+                pageQuery.setPageCount(1);
 
             }
             pageQuery.setRecordSet(list);
@@ -679,8 +679,8 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
     }
 
     private List<Map<String, Object>> queryItemList(final PageQuery qs, final String pageSQL) throws DAOException {
-        int pageNum = Integer.parseInt(qs.getPageNumber());
-        int pageSize = Integer.parseInt(qs.getPageSize());
+        int pageNum = qs.getPageNumber();
+        int pageSize = qs.getPageSize();
         int start = 0;
         int end = 0;
         if (pageSize != 0) {

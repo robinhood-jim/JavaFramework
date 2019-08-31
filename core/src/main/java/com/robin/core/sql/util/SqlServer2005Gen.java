@@ -45,8 +45,6 @@ public class SqlServer2005Gen extends AbstractSqlGen implements BaseSqlGen{
 
 	public String generatePageSql(String strSQL, PageQuery pageQuery) {
 
-		int nBegin = (Integer.parseInt(pageQuery.getPageNumber()) - 1) * Integer.parseInt(pageQuery.getPageSize());
-		boolean hasOffset = nBegin > 0;
 		strSQL = strSQL.trim();
 		String order=pageQuery.getOrder();
 		String orderdesc=pageQuery.getOrderDirection();
@@ -56,7 +54,7 @@ public class SqlServer2005Gen extends AbstractSqlGen implements BaseSqlGen{
 		else
 			norder=PageQuery.ASC;
 		StringBuffer pagingSelect = new StringBuffer(strSQL.length() + 100);
-		int pagefrom=Integer.parseInt(pageQuery.getPageSize())*Integer.parseInt(pageQuery.getPageNumber());
+		int pagefrom=pageQuery.getPageSize()*pageQuery.getPageNumber();
 		int pos=strSQL.indexOf("select");
 		int pos1=strSQL.indexOf("order");
 		String sqlpart=strSQL.substring(pos+6,pos1);

@@ -367,7 +367,7 @@ public class ProjectInfoContorller extends BaseCrudDhtmlxController<ProjectInfo,
             //DataSourceService DataSourceService = (DataSourceService) getBean("DataSourceService");
             PageQuery pageQuery = wrapPageQuery(request);
             pageQuery.setSelectParamId("GET_PROJECTINFO");
-            pageQuery.setPageSize("1");
+            pageQuery.setPageSize(1);
             String queryString = getQueryString(pageQuery);
             pageQuery.getParameters().put("queryString", queryString);
             if (pageQuery.getOrder() == null || "".equals(pageQuery.getOrder().trim())) {

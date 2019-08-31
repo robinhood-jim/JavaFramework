@@ -111,7 +111,7 @@ public class LoginService {
         }
         PageQuery query = new PageQuery();
         query.setSelectParamId("GET_RESOURCEINFO");
-        query.setPageSize("0");
+        query.setPageSize(0);
         query.getParameters().put("userId", session.getUserId().toString());
         if (!rolesList.isEmpty()) {
             query.getParameters().put("roleIds", StringUtils.join(rolesList, ","));

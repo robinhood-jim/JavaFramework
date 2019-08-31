@@ -15,16 +15,18 @@
  */
 package com.robin.core.sql.util;
 
+import com.robin.core.base.util.Const;
+import com.robin.core.query.util.PageQuery;
+import com.robin.core.query.util.QueryParam;
+import com.robin.core.query.util.QueryString;
+import lombok.extern.slf4j.Slf4j;
+
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
-import com.robin.core.base.util.Const;
-import com.robin.core.query.util.PageQuery;
-import com.robin.core.query.util.QueryParam;
-import com.robin.core.query.util.QueryString;
-
+@Slf4j
 public abstract class AbstractSqlGen implements BaseSqlGen {
     public static final String illegal_SchemaChars = "!@#$%^&*()+.";
     protected static String SELECT = "select ";
@@ -394,6 +396,16 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
             return "\"" + schema + "\"";
         }
     }
+
+    protected Integer[] getStartEndRecord(PageQuery pageQuery) {
+        int nBegin = (pageQuery.getPageNumber() - 1) * pageQuery.getPageSize();
+        int tonums = nBegin + pageQuery.getPageSize();
+        if (pageQuery.getRecordCount() < tonums)
+            tonums = pageQuery.getRecordCount();
+        return new Integer[]{nBegin, tonums};
+    }
+
+
 
     protected boolean isSchemaIllegal(String schema) {
         boolean is_illeagl = true;

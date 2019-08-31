@@ -52,20 +52,14 @@ public class PostgreSqlSqlGen extends AbstractSqlGen implements BaseSqlGen {
 
 
 	public String generatePageSql(String strSQL, PageQuery pageQuery) {
+		Integer[] startEnd=getStartEndRecord(pageQuery);
+		int nBegin = startEnd[0];
 
-		int nBegin = (Integer.parseInt(pageQuery.getPageNumber()) - 1) * Integer.parseInt(pageQuery.getPageSize());
-		boolean hasOffset = nBegin > 0;
 		strSQL = strSQL.trim();
-		boolean isForUpdate = false;
-		if (strSQL.toLowerCase().endsWith(" for update")) {
-			strSQL = strSQL.substring(0, strSQL.length() - 11);
-			isForUpdate = true;
-		}
+
 		StringBuffer pagingSelect = new StringBuffer(strSQL.length() + 100);
 		pagingSelect.append(strSQL);
-		int tonums=nBegin + Integer.parseInt(pageQuery.getPageSize());
-		if(Integer.parseInt(pageQuery.getRecordCount())< tonums)
-			tonums= Integer.parseInt(pageQuery.getRecordCount());
+		int tonums=startEnd[1];
 		int nums=tonums-nBegin;
 		pagingSelect.append(" limit "+nums+" offset "+nBegin);
 		log.info("pageSql="+pagingSelect.toString());
