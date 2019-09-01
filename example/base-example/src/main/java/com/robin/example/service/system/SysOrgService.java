@@ -17,6 +17,7 @@ package com.robin.example.service.system;
 
 import com.robin.core.base.model.BaseObject;
 import com.robin.core.base.service.BaseAnnotationJdbcService;
+import com.robin.core.base.service.IBaseAnnotationJdbcService;
 import com.robin.example.model.system.SysOrg;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.Scope;
@@ -26,7 +27,7 @@ import java.util.List;
 
 @Component(value="sysOrgService")
 @Scope(value="singleton")
-public class SysOrgService extends BaseAnnotationJdbcService<SysOrg, Long> {
+public class SysOrgService extends BaseAnnotationJdbcService<SysOrg, Long> implements IBaseAnnotationJdbcService<SysOrg, Long> {
 
     public String getSubIdByParentOrgId(Long orgId){
         SysOrg sysOrg=getEntity(orgId);

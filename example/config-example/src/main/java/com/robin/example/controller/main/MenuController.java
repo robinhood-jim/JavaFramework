@@ -15,11 +15,14 @@
  */
 package com.robin.example.controller.main;
 
+import com.robin.core.base.service.IBaseAnnotationJdbcService;
 import com.robin.core.base.util.Const;
 import com.robin.core.web.util.Session;
 import com.robin.example.service.system.SysResourceService;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -35,7 +38,8 @@ import java.util.Map;
 @RequestMapping("/menu")
 public class MenuController {
 	@Autowired
-	private SysResourceService sysResourceService;
+	@Qualifier("sysResourceService")
+	private IBaseAnnotationJdbcService sysResourceService;
 	@RequestMapping("/list")
 	@ResponseBody
 	public Map<String,Object> getMenu(HttpServletRequest request,HttpServletResponse response){

@@ -1,27 +1,21 @@
 package com.robin.comm.ftp;
 
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.RandomAccessFile;
+import org.apache.commons.net.ftp.FTP;
+import org.apache.commons.net.ftp.FTPClient;
+import org.apache.commons.net.ftp.FTPFile;
+import org.apache.commons.net.ftp.FTPReply;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.*;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.commons.net.ftp.FTP;
-import org.apache.commons.net.ftp.FTPClient;
-import org.apache.commons.net.ftp.FTPFile;
-import org.apache.commons.net.ftp.FTPReply;
-
 public class SimpleFtp {
-	protected static Log log = LogFactory.getLog(SimpleFtp.class);
+	protected static Logger log = LoggerFactory.getLogger(SimpleFtp.class);
 	public static final int PORT_DEFAULT = 21;
 	public static final String ENCODING_DEFAULT = "UTF-8";
 	protected FTPClient ftpClient;
@@ -58,10 +52,8 @@ public class SimpleFtp {
 		try {
 			ftpClient.connect(host, port);
 			ftpClient.setDataTimeout(20000);
-		} catch (SocketException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
+		} catch (Exception e) {
+			log.error("",e);
 		}
 		
 		
@@ -71,7 +63,7 @@ public class SimpleFtp {
 					return true;
 				}
 			} catch (IOException e) {
-				e.printStackTrace();
+				log.error("",e);
 			}
 		}
 		
@@ -130,7 +122,7 @@ public class SimpleFtp {
 			retStr.add(new FileInfo(path, files[i].getName(), files[i].getSize(), files[i].getTimestamp(),interfaceName));
 		}
 		}catch(Exception ex){
-			log.error(ex);
+			log.error("",ex);
 		}
 		return retStr;
 	}
@@ -180,7 +172,7 @@ public class SimpleFtp {
 					if(!retflag)
 						Thread.sleep(waitForReconnect);
 				}catch(InterruptedException ex){
-					log.error(ex);
+					log.error("",ex);
 					retrynum++;
 				}
 			}
@@ -209,7 +201,7 @@ public class SimpleFtp {
 				}
 				retflag=true;
 			} catch (IOException ex) {
-				log.error(ex);
+				log.error("",ex);
 				retflag=false;
 			}finally{
 				in.close();
@@ -234,7 +226,7 @@ public class SimpleFtp {
 				}
 				retflag=true;
 			} catch (IOException ex) {
-				ex.printStackTrace();
+				log.error("",ex);
 				retflag=false;
 			}finally{
 				in.close();
@@ -279,7 +271,7 @@ public class SimpleFtp {
 					if(!retflag)
 					Thread.currentThread().sleep(waitForReconnect);
 				}catch(InterruptedException ex){
-					log.error(ex);
+					log.error("",ex);
 					retrynum++;
 				}
 			}
@@ -331,7 +323,7 @@ public class SimpleFtp {
 			retflag = ftpClient.completePendingCommand();
 
 		} catch (Exception ex) {
-			log.error(ex);
+			log.error("",ex);
 			retflag=false;
 		}
 		return retflag;

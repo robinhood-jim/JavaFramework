@@ -17,6 +17,7 @@ package com.robin.core.web.controller;
 
 import com.robin.core.base.model.BaseObject;
 import com.robin.core.base.service.BaseAnnotationJdbcService;
+import com.robin.core.base.service.IBaseAnnotationJdbcService;
 import com.robin.core.base.spring.SpringContextHolder;
 import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.query.util.PageQuery;
@@ -36,7 +37,7 @@ import java.util.Map;
 /**
  * use Chinese Alter msg.Later will change to i18n
  */
-public abstract class BaseCrudDhtmlxController<O extends BaseObject, P extends Serializable, S extends BaseAnnotationJdbcService> extends BaseCrudController<O, P, S> {
+public abstract class BaseCrudDhtmlxController<O extends BaseObject, P extends Serializable, S extends IBaseAnnotationJdbcService<O,P>> extends BaseCrudController<O, P, S> {
 
 
     protected Map<String, Object> wrapComobo(List<Map<String, Object>> rsList, String keyColumn, String valueColumn, boolean insertNullVal) {

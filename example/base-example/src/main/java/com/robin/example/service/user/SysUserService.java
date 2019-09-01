@@ -2,6 +2,7 @@ package com.robin.example.service.user;
 
 import com.robin.core.base.service.BaseAnnotationJdbcService;
 
+import com.robin.core.base.service.IBaseAnnotationJdbcService;
 import com.robin.example.model.user.SysUser;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -20,5 +21,5 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @Scope("singleton")
-public class SysUserService extends BaseAnnotationJdbcService<SysUser,Long> {
+public class SysUserService extends BaseAnnotationJdbcService<SysUser,Long> implements IBaseAnnotationJdbcService<SysUser,Long> {
 }

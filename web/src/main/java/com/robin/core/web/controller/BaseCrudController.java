@@ -17,6 +17,7 @@ package com.robin.core.web.controller;
 
 import com.robin.core.base.model.BaseObject;
 import com.robin.core.base.service.BaseAnnotationJdbcService;
+import com.robin.core.base.service.IBaseAnnotationJdbcService;
 import com.robin.core.base.spring.SpringContextHolder;
 import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.query.util.PageQuery;
@@ -36,13 +37,12 @@ import java.util.Map;
 /**
  * Single Table Mapping Background Controller
  */
-public abstract class BaseCrudController<O extends BaseObject, P extends Serializable, S extends BaseAnnotationJdbcService> extends BaseContorller implements InitializingBean {
+public abstract class BaseCrudController<O extends BaseObject, P extends Serializable, S extends IBaseAnnotationJdbcService<O,P>> extends BaseContorller implements InitializingBean {
     private Class<O> objectType;
     private Class<P> pkType;
     private Class<S> serviceType;
     protected S service;
     protected Method valueOfMethod;
-
 
 
     public BaseCrudController() {
@@ -78,12 +78,12 @@ public abstract class BaseCrudController<O extends BaseObject, P extends Seriali
         boolean finishTag = true;
         Map<String, Object> retMap = new HashMap();
         try {
-            BaseObject object=null;
+            O object=null;
             if(obj==null) {
                 object=this.objectType.newInstance();
                 ConvertUtil.mapToObject(object, wrapRequest(request));
             }else if(obj[0] instanceof BaseObject){
-                object=(BaseObject) obj[0];
+                object=(O) obj[0];
             }
             this.service.saveEntity(object);
             wrapSuccess(retMap);
@@ -98,10 +98,10 @@ public abstract class BaseCrudController<O extends BaseObject, P extends Seriali
         return retMap;
     }
 
-    protected Map<String, Object> doView(HttpServletRequest request, HttpServletResponse response, Long id) {
+    protected Map<String, Object> doView(HttpServletRequest request, HttpServletResponse response, P id) {
         Map<String, Object> retMap = new HashMap<String, Object>();
         try {
-            BaseObject object = service.getEntity(id);
+            O object = service.getEntity(id);
             retMap = wrapSuccess("success");
             doAfterView(request, response, object, retMap);
             wrapSuccess(retMap);
@@ -129,8 +129,8 @@ public abstract class BaseCrudController<O extends BaseObject, P extends Seriali
         Map<String, Object> retMap = new HashMap<>();
         try {
             Map<String, String> valueMap = wrapRequest(request);
-            BaseObject object = objectType.newInstance();
-            BaseObject updateObj = service.getEntity(id);
+            O object = objectType.newInstance();
+            O updateObj = service.getEntity(id);
             ConvertUtil.convertToModel(object, valueMap);
             ConvertUtil.convertToModelForUpdateNew(updateObj, object);
             service.updateEntity(updateObj);

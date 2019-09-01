@@ -168,7 +168,7 @@ public class MultiThreadFtp extends SimpleFtp {
                 }
                 logger.info("finish download section {} stratfrom {} to pos {}", part, formsize, formsize + processsize);
             } catch (IOException ex) {
-                log.error(ex);
+                log.error("",ex);
                 retflag = false;
             } finally {
                 if (in != null)

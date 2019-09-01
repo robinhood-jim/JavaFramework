@@ -17,6 +17,8 @@ package com.robin.example.service.system;
 
 import com.robin.core.base.service.BaseAnnotationJdbcService;
 
+import com.robin.core.base.service.IBaseAnnotationJdbcService;
+import com.robin.core.base.util.Const;
 import com.robin.example.model.system.SysResource;
 import com.robin.example.model.user.SysResourceUser;
 import org.springframework.context.annotation.Scope;
@@ -28,7 +30,7 @@ import java.util.List;
 
 @Component(value="sysResourceService")
 @Scope(value="singleton")
-public class SysResourceService extends BaseAnnotationJdbcService<SysResource, Long> {
+public class SysResourceService extends BaseAnnotationJdbcService<SysResource, Long> implements IBaseAnnotationJdbcService<SysResource,Long> {
 	@Transactional(propagation= Propagation.REQUIRED,noRollbackFor=RuntimeException.class)
 	public void updateUserResourceRight(String userId,List<String> addList,List<String> delList){
 		this.getJdbcDao().deleteByField(SysResourceUser.class, "userId", new Integer(userId));
@@ -56,4 +58,11 @@ public class SysResourceService extends BaseAnnotationJdbcService<SysResource, L
 		}
 		
 	}
+	public List<SysResource> getOrgAllMenu(Long orgId){
+		SysResource queryVO=new SysResource();
+		queryVO.setStatus(Const.VALID);
+		queryVO.setOrgId(orgId);
+		return queryByVO(queryVO,null,null);
+	}
+
 }

@@ -186,7 +186,7 @@ div#winVP {
         w.denyMove();
         form.attachEvent("onButtonClick",function (name, command) {
             if(name=='submit'){
-                this.send(ctx + "system/user/setDefaultOrg", function (loader, response) {
+                this.send(ctx + "setDefaultOrg", function (loader, response) {
                     var tobj = eval('(' + response + ')');
                     if (tobj.success == true) {
                         closedialog();

@@ -32,6 +32,13 @@
             border: none;
             overflow: hidden;
         }
+        div#orgDiv {
+            position: relative;
+            width: auto;
+            height: 200px;
+            margin: 20px;
+            border: #c0c0c0 1px solid;
+        }
 
     </style>
     <script type="text/javascript">
@@ -43,7 +50,7 @@
 </head>
 
 <body onload="">
-<div id="orgDiv" style="width: 150px;height: 200px;overflow: hidden" />
+
 <script type="text/javascript" src="<%=CONTEXT_PATH%>resources/js/crud.js"></script>
 <script type="text/javascript">
     var ctx = "<%=CONTEXT_PATH%>";
@@ -54,6 +61,7 @@
     var orgId='${orgId}';
     var accountType='${cookie.accountType.value}';
     var allowButton='${allowButtons}';
+    var orgSelect=undefined;
 
     topPanel.setHeight(130);
     topPanel.setText("");
@@ -98,15 +106,7 @@
     if(orgId!=undefined){
         myForm.setItemValue("orgId",orgId);
     }
-    var myPop=new dhtmlXPopup({form:myForm,id:["orgName"]});
-    var myTreeView=myPop.attachTreeView(150,200,{json:ctx+"system/org/listAll?id={id}"});
-    //myTreeView.loadStruct(ctx+"system/org/listAll")
-    myTreeView.attachEvent("onClick",function (id) {
-        var txt=myTreeView.getItemText(id);
-        myForm.setItemValue("orgName",txt);
-        myForm.setItemValue("orgId",id);
-        myPop.hide();
-    })
+
 
     myForm.attachEvent("onButtonClick", function (name) {
         if (name == 'submit') {
@@ -121,6 +121,18 @@
             this.reset();
         }
     });
+    myForm.attachEvent("onFocus", function(name, value){
+       if(name=='orgName'){
+           orgSelect=openWindowForTreeview(ctx+"system/org/listAll?id={id}",myForm.getInput(name).offsetParent.offsetLeft+myForm.getInput(name).offsetLeft,myForm.getInput(name).offsetParent.offsetTop+myForm.getInput(name).offsetTop+40,200,150);
+           orgSelect.attachEvent("onSelect",function (id,mode) {
+               var txt=orgSelect.getItemText(id);
+               myForm.setItemValue("orgName",txt);
+               myForm.setItemValue("orgId",id);
+               closedialog();
+           });
+       }
+    });
+
 
     var statusbar = bottomPanel.attachStatusBar({height: 36});
     statusbar.setText("<div id='recinfoArea'></div>");
@@ -145,6 +157,7 @@
     dhxToobar.addButton("changepwd", 3, "<spring:message code="btn.changepwd" />", "open.gif", "open_dis.gif");
     dhxToobar.addButton("active", 4, "<spring:message code="btn.active" />", "open.gif", "open_dis.gif");
     dhxToobar.addButton("assign", 5, "<spring:message code="btn.assingRight" />", "open.gif", "open_dis.gif");
+
 
     if(accountType!='1'){
         dhxToobar.forEachItem(function (itemid) { dhxToobar.disableItem(itemid)});

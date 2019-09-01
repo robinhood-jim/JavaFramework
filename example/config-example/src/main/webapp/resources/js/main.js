@@ -20,7 +20,7 @@ function addTab(url,tabTitle,tabName,width){
 		if(arr.indexOf(tabName)!=-1)
 			tabbar.cells(tabName).setActive();
 		else{
-			url=contextpath+url;
+			url=ctx+url;
 			arr.append(tabName);
 			tabbar.addTab(tabName,tabTitle,width);
 			tabbar.cells(tabName).attachURL(url);	
@@ -37,10 +37,3 @@ function showmsg(mesg){
 		});
 }
 
-function closedialog(ret) {
-	dhxWins.window("win").close();
-		editMode="";
-	if(ret=='true') {
-		gosearch();
-	}	
-}

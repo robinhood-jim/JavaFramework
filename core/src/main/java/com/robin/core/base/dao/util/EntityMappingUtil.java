@@ -228,7 +228,7 @@ public class EntityMappingUtil {
             }
         }
         String sql = builder.toString().substring(0, builder.length() - 5);
-        if (orderByStr != null && !"".equals(orderByStr))
+        if (orderByStr != null && !orderByStr.isEmpty())
             sql += " order by " + orderByStr;
         List<Object> objs = new ArrayList<>();
         for (int i = 0; i < params.size(); i++) {

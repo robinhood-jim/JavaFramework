@@ -16,11 +16,12 @@
 package com.robin.example.service.system;
 
 import com.robin.core.base.service.BaseAnnotationJdbcService;
+import com.robin.core.base.service.IBaseAnnotationJdbcService;
 import com.robin.example.model.system.SysDept;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 @Component(value="sysDeptService")
 @Scope(value="singleton")
-public class SysDeptService extends BaseAnnotationJdbcService<SysDept, Long> {
+public class SysDeptService extends BaseAnnotationJdbcService<SysDept, Long> implements IBaseAnnotationJdbcService<SysDept, Long> {
 
 }

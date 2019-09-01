@@ -28,10 +28,12 @@ import com.robin.example.model.system.SysDept;
 import com.robin.example.model.system.SysOrg;
 import com.robin.example.model.system.SysResource;
 import com.robin.example.model.user.SysUser;
+import com.robin.example.service.system.LoginService;
 import com.robin.example.service.system.SysDeptService;
 import com.robin.example.service.system.SysOrgService;
 import com.robin.example.service.system.SysResourceService;
 import com.robin.example.service.user.SysUserService;
+import org.apache.http.HttpResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.stereotype.Controller;
@@ -40,8 +42,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.net.URLEncoder;
 import java.util.*;
 
 @Controller
@@ -55,14 +59,16 @@ public class SysUserCrudController extends BaseCrudDhtmlxController<SysUser, Lon
     private SysResourceService sysResourceService;
     @Autowired
     private ResourceBundleMessageSource messageSource;
+    @Autowired
+    private LoginService loginService;
 
     @RequestMapping("/show")
     public String userList(HttpServletRequest request, HttpServletResponse response) {
-        if(request.getParameter("lockorg")!=null && request.getParameter("lockorg").equals(Const.VALID)){
-            request.setAttribute("disabletxt",",disabled:true");
-            request.setAttribute("orgId",request.getParameter("orgId"));
-        }else{
-            request.setAttribute("disabletxt","");
+        if (request.getParameter("lockorg") != null && request.getParameter("lockorg").equals(Const.VALID)) {
+            request.setAttribute("disabletxt", ",disabled:true");
+            request.setAttribute("orgId", request.getParameter("orgId"));
+        } else {
+            request.setAttribute("disabletxt", "");
         }
         return "/user/user_list";
     }
@@ -74,11 +80,11 @@ public class SysUserCrudController extends BaseCrudDhtmlxController<SysUser, Lon
         if (query == null)
             query = new PageQuery();
         query.setSelectParamId("GET_SYSUSERINFO");
-        String orgIds=null;
-        if(request.getParameter("orgId")!=null && !request.getParameter("orgId").isEmpty()){
-            orgIds=sysOrgService.getSubIdByParentOrgId(Long.valueOf(request.getParameter("orgId")));
+        String orgIds = null;
+        if (request.getParameter("orgId") != null && !request.getParameter("orgId").isEmpty()) {
+            orgIds = sysOrgService.getSubIdByParentOrgId(Long.valueOf(request.getParameter("orgId")));
         }
-        query.getParameters().put("queryCondition", wrapQuery(request,orgIds));
+        query.getParameters().put("queryCondition", wrapQuery(request, orgIds));
         doQuery(request, response, query);
         List<SysDept> deptList = sysDeptService.queryByField("deptStatus", BaseObject.OPER_EQ, Const.VALID);
         setCode("DEPT", deptList, "deptName", "id");
@@ -103,10 +109,10 @@ public class SysUserCrudController extends BaseCrudDhtmlxController<SysUser, Lon
                                         HttpServletResponse response) {
 
         //check userAccount unique
-        List<SysUser> list=this.service.queryByField("userAccount",BaseObject.OPER_EQ,request.getParameter("userAccount"));
-        if(!list.isEmpty()){
-            return wrapError(new WebException(messageSource.getMessage("message.userNameExists",null,Locale.getDefault())));
-        }else
+        List<SysUser> list = this.service.queryByField("userAccount", BaseObject.OPER_EQ, request.getParameter("userAccount"));
+        if (!list.isEmpty()) {
+            return wrapError(new WebException(messageSource.getMessage("message.userNameExists", null, Locale.getDefault())));
+        } else
             return doSave(request, response);
     }
 
@@ -116,45 +122,30 @@ public class SysUserCrudController extends BaseCrudDhtmlxController<SysUser, Lon
                                           HttpServletResponse response) {
         Long id = Long.valueOf(request.getParameter("id"));
         //check userAccount unique
-        List<SysUser> list=this.service.queryByField("userAccount",BaseObject.OPER_EQ,request.getParameter("userAccount"));
-        if((list.size()==1 && id.equals(list.get(0).getId())) || list.isEmpty()){
+        List<SysUser> list = this.service.queryByField("userAccount", BaseObject.OPER_EQ, request.getParameter("userAccount"));
+        if ((list.size() == 1 && id.equals(list.get(0).getId())) || list.isEmpty()) {
             return doUpdate(request, response, id);
-        }else
-            return wrapError(new WebException(messageSource.getMessage("message.userNameExists",null,Locale.getDefault())));
+        } else
+            return wrapError(new WebException(messageSource.getMessage("message.userNameExists", null, Locale.getDefault())));
     }
-    @RequestMapping(value = "/setDefaultOrg",method = RequestMethod.POST)
-    @ResponseBody
-    public Map<String,Object> setDefaultOrg(HttpServletRequest request,@RequestParam Long userId,@RequestParam Long orgId){
-        Map<String,Object> retMap=new HashMap<>();
-        if(request.getSession().getAttribute(Const.SESSION)!=null){
-            Session session=(Session) request.getSession().getAttribute(Const.SESSION);
-            if(session.getUserId().equals(userId)){
-                session.setCurOrgId(orgId);
-                request.getSession().setAttribute(Const.SESSION,session);
-                wrapSuccess(retMap);
-            }else{
-                wrapFailed(retMap,messageSource.getMessage("login.require",null,Locale.getDefault()));
-            }
-        }else{
-            wrapFailed(retMap,messageSource.getMessage("login.require",null,Locale.getDefault()));
-        }
-        return retMap;
-    }
+
+
+
     @RequestMapping("/listorg")
     @ResponseBody
-    public Map<String,Object> listUserOrg(HttpServletRequest request){
-        Map<String,Object> retMap=new HashMap<>();
-        if(request.getSession().getAttribute(Const.SESSION)!=null){
-            Session session=(Session) request.getSession().getAttribute(Const.SESSION);
-            PageQuery query=new PageQuery();
+    public Map<String, Object> listUserOrg(HttpServletRequest request) {
+        Map<String, Object> retMap = new HashMap<>();
+        if (request.getSession().getAttribute(Const.SESSION) != null) {
+            Session session = (Session) request.getSession().getAttribute(Const.SESSION);
+            PageQuery query = new PageQuery();
             query.setPageSize(0);
             query.setSelectParamId("GETUSER_ORG");
             query.setParameterArr(new Object[]{session.getUserId()});
             service.queryBySelectId(query);
-            retMap.put("options",query.getRecordSet());
+            retMap.put("options", query.getRecordSet());
             wrapSuccess(retMap);
-        }else{
-            wrapFailed(retMap,messageSource.getMessage("login.require",null,Locale.getDefault()));
+        } else {
+            wrapFailed(retMap, messageSource.getMessage("login.require", null, Locale.getDefault()));
         }
         return retMap;
     }
@@ -178,7 +169,7 @@ public class SysUserCrudController extends BaseCrudDhtmlxController<SysUser, Lon
             SysUser user = this.service.getEntity(id);
             if (user.getUserPassword() != null && !user.getUserPassword().isEmpty()) {
                 if (request.getParameter("orgPwd") == null || !StringUtils.getMd5Encry(request.getParameter("orgPwd")).equals(user.getUserPassword())) {
-                    throw new WebException(messageSource.getMessage("message.passwordOriginNotMatch",null,Locale.getDefault()));
+                    throw new WebException(messageSource.getMessage("message.passwordOriginNotMatch", null, Locale.getDefault()));
                 }
             }
             user.setUserPassword(StringUtils.getMd5Encry(request.getParameter("newPwd")));
@@ -206,12 +197,12 @@ public class SysUserCrudController extends BaseCrudDhtmlxController<SysUser, Lon
                 wrapSuccess(retMap);
             }
         } catch (ServiceException ex) {
-            wrapFailed(retMap,ex);
+            wrapFailed(retMap, ex);
         }
         return retMap;
     }
 
-    public String wrapQuery(HttpServletRequest request,String orgIds) {
+    public String wrapQuery(HttpServletRequest request, String orgIds) {
         StringBuilder builder = new StringBuilder();
         if (request.getParameter("userName") != null && !"".equals(request.getParameter("userName"))) {
             builder.append(" and user_account like '%" + request.getParameter("userName") + "%'");
@@ -219,8 +210,8 @@ public class SysUserCrudController extends BaseCrudDhtmlxController<SysUser, Lon
         if (request.getParameter("deptId") != null && !"".equals(request.getParameter("deptId"))) {
             builder.append(" and dept_id =" + request.getParameter("deptId"));
         }
-        if(orgIds!=null && !orgIds.isEmpty()){
-            builder.append(" and dept_id in ("+orgIds+")");
+        if (orgIds != null && !orgIds.isEmpty()) {
+            builder.append(" and dept_id in (" + orgIds + ")");
         }
         return builder.toString();
     }

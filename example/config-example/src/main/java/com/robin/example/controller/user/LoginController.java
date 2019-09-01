@@ -26,8 +26,10 @@ import com.robin.example.model.user.SysUserOrg;
 import com.robin.example.service.system.LoginService;
 import com.robin.example.service.system.SysUserOrgService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
@@ -35,10 +37,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Controller
 public class LoginController extends BaseContorller {
@@ -46,6 +45,8 @@ public class LoginController extends BaseContorller {
     private LoginService loginService;
     @Autowired
     private SysUserOrgService sysUserOrgService;
+    @Autowired
+    private ResourceBundleMessageSource messageSource;
 
     @RequestMapping("/login")
     @ResponseBody
@@ -56,21 +57,20 @@ public class LoginController extends BaseContorller {
             request.getSession().setAttribute(Const.SESSION, session);
             map.put("success", true);
             if(session.getAccountType().equals(Const.ACCOUNT_TYPE.ORGUSER.toString())){
-                //Organization user must select a default org to login
-                List<FilterCondition> conditions=new ArrayList<>();
-                conditions.add(new FilterCondition("userId", Condition.EQUALS,session.getUserId()));
-                conditions.add(new FilterCondition("status",Condition.EQUALS,"1"));
-                List<SysUserOrg> usrList=sysUserOrgService.queryByCondition(conditions,"");
                 //User has more than one Org,Select from page
-                if(usrList.size()>1) {
+                if(session.getOrgId()==null) {
                     map.put("selectOrg", true);
                     map.put("userId", session.getUserId());
-                }else{
-                    session.setCurOrgId(usrList.get(0).getOrgId());
                 }
             }
             response.addCookie(new Cookie("userName", URLEncoder.encode(session.getUserName(),"UTF-8")));
             response.addCookie(new Cookie("accountType",session.getAccountType()));
+            response.addCookie(new Cookie("userId",String.valueOf(session.getUserId())));
+            if(session.getOrgName()!=null)
+                response.addCookie(new Cookie("orgName", URLEncoder.encode(session.getOrgName(), "UTF-8")));
+            else{
+                response.addCookie(new Cookie("orgName", URLEncoder.encode(messageSource.getMessage("title.defaultOrg",null,Locale.getDefault()), "UTF-8")));
+            }
         } catch (Exception ex) {
             map.put("success", false);
             map.put("message", ex.getMessage());
@@ -91,6 +91,32 @@ public class LoginController extends BaseContorller {
     public String logOut(HttpServletRequest request,HttpServletResponse response){
         request.getSession().removeAttribute(Const.SESSION);
         return "../login";
+    }
+    @RequestMapping(value = "/setDefaultOrg", method = RequestMethod.POST)
+    @ResponseBody
+    public Map<String, Object> setDefaultOrg(HttpServletRequest request, HttpServletResponse response, @RequestParam Long userId, @RequestParam Long orgId) {
+        Map<String, Object> retMap = new HashMap<>();
+        try {
+            if (request.getSession().getAttribute(Const.SESSION) != null) {
+                Session session = (Session) request.getSession().getAttribute(Const.SESSION);
+                if (session.getUserId().equals(userId)) {
+                    session.setOrgId(orgId);
+                    loginService.getRights(session);
+                    request.getSession().setAttribute(Const.SESSION, session);
+                    response.addCookie(new Cookie("orgName", URLEncoder.encode(session.getOrgName(), "UTF-8")));
+                    response.addCookie(new Cookie("accountType",session.getAccountType()));
+                    response.addCookie(new Cookie("userId",String.valueOf(session.getUserId())));
+                    wrapSuccess(retMap);
+                } else {
+                    wrapFailed(retMap, messageSource.getMessage("login.require", null, Locale.getDefault()));
+                }
+            } else {
+                wrapFailed(retMap, messageSource.getMessage("login.require", null, Locale.getDefault()));
+            }
+        } catch (Exception ex) {
+            wrapFailed(retMap, ex);
+        }
+        return retMap;
     }
     @RequestMapping("/showlogin")
     public String showLogin(HttpServletRequest request,HttpServletResponse response){

@@ -19,6 +19,7 @@ import com.robin.core.base.exception.DAOException;
 import com.robin.core.base.exception.ServiceException;
 import com.robin.core.base.service.BaseAnnotationJdbcService;
 
+import com.robin.core.base.service.IBaseAnnotationJdbcService;
 import com.robin.example.model.user.SysResourceRole;
 import com.robin.example.model.user.SysRole;
 import org.springframework.context.annotation.Scope;
@@ -28,7 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Component(value="sysRoleService")
 @Scope(value="singleton")
-public class SysRoleService extends BaseAnnotationJdbcService<SysRole, Long> {
+public class SysRoleService extends BaseAnnotationJdbcService<SysRole, Long> implements IBaseAnnotationJdbcService<SysRole,Long> {
 	@Transactional(propagation= Propagation.REQUIRED,noRollbackFor=RuntimeException.class)
 	public void saveRoleRigth(String[] ids,String resId) throws ServiceException {
 		try{

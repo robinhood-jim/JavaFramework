@@ -54,6 +54,12 @@ function openWindowForEdit(title, formStructure, w, h, func) {
 		eval(func(form));
 	return form;
 }
+function openWindowForTreeview(loadUrl,x,y,w,h,func) {
+	var w=dhxWins.createWindow(winName,x,y,w,h);
+	w.hideHeader();
+	var myTreeView=w.attachTreeView({json:loadUrl});
+	return myTreeView;
+}
 
 function closedialog(ret) {
 	dhxWins.window(winName).close();

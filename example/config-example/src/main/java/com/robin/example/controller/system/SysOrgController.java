@@ -1,5 +1,6 @@
 package com.robin.example.controller.system;
 
+import com.google.gson.Gson;
 import com.robin.core.base.model.BaseObject;
 import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.query.util.PageQuery;
@@ -11,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
@@ -24,6 +26,7 @@ import com.robin.core.base.util.Const;
 public class SysOrgController extends BaseCrudDhtmlxController<SysOrg, Long, SysOrgService> {
     @Autowired
     private ResourceBundleMessageSource messageSource;
+    private Gson gson=new Gson();
 
     @RequestMapping("/show")
     public String showSchema(HttpServletRequest request, HttpServletResponse response) {
@@ -101,27 +104,53 @@ public class SysOrgController extends BaseCrudDhtmlxController<SysOrg, Long, Sys
 
 
 
-    @RequestMapping("/listAll")
+    @RequestMapping(value = "/listAll")
     @ResponseBody
-    public List<Map<String, Object>> getAllOrgByUser(HttpServletRequest request, HttpServletResponse response) {
+    public List<Map<String,Object>> getAllOrgByUser(HttpServletRequest request, HttpServletResponse response) {
         Long id = Long.valueOf(request.getParameter("id"));
         Session session = (Session) request.getSession().getAttribute(Const.SESSION);
         Long parentId=id;
+        Map<String,Object> retMap=new HashMap<>();
         List<Map<String,Object>> list=new ArrayList<>();
-        if(!session.getAccountType().equals(Const.ACCOUNT_TYPE.SYSUSER.toString()) && parentId==0L){
-            parentId=session.getCurOrgId();
+
+        if(id==0L){
+            if(!session.getAccountType().equals(Const.ACCOUNT_TYPE.SYSUSER.toString())){
+                parentId=session.getOrgId();
+                SysOrg org=service.getEntity(parentId);
+                Map<String,Object> map=new HashMap<>();
+                fillMap(map,org);
+                list.add(map);
+            }else{
+                getSubList(list,parentId);
+            }
+        }else{
+            getSubList(list,parentId);
         }
+
+        if(id==0L){
+            return list;
+        }else{
+            retMap.put("id",parentId);
+            retMap.put("items",list);
+            List<Map<String,Object>> tList=new ArrayList<>();
+            tList.add(retMap);
+            return tList;
+        }
+    }
+    private void getSubList(List<Map<String,Object>> list,Long parentId){
         List<SysOrg> orgList=service.queryByField("upOrgId", BaseObject.OPER_EQ,parentId);
         if(!orgList.isEmpty()){
             for(SysOrg org:orgList){
                 Map<String,Object> map=new HashMap<>();
-                map.put("id",org.getId().toString());
-                map.put("text",org.getOrgName());
-                map.put("kids",true);
+                fillMap(map,org);
                 list.add(map);
             }
         }
-        return list;
+    }
+    private void fillMap(Map<String,Object> map,SysOrg org){
+        map.put("id",org.getId().toString());
+        map.put("text",org.getOrgName());
+        map.put("kids",true);
     }
 
     @RequestMapping("/tree")
