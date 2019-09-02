@@ -61,6 +61,8 @@ public class SimpleJdbcDao {
 	private BaseDataBaseMeta meta;
 	private DataBaseParam param;
 	private static  Logger logger=LoggerFactory.getLogger(SimpleJdbcDao.class);
+	private static SimpleDateFormat nformat=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	private static SimpleDateFormat shortformat=new SimpleDateFormat("yyyy-MM-dd");
 	public SimpleJdbcDao(BaseDataBaseMeta meta,DataBaseParam param) throws Exception{
 		this.driverName=meta.getParam().getDriverClassName();
 		this.userName=param.getUserName();
@@ -873,15 +875,15 @@ public class SimpleJdbcDao {
 				}
 			}
 			else if(poolobj.get("dataType").equals(Const.META_TYPE_DATE)){
-				SimpleDateFormat format=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
 				if(value==null || value.equals(""))
 					objArr[row][pos]=null;
 				else{
 					java.sql.Date date=null;
 					if(value.contains(":"))
-						date=new Date(format.parse(value).getTime());
+						date=new Date(nformat.parse(value).getTime());
 					else
-						date=new Date(format.parse(value).getTime());
+						date=new Date(shortformat.parse(value).getTime());
 					objArr[row][pos] = date;
 				}
 			}else{

@@ -421,7 +421,7 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
 					query.setShort(fieldName, Short.valueOf(fieldValue.toString()));	
 				}
 				else if(fieldValue instanceof java.lang.Long){
-					query.setLong(fieldName, Long.valueOf(fieldValue.toString()));
+					query.setLong(fieldName, Long.parseLong(fieldValue.toString()));
 				}else if(fieldValue instanceof java.lang.Float){
 					query.setFloat(fieldName, (java.lang.Float)fieldValue);
 				}else  if(fieldValue instanceof java.lang.Double){
@@ -472,7 +472,7 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
 					query.setShort(fieldName, Short.valueOf(fieldValue.toString()));	
 				}
 				else if(fieldValue instanceof java.lang.Long){
-					query.setLong(fieldName, Long.valueOf(fieldValue.toString()));
+					query.setLong(fieldName, Long.parseLong(fieldValue.toString()));
 				}else if(fieldValue instanceof java.lang.Float){
 					query.setFloat(fieldName, (java.lang.Float)fieldValue);
 				}else  if(fieldValue instanceof java.lang.Double){
@@ -882,7 +882,7 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
 			count =jdbcTemplate.query(sumSQL, new ResultSetExtractor<Integer>() {
 				public Integer extractData(ResultSet rs) throws SQLException, DataAccessException {
 					rs.next();
-					return new Integer(rs.getInt(1));
+					return rs.getInt(1);
 				}
 			});
 		}catch (Exception e) {
@@ -1069,10 +1069,10 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
 					if(obj instanceof java.lang.String){
 						query.setString(fieldName[i], fieldValue[i].toString());
 					}else if(obj instanceof java.lang.Short){
-						query.setShort(fieldName[i], Short.valueOf(fieldValue[i].toString()));	
+						query.setShort(fieldName[i], Short.parseShort(fieldValue[i].toString()));
 					}
 					else if(obj instanceof java.lang.Long){
-						query.setLong(fieldName[i], Long.valueOf(fieldValue[i].toString()));
+						query.setLong(fieldName[i], Long.parseLong(fieldValue[i].toString()));
 					}else if(obj instanceof java.lang.Float){
 						query.setFloat(fieldName[i], (java.lang.Float)fieldValue[i]);
 					}else  if(obj instanceof java.lang.Double){

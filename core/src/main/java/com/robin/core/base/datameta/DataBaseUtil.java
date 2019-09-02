@@ -19,6 +19,7 @@ import com.robin.core.base.dao.JdbcDao;
 import com.robin.core.base.util.Const;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.dbutils.DbUtils;
+import org.apache.commons.lang.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.support.JdbcUtils;
@@ -27,6 +28,10 @@ import javax.sql.DataSource;
 import java.sql.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.*;
 
@@ -437,7 +442,7 @@ public class DataBaseUtil {
         return retMap;
     }
 
-    public static boolean isStringValueDate(String value, SimpleDateFormat format) {
+    private static boolean isStringValueDate(String value, SimpleDateFormat format) {
         try {
             format.parse(value);
             return true;
@@ -465,6 +470,51 @@ public class DataBaseUtil {
         }
         return retObj;
     }
+    public static boolean isValueValid(Object value, String type) {
+        boolean validtag=false;
+        if(value!=null) {
+            if (type.equals(Const.META_TYPE_INTEGER) || type.equals(Const.META_TYPE_BIGINT) || type.equals(Const.META_TYPE_NUMERIC) || type.equals(Const.META_TYPE_DOUBLE)) {
+                if (NumberUtils.isNumber(value.toString()))
+                    validtag=true;
+            } else if (type.equals(Const.META_TYPE_DATE) || type.equals(Const.META_TYPE_TIMESTAMP)) {
+                if(value instanceof java.util.Date){
+                    validtag=true;
+                }else if(value instanceof java.sql.Date){
+                    validtag=true;
+                }else if(value instanceof Timestamp){
+                    validtag=true;
+                }
+            } else if(type.equals(Const.META_TYPE_STRING)){
+                validtag=true;
+            }
+        }
+        return validtag;
+    }
+
+    public static String toStringByDBType(Object value, String type, DateTimeFormatter formatter) {
+        String retObj=null;
+        if(value!=null) {
+            if (type.equals(Const.META_TYPE_INTEGER) || type.equals(Const.META_TYPE_BIGINT) || type.equals(Const.META_TYPE_NUMERIC) || type.equals(Const.META_TYPE_DOUBLE)) {
+                if (NumberUtils.isNumber(value.toString()))
+                    retObj = value.toString();
+            } else if (type.equals(Const.META_TYPE_DATE) || type.equals(Const.META_TYPE_TIMESTAMP)) {
+                long millsecod=0L;
+                if(value instanceof java.util.Date){
+                    millsecod=((java.util.Date)value).getTime();
+                }else if(value instanceof java.sql.Date){
+                    millsecod=((java.sql.Date)value).getTime();
+                }else if(value instanceof Timestamp){
+                    millsecod=((java.sql.Timestamp)value).getTime();
+                }else{
+                    return value.toString();
+                }
+                retObj = formatter.format(LocalDateTime.ofInstant(Instant.ofEpochMilli(millsecod), ZoneId.systemDefault()));
+            } else {
+                retObj = value.toString();
+            }
+        }
+        return retObj;
+    }
 
     private static List<DataBaseTableMeta> scanAllTable(Connection connection, String schema, DataBaseInterface datameta) throws SQLException {
         List<DataBaseTableMeta> tablelist = new ArrayList<DataBaseTableMeta>();
@@ -479,8 +529,9 @@ public class DataBaseUtil {
                 String userName = rs1.getString("TABLE_SCHEM") == null ? "" : rs1.getString("TABLE_SCHEM");
                 String remark = rs1.getString("REMARKS") == null ? "" : rs1.getString("REMARKS");
                 boolean canadd = false;
-                if (datameta instanceof OracleDataBaseMeta && tablename.indexOf("BIN$") != 0 && tablename.lastIndexOf("$0") != 0) {
-                    canadd = true;
+                if (datameta instanceof OracleDataBaseMeta) {
+                    if(tablename.indexOf("BIN$") != 0 && tablename.lastIndexOf("$0") != 0)
+                        canadd = true;
                 } else
                     canadd = true;
                 if (canadd) {

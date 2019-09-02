@@ -122,10 +122,10 @@ public class CommJdbcUtil {
             else if (pageSize > Integer.parseInt(Const.MAX_PAGE_SIZE))
                 pageSize = Integer.parseInt(Const.MAX_PAGE_SIZE);
             pageQuery.setPageSize(pageSize);
-            int total = (Integer) jdbcTemplate.query(sumSQL, new ResultSetExtractor() {
-                public Object extractData(ResultSet rs) throws SQLException, DataAccessException {
+            int total =  jdbcTemplate.query(sumSQL, new ResultSetExtractor<Integer>() {
+                public Integer extractData(ResultSet rs) throws SQLException, DataAccessException {
                     rs.next();
-                    return new Integer(rs.getInt(1));
+                    return rs.getInt(1);
                 }
             });
             pageQuery.setRecordCount(total);
@@ -168,11 +168,12 @@ public class CommJdbcUtil {
 
         Map<String, String> params = pageQuery.getParameters();
 
-        Iterator<String> keyiter = params.keySet().iterator();
+        Iterator<Map.Entry<String,String>> keyiter = params.entrySet().iterator();
         while (keyiter.hasNext()) {
-            String key = keyiter.next();
+            Map.Entry<String,String> entry=keyiter.next();
+            String key = entry.getKey();
             String replacestr = "\\$\\{" + key + "\\}";
-            String value = params.get(key);
+            String value = entry.getValue();
             if (value != null)
                 querySQL = querySQL.replaceAll(replacestr, value);
             else
@@ -404,7 +405,7 @@ public class CommJdbcUtil {
                 if (value == null || value.equals(""))
                     ps.setNull(pos + 1, Types.INTEGER);
                 else
-                    ps.setInt(pos + 1, Integer.valueOf(value));
+                    ps.setInt(pos + 1, Integer.parseInt(value));
             } else if (typeMap.get("dataType").equals(Const.META_TYPE_DOUBLE)) {
                 if (value == null || value.equals(""))
                     ps.setNull(pos + 1, Types.DOUBLE);

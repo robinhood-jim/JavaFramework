@@ -1,8 +1,8 @@
-package com.robin.example.service.system;
+package com.robin.example.service.org;
 
 import com.robin.core.base.service.BaseAnnotationJdbcService;
 import com.robin.core.base.service.IBaseAnnotationJdbcService;
-import com.robin.example.model.system.OrgResponsibility;
+import com.robin.example.model.org.OrgResponsibility;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 

@@ -15,6 +15,7 @@
  */
 package com.robin.core.fileaccess.writer;
 
+import com.robin.core.base.datameta.DataBaseUtil;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.meta.DataSetColumnMeta;
 import org.slf4j.Logger;
@@ -23,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -33,15 +35,17 @@ public abstract class AbstractFileWriter implements IResourceWriter {
 	protected BufferedWriter writer;
 	protected DataCollectionMeta colmeta;
 	protected OutputStream out;
-	protected Map<String, Void> columnMap=new HashMap<String, Void>();
+	protected Map<String, String> columnMap=new HashMap<String, String>();
 	protected List<String> columnList=new ArrayList<String>();
 	protected Logger logger= LoggerFactory.getLogger(getClass());
+	protected DateTimeFormatter formatter;
+
 	public AbstractFileWriter(DataCollectionMeta colmeta){
 		this.colmeta=colmeta;
-		
+		formatter=DateTimeFormatter.ofPattern(colmeta.getDefaultTimestampFormat());
 		for (DataSetColumnMeta meta:colmeta.getColumnList()) {
 			columnList.add(meta.getColumnName());
-			columnMap.put(meta.getColumnName(), null);
+			columnMap.put(meta.getColumnName(), meta.getColumnType());
 		}
 	}
 	public void setWriter(BufferedWriter writer){
@@ -81,5 +85,30 @@ public abstract class AbstractFileWriter implements IResourceWriter {
 		if(out!=null){
 			out.close();
 		}
+	}
+	protected String getOutputStringByType(Map<String,?> valueMap,String columnName){
+		String columnType=columnMap.get(columnName);
+		Object obj=getMapValueByMeta(valueMap,columnName);
+		if(obj!=null)
+			return DataBaseUtil.toStringByDBType(obj,columnType,formatter);
+		else{
+			return null;
+		}
+	}
+
+	protected Object getMapValueByMeta(Map<String,?> valueMap,String columnName){
+		Object obj=null;
+		String columnType=columnMap.get(columnName);
+		if(valueMap.containsKey(columnName)){
+			obj=valueMap.get(columnName);
+		}else if(valueMap.containsKey(columnName.toUpperCase())){
+			obj=valueMap.get(columnName.toUpperCase());
+		}else if(valueMap.containsKey(columnName.toLowerCase())){
+			obj=valueMap.get(columnName.toLowerCase());
+		}
+		if(DataBaseUtil.isValueValid(obj,columnType))
+			return obj;
+		else
+			return null;
 	}
 }

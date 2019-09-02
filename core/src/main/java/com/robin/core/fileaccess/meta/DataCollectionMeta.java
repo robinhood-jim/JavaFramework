@@ -15,12 +15,14 @@
  */
 package com.robin.core.fileaccess.meta;
 
+import lombok.Data;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
+@Data
 public class DataCollectionMeta implements Serializable {
 	private String split;
 	private String encode="UTF-8";
@@ -31,6 +33,7 @@ public class DataCollectionMeta implements Serializable {
 	private String classNamespace ="com.robin.avro.vo";
 	private String primaryKeys="";
 	private Map<String,Void> columnNameMap=new HashMap<String, Void>();
+	private String defaultTimestampFormat="yyyy-MM-dd HH:mm:ss";
 	
 
 	public void addColumnMeta(String columnName,String columnType,String defaultNullValue){
@@ -45,60 +48,7 @@ public class DataCollectionMeta implements Serializable {
 		this.columnList.add(new DataSetColumnMeta(columnName, columnType, defaultNullValue,required,dateFormat));
 		columnNameMap.put(columnName,null);
 	}
-	public String getSplit() {
-		return split;
-	}
-	public void setSplit(String split) {
-		this.split = split;
-	}
-	public String getEncode() {
-		return encode;
-	}
-	public void setEncode(String encode) {
-		this.encode = encode;
-	}
-	public String getPath() {
-		return path;
-	}
-	public void setPath(String path) {
-		this.path = path;
-	}
-	public Map<String, Object> getResourceCfgMap() {
-		return resourceCfgMap;
-	}
-	public void putResourceCfg(String key,Object value){
-		resourceCfgMap.put(key,value);
-	}
-	public void setResourceCfgMap(Map<String, Object> resourceCfgMap) {
-		this.resourceCfgMap = resourceCfgMap;
-	}
-	public List<DataSetColumnMeta> getColumnList() {
-		return columnList;
-	}
 
-	public String getValueClassName() {
-		return valueClassName;
-	}
-
-	public void setValueClassName(String valueClassName) {
-		this.valueClassName = valueClassName;
-	}
-
-	public String getClassNamespace() {
-		return classNamespace;
-	}
-
-	public void setClassNamespace(String classNamespace) {
-		this.classNamespace = classNamespace;
-	}
-
-	public String getPrimaryKeys() {
-		return primaryKeys;
-	}
-
-	public void setPrimaryKeys(String primaryKeys) {
-		this.primaryKeys = primaryKeys;
-	}
 	public  DataSetColumnMeta createColumnMeta(String columnName,String columnType,Object defaultNullValue){
 		return new DataSetColumnMeta(columnName,columnType,defaultNullValue);
 	}

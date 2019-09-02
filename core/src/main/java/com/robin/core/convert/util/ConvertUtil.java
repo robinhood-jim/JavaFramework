@@ -89,11 +89,12 @@ public class ConvertUtil {
     public static void mapToObject(BaseObject target, Map<String, String> src) throws Exception {
         if (src == null || target == null)
             return;
-        Iterator<String> it = src.keySet().iterator();
+        Iterator<Map.Entry<String,String>> it = src.entrySet().iterator();
         Method methods[] = target.getClass().getMethods();
         while (it.hasNext()) {
-            String key = (String) it.next();
-            String value = src.get(key);
+            Map.Entry<String,String> entry=it.next();
+            String key =  entry.getKey();
+            String value = entry.getValue();
             String methordName = "set" + key.substring(0, 1).toUpperCase() + key.substring(1);
             for (int i = 0; i < methods.length; i++) {
                 if (methods[i].getName().equalsIgnoreCase(methordName)) {
@@ -307,8 +308,16 @@ public class ConvertUtil {
             else if ("char".equals(typeName)) type = Class.forName("java.lang.Character");
             else if ("byte".equals(typeName)) type = Class.forName("java.lang.Byte");
         }
-
-        if (typeName.startsWith("java.math.") || "java.util.Date".equals(typeName)) {
+        if(typeName.equals("int")){
+            ret=Integer.parseInt(strValue.toString());
+        }else if(typeName.equals("long")){
+            ret=Long.parseLong(strValue.toString());
+        }else if(typeName.equals("float")){
+            ret=Float.parseFloat(strValue.toString());
+        }else if(typeName.equals("double")){
+            ret=Double.parseDouble(strValue.toString());
+        }
+        else if (typeName.startsWith("java.math.") || "java.util.Date".equals(typeName)) {
             String value = strValue.toString().trim();
             if (value.indexOf(":") == -1)
                 value += " 00:00:00";
@@ -338,7 +347,7 @@ public class ConvertUtil {
                 if (!strValue.toString().isEmpty()) {
                     Method method = type.getMethod("valueOf", new Class[]{"java.lang.String".getClass()});
                     if (method != null)
-                        ret = method.invoke(type, new Object[]{strValue.toString()});
+                        ret = method.invoke(Class.forName("java.lang.Byte"), new Object[]{strValue.toString()});
                 } else {
                     ret = null;
                 }

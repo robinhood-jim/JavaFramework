@@ -41,16 +41,9 @@ public class PlainTextFileWriter extends WriterBasedFileWriter {
 		retList.clear();
 		for (int i = 0; i < colmeta.getColumnList().size(); i++) {
 			String name=colmeta.getColumnList().get(i).getColumnName();
-			if(!map.containsKey(name)){
-				if(map.containsKey(name.toLowerCase())){
-					name=name.toLowerCase();
-				}else if(map.containsKey(name.toUpperCase())){
-					name=name.toUpperCase();
-				}else
-					name=null;
-			}
-			if(name!=null){
-				retList.add(map.get(name).toString());
+			String value=getOutputStringByType(map,name);
+			if(value!=null){
+				retList.add(value);
 			}else
 				retList.add("");
 		}

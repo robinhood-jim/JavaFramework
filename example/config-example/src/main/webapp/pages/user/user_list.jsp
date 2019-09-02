@@ -83,7 +83,7 @@
                         {type: "hidden", name: "orgId", value: ""},
                         {type: "input", label: "<spring:message code="sysUser.accountName" />", name: "userName", offsetTop: 10},
                         {type: "newcolumn", offset: 20},
-                        {type: "select", label: "<spring:message code="sysUser.Dept" />", name: "deptId",connector:ctx + "system/dept/listjson?allowNull=true"},
+                        {type: "select", label: "<spring:message code="sysUser.accountType" />", name: "accountType",connector:ctx + "system/codeset/select?codeSetNo=ACCOUNTTYPE&allowNull=true"},
                         {type: "newcolumn", offset: 20},
                         {type: "input", label: "<spring:message code="sysUser.Org" />", name: "orgName",readonly:true},
 
@@ -128,7 +128,7 @@
                var txt=orgSelect.getItemText(id);
                myForm.setItemValue("orgName",txt);
                myForm.setItemValue("orgId",id);
-               closedialog();
+               closedialog(false);
            });
        }
     });
@@ -139,7 +139,7 @@
 
     var myGrid = bottomPanel.attachGrid();
     myGrid.setImagePath(ctx + "component/dhtmlxSuite/codebase/imgs/");
-    myGrid.setHeader("#master_checkbox,img:[" + ctx + "resources/images/icon/men.gif]<b><spring:message code="sysUser.userName" /></b>,<spring:message code="sysUser.accountName" />,<spring:message code="sysUser.Dept" />,<spring:message code="sysUser.Org" />", null, ["text-align:center", "text-align:center", "text-align:center", "text-align:center", "text-align:center"]);//the headers of columns
+    myGrid.setHeader("#master_checkbox,img:[" + ctx + "resources/images/icon/men.gif]<b><spring:message code="sysUser.userName" /></b>,<spring:message code="sysUser.accountName" />,<spring:message code="sysUser.accountType" />,<spring:message code="sysUser.Org" />", null, ["text-align:center", "text-align:center", "text-align:center", "text-align:center", "text-align:center"]);//the headers of columns
     myGrid.setInitWidths("35,150,200,200,200");          //the widths of columns
     myGrid.setColAlign("center,center,center,center,center");       //the alignment of columns
     myGrid.setColTypes("ch,ro,ro,ro,ro");                //the types of columns
@@ -200,13 +200,10 @@
             type: "fieldset", label: "<spring:message code="sysUser.info" />", offsetLeft: 10,offsetRight: 20, inputWidth: 495, lableWidth: 100, list: [
                 {type: "hidden", name: "id", value: ""},
                 {type: "input", name: "userName", label: "<spring:message code="sysUser.userName" />:", validate: "NotEmpty"},
-                {
-                    type: "select", name: "accountType", label: "<spring:message code="sysUser.accountType" />:", validate: "NotEmpty",connector: ctx + "system/codecombo?codeSetNo=USERTYPE"
-                },
-                {type: "select", name: "orgId", label: "<spring:message code="sysUser.Org" />:", validate: "NotEmpty",connector:ctx + "system/org/listjson?allowNull=false"},
-                {type: "newcolumn", offset: 20},
+                {type: "select", name: "accountType", label: "<spring:message code="sysUser.accountType" />:", validate: "NotEmpty",connector: ctx + "system/codecombo?codeSetNo=ACCOUNTTYPE"},
                 {type: "input", name: "userAccount", label: "<spring:message code="sysUser.accountName" />:", validate: "NotEmpty"},
-                {type: "select", name: "deptId", label: "<spring:message code="sysUser.Dept" />:", validate: "NotEmpty",connector:ctx + "system/dept/listjson?allowNull=false"}
+                {type: "newcolumn", offset: 20},
+                {type: "select", name: "orgId", label: "<spring:message code="sysUser.Org" />:", validate: "NotEmpty",connector:ctx + "system/org/listjson?allowNull=false"}
             ]
         },
         {

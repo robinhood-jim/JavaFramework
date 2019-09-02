@@ -30,8 +30,8 @@ public class SysRoleContorller extends BaseCrudDhtmlxController<SysRole,Long, Sy
 		query.getParameters().put("queryString", wrapQuery(request));
 		service.queryBySelectId(query);
 		setCode("ROLETYPE,VALIDTAG");
-		filterListByCodeSet(query,"type","ROLETYPE");
-		filterListByCodeSet(query,"status","VALIDTAG");
+		filterListByCodeSet(query,"type","ROLETYPE",null);
+		filterListByCodeSet(query,"status","VALIDTAG",null);
 		return wrapDhtmlxGridOutput(query);
 	}
 	@RequestMapping("/show")

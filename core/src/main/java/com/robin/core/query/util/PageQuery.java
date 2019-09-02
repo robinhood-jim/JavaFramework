@@ -29,13 +29,13 @@ public class PageQuery implements Serializable {
 
 	protected String								whereString;
 
-	protected int							pageSize;
+	protected Integer							pageSize;
 
-	protected int							pageNumber;
+	protected Integer							pageNumber;
 
-	protected int							recordCount;
+	protected Integer							recordCount;
 
-	protected int							pageCount;
+	protected Integer							pageCount;
 
 	protected String								selectParamId;
 
@@ -127,35 +127,35 @@ public class PageQuery implements Serializable {
 		this.parameters = parameters;
 	}
 
-	public int getPageCount() {
+	public Integer getPageCount() {
 		return pageCount;
 	}
 
-	public void setPageCount(int pageCount) {
+	public void setPageCount(Integer pageCount) {
 		this.pageCount = pageCount;
 	}
 
-	public int getPageNumber() {
+	public Integer getPageNumber() {
 		return pageNumber;
 	}
 
-	public void setPageNumber(int pageNumber) {
+	public void setPageNumber(Integer pageNumber) {
 		this.pageNumber = pageNumber;
 	}
 
-	public int getPageSize() {
+	public Integer getPageSize() {
 		return pageSize;
 	}
 
-	public void setPageSize(int pageSize) {
+	public void setPageSize(Integer pageSize) {
 		this.pageSize = pageSize;
 	}
 
-	public int getRecordCount() {
+	public Integer getRecordCount() {
 		return recordCount;
 	}
 
-	public void setRecordCount(int recordCount) {
+	public void setRecordCount(Integer recordCount) {
 		this.recordCount = recordCount;
 	}
 

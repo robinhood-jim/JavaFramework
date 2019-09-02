@@ -415,7 +415,7 @@ public class AnnotationRetrevior {
                 if (pos != 0)
                     stmt.setNull(pos, Types.VARCHAR);
             } else if (obj instanceof Integer) {
-                stmt.setInt(pos, Integer.valueOf(obj.toString()));
+                stmt.setInt(pos, Integer.parseInt(obj.toString()));
             } else if (obj instanceof Double) {
                 stmt.setDouble(pos, Double.valueOf(obj.toString()));
             } else if (obj instanceof Date) {

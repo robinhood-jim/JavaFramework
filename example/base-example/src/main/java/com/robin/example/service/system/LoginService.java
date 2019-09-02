@@ -18,18 +18,19 @@ package com.robin.example.service.system;
 import com.robin.core.base.dao.JdbcDao;
 import com.robin.core.base.exception.ServiceException;
 import com.robin.core.base.util.Const;
-
 import com.robin.core.collection.util.CollectionMapConvert;
 import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.query.util.PageQuery;
 import com.robin.core.web.util.Session;
-import com.robin.example.model.system.SysDept;
 import com.robin.example.model.system.SysOrg;
 import com.robin.example.model.system.SysResource;
 import com.robin.example.model.system.SysResponsibility;
-import com.robin.example.model.user.*;
-
+import com.robin.example.model.user.SysResourceUser;
+import com.robin.example.model.user.SysUser;
+import com.robin.example.model.user.SysUserOrg;
+import com.robin.example.model.user.SysUserResponsiblity;
 import com.robin.example.service.user.SysUserService;
+import com.robin.example.util.WebConstant;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -85,7 +86,7 @@ public class LoginService {
         session.setLoginTime(new Date());
         BeanUtils.copyProperties(queryUser, session);
 
-        if (!session.getAccountType().equals(Const.ACCOUNT_TYPE.ORGUSER.toString())) {
+        if (!session.getAccountType().equals(WebConstant.ACCOUNT_TYPE.ORGUSER.toString())) {
             getRights(session);
         } else {
             SysUserOrg org = new SysUserOrg();
@@ -106,8 +107,8 @@ public class LoginService {
         if (orgId != 0L) {
             SysOrg sysOrg = (SysOrg) this.jdbcDao.getEntity(SysOrg.class, Long.valueOf(orgId));
             if (sysOrg == null) {
-                //throw new ServiceException("can not find Org.");
-                log.info("User {} login as No Org User", session.getUserName());
+                log.error("User {} try to login to No exist or frozen OrgId {}", session.getUserName());
+                throw new ServiceException("Organization not Exists");
             } else {
                 if (!sysOrg.getOrgStatus().equals(Const.VALID)) {
                     throw new ServiceException("Select Org disabled");
@@ -117,41 +118,38 @@ public class LoginService {
                 session.setOrgCode(sysOrg.getOrgCode());
             }
         }
-
-        //List<SysResource> resources = getResourcesByOrg(orgId);
         //common resources
-        List<SysResource> commresources = getResourcesByOrg(0L);
+        List<SysResource> commresources = getResourcesByOrg(WebConstant.DEFAULT_ORG);
         Map<String, SysResource> resmap = null;
         try {
             CollectionMapConvert<SysResource> convert = new CollectionMapConvert<>();
             resmap = convert.convertListToMap(commresources, "id");
-
         } catch (Exception ex) {
 
         }
+        //get comm menu from SysResponsiblity
         SysUserResponsiblity queryVO=new SysUserResponsiblity();
         queryVO.setUserId(session.getUserId());
         queryVO.setStatus(Const.VALID);
         List resps = this.jdbcDao.queryByVO(SysUserResponsiblity.class, queryVO, null,null);
-        List<Long> rolesList = new ArrayList();
-        if (resps != null) {
+        List<Long> respsList = new ArrayList();
+        if (resps != null && !resps.isEmpty()) {
             for (int i = 0; i < resps.size(); i++) {
                 SysUserResponsiblity sur = (SysUserResponsiblity) resps.get(i);
                 if ((sur != null) && (VERIFIED.equals(sur.getStatus()))) {
-                    rolesList.add(sur.getRespId());
-                    SysResponsibility r = (SysResponsibility) this.jdbcDao.getEntity(SysResponsibility.class, sur.getRespId());
-                    if ((r != null) && (Const.VALID.equals(r.getStatus()))) {
-                        session.getResponsiblitys().put(sur.getRespId(), r.getName());
-                    }
+                    respsList.add(sur.getRespId());
+                    session.getResponsiblitys().put(sur.getRespId(), "");
                 }
             }
+        }else if(session.getAccountType().equals(WebConstant.ACCOUNT_TYPE.ORGUSER.toString())){
+            respsList.add(WebConstant.SYS_RESPONSIBLITIY.ORG_RESP.getValue());
         }
         PageQuery query = new PageQuery();
         query.setSelectParamId("GET_RESOURCEINFOBYSYSRESP");
         query.setPageSize(0);
         query.getParameters().put("userId", session.getUserId().toString());
-        if (!rolesList.isEmpty()) {
-            query.getParameters().put("respIds", StringUtils.join(rolesList, ","));
+        if (!respsList.isEmpty()) {
+            query.getParameters().put("respIds", StringUtils.join(respsList, ","));
         } else {
             query.getParameters().put("respIds", "-1");
         }
@@ -160,16 +158,14 @@ public class LoginService {
         Map<String, List<Map<String, Object>>> privMap = new HashMap();
         Map<String, Integer> idMap = new HashMap<>();
         for (Map<String, Object> map : list) {
-            /*if (!privMap.containsKey(map.get("pid").toString())) {
-                List<Map<String, Object>> tlist = new ArrayList();
-                tlist.add(map);
-                privMap.put(map.get("pid").toString(), tlist);
-            } else {
-                (privMap.get(map.get("pid").toString())).add(map);
-            }*/
             fillRights(map.get("id").toString(), resmap, privMap, map, idMap);
         }
         session.setPrivileges(privMap);
+        if(orgId!=0L){
+            //get menu from Organization
+
+
+        }
     }
 
     private void fillRights(String id, Map<String, SysResource> resMap, Map<String, List<Map<String, Object>>> privMap, Map<String, Object> vmap, Map<String, Integer> idMap) {
@@ -177,24 +173,27 @@ public class LoginService {
             if (resMap.containsKey(id)) {
                 Long pid = resMap.get(id).getPid();
                 if(!idMap.containsKey(id)) {
-                    if (!privMap.containsKey(String.valueOf(pid))) {
-                        List<Map<String, Object>> tlist = new ArrayList();
-                        tlist.add(vmap);
-                        privMap.put(String.valueOf(pid), tlist);
-                    } else {
-                        privMap.get(String.valueOf(pid)).add(vmap);
+                    if(Integer.parseInt(vmap.get("assignType").toString())< SysResourceUser.ASSIGN_DEL) {
+                        if (!privMap.containsKey(String.valueOf(pid))) {
+                            List<Map<String, Object>> tlist = new ArrayList();
+                            tlist.add(vmap);
+                            privMap.put(String.valueOf(pid), tlist);
+                        } else {
+                            privMap.get(String.valueOf(pid)).add(vmap);
+                        }
                     }
                 }
                 Map<String, Object> tmap = new HashMap<>();
-                if (pid != 0L && !idMap.containsKey(pid.toString())) {
+                if (!idMap.containsKey(pid.toString())) {
                     ConvertUtil.objectToMapObj(tmap, resMap.get(pid.toString()));
+                    tmap.put("assignType","0");
                     fillRights(pid.toString(), resMap, privMap, tmap, idMap);
                 }
                 idMap.put(id,1);
                 idMap.put(pid.toString(), 1);
             }
         } catch (Exception ex) {
-
+            log.error("",ex);
         }
     }
 

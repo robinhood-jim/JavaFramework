@@ -376,8 +376,8 @@ public class ProjectInfoContorller extends BaseCrudDhtmlxController<ProjectInfo,
             }
             this.service.queryBySelectId(pageQuery);
             setCode("PRESISTTYPE,WEBFRAME,YNTYPE");
-            filterListByCodeSet(pageQuery, "presist", "PRESISTTYPE");
-            filterListByCodeSet(pageQuery, "webFrame", "WEBFRAME");
+            filterListByCodeSet(pageQuery, "presist", "PRESISTTYPE",null);
+            filterListByCodeSet(pageQuery, "webFrame", "WEBFRAME",null);
             retmap = wrapDhtmlxGridOutput(pageQuery);
         } catch (Exception e) {
             retmap.put("success", false);

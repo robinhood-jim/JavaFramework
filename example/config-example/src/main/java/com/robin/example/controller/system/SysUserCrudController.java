@@ -24,51 +24,38 @@ import com.robin.core.collection.util.CollectionBaseConvert;
 import com.robin.core.query.util.PageQuery;
 import com.robin.core.web.controller.BaseCrudDhtmlxController;
 import com.robin.core.web.util.Session;
-import com.robin.example.model.system.SysDept;
 import com.robin.example.model.system.SysOrg;
 import com.robin.example.model.system.SysResource;
 import com.robin.example.model.user.SysUser;
-import com.robin.example.service.system.LoginService;
-import com.robin.example.service.system.SysDeptService;
 import com.robin.example.service.system.SysOrgService;
 import com.robin.example.service.system.SysResourceService;
 import com.robin.example.service.user.SysUserService;
-import org.apache.http.HttpResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.net.URLEncoder;
 import java.util.*;
 
 @Controller
 @RequestMapping("/system/user")
 public class SysUserCrudController extends BaseCrudDhtmlxController<SysUser, Long, SysUserService> {
     @Autowired
-    private SysDeptService sysDeptService;
-    @Autowired
     private SysOrgService sysOrgService;
     @Autowired
     private SysResourceService sysResourceService;
     @Autowired
     private ResourceBundleMessageSource messageSource;
-    @Autowired
-    private LoginService loginService;
+
 
     @RequestMapping("/show")
     public String userList(HttpServletRequest request, HttpServletResponse response) {
-        if (request.getParameter("lockorg") != null && request.getParameter("lockorg").equals(Const.VALID)) {
-            request.setAttribute("disabletxt", ",disabled:true");
-            request.setAttribute("orgId", request.getParameter("orgId"));
-        } else {
-            request.setAttribute("disabletxt", "");
+        Session session=(Session)request.getSession().getAttribute(Const.SESSION);
+        if(session.getOrgId()!=null){
+            request.setAttribute("orgId",session.getOrgId());
         }
         return "/user/user_list";
     }
@@ -86,12 +73,12 @@ public class SysUserCrudController extends BaseCrudDhtmlxController<SysUser, Lon
         }
         query.getParameters().put("queryCondition", wrapQuery(request, orgIds));
         doQuery(request, response, query);
-        List<SysDept> deptList = sysDeptService.queryByField("deptStatus", BaseObject.OPER_EQ, Const.VALID);
-        setCode("DEPT", deptList, "deptName", "id");
+
         List<SysOrg> orgList = sysOrgService.queryByField("orgStatus", BaseObject.OPER_EQ, Const.VALID);
         setCode("ORG", orgList, "orgName", "id");
-        filterListByCodeSet(query, "deptId", "DEPT");
-        filterListByCodeSet(query, "orgId", "ORG");
+        setCode("ACCOUNTTYPE");
+        filterListByCodeSet(query, "accountType", "ACCOUNTTYPE",null);
+        filterListByCodeSet(query, "orgId", "ORG",messageSource.getMessage("title.defaultOrg",null,Locale.getDefault()));
         return wrapDhtmlxGridOutput(query);
     }
 
@@ -168,7 +155,8 @@ public class SysUserCrudController extends BaseCrudDhtmlxController<SysUser, Lon
         try {
             SysUser user = this.service.getEntity(id);
             if (user.getUserPassword() != null && !user.getUserPassword().isEmpty()) {
-                if (request.getParameter("orgPwd") == null || !StringUtils.getMd5Encry(request.getParameter("orgPwd")).equals(user.getUserPassword())) {
+                if (request.getParameter("orgPwd") == null ||
+                        !StringUtils.getMd5Encry(request.getParameter("orgPwd")).equals(user.getUserPassword())) {
                     throw new WebException(messageSource.getMessage("message.passwordOriginNotMatch", null, Locale.getDefault()));
                 }
             }
@@ -207,11 +195,11 @@ public class SysUserCrudController extends BaseCrudDhtmlxController<SysUser, Lon
         if (request.getParameter("userName") != null && !"".equals(request.getParameter("userName"))) {
             builder.append(" and user_account like '%" + request.getParameter("userName") + "%'");
         }
-        if (request.getParameter("deptId") != null && !"".equals(request.getParameter("deptId"))) {
-            builder.append(" and dept_id =" + request.getParameter("deptId"));
+        if (request.getParameter("accountType") != null && !"".equals(request.getParameter("accountType"))) {
+            builder.append(" and account_type =" + request.getParameter("accountType"));
         }
         if (orgIds != null && !orgIds.isEmpty()) {
-            builder.append(" and dept_id in (" + orgIds + ")");
+            builder.append(" and org_id in (" + orgIds + ")");
         }
         return builder.toString();
     }
@@ -226,70 +214,31 @@ public class SysUserCrudController extends BaseCrudDhtmlxController<SysUser, Lon
     @RequestMapping("listright")
     @ResponseBody
     public Map<String, Object> listUserRight(HttpServletRequest request, HttpServletResponse response) {
-
+        Session session=(Session) request.getSession().getAttribute(Const.SESSION);
         String userId = request.getParameter("userId");
         List<Map<String, Object>> retList = new ArrayList<Map<String, Object>>();
         String sql = "select distinct(a.id) as id,a.res_name as name from t_sys_resource_info a,t_sys_resource_role_r b,t_sys_user_role_r c where a.id=b.res_id and b.role_id=c.role_id and c.user_id=? ORDER BY a.RES_CODE";
-        Map<String, Object> rmap = new HashMap<String, Object>();
+        List<Long> resIdList = new ArrayList<Long>();
         try {
-            List<Map<String, Object>> list = service.queryBySql(sql, new Object[]{Long.valueOf(userId)});
-            List<Long> resIdList = new ArrayList<Long>();
+            PageQuery query=new PageQuery();
+            query.setPageSize(0);
+            if(session.getOrgId()==null){
+                query.setSelectParamId("GET_SYSRESOURCEBYRESP");
+            }else{
+                query.setSelectParamId("GET_ORGRESOURCEBYRESP");
+            }
+            query.setParameterArr(new Object[]{Long.parseLong(userId)});
+            service.queryBySelectId(query);
+            List<Map<String, Object>> list = query.getRecordSet();
+
             for (Map<String, Object> map : list) {
                 resIdList.add(new Long(map.get("id").toString()));
             }
             List<SysResource> resList = sysResourceService.queryByField("status", BaseObject.OPER_EQ, "1");
-
             //正向方向赋权
             List<Map<String, Object>> userRightList = service.queryBySql("select res_id as resId,assign_type as type from t_sys_resource_user_r where user_id=? and status=?", new Object[]{Long.valueOf(userId), "1"});
             Map<String, List<Map<String, Object>>> typeMap = CollectionBaseConvert.convertToMapByParentKeyWithObjVal(userRightList, "type");
-            List<Long> addList = new ArrayList<Long>();
-            List<Long> delList = new ArrayList<Long>();
-            if (typeMap.containsKey("1")) {
-                for (Map<String, Object> map : typeMap.get("1")) {
-                    addList.add(new Long(map.get("resId").toString()));
-                }
-            }
-            if (typeMap.containsKey("2")) {
-                for (Map<String, Object> map : typeMap.get("2")) {
-                    delList.add(new Long(map.get("resId").toString()));
-                }
-            }
-            for (SysResource res : resList) {
-                String pid = res.getPid().toString();
-                if (pid.equals("0")) {
-                    Map<String, Object> tmap = new HashMap<String, Object>();
-                    tmap.put("id", res.getId());
-                    tmap.put("text", res.getName());
-                    rmap.put(res.getId().toString(), tmap);
-                    retList.add(tmap);
-                } else {
-                    if (rmap.containsKey(pid)) {
-                        Map<String, Object> tmpmap = (Map<String, Object>) rmap.get(pid);
-                        Map<String, Object> t2map = new HashMap<String, Object>();
-                        t2map.put("id", res.getId());
-                        t2map.put("text", res.getName());
-                        if (resIdList.contains(res.getId())) {
-                            if (delList.contains(res.getId())) {
-                                t2map.put("style", "font-weight:bold;text-decoration:underline;color:#ee1010");
-                            } else {
-                                t2map.put("checked", "1");
-                                t2map.put("style", "font-weight:bold;text-decoration:underline");
-                            }
-                        } else if (addList.contains(res.getId())) {
-                            t2map.put("checked", "1");
-                            t2map.put("style", "font-weight:bold;color:#1010ee");
-                        }
-                        if (!tmpmap.containsKey("item")) {
-                            List<Map<String, Object>> list1 = new ArrayList<Map<String, Object>>();
-                            list1.add(t2map);
-                            tmpmap.put("item", list1);
-                        } else {
-                            List<Map<String, Object>> list1 = (List<Map<String, Object>>) tmpmap.get("item");
-                            list1.add(t2map);
-                        }
-                    }
-                }
-            }
+            filterMenu(typeMap,resList,retList,resIdList);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -299,19 +248,84 @@ public class SysUserCrudController extends BaseCrudDhtmlxController<SysUser, Lon
         retMaps.put("item", retList);
         return retMaps;
     }
+    private void filterMenu(Map<String, List<Map<String, Object>>> typeMap,List<SysResource> resList,List<Map<String, Object>> retList,List<Long> resIdList){
+        List<Long> addList = new ArrayList<Long>();
+        List<Long> delList = new ArrayList<Long>();
+        Map<String, Object> rmap = new HashMap<String, Object>();
+
+        if (typeMap.containsKey("1")) {
+            for (Map<String, Object> map : typeMap.get("1")) {
+                addList.add(new Long(map.get("resId").toString()));
+            }
+        }
+        if (typeMap.containsKey("2")) {
+            for (Map<String, Object> map : typeMap.get("2")) {
+                delList.add(new Long(map.get("resId").toString()));
+            }
+        }
+        for (SysResource res : resList) {
+            String pid = res.getPid().toString();
+            if (pid.equals("0")) {
+                Map<String, Object> tmap = new HashMap<String, Object>();
+                tmap.put("id", res.getId());
+                tmap.put("text", res.getName());
+                rmap.put(res.getId().toString(), tmap);
+                retList.add(tmap);
+            } else {
+                if (rmap.containsKey(pid)) {
+                    Map<String, Object> tmpmap = (Map<String, Object>) rmap.get(pid);
+                    Map<String, Object> t2map = new HashMap<String, Object>();
+                    t2map.put("id", res.getId());
+                    t2map.put("text", res.getName());
+                    if (resIdList.contains(res.getId())) {
+                        if (delList.contains(res.getId())) {
+                            t2map.put("style", "font-weight:bold;text-decoration:underline;color:#ee1010");
+                        } else {
+                            t2map.put("checked", "1");
+                            t2map.put("style", "font-weight:bold;text-decoration:underline");
+                        }
+                    } else if (addList.contains(res.getId())) {
+                        t2map.put("checked", "1");
+                        t2map.put("style", "font-weight:bold;color:#1010ee");
+                    }
+                    if (!tmpmap.containsKey("item")) {
+                        List<Map<String, Object>> list1 = new ArrayList<Map<String, Object>>();
+                        list1.add(t2map);
+                        tmpmap.put("item", list1);
+                    } else {
+                        List<Map<String, Object>> list1 = (List<Map<String, Object>>) tmpmap.get("item");
+                        list1.add(t2map);
+                    }
+                }
+            }
+        }
+    }
 
     @RequestMapping("/assignright")
     @ResponseBody
     public Map<String, Object> assignRight(HttpServletRequest request, HttpServletResponse response) {
+        Session session=(Session) request.getSession().getAttribute(Const.SESSION);
         String[] ids = request.getParameter("ids").split(",");
         String userId = request.getParameter("userId");
         String sql = "select distinct(a.id) as id,a.res_name as name from t_sys_resource_info a,t_sys_resource_role_r b,t_sys_user_role_r c where a.id=b.res_id and b.role_id=c.role_id and c.user_id=? ORDER BY a.RES_CODE";
+
         Map<String, Object> retMaps = new HashMap<String, Object>();
         try {
-            List<Map<String, Object>> list = service.queryBySql(sql, new Object[]{Long.valueOf(userId)});
-            List<String> orgList = new ArrayList<String>();
-
-            List<SysResource> avaiableList = sysResourceService.queryByField("status", BaseObject.OPER_EQ, "1");
+            PageQuery query=new PageQuery();
+            query.setPageSize(0);
+            if(session.getOrgId()==null){
+                query.setSelectParamId("GET_SYSRESOURCEBYRESP");
+            }else{
+                query.setSelectParamId("GET_ORGRESOURCEBYRESP");
+            }
+            query.setParameterArr(new Object[]{Long.parseLong(userId)});
+            service.queryBySelectId(query);
+            List<Map<String, Object>> list = query.getRecordSet();
+            List<String> delList = new ArrayList<String>();
+            SysResource queryVO=new SysResource();
+            queryVO.setOrgId(session.getOrgId()==null?0L:session.getOrgId());
+            queryVO.setStatus(Const.VALID);
+            List<SysResource> avaiableList = sysResourceService.queryByVO(queryVO,null,null);
             Map<String, SysResource> resMap = new HashMap<String, SysResource>();
             for (SysResource res : avaiableList) {
                 if (res.getPid() != -1) {
@@ -319,7 +333,7 @@ public class SysUserCrudController extends BaseCrudDhtmlxController<SysUser, Lon
                 }
             }
             for (Map<String, Object> map : list) {
-                orgList.add(map.get("id").toString());
+                delList.add(map.get("id").toString());
             }
             List<String> addList = new ArrayList<String>();
             for (int i = 0; i < ids.length; i++) {
@@ -327,16 +341,16 @@ public class SysUserCrudController extends BaseCrudDhtmlxController<SysUser, Lon
                     addList.add(ids[i]);
             }
             for (int i = 0; i < ids.length; i++) {
-                int pos = orgList.indexOf(ids[i]);
+                int pos = delList.indexOf(ids[i]);
                 int pos1 = addList.indexOf(ids[i]);
                 if (pos != -1 && pos1 != -1) {
-                    orgList.remove(pos);
+                    delList.remove(pos);
                     addList.remove(pos1);
                 }
             }
-            if (!orgList.isEmpty() || !addList.isEmpty()) {
+            if (!delList.isEmpty() || !addList.isEmpty()) {
                 //有权限修改
-                sysResourceService.updateUserResourceRight(userId, addList, orgList);
+                sysResourceService.updateUserResourceRight(userId, addList, delList);
                 retMaps.put("success", "true");
             } else {
                 //no chage,ignore update

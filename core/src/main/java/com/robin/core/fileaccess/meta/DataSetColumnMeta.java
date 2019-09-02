@@ -1,5 +1,7 @@
 package com.robin.core.fileaccess.meta;
 
+import java.io.Serializable;
+
 /**
  * <p>Project:  frame</p>
  * <p>
@@ -12,7 +14,7 @@ package com.robin.core.fileaccess.meta;
  * @author robinjim
  * @version 1.0
  */
-public class DataSetColumnMeta{
+public class DataSetColumnMeta implements Serializable {
     private String columnName;
     private String columnType;
     private Object defaultNullValue;

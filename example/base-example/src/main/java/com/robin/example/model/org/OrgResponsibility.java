@@ -1,4 +1,4 @@
-package com.robin.example.model.system;
+package com.robin.example.model.org;
 
 import com.robin.core.base.annotation.MappingEntity;
 import com.robin.core.base.annotation.MappingField;

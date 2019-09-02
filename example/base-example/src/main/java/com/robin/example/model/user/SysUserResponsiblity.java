@@ -5,7 +5,7 @@ import com.robin.core.base.annotation.MappingField;
 import com.robin.core.base.model.BaseObject;
 import lombok.Data;
 
-@MappingEntity(table = "t_user_sys_responsiblity")
+@MappingEntity(table = "t_sys_user_resp_r")
 @Data
 public class SysUserResponsiblity extends BaseObject {
     @MappingField(increment = true,primary = true)

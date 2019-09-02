@@ -89,7 +89,7 @@ public abstract class BaseContorller
     }
 
 
-    protected void filterListByCodeSet(PageQuery query, String columnName, String codeNo)
+    protected void filterListByCodeSet(PageQuery query, String columnName, String codeNo,String defaultValue)
     {
         if (!query.getRecordSet().isEmpty())
         {
@@ -102,7 +102,11 @@ public abstract class BaseContorller
                         map.put(columnName, name);
                     }
                 }else{
-                    map.put(columnName,"");
+                    if(defaultValue==null) {
+                        map.put(columnName, "");
+                    }else{
+                        map.put(columnName,defaultValue);
+                    }
                 }
             }
         }
@@ -151,6 +155,17 @@ public abstract class BaseContorller
         String message=Translator.toLocale("combo.NullDisplay");
         tmap.put("text", message);
         list.add(tmap);
+    }
+    protected void insertMapToSelect(List<Map<String, Object>> list,Map<String,String> codeMap)
+    {
+        Iterator<Map.Entry<String,String>> iterator=codeMap.entrySet().iterator();
+        while(iterator.hasNext()){
+            Map.Entry<String,String> entry=iterator.next();
+            Map<String, Object> tmap = new HashMap();
+            tmap.put("value", entry.getKey());
+            tmap.put("text", entry.getValue());
+            list.add(tmap);
+        }
     }
     protected List<Map<String,Object>> wrapYesNoCombo(boolean insertNullVal){
         List<Map<String,Object>> list=new ArrayList<>();

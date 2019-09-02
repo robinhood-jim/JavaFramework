@@ -55,18 +55,16 @@ public class XmlFileWriter extends WriterBasedFileWriter{
 
 	@Override
 	public void writeRecord(Map<String, ?> map) throws IOException {
-		Iterator<String> iter = map.keySet().iterator();
+
 		try {
 			streamWriter.writeCharacters("\t");
 			streamWriter.writeStartElement("record");
-			while (iter.hasNext()) {
-				String key = iter.next();
-				Object value = map.get(key);
-				if (value == null) {
-					logger.warn("column" + key + " value is null,mark as empty string");
-					value = "";
+			for (int i = 0; i < colmeta.getColumnList().size(); i++) {
+				String name = colmeta.getColumnList().get(i).getColumnName();
+				String value=getOutputStringByType(map,name);
+				if(value!=null){
+					streamWriter.writeAttribute(name,value);
 				}
-				streamWriter.writeAttribute(key,value.toString());
 			}
 			streamWriter.writeEndElement();
 			streamWriter.writeCharacters("\n");

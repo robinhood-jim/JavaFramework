@@ -50,15 +50,33 @@
 		 </FROMSQL>
 		 <FIELD>a.id as id,a.proj_name as name,a.proj_code as code,a.presist_type as presist,a.webframe_id as webFrame,b.name as datasourceName</FIELD>
 	</SQLSCRIPT>
+	<SQLSCRIPT ID="GET_SYSRESOURCEBYRESP">
+		<FROMSQL>from t_sys_resource_info a,t_sys_resource_resp_r b,t_sys_user_resp_r c
+			where a.id=b.res_id and b.resp_id=c.resp_id and c.user_id=? ORDER BY a.RES_CODE</FROMSQL>
+		<FIELD>
+			distinct(a.id) as id,a.res_name as name
+		</FIELD>
+	</SQLSCRIPT>
+	<SQLSCRIPT ID="GET_ORGRESOURCEBYRESP">
+		<FROMSQL>from t_sys_resource_info a,t_org_resource_resp_r b,t_org_user_resp_r c
+			where a.id=b.res_id and b.resp_id=c.resp_id and c.user_id=? ORDER BY a.RES_CODE</FROMSQL>
+		<FIELD>
+			distinct(a.id) as id,a.res_name as name
+		</FIELD>
+	</SQLSCRIPT>
 	<SQLSCRIPT ID="GET_RESOURCEINFO">
 		<FROMSQL>from (select a.* from t_sys_resource_info a,t_sys_resource_role_r b where a.ID=b.RES_ID and b.ROLE_ID in (${roleIds}) and a.STATUS=1
 			union 
-			select c.* from t_sys_resource_info c,t_sys_resource_user_r d where c.id=d.res_id and d.USER_ID=${userId} and c.STATUS=1)e order by res_code</FROMSQL>
+			select c.* from t_sys_resource_info c,t_sys_resource_user_r d where c.id=d.res_id and d.USER_ID=${userId} and c.STATUS=1)e order by res_code
+		</FROMSQL>
 			<FIELD>id,res_name as name,url,is_leaf as leafTag,res_code as code,pid,seq_no as seqNo</FIELD>
 	</SQLSCRIPT>
 	<SQLSCRIPT ID="GET_RESOURCEINFOBYSYSRESP">
-		<FROMSQL>from (select a.* from t_sys_resource_info a,t_sys_resource_resp_r b where a.ID=b.RES_ID and b.RESP_ID in (${respIds}) and a.STATUS='1' )e order by res_code</FROMSQL>
-		<FIELD>id,res_name as name,url,is_leaf as leafTag,res_code as code,pid,seq_no as seqNo</FIELD>
+		<FROMSQL>from (select a.*,0 as assignType from t_sys_resource_info a,t_sys_resource_resp_r b where a.ID=b.RES_ID and b.RESP_ID in (${respIds}) and a.STATUS='1'
+			union
+			select c.*,d.ASSIGN_TYPE as assignType from t_sys_resource_info c,t_sys_resource_user_r d where c.id=d.res_id and d.USER_ID=${userId} and c.STATUS=1)e order by res_code,assignType desc
+		</FROMSQL>
+		<FIELD>id,res_name as name,url,is_leaf as leafTag,res_code as code,pid,seq_no as seqNo,assignType</FIELD>
 	</SQLSCRIPT>
 	<SQLSCRIPT ID="GET_DEPTINFO">
 		<FROMSQL>from t_sys_dept_info</FROMSQL>
@@ -78,7 +96,7 @@
 	</SQLSCRIPT>
 	<SQLSCRIPT ID="GET_SYSUSERINFO">
 		<FROMSQL>from t_sys_user_info  where 1=1 ${queryCondition}</FROMSQL>
-			<FIELD>id,user_name as name,user_account as account,dept_id as deptId,org_id as orgId</FIELD>
+		<FIELD>id,user_name as name,user_account as account,account_type as accountType,org_id as orgId</FIELD>
 	</SQLSCRIPT>
 	<SQLSCRIPT ID="$_GETCODESET">
 		<FROMSQL>from t_sys_code a,t_sys_codeset b where a.CS_ID=b.ID and en_name=?</FROMSQL>

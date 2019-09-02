@@ -60,11 +60,15 @@ public class ParquetFileWriter extends AbstractFileWriter {
     @Override
     public void writeRecord(Map<String, ?> map) throws IOException {
         GenericRecord record=new GenericData.Record(schema);
-        Iterator<String> iter=map.keySet().iterator();
-        while(iter.hasNext()){
-            String key=iter.next();
-            record.put(key,map.get(key));
+
+        for (int i = 0; i < colmeta.getColumnList().size(); i++) {
+            String name = colmeta.getColumnList().get(i).getColumnName();
+            Object value=getMapValueByMeta(map,name);
+            if(value!=null){
+                record.put(name, value);
+            }
         }
+
         try {
             pwriter.write(record);
         }catch (IOException ex){

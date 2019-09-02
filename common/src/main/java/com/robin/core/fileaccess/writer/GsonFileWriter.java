@@ -42,15 +42,12 @@ public class GsonFileWriter extends WriterBasedFileWriter{
 	public void writeRecord(Map<String, ?> map) throws IOException{
 		try{
 			jwriter.beginObject();
-			Iterator<String> keyiter=map.keySet().iterator();
-			while(keyiter.hasNext()){
-				String key=keyiter.next();
-				Object value=map.get(key);
-				if(value==null ){
-					//logger.warn("column" +key+" value is null,mark as empty string");
-					value="";
+			for (int i = 0; i < colmeta.getColumnList().size(); i++) {
+				String name = colmeta.getColumnList().get(i).getColumnName();
+				String value=getOutputStringByType(map,name);
+				if(value!=null){
+					jwriter.name(name).value(value);
 				}
-				jwriter.name(key).value(value.toString());
 			}
 			jwriter.endObject();
 		}catch(Exception ex){

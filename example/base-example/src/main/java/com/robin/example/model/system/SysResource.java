@@ -33,6 +33,8 @@ public class SysResource extends BaseObject {
 	private String url;
 	@MappingField(field="power_id")
 	private Long powerId;
+	@MappingField(field = "is_leaf")
+	private Integer leafTag;
 	@MappingField
 	private String status;
 	@MappingField(field="res_code")

@@ -122,7 +122,7 @@ public class MultiThreadFtp extends SimpleFtp {
             while (!retflag && processsize != partsize) {
                 try {
                     processsize += doDownloadSect(formsize + processsize, tosize, local, remote);
-                    if (formsize + processsize != tosize && ((Long.valueOf(String.valueOf(processsize)) != partsize || !(tosize == totalsize && processsize != 0)))) {
+                    if (formsize + processsize != tosize && ((Long.parseLong(String.valueOf(processsize)) != partsize || !(tosize == totalsize && processsize != 0)))) {
                         Thread.sleep(waitForReconnect);
                     } else {
                         retflag = true;

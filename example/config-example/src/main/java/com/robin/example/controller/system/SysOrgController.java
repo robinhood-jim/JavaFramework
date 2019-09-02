@@ -8,6 +8,7 @@ import com.robin.core.web.controller.BaseCrudDhtmlxController;
 import com.robin.core.web.util.Session;
 import com.robin.example.model.system.SysOrg;
 import com.robin.example.service.system.SysOrgService;
+import com.robin.example.util.WebConstant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.stereotype.Controller;
@@ -61,7 +62,7 @@ public class SysOrgController extends BaseCrudDhtmlxController<SysOrg, Long, Sys
             //set treecode
             if (!query.getRecordSet().isEmpty()) {
                 orgCode = query.getRecordSet().get(0).get("code").toString();
-                Integer codeNum = 10000 + Integer.valueOf(orgCode.substring(orgCode.length() - 4, orgCode.length())) + 1;
+                Integer codeNum = 10000 + Integer.parseInt(orgCode.substring(orgCode.length() - 4, orgCode.length())) + 1;
                 vo.setTreeCode(orgCode.substring(0, orgCode.length() - 4) + String.valueOf(codeNum).substring(1, 5));
             } else {
                 SysOrg porg = service.getEntity(Long.valueOf(vo.getUpOrgId()));
@@ -114,7 +115,7 @@ public class SysOrgController extends BaseCrudDhtmlxController<SysOrg, Long, Sys
         List<Map<String,Object>> list=new ArrayList<>();
 
         if(id==0L){
-            if(!session.getAccountType().equals(Const.ACCOUNT_TYPE.SYSUSER.toString())){
+            if(!session.getAccountType().equals(WebConstant.ACCOUNT_TYPE.SYSUSER.toString())){
                 parentId=session.getOrgId();
                 SysOrg org=service.getEntity(parentId);
                 Map<String,Object> map=new HashMap<>();
