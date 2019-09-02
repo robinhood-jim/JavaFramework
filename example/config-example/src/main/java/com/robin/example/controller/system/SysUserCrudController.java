@@ -57,6 +57,7 @@ public class SysUserCrudController extends BaseCrudDhtmlxController<SysUser, Lon
         if(session.getOrgId()!=null){
             request.setAttribute("orgId",session.getOrgId());
         }
+        request.setAttribute("resps",StringUtils.join(session.getResponsiblitys().toArray(),","));
         return "/user/user_list";
     }
 

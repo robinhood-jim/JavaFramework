@@ -3,10 +3,7 @@ package com.robin.core.web.util;
 import lombok.Data;
 
 import java.io.Serializable;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Data
 public class Session implements Serializable {
@@ -25,16 +22,12 @@ public class Session implements Serializable {
     private String orgName;
     private String orgShortName;
     private String orgNumber;
-    private Long deptId;
-    private String deptCode;
-    private String deptName;
-    private String deptShortName;
-    private String deptNumber;
+
     private Date loginTime;
     private String cityCode;
     private String accountType;
     private Map<Integer, String> roles = new HashMap();
-    private Map<Long, String> responsiblitys = new HashMap();
+    private List<Long> responsiblitys = new ArrayList<>();
     private Map<Integer, String> modules = new HashMap();
     private Map<String, List<Map<String, Object>>> privileges = new HashMap();
     public boolean hasRole(String key)

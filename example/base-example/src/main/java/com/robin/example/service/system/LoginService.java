@@ -138,7 +138,7 @@ public class LoginService {
                 SysUserResponsiblity sur = (SysUserResponsiblity) resps.get(i);
                 if ((sur != null) && (VERIFIED.equals(sur.getStatus()))) {
                     respsList.add(sur.getRespId());
-                    session.getResponsiblitys().put(sur.getRespId(), "");
+                    session.getResponsiblitys().add(sur.getRespId());
                 }
             }
         }else if(session.getAccountType().equals(WebConstant.ACCOUNT_TYPE.ORGUSER.toString())){

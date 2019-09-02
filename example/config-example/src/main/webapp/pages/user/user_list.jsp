@@ -59,7 +59,7 @@
     var topPanel = dhxLayout.cells("a");
     var bottomPanel = dhxLayout.cells("b");
     var orgId='${orgId}';
-    var accountType='${cookie.accountType.value}';
+    var resps='${resps}';
     var allowButton='${allowButtons}';
     var orgSelect=undefined;
 
@@ -158,8 +158,8 @@
     dhxToobar.addButton("active", 4, "<spring:message code="btn.active" />", "open.gif", "open_dis.gif");
     dhxToobar.addButton("assign", 5, "<spring:message code="btn.assingRight" />", "open.gif", "open_dis.gif");
 
-
-    if(accountType!='1'){
+    var respsArr=resps.split(",");
+    if(!respsArr.indexOf("1")==-1){
         dhxToobar.forEachItem(function (itemid) { dhxToobar.disableItem(itemid)});
         var items=allowButton.split(",");
         for(i=0;i<items.length;i++){

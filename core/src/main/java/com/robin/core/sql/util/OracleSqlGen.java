@@ -70,7 +70,8 @@ public class OracleSqlGen extends AbstractSqlGen implements BaseSqlGen {
 		String nQueryModel = param.getQueryMode();
 		if (param.getQueryValue() == null || "".equals(param.getQueryValue().trim())) return "";
 		String key = param.getColumnName();
-		if (param.getAliasName() != null && !"".equals(param.getAliasName())) key = param.getAliasName() + "." + key;
+		if (param.getAliasName() != null && !"".equals(param.getAliasName()))
+			key = param.getAliasName() + "." + key;
 		String value = replace(param.getQueryValue());
 		if (value != null && !"".equals(value)) {
 			if (nQueryModel.equals(QueryParam.QUERYMODE_GT)) sql.append(key + ">" + "'" + value + "'");
