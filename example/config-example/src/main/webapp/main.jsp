@@ -268,7 +268,7 @@
                         window.location.href = ctx + 'main/index';
                         ;
                     } else {
-                        openMsgDialog("<spring:message code="message.SaveFailed" />", "<spring:message code="message.errorMsg" />:" + tobj.message);
+                        openMsgDialog("<spring:message code="message.saveFailed" />", "<spring:message code="message.errorMsg" />:" + tobj.message);
                     }
                 });
             }

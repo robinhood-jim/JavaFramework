@@ -7,7 +7,7 @@
 		       where 1=1 ${queryString}
 		 </FROMSQL>
 		 <FIELD>a.id AS id, a.user_name AS userName, a.user_account AS userAccount, a.account_type as accountType,
-		              a.org_id AS orgId,a.dept_id AS deptId,a.user_status AS userStatus, a.remark AS remark</FIELD>
+		              a.org_id AS orgId,a.user_status AS userStatus, a.remark AS remark</FIELD>
 	</SQLSCRIPT>
 	<SQLSCRIPT ID="GET_SYSORG_PAGE">  
 		<FROMSQL>from t_sys_org_info a where 1=1 ${queryString}
@@ -18,6 +18,21 @@
 		<FROMSQL>from t_sys_role_info a where 1=1 ${queryString}
 		 </FROMSQL>
 		 <FIELD>a.id AS id, a.role_name AS name, a.role_type AS type, a.role_status as status</FIELD>
+	</SQLSCRIPT>
+	<SQLSCRIPT ID="GET_SYSRESP_PAGE">
+		<FROMSQL>from t_sys_responsibility a where 1=1 ${queryString}
+		</FROMSQL>
+		<FIELD>a.id AS id, a.name AS name,a.status as status</FIELD>
+	</SQLSCRIPT>
+	<SQLSCRIPT ID="GET_SYSUSERRESP_PAGE">
+		<FROMSQL>from t_sys_user_resp_r b,t_sys_user_info a  where b.user_id=a.id ${queryString}
+		</FROMSQL>
+		<FIELD>b.id AS id, a.user_name AS userName, a.user_account AS userAccount, a.account_type as accountType,
+			a.org_id AS orgId</FIELD>
+	</SQLSCRIPT>
+	<SQLSCRIPT ID="GET_SYSRESP_COUNT">
+		<FROMSQL>from t_sys_responsibility a left join (select count(1) as cou,resp_id from t_sys_user_resp_r GROUP BY resp_id)b on a.id=b.resp_id</FROMSQL>
+		<FIELD>a.id as id,a.name as name,a.create_time as createTime,b.cou as rcount</FIELD>
 	</SQLSCRIPT>
 	<SQLSCRIPT ID="get_expert_question">  
 		<FROMSQL>select a.id as qid,b.name as cname,b.id as cid,a.title as qtitle from ask_question a , ask_category b where a.cid = b.id

@@ -93,8 +93,7 @@ public abstract class BaseContorller
     {
         if (!query.getRecordSet().isEmpty())
         {
-            List<Map<String, Object>> list = query.getRecordSet();
-            for (Map<String, Object> map : list)
+            for (Map<String, Object> map : query.getRecordSet())
             {
                 if(map.get(columnName)!=null) {
                     String name = findCodeName(codeNo, map.get(columnName).toString());
@@ -107,6 +106,16 @@ public abstract class BaseContorller
                     }else{
                         map.put(columnName,defaultValue);
                     }
+                }
+            }
+        }
+    }
+    protected void fillMissingValue(PageQuery query,String columnName,String defaultValue){
+        if (!query.getRecordSet().isEmpty())
+        {
+            for(Map<String,Object> map:query.getRecordSet()){
+                if(map.get(columnName)==null || map.get(columnName).toString().isEmpty()){
+                    map.put(columnName,defaultValue);
                 }
             }
         }

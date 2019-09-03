@@ -111,7 +111,7 @@
 			        		  dhxTree.insertNewChild(pid,menu.id,menu.resName,0,0,0,0,"CHILD");
 			        	  	 closedialog(true);
 			        	  }else{
-			        		  openMsgDialog("<spring:message code="message.SaveFailed" />","<spring:message code="message.errorMsg" />"+tobj.message,300,200);
+			        		  openMsgDialog("<spring:message code="message.saveFailed" />","<spring:message code="message.errorMsg" />"+tobj.message,300,200);
 			        	  }
 			          });      
 			    }else if(name=='cmdCancel'){

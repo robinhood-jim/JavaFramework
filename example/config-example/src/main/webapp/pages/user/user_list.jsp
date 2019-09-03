@@ -68,6 +68,7 @@
 
     var myForm = topPanel.attachForm();
     var cwidth = document.body.clientWidth;
+    var cheight = document.body.clientHeight;
     var queryUrl = ctx + "system/user/list";
     var userFrm = [
         {
@@ -166,6 +167,7 @@
             dhxToobar.enableItem(items[i]);
         }
     }
+
     dhxToobar.attachEvent("onClick", function (id) {
         if (id == 'new') {
             goAdd();
@@ -199,11 +201,13 @@
         {
             type: "fieldset", label: "<spring:message code="sysUser.info" />", offsetLeft: 10,offsetRight: 20, inputWidth: 495, lableWidth: 100, list: [
                 {type: "hidden", name: "id", value: ""},
+                {type: "hidden", name: "respId", value: ""},
+                {type: "hidden", name: "orgId", value: ""},
                 {type: "input", name: "userName", label: "<spring:message code="sysUser.userName" />:", validate: "NotEmpty"},
                 {type: "select", name: "accountType", label: "<spring:message code="sysUser.accountType" />:", validate: "NotEmpty",connector: ctx + "system/codecombo?codeSetNo=ACCOUNTTYPE"},
                 {type: "input", name: "userAccount", label: "<spring:message code="sysUser.accountName" />:", validate: "NotEmpty"},
                 {type: "newcolumn", offset: 20},
-                {type: "select", name: "orgId", label: "<spring:message code="sysUser.Org" />:", validate: "NotEmpty",connector:ctx + "system/org/listjson?allowNull=false"}
+                {type: "input", name: "orgName", label: "<spring:message code="sysUser.Org" />:",validate: "NotEmpty",readonly:true}
             ]
         },
         {
@@ -217,6 +221,7 @@
     ];
 
     function addInit(form) {
+
         form.attachEvent("onButtonClick", function (name, command) {
             form.validate();
             if (name == "cmdOK") {
@@ -230,11 +235,22 @@
                         closedialog(true);
                         reload();
                     } else {
-                        openMsgDialog("<spring:message code="message.SaveFailed" />", "<spring:message code="message.errorMsg" />:" + tobj.message);
+                        openMsgDialog("<spring:message code="message.saveFailed" />", "<spring:message code="message.errorMsg" />:" + tobj.message);
                     }
                 });
             } else if (name == 'cmdCancel') {
                 closedialog(false);
+            }
+        });
+        form.attachEvent("onFocus", function(name, value){
+            if(name=='orgName'){
+                orgSelect=openWindowForTreeviewWithName("t1",ctx+"system/org/listAll?id={id}",cwidth/2-250+form.getInput(name).offsetParent.offsetLeft+form.getInput(name).offsetLeft,form.getInput(name).offsetParent.offsetTop+form.getInput(name).offsetTop+cheight/2-80,200,150);
+                orgSelect.attachEvent("onSelect",function (id,mode) {
+                    var txt=orgSelect.getItemText(id);
+                    form.setItemValue("orgName",txt);
+                    form.setItemValue("orgId",id);
+                    closewithName("t1");
+                });
             }
         });
     }
@@ -258,6 +274,17 @@
                 });
             } else if (name == 'cmdCancel') {
                 closedialog(false);
+            }
+        });
+        form.attachEvent("onFocus", function(name, value){
+            if(name=='orgName'){
+                orgSelect=openWindowForTreeview("t1",ctx+"system/org/listAll?id={id}",form.getInput(name).offsetParent.offsetLeft+form.getInput(name).offsetLeft,form.getInput(name).offsetParent.offsetTop+form.getInput(name).offsetTop+cheight/2-80,200,150);
+                orgSelect.attachEvent("onSelect",function (id,mode) {
+                    var txt=orgSelect.getItemText(id);
+                    form.setItemValue("orgName",txt);
+                    form.setItemValue("orgId",id);
+                    closewithName("t1");
+                });
             }
         });
     }

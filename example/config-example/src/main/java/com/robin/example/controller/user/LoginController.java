@@ -19,7 +19,6 @@ import com.robin.core.base.util.Const;
 import com.robin.core.web.controller.BaseContorller;
 import com.robin.core.web.util.Session;
 import com.robin.example.service.system.LoginService;
-import com.robin.example.service.system.SysUserOrgService;
 import com.robin.example.util.WebConstant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.ResourceBundleMessageSource;
@@ -41,8 +40,7 @@ import java.util.Map;
 public class LoginController extends BaseContorller {
     @Autowired
     private LoginService loginService;
-    @Autowired
-    private SysUserOrgService sysUserOrgService;
+
     @Autowired
     private ResourceBundleMessageSource messageSource;
 

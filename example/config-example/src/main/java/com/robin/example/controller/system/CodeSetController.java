@@ -4,21 +4,17 @@ import com.robin.core.web.codeset.CodeSetService;
 import com.robin.core.web.controller.BaseContorller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-/**
- * <p>Created at: 2019-09-02 16:05:28</p>
- *
- * @author robinjim
- * @version 1.0
- */
 @RequestMapping("/system/codeset")
 @Controller
 public class CodeSetController extends BaseContorller {
