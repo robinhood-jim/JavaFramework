@@ -18,10 +18,6 @@ public class ResourceAuthroize extends BaseObject {
     private Long id;
     @MappingField(field = "resource_id",required = true)
     private Long resId;
-    @MappingField(field = "corp_id",required = true)
-    private Long corpId;
-    @MappingField(field = "dept_id")
-    private Long deptId;
     @MappingField(field = "org_id")
     private Long orgId;
 
@@ -29,11 +25,6 @@ public class ResourceAuthroize extends BaseObject {
     private Long credentialId;
     @MappingField(required = true)
     private Integer authorize;
-    @MappingField(field = "dept_column")
-    private String deptColumnName;
-    @MappingField(field = "org_column")
-    private String orgColumnName;
-    @MappingField(field = "use_classification")
-    private Integer useClassification;
+
 
 }

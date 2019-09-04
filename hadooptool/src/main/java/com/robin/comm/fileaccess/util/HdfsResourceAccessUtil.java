@@ -25,8 +25,7 @@ public class HdfsResourceAccessUtil extends AbstractResourceAccessUtil {
 			throws Exception {
 		HDFSUtil util=getHdfsUtil(meta);
 
-		String suffix=getFileSuffix(meta.getPath());
-		return getReaderBySuffix(suffix, util.getFileSystem().open(new Path(meta.getPath())), meta.getEncode());
+		return getReaderByPath(meta.getPath(), util.getFileSystem().open(new Path(meta.getPath())), meta.getEncode());
 	}
 	
 	@Override
@@ -37,8 +36,7 @@ public class HdfsResourceAccessUtil extends AbstractResourceAccessUtil {
 			logger.error("output file "+meta.getPath()+" exist!,remove it");
 			util.delete(meta.getPath());
 		}
-		String suffix=getFileSuffix(meta.getPath());
-		return getWriterBySuffix(suffix, util.getFileSystem().create(new Path(meta.getPath())), meta.getEncode());
+		return getWriterByPath(meta.getPath(), util.getFileSystem().create(new Path(meta.getPath())), meta.getEncode());
 	}
 	@Override
 	public OutputStream getOutResourceByStream(DataCollectionMeta meta)
@@ -49,7 +47,7 @@ public class HdfsResourceAccessUtil extends AbstractResourceAccessUtil {
 			util.delete(meta.getPath());
 		}
 		String suffix=getFileSuffix(meta.getPath());
-		return getOutputStreamBySuffix(suffix, util.getFileSystem().create(new Path(meta.getPath())));
+		return getOutputStreamByPath(suffix, util.getFileSystem().create(new Path(meta.getPath())));
 	}
 
 	@Override
@@ -71,7 +69,7 @@ public class HdfsResourceAccessUtil extends AbstractResourceAccessUtil {
 			util.delete(meta.getPath());
 		}
 		String suffix=getFileSuffix(meta.getPath());
-		return getInputStreamBySuffix(suffix, util.getFileSystem().open(new Path(meta.getPath())));
+		return getInputStreamByPath(suffix, util.getFileSystem().open(new Path(meta.getPath())));
 	}
 	public HDFSUtil getHdfsUtil(DataCollectionMeta meta){
 		HDFSUtil util=null;

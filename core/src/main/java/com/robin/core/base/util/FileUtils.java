@@ -43,4 +43,11 @@ public class FileUtils {
         }
         return type;
     }
+    public static Const.CompressType getFileCompressType(String suffix) {
+        Const.CompressType type = Const.CompressType.COMPRESS_TYPE_NONE;
+        if (suffix!=null && !suffix.isEmpty() && avaiableCompressSuffixs.contains(suffix.toLowerCase())) {
+            type = compressTypeEnum.get(avaiableCompressSuffixs.indexOf(suffix.toLowerCase()));
+        }
+        return type;
+    }
 }

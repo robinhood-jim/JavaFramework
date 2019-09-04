@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.robin.meta.service;
+package com.robin.meta.service.resource;
 
 import com.robin.comm.fileaccess.iterator.ParquetFileIterator;
 import com.robin.comm.fileaccess.util.HdfsResourceAccessUtil;
@@ -32,7 +32,7 @@ import com.robin.core.fileaccess.util.ApacheVfsResourceAccessUtil;
 import com.robin.core.fileaccess.util.AvroUtils;
 import com.robin.hadoop.hdfs.HDFSUtil;
 import com.robin.meta.explore.SourceFileExplorer;
-import com.robin.meta.model.GlobalResource;
+import com.robin.meta.model.resource.GlobalResource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.avro.Schema;
 import org.springframework.beans.factory.annotation.Autowired;

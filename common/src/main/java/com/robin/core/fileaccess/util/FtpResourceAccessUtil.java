@@ -46,14 +46,13 @@ public class FtpResourceAccessUtil extends AbstractResourceAccessUtil{
 		FtpParam param=new FtpParam();
 		ConvertUtil.convertToModel(param, meta.getResourceCfgMap());
 		BufferedReader reader=null;
-		String suffix=getFileSuffix(meta.getPath());
 		FileObject fo=manager.resolveFile(getUriByParam(param, meta.getPath()).toString(),getOptions(param));
 		if (fo.exists()) {
 			if (FileType.FOLDER.equals(fo.getType())) {
 				logger.error("File {} is a directory！", meta.getPath());
 				throw new FileNotFoundException("File "+meta.getPath()+" is a directory!");
 			} else {
-				reader = getReaderBySuffix(suffix, fo.getContent().getInputStream(), meta.getEncode());
+				reader = getReaderByPath(meta.getPath(), fo.getContent().getInputStream(), meta.getEncode());
 			}
 		} else {
 			throw new FileNotFoundException("File "+meta.getPath()+" not found!");
@@ -66,8 +65,7 @@ public class FtpResourceAccessUtil extends AbstractResourceAccessUtil{
 		BufferedWriter writer=null;
 		try{
 			FileObject fo=checkFtpFileExist(meta);
-			String suffix=getFileSuffix(meta.getPath());
-			writer = getWriterBySuffix(suffix, fo.getContent().getOutputStream(), meta.getEncode());
+			writer = getWriterByPath(meta.getPath(), fo.getContent().getOutputStream(), meta.getEncode());
 		}catch(Exception ex){
 			ex.printStackTrace();
 		}
@@ -99,7 +97,7 @@ public class FtpResourceAccessUtil extends AbstractResourceAccessUtil{
 		try{
 			FileObject fo=checkFtpFileExist(meta);
 			String suffix=getFileSuffix(meta.getPath());
-			out = getOutputStreamBySuffix(suffix, fo.getContent().getOutputStream());
+			out = getOutputStreamByPath(suffix, fo.getContent().getOutputStream());
 		}catch(Exception ex){
 			ex.printStackTrace();
 		}
@@ -130,7 +128,7 @@ public class FtpResourceAccessUtil extends AbstractResourceAccessUtil{
 				logger.error("File {} is a directory！", meta.getPath());
 				throw new FileNotFoundException("File "+meta.getPath()+" is a directory!");
 			} else {
-				reader = getInputStreamBySuffix(suffix, fo.getContent().getInputStream());
+				reader = getInputStreamByPath(suffix, fo.getContent().getInputStream());
 			}
 		} else {
 			throw new FileNotFoundException("File "+meta.getPath()+" not found!");

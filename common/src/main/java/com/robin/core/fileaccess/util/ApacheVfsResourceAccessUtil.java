@@ -35,14 +35,14 @@ public class ApacheVfsResourceAccessUtil extends AbstractResourceAccessUtil {
         VfsParam param = new VfsParam();
         ConvertUtil.convertToModel(param, meta.getResourceCfgMap());
         BufferedReader reader;
-        String suffix = getFileSuffix(meta.getPath());
+
         FileObject fo = manager.resolveFile(getUriByParam(param, meta.getPath()).toString(), getOptions(param));
         if (fo.exists()) {
             if (FileType.FOLDER.equals(fo.getType())) {
                 logger.error("File {} is a directory！", meta.getPath());
                 throw new FileNotFoundException("File " + meta.getPath() + " is a directory!");
             } else {
-                reader = getReaderBySuffix(suffix, fo.getContent().getInputStream(), meta.getEncode());
+                reader = getReaderByPath(meta.getPath(), fo.getContent().getInputStream(), meta.getEncode());
             }
         } else {
             throw new FileNotFoundException("File " + meta.getPath() + " not found!");
@@ -54,8 +54,7 @@ public class ApacheVfsResourceAccessUtil extends AbstractResourceAccessUtil {
     public BufferedWriter getOutResourceByWriter(DataCollectionMeta meta) throws Exception {
         BufferedWriter writer;
         FileObject fo = checkFileExist(meta);
-        String suffix = getFileSuffix(meta.getPath());
-        writer = getWriterBySuffix(suffix, fo.getContent().getOutputStream(), meta.getEncode());
+        writer = getWriterByPath(meta.getPath(), fo.getContent().getOutputStream(), meta.getEncode());
         return writer;
     }
 
@@ -64,7 +63,7 @@ public class ApacheVfsResourceAccessUtil extends AbstractResourceAccessUtil {
         OutputStream out;
         FileObject fo = checkFileExist(meta);
         String suffix = getFileSuffix(meta.getPath());
-        out = getOutputStreamBySuffix(suffix, fo.getContent().getOutputStream());
+        out = getOutputStreamByPath(suffix, fo.getContent().getOutputStream());
         return out;
     }
 
@@ -80,7 +79,7 @@ public class ApacheVfsResourceAccessUtil extends AbstractResourceAccessUtil {
                 logger.error("File {} is a directory！", meta.getPath());
                 throw new FileNotFoundException("File " + meta.getPath() + " is a directory!");
             } else {
-                reader = getInputStreamBySuffix(suffix, fo.getContent().getInputStream());
+                reader = getInputStreamByPath(suffix, fo.getContent().getInputStream());
             }
         } else {
             throw new FileNotFoundException("File " + meta.getPath() + " not found!");

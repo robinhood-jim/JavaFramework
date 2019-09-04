@@ -1,10 +1,9 @@
-package com.robin.meta.service;
+package com.robin.meta.service.resource;
 
 import com.robin.core.base.model.BaseObject;
 import com.robin.core.base.service.BaseAnnotationJdbcService;
 import com.robin.core.base.util.Const;
-import com.robin.meta.model.GlobalResource;
-import com.robin.meta.model.HadoopClusterDef;
+import com.robin.meta.model.resource.HadoopClusterDef;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;

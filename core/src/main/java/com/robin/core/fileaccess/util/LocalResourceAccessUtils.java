@@ -12,8 +12,7 @@ public class LocalResourceAccessUtils extends AbstractResourceAccessUtil {
 		if(!file.exists()){
 			throw new IOException("input file "+meta.getPath()+" does not exist!");
 		}
-		String suffix=getFileSuffix(meta.getPath());
-		reader=getReaderBySuffix(suffix, FileUtils.openInputStream(file), meta.getEncode());
+		reader= getReaderByPath(meta.getPath(), FileUtils.openInputStream(file), meta.getEncode());
 		return reader;
 	}
 	
@@ -23,8 +22,7 @@ public class LocalResourceAccessUtils extends AbstractResourceAccessUtil {
 		if(file.exists()){
 			FileUtils.forceDelete(file);
 		}
-		String suffix=getFileSuffix(meta.getPath());
-		writer=getWriterBySuffix(suffix, FileUtils.openOutputStream(file), meta.getEncode());
+		writer= getWriterByPath(meta.getPath(), FileUtils.openOutputStream(file), meta.getEncode());
 		return writer;
 	}
 	public OutputStream getOutResourceByStream(DataCollectionMeta meta) throws Exception{
@@ -33,7 +31,7 @@ public class LocalResourceAccessUtils extends AbstractResourceAccessUtil {
 			FileUtils.forceDelete(file);
 		}
 		String suffix=getFileSuffix(meta.getPath());
-		return getOutputStreamBySuffix(suffix,FileUtils.openOutputStream(file));
+		return getOutputStreamByPath(suffix,FileUtils.openOutputStream(file));
 	}
 	public InputStream getInResourceByStream(DataCollectionMeta meta) throws Exception{
 		File file=new File(meta.getPath());
@@ -41,7 +39,7 @@ public class LocalResourceAccessUtils extends AbstractResourceAccessUtil {
 			throw new IOException("file "+meta.getPath()+" not exist!");
 		}
 		String suffix=getFileSuffix(meta.getPath());
-		return getInputStreamBySuffix(suffix,FileUtils.openInputStream(file));
+		return getInputStreamByPath(suffix,FileUtils.openInputStream(file));
 
 	}
 
