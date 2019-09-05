@@ -30,16 +30,14 @@ public class LocalResourceAccessUtils extends AbstractResourceAccessUtil {
 		if(file.exists()){
 			FileUtils.forceDelete(file);
 		}
-		String suffix=getFileSuffix(meta.getPath());
-		return getOutputStreamByPath(suffix,FileUtils.openOutputStream(file));
+		return getOutputStreamByPath(meta.getPath(),FileUtils.openOutputStream(file));
 	}
 	public InputStream getInResourceByStream(DataCollectionMeta meta) throws Exception{
 		File file=new File(meta.getPath());
 		if(!file.exists()){
 			throw new IOException("file "+meta.getPath()+" not exist!");
 		}
-		String suffix=getFileSuffix(meta.getPath());
-		return getInputStreamByPath(suffix,FileUtils.openInputStream(file));
+		return getInputStreamByPath(meta.getPath(),FileUtils.openInputStream(file));
 
 	}
 

@@ -32,6 +32,7 @@ import java.util.zip.*;
 public abstract class AbstractResourceAccessUtil {
 	public static String[] retrieveResource(String path){
 		String[] ret=new String[2];
+
 		ret[1]=getFileSuffix(path);
 		ret[0]=getFilePrefix(path);
 		return ret;
