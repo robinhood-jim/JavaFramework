@@ -19,7 +19,7 @@ import com.robin.core.base.util.Const;
 import com.robin.core.web.controller.BaseContorller;
 import com.robin.core.web.util.Session;
 import com.robin.example.service.system.LoginService;
-import com.robin.example.util.WebConstant;
+import com.robin.core.web.util.WebConstant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.stereotype.Controller;

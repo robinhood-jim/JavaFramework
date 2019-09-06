@@ -42,7 +42,7 @@ public class ConvertUtil {
         Method methods[] = src.getClass().getMethods();
         for (int i = 0; i < methods.length; i++) {
             String method = methods[i].getName();
-            if (method.startsWith("get") && !"getClass".equals(method)) {
+            if (method.startsWith("get") && !"getClass" .equals(method)) {
                 Method setMethod = map.get(method.replaceFirst("get", "set"));
                 if (setMethod != null) {
                     Object value = methods[i].invoke(src, (Object[]) null);
@@ -62,7 +62,7 @@ public class ConvertUtil {
         Method methods[] = src.getClass().getMethods();
         for (int i = 0; i < methods.length; i++) {
             String method = methods[i].getName();
-            if (method.startsWith("get") && !"getClass".equals(method)) {
+            if (method.startsWith("get") && !"getClass" .equals(method)) {
                 String key = method.replaceFirst("get", "");
                 key = key.substring(0, 1).toLowerCase() + key.substring(1);
                 Object value = methods[i].invoke(src, (Object[]) null);
@@ -73,11 +73,10 @@ public class ConvertUtil {
 
     public static void objectToMapObj(Map<String, Object> target, Object src) throws Exception {
         if (src == null || target == null) return;
-
         Method methods[] = src.getClass().getMethods();
         for (int i = 0; i < methods.length; i++) {
             String method = methods[i].getName();
-            if (method.startsWith("get") && !"getClass".equals(method)) {
+            if (method.startsWith("get") && !"getClass" .equals(method)) {
                 String key = method.replaceFirst("get", "");
                 key = key.substring(0, 1).toLowerCase() + key.substring(1);
                 Object value = methods[i].invoke(src, (Object[]) null);
@@ -89,25 +88,24 @@ public class ConvertUtil {
     public static void mapToObject(BaseObject target, Map<String, String> src) throws Exception {
         if (src == null || target == null)
             return;
-        Iterator<Map.Entry<String,String>> it = src.entrySet().iterator();
-        Method methods[] = target.getClass().getMethods();
+        Iterator<Map.Entry<String, String>> it = src.entrySet().iterator();
+        Map<String, Method> methodMap = getMethodMap(target);
         while (it.hasNext()) {
-            Map.Entry<String,String> entry=it.next();
-            String key =  entry.getKey();
+            Map.Entry<String, String> entry = it.next();
+            String key = entry.getKey();
             String value = entry.getValue();
-            String methordName = "set" + key.substring(0, 1).toUpperCase() + key.substring(1);
-            for (int i = 0; i < methods.length; i++) {
-                if (methods[i].getName().equalsIgnoreCase(methordName)) {
-                    target.AddDirtyColumn(key);
-                    Class type = methods[i].getParameterTypes()[0];
-                    Object retValue = null;
-                    if (!type.getName().equalsIgnoreCase("java.lang.String") && value.equals(""))
-                        retValue = null;
-                    else
-                        retValue = parseParamenter(type, value);
-                    methods[i].invoke(target, new Object[]{retValue});
-                    break;
-                }
+            String methodName = "set" + key.substring(0, 1).toUpperCase() + key.substring(1);
+
+            if (methodMap.containsKey(methodName)) {
+                target.AddDirtyColumn(key);
+                Class type = methodMap.get(methodName).getParameterTypes()[0];
+                Object retValue = null;
+                if (!type.getName().equalsIgnoreCase("java.lang.String") && value.equals(""))
+                    retValue = null;
+                else
+                    retValue = parseParamenter(type, value);
+                methodMap.get(methodName).invoke(target, new Object[]{retValue});
+                break;
             }
         }
 
@@ -117,42 +115,50 @@ public class ConvertUtil {
         if (src == null || target == null) return;
 
         Iterator it = src.keySet().iterator();
-        Method methods[] = target.getClass().getMethods();
         while (it.hasNext()) {
             String key = (String) it.next();
             String value = src.get(key).toString();
-            String methordName = "set" + key.substring(0, 1).toUpperCase() + key.substring(1);
-            for (int i = 0; i < methods.length; i++) {
-                if (methods[i].getName().equalsIgnoreCase(methordName)) {
-                    Class type = methods[i].getParameterTypes()[0];
-                    Object retValue = null;
-                    if (!type.getName().equalsIgnoreCase("java.lang.String") && value.equals("")) retValue = null;
-                    else retValue = parseParamenter(type, value);
-                    methods[i].invoke(target, new Object[]{retValue});
-                }
+            String methodName = "set" + key.substring(0, 1).toUpperCase() + key.substring(1);
+            Map<String, Method> methodMap = getMethodMap(target);
+
+            if (methodMap.containsKey(methodName)) {
+                Class type = methodMap.get(methodName).getParameterTypes()[0];
+                Object retValue = null;
+                if (!type.getName().equalsIgnoreCase("java.lang.String") && value.equals("")) retValue = null;
+                else retValue = parseParamenter(type, value);
+                methodMap.get(methodName).invoke(target, new Object[]{retValue});
             }
         }
+    }
+
+    private static Map<String, Method> getMethodMap(Object target) {
+        Method methods[] = target.getClass().getMethods();
+        Map<String, Method> methodMap = new HashMap<>();
+        for (int i = 0; i < methods.length; i++) {
+            methodMap.put(methods[i].getName(), methods[i]);
+        }
+        return methodMap;
     }
 
     public static void mapToObject(Object target, Map<String, String> src, boolean idInclude) throws Exception {
         if (src == null || target == null) return;
 
         Iterator it = src.keySet().iterator();
-        Method methods[] = target.getClass().getMethods();
+        Map<String, Method> methodMap = getMethodMap(target);
         while (it.hasNext()) {
             String key = (String) it.next();
             if (!idInclude && key.equals("id")) continue;
             String value = src.get(key);
-            String methordName = "set" + key.substring(0, 1).toUpperCase() + key.substring(1);
-            for (int i = 0; i < methods.length; i++) {
-                if (methods[i].getName().equalsIgnoreCase(methordName)) {
-                    Class type = methods[i].getParameterTypes()[0];
-                    Object retValue = null;
-                    if (!type.getName().equalsIgnoreCase("java.lang.String") && value.equals("")) retValue = null;
-                    else retValue = parseParamenter(type, value);
-                    methods[i].invoke(target, new Object[]{retValue});
-                }
+            String methodName = "set" + key.substring(0, 1).toUpperCase() + key.substring(1);
+
+            if (methodMap.containsKey(methodName)) {
+                Class type = methodMap.get(methodName).getParameterTypes()[0];
+                Object retValue = null;
+                if (!type.getName().equalsIgnoreCase("java.lang.String") && value.equals("")) retValue = null;
+                else retValue = parseParamenter(type, value);
+                methodMap.get(methodName).invoke(target, new Object[]{retValue});
             }
+
         }
     }
 
@@ -170,7 +176,7 @@ public class ConvertUtil {
         Method methods[] = src.getClass().getMethods();
         for (int i = 0; i < methods.length; i++) {
             String method = methods[i].getName();
-            if (method.startsWith("get") && !"getClass".equals(method)) {
+            if (method.startsWith("get") && !"getClass" .equals(method)) {
                 Method setMethod = map.get(method.replaceFirst("get", "set"));
                 if (setMethod != null) {
                     Object value = methods[i].invoke(src, (Object[]) null);
@@ -212,7 +218,7 @@ public class ConvertUtil {
             Method methods[] = src.getClass().getMethods();
             for (int i = 0; i < methods.length; i++) {
                 String method = methods[i].getName();
-                if (method.startsWith("get") && !"getClass".equals(method) && !"getId".equalsIgnoreCase(method)) {
+                if (method.startsWith("get") && !"getClass" .equals(method) && !"getId" .equalsIgnoreCase(method)) {
                     Method setMethod = map.get(method.replaceFirst("get", "set"));
                     if (setMethod != null) {
                         logger.info("setMethod Name" + setMethod.getName());
@@ -263,7 +269,7 @@ public class ConvertUtil {
         Method methods[] = src.getClass().getMethods();
         for (int i = 0; i < methods.length; i++) {
             String method = methods[i].getName();
-            if (method.startsWith("get") && !"getClass".equals(method)) {
+            if (method.startsWith("get") && !"getClass" .equals(method)) {
                 Method setMethod = map.get(method.replaceFirst("get", "set"));
                 if (setMethod != null) {
                     Object value = methods[i].invoke(src, (Object[]) null);
@@ -300,24 +306,23 @@ public class ConvertUtil {
         }
         Object ret = null;
         if (type.isPrimitive()) {
-            if ("int".equals(typeName)) type = Class.forName("java.lang.Integer");
-            else if ("long".equals(typeName)) type = Class.forName("java.lang.Long");
-            else if ("float".equals(typeName)) type = Class.forName("java.lang.Float");
-            else if ("double".equals(typeName)) type = Class.forName("java.lang.Double");
-            else if ("boolean".equals(typeName)) type = Class.forName("java.lang.Boolean");
-            else if ("char".equals(typeName)) type = Class.forName("java.lang.Character");
-            else if ("byte".equals(typeName)) type = Class.forName("java.lang.Byte");
+            if ("int" .equals(typeName)) type = Class.forName("java.lang.Integer");
+            else if ("long" .equals(typeName)) type = Class.forName("java.lang.Long");
+            else if ("float" .equals(typeName)) type = Class.forName("java.lang.Float");
+            else if ("double" .equals(typeName)) type = Class.forName("java.lang.Double");
+            else if ("boolean" .equals(typeName)) type = Class.forName("java.lang.Boolean");
+            else if ("char" .equals(typeName)) type = Class.forName("java.lang.Character");
+            else if ("byte" .equals(typeName)) type = Class.forName("java.lang.Byte");
         }
-        if(typeName.equals("int")){
-            ret=Integer.parseInt(strValue.toString());
-        }else if(typeName.equals("long")){
-            ret=Long.parseLong(strValue.toString());
-        }else if(typeName.equals("float")){
-            ret=Float.parseFloat(strValue.toString());
-        }else if(typeName.equals("double")){
-            ret=Double.parseDouble(strValue.toString());
-        }
-        else if (typeName.startsWith("java.math.") || "java.util.Date".equals(typeName)) {
+        if (typeName.equals("int")) {
+            ret = Integer.parseInt(strValue.toString());
+        } else if (typeName.equals("long")) {
+            ret = Long.parseLong(strValue.toString());
+        } else if (typeName.equals("float")) {
+            ret = Float.parseFloat(strValue.toString());
+        } else if (typeName.equals("double")) {
+            ret = Double.parseDouble(strValue.toString());
+        } else if (typeName.startsWith("java.math.") || "java.util.Date" .equals(typeName)) {
             String value = strValue.toString().trim();
             if (value.indexOf(":") == -1)
                 value += " 00:00:00";
@@ -345,7 +350,7 @@ public class ConvertUtil {
             }
             if (!typeName.equals("byte")) {
                 if (!strValue.toString().isEmpty()) {
-                    Method method = type.getMethod("valueOf", new Class[]{"java.lang.String".getClass()});
+                    Method method = type.getMethod("valueOf", new Class[]{"java.lang.String" .getClass()});
                     if (method != null)
                         ret = method.invoke(Class.forName("java.lang.Byte"), new Object[]{strValue.toString()});
                 } else {
@@ -387,7 +392,7 @@ public class ConvertUtil {
     }
 
     public static Object wrapObjectByAutoDetect(Object object, String dateFormatStr) {
-        Object retObj=null;
+        Object retObj = null;
         if (object != null) {
             SimpleDateFormat dateFormat = new SimpleDateFormat(dateFormatStr == null && !dateFormatStr.isEmpty() ? dateFormatStr : "yyyy-MM-dd");
             Class clazz = object.getClass();
@@ -397,26 +402,26 @@ public class ConvertUtil {
                         Number number = NumberUtils.createNumber(object.toString());
                         if (Math.ceil(number.doubleValue()) == number.longValue()) {
                             if (number.longValue() < Integer.MAX_VALUE) {
-                                retObj=number.intValue();
-                            }else{
-                                retObj=number.longValue();
+                                retObj = number.intValue();
+                            } else {
+                                retObj = number.longValue();
                             }
-                        }else{
-                            retObj=number.doubleValue();
+                        } else {
+                            retObj = number.doubleValue();
                         }
-                    }else{
+                    } else {
                         try {
-                            Date date=dateFormat.parse(object.toString());
-                            retObj=new Timestamp(date.getTime());
-                        }catch (ParseException ex){
-                            retObj=object;
+                            Date date = dateFormat.parse(object.toString());
+                            retObj = new Timestamp(date.getTime());
+                        } catch (ParseException ex) {
+                            retObj = object;
                         }
                     }
-                }else{
-                    retObj=object;
+                } else {
+                    retObj = object;
                 }
             } else {
-                retObj=object;
+                retObj = object;
             }
         }
         return retObj;

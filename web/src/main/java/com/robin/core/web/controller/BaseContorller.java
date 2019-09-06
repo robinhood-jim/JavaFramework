@@ -317,5 +317,29 @@ public abstract class BaseContorller
         }
         return query;
     }
+    public static Map<String,Object> wrapSuccessMsg(String message){
+        Map<String,Object> retmap=new HashMap<>();
+        retmap.put(COL_SUCCESS, true);
+        if(message!=null && !message.trim().isEmpty()){
+            retmap.put(COL_MESSAGE,message);
+        }
+        return retmap;
+    }
+    public static Map<String,Object> wrapFailedMsg(String message){
+        Map<String,Object> retmap=new HashMap<>();
+        retmap.put(COL_SUCCESS, false);
+        if(message!=null && !message.trim().isEmpty()){
+            retmap.put(COL_MESSAGE,message);
+        }
+        return retmap;
+    }
+    public static Map<String,Object> wrapFailedMsg(Exception ex){
+        Map<String,Object> retmap=new HashMap<>();
+        retmap.put(COL_SUCCESS, false);
+        if(ex!=null){
+            retmap.put(COL_MESSAGE,ex.getMessage());
+        }
+        return retmap;
+    }
 
 }

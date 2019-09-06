@@ -9,7 +9,7 @@ import com.robin.core.web.controller.BaseCrudDhtmlxController;
 import com.robin.core.web.util.Session;
 import com.robin.example.model.system.SysOrg;
 import com.robin.example.service.system.SysOrgService;
-import com.robin.example.util.WebConstant;
+import com.robin.core.web.util.WebConstant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.stereotype.Controller;
