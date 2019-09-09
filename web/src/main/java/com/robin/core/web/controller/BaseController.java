@@ -32,7 +32,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 
 
-public abstract class BaseContorller
+public abstract class BaseController
 {
 
     protected Logger log = LoggerFactory.getLogger(getClass());

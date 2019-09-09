@@ -16,7 +16,7 @@
 package com.robin.example.controller.user;
 
 import com.robin.core.base.util.Const;
-import com.robin.core.web.controller.BaseContorller;
+import com.robin.core.web.controller.BaseController;
 import com.robin.core.web.util.Session;
 import com.robin.example.service.system.LoginService;
 import com.robin.core.web.util.WebConstant;
@@ -37,7 +37,7 @@ import java.util.Locale;
 import java.util.Map;
 
 @Controller
-public class LoginController extends BaseContorller {
+public class LoginController extends BaseController {
     @Autowired
     private LoginService loginService;
 

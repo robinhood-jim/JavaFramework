@@ -16,7 +16,6 @@
 package com.robin.core.web.controller;
 
 import com.robin.core.base.model.BaseObject;
-import com.robin.core.base.service.BaseAnnotationJdbcService;
 import com.robin.core.base.service.IBaseAnnotationJdbcService;
 import com.robin.core.base.spring.SpringContextHolder;
 import com.robin.core.convert.util.ConvertUtil;
@@ -37,7 +36,7 @@ import java.util.Map;
 /**
  * Single Table Mapping Background Controller
  */
-public abstract class BaseCrudController<O extends BaseObject, P extends Serializable, S extends IBaseAnnotationJdbcService<O,P>> extends BaseContorller implements InitializingBean {
+public abstract class BaseCrudController<O extends BaseObject, P extends Serializable, S extends IBaseAnnotationJdbcService<O,P>> extends BaseController implements InitializingBean {
     private Class<O> objectType;
     private Class<P> pkType;
     private Class<S> serviceType;
