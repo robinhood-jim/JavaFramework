@@ -17,6 +17,7 @@ package com.robin.example.service.system;
 
 import com.robin.core.base.dao.JdbcDao;
 import com.robin.core.base.exception.ServiceException;
+import com.robin.core.base.model.BaseObject;
 import com.robin.core.base.util.Const;
 import com.robin.core.collection.util.CollectionMapConvert;
 import com.robin.core.convert.util.ConvertUtil;
@@ -28,6 +29,7 @@ import com.robin.example.model.user.SysResourceUser;
 import com.robin.example.model.user.SysUser;
 import com.robin.example.model.user.SysUserOrg;
 import com.robin.example.model.user.SysUserResponsiblity;
+import com.robin.example.service.user.SysUserResponsiblityService;
 import com.robin.example.service.user.SysUserService;
 import com.robin.core.web.util.WebConstant;
 import lombok.extern.slf4j.Slf4j;
@@ -52,6 +54,8 @@ public class LoginService {
     private SysResourceService sysResourceService;
     @Autowired
     private SysUserOrgService sysUserOrgService;
+    @Autowired
+    private SysUserResponsiblityService sysUserResponsiblityService;
 
 
     public static final String VERIFIED = "1";
@@ -66,6 +70,41 @@ public class LoginService {
 
         return session;
     }
+    public Map<String,Object> getUserAndResp(String userName){
+        Map<String,Object> retMap=new HashMap<>();
+        SysUser user = new SysUser();
+        user.setUserAccount(userName);
+        user.setUserStatus(Const.VALID);
+        List<SysUser> users = sysUserService.queryByVO(user, null, null);
+        if (users.isEmpty()) {
+            throw new ServiceException("AccountName or password incorrect or Account is locked!Please retry");
+        }
+        SysUser queryUser = users.get(0);
+        List<SysUserResponsiblity> respList=sysUserResponsiblityService.queryByField("userId", BaseObject.OPER_EQ,queryUser.getId());
+        retMap.put("accountName",queryUser.getUserAccount());
+        retMap.put("userName",queryUser.getUserName());
+        retMap.put("accountType",queryUser.getAccountType());
+        List<Long> respIdList=new ArrayList<>();
+        if(!respList.isEmpty()){
+            for(SysUserResponsiblity resp:respList){
+                respIdList.add(resp.getRespId());
+            }
+        }
+        if(!respIdList.isEmpty())
+            retMap.put("resps",StringUtils.join(respIdList,","));
+        return retMap;
+    }
+    public Session ssoGetUser(String userName){
+        Map<String,Object> retMap=new HashMap<>();
+        SysUser user = new SysUser();
+        user.setUserAccount(userName);
+        user.setUserStatus(Const.VALID);
+        List<SysUser> users = sysUserService.queryByVO(user, null, null);
+        if (users.isEmpty()) {
+            throw new ServiceException("AccountName or password incorrect or Account is locked!Please retry");
+        }
+        return returnSession(users.get(0));
+    }
 
     private Session checkAccount(String accountName, String password) {
         SysUser user = new SysUser();
@@ -74,12 +113,12 @@ public class LoginService {
         user.setUserStatus(Const.VALID);
         List<SysUser> users = sysUserService.queryByVO(user, null, null);
         if (users.isEmpty()) {
-            throw new ServiceException("AccountName or password incorrect!Please retry");
+            throw new ServiceException("AccountName or password incorrect or account is Locked!Please retry");
         }
         SysUser queryUser = users.get(0);
-        if (!Const.LOGIN_ACTIVE.equals(queryUser.getUserStatus())) {
-            throw new ServiceException("Account is locked,Please contact admin");
-        }
+        return returnSession(queryUser);
+    }
+    private Session returnSession(SysUser queryUser){
         Session session = new Session();
         session.setUserId(queryUser.getId());
         session.setLoginTime(new Date());
@@ -106,11 +145,11 @@ public class LoginService {
         if (orgId != 0L) {
             SysOrg sysOrg = (SysOrg) this.jdbcDao.getEntity(SysOrg.class, Long.valueOf(orgId));
             if (sysOrg == null) {
-                log.error("User {} try to login to No exist or frozen OrgId {}", session.getUserName());
+                log.error("User {} try to login to No exist OrgId {}", session.getUserName());
                 throw new ServiceException("Organization not Exists");
             } else {
                 if (!sysOrg.getOrgStatus().equals(Const.VALID)) {
-                    throw new ServiceException("Select Org disabled");
+                    throw new ServiceException("Organization is frozen");
                 }
                 session.setOrgName(sysOrg.getOrgName());
                 session.setOrgShortName(sysOrg.getOrgAbbr());
