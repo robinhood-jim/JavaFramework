@@ -41,4 +41,6 @@ public class WebConstant {
             return value;
         }
     }
+    public static final String TOKEN="tokenMap";
+
 }

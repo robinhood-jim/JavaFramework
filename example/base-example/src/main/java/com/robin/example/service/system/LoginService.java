@@ -84,6 +84,7 @@ public class LoginService {
         retMap.put("accountName",queryUser.getUserAccount());
         retMap.put("userName",queryUser.getUserName());
         retMap.put("accountType",queryUser.getAccountType());
+        retMap.put("password",queryUser.getUserPassword());
         List<Long> respIdList=new ArrayList<>();
         if(!respList.isEmpty()){
             for(SysUserResponsiblity resp:respList){
