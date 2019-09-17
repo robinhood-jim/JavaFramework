@@ -22,6 +22,8 @@ public class Session implements Serializable {
     private String orgName;
     private String orgShortName;
     private String orgNumber;
+    private String accessToken;
+    private String refreshToken;
 
     private Date loginTime;
     private String cityCode;
