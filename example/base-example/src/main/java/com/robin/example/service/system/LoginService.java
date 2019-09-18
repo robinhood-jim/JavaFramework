@@ -106,6 +106,14 @@ public class LoginService {
         }
         return returnSession(users.get(0));
     }
+    public Session ssoGetUserById(Long userId){
+        Map<String,Object> retMap=new HashMap<>();
+        SysUser user = sysUserService.getEntity(userId);
+        if (user==null) {
+            throw new ServiceException("AccountName or password incorrect or Account is locked!Please retry");
+        }
+        return returnSession(user);
+    }
 
     private Session checkAccount(String accountName, String password) {
         SysUser user = new SysUser();

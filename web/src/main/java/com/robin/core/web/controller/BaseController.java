@@ -281,7 +281,7 @@ public abstract class BaseController
         return retmap;
     }
 
-    protected Map<String, String> wrapRequest(HttpServletRequest request)
+    public static Map<String, String> wrapRequest(HttpServletRequest request)
     {
         Map<String, String> map = new HashMap();
         Iterator<String> iter = request.getParameterMap().keySet().iterator();
