@@ -28,12 +28,7 @@ package com.robin.core.fileaccess.holder;
  */
 public abstract class AbstractResourceHolder implements IHolder{
 	protected boolean busyTag=false;
-	public boolean getBusyTag(){
-		if(!isResourceAvaiable() || busyTag){
-			return false;
-		}
-		return true;
-	}
+
 	public void setBusyTag(boolean tag){
 		this.busyTag=tag;
 	}

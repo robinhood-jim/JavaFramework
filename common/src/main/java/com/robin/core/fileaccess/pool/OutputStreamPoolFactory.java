@@ -20,7 +20,7 @@ public class OutputStreamPoolFactory implements PooledObjectFactory<OutputStream
 
     @Override
     public void destroyObject(PooledObject<OutputStreamHolder> pooledObject) throws Exception {
-        pooledObject.getObject().setBusyTag(false);
+        pooledObject.getObject().close();
     }
 
     @Override

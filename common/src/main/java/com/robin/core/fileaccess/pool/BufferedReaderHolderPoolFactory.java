@@ -6,7 +6,7 @@ import org.apache.commons.pool2.PooledObject;
 import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.DefaultPooledObject;
 
-public class BufferedReaderPoolFactory implements PooledObjectFactory<BufferedReaderHolder> {
+public class BufferedReaderHolderPoolFactory implements PooledObjectFactory<BufferedReaderHolder> {
 
     @Override
     public PooledObject<BufferedReaderHolder> makeObject() throws Exception {
@@ -16,7 +16,7 @@ public class BufferedReaderPoolFactory implements PooledObjectFactory<BufferedRe
 
     @Override
     public void destroyObject(PooledObject<BufferedReaderHolder> pooledObject) throws Exception {
-        pooledObject.getObject().setBusyTag(false);
+        pooledObject.getObject().close();
     }
 
     @Override

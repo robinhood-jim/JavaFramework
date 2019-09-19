@@ -15,6 +15,8 @@
  */
 package com.robin.core.fileaccess.holder;
 
+import com.robin.core.fileaccess.meta.DataCollectionMeta;
+
 import java.io.Closeable;
 
 /**
@@ -31,6 +33,6 @@ import java.io.Closeable;
  */
 public interface IHolder extends Closeable {
 	void setBusyTag(boolean tag);
-	boolean isResourceAvaiable();
 	boolean isBusyTag();
+	void init(DataCollectionMeta colmeta) throws Exception;
 }

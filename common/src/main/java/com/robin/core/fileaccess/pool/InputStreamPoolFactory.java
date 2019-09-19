@@ -16,7 +16,7 @@ public class InputStreamPoolFactory implements PooledObjectFactory<InputStreamHo
 
     @Override
     public void destroyObject(PooledObject<InputStreamHolder> pooledObject) throws Exception {
-        pooledObject.getObject().setBusyTag(false);
+        pooledObject.getObject().close();
     }
 
     @Override

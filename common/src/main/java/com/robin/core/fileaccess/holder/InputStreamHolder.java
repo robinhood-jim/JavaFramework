@@ -15,49 +15,50 @@
  */
 package com.robin.core.fileaccess.holder;
 
-import java.io.IOException;
-import java.io.OutputStream;
-
 import com.robin.core.base.exception.OperationInWorkException;
+import com.robin.core.fileaccess.iterator.TextFileIteratorFactory;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.pool.ResourceAccessHolder;
 import com.robin.core.fileaccess.util.AbstractResourceAccessUtil;
 
-public class OutputStreamHolder extends AbstractResourceHolder {
-	protected OutputStream out;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Map;
+
+public class InputStreamHolder extends AbstractResourceHolder{
+	protected InputStream in;
 	public void init(){
-		out=null;
+		in=null;
 	}
-	public boolean isResourceAvaiable(){
-		if(out!=null){
-			return false;
-		}
-		return true;
-	}
-	public OutputStream getOutputStream(DataCollectionMeta colmeta) throws Exception{
-		if(out!=null || busyTag){
+
+	@Override
+	public void init(DataCollectionMeta colmeta) throws Exception{
+		if(in!=null || busyTag){
 			throw new OperationInWorkException("Stream is Still In use,Wait for finish.");
 		}
-		String[] tag= AbstractResourceAccessUtil.retrieveResource(colmeta.getPath());
+		String[] tag=AbstractResourceAccessUtil.retrieveResource(colmeta.getPath());
 		AbstractResourceAccessUtil util= ResourceAccessHolder.getAccessUtilByProtocol(tag[0].toLowerCase());
-		out=util.getOutResourceByStream(colmeta);
+		in=util.getInResourceByStream(colmeta);
 		setBusyTag(true);
-		return out;
 	}
+
+	public InputStream getInputStream(){
+		return in;
+	}
+	@Override
 	public void close() throws IOException{
 		try{
-			if(out!=null){
-				out.flush();
-				out.close();
+			if(in!=null){
+				in.close();
 			}
 		}catch(IOException ex){
 			throw ex;
 		}finally{
-			out=null;
+			in=null;
 			setBusyTag(false);
 		}
 	}
-	public void setBusyTag(boolean tag){
-		this.busyTag=tag;
-	}
+
+	
+	
 }

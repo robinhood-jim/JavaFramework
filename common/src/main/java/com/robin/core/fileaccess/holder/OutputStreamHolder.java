@@ -15,48 +15,41 @@
  */
 package com.robin.core.fileaccess.holder;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-
 import com.robin.core.base.exception.OperationInWorkException;
-import com.robin.core.fileaccess.pool.ResourceAccessHolder;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
+import com.robin.core.fileaccess.pool.ResourceAccessHolder;
 import com.robin.core.fileaccess.util.AbstractResourceAccessUtil;
 
+import java.io.IOException;
+import java.io.OutputStream;
 
-public class BufferedReaderHolder extends AbstractResourceHolder {
-	protected BufferedReader reader;
-	@Override
-	public boolean isResourceAvaiable() {
-		if(reader==null)
-			return true;
-		else
-			return false;
-	}
-	public BufferedReader getReaderByResource(DataCollectionMeta colmeta) throws Exception{
-		if(isResourceAvaiable()){
-			throw new OperationInWorkException("Reader is Still In use,Wait for finish.");
-		}
-		String[] tag=AbstractResourceAccessUtil.retrieveResource(colmeta.getPath());
+public class OutputStreamHolder extends AbstractResourceHolder {
+	protected OutputStream out;
+	public void init(DataCollectionMeta colmeta) throws Exception{
+		String[] tag= AbstractResourceAccessUtil.retrieveResource(colmeta.getPath());
 		AbstractResourceAccessUtil util= ResourceAccessHolder.getAccessUtilByProtocol(tag[0].toLowerCase());
-		reader=util.getInResourceByReader(colmeta);
+		out=util.getOutResourceByStream(colmeta);
 		setBusyTag(true);
-		return reader;
+
 	}
 
-	@Override
-	public void close() throws IOException {
+	public OutputStream getOutputStream(){
+		return out;
+	}
+	public void close() throws IOException{
 		try{
-			if(reader!=null){
-				reader.close();
+			if(out!=null){
+				out.flush();
+				out.close();
 			}
 		}catch(IOException ex){
 			throw ex;
 		}finally{
-			reader=null;
+			out=null;
 			setBusyTag(false);
 		}
 	}
-	
-
+	public void setBusyTag(boolean tag){
+		this.busyTag=tag;
+	}
 }

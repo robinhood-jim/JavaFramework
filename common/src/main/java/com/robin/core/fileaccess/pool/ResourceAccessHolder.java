@@ -2,15 +2,9 @@ package com.robin.core.fileaccess.pool;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.RemovalListener;
 import com.robin.core.base.datameta.BaseDataBaseMeta;
 import com.robin.core.base.spring.SpringContextHolder;
-import com.robin.core.base.util.StringUtils;
-import com.robin.core.fileaccess.holder.BufferedReaderHolder;
-import com.robin.core.fileaccess.holder.DbConnectionHolder;
-import com.robin.core.fileaccess.holder.InputStreamHolder;
-import com.robin.core.fileaccess.holder.OutputStreamHolder;
-import com.robin.core.fileaccess.meta.DataCollectionMeta;
+import com.robin.core.fileaccess.holder.*;
 import com.robin.core.fileaccess.util.AbstractResourceAccessUtil;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
@@ -25,15 +19,20 @@ import java.util.concurrent.TimeUnit;
 public class ResourceAccessHolder implements InitializingBean {
 	private int inlimitstreamnum=1000;
 	private int outlimitstreamnum=100;
-	private int bufferedReadNum=0;
+	private int bufferedReaderNum =0;
+	private int bufferedWriterNum=0;
 	private static final Map<String, AbstractResourceAccessUtil> resouceAccessUtilMap=new HashMap<String, AbstractResourceAccessUtil>();
 	private Cache<Long, DbConnectionHolder> connectionHolderCache= CacheBuilder.newBuilder().initialCapacity(10).expireAfterAccess(1, TimeUnit.HOURS).build();
 	private GenericObjectPool<InputStreamHolder> inputStreamPool=null;
 	private GenericObjectPool<OutputStreamHolder> outputStreamPool=null;
 	private GenericObjectPool<BufferedReaderHolder> bufferedReaderPool=null;
+	private GenericObjectPool<BufferedWriterHolder> bufferedWriterPool=null;
 	private boolean hasInputLimit=false;
 	private boolean hasOutputLimit=false;
 	private boolean hasBufferedReaderLimit=false;
+	private boolean hasBufferedWriterLimit=false;
+	private static final List<String> prefixList= Arrays.asList(new String[]{"hdfs","ftp","sftp","file"});
+	private static final List<String> processClassList= Arrays.asList(new String[]{"Hdfs","ApacheVfs","ApacheVfs","Local"});
 
 	public ResourceAccessHolder() {
 
@@ -42,10 +41,13 @@ public class ResourceAccessHolder implements InitializingBean {
 	private static AbstractResourceAccessUtil loadResourceUtil(String type){
 		AbstractResourceAccessUtil util=null;
 		try{
-			String className="com.robin.core.fileaccess.util."+StringUtils.initailCharToUpperCase(type)+"ResourceAccessUtil";
-			Class<?> clazz= Class.forName(className);
-			Constructor<?> construct=clazz.getDeclaredConstructor(new Class[]{});
-			util= (AbstractResourceAccessUtil) construct.newInstance(new Object[]{});
+			int pos=prefixList.indexOf(type.toLowerCase());
+			if(pos!=-1) {
+				String className = "com.robin.core.fileaccess.util." + processClassList.get(pos) + "ResourceAccessUtil";
+				Class<?> clazz = Class.forName(className);
+				Constructor<?> construct = clazz.getDeclaredConstructor(new Class[]{});
+				util = (AbstractResourceAccessUtil) construct.newInstance(new Object[]{});
+			}
 		}catch(Exception ex){
 			
 		}
@@ -75,9 +77,13 @@ public class ResourceAccessHolder implements InitializingBean {
 			outlimitstreamnum=Integer.parseInt(environment.getProperty("resource.limit.outputstreamnum"));
 			hasOutputLimit=true;
 		}
-		if(environment.containsProperty("resource.limit.bufferedreadnum")){
-			bufferedReadNum=Integer.parseInt(environment.getProperty("resource.limit.bufferedreadnum"));
+		if(environment.containsProperty("resource.limit.bufferedreadernum")){
+			bufferedReaderNum =Integer.parseInt(environment.getProperty("resource.limit.bufferedreadernum"));
 			hasBufferedReaderLimit=true;
+		}
+		if(environment.containsProperty("resource.limit.bufferedwriternum")){
+			bufferedReaderNum =Integer.parseInt(environment.getProperty("resource.limit.bufferedwriternum"));
+			hasBufferedWriterLimit=true;
 		}
 
 		if(hasInputLimit) {
@@ -93,10 +99,16 @@ public class ResourceAccessHolder implements InitializingBean {
 			outputStreamPool = new GenericObjectPool<>(factory, config);
 		}
 		if(hasBufferedReaderLimit) {
-			BufferedReaderPoolFactory factory = new BufferedReaderPoolFactory();
+			BufferedReaderHolderPoolFactory factory = new BufferedReaderHolderPoolFactory();
 			GenericObjectPoolConfig config = new GenericObjectPoolConfig();
-			config.setMaxTotal(bufferedReadNum);
+			config.setMaxTotal(bufferedReaderNum);
 			bufferedReaderPool = new GenericObjectPool<>(factory, config);
+		}
+		if(hasBufferedWriterLimit) {
+			BufferedWriterHolderPoolFactory factory = new BufferedWriterHolderPoolFactory();
+			GenericObjectPoolConfig config = new GenericObjectPoolConfig();
+			config.setMaxTotal(bufferedWriterNum);
+			bufferedWriterPool = new GenericObjectPool<>(factory, config);
 		}
 
 	}
