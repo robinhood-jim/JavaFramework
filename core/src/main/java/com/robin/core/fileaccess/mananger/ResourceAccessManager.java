@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.ResourceBundle;
 
 import com.robin.core.base.exception.ResourceNotAvailableException;
-import com.robin.core.fileaccess.cache.CacheHolder;
+import com.robin.core.fileaccess.pool.ResourceAccessHolder;
 import com.robin.core.fileaccess.holder.InputStreamHolder;
 import com.robin.core.fileaccess.holder.OutputStreamHolder;
 
@@ -54,12 +54,12 @@ public class ResourceAccessManager {
 	}
 	
 	public InputStreamHolder getInputStreamByType(Map<String, Object> configMap,String path,String encode) throws Exception{
-		InputStreamHolder holder=CacheHolder.getInstance().getAvaliableInputStreamHolder();
+		InputStreamHolder holder= ResourceAccessHolder.getInstance().getAvaliableInputStreamHolder();
 		int pos=0;
 		//can  not get avaliabe Holder,Sleep and wait
 		while(holder==null && pos<retryNums){
 			 Thread.sleep(waitSecond*1000);
-			 holder=CacheHolder.getInstance().getAvaliableInputStreamHolder();
+			 holder= ResourceAccessHolder.getInstance().getAvaliableInputStreamHolder();
 		}
 		if(holder==null)
 			throw new ResourceNotAvailableException("InputStream over limit,Please wait");

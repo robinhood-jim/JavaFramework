@@ -32,5 +32,5 @@ import java.io.Closeable;
 public interface IHolder extends Closeable {
 	void setBusyTag(boolean tag);
 	boolean isResourceAvaiable();
-	boolean getBusyTag();
+	boolean isBusyTag();
 }

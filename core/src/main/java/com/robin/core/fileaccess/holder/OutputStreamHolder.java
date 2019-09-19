@@ -19,6 +19,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 import com.robin.core.base.exception.OperationInWorkException;
+import com.robin.core.fileaccess.meta.DataCollectionMeta;
+import com.robin.core.fileaccess.pool.ResourceAccessHolder;
+import com.robin.core.fileaccess.util.AbstractResourceAccessUtil;
 
 public class OutputStreamHolder extends AbstractResourceHolder {
 	protected OutputStream out;
@@ -31,21 +34,26 @@ public class OutputStreamHolder extends AbstractResourceHolder {
 		}
 		return true;
 	}
-	public OutputStream getOutputStream(String path) throws Exception{
+	public OutputStream getOutputStream(DataCollectionMeta colmeta) throws Exception{
 		if(out!=null || busyTag){
 			throw new OperationInWorkException("Stream is Still In use,Wait for finish.");
 		}
+		String[] tag= AbstractResourceAccessUtil.retrieveResource(colmeta.getPath());
+		AbstractResourceAccessUtil util= ResourceAccessHolder.getAccessUtilByProtocol(tag[0].toLowerCase());
+		out=util.getOutResourceByStream(colmeta);
 		setBusyTag(true);
 		return out;
 	}
 	public void close() throws IOException{
 		try{
 			if(out!=null){
+				out.flush();
 				out.close();
 			}
 		}catch(IOException ex){
 			throw ex;
 		}finally{
+			out=null;
 			setBusyTag(false);
 		}
 	}

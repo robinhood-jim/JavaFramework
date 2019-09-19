@@ -15,6 +15,7 @@
  */
 package com.robin.core.fileaccess.meta;
 
+import com.robin.core.base.model.BaseObject;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -34,7 +35,14 @@ public class DataCollectionMeta implements Serializable {
 	private String primaryKeys="";
 	private Map<String,Void> columnNameMap=new HashMap<String, Void>();
 	private String defaultTimestampFormat="yyyy-MM-dd HH:mm:ss";
-	
+	private Long resType;
+	private List<String> pkColumns;
+	public void setAvroSchema(Class<?> clazz){
+		String fullClassName=clazz.getClass().getCanonicalName();
+		int pos=fullClassName.lastIndexOf(".");
+		classNamespace=fullClassName.substring(0,pos);
+		valueClassName=fullClassName.substring(pos+1);
+	}
 
 	public void addColumnMeta(String columnName,String columnType,String defaultNullValue){
 		this.columnList.add(new DataSetColumnMeta(columnName, columnType, defaultNullValue));

@@ -37,4 +37,8 @@ public abstract class AbstractResourceHolder implements IHolder{
 	public void setBusyTag(boolean tag){
 		this.busyTag=tag;
 	}
+
+	public boolean isBusyTag() {
+		return busyTag;
+	}
 }

@@ -37,6 +37,7 @@
         <module>web</module>
         <module>example</module>
         <module>metadata</module>
+        <module>webui</module>
     </modules>
     <!-- properties -->
     <properties>
@@ -57,7 +58,7 @@
         <fastjson.version>1.1.32</fastjson.version>
         <gson.version>2.8.5</gson.version>
         <jackson.version>1.4.3</jackson.version>
-        <pool.version>1.5.5</pool.version>
+        <pool.version>2.4.3</pool.version>
         <commons-dbcp.version>1.4</commons-dbcp.version>
         <commons-io.version>2.4</commons-io.version>
         <commons-net.version>1.4.1</commons-net.version>
@@ -128,10 +129,11 @@
                 <version>${lang.version}</version>
             </dependency>
             <dependency>
-                <groupId>commons-pool</groupId>
-                <artifactId>commons-pool</artifactId>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-pool2</artifactId>
                 <version>${pool.version}</version>
             </dependency>
+
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-vfs2</artifactId>
@@ -564,6 +566,11 @@
             <!-- Hbase Hive and Phonenix end -->
 
             <!-- Other tool start -->
+            <dependency>
+                <groupId>org.apache.kafka</groupId>
+                <artifactId>kafka-clients</artifactId>
+                <version>2.2.0-cp2</version>
+            </dependency>
             <dependency>
                 <groupId>dom4j</groupId>
                 <artifactId>dom4j</artifactId>

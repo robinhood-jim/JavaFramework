@@ -34,11 +34,13 @@ public class SchemaController {
     private GlobalResourceService globalResourceService;
     @RequestMapping("/resource")
     @ResponseBody
-    public Map<String,Object> getResourceSchema(@RequestParam Long sourceId,@RequestParam String sourceParam){
+    public Map<String,Object> getResourceSchema(@RequestParam String sourceId,@RequestParam String sourceParam){
         DataCollectionMeta collectionMeta=globalResourceService.getResourceMetaDef(sourceId);
         //Schema schema=globalResourceService.getDataSourceSchema(collectionMeta,sourceId,sourceParam);
         Map<String,Object> retMap=new HashMap<>();
-        retMap.put("schema",globalResourceService.getDataSourceSchemaDesc(collectionMeta,sourceId,sourceParam,0));
+        String[] arr=sourceId.split(",");
+        retMap.put("schema",globalResourceService.getDataSourceSchemaDesc(collectionMeta,Long.parseLong(arr[0]),sourceParam,0));
         return retMap;
     }
+
 }

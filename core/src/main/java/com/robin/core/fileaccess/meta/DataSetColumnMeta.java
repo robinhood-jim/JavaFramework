@@ -20,6 +20,9 @@ public class DataSetColumnMeta implements Serializable {
     private Object defaultNullValue;
     private String dateFormat;
     private boolean required;
+    private boolean algrithColumn;
+    private String algrithOper;
+
     public DataSetColumnMeta(String columnName,String columnType,Object defaultNullValue){
         this.columnName=columnName;
         this.columnType=columnType;
@@ -71,5 +74,33 @@ public class DataSetColumnMeta implements Serializable {
 
     public boolean isRequired() {
         return required;
+    }
+
+    public String getDateFormat() {
+        return dateFormat;
+    }
+
+    public void setDateFormat(String dateFormat) {
+        this.dateFormat = dateFormat;
+    }
+
+    public void setRequired(boolean required) {
+        this.required = required;
+    }
+
+    public boolean isAlgrithColumn() {
+        return algrithColumn;
+    }
+
+    public void setAlgrithColumn(boolean algrithColumn) {
+        this.algrithColumn = algrithColumn;
+    }
+
+    public String getAlgrithOper() {
+        return algrithOper;
+    }
+
+    public void setAlgrithOper(String algrithOper) {
+        this.algrithOper = algrithOper;
     }
 }

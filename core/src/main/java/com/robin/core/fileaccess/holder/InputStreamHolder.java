@@ -16,7 +16,7 @@
 package com.robin.core.fileaccess.holder;
 
 import com.robin.core.base.exception.OperationInWorkException;
-import com.robin.core.fileaccess.cache.CacheHolder;
+import com.robin.core.fileaccess.pool.ResourceAccessHolder;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.util.AbstractResourceAccessUtil;
 
@@ -40,7 +40,7 @@ public class InputStreamHolder extends AbstractResourceHolder{
 			throw new OperationInWorkException("Stream is Still In use,Wait for finish.");
 		}
 		String[] tag=AbstractResourceAccessUtil.retrieveResource(colmeta.getPath());
-		AbstractResourceAccessUtil util=CacheHolder.getInstance().getAccessUtilByProtocol(tag[0].toLowerCase());
+		AbstractResourceAccessUtil util= ResourceAccessHolder.getAccessUtilByProtocol(tag[0].toLowerCase());
 		in=util.getInResourceByStream(colmeta);
 		setBusyTag(true);
 		return in;

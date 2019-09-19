@@ -365,7 +365,7 @@
                                     });
                                     reload();
                                 } else {
-                                    openMsgDialog("<spring:message code="message.SaveFailed" />", "<spring:message code="message.errorMsg" />:" + obj.message, 300, 200);
+                                    openMsgDialog("<spring:message code="message.saveFailed" />", "<spring:message code="message.errorMsg" />:" + obj.message, 300, 200);
                                 }
                             }
                         });
@@ -434,7 +434,7 @@
                             closedialog(true);
                             reload();
                         } else {
-                            openMsgDialog("<spring:message code="message.SaveFailed" />", "<spring:message code="message.errorMsg" />:" + tobj.message);
+                            openMsgDialog("<spring:message code="message.saveFailed" />", "<spring:message code="message.errorMsg" />:" + tobj.message);
                         }
 
                     });

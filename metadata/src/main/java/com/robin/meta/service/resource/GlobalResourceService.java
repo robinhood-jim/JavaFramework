@@ -35,12 +35,14 @@ import com.robin.meta.explore.SourceFileExplorer;
 import com.robin.meta.model.resource.GlobalResource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.avro.Schema;
+import org.apache.commons.dbutils.DbUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 
 import java.io.BufferedReader;
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -64,16 +66,35 @@ public class GlobalResourceService extends BaseAnnotationJdbcService<GlobalResou
     public void evictSourceCache(Long sourceId){
 
     }
-    @Cacheable(value = "metaCache",key = "#sourceId.toString()")
-    public DataCollectionMeta getResourceMetaDef(Long sourceId){
-        GlobalResource resource=getEntity(sourceId);
+    @Cacheable(value = "metaCache",key = "#sourceId")
+    public DataCollectionMeta getResourceMetaDef(String sourceId){
+        String[] arr=sourceId.split(",");
+        GlobalResource resource=null;
+        if(arr.length==1){
+            resource=getEntity(Long.parseLong(sourceId));
+        }else{
+            resource=getEntity(Long.parseLong(arr[0]));
+        }
         DataCollectionMeta colmeta=new DataCollectionMeta();
+        Connection connection=null;
         try {
-            if (resource.getResType().equals(Long.valueOf(ResourceConst.ResourceType.TYPE_DB.toString()))) {
-
+            colmeta.setResType(resource.getResType());
+            if (resource.getResType().equals(ResourceConst.ResourceType.TYPE_DB.getValue())) {
+                String[] tableNames=arr[1].split(".");
+                String tableName=tableNames.length==1?tableNames[0]:tableNames[1];
+                String schema=tableNames.length==1?resource.getDbName():tableNames[0];
+                DataBaseParam param = new DataBaseParam(resource.getIpAddress(), 0, schema, resource.getUserName(), resource.getPassword());
+                BaseDataBaseMeta meta = DataBaseMetaFactory.getDataBaseMetaByType(resource.getDbType(), param);
+                connection=SimpleJdbcDao.getConnection(meta, param);
+                List<DataBaseColumnMeta> columnList= DataBaseUtil.getTableMetaByTableName(connection, tableName, schema, meta);
+                for(DataBaseColumnMeta columnmeta:columnList) {
+                    colmeta.addColumnMeta(columnmeta.getColumnName(),columnmeta.getColumnType().toString(),null);
+                }
+                List<String> pkList=DataBaseUtil.getAllPrimaryKeyByTableName(connection,tableName,schema);
+                colmeta.setPkColumns(pkList);
             }else if (resource.getResType().equals(Long.valueOf(ResourceConst.ResourceType.TYPE_HDFSFILE.toString()))) {
-                colmeta.setResourceCfgMap(service.getResourceCfg(sourceId));
-            }else if (resource.getResType().equals(Long.valueOf(ResourceConst.ResourceType.TYPE_FTPFILE.toString())) || resource.getResType().equals(Long.valueOf(ResourceConst.ResourceType.TYPE_SFTPFILE.toString()))) {
+                colmeta.setResourceCfgMap(service.getResourceCfg(Long.parseLong(sourceId)));
+            }else if (resource.getResType().equals(ResourceConst.ResourceType.TYPE_FTPFILE.getValue()) || resource.getResType().equals(ResourceConst.ResourceType.TYPE_SFTPFILE.getValue())) {
                 Map<String, Object> ftpparam = new HashMap<String, Object>();
                 ftpparam.put("hostName", resource.getIpAddress());
                 if (resource.getResType().equals(Long.valueOf(ResourceConst.ResourceType.TYPE_FTPFILE.toString()))) {
@@ -90,20 +111,24 @@ public class GlobalResourceService extends BaseAnnotationJdbcService<GlobalResou
 
         }catch (Exception ex){
             log.error("",ex);
+        }finally {
+            if(connection!=null){
+                DbUtils.closeQuietly(connection);
+            }
         }
         return colmeta;
     }
 
+
+
+
     public Schema getDataSourceSchema(DataCollectionMeta colmeta,Long sourceId, String sourceParamInput,int maxReadLines){
         GlobalResource resource=getEntity(sourceId);
         Schema schema=null;
+
         try {
             if (resource.getResType().equals(Long.valueOf(ResourceConst.ResourceType.TYPE_DB.toString()))) {
-                DataBaseParam param = new DataBaseParam(resource.getIpAddress(), 0, resource.getDbName(), resource.getUserName(), resource.getPassword());
-                BaseDataBaseMeta meta = DataBaseMetaFactory.getDataBaseMetaByType(resource.getDbType(), param);
-                List<DataBaseColumnMeta> columnList= DataBaseUtil.getTableMetaByTableName(SimpleJdbcDao.getConnection(meta, param), sourceParamInput, resource.getDbName(), meta);
-                schema=AvroUtils.getSchemaForDbMeta("com.robin.meta",getTableClassName(sourceParamInput),columnList);
-
+                schema=AvroUtils.getSchemaFromMeta(colmeta);
             } else if (resource.getResType().equals(Long.valueOf(ResourceConst.ResourceType.TYPE_HDFSFILE.toString()))) {
                 HdfsResourceAccessUtil util=new HdfsResourceAccessUtil();
                 HDFSUtil dfsutil=new HDFSUtil(colmeta);
