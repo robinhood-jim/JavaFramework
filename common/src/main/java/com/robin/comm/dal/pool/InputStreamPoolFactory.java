@@ -1,6 +1,6 @@
-package com.robin.core.fileaccess.pool;
+package com.robin.comm.dal.pool;
 
-import com.robin.core.fileaccess.holder.InputStreamHolder;
+import com.robin.comm.dal.holder.fs.InputStreamHolder;
 import org.apache.commons.pool2.PooledObject;
 import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.DefaultPooledObject;

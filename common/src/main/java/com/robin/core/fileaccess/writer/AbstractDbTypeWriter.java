@@ -23,13 +23,13 @@ import java.util.Map;
  * @author robinjim
  * @version 1.0
  */
-public abstract class AbstractStreamWriter implements IResourceWriter{
+public abstract class AbstractDbTypeWriter implements IResourceWriter{
     protected DataCollectionMeta colmeta;
 
     protected Map<String, Void> columnMap=new HashMap<String, Void>();
     protected List<String> columnList=new ArrayList<String>();
     protected Logger logger= LoggerFactory.getLogger(getClass());
-    public AbstractStreamWriter(DataCollectionMeta colmeta){
+    public AbstractDbTypeWriter(DataCollectionMeta colmeta){
         this.colmeta=colmeta;
 
         for (DataSetColumnMeta meta:colmeta.getColumnList()) {
@@ -37,5 +37,4 @@ public abstract class AbstractStreamWriter implements IResourceWriter{
             columnMap.put(meta.getColumnName(), null);
         }
     }
-    public abstract void writeRecordWithSchema(Map<String, Object> map, Schema schema);
 }

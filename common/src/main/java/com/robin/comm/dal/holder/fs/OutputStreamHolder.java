@@ -13,23 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.robin.core.fileaccess.holder;
+package com.robin.comm.dal.holder.fs;
 
+import com.robin.comm.dal.holder.AbstractResourceHolder;
 import com.robin.core.base.exception.OperationInWorkException;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
-import com.robin.core.fileaccess.pool.ResourceAccessHolder;
+import com.robin.comm.dal.pool.ResourceAccessHolder;
 import com.robin.core.fileaccess.util.AbstractResourceAccessUtil;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.io.OutputStream;
-
+@Slf4j
 public class OutputStreamHolder extends AbstractResourceHolder {
 	protected OutputStream out;
 	public void init(DataCollectionMeta colmeta) throws Exception{
+		if(out!=null || busyTag){
+			throw new OperationInWorkException("last Opertaion OuputStream already Exists.May not be shutdown Propery");
+		}
 		String[] tag= AbstractResourceAccessUtil.retrieveResource(colmeta.getPath());
 		AbstractResourceAccessUtil util= ResourceAccessHolder.getAccessUtilByProtocol(tag[0].toLowerCase());
 		out=util.getOutResourceByStream(colmeta);
-		setBusyTag(true);
 
 	}
 

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.robin.core.fileaccess.holder;
+package com.robin.comm.dal.holder;
 /**
  * <p>Project:  core</p>
  *

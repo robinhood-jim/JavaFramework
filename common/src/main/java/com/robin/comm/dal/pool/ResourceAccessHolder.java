@@ -1,10 +1,14 @@
-package com.robin.core.fileaccess.pool;
+package com.robin.comm.dal.pool;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
+import com.google.common.util.concurrent.AbstractScheduledService;
+import com.robin.comm.dal.holder.db.DbConnectionHolder;
+import com.robin.comm.dal.holder.FsRecordIteratorHolder;
+import com.robin.comm.dal.holder.RecordWriterHolder;
+import com.robin.comm.dal.holder.db.JdbcResourceHolder;
+import com.robin.comm.dal.holder.fs.InputStreamHolder;
+import com.robin.comm.dal.holder.fs.OutputStreamHolder;
 import com.robin.core.base.datameta.BaseDataBaseMeta;
 import com.robin.core.base.spring.SpringContextHolder;
-import com.robin.core.fileaccess.holder.*;
 import com.robin.core.fileaccess.util.AbstractResourceAccessUtil;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
@@ -12,7 +16,10 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.env.Environment;
 
 import java.lang.reflect.Constructor;
-import java.util.*;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 
@@ -21,16 +28,19 @@ public class ResourceAccessHolder implements InitializingBean {
 	private int outlimitstreamnum=100;
 	private int bufferedReaderNum =0;
 	private int bufferedWriterNum=0;
-	private static final Map<String, AbstractResourceAccessUtil> resouceAccessUtilMap=new HashMap<String, AbstractResourceAccessUtil>();
-	private Cache<Long, DbConnectionHolder> connectionHolderCache= CacheBuilder.newBuilder().initialCapacity(10).expireAfterAccess(1, TimeUnit.HOURS).build();
+	private int jdbcHolderNum=10;
+	private static final Map<String, AbstractResourceAccessUtil> resouceAccessUtilMap=new LinkedHashMap<>();
+	private Map<Long, DbConnectionHolder> connectionHolderCache= new LinkedHashMap<>();
 	private GenericObjectPool<InputStreamHolder> inputStreamPool=null;
 	private GenericObjectPool<OutputStreamHolder> outputStreamPool=null;
-	private GenericObjectPool<BufferedReaderHolder> bufferedReaderPool=null;
-	private GenericObjectPool<BufferedWriterHolder> bufferedWriterPool=null;
+	private GenericObjectPool<FsRecordIteratorHolder> bufferedReaderPool=null;
+	private GenericObjectPool<RecordWriterHolder> bufferedWriterPool=null;
+	private GenericObjectPool<JdbcResourceHolder> jdbcHolderPool=null;
 	private boolean hasInputLimit=false;
 	private boolean hasOutputLimit=false;
-	private boolean hasBufferedReaderLimit=false;
-	private boolean hasBufferedWriterLimit=false;
+	private boolean hasRecReaderLimit =false;
+	private boolean hasRecWriterLimit =false;
+	private DbPoolMonitorService monitorService=null;
 	private static final List<String> prefixList= Arrays.asList(new String[]{"hdfs","ftp","sftp","file"});
 	private static final List<String> processClassList= Arrays.asList(new String[]{"Hdfs","ApacheVfs","ApacheVfs","Local"});
 
@@ -77,13 +87,16 @@ public class ResourceAccessHolder implements InitializingBean {
 			outlimitstreamnum=Integer.parseInt(environment.getProperty("resource.limit.outputstreamnum"));
 			hasOutputLimit=true;
 		}
-		if(environment.containsProperty("resource.limit.bufferedreadernum")){
-			bufferedReaderNum =Integer.parseInt(environment.getProperty("resource.limit.bufferedreadernum"));
-			hasBufferedReaderLimit=true;
+		if(environment.containsProperty("resource.limit.recorditernum")){
+			bufferedReaderNum =Integer.parseInt(environment.getProperty("resource.limit.recorditernum"));
+			hasRecReaderLimit =true;
 		}
-		if(environment.containsProperty("resource.limit.bufferedwriternum")){
-			bufferedReaderNum =Integer.parseInt(environment.getProperty("resource.limit.bufferedwriternum"));
-			hasBufferedWriterLimit=true;
+		if(environment.containsProperty("resource.limit.recordwriternum")){
+			bufferedReaderNum =Integer.parseInt(environment.getProperty("resource.limit.recordwriternum"));
+			hasRecWriterLimit =true;
+		}
+		if(environment.containsProperty("resource.limit.jdbcnum")){
+			jdbcHolderNum=Integer.parseInt(environment.getProperty("resource.limit.jdbcnum"));
 		}
 
 		if(hasInputLimit) {
@@ -98,18 +111,19 @@ public class ResourceAccessHolder implements InitializingBean {
 			config.setMaxTotal(outlimitstreamnum);
 			outputStreamPool = new GenericObjectPool<>(factory, config);
 		}
-		if(hasBufferedReaderLimit) {
-			BufferedReaderHolderPoolFactory factory = new BufferedReaderHolderPoolFactory();
+		if(hasRecReaderLimit) {
+			RecordIteratorHolderPoolFactory factory = new RecordIteratorHolderPoolFactory();
 			GenericObjectPoolConfig config = new GenericObjectPoolConfig();
 			config.setMaxTotal(bufferedReaderNum);
 			bufferedReaderPool = new GenericObjectPool<>(factory, config);
 		}
-		if(hasBufferedWriterLimit) {
-			BufferedWriterHolderPoolFactory factory = new BufferedWriterHolderPoolFactory();
+		if(hasRecWriterLimit) {
+			RecordWriterHolderPoolFactory factory = new RecordWriterHolderPoolFactory();
 			GenericObjectPoolConfig config = new GenericObjectPoolConfig();
 			config.setMaxTotal(bufferedWriterNum);
 			bufferedWriterPool = new GenericObjectPool<>(factory, config);
 		}
+
 
 	}
 	public InputStreamHolder getPoolInputStreamObject() throws Exception{
@@ -135,11 +149,14 @@ public class ResourceAccessHolder implements InitializingBean {
 		}
 	}
 	public DbConnectionHolder getConnectionHolder(Long sourceId, BaseDataBaseMeta meta){
-		if(connectionHolderCache.getIfPresent(sourceId)==null){
+		if(!connectionHolderCache.containsKey(sourceId)){
+			if(monitorService==null){
+				startMonitor();
+			}
 			DbConnectionHolder holder=new DbConnectionHolder(sourceId,meta);
 			connectionHolderCache.put(sourceId,holder);
 		}
-		return connectionHolderCache.getIfPresent(sourceId);
+		return connectionHolderCache.get(sourceId);
 	}
 	public void returnOutputStreamHolder(OutputStreamHolder holder) throws Exception{
 		if(outputStreamPool!=null){
@@ -149,4 +166,36 @@ public class ResourceAccessHolder implements InitializingBean {
 			throw new RuntimeException("output strem config not found!");
 		}
 	}
+	public JdbcResourceHolder getPoolJdbcHolder() throws Exception{
+		if(jdbcHolderPool!=null){
+			return jdbcHolderPool.borrowObject();
+		}else{
+			throw new RuntimeException("can not get jdbc!");
+		}
+	}
+	public void returnJdbcPool(JdbcResourceHolder holder) throws Exception{
+		if(jdbcHolderPool!=null){
+			holder.close();
+			jdbcHolderPool.returnObject(holder);
+		}else{
+			throw new RuntimeException("output strem config not found!");
+		}
+	}
+	public class DbPoolMonitorService extends AbstractScheduledService{
+
+		@Override
+		protected void runOneIteration() throws Exception {
+			connectionHolderCache.entrySet().removeIf(e->e.getValue().canClose());
+		}
+
+		@Override
+		protected Scheduler scheduler() {
+			return Scheduler.newFixedDelaySchedule(0,1, TimeUnit.HOURS);
+		}
+	}
+	private void startMonitor(){
+		monitorService=new DbPoolMonitorService();
+		monitorService.startAsync();
+	}
+
 }

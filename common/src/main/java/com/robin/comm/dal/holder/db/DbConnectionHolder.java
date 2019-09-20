@@ -1,4 +1,4 @@
-package com.robin.core.fileaccess.holder;
+package com.robin.comm.dal.holder.db;
 
 import com.robin.core.base.datameta.BaseDataBaseMeta;
 import com.zaxxer.hikari.HikariConfig;
@@ -38,6 +38,9 @@ public class DbConnectionHolder {
         else{
             return null;
         }
+    }
+    public boolean canClose(){
+        return pool.getActiveConnections()==0;
     }
     public void closeConnection(Connection connection){
         if(pool!=null){

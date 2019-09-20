@@ -13,27 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.robin.core.fileaccess.holder;
+package com.robin.comm.dal.holder;
 
+import com.robin.comm.dal.holder.AbstractResourceHolder;
+import com.robin.core.base.exception.OperationInWorkException;
 import com.robin.core.fileaccess.iterator.AbstractFileIterator;
 import com.robin.core.fileaccess.iterator.TextFileIteratorFactory;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
-import com.robin.core.fileaccess.pool.ResourceAccessHolder;
+import com.robin.comm.dal.pool.ResourceAccessHolder;
 import com.robin.core.fileaccess.util.AbstractResourceAccessUtil;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 
 @Slf4j
-public class BufferedReaderHolder extends AbstractResourceHolder {
-    protected BufferedReader reader;
+public class FsRecordIteratorHolder extends AbstractResourceHolder {
     protected AbstractFileIterator iterator;
 
     @Override
     public void init(DataCollectionMeta colmeta) throws Exception {
+        if(iterator!=null || busyTag){
+            throw new OperationInWorkException("last Opertaion reader already Exists.May not be shutdown Propery");
+        }
         String[] tag = AbstractResourceAccessUtil.retrieveResource(colmeta.getPath());
         AbstractResourceAccessUtil util = ResourceAccessHolder.getAccessUtilByProtocol(tag[0].toLowerCase());
         InputStream inputStream = util.getInResourceByStream(colmeta);
@@ -52,13 +55,13 @@ public class BufferedReaderHolder extends AbstractResourceHolder {
     @Override
     public void close() throws IOException {
         try {
-            if (reader != null) {
-                reader.close();
+            if (iterator != null) {
+                iterator.close();
             }
         } catch (IOException ex) {
             throw ex;
         } finally {
-            reader = null;
+            iterator = null;
             setBusyTag(false);
         }
     }

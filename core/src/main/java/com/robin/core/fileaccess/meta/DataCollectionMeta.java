@@ -15,6 +15,7 @@
  */
 package com.robin.core.fileaccess.meta;
 
+import com.robin.core.base.datameta.BaseDataBaseMeta;
 import com.robin.core.base.model.BaseObject;
 import lombok.Data;
 
@@ -36,7 +37,10 @@ public class DataCollectionMeta implements Serializable {
 	private Map<String,Void> columnNameMap=new HashMap<String, Void>();
 	private String defaultTimestampFormat="yyyy-MM-dd HH:mm:ss";
 	private Long resType;
+	private Long dbSourceId;
 	private List<String> pkColumns;
+	private boolean fsTag=false;
+	private BaseDataBaseMeta dbMeta;
 	public void setAvroSchema(Class<?> clazz){
 		String fullClassName=clazz.getClass().getCanonicalName();
 		int pos=fullClassName.lastIndexOf(".");

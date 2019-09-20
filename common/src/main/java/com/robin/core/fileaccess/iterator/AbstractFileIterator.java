@@ -23,19 +23,12 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.util.*;
 
-public abstract class AbstractFileIterator implements Iterator<Map<String,Object>>,Closeable{
+public abstract class AbstractFileIterator extends AbstractResIterator{
 	protected BufferedReader reader;
 	protected InputStream instream;
-	protected DataCollectionMeta colmeta;
-	protected List<String> columnList=new ArrayList<String>();
-	protected Map<String, DataSetColumnMeta> columnMap=new HashMap<String, DataSetColumnMeta>();
-	protected Logger logger=LoggerFactory.getLogger(getClass());
+
 	public AbstractFileIterator(DataCollectionMeta colmeta){
-		this.colmeta=colmeta;
-		for (DataSetColumnMeta meta:colmeta.getColumnList()) {
-			columnList.add(meta.getColumnName());
-			columnMap.put(meta.getColumnName(), meta);
-		}
+		super(colmeta);
 	}
 	public abstract void init() throws Exception;
 	public void setReader(BufferedReader reader){

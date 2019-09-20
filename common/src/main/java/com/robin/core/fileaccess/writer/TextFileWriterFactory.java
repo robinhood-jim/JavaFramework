@@ -32,7 +32,6 @@ public class TextFileWriterFactory {
 
     public static AbstractFileWriter getFileWriterByType(String fileType, DataCollectionMeta colmeta, BufferedWriter writer) {
         AbstractFileWriter fileWriter = getFileWriterByType(fileType, colmeta);
-
         fileWriter.setWriter(writer);
         return fileWriter;
     }

@@ -85,25 +85,7 @@ public class Const {
 	public static final String PREFIX_HDFS="hdfs";
 	public static final String PREFIX_S3="s3";
 
-	public enum ResourceType{
-		TYPE_LOCALFILE("0"),  //local
-		TYPE_HDFSFILE("1"),   //hdfs
-		TYPE_FTPFILE("2"),     //ftp
-		TYPE_SFTP("3"),   //
-		TYPE_DB("4"),
-		TYPE_WEBDAV("5"),
-		TYPE_AWS("6");
-		private String value;
 
-		private ResourceType(String value) {
-			this.value = value;
-		}
-
-		@Override
-		public String toString() {
-			return String.valueOf(this.value);
-		}
-	}
 	public enum FileFormat{
 		TYPE_CSV("1"),       //csv
 		TYPE_JSON("2"),   //json
@@ -209,20 +191,7 @@ public class Const {
 			return value;
 		}
 	}
-	public enum RESTYPE{
-		MENU("1"),
-		BUTTON("2");
 
-		private String value;
-
-		RESTYPE(String value){
-			this.value=value;
-		}
-		@Override
-		public String toString() {
-			return value;
-		}
-	}
 	public final static List<String> ESCAPE_CHARACTERS = new ArrayList<String>(
 			Arrays.asList(new String[] { "$", "(", ")", "*", "+", ".", "[",
 					"?", "\\", "^", "{", "|" }));

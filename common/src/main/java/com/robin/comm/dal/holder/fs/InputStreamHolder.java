@@ -13,19 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.robin.core.fileaccess.holder;
+package com.robin.comm.dal.holder.fs;
 
+import com.robin.comm.dal.holder.AbstractResourceHolder;
 import com.robin.core.base.exception.OperationInWorkException;
-import com.robin.core.fileaccess.iterator.TextFileIteratorFactory;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
-import com.robin.core.fileaccess.pool.ResourceAccessHolder;
+import com.robin.comm.dal.pool.ResourceAccessHolder;
 import com.robin.core.fileaccess.util.AbstractResourceAccessUtil;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Map;
 
-public class InputStreamHolder extends AbstractResourceHolder{
+public class InputStreamHolder extends AbstractResourceHolder {
 	protected InputStream in;
 	public void init(){
 		in=null;
@@ -34,12 +33,11 @@ public class InputStreamHolder extends AbstractResourceHolder{
 	@Override
 	public void init(DataCollectionMeta colmeta) throws Exception{
 		if(in!=null || busyTag){
-			throw new OperationInWorkException("Stream is Still In use,Wait for finish.");
+			throw new OperationInWorkException("last Opertaion InputStream already Exists.May not be shutdown Propery");
 		}
 		String[] tag=AbstractResourceAccessUtil.retrieveResource(colmeta.getPath());
 		AbstractResourceAccessUtil util= ResourceAccessHolder.getAccessUtilByProtocol(tag[0].toLowerCase());
 		in=util.getInResourceByStream(colmeta);
-		setBusyTag(true);
 	}
 
 	public InputStream getInputStream(){
