@@ -9,13 +9,17 @@ import org.apache.avro.LogicalTypes;
 import org.apache.avro.Protocol;
 import org.apache.avro.Schema;
 import org.apache.avro.SchemaBuilder;
+import org.apache.avro.generic.GenericDatumReader;
+import org.apache.avro.generic.GenericDatumWriter;
+import org.apache.avro.generic.GenericRecord;
+import org.apache.avro.io.Decoder;
+import org.apache.avro.io.DecoderFactory;
+import org.apache.avro.io.Encoder;
+import org.apache.avro.io.EncoderFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
 import java.util.List;
 
 /**
@@ -116,5 +120,36 @@ public class AvroUtils {
     }
     public static Protocol parseProtocolWithString(String fileContent) throws IOException{
         return Protocol.parse(new ByteArrayInputStream(fileContent.getBytes()));
+    }
+    public static byte[] dataToByteArray(Schema schema, GenericRecord datum) throws IOException {
+        GenericDatumWriter<GenericRecord> writer = new GenericDatumWriter<GenericRecord>(schema);
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        try {
+            Encoder e = EncoderFactory.get().binaryEncoder(os, null);
+            writer.write(datum, e);
+            e.flush();
+            byte[] byteData = os.toByteArray();
+            return byteData;
+        } finally {
+            os.close();
+        }
+    }
+
+    public static GenericRecord byteArrayToData(Schema schema, byte[] byteData) {
+        GenericDatumReader<GenericRecord> reader = new GenericDatumReader<GenericRecord>(schema);
+        ByteArrayInputStream byteArrayInputStream = null;
+        try {
+            byteArrayInputStream = new ByteArrayInputStream(byteData);
+            Decoder decoder = DecoderFactory.get().binaryDecoder(byteArrayInputStream, null);
+            return reader.read(null, decoder);
+        } catch (IOException e) {
+            return null;
+        } finally {
+            try {
+                byteArrayInputStream.close();
+            } catch (IOException e) {
+
+            }
+        }
     }
 }

@@ -6,13 +6,14 @@ import com.zaxxer.hikari.pool.HikariPool;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.Closeable;
 import java.sql.Connection;
 import java.sql.SQLException;
 
 
 @Slf4j
 @Data
-public class DbConnectionHolder {
+public class DbConnectionHolder implements Closeable {
     private BaseDataBaseMeta meta;
     private Long sourceId;
     private HikariPool pool;
@@ -48,4 +49,14 @@ public class DbConnectionHolder {
         }
     }
 
+    @Override
+    public void close() {
+        try {
+            if (pool != null) {
+                pool.shutdown();
+            }
+        }catch (Exception ex){
+
+        }
+    }
 }

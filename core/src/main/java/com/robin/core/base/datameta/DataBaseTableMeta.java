@@ -21,6 +21,13 @@ public class DataBaseTableMeta {
 	private String schema;
 	private String remark;
 	private int id;
+	public DataBaseTableMeta(){
+
+	}
+	public DataBaseTableMeta(String schema,String tableName){
+		this.schema=schema;
+		this.tableName=tableName;
+	}
 
 	public String getTableName() {
 		return tableName;
