@@ -161,6 +161,11 @@
 			<artifactId>cassandra-driver-core</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>org.apache.cassandra</groupId>
+			<artifactId>cassandra-all</artifactId>
+			<version>3.11.4</version>
+		</dependency>
+		<dependency>
 			<groupId>org.apache.kafka</groupId>
 			<artifactId>kafka-clients</artifactId>
 		</dependency>

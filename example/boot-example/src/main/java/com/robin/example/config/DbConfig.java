@@ -5,17 +5,25 @@ import com.robin.core.base.spring.SpringContextHolder;
 import com.robin.core.query.util.QueryFactory;
 import com.robin.core.sql.util.BaseSqlGen;
 import com.robin.core.sql.util.MysqlSqlGen;
+import com.robin.core.web.interceptor.RestRequestLimitInterceptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.*;
 import org.springframework.context.support.ResourceBundleMessageSource;
+import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.jdbc.support.lob.DefaultLobHandler;
 import org.springframework.jdbc.support.lob.LobHandler;
+import org.springframework.web.client.RestTemplate;
 
 import javax.sql.DataSource;
+import java.util.ArrayList;
+import java.util.List;
 
 @Configuration
 public class DbConfig {
@@ -90,6 +98,31 @@ public class DbConfig {
         messageSource.setDefaultEncoding("UTF-8");
         messageSource.setUseCodeAsDefaultMessage(true);
         return messageSource;
+    }
+    @Bean
+    BeanPostProcessor getBeanPostProcesser(final BeanFactory beanFactory){
+        return new BeanPostProcessor() {
+            @Override
+            public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+
+                return bean;
+            }
+
+            @Override
+            public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+                if(bean instanceof RestTemplate){
+                    RestTemplate restTemplate = (RestTemplate) bean;
+                    List<ClientHttpRequestInterceptor> interceptors =
+                            new ArrayList<>(restTemplate.getInterceptors());
+                    interceptors.add(0, getIntercept());
+                    restTemplate.setInterceptors(interceptors);
+                }
+                return bean;
+            }
+            ClientHttpRequestInterceptor getIntercept(){
+                return new RestRequestLimitInterceptor();
+            }
+        };
     }
 
 

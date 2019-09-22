@@ -6,8 +6,9 @@ import org.springframework.boot.autoconfigure.freemarker.FreeMarkerAutoConfigura
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
-@SpringBootApplication(exclude = FreeMarkerAutoConfiguration.class)
+@SpringBootApplication(exclude = {FreeMarkerAutoConfiguration.class})
 @EnableTransactionManagement(proxyTargetClass = true)
+
 @ComponentScan("com.robin")
 public class Application {
     public static  void main(String[] args) throws Exception{

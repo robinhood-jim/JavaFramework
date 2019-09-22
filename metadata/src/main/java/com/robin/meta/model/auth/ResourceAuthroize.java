@@ -5,12 +5,7 @@ import com.robin.core.base.annotation.MappingField;
 import com.robin.core.base.model.BaseObject;
 import lombok.Data;
 
-/**
- * <p>Created at: 2019-08-19 17:55:57</p>
- *
- * @author robinjim
- * @version 1.0
- */
+
 @MappingEntity(table = "t_meta_resource_authorize")
 @Data
 public class ResourceAuthroize extends BaseObject {
