@@ -3,6 +3,7 @@ package com.robin.core.web.util;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.List;
 
 public class CookieUtils {
     public static void addCookie(HttpServletRequest request, HttpServletResponse response, String name, String value, int ageTs) {
@@ -37,6 +38,16 @@ public class CookieUtils {
             if (cookie.getName().equals(name)) {
                 retVal = cookie.getValue();
                 break;
+            }
+        }
+        return retVal;
+    }
+    public static String delCookie(HttpServletRequest request, List<String> names) {
+        Cookie[] cookies = request.getCookies();
+        String retVal = null;
+        for (Cookie cookie : cookies) {
+            if (names.contains(cookie.getName())) {
+                cookie.setMaxAge(0);
             }
         }
         return retVal;

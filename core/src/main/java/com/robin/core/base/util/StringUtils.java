@@ -30,6 +30,8 @@ import javax.xml.bind.DatatypeConverter;
 public class StringUtils {
 	public static final int ASCII_VISABLE_START=48;
 	public static final int ASCII_VISABLE_END=122;
+	public static final int ASCII_UPPER_START=64;
+	public static final int ASCII_LOWER_START=96;
 
 	/**
 	 * custom String split 
@@ -213,7 +215,25 @@ public class StringUtils {
 		StringBuilder builder=new StringBuilder();
 		Random random=new Random();
 		for(int i=0;i<length;i++){
-			builder.append((char)(48+getRandomChar(random)));
+			builder.append((char)(ASCII_VISABLE_START+getRandomChar(random)));
+		}
+		return builder.toString();
+	}
+	private static int getRandomUpperChar(Random random){
+		return ASCII_UPPER_START+random.nextInt(26)+1;
+	}
+	private static int getRandomLowerChar(Random random){
+		return ASCII_LOWER_START+random.nextInt(26)+1;
+	}
+	public static String genarateRandomUpperLowerChar(int length){
+		StringBuilder builder=new StringBuilder();
+		Random random=new Random();
+		for(int i=0;i<length;i++){
+			if(random.nextFloat()<0.5)
+				builder.append((char)getRandomUpperChar(random));
+			else{
+				builder.append((char)getRandomLowerChar(random));
+			}
 		}
 		return builder.toString();
 	}
@@ -224,6 +244,9 @@ public class StringUtils {
 		MessageDigest md=MessageDigest.getInstance("MD5");
 		md.update(inputStr.getBytes());
 		return DatatypeConverter.printHexBinary(md.digest()).toUpperCase();
+	}
+	public static void main(String[] args){
+		System.out.println(genarateRandomUpperLowerChar(8));
 	}
 
 }
