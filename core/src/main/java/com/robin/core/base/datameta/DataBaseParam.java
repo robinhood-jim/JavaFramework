@@ -15,6 +15,14 @@
  */
 package com.robin.core.base.datameta;
 
+import com.robin.core.base.exception.ConfigurationIncorrectException;
+import com.robin.core.convert.util.ConvertUtil;
+import lombok.extern.slf4j.Slf4j;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.regex.Matcher;
+@Slf4j
 public class DataBaseParam {
 	private String hostName;
 	private int port;
@@ -63,6 +71,30 @@ public class DataBaseParam {
 	public String getUrl() {
 		return url;
 	}
+	public String getUrlByMeta(BaseDataBaseMeta dbMeta,Map<String,String> paramMap){
+		try{
+			if(this.getUrl()==null || this.getUrl().isEmpty()){
+				if(this.getPort()==0)
+					this.setPort(dbMeta.getDefaultDatabasePort());
+				Matcher matcher=BaseDataBaseMeta.PATTERN_TEMPLATE_PARAM.matcher(dbMeta.getUrlTemplate());
+
+				StringBuffer builder=new StringBuffer();
+				while(matcher.find()){
+					String word=matcher.group();
+					String v_word = word.replaceFirst("\\[", "");
+					v_word = v_word.replaceFirst("\\]", "");
+					matcher.appendReplacement(builder, paramMap.get(v_word));
+				}
+				matcher.appendTail(builder);
+				setUrl(builder.toString());
+			}
+		}catch(Exception ex){
+			log.error("",ex);
+			throw new ConfigurationIncorrectException("template is invalid");
+		}
+		return getUrl();
+	}
+
 	public void setUrl(String url) {
 		this.url = url;
 	}

@@ -46,7 +46,7 @@ public class DataBaseUtil {
             dataBaseMeta=meta;
             if (connection == null) {
                 Class.forName(meta.getParam().getDriverClassName());
-                String url = meta.getParam().getUrl();
+                String url = meta.getUrl();
                 if (url == null || "".equals(url))
                     url = meta.getUrl();
                 connection = DriverManager.getConnection(url, meta.getParam().getUserName(), meta.getParam().getPasswd());
@@ -275,12 +275,6 @@ public class DataBaseUtil {
             logger.error("", e);
             throw e;
         } finally {
-            try {
-                if (conn != null)
-                    conn.close();
-            } catch (Exception ex) {
-
-            }
         }
         return columnlist;
     }

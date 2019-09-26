@@ -134,7 +134,7 @@ public class YarnJobInfoUtil extends AbstractJobInfoUtil{
 		}
 	}
 	 public JobDetail getJobDetail(JobID jobId,String ymd,String outPutStr) throws Exception{
-		 //String url="http://"+ipAddress+":50030/jobdetails.jsp?jobid="+jobId;
+		 //String url="http://"+hostName+":50030/jobdetails.jsp?jobid="+jobId;
 		 YARNRunner runner=getRunner();
 		 JobStatus status=runner.getJobStatus(jobId);
 		 String url=status.getTrackingUrl();

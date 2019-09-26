@@ -17,7 +17,7 @@
 /**
  * Redis Cache config,If use Redis CacheManager,Uncomment this class.
  */
-package com.robin.meta.config;
+package com.robin.meta.mvc.config;
 
 
 import org.springframework.cache.annotation.CachingConfigurerSupport;

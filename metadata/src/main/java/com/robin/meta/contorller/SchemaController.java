@@ -35,7 +35,7 @@ public class SchemaController {
     @RequestMapping("/resource")
     @ResponseBody
     public Map<String,Object> getResourceSchema(@RequestParam String sourceId,@RequestParam String sourceParam){
-        DataCollectionMeta collectionMeta=globalResourceService.getResourceMetaDef(sourceId);
+        DataCollectionMeta collectionMeta=globalResourceService.getResourceMetaDef(Long.parseLong(sourceId),sourceParam);
         //Schema schema=globalResourceService.getDataSourceSchema(collectionMeta,sourceId,sourceParam);
         Map<String,Object> retMap=new HashMap<>();
         String[] arr=sourceId.split(",");

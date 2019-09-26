@@ -17,13 +17,14 @@ package com.robin.core.base.datameta;
 
 import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.sql.util.BaseSqlGen;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
+@Slf4j
 public abstract class BaseDataBaseMeta implements DataBaseInterface {
 	//static fields
 	public static final String TYPE_MYSQL="MySql";
@@ -42,7 +43,7 @@ public abstract class BaseDataBaseMeta implements DataBaseInterface {
 	//Enum type of all support DB
 	public static String[] dbTypeEnmu={"Oracle","MySql","DB2","SqlServer","Sybase","H2","Debry","PostgreSql","Phoenix","Hive","Hive2","OracleRac"};
 	//jdbc Url Template like jdbc:mysql://[hostName]:[port]/[databaseName]?useUnicode=true&characterEncoding=[encode]
-	protected static final Pattern PATTERN_TEMPLATE_PARAM = Pattern.compile("\\[.*?\\]");
+	public static final Pattern PATTERN_TEMPLATE_PARAM = Pattern.compile("\\[.*?\\]");
 	public List<DataBaseTableMeta> listAllTable(String schema) throws Exception {
 		DataBaseUtil util=new DataBaseUtil();
 		util.connect(this);
@@ -50,28 +51,14 @@ public abstract class BaseDataBaseMeta implements DataBaseInterface {
 		util.closeConnection();
 		return list;
 	}
-	public String getUrl() throws Exception{
-		try{
-			if(param.getUrl()==null){
-				if(param.getPort()==0)
-					param.setPort(getDefaultDatabasePort());
-				Matcher matcher=PATTERN_TEMPLATE_PARAM.matcher(param.getUrlTemplate());
-				Map<String, String> map=new HashMap<String, String>();
-				StringBuffer builder=new StringBuffer();
-				processParam(map);
-				while(matcher.find()){
-					String word=matcher.group();
-					String v_word = word.replaceFirst("\\[", "");
-					v_word = v_word.replaceFirst("\\]", "");
-					matcher.appendReplacement(builder, map.get(v_word));
-				}
-				matcher.appendTail(builder);
-				param.setUrl(builder.toString());
-			}
-		}catch(Exception ex){
-			throw ex;
+	public String getUrl(){
+		Map<String,String> paramMap=new HashMap<>();
+		try {
+			processParam(paramMap);
+		}catch (Exception ex){
+			log.error("",ex);
 		}
-		return param.getUrl();
+		return param.getUrlByMeta(this,paramMap);
 	}
 	protected void processParam(Map<String,String> map) throws Exception{
 		ConvertUtil.objectToMap(map, param);

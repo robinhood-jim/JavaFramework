@@ -78,7 +78,7 @@ public abstract class BaseCrudController<O extends BaseObject, P extends Seriali
         Map<String, Object> retMap = new HashMap();
         try {
             O object=null;
-            if(obj==null) {
+            if(obj.length==0) {
                 object=this.objectType.newInstance();
                 ConvertUtil.mapToObject(object, wrapRequest(request));
             }else if(obj[0] instanceof BaseObject){
@@ -131,7 +131,7 @@ public abstract class BaseCrudController<O extends BaseObject, P extends Seriali
             O object = objectType.newInstance();
             O updateObj = service.getEntity(id);
             ConvertUtil.convertToModel(object, valueMap);
-            ConvertUtil.convertToModelForUpdateNew(updateObj, object);
+            ConvertUtil.convertToModelForUpdate(updateObj, object);
             service.updateEntity(updateObj);
             doAfterUpdate(request, response, object, retMap);
             wrapSuccess(retMap);

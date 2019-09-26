@@ -278,7 +278,7 @@
         });
         form.attachEvent("onFocus", function(name, value){
             if(name=='orgName'){
-                orgSelect=openWindowForTreeview("t1",ctx+"system/org/listAll?id={id}",form.getInput(name).offsetParent.offsetLeft+form.getInput(name).offsetLeft,form.getInput(name).offsetParent.offsetTop+form.getInput(name).offsetTop+cheight/2-80,200,150);
+                orgSelect=openWindowForTreeviewWithName("t1",ctx+"system/org/listAll?id={id}",form.getInput(name).offsetParent.offsetLeft+form.getInput(name).offsetLeft,form.getInput(name).offsetParent.offsetTop+form.getInput(name).offsetTop+cheight/2-80,200,150);
                 orgSelect.attachEvent("onSelect",function (id,mode) {
                     var txt=orgSelect.getItemText(id);
                     form.setItemValue("orgName",txt);

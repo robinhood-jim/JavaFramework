@@ -35,12 +35,12 @@ public class GlobalResource extends BaseObject {
 	private String protocol;
 	@MappingField(field="db_type")
 	private String dbType;
-	@MappingField(field="ip_address")
-	private String ipAddress;
+	@MappingField(field="host_name")
+	private String hostName;
 	@MappingField
 	private Integer port;
-	@MappingField(field="db_name")
-	private String dbName;
+	@MappingField(field="schema")
+	private String schema;
 	@MappingField(field="username")
 	private String userName;
 	@MappingField

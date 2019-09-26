@@ -33,7 +33,7 @@ public class EncryptClassLoader extends ClassLoader{
 	public EncryptClassLoader(ClassLoader loader){
 		this.superloader=loader;
 		try{
-		InputStream stream=superloader.getResourceAsStream("META-INF/key");
+		InputStream stream=superloader.getResourceAsStream("META-INF/core-assembly-key");
 		int nums=stream.available();
 		byte[] bytes=new byte[nums];
 		stream.read(bytes,0,nums);

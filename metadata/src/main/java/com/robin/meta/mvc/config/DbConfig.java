@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.robin.meta.config;
+package com.robin.meta.mvc.config;
 
 import com.robin.core.base.dao.JdbcDao;
 import com.robin.core.base.spring.SpringContextHolder;

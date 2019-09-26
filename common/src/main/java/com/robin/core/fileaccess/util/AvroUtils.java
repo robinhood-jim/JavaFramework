@@ -1,8 +1,8 @@
 package com.robin.core.fileaccess.util;
 
 import com.robin.core.base.datameta.DataBaseColumnMeta;
+import com.robin.core.base.exception.ConfigurationIncorrectException;
 import com.robin.core.base.util.Const;
-import com.robin.core.exception.ConfigIncorrectException;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.meta.DataSetColumnMeta;
 import org.apache.avro.LogicalTypes;
@@ -75,7 +75,7 @@ public class AvroUtils {
             try{
                 schema=new Schema.Parser().parse(new FileInputStream(new File(schemaPath)));
             }catch(IOException ex){
-                throw new ConfigIncorrectException("avro schema file load exception:"+ex.getMessage());
+                throw new ConfigurationIncorrectException("avro schema file load exception:"+ex.getMessage());
             }
         }else if(colmeta.getResourceCfgMap().containsKey(Const.AVRO_SCHEMA_CONTENT_PARAM)){
             try{
@@ -108,7 +108,7 @@ public class AvroUtils {
                 schema=fields.endRecord();
                 logger.info(schema.toString(true));
             }else
-                throw new ConfigIncorrectException("missing avro schema config file or Content");
+                throw new ConfigurationIncorrectException("missing avro schema config file or Content");
         }
         return schema;
     }

@@ -79,7 +79,7 @@ public class SysRoleContorller extends BaseCrudDhtmlxController<SysRole,Long, Sy
 			SysRole user=service.getEntity(id);
 			SysRole tmpuser=new SysRole();
 			ConvertUtil.mapToObject(tmpuser, map);
-			ConvertUtil.convertToModelForUpdateNew(user, tmpuser);
+			ConvertUtil.convertToModelForUpdate(user, tmpuser);
 			service.updateEntity(user);
 			retmap.put("id", String.valueOf(id));
 			retmap.put("success", "true");

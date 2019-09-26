@@ -15,7 +15,6 @@ import com.robin.example.service.system.SysResponsibilityService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
@@ -112,7 +111,7 @@ public class SysResponsiblityController extends BaseCrudDhtmlxController<SysResp
             SysResponsibility user=service.getEntity(id);
             SysRole tmpuser=new SysRole();
             ConvertUtil.mapToObject(tmpuser, map);
-            ConvertUtil.convertToModelForUpdateNew(user, tmpuser);
+            ConvertUtil.convertToModelForUpdate(user, tmpuser);
             service.updateEntity(user);
             retmap.put("id", String.valueOf(id));
             retmap.put("success", "true");
