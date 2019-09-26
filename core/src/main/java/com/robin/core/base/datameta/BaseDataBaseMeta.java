@@ -19,13 +19,14 @@ import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.sql.util.BaseSqlGen;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 @Slf4j
-public abstract class BaseDataBaseMeta implements DataBaseInterface {
+public abstract class BaseDataBaseMeta implements DataBaseInterface, Serializable {
 	//static fields
 	public static final String TYPE_MYSQL="MySql";
 	public static final String TYPE_ORACLE="Oracle";
@@ -53,12 +54,7 @@ public abstract class BaseDataBaseMeta implements DataBaseInterface {
 	}
 	public String getUrl(){
 		Map<String,String> paramMap=new HashMap<>();
-		try {
-			processParam(paramMap);
-		}catch (Exception ex){
-			log.error("",ex);
-		}
-		return param.getUrlByMeta(this,paramMap);
+		return param.getUrlByMeta(this);
 	}
 	protected void processParam(Map<String,String> map) throws Exception{
 		ConvertUtil.objectToMap(map, param);

@@ -19,11 +19,12 @@ import com.robin.core.base.exception.ConfigurationIncorrectException;
 import com.robin.core.convert.util.ConvertUtil;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 @Slf4j
-public class DataBaseParam {
+public class DataBaseParam implements Serializable {
 	private String hostName;
 	private int port;
 	private String databaseName;
@@ -71,13 +72,13 @@ public class DataBaseParam {
 	public String getUrl() {
 		return url;
 	}
-	public String getUrlByMeta(BaseDataBaseMeta dbMeta,Map<String,String> paramMap){
+	public String getUrlByMeta(BaseDataBaseMeta dbMeta){
 		try{
 			if(this.getUrl()==null || this.getUrl().isEmpty()){
 				if(this.getPort()==0)
 					this.setPort(dbMeta.getDefaultDatabasePort());
 				Matcher matcher=BaseDataBaseMeta.PATTERN_TEMPLATE_PARAM.matcher(dbMeta.getUrlTemplate());
-
+				Map<String,String> paramMap=processParam();
 				StringBuffer builder=new StringBuffer();
 				while(matcher.find()){
 					String word=matcher.group();
@@ -93,6 +94,11 @@ public class DataBaseParam {
 			throw new ConfigurationIncorrectException("template is invalid");
 		}
 		return getUrl();
+	}
+	protected Map<String,String> processParam() throws Exception{
+		Map<String,String> map=new HashMap<>();
+		ConvertUtil.objectToMap(map, this);
+		return map;
 	}
 
 	public void setUrl(String url) {

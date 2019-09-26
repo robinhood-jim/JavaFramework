@@ -57,18 +57,34 @@ public class ConvertUtil {
     }
     private static Map<String,Method> returnGetMethold(Class clazz){
         if(cachedGetMethod.getIfPresent(clazz.getCanonicalName())==null){
-            Field[] fields= clazz.getDeclaredFields();
             Map<String,Method> map=new HashMap<>();
-            for(int i=0;i<fields.length;i++){
-                Method method=getMethodByName(clazz,"get"+StringUtils.capitalize(fields[i].getName()));
-                if(method!=null){
-                    map.put(fields[i].getName(),method);
+            Method[] methods=clazz.getMethods();
+            for(Method method:methods){
+                if(method.getName().startsWith("get")){
+                    String name=method.getName().substring(3,4).toLowerCase()+method.getName().substring(4);
+                    map.put(name,method);
                 }
             }
             if(!map.isEmpty())
                 cachedGetMethod.put(clazz.getCanonicalName(),map);
         }
         return cachedGetMethod.getIfPresent(clazz.getCanonicalName());
+    }
+
+    private static Map<String,Method> returnSetMethold(Class clazz){
+        if(cachedSetMethod.getIfPresent(clazz.getCanonicalName())==null){
+            Method[] methods=clazz.getMethods();
+            Map<String,Method> map=new HashMap<>();
+            for(Method method:methods){
+                if(method.getName().startsWith("set")){
+                    String name=method.getName().substring(3,4).toLowerCase()+method.getName().substring(4);
+                    map.put(name,method);
+                }
+            }
+            if(!map.isEmpty())
+                cachedSetMethod.put(clazz.getCanonicalName(),map);
+        }
+        return cachedSetMethod.getIfPresent(clazz.getCanonicalName());
     }
     private static Method getMethodByName(Class clazz,String methodName){
         try{
@@ -86,21 +102,6 @@ public class ConvertUtil {
         }
         return null;
     }
-    private static Map<String,Method> returnSetMethold(Class clazz){
-        if(cachedSetMethod.getIfPresent(clazz.getCanonicalName())==null){
-            Field[] fields= clazz.getDeclaredFields();
-            Map<String,Method> map=new HashMap<>();
-            for(Field field:fields){
-                Method method=getMethodByName(clazz,"set"+StringUtils.capitalize(field.getName()),field.getType());
-                if(method!=null){
-                    map.put(field.getName(),method);
-                }
-            }
-            if(!map.isEmpty())
-                cachedSetMethod.put(clazz.getCanonicalName(),map);
-        }
-        return cachedSetMethod.getIfPresent(clazz.getCanonicalName());
-    }
 
     public static void objectToMap(Map<String, String> target, Object src) throws Exception {
         if (src == null || target == null) return;
@@ -109,8 +110,10 @@ public class ConvertUtil {
         Iterator<Map.Entry<String,Method>> iterator=getMetholds.entrySet().iterator();
         while(iterator.hasNext()){
             Map.Entry<String,Method> entry=iterator.next();
-            Object value=entry.getValue().invoke(src,(Object[])null);
-            target.put(entry.getKey(), value == null ? "" : value.toString().trim());
+            if(entry.getValue().getParameterTypes().length==0) {
+                Object value = entry.getValue().invoke(src, (Object[]) null);
+                target.put(entry.getKey(), value == null ? "" : value.toString().trim());
+            }
         }
     }
 
@@ -120,8 +123,10 @@ public class ConvertUtil {
         Iterator<Map.Entry<String,Method>> iterator=getMetholds.entrySet().iterator();
         while(iterator.hasNext()){
             Map.Entry<String,Method> entry=iterator.next();
-            Object value=entry.getValue().invoke(src,(Object[])null);
-            target.put(entry.getKey(), value == null ? "" : value);
+            if(entry.getValue().getParameterTypes().length==0) {
+                Object value = entry.getValue().invoke(src, (Object[]) null);
+                target.put(entry.getKey(), value == null ? "" : value);
+            }
         }
     }
 
