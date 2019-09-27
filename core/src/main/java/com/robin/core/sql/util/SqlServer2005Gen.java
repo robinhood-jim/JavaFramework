@@ -38,7 +38,7 @@ public class SqlServer2005Gen extends AbstractSqlGen implements BaseSqlGen{
 		int nOrderPos = str.lastIndexOf("order by");
 		if (nOrderPos == -1) nOrderPos = str.length();
 		StringBuffer strBuf = new StringBuffer();
-		strBuf.append("select count(*) as total ").append(str.substring(nFromPos, nOrderPos));
+		strBuf.append("select count(*) as total ").append(str, nFromPos, nOrderPos);
 		return strBuf.toString();
 	}
 
@@ -80,7 +80,7 @@ public class SqlServer2005Gen extends AbstractSqlGen implements BaseSqlGen{
 		if (nOrderPos == -1) nOrderPos = str.length();
 		StringBuffer pagingSelect = new StringBuffer();
 		pagingSelect.append("select * from ( select row.*,rownumber() over() as rownum");
-		pagingSelect.append(" from ( ").append(str.substring(0,nOrderPos));
+		pagingSelect.append(" from ( ").append(str, 0, nOrderPos);
 		pagingSelect.append(" )row) row_ where rownum = 1").append(" with ur");
 		return pagingSelect.toString();
 	}

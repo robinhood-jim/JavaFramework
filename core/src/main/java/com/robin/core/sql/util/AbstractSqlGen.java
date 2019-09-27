@@ -195,7 +195,7 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
 
         if (nOrderPos == -1) nOrderPos = sql.length();
         StringBuffer strBuf = new StringBuffer();
-        strBuf.append("select count(1) as total from (").append(sql.substring(0, nOrderPos)).append(") a ");
+        strBuf.append("select count(1) as total from (").append(sql, 0, nOrderPos).append(") a ");
         return strBuf.toString();
     }
 
@@ -257,7 +257,7 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
     }
 
     protected String toSQLForInt(QueryParam param) {
-        StringBuffer sql = new StringBuffer("");
+        StringBuffer sql = new StringBuffer();
         String retstr = "";
         String nQueryModel = param.getQueryMode();
         if (param.getQueryValue() == null || "".equals(param.getQueryValue().trim())) return "";
@@ -276,7 +276,7 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
                 sql.append(" having " + key + param.getQueryMode() + param.getQueryValue());
             else if (nQueryModel.equals(QueryParam.QUERYMODE_BETWEEN) && !";".equals(value)) {
                 String beginvalue = value.substring(0, value.indexOf(";"));
-                String endvalue = value.substring(value.indexOf(";") + 1, value.length());
+                String endvalue = value.substring(value.indexOf(";") + 1);
                 if (!"".equals(beginvalue)) {
                     if (!"".equals(endvalue))
                         sql.append("(" + key + " between " + beginvalue + " and " + endvalue + ")");
@@ -290,7 +290,7 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
     }
 
     protected String toSQLForDecimal(QueryParam param) {
-        StringBuffer sql = new StringBuffer("");
+        StringBuffer sql = new StringBuffer();
         String nQueryModel = param.getQueryMode();
         if (param.getQueryValue() == null || "".equals(param.getQueryValue().trim())) return "";
         String value = param.getQueryValue();
@@ -307,7 +307,7 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
                 sql.append(" having " + key + param.getQueryMode() + param.getQueryValue());
             else if (nQueryModel.equals(QueryParam.QUERYMODE_BETWEEN)) {
                 String beginvalue = value.substring(0, value.indexOf(";"));
-                String endvalue = value.substring(value.indexOf(";") + 1, value.length());
+                String endvalue = value.substring(value.indexOf(";") + 1);
                 sql.append("(" + key + " between " + beginvalue + " and " + endvalue + ")");
             }
         }
@@ -315,7 +315,7 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
     }
 
     protected String toSQLForString(QueryParam param) {
-        StringBuffer sql = new StringBuffer("");
+        StringBuffer sql = new StringBuffer();
         String nQueryModel = param.getQueryMode();
         if (param.getQueryValue() == null || "".equals(param.getQueryValue().trim())) return "";
         String key = param.getColumnName();
@@ -341,7 +341,7 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
     }
 
     protected String toSQLForDate(QueryParam param) {
-        StringBuffer sql = new StringBuffer("");
+        StringBuffer sql = new StringBuffer();
         String nQueryModel = param.getQueryMode();
         if (param.getQueryValue() == null || "".equals(param.getQueryValue().trim())) return "";
         String key = param.getColumnName();
@@ -352,7 +352,7 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
         else if (nQueryModel.equals(QueryParam.QUERYMODE_LTANDEQUAL)) sql.append(key + "<=" + "'" + value + "'");
         else if (nQueryModel.equals(QueryParam.QUERYMODE_BETWEEN) && !"".equals(value) && !";".equals(value)) {
             String begindate = value.substring(0, value.indexOf(";"));
-            String enddate = value.substring(value.indexOf(";") + 1, value.length());
+            String enddate = value.substring(value.indexOf(";") + 1);
             if (!"".equals(begindate)) {
                 if (!"".equals(enddate))
                     sql.append("(" + key + " between '" + begindate + "' and '" + enddate + "')");

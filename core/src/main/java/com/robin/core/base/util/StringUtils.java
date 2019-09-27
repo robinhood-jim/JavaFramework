@@ -201,13 +201,13 @@ public class StringUtils {
 	}
 	public static String initailCharToUpperCase(String input){
 		if(input.length()>2)
-			return input.substring(0,1).toUpperCase()+input.substring(1,input.length());
+			return input.substring(0,1).toUpperCase()+input.substring(1);
 		else
 			return null;
 	}
 	public static String initailCharToLowCase(String input){
 		if(input.length()>2)
-			return input.substring(0,1).toLowerCase()+input.substring(1,input.length());
+			return input.substring(0,1).toLowerCase()+input.substring(1);
 		else
 			return null;
 	}

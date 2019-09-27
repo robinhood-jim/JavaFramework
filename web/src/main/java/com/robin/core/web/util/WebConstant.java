@@ -8,12 +8,12 @@ package com.robin.core.web.util;
  */
 public class WebConstant {
     public static final Long DEFAULT_ORG=0L;
-    public static enum SYS_RESPONSIBLITIY{
+    public enum SYS_RESPONSIBLITIY{
         SYS_RESP(1L),
         ORG_RESP(2L),
         FREE_RESP(3L);
         private Long value;
-        private SYS_RESPONSIBLITIY(Long value){
+        SYS_RESPONSIBLITIY(Long value){
             this.value=value;
         }
 
@@ -30,7 +30,7 @@ public class WebConstant {
         ORGUSER(2L),  // Org User,can access Org right menu and menu Assign by system user
         FREEUSER(3L); // User not include in Any Org
         private Long value;
-        private ACCOUNT_TYPE(Long value){
+        ACCOUNT_TYPE(Long value){
             this.value=value;
         }
         @Override

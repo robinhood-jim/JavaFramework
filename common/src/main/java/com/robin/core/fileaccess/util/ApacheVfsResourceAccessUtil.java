@@ -33,7 +33,7 @@ public class ApacheVfsResourceAccessUtil extends AbstractResourceAccessUtil {
     @Override
     public BufferedReader getInResourceByReader(DataCollectionMeta meta) throws Exception {
         VfsParam param = new VfsParam();
-        ConvertUtil.convertToModel(param, meta.getResourceCfgMap());
+        ConvertUtil.convertToTarget(param, meta.getResourceCfgMap());
         BufferedReader reader;
 
         FileObject fo = manager.resolveFile(getUriByParam(param, meta.getPath()).toString(), getOptions(param));
@@ -69,7 +69,7 @@ public class ApacheVfsResourceAccessUtil extends AbstractResourceAccessUtil {
     @Override
     public InputStream getInResourceByStream(DataCollectionMeta meta) throws Exception {
         VfsParam param = new VfsParam();
-        ConvertUtil.convertToModel(param, meta.getResourceCfgMap());
+        ConvertUtil.convertToTarget(param, meta.getResourceCfgMap());
         InputStream reader;
         FileObject fo = manager.resolveFile(getUriByParam(param, meta.getPath()).toString(), getOptions(param));
         if (fo.exists()) {
@@ -106,7 +106,7 @@ public class ApacheVfsResourceAccessUtil extends AbstractResourceAccessUtil {
 
     private FileObject checkFileExist(DataCollectionMeta meta) throws Exception {
         VfsParam param = new VfsParam();
-        ConvertUtil.convertToModel(param, meta.getResourceCfgMap());
+        ConvertUtil.convertToTarget(param, meta.getResourceCfgMap());
         FileObject fo = manager.resolveFile(getUriByParam(param, meta.getPath()).toString(), getOptions(param));
         if (fo.exists()) {
             if (FileType.FOLDER.equals(fo.getType())) {

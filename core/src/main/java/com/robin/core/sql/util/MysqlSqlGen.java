@@ -43,9 +43,9 @@ public class MysqlSqlGen extends AbstractSqlGen implements BaseSqlGen{
 		if (nOrderPos == -1) nOrderPos = str.length();
 		StringBuffer strBuf = new StringBuffer();
 		if(nGroupByPos==-1)
-			strBuf.append("select count(*) as total ").append(str.substring(nFromPos, nOrderPos));
+			strBuf.append("select count(*) as total ").append(str, nFromPos, nOrderPos);
 		else
-			strBuf.append("select count(1) as total from(select count(1) as cou ").append(str.substring(nFromPos,nOrderPos)).append(") tmp");
+			strBuf.append("select count(1) as total from(select count(1) as cou ").append(str, nFromPos, nOrderPos).append(") tmp");
 		
 		return strBuf.toString();
 	}
@@ -81,7 +81,7 @@ public class MysqlSqlGen extends AbstractSqlGen implements BaseSqlGen{
 		int nOrderPos = str.lastIndexOf(" order by ");
 		if (nOrderPos == -1) nOrderPos = str.length();
 		StringBuffer strBuf = new StringBuffer();
-		strBuf.append(str.substring(0, nOrderPos)).append(" limit 1,1");
+		strBuf.append(str, 0, nOrderPos).append(" limit 1,1");
 		return strBuf.toString();
 	}
 	public String getSequnceScript(String sequnceName) throws DAOException {

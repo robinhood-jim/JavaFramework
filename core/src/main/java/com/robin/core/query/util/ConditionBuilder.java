@@ -24,7 +24,7 @@ public class ConditionBuilder {
 		ConditionList list = new ConditionList(); 
 		for (int i = 0; i < method.length; i++) {
 			methodName = method[i].getName();
-			methodFix = methodName.substring(3, methodName.length());
+			methodFix = methodName.substring(3);
 			if (methodName.startsWith("get") && !methodName.equals("getClass") && (methods == null || methods.isEmpty() 
 					|| methods.containsKey(methodFix))) {
 				if (method[i].getParameterTypes().length > 0){

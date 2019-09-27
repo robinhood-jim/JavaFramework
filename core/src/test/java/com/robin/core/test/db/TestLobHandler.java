@@ -62,7 +62,7 @@ public class TestLobHandler extends TestCase {
     }
 
     @Test
-    public void testQueryVO() throws Exception {
+    public void testQueryVO() {
         TestLobService service = (TestLobService) SpringContextHolder.getBean("lobService");
         TestLob obj = service.getEntity(Long.valueOf("1"));
         try {

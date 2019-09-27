@@ -3,7 +3,7 @@ package com.robin.comm.resaccess.writer;
 import com.google.gson.Gson;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.util.AvroUtils;
-import com.robin.core.fileaccess.writer.AbstractDbTypeWriter;
+import com.robin.core.fileaccess.writer.AbstractResourceWriter;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericRecord;
@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.Properties;
 
 
-public class KafkaResourceWriter extends AbstractDbTypeWriter {
+public class KafkaResourceWriter extends AbstractResourceWriter {
     KafkaProducerConfig config=new KafkaProducerConfig();
     private KafkaProducer<String, byte[]> producer;
     private Schema schema;
@@ -83,6 +83,11 @@ public class KafkaResourceWriter extends AbstractDbTypeWriter {
     @Override
     public void writeRecord(List<Object> list) throws IOException {
 
+    }
+
+    @Override
+    public void writeRecord(GenericRecord genericRecord) throws IOException{
+        producer.send(new ProducerRecord(config.getTopicName(), key,AvroUtils.dataToByteArray(schema,genericRecord)));
     }
 
     @Override

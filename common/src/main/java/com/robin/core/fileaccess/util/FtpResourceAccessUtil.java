@@ -44,7 +44,7 @@ public class FtpResourceAccessUtil extends AbstractResourceAccessUtil{
 	@Override
 	public BufferedReader getInResourceByReader(DataCollectionMeta meta) throws Exception {
 		FtpParam param=new FtpParam();
-		ConvertUtil.convertToModel(param, meta.getResourceCfgMap());
+		ConvertUtil.convertToTarget(param, meta.getResourceCfgMap());
 		BufferedReader reader=null;
 		FileObject fo=manager.resolveFile(getUriByParam(param, meta.getPath()).toString(),getOptions(param));
 		if (fo.exists()) {
@@ -73,7 +73,7 @@ public class FtpResourceAccessUtil extends AbstractResourceAccessUtil{
 	}
 	private FileObject checkFtpFileExist(DataCollectionMeta meta) throws Exception{
 		FtpParam param=new FtpParam();
-		ConvertUtil.convertToModel(param, meta.getResourceCfgMap());
+		ConvertUtil.convertToTarget(param, meta.getResourceCfgMap());
 		FileObject fo=manager.resolveFile(getUriByParam(param, meta.getPath()).toString(),getOptions(param));
 		if (fo.exists()) {
 			if (FileType.FOLDER.equals(fo.getType())) {
@@ -118,7 +118,7 @@ public class FtpResourceAccessUtil extends AbstractResourceAccessUtil{
 	@Override
 	public InputStream getInResourceByStream(DataCollectionMeta meta) throws Exception {
 		FtpParam param=new FtpParam();
-		ConvertUtil.convertToModel(param, meta.getResourceCfgMap());
+		ConvertUtil.convertToTarget(param, meta.getResourceCfgMap());
 		InputStream reader=null;
 		FileObject fo=manager.resolveFile(getUriByParam(param, meta.getPath()).toString(),getOptions(param));
 		if (fo.exists()) {

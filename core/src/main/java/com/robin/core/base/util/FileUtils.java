@@ -7,11 +7,11 @@ import java.util.Collections;
 import java.util.List;
 
 public class FileUtils {
-    public static final List<String> avaiableCompressSuffixs = Collections.unmodifiableList(Arrays.asList(new String[]{Const.CompressType.COMPRESS_TYPE_GZ.toString(),
+    public static final List<String> avaiableCompressSuffixs = Collections.unmodifiableList(Arrays.asList(Const.CompressType.COMPRESS_TYPE_GZ.toString(),
             Const.CompressType.COMPRESS_TYPE_LZO.toString(), Const.CompressType.COMPRESS_TYPE_BZ2.toString(), Const.CompressType.COMPRESS_TYPE_SNAPPY.toString(),
-            Const.CompressType.COMPRESS_TYPE_ZIP.toString(), Const.CompressType.COMPRESS_TYPE_LZMA.toString()}));
-    public static final List<Const.CompressType> compressTypeEnum =Collections.unmodifiableList(Arrays.asList(new Const.CompressType[]{Const.CompressType.COMPRESS_TYPE_GZ, Const.CompressType.COMPRESS_TYPE_LZO,
-            Const.CompressType.COMPRESS_TYPE_BZ2, Const.CompressType.COMPRESS_TYPE_SNAPPY, Const.CompressType.COMPRESS_TYPE_ZIP, Const.CompressType.COMPRESS_TYPE_LZMA}));
+            Const.CompressType.COMPRESS_TYPE_ZIP.toString(), Const.CompressType.COMPRESS_TYPE_LZMA.toString()));
+    public static final List<Const.CompressType> compressTypeEnum =Collections.unmodifiableList(Arrays.asList(Const.CompressType.COMPRESS_TYPE_GZ, Const.CompressType.COMPRESS_TYPE_LZO,
+            Const.CompressType.COMPRESS_TYPE_BZ2, Const.CompressType.COMPRESS_TYPE_SNAPPY, Const.CompressType.COMPRESS_TYPE_ZIP, Const.CompressType.COMPRESS_TYPE_LZMA));
 
     public static String parseFileFormat(String path, List<String> suffix) {
         String filePath = null;
@@ -24,7 +24,7 @@ public class FileUtils {
                 pos = path.lastIndexOf("/");
             }
             if (pos != -1) {
-                String fileName = path.substring(pos + 1, path.length());
+                String fileName = path.substring(pos + 1);
                 String[] arr = fileName.split("\\.");
                 int lastpos = fileName.lastIndexOf(".");
                 filePath = fileName.substring(0, lastpos);

@@ -116,7 +116,7 @@ public class QueryFactory implements InitializingBean {
     }
 
 
-    private void putQueryMap(Document document) throws Exception {
+    private void putQueryMap(Document document) {
         Element root = document.getRootElement();
         String id;
         Iterator iter = root.elementIterator("SQLSCRIPT");
@@ -165,15 +165,11 @@ public class QueryFactory implements InitializingBean {
     }
 
     public boolean isSelectIdExists(String selectId) {
-        if (selectId != null && !selectId.isEmpty() && queryMap.containsKey(selectId)) {
-            return true;
-        } else {
-            return false;
-        }
+        return selectId != null && !selectId.isEmpty() && queryMap.containsKey(selectId);
     }
 
 
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() {
         init();
     }
 

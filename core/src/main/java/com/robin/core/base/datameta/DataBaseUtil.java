@@ -149,7 +149,7 @@ public class DataBaseUtil {
                 String columnname = rs.getString("COLUMN_NAME");
                 Integer datatype = Integer.parseInt(translateDbType(new Integer(rs.getInt("DATA_TYPE"))));
                 String datalength = rs.getString("COLUMN_SIZE");
-                boolean nullable = (rs.getInt("NULLABLE") == DatabaseMetaData.columnNoNulls) ? false : true;
+                boolean nullable = rs.getInt("NULLABLE") != DatabaseMetaData.columnNoNulls;
                 String comment = rs.getString("REMARKS");
                 String precise = rs.getString("DECIMAL_DIGITS");
                 String scale = rs.getString("TABLE_SCHEM");
@@ -239,7 +239,7 @@ public class DataBaseUtil {
                 String columnname = rs.getString("COLUMN_NAME");
                 Integer datatype = Integer.parseInt(translateDbType(new Integer(rs.getInt("DATA_TYPE"))));
                 String datalength = rs.getString("COLUMN_SIZE");
-                boolean nullable = (rs.getInt("NULLABLE") == DatabaseMetaData.columnNoNulls) ? false : true;
+                boolean nullable = rs.getInt("NULLABLE") != DatabaseMetaData.columnNoNulls;
                 String comment = "";
                 ResultSetMetaData rsmeta = rs.getMetaData();
                 List<String> metaNames = new ArrayList<String>();
@@ -347,7 +347,7 @@ public class DataBaseUtil {
                 String column = JdbcUtils.lookupColumnName(rsmeta, i + 1);
                 if (column.contains(".")) {
                     int pos = column.indexOf(".");
-                    column = column.substring(pos + 1, column.length());
+                    column = column.substring(pos + 1);
                 }
                 datameta.setColumnName(column);
                 datameta.setColumnType(Integer.valueOf(translateDbType(new Integer(rsmeta.getColumnType(i + 1)))));
@@ -460,7 +460,7 @@ public class DataBaseUtil {
         } else if (type.equals(Const.META_TYPE_DATE)) {
             retObj = format.parse(value);
         } else {
-            retObj = value.toString();
+            retObj = value;
         }
         return retObj;
     }

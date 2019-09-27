@@ -146,13 +146,11 @@ public abstract class BaseCrudController<O extends BaseObject, P extends Seriali
 
     }
 
-    protected void doAfterView(HttpServletRequest request, HttpServletResponse response, BaseObject obj, Map<String, Object> retMap)
-            throws Exception {
+    protected void doAfterView(HttpServletRequest request, HttpServletResponse response, BaseObject obj, Map<String, Object> retMap) {
         retMap.put("model", obj);
     }
 
-    protected void doAfterEdit(HttpServletRequest request, HttpServletResponse response, BaseObject obj, Map<String, Object> retMap)
-            throws Exception {
+    protected void doAfterEdit(HttpServletRequest request, HttpServletResponse response, BaseObject obj, Map<String, Object> retMap) {
         retMap.put("model", obj);
     }
 
@@ -198,7 +196,7 @@ public abstract class BaseCrudController<O extends BaseObject, P extends Seriali
     }
 
     @SuppressWarnings(value = "uncheck")
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() {
         if (this.serviceType != null) {
             this.service = SpringContextHolder.getBean(this.serviceType);
         }

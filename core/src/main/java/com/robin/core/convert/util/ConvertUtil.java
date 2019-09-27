@@ -215,18 +215,58 @@ public class ConvertUtil {
             Method setMethod = map.get(field);
             if (setMethod != null) {
                 String value = src.get(field);
-                if (value != null) {
-                    target.AddDirtyColumn(field);
-                    Class type = setMethod.getParameterTypes()[0];
-                    if (!type.getName().equalsIgnoreCase("java.lang.String") && value.equals("")) {
-                        setMethod.invoke(target, new Object[]{null});
-                    } else {
-                        Object retValue = parseParamenter(type, value);
-                        setMethod.invoke(target, new Object[]{retValue});
+                setBaseObjectValue(target,value,field,setMethod);
+            }
+        }
+    }
+    private static void setBaseObjectValue(BaseObject target,Object value,String field,Method setMethod) throws Exception{
+        if (value != null) {
+            target.AddDirtyColumn(field);
+            Class type = setMethod.getParameterTypes()[0];
+            if (!type.getName().equalsIgnoreCase("java.lang.String") && value.equals("")) {
+                setMethod.invoke(target, new Object[]{null});
+            } else {
+                Object retValue = parseParamenter(type, value);
+                setMethod.invoke(target, new Object[]{retValue});
+            }
+        }
+    }
+    public static void convertToTarget(Object target, Object src) throws Exception {
+        if (target == null || src == null) return;
+        Map<String, Method> targetMethodMap = returnSetMethold(target.getClass());
+        Map<String, Method> sourceMethodMap = returnGetMethold(src.getClass());
+        if(src instanceof Map) {
+            Map<String,Object> vMap=(Map<String,Object>)src;
+            Iterator set = vMap.keySet().iterator();
+            while (set.hasNext()) {
+                String field = (String) set.next();
+                Method setMethod = targetMethodMap.get(field);
+                if (setMethod != null) {
+                    String value = vMap.get(field).toString();
+                    if(target instanceof BaseObject)
+                        setBaseObjectValue((BaseObject) target,value,field,setMethod);
+                    else{
+                        if(targetMethodMap.containsKey(field)) {
+                            Object retValue = parseParamenter(targetMethodMap.get(field).getParameterTypes()[0], value);
+                            setObjectValue(targetMethodMap.get(field), target, retValue);
+                        }
                     }
                 }
             }
+        }else {
+
+            Iterator<Map.Entry<String,Method>> iter=sourceMethodMap.entrySet().iterator();
+            while(iter.hasNext()){
+                Map.Entry<String,Method> entry=iter.next();
+                if (targetMethodMap.containsKey(entry.getKey()) && entry.getValue().getParameterTypes().length==0){
+                    Object retValue = parseParamenter(targetMethodMap.get(entry.getKey()).getParameterTypes()[0], entry.getValue().invoke(src,new Object[]{}));
+                    setObjectValue(targetMethodMap.get(entry.getKey()), target, retValue);
+                }
+            }
         }
+    }
+    private static void setObjectValue(Method setMethod,Object target,Object value) throws Exception{
+        setMethod.invoke(target,new Object[]{value});
     }
 
 

@@ -94,7 +94,7 @@ public class Const {
 		TYPE_PARQUET("5"),  //parquet
 		TYPE_AVRO("6");   //avro
 		private String value;
-		private FileFormat(String value){this.value=value;}
+		FileFormat(String value){this.value=value;}
 		public String toString() {
 			return String.valueOf(this.value);
 		}
@@ -169,7 +169,7 @@ public class Const {
 		COMPRESS_TYPE_LZMA("lzma"),
 		COMPRESS_TYPE_NONE("none");
 		private String value;
-		private CompressType(String value){
+		CompressType(String value){
 			this.value=value;
 		}
 		@Override
@@ -182,7 +182,7 @@ public class Const {
 		SYS_RESP("1"),
 		ORG_RESP("2");
 		private String value;
-		private RESPONSEBILITY_TYPE(String value){
+		RESPONSEBILITY_TYPE(String value){
 			this.value=value;
 		}
 
@@ -193,6 +193,6 @@ public class Const {
 	}
 
 	public final static List<String> ESCAPE_CHARACTERS = new ArrayList<String>(
-			Arrays.asList(new String[] { "$", "(", ")", "*", "+", ".", "[",
-					"?", "\\", "^", "{", "|" }));
+			Arrays.asList("$", "(", ")", "*", "+", ".", "[",
+					"?", "\\", "^", "{", "|"));
 }

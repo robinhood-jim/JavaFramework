@@ -60,8 +60,7 @@ public class Condition implements ICondition{
 	
 	
 	
-	public String toSQLString(String tablename) throws Exception
-	{
+	public String toSQLString(String tablename) {
 		StringBuffer sbSQLStr = new StringBuffer();
 		if (BETWEEN == state){
 			if (values.length < 2){
@@ -172,8 +171,7 @@ public class Condition implements ICondition{
 		}
 		return sbSQLStr.toString();
 	}
-	public String toSQLPart() throws Exception
-	{
+	public String toSQLPart() {
 		StringBuffer sbSQLStr = new StringBuffer();
 		if (BETWEEN == state){
 			if (values.length < 2){

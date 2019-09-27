@@ -49,9 +49,9 @@ public class DB2SqlGen extends AbstractSqlGen implements BaseSqlGen{
 		if (nOrderPos == -1) nOrderPos = str.length();
 		StringBuilder strBuf = new StringBuilder();
 		if(nGroupByPos==-1)
-			strBuf.append("select count(*) as total ").append(str.substring(nFromPos, nOrderPos)).append(" with ur");
+			strBuf.append("select count(*) as total ").append(str, nFromPos, nOrderPos).append(" with ur");
 		else
-			strBuf.append("select count(1) as total from (select count(1) as cou ").append(str.substring(nFromPos,nOrderPos)).append(") a with ur");
+			strBuf.append("select count(1) as total from (select count(1) as cou ").append(str, nFromPos, nOrderPos).append(") a with ur");
 		return strBuf.toString();
 	}
 
@@ -84,7 +84,7 @@ public class DB2SqlGen extends AbstractSqlGen implements BaseSqlGen{
 
 
 	protected String toSQLForString(QueryParam param) {
-		StringBuilder sql = new StringBuilder("");
+		StringBuilder sql = new StringBuilder();
 		String nQueryModel = param.getQueryMode();
 		if (param.getQueryValue() == null || "".equals(param.getQueryValue().trim())) return "";
 		String key = param.getColumnName();
@@ -112,7 +112,7 @@ public class DB2SqlGen extends AbstractSqlGen implements BaseSqlGen{
 	}
 
 	protected String toSQLForDate(QueryParam param) {
-		StringBuilder sql = new StringBuilder("");
+		StringBuilder sql = new StringBuilder();
 		String nQueryModel = param.getQueryMode();
 		if (param.getQueryValue() == null || "".equals(param.getQueryValue().trim())) return "";
 		String key = param.getColumnName();
@@ -123,7 +123,7 @@ public class DB2SqlGen extends AbstractSqlGen implements BaseSqlGen{
 		else if (nQueryModel.equals(QueryParam.QUERYMODE_LTANDEQUAL)) sql.append(key + "<=" + "'" + value + "'");
 		else if (nQueryModel.equals(QueryParam.QUERYMODE_BETWEEN) && !"".equals(value) && !";".equals(value)) {
 			String begindate = value.substring(0, value.indexOf(";"));
-			String enddate = value.substring(value.indexOf(";") + 1, value.length());
+			String enddate = value.substring(value.indexOf(";") + 1);
 			if(!"".equals(begindate)){
 				if(!"".equals(enddate))
 					sql.append("(" + key + " between '" + begindate + "' and '" + enddate + "')");
@@ -144,7 +144,7 @@ public class DB2SqlGen extends AbstractSqlGen implements BaseSqlGen{
 		if (nOrderPos == -1) nOrderPos = str.length();
 		StringBuilder pagingSelect = new StringBuilder();
 		pagingSelect.append("select * from ( select row.*,rownumber() over() as rownum");
-		pagingSelect.append(" from ( ").append(str.substring(0,nOrderPos));
+		pagingSelect.append(" from ( ").append(str, 0, nOrderPos);
 		pagingSelect.append(" )row) row_ where rownum = 1").append(" with ur");
 		return pagingSelect.toString();
 	}

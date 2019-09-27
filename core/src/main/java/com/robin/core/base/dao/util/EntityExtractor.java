@@ -36,7 +36,7 @@ public class EntityExtractor implements
             typeName[k] = rsmd.getColumnTypeName(k + 1);
             String fullclassName = rsmd.getColumnClassName(k + 1);
             int pos = fullclassName.lastIndexOf(".");
-            className[k] = fullclassName.substring(pos + 1, fullclassName.length()).toUpperCase();
+            className[k] = fullclassName.substring(pos + 1).toUpperCase();
         }
         try {
             Field[] fields = targetclazz.getDeclaredFields();

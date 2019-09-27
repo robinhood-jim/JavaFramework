@@ -16,7 +16,7 @@ public abstract class BaseDataBaseImportor {
 	public static String getSplit(String split){
 		String retsplit="";
 		if(split.startsWith("0x")){
-			char splitbyte=(char) Integer.parseInt(split.substring(2,split.length()));
+			char splitbyte=(char) Integer.parseInt(split.substring(2));
 			char[] chars={splitbyte};
 			retsplit=new String(chars);
 		}else{

@@ -48,12 +48,12 @@ import com.robin.core.query.util.PageQuery;
 @ContextConfiguration(locations = "classpath:applicationContext-test.xml")
 public class JdbcDaoTest extends TestCase {
     @Override
-    protected void setUp() throws Exception {
+    protected void setUp() {
 
     }
 
     @Override
-    protected void tearDown() throws Exception {
+    protected void tearDown() {
     }
 
     @Test
@@ -79,6 +79,9 @@ public class JdbcDaoTest extends TestCase {
         model.setCsId(1);
         Long id = service.saveEntity(model);
         assertNotNull(id);
+        model.setName("ressds");
+        model.setCsId(2);
+        service.updateEntity(model);
     }
 
     @Test

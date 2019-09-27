@@ -113,7 +113,7 @@ public class SimpleFtp {
 		}
 		return retStr;
 	}
-	public List<FileInfo> listFileDetail(String path,String interfaceName) throws IOException{
+	public List<FileInfo> listFileDetail(String path,String interfaceName) {
 		List<FileInfo> retStr=new ArrayList<FileInfo>();
 		try{
 		
@@ -248,7 +248,7 @@ public class SimpleFtp {
 		for (int i = 0; i < remotelist.size(); i++) {
 			String remotefile=remotelist.get(i);
 			int pos=remotefile.lastIndexOf("/");
-			String fileName=remotefile.substring(pos,remotefile.length());
+			String fileName=remotefile.substring(pos);
 			ret=downloadFile(remotefile, local+fileName,retrys);
 		}
 		return ret;
@@ -269,7 +269,7 @@ public class SimpleFtp {
 				try{
 					retflag=doUpload(localfile, remoteDir, remote);
 					if(!retflag)
-					Thread.currentThread().sleep(waitForReconnect);
+					Thread.sleep(waitForReconnect);
 				}catch(InterruptedException ex){
 					log.error("",ex);
 					retrynum++;

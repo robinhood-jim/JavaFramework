@@ -287,7 +287,7 @@ public abstract class BaseController
         Iterator<String> iter = request.getParameterMap().keySet().iterator();
         while (iter.hasNext())
         {
-            String key = (String)iter.next();
+            String key = iter.next();
             map.put(key, request.getParameter(key));
         }
         return map;
@@ -304,7 +304,7 @@ public abstract class BaseController
         {
             String key = iter.next();
             if (key.startsWith("query.")) {
-                tmpmap.put(key.substring(6, key.length()), request.getParameter(key));
+                tmpmap.put(key.substring(6), request.getParameter(key));
             }
         }
         try

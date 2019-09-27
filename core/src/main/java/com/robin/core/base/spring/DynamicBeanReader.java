@@ -17,6 +17,6 @@ package com.robin.core.base.spring;
 
 
 public interface DynamicBeanReader {
-	public void loadBean(DynamicBean bean);
+	void loadBean(DynamicBean bean);
 
 }

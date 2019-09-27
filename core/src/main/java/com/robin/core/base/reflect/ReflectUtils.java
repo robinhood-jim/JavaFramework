@@ -30,7 +30,7 @@ public class ReflectUtils {
 			for (int i = 0; i < method.length; i++) {
 				String name=method[i].getName();
 				if(name.startsWith("set")){
-					name=StringUtils.initailCharToLowCase(name.substring(3,name.length()));
+					name=StringUtils.initailCharToLowCase(name.substring(3));
 					methodMap.put(name, method[i]);
 				}
 			}

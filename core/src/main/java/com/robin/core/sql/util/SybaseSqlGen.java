@@ -32,7 +32,7 @@ public class SybaseSqlGen extends AbstractSqlGen implements BaseSqlGen{
 		int nOrderPos = str.lastIndexOf(" order by ");
 		if (nOrderPos == -1) nOrderPos = str.length();
 		StringBuffer strBuf = new StringBuffer();
-		strBuf.append("select count(*) as total ").append(strSQL.substring(nFromPos, nOrderPos));
+		strBuf.append("select count(*) as total ").append(strSQL, nFromPos, nOrderPos);
 		return strBuf.toString();
 	}
 

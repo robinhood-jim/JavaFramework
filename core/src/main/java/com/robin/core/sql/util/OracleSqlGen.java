@@ -35,7 +35,7 @@ public class OracleSqlGen extends AbstractSqlGen implements BaseSqlGen {
 		int nOrderPos = str.lastIndexOf(" order by ");
 		if (nOrderPos == -1) nOrderPos = str.length();
 		StringBuffer strBuf = new StringBuffer();
-		strBuf.append("select count(*) as total ").append(str.substring(nFromPos, nOrderPos));
+		strBuf.append("select count(*) as total ").append(str, nFromPos, nOrderPos);
 		return strBuf.toString();
 	}
 
@@ -66,7 +66,7 @@ public class OracleSqlGen extends AbstractSqlGen implements BaseSqlGen {
 	}
 
 	protected String toSQLForString(QueryParam param) {
-		StringBuffer sql = new StringBuffer("");
+		StringBuffer sql = new StringBuffer();
 		String nQueryModel = param.getQueryMode();
 		if (param.getQueryValue() == null || "".equals(param.getQueryValue().trim())) return "";
 		String key = param.getColumnName();
@@ -88,7 +88,7 @@ public class OracleSqlGen extends AbstractSqlGen implements BaseSqlGen {
 	}
 
 	protected String toSQLForDate(QueryParam param) {
-		StringBuffer sql = new StringBuffer("");
+		StringBuffer sql = new StringBuffer();
 		String nQueryModel = param.getQueryMode();
 		if (param.getQueryValue() == null || "".equals(param.getQueryValue().trim())) return "";
 		String key = param.getColumnName();
@@ -99,7 +99,7 @@ public class OracleSqlGen extends AbstractSqlGen implements BaseSqlGen {
 		else if (nQueryModel.equals(QueryParam.QUERYMODE_LTANDEQUAL)) sql.append(key + "<=" + "to_date('" + value + "','YYYY-MM-DD')");
 		else if (nQueryModel.equals(QueryParam.QUERYMODE_BETWEEN) && !"".equals(value) && !";".equals(value)) {
 			String begindate = value.substring(0, value.indexOf(";"));
-			String enddate = value.substring(value.indexOf(";") + 1, value.length());
+			String enddate = value.substring(value.indexOf(";") + 1);
 			if(!"".equals(begindate)){
 				if(!"".equals(enddate))
 					sql.append("(" + key + " between to_date('" + begindate + "','YYYY-MM-DD') and to_date('" + enddate + "','YYYY-MM-DD'))");

@@ -40,7 +40,7 @@ public abstract class AbstractResourceAccessUtil {
 	
 	public static String getFileSuffix(String path){
 		int pos=path.lastIndexOf(".");
-		String suffix=path.substring(pos+1,path.length());
+		String suffix=path.substring(pos+1);
 		if(suffix.contains(File.separator)){
 			suffix="";
 		}
