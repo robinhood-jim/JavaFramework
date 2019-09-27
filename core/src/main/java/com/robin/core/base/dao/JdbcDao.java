@@ -555,6 +555,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
 
     /**
      * now only support Single primary key
+     *
      * @param clazz
      * @param value
      * @return
@@ -717,7 +718,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
         } else if (oper.equals(BaseObject.OPER_IN)) {
             namedstr = columncfg.getFieldName() + "val";
             queryBuffer.append(columncfg.getFieldName() + " in (:" + columncfg.getFieldName() + "val)");
-        }else if(oper.equals(BaseObject.OPER_LEFT_LK) || oper.equals(BaseObject.OPER_RIGHT_LK)){
+        } else if (oper.equals(BaseObject.OPER_LEFT_LK) || oper.equals(BaseObject.OPER_RIGHT_LK)) {
             queryBuffer.append(columncfg.getFieldName() + " like ?");
         }
         return namedstr;

@@ -53,7 +53,7 @@ public abstract class BaseDataBaseMeta implements DataBaseInterface, Serializabl
 		return list;
 	}
 	public String getUrl(){
-		Map<String,String> paramMap=new HashMap<>();
+
 		return param.getUrlByMeta(this);
 	}
 	protected void processParam(Map<String,String> map) throws Exception{

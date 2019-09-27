@@ -22,6 +22,7 @@ import com.robin.core.query.util.PageQuery;
 import com.robin.core.query.util.QueryParam;
 import com.robin.core.query.util.QueryString;
 import com.robin.core.sql.util.BaseSqlGen;
+import org.apache.commons.dbutils.DbUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
@@ -64,6 +65,10 @@ public class CommJdbcUtil {
                     }
                 } catch (Exception e) {
                     throw new SQLException(e.getMessage());
+                }finally {
+                    if(ps!=null){
+                        DbUtils.closeQuietly(ps);
+                    }
                 }
                 return ps;
             }

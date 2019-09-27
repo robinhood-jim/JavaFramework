@@ -96,7 +96,6 @@ public class LoginService {
         return retMap;
     }
     public Session ssoGetUser(String userName){
-        Map<String,Object> retMap=new HashMap<>();
         SysUser user = new SysUser();
         user.setUserAccount(userName);
         user.setUserStatus(Const.VALID);
@@ -107,7 +106,6 @@ public class LoginService {
         return returnSession(users.get(0));
     }
     public Session ssoGetUserById(Long userId){
-        Map<String,Object> retMap=new HashMap<>();
         SysUser user = sysUserService.getEntity(userId);
         if (user==null) {
             throw new ServiceException("AccountName or password incorrect or Account is locked!Please retry");

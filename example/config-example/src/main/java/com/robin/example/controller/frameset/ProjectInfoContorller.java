@@ -256,7 +256,7 @@ public class ProjectInfoContorller extends BaseCrudDhtmlxController<ProjectInfo,
     @RequestMapping("/genconfig/{id}")
     @ResponseBody
     public Map<String, Object> genConfig(HttpServletRequest request, HttpServletResponse response, @PathVariable Long id) {
-        Map<String, Object> retmap = new HashMap<String, Object>();
+
         try {
             ProjectInfo info = this.service.getEntity(Long.valueOf(id));
             String projType = info.getProjType().toString();

@@ -368,7 +368,7 @@ public class ConvertUtil {
     public static Object wrapObjectByAutoDetect(Object object, String dateFormatStr) {
         Object retObj = null;
         if (object != null) {
-            SimpleDateFormat dateFormat = new SimpleDateFormat(dateFormatStr == null && !dateFormatStr.isEmpty() ? dateFormatStr : "yyyy-MM-dd");
+            SimpleDateFormat dateFormat = new SimpleDateFormat(dateFormatStr != null && !dateFormatStr.isEmpty() ? dateFormatStr : "yyyy-MM-dd");
             Class clazz = object.getClass();
             if (object.getClass().isPrimitive()) {
                 if (clazz.equals(String.class)) {

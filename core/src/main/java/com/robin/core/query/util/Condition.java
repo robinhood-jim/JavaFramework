@@ -15,6 +15,8 @@
  */
 package com.robin.core.query.util;
 
+import com.robin.core.base.exception.ConfigurationIncorrectException;
+
 public class Condition implements ICondition{
 	
 	public static final String BETWEEN = "BETWEEN";
@@ -64,7 +66,7 @@ public class Condition implements ICondition{
 		StringBuffer sbSQLStr = new StringBuffer();
 		if (BETWEEN == state){
 			if (values.length < 2){
-				throw new RuntimeException("between must has least two value");
+				throw new ConfigurationIncorrectException("between must has least two value");
 			}
 			sbSQLStr.append(" (");
 			sbSQLStr.append(tablename);
@@ -136,7 +138,7 @@ public class Condition implements ICondition{
 		} else 
 		if (IN == state){
 			if (values.length < 1 || values[0] == null){
-				throw new RuntimeException("In must have at least one Value");
+				throw new ConfigurationIncorrectException("In must have at least one Value");
 			}
 			sbSQLStr.append(" (");
 			sbSQLStr.append(tablename);
@@ -152,8 +154,8 @@ public class Condition implements ICondition{
 			sbSQLStr.append(")) ");
 		} else 
 		if (OR == state){
-			if (values.length < 2 || values[0] == null || values[0] == null){
-				//throw new Exception("������ʾ:��ѯ��������Ϊ�գ�(in "+values+")");
+			if (values.length < 2 || values[0] == null || values[1] == null){
+				throw new ConfigurationIncorrectException(" or must at least two parameter ");
 			}
 			sbSQLStr.append(" (");
 			sbSQLStr.append(((Condition)values[0]).toSQLString(tablename));
@@ -163,7 +165,7 @@ public class Condition implements ICondition{
 		} else 
 		if (NOT == state){
 			if (value == null){
-				//throw new Exception("������ʾ:��ѯ��������Ϊ�գ�(in "+values+")");
+				//throw new Exception(" (in "+values+")");
 			}
 			sbSQLStr.append(" (not (");
 			sbSQLStr.append(((Condition)value).toSQLString(tablename));
@@ -175,7 +177,7 @@ public class Condition implements ICondition{
 		StringBuffer sbSQLStr = new StringBuffer();
 		if (BETWEEN == state){
 			if (values.length < 2){
-				//throw new Exception("������ʾ:��ѯ��������Ϊ�գ�(between "+values+")");
+				throw new ConfigurationIncorrectException(" between do not contain two parameter");
 			}
 			sbSQLStr.append(" (");
 			sbSQLStr.append(name);
@@ -227,7 +229,7 @@ public class Condition implements ICondition{
 		} else 
 		if (IN == state){
 			if (values.length < 1 || values[0] == null){
-				//throw new Exception("������ʾ:��ѯ��������Ϊ�գ�(in "+values+")");
+				throw new ConfigurationIncorrectException("in with less than two parameter");
 			}
 			sbSQLStr.append(" (");
 			sbSQLStr.append(name);
@@ -241,8 +243,8 @@ public class Condition implements ICondition{
 			sbSQLStr.append(")) ");
 		} else 
 		if (OR == state){
-			if (values.length < 2 || values[0] == null || values[0] == null){
-				//throw new Exception("������ʾ:��ѯ��������Ϊ�գ�(in "+values+")");
+			if (values.length < 2 || values[0] == null || values[1] == null){
+				throw new ConfigurationIncorrectException("(in "+values+")");
 			}
 			sbSQLStr.append(" (");
 			sbSQLStr.append(((Condition)values[0]).toSQLPart());
@@ -252,7 +254,7 @@ public class Condition implements ICondition{
 		} else 
 		if (NOT == state){
 			if (value == null){
-				//throw new Exception("������ʾ:��ѯ��������Ϊ�գ�(in "+values+")");
+				//throw new Exception("(in "+values+")");
 			}
 			sbSQLStr.append(" (not (");
 			sbSQLStr.append(((Condition)value).toSQLPart());

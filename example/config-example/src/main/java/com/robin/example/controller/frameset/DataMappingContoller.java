@@ -136,7 +136,7 @@ public class DataMappingContoller extends BaseCrudDhtmlxController<ProjectInfo,L
 		String table=request.getParameter("table");
 		DataBaseUtil util=null;
 		List<Map<String,String>> list=new ArrayList<Map<String,String>>();
-		Map<String,Object> retmap=new HashMap<String, Object>();
+		Map<String,Object> retmap;
 		try{
 			ProjectInfo info=projectInfoService.getEntity(Long.valueOf(projId));
 			DataSource source=dataSourceService.getEntity(info.getDataSourceId());

@@ -29,7 +29,7 @@ import java.util.StringTokenizer;
 @Slf4j
 public abstract class AbstractSqlGen implements BaseSqlGen {
     public static final String illegal_SchemaChars = "!@#$%^&*()+.";
-    protected static String SELECT = "select ";
+    protected static final String SELECT = "select ";
 
     /**
      * @param str
@@ -189,11 +189,11 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
         int nOrderPos = sql.lastIndexOf("order by");
         if (nOrderPos == -1)
             nOrderPos = sql.indexOf("ORDER BY");
-        int nGroupByPos = sql.lastIndexOf("group by");
+        /*int nGroupByPos = sql.lastIndexOf("group by");
         if (nGroupByPos == -1)
-            nGroupByPos = sql.lastIndexOf("GROUP BY");
-
-        if (nOrderPos == -1) nOrderPos = sql.length();
+            nGroupByPos = sql.lastIndexOf("GROUP BY");*/
+        if (nOrderPos == -1)
+            nOrderPos = sql.length();
         StringBuffer strBuf = new StringBuffer();
         strBuf.append("select count(1) as total from (").append(sql, 0, nOrderPos).append(") a ");
         return strBuf.toString();

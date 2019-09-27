@@ -88,7 +88,7 @@ public class EncryptWebClassLoader extends URLClassLoader {
 			Map<String,Package> packageMap=(Map<String,Package>)packfield.get(this.getParent());
 			Iterator<Class> iter=pclasses.iterator();
 			curclasses=(Vector<Class>) f.get(this);
-			Map<String,Package> curpackageMap=(Map<String,Package>)packfield.get(this);
+
 			//remove core classes by src folder
 			synchronized (loader.getParent()) {
 				while(iter.hasNext()){

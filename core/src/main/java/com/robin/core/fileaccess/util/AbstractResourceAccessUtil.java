@@ -15,19 +15,11 @@
  */
 package com.robin.core.fileaccess.util;
 
-import com.robin.core.base.util.Const;
 import com.robin.core.compress.util.CompressDecoder;
 import com.robin.core.compress.util.CompressEncoder;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
-import net.jpountz.lz4.*;
-import org.anarres.lzo.*;
-import org.apache.commons.compress.compressors.bzip2.BZip2CompressorOutputStream;
-import org.tukaani.xz.LZMA2Options;
-import org.tukaani.xz.LZMAOutputStream;
-import org.xerial.snappy.SnappyOutputStream;
 
 import java.io.*;
-import java.util.zip.*;
 
 public abstract class AbstractResourceAccessUtil {
 	public static String[] retrieveResource(String path){

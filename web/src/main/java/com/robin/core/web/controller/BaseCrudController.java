@@ -218,8 +218,9 @@ public abstract class BaseCrudController<O extends BaseObject, P extends Seriali
         }
         if (list.isEmpty()) {
             return null;
-        } else
+        } else {
             return (P[]) list.toArray();
+        }
     }
 
 }
