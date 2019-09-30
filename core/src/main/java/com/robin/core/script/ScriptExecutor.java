@@ -13,46 +13,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.robin.comm.script;
+package com.robin.core.script;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.TimeUnit;
 
 import javax.script.Bindings;
 import javax.script.CompiledScript;
 import javax.script.ScriptEngineFactory;
 import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
 
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
+import org.springframework.beans.factory.InitializingBean;
 
-public class ScriptExecutorDecorate {
+public class ScriptExecutor implements InitializingBean {
 	private ConcurrentMap<String, BaseScriptExecutor> scriptExecutorMap=new ConcurrentHashMap<String, BaseScriptExecutor>();
 	private List<String> scriptNameList;
-	public static ScriptExecutorDecorate util=null;
-	private ScriptExecutorDecorate(){
+
+	@Override
+	public void afterPropertiesSet() {
 		scriptNameList=getAllScriptEngineNames();
 		for (String name:scriptNameList) {
 			scriptExecutorMap.put(name, new BaseScriptExecutor(name));
 		}
 	}
-	public static ScriptExecutorDecorate getInstance(){
-		if(util==null){
-			synchronized (ScriptExecutorDecorate.class) {
-				util=new ScriptExecutorDecorate();
-			}
-		}
-		return util;
-	}
-	public static List<String> getAllScriptEngineNames() {
+
+
+	public List<String> getAllScriptEngineNames() {
         List<String> scriptEngineNames = new ArrayList<String>();
         ScriptEngineManager factory = new ScriptEngineManager();
         for (ScriptEngineFactory fac : factory.getEngineFactories()) {

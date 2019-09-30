@@ -66,10 +66,11 @@
         <comm-codec.version>1.4</comm-codec.version>
         <vfs.version>2.0</vfs.version>
         <lang.version>2.6</lang.version>
+        <lang3.version>3.2.1</lang3.version>
         <httpclient.version>3.1</httpclient.version>
         <jackson-mapper-asl.version>1.9.10</jackson-mapper-asl.version>
         <jackson-core-asl.version>1.9.10</jackson-core-asl.version>
-        <dom4j.version>1.6</dom4j.version>
+        <dom4j.version>2.1.1</dom4j.version>
         <jaxen.version>1.1.6</jaxen.version>
         <hadoop.version>2.5.0</hadoop.version>
         <hadoop-core.version>2.5.0</hadoop-core.version>
@@ -127,6 +128,11 @@
                 <groupId>commons-lang</groupId>
                 <artifactId>commons-lang</artifactId>
                 <version>${lang.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-lang3</artifactId>
+                <version>${lang3.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.commons</groupId>
@@ -572,7 +578,7 @@
                 <version>2.2.0-cp2</version>
             </dependency>
             <dependency>
-                <groupId>dom4j</groupId>
+                <groupId>org.dom4j</groupId>
                 <artifactId>dom4j</artifactId>
                 <version>${dom4j.version}</version>
             </dependency>

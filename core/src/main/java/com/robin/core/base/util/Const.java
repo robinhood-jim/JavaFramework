@@ -191,6 +191,33 @@ public class Const {
 			return value;
 		}
 	}
+	public enum META_TYPE{
+		METATYPE_CHAR(META_TYPE_STRING,"CHAR"),
+		METATYPE_VARCHAR(META_TYPE_STRING,"VARCHAR"),
+		METATYPE_BIGINT(META_TYPE_BIGINT,"BIGINT"),
+		METATYPE_DOUBLE(META_TYPE_DOUBLE,"DOUBLE"),
+		METATYPE_NUMERIC(META_TYPE_DOUBLE,"NUMERIC"),
+		METATYPE_TIMESTAMP(META_TYPE_TIMESTAMP,"TIMESTMAP"),
+		METATYPE_INT(META_TYPE_INTEGER,"INT");
+
+		private String name;
+		private String id;
+		META_TYPE(String id,String name){
+			this.id=id;
+			this.name=name;
+		}
+
+		@Override
+		public String toString() {
+			return name;
+		}
+		public String getName(){
+			return name;
+		}
+		public String getValue(){
+			return id;
+		}
+	}
 
 	public final static List<String> ESCAPE_CHARACTERS = new ArrayList<String>(
 			Arrays.asList("$", "(", ")", "*", "+", ".", "[",

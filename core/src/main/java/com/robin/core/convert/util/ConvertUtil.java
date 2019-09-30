@@ -20,8 +20,9 @@ import com.google.common.cache.CacheBuilder;
 import com.robin.core.base.model.BaseObject;
 import com.robin.core.base.util.Const;
 import com.robin.core.fileaccess.meta.DataSetColumnMeta;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.math.NumberUtils;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,7 +56,7 @@ public class ConvertUtil {
             }
         }
     }
-    private static Map<String,Method> returnGetMethold(Class clazz){
+    public static Map<String,Method> returnGetMethold(Class clazz){
         if(cachedGetMethod.getIfPresent(clazz.getCanonicalName())==null){
             Map<String,Method> map=new HashMap<>();
             Method[] methods=clazz.getMethods();
@@ -71,7 +72,7 @@ public class ConvertUtil {
         return cachedGetMethod.getIfPresent(clazz.getCanonicalName());
     }
 
-    private static Map<String,Method> returnSetMethold(Class clazz){
+    public static Map<String,Method> returnSetMethold(Class clazz){
         if(cachedSetMethod.getIfPresent(clazz.getCanonicalName())==null){
             Method[] methods=clazz.getMethods();
             Map<String,Method> map=new HashMap<>();

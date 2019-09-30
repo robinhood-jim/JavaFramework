@@ -44,7 +44,7 @@ public class PageQuery implements Serializable {
 	protected String							orderDirection;	
 
 	protected Map<String, String>			parameters=new HashMap<String, String>();
-	protected Map<String,Object>         nameParameters=new HashMap<String, Object>();
+	protected Map<String,Object> namedParameters =new HashMap<String, Object>();
 	protected Object[] 	parameterArr;
 	private Map<String, String>			columnTypes;
 
@@ -203,15 +203,15 @@ public class PageQuery implements Serializable {
 		return parameterArr;
 	}
 
-	public Map<String, Object> getNameParameters() {
-		return nameParameters;
+	public Map<String, Object> getNamedParameters() {
+		return namedParameters;
 	}
 	public void setNameParameterWithKey(String key,Object value){
-		nameParameters.put(key,value);
+		namedParameters.put(key,value);
 	}
 
-	public void setNameParameters(Map<String, Object> nameParameters) {
-		this.nameParameters = nameParameters;
+	public void setNamedParameters(Map<String, Object> namedParameters) {
+		this.namedParameters = namedParameters;
 	}
 
 	public void setParameterArr(Object[] parameterArr) {

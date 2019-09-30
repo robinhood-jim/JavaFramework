@@ -15,6 +15,8 @@
  */
 package com.robin.core.base.util;
 
+import org.apache.commons.lang3.text.StrBuilder;
+
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.security.MessageDigest;
@@ -23,7 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import org.apache.commons.lang.text.StrBuilder;
+
 
 import javax.xml.bind.DatatypeConverter;
 

@@ -23,13 +23,12 @@ import org.dom4j.io.SAXReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
 import java.io.File;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 
@@ -44,51 +43,10 @@ public class QueryFactory implements InitializingBean {
 
     public void init() {
         try {
-            String xmlpath = xmlConfigPath;
-
-            String classesPath = null;
-            PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
-            //default config at queryConfig in classpath
-            if (xmlpath == null || "".equals(xmlpath)) {
-                classesPath = "queryConfig";
-            } else {
-                if (xmlpath.startsWith("classpath:")) {
-                    String relativePath = xmlpath.substring(10);
-                    classesPath = relativePath;
-                } else if (xmlpath.startsWith("jarpath:")) {
-                    //read config at relative folder where jar present
-                    String relativePath = xmlpath.substring(8);
-                    String jarRelativePath = this.getClass().getClassLoader().getResource("").toURI().toString();
-                    int pos = jarRelativePath.indexOf("file:/");
-                    String path = jarRelativePath.substring(pos + 6);
-                    pos = path.indexOf("jar!/");
-                    if (pos != -1) {
-                        path = path.substring(0, pos);
-                        pos = path.lastIndexOf("/");
-                        path = path.substring(0, pos);
-                        xmlpath = path + "/" + relativePath;
-                    }
-                }
+            List<InputStream> configStreams=ConfigResourceScanner.doScan(xmlConfigPath);
+            for(InputStream stream:configStreams){
+                parseXML(stream);
             }
-            log.info("parse config queryMap file from path={}", classesPath == null ? xmlpath : "classpath:" + classesPath);
-            if (classesPath != null) {
-                Resource[] configFiles = resolver.getResources("classpath:" + classesPath + "/*.xml");
-                for (Resource configFile : configFiles) {
-                    parseXML(configFile.getInputStream());
-                }
-            } else {
-                File file = new File(xmlpath);
-                if (!file.isDirectory()) {
-                    throw new MissingConfigExecption("no query XML found in path!");
-                }
-                File[] files = file.listFiles();
-                for (int i = 0; i < files.length; i++) {
-                    File subfile = files[i];
-                    if (subfile.getName().toLowerCase().endsWith("xml"))
-                        parseXML(subfile);
-                }
-            }
-
         } catch (Exception e) {
             log.error("", e);
             e.printStackTrace();
@@ -130,6 +88,9 @@ public class QueryFactory implements InitializingBean {
             String field = element.elementText("FIELD");
             String countSql = element.elementText("COUNTSQL");
             String fromSql = decodeSql(element.elementText("FROMSQL"));
+            if(element.element("WHERE")!=null){
+
+            }
 
             QueryString qs = new QueryString();
             qs.setSql(sql);

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.robin.comm.script;
+package com.robin.core.script;
 
 import java.util.Map;
 

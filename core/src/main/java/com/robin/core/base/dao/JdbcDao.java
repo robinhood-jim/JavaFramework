@@ -135,7 +135,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
             if (queryString1 == null)
                 throw new DAOException("query ID not found in config file!");
 
-            if ((pageQuery.getParameterArr() != null && pageQuery.getParameterArr().length > 0) || !pageQuery.getNameParameters().isEmpty()) {
+            if ((pageQuery.getParameterArr() != null && pageQuery.getParameterArr().length > 0) || !pageQuery.getNamedParameters().isEmpty()) {
                 return CommJdbcUtil.executeByPreparedParamter(this.getJdbcTemplate(), sqlGen, queryString1, pageQuery);
             } else {
                 throw new DAOException("execute must with nameParameter or prepareStatements!");
@@ -154,7 +154,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
         String querySQL = sqlGen.generateSqlBySelectId(qs, pageQuery);
         if (logger.isDebugEnabled())
             logger.debug((new StringBuilder().append("querySQL: ").append(querySQL).toString()));
-        if ((pageQuery.getParameterArr() != null && pageQuery.getParameterArr().length > 0) || !pageQuery.getNameParameters().isEmpty()) {
+        if ((pageQuery.getParameterArr() != null && pageQuery.getParameterArr().length > 0) || !pageQuery.getNamedParameters().isEmpty()) {
             CommJdbcUtil.queryByPreparedParamter(this.getJdbcTemplate(), lobHandler, sqlGen, qs, pageQuery);
         } else {
             CommJdbcUtil.queryByReplaceParamter(this.getJdbcTemplate(), lobHandler, sqlGen, qs, pageQuery);

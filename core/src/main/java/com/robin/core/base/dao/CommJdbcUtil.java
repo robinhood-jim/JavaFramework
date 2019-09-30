@@ -16,7 +16,6 @@
 package com.robin.core.base.dao;
 
 import com.robin.core.base.exception.DAOException;
-import com.robin.core.base.spring.SpringContextHolder;
 import com.robin.core.base.util.Const;
 import com.robin.core.query.util.PageQuery;
 import com.robin.core.query.util.QueryParam;
@@ -84,13 +83,13 @@ public class CommJdbcUtil {
     @SuppressWarnings({"rawtypes", "unchecked"})
     private static List getResultItemsByPreparedSimple(JdbcTemplate jdbcTemplate,LobHandler lobHandler, final BaseSqlGen sqlGen, final QueryString qs, final PageQuery pageQuery, final String pageSQL) {
         final String[] fields = sqlGen.getResultColName(qs);
-        if (pageQuery.getNameParameters().isEmpty()) {
+        if (pageQuery.getNamedParameters().isEmpty()) {
             //Preparedstatment
             return (List) jdbcTemplate.query(pageSQL, pageQuery.getParameterArr(), getDefaultExtract(fields,lobHandler));
         } else {
             //NamedParameter
             NamedParameterJdbcTemplate template = new NamedParameterJdbcTemplate(jdbcTemplate);
-            return (List) template.query(pageSQL, pageQuery.getNameParameters(), getDefaultExtract(fields,lobHandler));
+            return (List) template.query(pageSQL, pageQuery.getNamedParameters(), getDefaultExtract(fields,lobHandler));
         }
     }
 
@@ -493,11 +492,11 @@ public class CommJdbcUtil {
             String executeSQL = sqlGen.generateSqlBySelectId(qs, pageQuery);
             if (logger.isInfoEnabled())
                 logger.info((new StringBuilder()).append("executeSQL: ").append(executeSQL).toString());
-            if (pageQuery.getNameParameters().isEmpty()) {
+            if (pageQuery.getNamedParameters().isEmpty()) {
                 return jdbcTemplate.update(executeSQL, pageQuery.getParameterArr());
             } else {
                 NamedParameterJdbcTemplate template = new NamedParameterJdbcTemplate(jdbcTemplate);
-                return template.update(executeSQL, pageQuery.getNameParameters());
+                return template.update(executeSQL, pageQuery.getNamedParameters());
             }
         } catch (Exception e) {
             throw new DAOException(e);
