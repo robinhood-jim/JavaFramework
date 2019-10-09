@@ -5,6 +5,8 @@ import com.robin.core.base.annotation.MappingField;
 import com.robin.core.base.model.BaseObject;
 import lombok.Data;
 
+import java.sql.Timestamp;
+
 @MappingEntity(table="t_test")
 @Data
 public class TestModel extends BaseObject{
@@ -16,6 +18,8 @@ public class TestModel extends BaseObject{
 	private String description;
 	@MappingField(field="cs_id")
 	private Integer csId;
+	@MappingField(field = "createTime")
+	private Timestamp createTime;
 
 	
 }

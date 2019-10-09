@@ -48,7 +48,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
+@SuppressWarnings({"deprecated","unchecked"})
 public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> extends HibernateDaoSupport implements BaseGenricDao<T,ID> {
 	private JdbcTemplate jdbcTemplate;
 	private final Logger				logger	= LoggerFactory.getLogger(this.getClass());

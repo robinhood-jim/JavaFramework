@@ -166,10 +166,7 @@
             <groupId>org.xhtmlrenderer</groupId>
             <artifactId>core-renderer</artifactId>
         </dependency>
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-        </dependency>
+
         <dependency>
             <groupId>com.jcraft</groupId>
             <artifactId>jsch</artifactId>

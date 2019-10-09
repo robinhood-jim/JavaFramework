@@ -95,7 +95,6 @@
         <guava.version>18.0</guava.version>
         <jsoup.version>1.6.3</jsoup.version>
         <freemarker.version>2.3.18</freemarker.version>
-        <vfs.version>2.0</vfs.version>
         <compress.version>1.18</compress.version>
         <helix.version>0.6.5</helix.version>
         <quartz.version>2.2.1</quartz.version>
@@ -186,11 +185,7 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-            <dependency>
-                <groupId>org.apache.commons</groupId>
-                <artifactId>commons-vfs2</artifactId>
-                <version>${vfs.version}</version>
-            </dependency>
+
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-compress</artifactId>
@@ -915,6 +910,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.0</version>
                     <configuration>
                         <source>${maven.compiler.source}</source>
                         <target>${maven.compiler.target}</target>
@@ -924,6 +920,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-jar-plugin</artifactId>
+                    <version>3.0.2</version>
                     <configuration>
                         <archive>
                             <manifest>

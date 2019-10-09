@@ -62,6 +62,10 @@
     </bean>
 	<bean id="springContextHolder" class="com.robin.core.base.spring.SpringContextHolder" lazy-init="false"></bean>
 	<bean id="dynamicBeanLoader" class="com.robin.core.base.spring.DynamicBeanReaderImpl" />
+    <bean id="scriptExecutor" class="com.robin.core.script.ScriptExecutor" />
+    <bean id="queryMapperConfig" class="com.robin.core.query.mapper.QueryConfigMapper" autowire="byName" />
+    <bean id="queryMapperDao" class="com.robin.core.base.dao.QueryMapperDao" autowire="byName" />
+    <bean id="queryMapperService" class="com.robin.core.base.service.QueryMapperService" autowire="byName" />
 	<context:component-scan base-package="com.robin"  />
 	
 </beans>

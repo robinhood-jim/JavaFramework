@@ -113,6 +113,16 @@ public class JdbcDaoTest extends TestCase {
         assertNotNull(fristPage);
         assertNotNull(secondPage);
     }
+    @Test
+    public void testPageQueryWithNamedParameter(){
+        JdbcDao jdbcDao = SpringContextHolder.getBean("jdbcDao", JdbcDao.class);
+        PageQuery query = new PageQuery();
+        query.setPageSize(0);
+        query.setSelectParamId("GET_TEST_NAMEPARAM");
+        query.setNameParameterWithKey("name","%O%");
+        jdbcDao.queryBySelectId(query);
+        assertNotNull(query.getRecordSet());
+    }
 
     @Test
     public void testInsertWithSecondaryDataSource() {
