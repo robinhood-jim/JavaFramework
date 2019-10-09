@@ -31,6 +31,7 @@ import com.robin.core.sql.util.FilterCondition;
 import com.robin.core.sql.util.OracleSqlGen;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.*;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -39,6 +40,7 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.jdbc.support.lob.LobHandler;
 
+import javax.sql.DataSource;
 import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -52,6 +54,14 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
     private QueryFactory queryFactory;
     private LobHandler lobHandler;
     private Logger logger = LoggerFactory.getLogger(this.getClass());
+    private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+    public JdbcDao(DataSource dataSource,LobHandler lobHandler,QueryFactory queryFactory,BaseSqlGen sqlGen){
+        setDataSource(dataSource);
+        this.lobHandler=lobHandler;
+        this.queryFactory=queryFactory;
+        this.sqlGen=sqlGen;
+        namedParameterJdbcTemplate=new NamedParameterJdbcTemplate(getJdbcTemplate());
+    }
 
     public PageQuery queryByPageQuery(String sqlstr, PageQuery pageQuery) throws DAOException {
         String querySQL = sqlstr;
@@ -60,14 +70,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
             if (logger.isDebugEnabled())
                 logger.debug((new StringBuilder()).append("querySQL: ").append(querySQL).toString());
             String sumSQL = sqlGen.generateCountSql(querySQL);
-            int total = this.getJdbcTemplate().queryForObject(sumSQL, new RowMapper<Integer>() {
-                @Override
-                public Integer mapRow(ResultSet rs, int paramInt)
-                        throws SQLException {
-                    rs.next();
-                    return rs.getInt(1);
-                }
-            });
+            int total = this.getJdbcTemplate().queryForObject(sumSQL,Integer.class);
             pageQuery.setRecordCount(total);
             if (pageQuery.getPageSize() > 0) {
                 String pageSQL = sqlGen.generatePageSql(querySQL, pageQuery);
@@ -155,12 +158,13 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
         if (logger.isDebugEnabled())
             logger.debug((new StringBuilder().append("querySQL: ").append(querySQL).toString()));
         if ((pageQuery.getParameterArr() != null && pageQuery.getParameterArr().length > 0) || !pageQuery.getNamedParameters().isEmpty()) {
-            CommJdbcUtil.queryByPreparedParamter(this.getJdbcTemplate(), lobHandler, sqlGen, qs, pageQuery);
+            CommJdbcUtil.queryByPreparedParamter(this.getJdbcTemplate(),getNamedJdbcTemplate(),lobHandler, sqlGen, qs, pageQuery);
         } else {
             CommJdbcUtil.queryByReplaceParamter(this.getJdbcTemplate(), lobHandler, sqlGen, qs, pageQuery);
         }
 
     }
+
 
     public List<Map<String, Object>> queryByPageSql(String sqlstr, PageQuery pageQuery) throws DAOException {
         String querySQL = sqlstr;
@@ -423,8 +427,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
 
     public void executeByNamedParam(String executeSql, Map<String, Object> parmaMap) throws DAOException {
         try {
-            NamedParameterJdbcTemplate nameTemplate = new NamedParameterJdbcTemplate(this.getDataSource());
-            nameTemplate.update(executeSql, parmaMap);
+            getNamedJdbcTemplate().update(executeSql, parmaMap);
         } catch (Exception ex) {
             throw new DAOException(ex);
         }
@@ -434,8 +437,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
         try {
             if (logger.isDebugEnabled())
                 logger.debug("query with NameParameter:=" + executeSql);
-            NamedParameterJdbcTemplate nameTemplate = new NamedParameterJdbcTemplate(this.getDataSource());
-            return nameTemplate.query(executeSql, parmaMap, new SplitPageResultSetExtractor(0, 0, lobHandler));
+            return getNamedJdbcTemplate().query(executeSql, parmaMap, new SplitPageResultSetExtractor(0, 0, lobHandler));
         } catch (Exception ex) {
             throw new DAOException(ex);
         }
@@ -578,14 +580,13 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
                     break;
                 }
             }
-            NamedParameterJdbcTemplate nameTemplate = new NamedParameterJdbcTemplate(this.getDataSource());
             List<Serializable> ids = Arrays.asList(value);
             Map<String, List<Serializable>> params = Collections.singletonMap("ids", ids);
             buffer.append(fieldBuffer);
             String deleteSql = buffer.toString();
             if (logger.isDebugEnabled())
                 logger.debug("delete sql=" + deleteSql);
-            return nameTemplate.update(deleteSql, params);
+            return getNamedJdbcTemplate().update(deleteSql, params);
         } catch (Exception ex) {
             if (logger.isDebugEnabled()) {
                 logger.debug("Encounter error", ex);
@@ -871,4 +872,11 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
             }
         }
     }
+    private NamedParameterJdbcTemplate getNamedJdbcTemplate(){
+        if(namedParameterJdbcTemplate==null){
+            namedParameterJdbcTemplate=new NamedParameterJdbcTemplate(getJdbcTemplate());
+        }
+        return namedParameterJdbcTemplate;
+    }
+
 }

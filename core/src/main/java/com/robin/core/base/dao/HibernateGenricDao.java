@@ -35,6 +35,7 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.support.lob.DefaultLobHandler;
 import org.springframework.orm.hibernate5.HibernateCallback;
 import org.springframework.orm.hibernate5.support.HibernateDaoSupport;
@@ -58,7 +59,7 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
 	private DefaultLobHandler	lobHandler;  //Lob Handler
 
 	private QueryFactory			queryFactory;  //config query Factory
-	
+	private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 	
 	public HibernateGenricDao() {
 		entityClass = GenericsUtils.getSuperClassGenricType(getClass());
@@ -836,7 +837,7 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
 	}
 	public void queryByParamter(QueryString qs, PageQuery pageQuery) throws DAOException {
 		if(pageQuery.getParameterArr()!=null && pageQuery.getParameterArr().length>0){
-			CommJdbcUtil.queryByPreparedParamter(jdbcTemplate,lobHandler,sqlGen,qs, pageQuery);
+			CommJdbcUtil.queryByPreparedParamter(jdbcTemplate,namedParameterJdbcTemplate,lobHandler,sqlGen,qs, pageQuery);
 		}
 		else {
 			CommJdbcUtil.queryByReplaceParamter(jdbcTemplate,lobHandler,sqlGen,qs, pageQuery);
@@ -1046,6 +1047,7 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
 
 	public void setJdbcTemplate(JdbcTemplate jdbcTemplate) {
 		this.jdbcTemplate = jdbcTemplate;
+		namedParameterJdbcTemplate=new NamedParameterJdbcTemplate(jdbcTemplate);
 	}
 	public void setSqlGen(BaseSqlGen sqlGen) {
 		this.sqlGen = sqlGen;

@@ -76,11 +76,11 @@ public class JdbcDaoTest extends TestCase {
         TestModel model = new TestModel();
         model.setName("OOOOOOOOOO");
         model.setDescription("FFFFFFFFFF");
-        model.setCsId(1);
+        model.setCsId(1L);
         Long id = service.saveEntity(model);
         assertNotNull(id);
         model.setName("ressds");
-        model.setCsId(2);
+        model.setCsId(2L);
         service.updateEntity(model);
     }
 

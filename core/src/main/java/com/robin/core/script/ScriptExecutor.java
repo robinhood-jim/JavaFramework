@@ -73,6 +73,9 @@ public class ScriptExecutor implements InitializingBean {
 	public CompiledScript returnScript(String scriptName,String key,String scripts) throws Exception{
 		return scriptExecutorMap.get(scriptName).returnScript(key, scripts);
 	}
+	public CompiledScript returnScriptNoCache(String scriptName,String scripts) throws Exception{
+		return scriptExecutorMap.get(scriptName).returnScript(scripts);
+	}
 	public Map<String, BaseScriptExecutor> getScriptExecutorMap() {
 		return scriptExecutorMap;
 	}

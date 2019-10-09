@@ -280,15 +280,6 @@ public class ConvertUtil {
             typeName = "byte";
         }
         Object ret = null;
-        if (type.isPrimitive()) {
-            if ("int" .equals(typeName)) type = Class.forName("java.lang.Integer");
-            else if ("long" .equals(typeName)) type = Class.forName("java.lang.Long");
-            else if ("float" .equals(typeName)) type = Class.forName("java.lang.Float");
-            else if ("double" .equals(typeName)) type = Class.forName("java.lang.Double");
-            else if ("boolean" .equals(typeName)) type = Class.forName("java.lang.Boolean");
-            else if ("char" .equals(typeName)) type = Class.forName("java.lang.Character");
-            else if ("byte" .equals(typeName)) type = Class.forName("java.lang.Byte");
-        }
         if (typeName.equals("int")) {
             ret = Integer.parseInt(strValue.toString());
         } else if (typeName.equals("long")) {

@@ -17,7 +17,7 @@ public class TestModel extends BaseObject{
 	@MappingField(field="code_desc",datatype="clob")
 	private String description;
 	@MappingField(field="cs_id")
-	private Integer csId;
+	private Long csId;
 	@MappingField(field = "createTime")
 	private Timestamp createTime;
 
