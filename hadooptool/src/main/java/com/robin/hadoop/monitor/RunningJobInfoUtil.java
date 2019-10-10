@@ -509,7 +509,7 @@ public class RunningJobInfoUtil extends AbstractJobInfoUtil {
 		return objList;
 	 }
 	 /*private Map<String, String> getJobConfig(String jobId){
-		 String confpath="http://"+ipAddress+":50070/logs/"+jobId+"_conf.xml";
+		 String confpath="http://"+hostName+":50070/logs/"+jobId+"_conf.xml";
 		 Map<String, String> map=new HashMap<String, String>();
 		 try{
 			 URL url=new URL(confpath);
@@ -534,7 +534,7 @@ public class RunningJobInfoUtil extends AbstractJobInfoUtil {
 		 return map;
 	 }
 	 public List<JobConfig> getJobConfiguration(String jobId){
-		 String confpath="http://"+ipAddress+":50070/logs/"+jobId+"_conf.xml";
+		 String confpath="http://"+hostName+":50070/logs/"+jobId+"_conf.xml";
 		 List<JobConfig> list=new ArrayList<JobConfig>();
 		 try{
 			 URL url=new URL(confpath);

@@ -37,6 +37,7 @@
         <module>web</module>
         <module>example</module>
         <module>metadata</module>
+        <module>webui</module>
     </modules>
     <!-- properties -->
     <properties>
@@ -57,7 +58,7 @@
         <fastjson.version>1.1.32</fastjson.version>
         <gson.version>2.8.5</gson.version>
         <jackson.version>1.4.3</jackson.version>
-        <pool.version>1.5.5</pool.version>
+        <pool.version>2.4.3</pool.version>
         <commons-dbcp.version>1.4</commons-dbcp.version>
         <commons-io.version>2.4</commons-io.version>
         <commons-net.version>1.4.1</commons-net.version>
@@ -65,10 +66,11 @@
         <comm-codec.version>1.4</comm-codec.version>
         <vfs.version>2.0</vfs.version>
         <lang.version>2.6</lang.version>
+        <lang3.version>3.2.1</lang3.version>
         <httpclient.version>3.1</httpclient.version>
         <jackson-mapper-asl.version>1.9.10</jackson-mapper-asl.version>
         <jackson-core-asl.version>1.9.10</jackson-core-asl.version>
-        <dom4j.version>1.6</dom4j.version>
+        <dom4j.version>2.1.1</dom4j.version>
         <jaxen.version>1.1.6</jaxen.version>
         <hadoop.version>2.5.0</hadoop.version>
         <hadoop-core.version>2.5.0</hadoop-core.version>
@@ -90,10 +92,9 @@
         <frm.version>1.0-SNAPSHOT</frm.version>
         <jsonlib.version>2.4</jsonlib.version>
         <itext.version>2.1.4</itext.version>
-        <guava.version>16.0</guava.version>
+        <guava.version>18.0</guava.version>
         <jsoup.version>1.6.3</jsoup.version>
         <freemarker.version>2.3.18</freemarker.version>
-        <vfs.version>2.0</vfs.version>
         <compress.version>1.18</compress.version>
         <helix.version>0.6.5</helix.version>
         <quartz.version>2.2.1</quartz.version>
@@ -128,10 +129,16 @@
                 <version>${lang.version}</version>
             </dependency>
             <dependency>
-                <groupId>commons-pool</groupId>
-                <artifactId>commons-pool</artifactId>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-lang3</artifactId>
+                <version>${lang3.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-pool2</artifactId>
                 <version>${pool.version}</version>
             </dependency>
+
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-vfs2</artifactId>
@@ -178,11 +185,7 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-            <dependency>
-                <groupId>org.apache.commons</groupId>
-                <artifactId>commons-vfs2</artifactId>
-                <version>${vfs.version}</version>
-            </dependency>
+
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-compress</artifactId>
@@ -389,12 +392,22 @@
                         <groupId>jdk.tools</groupId>
                         <artifactId>jdk.tools</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>io.netty</groupId>
+                        <artifactId>netty</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.apache.hadoop</groupId>
                 <artifactId>hadoop-mapreduce-client-common</artifactId>
                 <version>${hadoop.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>io.netty</groupId>
+                        <artifactId>netty</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.apache.hadoop</groupId>
@@ -424,6 +437,10 @@
                         <groupId>log4j</groupId>
                         <artifactId>log4j</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>io.netty</groupId>
+                        <artifactId>netty</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
             <dependency>
@@ -438,6 +455,10 @@
                     <exclusion>
                         <artifactId>curator-client</artifactId>
                         <groupId>org.apache.curator</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>netty-all</artifactId>
+                        <groupId>io.netty</groupId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -472,6 +493,12 @@
                 <groupId>org.apache.hbase</groupId>
                 <artifactId>hbase-client</artifactId>
                 <version>${hbase.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>io.netty</groupId>
+                        <artifactId>netty-all</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.apache.hbase</groupId>
@@ -488,12 +515,22 @@
                         <groupId>log4j</groupId>
                         <artifactId>log4j</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>io.netty</groupId>
+                        <artifactId>netty-all</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.apache.phoenix</groupId>
                 <artifactId>phoenix-core</artifactId>
                 <version>${phoenix.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>io.netty</groupId>
+                        <artifactId>netty-all</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.apache.hive</groupId>
@@ -531,7 +568,12 @@
 
             <!-- Other tool start -->
             <dependency>
-                <groupId>dom4j</groupId>
+                <groupId>org.apache.kafka</groupId>
+                <artifactId>kafka-clients</artifactId>
+                <version>2.2.0-cp2</version>
+            </dependency>
+            <dependency>
+                <groupId>org.dom4j</groupId>
                 <artifactId>dom4j</artifactId>
                 <version>${dom4j.version}</version>
             </dependency>
@@ -868,6 +910,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.0</version>
                     <configuration>
                         <source>${maven.compiler.source}</source>
                         <target>${maven.compiler.target}</target>
@@ -877,6 +920,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-jar-plugin</artifactId>
+                    <version>3.0.2</version>
                     <configuration>
                         <archive>
                             <manifest>

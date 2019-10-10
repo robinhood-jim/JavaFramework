@@ -18,7 +18,7 @@ import lombok.Data;
  */
 @Data
 public class TestPkObj extends BasePrimaryObject {
-    @MappingField(increment = "1")
+    @MappingField(increment = true)
     private Long id;
     @MappingField
     private String tname;

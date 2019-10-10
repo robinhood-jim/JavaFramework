@@ -1,5 +1,7 @@
 package com.robin.core.fileaccess.meta;
 
+import java.io.Serializable;
+
 /**
  * <p>Project:  frame</p>
  * <p>
@@ -12,12 +14,15 @@ package com.robin.core.fileaccess.meta;
  * @author robinjim
  * @version 1.0
  */
-public class DataSetColumnMeta{
+public class DataSetColumnMeta implements Serializable {
     private String columnName;
     private String columnType;
     private Object defaultNullValue;
     private String dateFormat;
     private boolean required;
+    private boolean algrithColumn;
+    private String algrithOper;
+
     public DataSetColumnMeta(String columnName,String columnType,Object defaultNullValue){
         this.columnName=columnName;
         this.columnType=columnType;
@@ -69,5 +74,33 @@ public class DataSetColumnMeta{
 
     public boolean isRequired() {
         return required;
+    }
+
+    public String getDateFormat() {
+        return dateFormat;
+    }
+
+    public void setDateFormat(String dateFormat) {
+        this.dateFormat = dateFormat;
+    }
+
+    public void setRequired(boolean required) {
+        this.required = required;
+    }
+
+    public boolean isAlgrithColumn() {
+        return algrithColumn;
+    }
+
+    public void setAlgrithColumn(boolean algrithColumn) {
+        this.algrithColumn = algrithColumn;
+    }
+
+    public String getAlgrithOper() {
+        return algrithOper;
+    }
+
+    public void setAlgrithOper(String algrithOper) {
+        this.algrithOper = algrithOper;
     }
 }

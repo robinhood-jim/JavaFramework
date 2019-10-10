@@ -15,11 +15,15 @@
  */
 package com.robin.core.query.util;
 
+import lombok.Data;
+
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Data
 public class PageQuery implements Serializable {
 	protected String								groupByString;
 
@@ -29,13 +33,13 @@ public class PageQuery implements Serializable {
 
 	protected String								whereString;
 
-	protected String							pageSize;			
+	protected Integer							pageSize;
 
-	protected String							pageNumber;		
+	protected Integer							pageNumber;
 
-	protected String							recordCount;		
+	protected Integer							recordCount;
 
-	protected String							pageCount;
+	protected Integer							pageCount;
 
 	protected String								selectParamId;
 
@@ -44,7 +48,7 @@ public class PageQuery implements Serializable {
 	protected String							orderDirection;	
 
 	protected Map<String, String>			parameters=new HashMap<String, String>();
-	protected Map<String,Object>         nameParameters=new HashMap<String, Object>();
+	protected Map<String,Object> namedParameters =new HashMap<String, Object>();
 	protected Object[] 	parameterArr;
 	private Map<String, String>			columnTypes;
 
@@ -54,179 +58,44 @@ public class PageQuery implements Serializable {
 	
 	protected String 					querySql;			
 
+
+	protected String                         pageToolBar;
+	protected String dateFormatString="yyyy-MM-dd";
+	protected String timestampFormatString="yyyy-MM-dd HH:mm:ss";
+	protected SimpleDateFormat dateFormater=null;
+	protected SimpleDateFormat timestampFormater=null;
+
 	public static final String						ASC	= "asc";
 
 	public static final String						DESC	= "desc";
-	public String                         pageToolBar;
+
 
 	public PageQuery() {
-		pageNumber = "1";
-		pageSize = "10";
+		pageNumber = 1;
+		pageSize = 10;
 	}
 
-	public String getGroupByString() {
-		return groupByString;
-	}
 
-	public void setGroupByString(String groupByString) {
-		this.groupByString = groupByString;
-	}
-
-	public String getHavingString() {
-		return havingString;
-	}
-
-	public void setHavingString(String havingString) {
-		this.havingString = havingString;
-	}
-
-	public String getOrderString() {
-		return orderString;
-	}
-
-	public void setOrderString(String orderString) {
-		this.orderString = orderString;
-	}
-
-	public void setResultField(String[] fieldArray) {
-
-	}
-
-	public String getWhereString() {
-		return whereString;
-	}
-
-	public void setWhereString(String whereString) {
-		this.whereString = whereString;
-	}
-
-	public String getSelectParamId() {
-		return selectParamId;
-	}
-
-	public void setSelectParamId(String selectParamId) {
-		this.selectParamId = selectParamId;
-	}
-
-	public List<Condition> getConditions() {
-		return conditions;
-	}
-
-	public void setConditions(List<Condition> conditions) {
-		this.conditions = conditions;
-	}
-
-	public Map<String, String> getParameters() {
-		return parameters;
-	}
 	public void setParameterWithKey(String key,String value){
 		this.parameters.put(key,value);
 	}
 
-	public void setParameters(Map<String, String> parameters) {
-		this.parameters = parameters;
-	}
-
-	public String getPageCount() {
-		return pageCount;
-	}
-
-	public void setPageCount(String pageCount) {
-		this.pageCount = pageCount;
-	}
-
-	public String getPageNumber() {
-		return pageNumber;
-	}
-
-	public void setPageNumber(String pageNumber) {
-		this.pageNumber = pageNumber;
-	}
-
-	public String getPageSize() {
-		return pageSize;
-	}
-
-	public void setPageSize(String pageSize) {
-		this.pageSize = pageSize;
-	}
-
-	public String getRecordCount() {
-		return recordCount;
-	}
-
-	public void setRecordCount(String recordCount) {
-		this.recordCount = recordCount;
-	}
-
-	public List<Map<String, Object>> getRecordSet() {
-		return recordSet;
-	}
-
-	public void setRecordSet(List<Map<String, Object>> recordSet) {
-		this.recordSet = recordSet;
-	}
-
-	public Map<String, String> getColumnTypes() {
-		return columnTypes;
-	}
-
-	public void setColumnTypes(Map<String, String> columnTypes) {
-		this.columnTypes = columnTypes;
-	}
-
-	public String getOrder() {
-		return order;
-	}
-
-	public void setOrder(String order) {
-		this.order = order;
-	}
-
-	public String getOrderDirection() {
-		return orderDirection;
-	}
-
-	public void setOrderDirection(String orderDirection) {
-		this.orderDirection = orderDirection;
-	}
-
-	public String getQuerySql() {
-		return querySql;
-	}
-
-	public void setQuerySql(String querySql) {
-		this.querySql = querySql;
-	}
-	
-	public Object[] getParameterArr() {
-		return parameterArr;
-	}
-
-	public Map<String, Object> getNameParameters() {
-		return nameParameters;
-	}
 	public void setNameParameterWithKey(String key,Object value){
-		nameParameters.put(key,value);
+		namedParameters.put(key,value);
 	}
 
-	public void setNameParameters(Map<String, Object> nameParameters) {
-		this.nameParameters = nameParameters;
+	public SimpleDateFormat getDateFormater(){
+		if(dateFormater==null){
+			dateFormater=new SimpleDateFormat(dateFormatString);
+		}
+		return dateFormater;
 	}
-
-	public void setParameterArr(Object[] parameterArr) {
-		this.parameterArr = parameterArr;
+	public SimpleDateFormat getTimestampFormater(){
+		if(timestampFormater==null){
+			timestampFormater=new SimpleDateFormat(timestampFormatString);
+		}
+		return timestampFormater;
 	}
-
-	public String getPageToolBar() {
-		return pageToolBar;
-	}
-
-	public void setPageToolBar(String pageToolBar) {
-		this.pageToolBar = pageToolBar;
-	}
-	
-
 	
 
 }

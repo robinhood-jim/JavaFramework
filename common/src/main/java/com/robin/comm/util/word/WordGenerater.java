@@ -20,8 +20,9 @@ import java.util.List;
 import com.lowagie.text.Document;
 import com.lowagie.text.PageSize;
 import com.lowagie.text.pdf.BaseFont;
+import lombok.extern.slf4j.Slf4j;
 
-
+@Slf4j
 public class WordGenerater {
 	public static void Write(Document document,WordConfig config){
 		try{
@@ -43,7 +44,7 @@ public class WordGenerater {
 				
 			}
 		}catch (Exception e) {
-			e.printStackTrace();
+			log.error("",e);
 		}
 	}
 	public static void Write(AbstractDocumentDrawer drawer){

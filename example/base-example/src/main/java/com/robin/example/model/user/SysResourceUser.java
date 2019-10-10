@@ -26,7 +26,7 @@ public class SysResourceUser extends BaseObject {
 	private static final long serialVersionUID = 1L;
 
 	// primary key
-	@MappingField(primary = "1", increment = "1")
+	@MappingField(primary = true, increment = true)
 	private Long id; //
 
 	// fields
@@ -37,10 +37,10 @@ public class SysResourceUser extends BaseObject {
 	@MappingField(field = "user_id")
 	private Integer userId;
 	@MappingField(field="assign_type")
-	private String assignType;
+	private Integer assignType;
 
-	public static String ASSIGN_ADD = "1";
-	public static String ASSIGN_DEL = "2";
+	public static final int ASSIGN_ADD = 1;
+	public static final int ASSIGN_DEL = 2;
 
 
 	public static String REF_CLASS = "SysResourceUser";

@@ -8,7 +8,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-    <title><spring:message code="userContr" /> </title>
+    <title><spring:message code="title.userContr" /> </title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
     <meta http-equiv="pragma" content="no-cache">
@@ -32,6 +32,13 @@
             border: none;
             overflow: hidden;
         }
+        div#orgDiv {
+            position: relative;
+            width: auto;
+            height: 200px;
+            margin: 20px;
+            border: #c0c0c0 1px solid;
+        }
 
     </style>
     <script type="text/javascript">
@@ -43,6 +50,7 @@
 </head>
 
 <body onload="">
+
 <script type="text/javascript" src="<%=CONTEXT_PATH%>resources/js/crud.js"></script>
 <script type="text/javascript">
     var ctx = "<%=CONTEXT_PATH%>";
@@ -50,13 +58,17 @@
     var dhxLayout = new dhtmlXLayoutObject(document.body, "2E");
     var topPanel = dhxLayout.cells("a");
     var bottomPanel = dhxLayout.cells("b");
-
+    var orgId='${orgId}';
+    var resps='${resps}';
+    var allowButton='${allowButtons}';
+    var orgSelect=undefined;
 
     topPanel.setHeight(130);
     topPanel.setText("");
 
     var myForm = topPanel.attachForm();
     var cwidth = document.body.clientWidth;
+    var cheight = document.body.clientHeight;
     var queryUrl = ctx + "system/user/list";
     var userFrm = [
         {
@@ -69,11 +81,12 @@
                         {type: "hidden", name: "query.pageCount", value: ""},
                         {type: "hidden", name: "query.pageNumber", value: "1"},
                         {type: "hidden", name: "query.pageSize", value: "10"},
+                        {type: "hidden", name: "orgId", value: ""},
                         {type: "input", label: "<spring:message code="sysUser.accountName" />", name: "userName", offsetTop: 10},
                         {type: "newcolumn", offset: 20},
-                        {type: "select", label: "<spring:message code="sysUser.Dept" />", name: "deptId",connector:ctx + "system/dept/listjson?allowNull=true"},
+                        {type: "select", label: "<spring:message code="sysUser.accountType" />", name: "accountType",connector:ctx + "system/codeset/select?codeSetNo=ACCOUNTTYPE&allowNull=true"},
                         {type: "newcolumn", offset: 20},
-                        {type: "select", label: "<spring:message code="sysUser.Org" />", name: "orgId",connector:ctx + "system/org/listjson?allowNull=true"},
+                        {type: "input", label: "<spring:message code="sysUser.Org" />", name: "orgName",readonly:true},
 
                     ]
                 }, {
@@ -91,6 +104,10 @@
     bottomPanel.hideHeader();
     topPanel.fixSize(true, true);
     myForm.loadStruct(userFrm);
+    if(orgId!=undefined){
+        myForm.setItemValue("orgId",orgId);
+    }
+
 
     myForm.attachEvent("onButtonClick", function (name) {
         if (name == 'submit') {
@@ -105,12 +122,25 @@
             this.reset();
         }
     });
+    myForm.attachEvent("onFocus", function(name, value){
+       if(name=='orgName'){
+           orgSelect=openWindowForTreeview(ctx+"system/org/listAll?id={id}",myForm.getInput(name).offsetParent.offsetLeft+myForm.getInput(name).offsetLeft,myForm.getInput(name).offsetParent.offsetTop+myForm.getInput(name).offsetTop+40,200,150);
+           orgSelect.attachEvent("onSelect",function (id,mode) {
+               var txt=orgSelect.getItemText(id);
+               myForm.setItemValue("orgName",txt);
+               myForm.setItemValue("orgId",id);
+               closedialog(false);
+           });
+       }
+    });
+
+
     var statusbar = bottomPanel.attachStatusBar({height: 36});
     statusbar.setText("<div id='recinfoArea'></div>");
 
     var myGrid = bottomPanel.attachGrid();
     myGrid.setImagePath(ctx + "component/dhtmlxSuite/codebase/imgs/");
-    myGrid.setHeader("#master_checkbox,img:[" + ctx + "resources/images/icon/men.gif]<b><spring:message code="sysUser.accountName" /></b>,<spring:message code="sysUser.accountType" />,<spring:message code="sysUser.Dept" />,<spring:message code="sysUser.Org" />", null, ["text-align:center", "text-align:center", "text-align:center", "text-align:center", "text-align:center"]);//the headers of columns
+    myGrid.setHeader("#master_checkbox,img:[" + ctx + "resources/images/icon/men.gif]<b><spring:message code="sysUser.userName" /></b>,<spring:message code="sysUser.accountName" />,<spring:message code="sysUser.accountType" />,<spring:message code="sysUser.Org" />", null, ["text-align:center", "text-align:center", "text-align:center", "text-align:center", "text-align:center"]);//the headers of columns
     myGrid.setInitWidths("35,150,200,200,200");          //the widths of columns
     myGrid.setColAlign("center,center,center,center,center");       //the alignment of columns
     myGrid.setColTypes("ch,ro,ro,ro,ro");                //the types of columns
@@ -128,6 +158,16 @@
     dhxToobar.addButton("changepwd", 3, "<spring:message code="btn.changepwd" />", "open.gif", "open_dis.gif");
     dhxToobar.addButton("active", 4, "<spring:message code="btn.active" />", "open.gif", "open_dis.gif");
     dhxToobar.addButton("assign", 5, "<spring:message code="btn.assingRight" />", "open.gif", "open_dis.gif");
+
+    var respsArr=resps.split(",");
+    if(!respsArr.indexOf("1")==-1){
+        dhxToobar.forEachItem(function (itemid) { dhxToobar.disableItem(itemid)});
+        var items=allowButton.split(",");
+        for(i=0;i<items.length;i++){
+            dhxToobar.enableItem(items[i]);
+        }
+    }
+
     dhxToobar.attachEvent("onClick", function (id) {
         if (id == 'new') {
             goAdd();
@@ -143,6 +183,7 @@
             goActive();
         }
     });
+
 
     function goSearch() {
         myForm.send(ctx + "system/user/list", function (loader, response) {
@@ -160,14 +201,13 @@
         {
             type: "fieldset", label: "<spring:message code="sysUser.info" />", offsetLeft: 10,offsetRight: 20, inputWidth: 495, lableWidth: 100, list: [
                 {type: "hidden", name: "id", value: ""},
+                {type: "hidden", name: "respId", value: ""},
+                {type: "hidden", name: "orgId", value: ""},
                 {type: "input", name: "userName", label: "<spring:message code="sysUser.userName" />:", validate: "NotEmpty"},
-                {
-                    type: "select", name: "accountType", label: "<spring:message code="sysUser.accountType" />:", validate: "NotEmpty",connector: ctx + "system/codecombo?codeSetNo=USERTYPE"
-                },
-                {type: "select", name: "orgId", label: "<spring:message code="sysUser.Org" />:", validate: "NotEmpty",connector:ctx + "system/org/listjson?allowNull=false"},
-                {type: "newcolumn", offset: 20},
+                {type: "select", name: "accountType", label: "<spring:message code="sysUser.accountType" />:", validate: "NotEmpty",connector: ctx + "system/codecombo?codeSetNo=ACCOUNTTYPE"},
                 {type: "input", name: "userAccount", label: "<spring:message code="sysUser.accountName" />:", validate: "NotEmpty"},
-                {type: "select", name: "deptId", label: "<spring:message code="sysUser.Dept" />:", validate: "NotEmpty",connector:ctx + "system/dept/listjson?allowNull=false"}
+                {type: "newcolumn", offset: 20},
+                {type: "input", name: "orgName", label: "<spring:message code="sysUser.Org" />:",validate: "NotEmpty",readonly:true}
             ]
         },
         {
@@ -181,6 +221,7 @@
     ];
 
     function addInit(form) {
+
         form.attachEvent("onButtonClick", function (name, command) {
             form.validate();
             if (name == "cmdOK") {
@@ -194,11 +235,22 @@
                         closedialog(true);
                         reload();
                     } else {
-                        openMsgDialog("<spring:message code="message.SaveFailed" />", "<spring:message code="message.errorMsg" />:" + tobj.message);
+                        openMsgDialog("<spring:message code="message.saveFailed" />", "<spring:message code="message.errorMsg" />:" + tobj.message);
                     }
                 });
             } else if (name == 'cmdCancel') {
                 closedialog(false);
+            }
+        });
+        form.attachEvent("onFocus", function(name, value){
+            if(name=='orgName'){
+                orgSelect=openWindowForTreeviewWithName("t1",ctx+"system/org/listAll?id={id}",cwidth/2-250+form.getInput(name).offsetParent.offsetLeft+form.getInput(name).offsetLeft,form.getInput(name).offsetParent.offsetTop+form.getInput(name).offsetTop+cheight/2-80,200,150);
+                orgSelect.attachEvent("onSelect",function (id,mode) {
+                    var txt=orgSelect.getItemText(id);
+                    form.setItemValue("orgName",txt);
+                    form.setItemValue("orgId",id);
+                    closewithName("t1");
+                });
             }
         });
     }
@@ -207,7 +259,7 @@
 
         form.attachEvent("onButtonClick", function (name, command) {
             if (name == "cmdOK") {
-                this.send(contextpath + "system/user/update", function (loader, response) {
+                this.send(ctx + "system/user/update", function (loader, response) {
                     var tobj = eval('(' + response + ')');
                     if (tobj.success == true) {
                         dhtmlx.message({
@@ -222,6 +274,17 @@
                 });
             } else if (name == 'cmdCancel') {
                 closedialog(false);
+            }
+        });
+        form.attachEvent("onFocus", function(name, value){
+            if(name=='orgName'){
+                orgSelect=openWindowForTreeviewWithName("t1",ctx+"system/org/listAll?id={id}",form.getInput(name).offsetParent.offsetLeft+form.getInput(name).offsetLeft,form.getInput(name).offsetParent.offsetTop+form.getInput(name).offsetTop+cheight/2-80,200,150);
+                orgSelect.attachEvent("onSelect",function (id,mode) {
+                    var txt=orgSelect.getItemText(id);
+                    form.setItemValue("orgName",txt);
+                    form.setItemValue("orgId",id);
+                    closewithName("t1");
+                });
             }
         });
     }
@@ -302,7 +365,7 @@
                                     });
                                     reload();
                                 } else {
-                                    openMsgDialog("<spring:message code="message.SaveFailed" />", "<spring:message code="message.errorMsg" />:" + obj.message, 300, 200);
+                                    openMsgDialog("<spring:message code="message.saveFailed" />", "<spring:message code="message.errorMsg" />:" + obj.message, 300, 200);
                                 }
                             }
                         });
@@ -371,7 +434,7 @@
                             closedialog(true);
                             reload();
                         } else {
-                            openMsgDialog("<spring:message code="message.SaveFailed" />", "<spring:message code="message.errorMsg" />:" + tobj.message);
+                            openMsgDialog("<spring:message code="message.saveFailed" />", "<spring:message code="message.errorMsg" />:" + tobj.message);
                         }
 
                     });

@@ -26,7 +26,7 @@ import lombok.Data;
 public class SysOrg extends BaseObject
 {
     private static final long serialVersionUID = 1L;
-    @MappingField(increment="1", primary="1")
+    @MappingField(increment=true, primary=true)
     private Long id;
     @MappingField(field="tree_level")
     private Integer treeLevel;

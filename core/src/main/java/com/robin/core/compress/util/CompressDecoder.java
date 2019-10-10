@@ -11,6 +11,7 @@ import org.tukaani.xz.LZMAOutputStream;
 import org.xerial.snappy.SnappyInputStream;
 import org.xerial.snappy.SnappyOutputStream;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -37,26 +38,35 @@ public class CompressDecoder {
         Const.CompressType type=FileUtils.getFileCompressType(suffixList);
         if(!type.equals(Const.CompressType.COMPRESS_TYPE_NONE)){
             if(type.equals(Const.CompressType.COMPRESS_TYPE_GZ)){
-                inputStream=new GZIPInputStream(rawstream);
+                inputStream=new GZIPInputStream(wrapInputStream(rawstream));
             }else if(type.equals(Const.CompressType.COMPRESS_TYPE_BZ2)){
-                inputStream=new BZip2CompressorInputStream(rawstream);
+                inputStream=new BZip2CompressorInputStream(wrapInputStream(rawstream));
             }else if(type.equals(Const.CompressType.COMPRESS_TYPE_LZO)){
                 LzoAlgorithm algorithm = LzoAlgorithm.LZO1X;
                 LzoDecompressor decompressor = LzoLibrary.getInstance().newDecompressor(algorithm, null);
-                inputStream = new LzoInputStream(rawstream, decompressor);
+                inputStream = new LzoInputStream(wrapInputStream(rawstream), decompressor);
             }else if(type.equals(Const.CompressType.COMPRESS_TYPE_SNAPPY)){
-                inputStream=new SnappyInputStream(rawstream);
+                inputStream=new SnappyInputStream(wrapInputStream(rawstream));
             }else if(type.equals(Const.CompressType.COMPRESS_TYPE_ZIP)){
-                ZipInputStream stream1=new ZipInputStream(rawstream);
+                ZipInputStream stream1=new ZipInputStream(wrapInputStream(rawstream));
                 stream1.getNextEntry();
                 inputStream=stream1;
             }else if(type.equals(Const.CompressType.COMPRESS_TYPE_LZMA)){
-                inputStream=new LZMAInputStream(rawstream);
+                inputStream=new LZMAInputStream(wrapInputStream(rawstream));
             }
         }else{
             //no compress
             inputStream=rawstream;
         }
         return inputStream;
+    }
+    private static InputStream wrapInputStream(InputStream instream){
+        InputStream in=null;
+        if(instream instanceof BufferedInputStream){
+            in=instream;
+        }else{
+            in=new BufferedInputStream(instream);
+        }
+        return in;
     }
 }

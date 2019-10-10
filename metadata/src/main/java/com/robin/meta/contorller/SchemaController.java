@@ -16,8 +16,7 @@
 package com.robin.meta.contorller;
 
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
-import com.robin.meta.service.GlobalResourceService;
-import org.apache.avro.Schema;
+import com.robin.meta.service.resource.GlobalResourceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -35,11 +34,13 @@ public class SchemaController {
     private GlobalResourceService globalResourceService;
     @RequestMapping("/resource")
     @ResponseBody
-    public Map<String,Object> getResourceSchema(@RequestParam Long sourceId,@RequestParam String sourceParam){
-        DataCollectionMeta collectionMeta=globalResourceService.getResourceMetaDef(sourceId);
+    public Map<String,Object> getResourceSchema(@RequestParam String sourceId,@RequestParam String sourceParam){
+        DataCollectionMeta collectionMeta=globalResourceService.getResourceMetaDef(Long.parseLong(sourceId),sourceParam);
         //Schema schema=globalResourceService.getDataSourceSchema(collectionMeta,sourceId,sourceParam);
         Map<String,Object> retMap=new HashMap<>();
-        retMap.put("schema",globalResourceService.getDataSourceSchemaDesc(collectionMeta,sourceId,sourceParam,0));
+        String[] arr=sourceId.split(",");
+        retMap.put("schema",globalResourceService.getDataSourceSchemaDesc(collectionMeta,Long.parseLong(arr[0]),sourceParam,0));
         return retMap;
     }
+
 }

@@ -33,16 +33,16 @@ public class ApacheVfsResourceAccessUtil extends AbstractResourceAccessUtil {
     @Override
     public BufferedReader getInResourceByReader(DataCollectionMeta meta) throws Exception {
         VfsParam param = new VfsParam();
-        ConvertUtil.convertToModel(param, meta.getResourceCfgMap());
+        ConvertUtil.convertToTarget(param, meta.getResourceCfgMap());
         BufferedReader reader;
-        String suffix = getFileSuffix(meta.getPath());
+
         FileObject fo = manager.resolveFile(getUriByParam(param, meta.getPath()).toString(), getOptions(param));
         if (fo.exists()) {
             if (FileType.FOLDER.equals(fo.getType())) {
                 logger.error("File {} is a directory！", meta.getPath());
                 throw new FileNotFoundException("File " + meta.getPath() + " is a directory!");
             } else {
-                reader = getReaderBySuffix(suffix, fo.getContent().getInputStream(), meta.getEncode());
+                reader = getReaderByPath(meta.getPath(), fo.getContent().getInputStream(), meta.getEncode());
             }
         } else {
             throw new FileNotFoundException("File " + meta.getPath() + " not found!");
@@ -54,8 +54,7 @@ public class ApacheVfsResourceAccessUtil extends AbstractResourceAccessUtil {
     public BufferedWriter getOutResourceByWriter(DataCollectionMeta meta) throws Exception {
         BufferedWriter writer;
         FileObject fo = checkFileExist(meta);
-        String suffix = getFileSuffix(meta.getPath());
-        writer = getWriterBySuffix(suffix, fo.getContent().getOutputStream(), meta.getEncode());
+        writer = getWriterByPath(meta.getPath(), fo.getContent().getOutputStream(), meta.getEncode());
         return writer;
     }
 
@@ -63,24 +62,22 @@ public class ApacheVfsResourceAccessUtil extends AbstractResourceAccessUtil {
     public OutputStream getOutResourceByStream(DataCollectionMeta meta) throws Exception {
         OutputStream out;
         FileObject fo = checkFileExist(meta);
-        String suffix = getFileSuffix(meta.getPath());
-        out = getOutputStreamBySuffix(suffix, fo.getContent().getOutputStream());
+        out = getOutputStreamByPath(meta.getPath(), fo.getContent().getOutputStream());
         return out;
     }
 
     @Override
     public InputStream getInResourceByStream(DataCollectionMeta meta) throws Exception {
         VfsParam param = new VfsParam();
-        ConvertUtil.convertToModel(param, meta.getResourceCfgMap());
+        ConvertUtil.convertToTarget(param, meta.getResourceCfgMap());
         InputStream reader;
-        String suffix = getFileSuffix(meta.getPath());
         FileObject fo = manager.resolveFile(getUriByParam(param, meta.getPath()).toString(), getOptions(param));
         if (fo.exists()) {
             if (FileType.FOLDER.equals(fo.getType())) {
                 logger.error("File {} is a directory！", meta.getPath());
                 throw new FileNotFoundException("File " + meta.getPath() + " is a directory!");
             } else {
-                reader = getInputStreamBySuffix(suffix, fo.getContent().getInputStream());
+                reader = getInputStreamByPath(meta.getPath(), fo.getContent().getInputStream());
             }
         } else {
             throw new FileNotFoundException("File " + meta.getPath() + " not found!");
@@ -109,7 +106,7 @@ public class ApacheVfsResourceAccessUtil extends AbstractResourceAccessUtil {
 
     private FileObject checkFileExist(DataCollectionMeta meta) throws Exception {
         VfsParam param = new VfsParam();
-        ConvertUtil.convertToModel(param, meta.getResourceCfgMap());
+        ConvertUtil.convertToTarget(param, meta.getResourceCfgMap());
         FileObject fo = manager.resolveFile(getUriByParam(param, meta.getPath()).toString(), getOptions(param));
         if (fo.exists()) {
             if (FileType.FOLDER.equals(fo.getType())) {

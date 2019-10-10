@@ -21,7 +21,7 @@ import java.io.FileWriter;
 import java.net.URL;
 import java.util.*;
 
-import org.apache.commons.lang.StringUtils;
+
 import org.scannotation.AnnotationDB;
 import org.scannotation.ClasspathUrlFinder;
 import org.springframework.context.ApplicationContext;
@@ -100,7 +100,7 @@ public class ModelScriptGenerator {
                 pkColumns.add(primarycol.getFieldName());
             }
 
-            builder.append("\tPRIMARY KEY(").append(StringUtils.join(pkColumns,",")).append(")");
+            builder.append("\tPRIMARY KEY(").append(StringUtils.join(pkColumns.toArray(),",")).append(")");
         }else
             builder.deleteCharAt(builder.length() - 2);
         builder.append(");\n");

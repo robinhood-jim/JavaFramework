@@ -18,6 +18,8 @@ package com.robin.core.base.datameta;
 import com.robin.core.base.dao.JdbcDao;
 import com.robin.core.base.util.Const;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.dbutils.DbUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.support.JdbcUtils;
@@ -26,19 +28,25 @@ import javax.sql.DataSource;
 import java.sql.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.Date;
 
 @Slf4j
 public class DataBaseUtil {
     private Connection connection;
     private static Logger logger = LoggerFactory.getLogger(DataBaseUtil.class);
+    private BaseDataBaseMeta dataBaseMeta;
 
     public void connect(BaseDataBaseMeta meta) {
         try {
+            dataBaseMeta = meta;
             if (connection == null) {
                 Class.forName(meta.getParam().getDriverClassName());
-                String url = meta.getParam().getUrl();
+                String url = meta.getUrl();
                 if (url == null || "".equals(url))
                     url = meta.getUrl();
                 connection = DriverManager.getConnection(url, meta.getParam().getUserName(), meta.getParam().getPasswd());
@@ -54,13 +62,7 @@ public class DataBaseUtil {
 
     public void closeConnection() {
         if (connection != null) {
-            try {
-                connection.close();
-            } catch (Exception e) {
-
-            } finally {
-                connection = null;
-            }
+            DbUtils.closeQuietly(connection);
         }
     }
 
@@ -140,14 +142,14 @@ public class DataBaseUtil {
         try {
             stmt = connection.createStatement();
             DatabaseMetaData meta = connection.getMetaData();
-            ResultSet rs = meta.getColumns(null, DbOrtablespacename, tablename, null);
+            ResultSet rs = meta.getColumns(dataBaseMeta.getCatalog(DbOrtablespacename), DbOrtablespacename, tablename, null);
             // all pk column
             List<String> pklist = this.getAllPrimaryKeyByTableName(tablename, DbOrtablespacename);
             while (rs.next()) {
                 String columnname = rs.getString("COLUMN_NAME");
                 Integer datatype = Integer.parseInt(translateDbType(new Integer(rs.getInt("DATA_TYPE"))));
                 String datalength = rs.getString("COLUMN_SIZE");
-                boolean nullable = (rs.getInt("NULLABLE") == DatabaseMetaData.columnNoNulls) ? false : true;
+                boolean nullable = rs.getInt("NULLABLE") != DatabaseMetaData.columnNoNulls;
                 String comment = rs.getString("REMARKS");
                 String precise = rs.getString("DECIMAL_DIGITS");
                 String scale = rs.getString("TABLE_SCHEM");
@@ -237,7 +239,7 @@ public class DataBaseUtil {
                 String columnname = rs.getString("COLUMN_NAME");
                 Integer datatype = Integer.parseInt(translateDbType(new Integer(rs.getInt("DATA_TYPE"))));
                 String datalength = rs.getString("COLUMN_SIZE");
-                boolean nullable = (rs.getInt("NULLABLE") == DatabaseMetaData.columnNoNulls) ? false : true;
+                boolean nullable = rs.getInt("NULLABLE") != DatabaseMetaData.columnNoNulls;
                 String comment = "";
                 ResultSetMetaData rsmeta = rs.getMetaData();
                 List<String> metaNames = new ArrayList<String>();
@@ -273,12 +275,6 @@ public class DataBaseUtil {
             logger.error("", e);
             throw e;
         } finally {
-            try {
-                if (conn != null)
-                    conn.close();
-            } catch (Exception ex) {
-
-            }
         }
         return columnlist;
     }
@@ -288,7 +284,7 @@ public class DataBaseUtil {
         ResultSet rs1 = null;
         try {
             DatabaseMetaData meta = connection.getMetaData();
-            rs1 = meta.getPrimaryKeys(null, schema, tableName);
+            rs1 = meta.getPrimaryKeys(dataBaseMeta.getCatalog(schema), schema, tableName);
             while (rs1.next()) {
                 String columnName = rs1.getString("COLUMN_NAME");
                 tablelist.add(columnName);
@@ -351,10 +347,10 @@ public class DataBaseUtil {
                 String column = JdbcUtils.lookupColumnName(rsmeta, i + 1);
                 if (column.contains(".")) {
                     int pos = column.indexOf(".");
-                    column = column.substring(pos + 1, column.length());
+                    column = column.substring(pos + 1);
                 }
                 datameta.setColumnName(column);
-                datameta.setColumnType(Integer.valueOf(translateDbType(new Integer(rsmeta.getColumnType(i + 1)))));
+                datameta.setColumnType(Integer.valueOf(translateDbType(Integer.valueOf(rsmeta.getColumnType(i + 1)))));
                 datameta.setColumnLength(String.valueOf(rsmeta.getColumnDisplaySize(i + 1)));
                 datameta.setDataScale(String.valueOf(rsmeta.getScale(i + 1)));
                 datameta.setDataPrecise(String.valueOf(rsmeta.getPrecision(i + 1)));
@@ -363,18 +359,15 @@ public class DataBaseUtil {
         } catch (Exception ex) {
             throw ex;
         } finally {
-            try {
-                if (rsmeta != null)
-                    rsmeta = null;
-                if (rs != null)
-                    rs.close();
-                if (stmt != null)
-                    stmt.close();
-                if (conn != null)
-                    conn.close();
-            } catch (Exception e) {
+            if (rsmeta != null)
+                rsmeta = null;
+            if (rs != null)
+                DbUtils.closeQuietly(rs);
+            if (stmt != null)
+                DbUtils.closeQuietly(stmt);
+            if (conn != null)
+                DbUtils.closeQuietly(conn);
 
-            }
         }
         return columnlist;
     }
@@ -440,7 +433,7 @@ public class DataBaseUtil {
         return retMap;
     }
 
-    public static boolean isStringValueDate(String value, SimpleDateFormat format) {
+    private static boolean isStringValueDate(String value, SimpleDateFormat format) {
         try {
             format.parse(value);
             return true;
@@ -464,7 +457,53 @@ public class DataBaseUtil {
         } else if (type.equals(Const.META_TYPE_DATE)) {
             retObj = format.parse(value);
         } else {
-            retObj = value.toString();
+            retObj = value;
+        }
+        return retObj;
+    }
+
+    public static boolean isValueValid(Object value, String type) {
+        boolean validtag = false;
+        if (value != null) {
+            if (type.equals(Const.META_TYPE_INTEGER) || type.equals(Const.META_TYPE_BIGINT) || type.equals(Const.META_TYPE_NUMERIC) || type.equals(Const.META_TYPE_DOUBLE)) {
+                if (NumberUtils.isNumber(value.toString()))
+                    validtag = true;
+            } else if (type.equals(Const.META_TYPE_DATE) || type.equals(Const.META_TYPE_TIMESTAMP)) {
+                if (value instanceof java.util.Date) {
+                    validtag = true;
+                } else if (value instanceof java.sql.Date) {
+                    validtag = true;
+                } else if (value instanceof Timestamp) {
+                    validtag = true;
+                }
+            } else if (type.equals(Const.META_TYPE_STRING)) {
+                validtag = true;
+            }
+        }
+        return validtag;
+    }
+
+    public static String toStringByDBType(Object value, String type, DateTimeFormatter formatter) {
+        String retObj = null;
+        if (value != null) {
+            if (type.equals(Const.META_TYPE_INTEGER) || type.equals(Const.META_TYPE_BIGINT) || type.equals(Const.META_TYPE_NUMERIC) || type.equals(Const.META_TYPE_DOUBLE)) {
+                if (NumberUtils.isNumber(value.toString()))
+                    retObj = value.toString();
+            } else if (type.equals(Const.META_TYPE_DATE) || type.equals(Const.META_TYPE_TIMESTAMP)) {
+                long millsecod = 0L;
+                if (value instanceof java.util.Date) {
+                    millsecod = ((java.util.Date) value).getTime();
+                } else if (value instanceof java.sql.Date) {
+                    millsecod = ((java.sql.Date) value).getTime();
+                } else if (value instanceof Timestamp) {
+                    millsecod = ((java.sql.Timestamp) value).getTime();
+                } else {
+                    return value.toString();
+                }
+                retObj = formatter.format(LocalDateTime.ofInstant(Instant.ofEpochMilli(millsecod), ZoneId.systemDefault()));
+            } else {
+                retObj = value.toString();
+            }
         }
         return retObj;
     }
@@ -474,7 +513,7 @@ public class DataBaseUtil {
         ResultSet rs1 = null;
         try {
             DatabaseMetaData meta = connection.getMetaData();
-            rs1 = meta.getTables(null, schema, null, new String[]{"TABLE", "VIEW"});
+            rs1 = meta.getTables(datameta.getCatalog(schema), schema, null, new String[]{"TABLE", "VIEW"});
             int pos = 1;
             while (rs1.next()) {
                 String tablename = rs1.getString("TABLE_NAME") == null ? "" : rs1.getString("TABLE_NAME");
@@ -482,8 +521,9 @@ public class DataBaseUtil {
                 String userName = rs1.getString("TABLE_SCHEM") == null ? "" : rs1.getString("TABLE_SCHEM");
                 String remark = rs1.getString("REMARKS") == null ? "" : rs1.getString("REMARKS");
                 boolean canadd = false;
-                if (datameta instanceof OracleDataBaseMeta && tablename.indexOf("BIN$") != 0 && tablename.lastIndexOf("$0") != 0) {
-                    canadd = true;
+                if (datameta instanceof OracleDataBaseMeta) {
+                    if (tablename.indexOf("BIN$") != 0 && tablename.lastIndexOf("$0") != 0)
+                        canadd = true;
                 } else
                     canadd = true;
                 if (canadd) {

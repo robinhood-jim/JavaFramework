@@ -20,7 +20,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import org.apache.commons.beanutils.ConversionException;
-import org.apache.commons.lang.StringUtils;
 
 /**
  * This class is converts a java.util.Date to a String and a String to a
@@ -40,7 +39,7 @@ public class TimestampConverter extends DateConverter {
         DateFormat df = new SimpleDateFormat(TS_FORMAT);
         if (value instanceof String) {
             try {
-                if (StringUtils.isEmpty(value.toString())) {
+                if (value.toString().isEmpty()) {
                     return null;
                 }
 

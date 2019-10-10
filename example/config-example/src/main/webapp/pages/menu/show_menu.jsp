@@ -1,6 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %>
  <%
 	String path = request.getContextPath();
 	String CONTEXT_PATH = request.getScheme() + "://"+ request.getServerName() + ":" + request.getServerPort()+ path + "/";
@@ -42,27 +43,27 @@
 <body>
 <script type="text/javascript">
 	dhtmlx.message.defPosition="bottom";
-	 var contextpath = "<%=CONTEXT_PATH%>";
-	 var queryUrl=contextpath+"system/menu/list";
+	 var ctx = "<%=CONTEXT_PATH%>";
+	 var queryUrl=ctx+"system/menu/list";
 	 
 	 var dhxLayout = new dhtmlXLayoutObject(document.body, "1C");
 	 var dhxToobar = dhxLayout.cells("a").attachToolbar(); 
 	 dhxLayout.cells("a").setText("");
 	 dhxLayout.cells("a").hideHeader();
-	 dhxToobar.setIconsPath(contextpath+"component/dhtmlxSuite/comm/imgs/");
-	 dhxToobar.addButton("new", 0, "新增", "new.gif", "new_dis.gif");
-	 dhxToobar.addButton("edit", 1, "修改","open.gif", "open_dis.gif");
-	 dhxToobar.addButton("delete", 2, "删除","close.gif", "close_dis.gif");
-	 dhxToobar.addButton("assign", 3, "赋权","open.gif", "open_dis.gif");
+	 dhxToobar.setIconsPath(ctx+"component/dhtmlxSuite/comm/imgs/");
+	 dhxToobar.addButton("new", 0, '<spring:message code="btn.add" />', "new.gif", "new_dis.gif");
+	 dhxToobar.addButton("edit", 1, '<spring:message code="btn.modi" />',"open.gif", "open_dis.gif");
+	 dhxToobar.addButton("delete", 2, '<spring:message code="btn.delete" />',"close.gif", "close_dis.gif");
+	 dhxToobar.addButton("assign", 3, '<spring:message code="btn.add" />',"open.gif", "open_dis.gif");
 	 var dhxTree=dhxLayout.cells("a").attachTree();
-	 dhxTree.setImagePath(contextpath+"component/dhtmlxSuite/codebase/imgs/dhxtree_material/");
-	 //dhxTree.enableTreeLines(true);
-     //dhxTree.setImageArrays("plus", "plus2.gif", "plus3.gif", "plus4.gif", "plus.gif", "plus5.gif");
-     //dhxTree.setImageArrays("minus", "minus2.gif", "minus3.gif", "minus4.gif", "minus.gif", "minus5.gif");
-     //dhxTree.setStdImages("leaf.gif", "folderOpen.gif", "folderClosed.gif");
+	 dhxTree.setImagePath(ctx+"component/dhtmlxSuite/codebase/imgs/dhxtree_material/");
+	 dhxTree.enableTreeLines(true);
+     dhxTree.setImageArrays("plus", "plus2.gif", "plus3.gif", "plus4.gif", "plus.gif", "plus5.gif");
+     dhxTree.setImageArrays("minus", "minus2.gif", "minus3.gif", "minus4.gif", "minus.gif", "minus5.gif");
+     dhxTree.setStdImages("leaf.gif", "folderOpen.gif", "folderClosed.gif");
      dhxTree.setDataMode("json");
-     //dhxTree.setSkin("dhx_skyblue");
-     dhxTree.load(contextpath+"system/menu/list","json");
+
+     dhxTree.load(ctx+"system/menu/list","json");
      dhxToobar.attachEvent("onClick", function(id){
 		 if(id=='new'){
 			 goAdd();
@@ -75,15 +76,7 @@
 		 }
 	 });
      
-    /*  $.ajax({
-    	 type:"post",
-			url:contextpath+"system/menu/list",
-			dataType: "json",
-		    success:function(data){
-				var obj=eval(data);
-				dhxTree.load(obj,"json");
-		    }
-     }); */
+
      var editFormContent=[
 							{type:"settings", position:"label-left",lableWidth: 100,inputWidth: 120},
 							{type: "fieldset", label: "菜单信息",offsetLeft:10, inputWidth: 520, lableWidth: 100,list:[
@@ -107,18 +100,18 @@
 			 form.validate();
 			  if(name=="cmdOK"){
 				  	  var pid=this.getItemValue("parentId");
-			          this.send(contextpath+"system/menu/save",function(loader, response){
+			          this.send(ctx+"system/menu/save",function(loader, response){
 			        	  var tobj= eval('(' + response + ')'); 
 			        	  if(tobj.success=='true'){
 			        		  dhtmlx.message({
-									text: "保存成功",
+									text: <spring:message code="message.saveSuccess" />,
 									expire: 10
 								});
 			        		  var menu=tobj.menu;
 			        		  dhxTree.insertNewChild(pid,menu.id,menu.resName,0,0,0,0,"CHILD");
 			        	  	 closedialog(true);
 			        	  }else{
-			        		  openMsgDialog("保存用户失败","错误信息:"+tobj.message,300,200);
+			        		  openMsgDialog("<spring:message code="message.saveFailed" />","<spring:message code="message.errorMsg" />"+tobj.message,300,200);
 			        	  }
 			          });      
 			    }else if(name=='cmdCancel'){
@@ -138,7 +131,7 @@
      function editInit(form){
  		 form.attachEvent("onButtonClick", function(name, command){
  			  if(name=="cmdOK"){
- 			          this.send(contextpath+"system/menu/update",function(loader, response){
+ 			          this.send(ctx+"system/menu/update",function(loader, response){
  			        	  var tobj= eval('(' + response + ')'); 
  			        	  if(tobj.success=='true'){
  			        		  dhtmlx.message({
@@ -164,10 +157,10 @@
  			openMsgDialog("编辑菜单","只能修改一个菜单",300,150);
  		}else{
  			var form=openWindowForEdit("修改菜单",editFormContent,550,250,editInit);
- 			//form.load(contextpath+"system/sysuser/edit?id="+list);
+ 			//form.load(ctx+"system/sysuser/edit?id="+list);
  			$.ajax({
  				type:"get",
- 				url:contextpath+"system/menu/edit?id="+id,
+ 				url:ctx+"system/menu/edit?id="+id,
  				dataType: "json",
  			    success:function(data){
  				var obj=eval(data);
@@ -187,7 +180,7 @@
   		}else if(id.indexOf(",")!=-1){
   			openMsgDialog("菜单赋权","只能给一个菜单赋权",300,150);
   		}else{
-  			var form=openWindow("菜单角色赋权",contextpath+"system/menu/showrole?id="+id,600,450);
+  			var form=openWindow("菜单角色赋权",ctx+"system/menu/showrole?id="+id,600,450);
   		}
      }     
 	 

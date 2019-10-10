@@ -1,5 +1,8 @@
 package com.robin.core.fileaccess.writer;
 
+import org.apache.avro.generic.GenericRecord;
+
+import java.io.Closeable;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -16,10 +19,11 @@ import java.util.Map;
  * @author robinjim
  * @version 1.0
  */
-public interface IResourceWriter {
+public interface IResourceWriter extends Closeable {
     void writeRecord(Map<String,?> map) throws IOException;
     void writeRecord(List<Object> map) throws IOException;
 
     void initalize() throws IOException;
-    void close() throws IOException;
+
+
 }

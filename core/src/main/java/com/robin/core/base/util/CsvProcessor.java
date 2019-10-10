@@ -16,6 +16,7 @@
 package com.robin.core.base.util;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,7 +37,7 @@ public class CsvProcessor {
 
         int pos = 0;
         try {
-            ICsvListReader reader = new CsvListReader(new InputStreamReader(inputStream, "UTF-8"), CsvPreference.STANDARD_PREFERENCE);
+            ICsvListReader reader = new CsvListReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8), CsvPreference.STANDARD_PREFERENCE);
             pos = readHeadContentByConfig(reader, config, columnResultList);
         } catch (Exception e) {
             e.printStackTrace();
@@ -48,7 +49,7 @@ public class CsvProcessor {
 
         int pos = 0;
         try {
-            ICsvListReader reader = new CsvListReader(new InputStreamReader(inputStream, "UTF-8"), new CsvPreference.Builder('"', separator, "n").build());
+            ICsvListReader reader = new CsvListReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8), new CsvPreference.Builder('"', separator, "n").build());
             pos = readHeadContentByConfig(reader, config, columnResultList);
         } catch (Exception e) {
             e.printStackTrace();
@@ -60,7 +61,7 @@ public class CsvProcessor {
 
         int pos = 0;
         try {
-            ICsvListReader reader = new CsvListReader(new InputStreamReader(inputStream, "UTF-8"), CsvPreference.STANDARD_PREFERENCE);
+            ICsvListReader reader = new CsvListReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8), CsvPreference.STANDARD_PREFERENCE);
             pos = readHeadAndContent(reader, columnResultList);
         } catch (Exception e) {
             e.printStackTrace();
@@ -72,7 +73,7 @@ public class CsvProcessor {
 
         int pos = 0;
         try {
-            ICsvListReader reader = new CsvListReader(new InputStreamReader(inputStream, "UTF-8"), new CsvPreference.Builder('"', seperator, "n").build());
+            ICsvListReader reader = new CsvListReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8), new CsvPreference.Builder('"', seperator, "n").build());
             pos = readHeadAndContent(reader, columnResultList);
         } catch (Exception e) {
             e.printStackTrace();

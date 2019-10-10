@@ -54,12 +54,38 @@ function openWindowForEdit(title, formStructure, w, h, func) {
 		eval(func(form));
 	return form;
 }
+function openWindowForTreeview(loadUrl,x,y,w,h,func) {
+	var w=dhxWins.createWindow(winName,x,y,w,h);
+	w.hideHeader();
+    w.denyResize();
+    w.denyMove();
+	var myTreeView=w.attachTreeView({json:loadUrl});
+	return myTreeView;
+}
+
+function openWindowForTreeviewWithName(name,loadUrl,x,y,w,h,func) {
+    var w=dhxWins.createWindow(name,x,y,w,h);
+    w.hideHeader();
+    w.setModal(true);
+    w.denyResize();
+    w.denyMove();
+    var myTreeView=w.attachTreeView({json:loadUrl});
+    return myTreeView;
+}
+function addEvent(type,callback){
+	dhxWins.window(winName).attachEvent(type,callback);
+}
 
 function closedialog(ret) {
 	dhxWins.window(winName).close();
 	editMode = "";
 }
-
+function closewithName(name,func){
+	dhxWins.window(name).close();
+	if(func!=null && func!=undefined){
+		eval(func);
+	}
+}
 function openMsgDialog(title, msg, func) {
 	dhtmlx.message({
 		title : title,

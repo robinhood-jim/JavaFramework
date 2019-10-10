@@ -20,7 +20,7 @@ import java.text.ParseException;
 
 import org.apache.commons.beanutils.ConversionException;
 import org.apache.commons.beanutils.Converter;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -57,7 +57,7 @@ public class CurrencyConverter implements Converter {
                 }
 
                 try {
-                    if (StringUtils.isBlank(String.valueOf(value))) {
+                    if (String.valueOf(value).isEmpty()) {
                         return null;
                     }
 

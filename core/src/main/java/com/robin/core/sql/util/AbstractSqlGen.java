@@ -15,19 +15,21 @@
  */
 package com.robin.core.sql.util;
 
+import com.robin.core.base.util.Const;
+import com.robin.core.query.util.PageQuery;
+import com.robin.core.query.util.QueryParam;
+import com.robin.core.query.util.QueryString;
+import lombok.extern.slf4j.Slf4j;
+
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
-import com.robin.core.base.util.Const;
-import com.robin.core.query.util.PageQuery;
-import com.robin.core.query.util.QueryParam;
-import com.robin.core.query.util.QueryString;
-
+@Slf4j
 public abstract class AbstractSqlGen implements BaseSqlGen {
     public static final String illegal_SchemaChars = "!@#$%^&*()+.";
-    protected static String SELECT = "select ";
+    protected static final String SELECT = "select ";
 
     /**
      * @param str
@@ -187,13 +189,13 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
         int nOrderPos = sql.lastIndexOf("order by");
         if (nOrderPos == -1)
             nOrderPos = sql.indexOf("ORDER BY");
-        int nGroupByPos = sql.lastIndexOf("group by");
+        /*int nGroupByPos = sql.lastIndexOf("group by");
         if (nGroupByPos == -1)
-            nGroupByPos = sql.lastIndexOf("GROUP BY");
-
-        if (nOrderPos == -1) nOrderPos = sql.length();
+            nGroupByPos = sql.lastIndexOf("GROUP BY");*/
+        if (nOrderPos == -1)
+            nOrderPos = sql.length();
         StringBuffer strBuf = new StringBuffer();
-        strBuf.append("select count(1) as total from (").append(sql.substring(0, nOrderPos)).append(") a ");
+        strBuf.append("select count(1) as total from (").append(sql, 0, nOrderPos).append(") a ");
         return strBuf.toString();
     }
 
@@ -255,7 +257,7 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
     }
 
     protected String toSQLForInt(QueryParam param) {
-        StringBuffer sql = new StringBuffer("");
+        StringBuffer sql = new StringBuffer();
         String retstr = "";
         String nQueryModel = param.getQueryMode();
         if (param.getQueryValue() == null || "".equals(param.getQueryValue().trim())) return "";
@@ -274,7 +276,7 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
                 sql.append(" having " + key + param.getQueryMode() + param.getQueryValue());
             else if (nQueryModel.equals(QueryParam.QUERYMODE_BETWEEN) && !";".equals(value)) {
                 String beginvalue = value.substring(0, value.indexOf(";"));
-                String endvalue = value.substring(value.indexOf(";") + 1, value.length());
+                String endvalue = value.substring(value.indexOf(";") + 1);
                 if (!"".equals(beginvalue)) {
                     if (!"".equals(endvalue))
                         sql.append("(" + key + " between " + beginvalue + " and " + endvalue + ")");
@@ -288,7 +290,7 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
     }
 
     protected String toSQLForDecimal(QueryParam param) {
-        StringBuffer sql = new StringBuffer("");
+        StringBuffer sql = new StringBuffer();
         String nQueryModel = param.getQueryMode();
         if (param.getQueryValue() == null || "".equals(param.getQueryValue().trim())) return "";
         String value = param.getQueryValue();
@@ -305,7 +307,7 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
                 sql.append(" having " + key + param.getQueryMode() + param.getQueryValue());
             else if (nQueryModel.equals(QueryParam.QUERYMODE_BETWEEN)) {
                 String beginvalue = value.substring(0, value.indexOf(";"));
-                String endvalue = value.substring(value.indexOf(";") + 1, value.length());
+                String endvalue = value.substring(value.indexOf(";") + 1);
                 sql.append("(" + key + " between " + beginvalue + " and " + endvalue + ")");
             }
         }
@@ -313,7 +315,7 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
     }
 
     protected String toSQLForString(QueryParam param) {
-        StringBuffer sql = new StringBuffer("");
+        StringBuffer sql = new StringBuffer();
         String nQueryModel = param.getQueryMode();
         if (param.getQueryValue() == null || "".equals(param.getQueryValue().trim())) return "";
         String key = param.getColumnName();
@@ -339,7 +341,7 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
     }
 
     protected String toSQLForDate(QueryParam param) {
-        StringBuffer sql = new StringBuffer("");
+        StringBuffer sql = new StringBuffer();
         String nQueryModel = param.getQueryMode();
         if (param.getQueryValue() == null || "".equals(param.getQueryValue().trim())) return "";
         String key = param.getColumnName();
@@ -350,7 +352,7 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
         else if (nQueryModel.equals(QueryParam.QUERYMODE_LTANDEQUAL)) sql.append(key + "<=" + "'" + value + "'");
         else if (nQueryModel.equals(QueryParam.QUERYMODE_BETWEEN) && !"".equals(value) && !";".equals(value)) {
             String begindate = value.substring(0, value.indexOf(";"));
-            String enddate = value.substring(value.indexOf(";") + 1, value.length());
+            String enddate = value.substring(value.indexOf(";") + 1);
             if (!"".equals(begindate)) {
                 if (!"".equals(enddate))
                     sql.append("(" + key + " between '" + begindate + "' and '" + enddate + "')");
@@ -394,6 +396,16 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
             return "\"" + schema + "\"";
         }
     }
+
+    protected Integer[] getStartEndRecord(PageQuery pageQuery) {
+        int nBegin = (pageQuery.getPageNumber() - 1) * pageQuery.getPageSize();
+        int tonums = nBegin + pageQuery.getPageSize();
+        if (pageQuery.getRecordCount() < tonums)
+            tonums = pageQuery.getRecordCount();
+        return new Integer[]{nBegin, tonums};
+    }
+
+
 
     protected boolean isSchemaIllegal(String schema) {
         boolean is_illeagl = true;

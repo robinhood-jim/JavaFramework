@@ -45,5 +45,9 @@ public class TestModelService extends BaseAnnotationJdbcService<TestModel, Long>
         dao.executeUpdate("update t_test set name='DDDDDD' where id=6");
         throw new RuntimeException("error");
     }
+    @Transactional(propagation = Propagation.REQUIRED,rollbackFor = RuntimeException.class)
+    public void insertWithQueryMapper(){
+
+    }
 
 }

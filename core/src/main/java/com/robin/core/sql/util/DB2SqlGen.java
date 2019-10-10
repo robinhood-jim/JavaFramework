@@ -47,11 +47,11 @@ public class DB2SqlGen extends AbstractSqlGen implements BaseSqlGen{
 			nGroupByPos=str.lastIndexOf("GROUP BY");
 		
 		if (nOrderPos == -1) nOrderPos = str.length();
-		StringBuffer strBuf = new StringBuffer();
+		StringBuilder strBuf = new StringBuilder();
 		if(nGroupByPos==-1)
-			strBuf.append("select count(*) as total ").append(str.substring(nFromPos, nOrderPos)).append(" with ur");
+			strBuf.append("select count(*) as total ").append(str, nFromPos, nOrderPos).append(" with ur");
 		else
-			strBuf.append("select count(1) as total from (select count(1) as cou ").append(str.substring(nFromPos,nOrderPos)).append(") a with ur");
+			strBuf.append("select count(1) as total from (select count(1) as cou ").append(str, nFromPos, nOrderPos).append(") a with ur");
 		return strBuf.toString();
 	}
 
@@ -61,23 +61,17 @@ public class DB2SqlGen extends AbstractSqlGen implements BaseSqlGen{
 	}
 
 	public String generatePageSql(String strSQL, PageQuery pageQuery) {
+		Integer[] startEnd=getStartEndRecord(pageQuery);
 
-		int nBegin = (Integer.parseInt(pageQuery.getPageNumber()) - 1) * Integer.parseInt(pageQuery.getPageSize());
-		boolean hasOffset = nBegin > 0;
 		strSQL = strSQL.trim();
-		
-		StringBuffer pagingSelect = new StringBuffer(strSQL.length() + 100);
+		StringBuilder pagingSelect = new StringBuilder(strSQL.length() + 100);
 		pagingSelect.append("select * from ( select row.*,rownumber() over() as rownum");
 		pagingSelect.append(" from ( ");
 		pagingSelect.append(strSQL);
-		int tonums=nBegin + Integer.parseInt(pageQuery.getPageSize());
-		if(Integer.parseInt(pageQuery.getRecordCount())< tonums)
-			tonums= Integer.parseInt(pageQuery.getRecordCount());
-		pagingSelect.append(" )row) row_ where rownum <= ").append(tonums).append(" and rownum > ").append(nBegin).append(" with ur");
+		pagingSelect.append(" )row) row_ where rownum <= ").append(startEnd[1]).append(" and rownum > ").append(startEnd[0]).append(" with ur");
 		log.info("pageSql="+pagingSelect.toString());
 		return pagingSelect.toString();
 	}
-
 	
 
 
@@ -90,7 +84,7 @@ public class DB2SqlGen extends AbstractSqlGen implements BaseSqlGen{
 
 
 	protected String toSQLForString(QueryParam param) {
-		StringBuffer sql = new StringBuffer("");
+		StringBuilder sql = new StringBuilder();
 		String nQueryModel = param.getQueryMode();
 		if (param.getQueryValue() == null || "".equals(param.getQueryValue().trim())) return "";
 		String key = param.getColumnName();
@@ -118,7 +112,7 @@ public class DB2SqlGen extends AbstractSqlGen implements BaseSqlGen{
 	}
 
 	protected String toSQLForDate(QueryParam param) {
-		StringBuffer sql = new StringBuffer("");
+		StringBuilder sql = new StringBuilder();
 		String nQueryModel = param.getQueryMode();
 		if (param.getQueryValue() == null || "".equals(param.getQueryValue().trim())) return "";
 		String key = param.getColumnName();
@@ -129,7 +123,7 @@ public class DB2SqlGen extends AbstractSqlGen implements BaseSqlGen{
 		else if (nQueryModel.equals(QueryParam.QUERYMODE_LTANDEQUAL)) sql.append(key + "<=" + "'" + value + "'");
 		else if (nQueryModel.equals(QueryParam.QUERYMODE_BETWEEN) && !"".equals(value) && !";".equals(value)) {
 			String begindate = value.substring(0, value.indexOf(";"));
-			String enddate = value.substring(value.indexOf(";") + 1, value.length());
+			String enddate = value.substring(value.indexOf(";") + 1);
 			if(!"".equals(begindate)){
 				if(!"".equals(enddate))
 					sql.append("(" + key + " between '" + begindate + "' and '" + enddate + "')");
@@ -148,9 +142,9 @@ public class DB2SqlGen extends AbstractSqlGen implements BaseSqlGen{
 
 		int nOrderPos = str.lastIndexOf("order by");
 		if (nOrderPos == -1) nOrderPos = str.length();
-		StringBuffer pagingSelect = new StringBuffer();
+		StringBuilder pagingSelect = new StringBuilder();
 		pagingSelect.append("select * from ( select row.*,rownumber() over() as rownum");
-		pagingSelect.append(" from ( ").append(str.substring(0,nOrderPos));
+		pagingSelect.append(" from ( ").append(str, 0, nOrderPos);
 		pagingSelect.append(" )row) row_ where rownum = 1").append(" with ur");
 		return pagingSelect.toString();
 	}

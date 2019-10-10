@@ -22,7 +22,7 @@ import java.sql.Timestamp;
 @MappingEntity(table = "t_test_mutilkey")
 @Data
 public class TestMutilPK extends BaseObject {
-    @MappingField(primary = "1")
+    @MappingField(primary = true)
     private TestPkObj tobj;
     @MappingField
     private Double outputval;

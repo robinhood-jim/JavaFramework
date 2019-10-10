@@ -53,17 +53,17 @@ public class AvroFileWriter extends AbstractFileWriter{
 
 	@Override
 	public void writeRecord(Map<String, ?> map) throws IOException {
-		Iterator<String> iter=map.keySet().iterator();
+
 		GenericRecord record=new GenericData.Record(schema);
-		while(iter.hasNext()){
-			String key=iter.next();
-			if(colmeta.getColumnNameMap().containsKey(key)) {
-				if (map.get(key) != null)
-					record.put(key, map.get(key));
-				else
-					record.put(key, "");
+
+		for (int i = 0; i < colmeta.getColumnList().size(); i++) {
+			String name = colmeta.getColumnList().get(i).getColumnName();
+			Object value=getMapValueByMeta(map,name);
+			if(value!=null){
+				record.put(name, value);
 			}
 		}
+
 		fileWriter.append(record);
 		//dwriter.write(record, encoder);
 	}

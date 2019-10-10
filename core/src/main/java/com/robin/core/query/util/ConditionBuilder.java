@@ -24,7 +24,7 @@ public class ConditionBuilder {
 		ConditionList list = new ConditionList(); 
 		for (int i = 0; i < method.length; i++) {
 			methodName = method[i].getName();
-			methodFix = methodName.substring(3, methodName.length());
+			methodFix = methodName.substring(3);
 			if (methodName.startsWith("get") && !methodName.equals("getClass") && (methods == null || methods.isEmpty() 
 					|| methods.containsKey(methodFix))) {
 				if (method[i].getParameterTypes().length > 0){
@@ -36,8 +36,8 @@ public class ConditionBuilder {
 				if(empty == 1 && args2[0] == null){
 					continue;
 				}
-				if(empty == 2 && (args2[0] == null || args2[0].equals("") || args2[0].equals(new Integer(0))
-						|| args2[0].equals(new Long(0)) || args2[0].equals(new Double(0))
+				if(empty == 2 && (args2[0] == null || args2[0].equals("") || args2[0].equals(0)
+						|| args2[0].equals(0L) || args2[0].equals(0.0)
 						|| args2[0].equals(new Float(0))) || args2[0].equals(new HashMap()) || args2[0].equals(new ArrayList())){
 					continue;
 				}

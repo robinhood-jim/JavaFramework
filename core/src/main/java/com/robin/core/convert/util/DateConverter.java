@@ -22,7 +22,7 @@ import java.util.Date;
 
 import org.apache.commons.beanutils.ConversionException;
 import org.apache.commons.beanutils.Converter;
-import org.apache.commons.lang.StringUtils;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -62,7 +62,7 @@ public class DateConverter implements Converter {
         DateFormat df = new SimpleDateFormat(pattern);
         if (value instanceof String) {
             try {
-                if (StringUtils.isEmpty(value.toString())) {
+                if (value.toString().isEmpty()) {
                     return null;
                 }
 

@@ -23,7 +23,7 @@ import lombok.Data;
 @MappingEntity(table="testtablob")
 @Data
 public class TestLob extends BaseObject {
-	@MappingField(primary="1",increment="1")
+	@MappingField(primary=true,increment=true)
 	private Long id;
 	@MappingField
 	private String name;

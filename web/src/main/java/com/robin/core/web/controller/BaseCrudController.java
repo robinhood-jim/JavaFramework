@@ -16,7 +16,7 @@
 package com.robin.core.web.controller;
 
 import com.robin.core.base.model.BaseObject;
-import com.robin.core.base.service.BaseAnnotationJdbcService;
+import com.robin.core.base.service.IBaseAnnotationJdbcService;
 import com.robin.core.base.spring.SpringContextHolder;
 import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.query.util.PageQuery;
@@ -36,7 +36,7 @@ import java.util.Map;
 /**
  * Single Table Mapping Background Controller
  */
-public abstract class BaseCrudController<O extends BaseObject, P extends Serializable, S extends BaseAnnotationJdbcService> extends BaseContorller implements InitializingBean {
+public abstract class BaseCrudController<O extends BaseObject, P extends Serializable, S extends IBaseAnnotationJdbcService<O,P>> extends BaseController implements InitializingBean {
     private Class<O> objectType;
     private Class<P> pkType;
     private Class<S> serviceType;
@@ -73,16 +73,20 @@ public abstract class BaseCrudController<O extends BaseObject, P extends Seriali
      * @param response
      * @return
      */
-    protected Map<String, Object> doAdd(HttpServletRequest request, HttpServletResponse response) {
+    protected Map<String, Object> doSave(HttpServletRequest request, HttpServletResponse response,Object... obj) {
         boolean finishTag = true;
-        Long id = null;
         Map<String, Object> retMap = new HashMap();
         try {
-            BaseObject obj = this.objectType.newInstance();
-            ConvertUtil.mapToObject(obj, wrapRequest(request));
-            this.service.saveEntity(obj);
+            O object=null;
+            if(obj.length==0) {
+                object=this.objectType.newInstance();
+                ConvertUtil.mapToObject(object, wrapRequest(request));
+            }else if(obj[0] instanceof BaseObject){
+                object=(O) obj[0];
+            }
+            this.service.saveEntity(object);
             wrapSuccess(retMap);
-            doAfterAdd(request, response, obj, retMap);
+            doAfterAdd(request, response, object, retMap);
         } catch (Exception ex) {
             this.log.error("{}", ex);
             finishTag = false;
@@ -93,10 +97,10 @@ public abstract class BaseCrudController<O extends BaseObject, P extends Seriali
         return retMap;
     }
 
-    protected Map<String, Object> doView(HttpServletRequest request, HttpServletResponse response, Long id) {
+    protected Map<String, Object> doView(HttpServletRequest request, HttpServletResponse response, P id) {
         Map<String, Object> retMap = new HashMap<String, Object>();
         try {
-            BaseObject object = service.getEntity(id);
+            O object = service.getEntity(id);
             retMap = wrapSuccess("success");
             doAfterView(request, response, object, retMap);
             wrapSuccess(retMap);
@@ -124,10 +128,10 @@ public abstract class BaseCrudController<O extends BaseObject, P extends Seriali
         Map<String, Object> retMap = new HashMap<>();
         try {
             Map<String, String> valueMap = wrapRequest(request);
-            BaseObject object = objectType.newInstance();
-            BaseObject updateObj = service.getEntity(id);
+            O object = objectType.newInstance();
+            O updateObj = service.getEntity(id);
             ConvertUtil.convertToModel(object, valueMap);
-            ConvertUtil.convertToModelForUpdateNew(updateObj, object);
+            ConvertUtil.convertToModelForUpdate(updateObj, object);
             service.updateEntity(updateObj);
             doAfterUpdate(request, response, object, retMap);
             wrapSuccess(retMap);
@@ -142,13 +146,11 @@ public abstract class BaseCrudController<O extends BaseObject, P extends Seriali
 
     }
 
-    protected void doAfterView(HttpServletRequest request, HttpServletResponse response, BaseObject obj, Map<String, Object> retMap)
-            throws Exception {
+    protected void doAfterView(HttpServletRequest request, HttpServletResponse response, BaseObject obj, Map<String, Object> retMap) {
         retMap.put("model", obj);
     }
 
-    protected void doAfterEdit(HttpServletRequest request, HttpServletResponse response, BaseObject obj, Map<String, Object> retMap)
-            throws Exception {
+    protected void doAfterEdit(HttpServletRequest request, HttpServletResponse response, BaseObject obj, Map<String, Object> retMap) {
         retMap.put("model", obj);
     }
 
@@ -194,7 +196,7 @@ public abstract class BaseCrudController<O extends BaseObject, P extends Seriali
     }
 
     @SuppressWarnings(value = "uncheck")
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() {
         if (this.serviceType != null) {
             this.service = SpringContextHolder.getBean(this.serviceType);
         }
@@ -216,8 +218,9 @@ public abstract class BaseCrudController<O extends BaseObject, P extends Seriali
         }
         if (list.isEmpty()) {
             return null;
-        } else
+        } else {
             return (P[]) list.toArray();
+        }
     }
 
 }

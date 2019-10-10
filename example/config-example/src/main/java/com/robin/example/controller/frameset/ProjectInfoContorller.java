@@ -256,7 +256,7 @@ public class ProjectInfoContorller extends BaseCrudDhtmlxController<ProjectInfo,
     @RequestMapping("/genconfig/{id}")
     @ResponseBody
     public Map<String, Object> genConfig(HttpServletRequest request, HttpServletResponse response, @PathVariable Long id) {
-        Map<String, Object> retmap = new HashMap<String, Object>();
+
         try {
             ProjectInfo info = this.service.getEntity(Long.valueOf(id));
             String projType = info.getProjType().toString();
@@ -367,7 +367,7 @@ public class ProjectInfoContorller extends BaseCrudDhtmlxController<ProjectInfo,
             //DataSourceService DataSourceService = (DataSourceService) getBean("DataSourceService");
             PageQuery pageQuery = wrapPageQuery(request);
             pageQuery.setSelectParamId("GET_PROJECTINFO");
-            pageQuery.setPageSize("1");
+            pageQuery.setPageSize(1);
             String queryString = getQueryString(pageQuery);
             pageQuery.getParameters().put("queryString", queryString);
             if (pageQuery.getOrder() == null || "".equals(pageQuery.getOrder().trim())) {
@@ -376,8 +376,8 @@ public class ProjectInfoContorller extends BaseCrudDhtmlxController<ProjectInfo,
             }
             this.service.queryBySelectId(pageQuery);
             setCode("PRESISTTYPE,WEBFRAME,YNTYPE");
-            filterListByCodeSet(pageQuery, "presist", "PRESISTTYPE");
-            filterListByCodeSet(pageQuery, "webFrame", "WEBFRAME");
+            filterListByCodeSet(pageQuery, "presist", "PRESISTTYPE",null);
+            filterListByCodeSet(pageQuery, "webFrame", "WEBFRAME",null);
             retmap = wrapDhtmlxGridOutput(pageQuery);
         } catch (Exception e) {
             retmap.put("success", false);

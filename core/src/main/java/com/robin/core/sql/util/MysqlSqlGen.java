@@ -43,29 +43,22 @@ public class MysqlSqlGen extends AbstractSqlGen implements BaseSqlGen{
 		if (nOrderPos == -1) nOrderPos = str.length();
 		StringBuffer strBuf = new StringBuffer();
 		if(nGroupByPos==-1)
-			strBuf.append("select count(*) as total ").append(str.substring(nFromPos, nOrderPos));
+			strBuf.append("select count(*) as total ").append(str, nFromPos, nOrderPos);
 		else
-			strBuf.append("select count(1) as total from(select count(1) as cou ").append(str.substring(nFromPos,nOrderPos)).append(") tmp");
+			strBuf.append("select count(1) as total from(select count(1) as cou ").append(str, nFromPos, nOrderPos).append(") tmp");
 		
 		return strBuf.toString();
 	}
 
 
 	public String generatePageSql(String strSQL, PageQuery pageQuery) {
-
-		int nBegin = (Integer.parseInt(pageQuery.getPageNumber()) - 1) * Integer.parseInt(pageQuery.getPageSize());
-		boolean hasOffset = nBegin > 0;
+		Integer[] startEnd=getStartEndRecord(pageQuery);
+		int nBegin=startEnd[0];
+		int tonums=startEnd[1];
 		strSQL = strSQL.trim();
-		boolean isForUpdate = false;
-		if (strSQL.toLowerCase().endsWith(" for update")) {
-			strSQL = strSQL.substring(0, strSQL.length() - 11);
-			isForUpdate = true;
-		}
+
 		StringBuffer pagingSelect = new StringBuffer(strSQL.length() + 100);
 		pagingSelect.append(strSQL);
-		int tonums=nBegin + Integer.parseInt(pageQuery.getPageSize());
-		if(Integer.parseInt(pageQuery.getRecordCount())< tonums)
-			tonums= Integer.parseInt(pageQuery.getRecordCount());
 		int nums=tonums-nBegin;
 		pagingSelect.append(" limit "+nBegin+","+nums);
 		log.info("pageSql="+pagingSelect.toString());
@@ -88,7 +81,7 @@ public class MysqlSqlGen extends AbstractSqlGen implements BaseSqlGen{
 		int nOrderPos = str.lastIndexOf(" order by ");
 		if (nOrderPos == -1) nOrderPos = str.length();
 		StringBuffer strBuf = new StringBuffer();
-		strBuf.append(str.substring(0, nOrderPos)).append(" limit 1,1");
+		strBuf.append(str, 0, nOrderPos).append(" limit 1,1");
 		return strBuf.toString();
 	}
 	public String getSequnceScript(String sequnceName) throws DAOException {

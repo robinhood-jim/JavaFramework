@@ -15,73 +15,118 @@
  */
 package com.robin.core.convert.util;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.robin.core.base.model.BaseObject;
 import com.robin.core.base.util.Const;
 import com.robin.core.fileaccess.meta.DataSetColumnMeta;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.math.NumberUtils;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 public class ConvertUtil {
 
+    private static Cache<String,Map<String,Method>> cachedGetMethod= CacheBuilder.newBuilder().maximumSize(200).expireAfterAccess(30, TimeUnit.MINUTES).build();
+    private static Cache<String,Map<String,Method>> cachedSetMethod= CacheBuilder.newBuilder().maximumSize(200).expireAfterAccess(30, TimeUnit.MINUTES).build();
 
-    private static Logger logger = LoggerFactory.getLogger(ConvertUtil.class);
 
-    public static void convertToWeb(Object target, Object src) throws Exception {
+    public static void convertToTargetObj(Object target, Object src) throws Exception {
         if (target == null || src == null) return;
 
-        Map<String, Method> map = getAllSetMethodNames(target);
+        Map<String, Method> srcmap = returnGetMethold(src.getClass());
+        Map<String,Method> targetMap=returnSetMethold(target.getClass());
 
-        Method methods[] = src.getClass().getMethods();
-        for (int i = 0; i < methods.length; i++) {
-            String method = methods[i].getName();
-            if (method.startsWith("get") && !"getClass".equals(method)) {
-                Method setMethod = map.get(method.replaceFirst("get", "set"));
-                if (setMethod != null) {
-                    Object value = methods[i].invoke(src, (Object[]) null);
-                    if (value != null) {
-                        setMethod.invoke(target, new Object[]{value.toString()});
-                    } else {
-                        setMethod.invoke(target, new Object[]{""});
-                    }
-                }
+        Iterator<Map.Entry<String,Method>> iterator=srcmap.entrySet().iterator();
+        while(iterator.hasNext()){
+            Map.Entry<String,Method> entry=iterator.next();
+            if(targetMap.containsKey(entry.getKey())){
+                Object value=parseParamenter(targetMap.get(entry.getKey()).getParameterTypes()[0],srcmap.get(entry.getKey()).invoke(src,(Object[]) null));
+                targetMap.get(entry.getKey()).invoke(target,new Object[]{value});
             }
         }
+    }
+    public static Map<String,Method> returnGetMethold(Class clazz){
+        if(cachedGetMethod.getIfPresent(clazz.getCanonicalName())==null){
+            Map<String,Method> map=new HashMap<>();
+            Method[] methods=clazz.getMethods();
+            for(Method method:methods){
+                if(method.getName().startsWith("get")){
+                    String name=method.getName().substring(3,4).toLowerCase()+method.getName().substring(4);
+                    map.put(name,method);
+                }
+            }
+            if(!map.isEmpty())
+                cachedGetMethod.put(clazz.getCanonicalName(),map);
+        }
+        return cachedGetMethod.getIfPresent(clazz.getCanonicalName());
+    }
+
+    public static Map<String,Method> returnSetMethold(Class clazz){
+        if(cachedSetMethod.getIfPresent(clazz.getCanonicalName())==null){
+            Method[] methods=clazz.getMethods();
+            Map<String,Method> map=new HashMap<>();
+            for(Method method:methods){
+                if(method.getName().startsWith("set")){
+                    String name=method.getName().substring(3,4).toLowerCase()+method.getName().substring(4);
+                    map.put(name,method);
+                }
+            }
+            if(!map.isEmpty())
+                cachedSetMethod.put(clazz.getCanonicalName(),map);
+        }
+        return cachedSetMethod.getIfPresent(clazz.getCanonicalName());
+    }
+    private static Method getMethodByName(Class clazz,String methodName){
+        try{
+            return clazz.getDeclaredMethod(methodName);
+        }catch (NoSuchMethodException ex){
+
+        }
+        return null;
+    }
+    private static Method getMethodByName(Class clazz, String methodName, Type type){
+        try{
+            return clazz.getDeclaredMethod(methodName,(Class) type);
+        }catch (NoSuchMethodException ex){
+
+        }
+        return null;
     }
 
     public static void objectToMap(Map<String, String> target, Object src) throws Exception {
         if (src == null || target == null) return;
 
-        Method methods[] = src.getClass().getMethods();
-        for (int i = 0; i < methods.length; i++) {
-            String method = methods[i].getName();
-            if (method.startsWith("get") && !"getClass".equals(method)) {
-                String key = method.replaceFirst("get", "");
-                key = key.substring(0, 1).toLowerCase() + key.substring(1);
-                Object value = methods[i].invoke(src, (Object[]) null);
-                target.put(key, value == null ? "" : value.toString().trim());
+        Map<String,Method> getMetholds=returnGetMethold(src.getClass());
+        Iterator<Map.Entry<String,Method>> iterator=getMetholds.entrySet().iterator();
+        while(iterator.hasNext()){
+            Map.Entry<String,Method> entry=iterator.next();
+            if(entry.getValue().getParameterTypes().length==0) {
+                Object value = entry.getValue().invoke(src, (Object[]) null);
+                target.put(entry.getKey(), value == null ? "" : value.toString().trim());
             }
         }
     }
 
     public static void objectToMapObj(Map<String, Object> target, Object src) throws Exception {
         if (src == null || target == null) return;
-
-        Method methods[] = src.getClass().getMethods();
-        for (int i = 0; i < methods.length; i++) {
-            String method = methods[i].getName();
-            if (method.startsWith("get") && !"getClass".equals(method)) {
-                String key = method.replaceFirst("get", "");
-                key = key.substring(0, 1).toLowerCase() + key.substring(1);
-                Object value = methods[i].invoke(src, (Object[]) null);
-                target.put(key, value == null ? "" : value);
+        Map<String,Method> getMetholds=returnGetMethold(src.getClass());
+        Iterator<Map.Entry<String,Method>> iterator=getMetholds.entrySet().iterator();
+        while(iterator.hasNext()){
+            Map.Entry<String,Method> entry=iterator.next();
+            if(entry.getValue().getParameterTypes().length==0) {
+                Object value = entry.getValue().invoke(src, (Object[]) null);
+                target.put(entry.getKey(), value == null ? "" : value);
             }
         }
     }
@@ -89,24 +134,21 @@ public class ConvertUtil {
     public static void mapToObject(BaseObject target, Map<String, String> src) throws Exception {
         if (src == null || target == null)
             return;
-        Iterator<String> it = src.keySet().iterator();
-        Method methods[] = target.getClass().getMethods();
+        Iterator<Map.Entry<String, String>> it = src.entrySet().iterator();
+        Map<String, Method> methodMap = returnSetMethold(target.getClass());
         while (it.hasNext()) {
-            String key = (String) it.next();
-            String value = src.get(key);
-            String methordName = "set" + key.substring(0, 1).toUpperCase() + key.substring(1);
-            for (int i = 0; i < methods.length; i++) {
-                if (methods[i].getName().equalsIgnoreCase(methordName)) {
-                    target.AddDirtyColumn(key);
-                    Class type = methods[i].getParameterTypes()[0];
-                    Object retValue = null;
-                    if (!type.getName().equalsIgnoreCase("java.lang.String") && value.equals(""))
-                        retValue = null;
-                    else
-                        retValue = parseParamenter(type, value);
-                    methods[i].invoke(target, new Object[]{retValue});
-                    break;
-                }
+            Map.Entry<String, String> entry = it.next();
+            String key = entry.getKey();
+            String value = entry.getValue();
+            if (methodMap.containsKey(key)) {
+                target.AddDirtyColumn(key);
+                Class type = methodMap.get(key).getParameterTypes()[0];
+                Object retValue = null;
+                if (!type.getName().equalsIgnoreCase("java.lang.String") && value.equals(""))
+                    retValue = null;
+                else
+                    retValue = parseParamenter(type, value);
+                methodMap.get(key).invoke(target, new Object[]{retValue});
             }
         }
 
@@ -116,44 +158,20 @@ public class ConvertUtil {
         if (src == null || target == null) return;
 
         Iterator it = src.keySet().iterator();
-        Method methods[] = target.getClass().getMethods();
+        Map<String,Method> targetMap=returnSetMethold(target.getClass());
         while (it.hasNext()) {
             String key = (String) it.next();
             String value = src.get(key).toString();
-            String methordName = "set" + key.substring(0, 1).toUpperCase() + key.substring(1);
-            for (int i = 0; i < methods.length; i++) {
-                if (methods[i].getName().equalsIgnoreCase(methordName)) {
-                    Class type = methods[i].getParameterTypes()[0];
-                    Object retValue = null;
-                    if (!type.getName().equalsIgnoreCase("java.lang.String") && value.equals("")) retValue = null;
-                    else retValue = parseParamenter(type, value);
-                    methods[i].invoke(target, new Object[]{retValue});
-                }
+            if (targetMap.containsKey(key)) {
+                Class type = targetMap.get(key).getParameterTypes()[0];
+                Object retValue = null;
+                if (!type.getName().equalsIgnoreCase("java.lang.String") && value.equals("")) retValue = null;
+                else retValue = parseParamenter(type, value);
+                targetMap.get(key).invoke(target, new Object[]{retValue});
             }
         }
     }
 
-    public static void mapToObject(Object target, Map<String, String> src, boolean idInclude) throws Exception {
-        if (src == null || target == null) return;
-
-        Iterator it = src.keySet().iterator();
-        Method methods[] = target.getClass().getMethods();
-        while (it.hasNext()) {
-            String key = (String) it.next();
-            if (!idInclude && key.equals("id")) continue;
-            String value = src.get(key);
-            String methordName = "set" + key.substring(0, 1).toUpperCase() + key.substring(1);
-            for (int i = 0; i < methods.length; i++) {
-                if (methods[i].getName().equalsIgnoreCase(methordName)) {
-                    Class type = methods[i].getParameterTypes()[0];
-                    Object retValue = null;
-                    if (!type.getName().equalsIgnoreCase("java.lang.String") && value.equals("")) retValue = null;
-                    else retValue = parseParamenter(type, value);
-                    methods[i].invoke(target, new Object[]{retValue});
-                }
-            }
-        }
-    }
 
     private static String wordCase(String value) {
 
@@ -161,37 +179,20 @@ public class ConvertUtil {
     }
 
 
-    public static void convertToModel(Object target, Object src) throws Exception {
-        if (target == null || src == null) return;
 
-        Map<String, Method> map = getAllSetMethodNames(target);
 
-        Method methods[] = src.getClass().getMethods();
-        for (int i = 0; i < methods.length; i++) {
-            String method = methods[i].getName();
-            if (method.startsWith("get") && !"getClass".equals(method)) {
-                Method setMethod = map.get(method.replaceFirst("get", "set"));
-                if (setMethod != null) {
-                    Object value = methods[i].invoke(src, (Object[]) null);
-                    if (value != null) {
-                        setMethod.invoke(target, new Object[]{value});
-                    }
-                }
-            }
-        }
-    }
-
-    public static void convertToModelForUpdateNew(BaseObject target, BaseObject src) throws Exception {
+    public static void convertToModelForUpdate(BaseObject target, BaseObject src) throws Exception {
         if (target == null || src == null) return;
         if (!target.getClass().equals(src.getClass())) throw new RuntimeException("");
-        Map<String, Method> map = getAllSetMethodNames(target);
+        Map<String, Method> srcmap = returnGetMethold(src.getClass());
+        Map<String,Method> targetMap=returnSetMethold(target.getClass());
 
         List<String> dirtyColumnList = src.getDirtyColumn();
         for (int i = 0; i < dirtyColumnList.size(); i++) {
-            String method = dirtyColumnList.get(i).substring(0, 1).toUpperCase() + dirtyColumnList.get(i).substring(1, dirtyColumnList.get(i).length());
-            Method setMethod = map.get("set" + method);
+
+            Method setMethod = targetMap.get(dirtyColumnList.get(i));
             if (setMethod != null) {
-                Method getMethod = src.getClass().getMethod("get" + method, (Class[]) null);
+                Method getMethod = srcmap.get(dirtyColumnList.get(i));
                 Object value = getMethod.invoke(src, (Object[]) null);
                 if (value != null) {
                     setMethod.invoke(target, new Object[]{value});
@@ -202,92 +203,73 @@ public class ConvertUtil {
         }
     }
 
-    public static void convertToModelForUpdate(Object target, Object src) throws Exception {
+
+
+    public static void convertToModel(BaseObject target, Map<String, String> src) throws Exception {
         if (target == null || src == null) return;
-        if (!target.getClass().equals(src.getClass())) throw new RuntimeException("");
-        try {
-            Map<String, Method> map = getAllSetMethodNames(target);
 
-            Method methods[] = src.getClass().getMethods();
-            for (int i = 0; i < methods.length; i++) {
-                String method = methods[i].getName();
-                if (method.startsWith("get") && !"getClass".equals(method) && !"getId".equalsIgnoreCase(method)) {
-                    Method setMethod = map.get(method.replaceFirst("get", "set"));
-                    if (setMethod != null) {
-                        logger.info("setMethod Name" + setMethod.getName());
-                        Object value = methods[i].invoke(src, (Object[]) null);
+        Map<String, Method> map = returnSetMethold(target.getClass());
 
-                        if (value != null) {
-                            logger.info("getValue=" + value.toString());
-                            setMethod.invoke(target, new Object[]{value});
+        Iterator set = src.keySet().iterator();
+        while (set.hasNext()) {
+            String field = (String) set.next();
+            Method setMethod = map.get(field);
+            if (setMethod != null) {
+                String value = src.get(field);
+                setBaseObjectValue(target,value,field,setMethod);
+            }
+        }
+    }
+    private static void setBaseObjectValue(BaseObject target,Object value,String field,Method setMethod) throws Exception{
+        if (value != null) {
+            target.AddDirtyColumn(field);
+            Class type = setMethod.getParameterTypes()[0];
+            if (!type.getName().equalsIgnoreCase("java.lang.String") && value.equals("")) {
+                setMethod.invoke(target, new Object[]{null});
+            } else {
+                Object retValue = parseParamenter(type, value);
+                setMethod.invoke(target, new Object[]{retValue});
+            }
+        }
+    }
+    public static void convertToTarget(Object target, Object src) throws Exception {
+        if (target == null || src == null) return;
+        Map<String, Method> targetMethodMap = returnSetMethold(target.getClass());
+        Map<String, Method> sourceMethodMap = returnGetMethold(src.getClass());
+        if(src instanceof Map) {
+            Map<String,Object> vMap=(Map<String,Object>)src;
+            Iterator set = vMap.keySet().iterator();
+            while (set.hasNext()) {
+                String field = (String) set.next();
+                Method setMethod = targetMethodMap.get(field);
+                if (setMethod != null) {
+                    String value = vMap.get(field).toString();
+                    if(target instanceof BaseObject)
+                        setBaseObjectValue((BaseObject) target,value,field,setMethod);
+                    else{
+                        if(targetMethodMap.containsKey(field)) {
+                            Object retValue = parseParamenter(targetMethodMap.get(field).getParameterTypes()[0], value);
+                            setObjectValue(targetMethodMap.get(field), target, retValue);
                         }
                     }
                 }
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw e;
-        }
-    }
+        }else {
 
-    public static void convertToModel(Object target, Map<String, Object> src) throws Exception {
-        if (target == null || src == null) return;
-
-        Map<String, Method> map = getAllSetMethodNames(target);
-
-        Iterator set = src.keySet().iterator();
-        while (set.hasNext()) {
-            String method = (String) set.next();
-            Method setMethod = map.get("set" + wordCase(method));
-            if (setMethod != null) {
-                Object value = src.get(method);
-                if (value != null) {
-                    Class type = setMethod.getParameterTypes()[0];
-                    if (!type.getName().equalsIgnoreCase("java.lang.String") && value.equals("")) {
-                        setMethod.invoke(target, new Object[]{null});
-                    } else {
-                        Object retValue = parseParamenter(type, value);
-                        setMethod.invoke(target, new Object[]{retValue});
-                    }
+            Iterator<Map.Entry<String,Method>> iter=sourceMethodMap.entrySet().iterator();
+            while(iter.hasNext()){
+                Map.Entry<String,Method> entry=iter.next();
+                if (targetMethodMap.containsKey(entry.getKey()) && entry.getValue().getParameterTypes().length==0){
+                    Object retValue = parseParamenter(targetMethodMap.get(entry.getKey()).getParameterTypes()[0], entry.getValue().invoke(src,new Object[]{}));
+                    setObjectValue(targetMethodMap.get(entry.getKey()), target, retValue);
                 }
             }
         }
     }
-
-    public static void convertToPool(Object target, Object src) throws Exception {
-        if (target == null || src == null) return;
-
-        Map<String, Method> map = getAllSetMethodNames(target);
-
-        Method methods[] = src.getClass().getMethods();
-        for (int i = 0; i < methods.length; i++) {
-            String method = methods[i].getName();
-            if (method.startsWith("get") && !"getClass".equals(method)) {
-                Method setMethod = map.get(method.replaceFirst("get", "set"));
-                if (setMethod != null) {
-                    Object value = methods[i].invoke(src, (Object[]) null);
-                    if (value != null) {
-                        Class type = setMethod.getParameterTypes()[0];
-                        Object retValue = parseParamenter(type, value);
-                        setMethod.invoke(target, new Object[]{retValue});
-                    }
-                }
-            }
-        }
+    private static void setObjectValue(Method setMethod,Object target,Object value) throws Exception{
+        setMethod.invoke(target,new Object[]{value});
     }
 
-    private static Map<String, Method> getAllSetMethodNames(Object source) throws Exception {
-        Method methods[] = source.getClass().getMethods();
-        Map<String, Method> map = new HashMap<String, Method>();
-
-        for (int i = 0; i < methods.length; i++) {
-            String method = methods[i].getName();
-            if (method.startsWith("set")) {
-                map.put(method, methods[i]);
-            }
-        }
-        return map;
-    }
 
     public static Object parseParamenter(Class type, Object strValue) throws Exception {
         if (strValue == null) {
@@ -298,17 +280,15 @@ public class ConvertUtil {
             typeName = "byte";
         }
         Object ret = null;
-        if (type.isPrimitive()) {
-            if ("int".equals(typeName)) type = Class.forName("java.lang.Integer");
-            else if ("long".equals(typeName)) type = Class.forName("java.lang.Long");
-            else if ("float".equals(typeName)) type = Class.forName("java.lang.Float");
-            else if ("double".equals(typeName)) type = Class.forName("java.lang.Double");
-            else if ("boolean".equals(typeName)) type = Class.forName("java.lang.Boolean");
-            else if ("char".equals(typeName)) type = Class.forName("java.lang.Character");
-            else if ("byte".equals(typeName)) type = Class.forName("java.lang.Byte");
-        }
-
-        if (typeName.startsWith("java.math.") || "java.util.Date".equals(typeName)) {
+        if (typeName.equals("int")) {
+            ret = Integer.parseInt(strValue.toString());
+        } else if (typeName.equals("long")) {
+            ret = Long.parseLong(strValue.toString());
+        } else if (typeName.equals("float")) {
+            ret = Float.parseFloat(strValue.toString());
+        } else if (typeName.equals("double")) {
+            ret = Double.parseDouble(strValue.toString());
+        } else if (typeName.startsWith("java.math.") || "java.util.Date" .equals(typeName)) {
             String value = strValue.toString().trim();
             if (value.indexOf(":") == -1)
                 value += " 00:00:00";
@@ -336,9 +316,9 @@ public class ConvertUtil {
             }
             if (!typeName.equals("byte")) {
                 if (!strValue.toString().isEmpty()) {
-                    Method method = type.getMethod("valueOf", new Class[]{"java.lang.String".getClass()});
+                    Method method = type.getMethod("valueOf", new Class[]{"java.lang.String" .getClass()});
                     if (method != null)
-                        ret = method.invoke(type, new Object[]{strValue.toString()});
+                        ret = method.invoke(Class.forName("java.lang.Byte"), new Object[]{strValue.toString()});
                 } else {
                     ret = null;
                 }
@@ -378,9 +358,9 @@ public class ConvertUtil {
     }
 
     public static Object wrapObjectByAutoDetect(Object object, String dateFormatStr) {
-        Object retObj=null;
+        Object retObj = null;
         if (object != null) {
-            SimpleDateFormat dateFormat = new SimpleDateFormat(dateFormatStr == null && !dateFormatStr.isEmpty() ? dateFormatStr : "yyyy-MM-dd");
+            SimpleDateFormat dateFormat = new SimpleDateFormat(dateFormatStr != null && !dateFormatStr.isEmpty() ? dateFormatStr : "yyyy-MM-dd");
             Class clazz = object.getClass();
             if (object.getClass().isPrimitive()) {
                 if (clazz.equals(String.class)) {
@@ -388,26 +368,26 @@ public class ConvertUtil {
                         Number number = NumberUtils.createNumber(object.toString());
                         if (Math.ceil(number.doubleValue()) == number.longValue()) {
                             if (number.longValue() < Integer.MAX_VALUE) {
-                                retObj=number.intValue();
-                            }else{
-                                retObj=number.longValue();
+                                retObj = number.intValue();
+                            } else {
+                                retObj = number.longValue();
                             }
-                        }else{
-                            retObj=number.doubleValue();
+                        } else {
+                            retObj = number.doubleValue();
                         }
-                    }else{
+                    } else {
                         try {
-                            Date date=dateFormat.parse(object.toString());
-                            retObj=new Timestamp(date.getTime());
-                        }catch (ParseException ex){
-                            retObj=object;
+                            Date date = dateFormat.parse(object.toString());
+                            retObj = new Timestamp(date.getTime());
+                        } catch (ParseException ex) {
+                            retObj = object;
                         }
                     }
-                }else{
-                    retObj=object;
+                } else {
+                    retObj = object;
                 }
             } else {
-                retObj=object;
+                retObj = object;
             }
         }
         return retObj;

@@ -35,13 +35,13 @@ public class OracleSqlGen extends AbstractSqlGen implements BaseSqlGen {
 		int nOrderPos = str.lastIndexOf(" order by ");
 		if (nOrderPos == -1) nOrderPos = str.length();
 		StringBuffer strBuf = new StringBuffer();
-		strBuf.append("select count(*) as total ").append(str.substring(nFromPos, nOrderPos));
+		strBuf.append("select count(*) as total ").append(str, nFromPos, nOrderPos);
 		return strBuf.toString();
 	}
 
 	public String generatePageSql(String strSQL, PageQuery pageQuery) {
-
-		int nBegin = (Integer.parseInt(pageQuery.getPageNumber()) - 1) * Integer.parseInt(pageQuery.getPageSize());
+		Integer[] startEnd=getStartEndRecord(pageQuery);
+		int nBegin = startEnd[0];
 		boolean hasOffset = nBegin > 0;
 		strSQL = strSQL.trim();
 		boolean isForUpdate = false;
@@ -53,9 +53,7 @@ public class OracleSqlGen extends AbstractSqlGen implements BaseSqlGen {
 		if (hasOffset) pagingSelect.append("select * from ( select row_.*, rownum rownum_ from ( ");
 		else pagingSelect.append("select * from ( ");
 		pagingSelect.append(strSQL);
-		int tonums=nBegin + Integer.parseInt(pageQuery.getPageSize());
-		if(Integer.parseInt(pageQuery.getRecordCount())< tonums)
-			tonums= Integer.parseInt(pageQuery.getRecordCount());
+		int tonums=startEnd[1];
 		if (hasOffset) pagingSelect.append(" ) row_ ) where rownum_ <= ").append(tonums).append(" and rownum_ > ").append(nBegin);
 		else pagingSelect.append(" ) where rownum <= ").append(pageQuery.getPageSize());
 		if (isForUpdate) pagingSelect.append(" for update");
@@ -68,11 +66,12 @@ public class OracleSqlGen extends AbstractSqlGen implements BaseSqlGen {
 	}
 
 	protected String toSQLForString(QueryParam param) {
-		StringBuffer sql = new StringBuffer("");
+		StringBuffer sql = new StringBuffer();
 		String nQueryModel = param.getQueryMode();
 		if (param.getQueryValue() == null || "".equals(param.getQueryValue().trim())) return "";
 		String key = param.getColumnName();
-		if (param.getAliasName() != null && !"".equals(param.getAliasName())) key = param.getAliasName() + "." + key;
+		if (param.getAliasName() != null && !"".equals(param.getAliasName()))
+			key = param.getAliasName() + "." + key;
 		String value = replace(param.getQueryValue());
 		if (value != null && !"".equals(value)) {
 			if (nQueryModel.equals(QueryParam.QUERYMODE_GT)) sql.append(key + ">" + "'" + value + "'");
@@ -89,7 +88,7 @@ public class OracleSqlGen extends AbstractSqlGen implements BaseSqlGen {
 	}
 
 	protected String toSQLForDate(QueryParam param) {
-		StringBuffer sql = new StringBuffer("");
+		StringBuffer sql = new StringBuffer();
 		String nQueryModel = param.getQueryMode();
 		if (param.getQueryValue() == null || "".equals(param.getQueryValue().trim())) return "";
 		String key = param.getColumnName();
@@ -100,7 +99,7 @@ public class OracleSqlGen extends AbstractSqlGen implements BaseSqlGen {
 		else if (nQueryModel.equals(QueryParam.QUERYMODE_LTANDEQUAL)) sql.append(key + "<=" + "to_date('" + value + "','YYYY-MM-DD')");
 		else if (nQueryModel.equals(QueryParam.QUERYMODE_BETWEEN) && !"".equals(value) && !";".equals(value)) {
 			String begindate = value.substring(0, value.indexOf(";"));
-			String enddate = value.substring(value.indexOf(";") + 1, value.length());
+			String enddate = value.substring(value.indexOf(";") + 1);
 			if(!"".equals(begindate)){
 				if(!"".equals(enddate))
 					sql.append("(" + key + " between to_date('" + begindate + "','YYYY-MM-DD') and to_date('" + enddate + "','YYYY-MM-DD'))");

@@ -332,7 +332,7 @@ public class ExcelBaseOper {
         Cell cell = row.createCell(column);
         cellStyle.setDataFormat(helper.createDataFormat().getFormat("yyyy-MM-dd hh:mm:ss"));
 
-        cell.setCellValue(new Date(Long.valueOf(value)));
+        cell.setCellValue(new Date(Long.parseLong(value)));
         cell.setCellStyle(cellStyle);
         return cell;
     }

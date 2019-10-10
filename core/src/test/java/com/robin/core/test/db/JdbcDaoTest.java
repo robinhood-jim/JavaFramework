@@ -16,6 +16,7 @@
 package com.robin.core.test.db;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -25,6 +26,9 @@ import com.robin.core.base.datameta.DataBaseParam;
 import com.robin.core.base.spring.DynamicBeanReader;
 import com.robin.core.base.spring.JdbcDaoDynamicBean;
 import com.robin.core.base.util.Const;
+import com.robin.core.base.util.StringUtils;
+import com.robin.core.query.util.Condition;
+import com.robin.core.sql.util.FilterCondition;
 import com.robin.core.test.model.*;
 import com.robin.core.test.service.*;
 import junit.framework.TestCase;
@@ -44,12 +48,12 @@ import com.robin.core.query.util.PageQuery;
 @ContextConfiguration(locations = "classpath:applicationContext-test.xml")
 public class JdbcDaoTest extends TestCase {
     @Override
-    protected void setUp() throws Exception {
+    protected void setUp() {
 
     }
 
     @Override
-    protected void tearDown() throws Exception {
+    protected void tearDown() {
     }
 
     @Test
@@ -72,16 +76,19 @@ public class JdbcDaoTest extends TestCase {
         TestModel model = new TestModel();
         model.setName("OOOOOOOOOO");
         model.setDescription("FFFFFFFFFF");
-        model.setCsId(1);
+        model.setCsId(1L);
         Long id = service.saveEntity(model);
         assertNotNull(id);
+        model.setName("ressds");
+        model.setCsId(2L);
+        service.updateEntity(model);
     }
 
     @Test
     public void testPageQuery() {
         JdbcDao jdbcDao = SpringContextHolder.getBean("jdbcDao", JdbcDao.class);
         PageQuery query = new PageQuery();
-        query.setPageSize("0");
+        query.setPageSize(0);
         query.setSelectParamId("GET_TEST_PAGE");
         query.getParameters().put("queryString", "");
         jdbcDao.queryBySelectId(query);
@@ -93,18 +100,28 @@ public class JdbcDaoTest extends TestCase {
     public void testPageQueryWithReplaceAndPrepared() {
         JdbcDao jdbcDao = SpringContextHolder.getBean("jdbcDao", JdbcDao.class);
         PageQuery query = new PageQuery();
-        query.setPageSize("0");
+        query.setPageSize(0);
         query.setSelectParamId("GET_TEST_PREPARE");
         query.getParameters().put("queryString", "and name like ? and cs_id=?");
         query.setParameterArr(new Object[]{"%e%", 1});
-        query.setPageSize("2");
+        query.setPageSize(2);
         jdbcDao.queryBySelectId(query);
         List<Map<String, Object>> fristPage = query.getRecordSet();
-        query.setPageNumber("2");
+        query.setPageNumber(2);
         jdbcDao.queryBySelectId(query);
         List<Map<String, Object>> secondPage = query.getRecordSet();
         assertNotNull(fristPage);
         assertNotNull(secondPage);
+    }
+    @Test
+    public void testPageQueryWithNamedParameter(){
+        JdbcDao jdbcDao = SpringContextHolder.getBean("jdbcDao", JdbcDao.class);
+        PageQuery query = new PageQuery();
+        query.setPageSize(0);
+        query.setSelectParamId("GET_TEST_NAMEPARAM");
+        query.setNameParameterWithKey("name","%O%");
+        jdbcDao.queryBySelectId(query);
+        assertNotNull(query.getRecordSet());
     }
 
     @Test
@@ -171,6 +188,22 @@ public class JdbcDaoTest extends TestCase {
         JdbcDao dao=SpringContextHolder.getBean("testSource",JdbcDao.class);
         List<Map<String,Object>> list= dao.queryBySql("select * from t_base_jar");
         assertNotNull(list);
+    }
+    @Test
+    public void testUpdate(){
+        SysUserService sysUserService=SpringContextHolder.getBean(SysUserService.class);
+        SysUser user=sysUserService.getEntity(25L);
+        user.setUserPassword("1222");
+        sysUserService.updateEntity(user);
+    }
+    @Test
+    public void testCondition() throws Exception{
+        List<FilterCondition> condList=new ArrayList<FilterCondition>();
+        SysUserService sysUserService=SpringContextHolder.getBean(SysUserService.class);
+        condList.add(new FilterCondition("userAccount", Condition.EQUALS,"admin"));
+        condList.add(new FilterCondition("userPassword", Condition.EQUALS, StringUtils.getMd5Encry("123456")));
+        condList.add(new FilterCondition("accountType", Condition.EQUALS,"1"));
+        List<SysUser> list=sysUserService.queryByCondition(condList,"");
     }
 
 }

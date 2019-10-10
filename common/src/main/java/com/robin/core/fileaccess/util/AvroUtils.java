@@ -1,21 +1,25 @@
 package com.robin.core.fileaccess.util;
 
 import com.robin.core.base.datameta.DataBaseColumnMeta;
+import com.robin.core.base.exception.ConfigurationIncorrectException;
 import com.robin.core.base.util.Const;
-import com.robin.core.exception.ConfigIncorrectException;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.meta.DataSetColumnMeta;
 import org.apache.avro.LogicalTypes;
 import org.apache.avro.Protocol;
 import org.apache.avro.Schema;
 import org.apache.avro.SchemaBuilder;
+import org.apache.avro.generic.GenericDatumReader;
+import org.apache.avro.generic.GenericDatumWriter;
+import org.apache.avro.generic.GenericRecord;
+import org.apache.avro.io.Decoder;
+import org.apache.avro.io.DecoderFactory;
+import org.apache.avro.io.Encoder;
+import org.apache.avro.io.EncoderFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
 import java.util.List;
 
 /**
@@ -71,7 +75,7 @@ public class AvroUtils {
             try{
                 schema=new Schema.Parser().parse(new FileInputStream(new File(schemaPath)));
             }catch(IOException ex){
-                throw new ConfigIncorrectException("avro schema file load exception:"+ex.getMessage());
+                throw new ConfigurationIncorrectException("avro schema file load exception:"+ex.getMessage());
             }
         }else if(colmeta.getResourceCfgMap().containsKey(Const.AVRO_SCHEMA_CONTENT_PARAM)){
             try{
@@ -104,7 +108,7 @@ public class AvroUtils {
                 schema=fields.endRecord();
                 logger.info(schema.toString(true));
             }else
-                throw new ConfigIncorrectException("missing avro schema config file or Content");
+                throw new ConfigurationIncorrectException("missing avro schema config file or Content");
         }
         return schema;
     }
@@ -116,5 +120,36 @@ public class AvroUtils {
     }
     public static Protocol parseProtocolWithString(String fileContent) throws IOException{
         return Protocol.parse(new ByteArrayInputStream(fileContent.getBytes()));
+    }
+    public static byte[] dataToByteArray(Schema schema, GenericRecord datum) throws IOException {
+        GenericDatumWriter<GenericRecord> writer = new GenericDatumWriter<GenericRecord>(schema);
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        try {
+            Encoder e = EncoderFactory.get().binaryEncoder(os, null);
+            writer.write(datum, e);
+            e.flush();
+            byte[] byteData = os.toByteArray();
+            return byteData;
+        } finally {
+            os.close();
+        }
+    }
+
+    public static GenericRecord byteArrayToData(Schema schema, byte[] byteData) {
+        GenericDatumReader<GenericRecord> reader = new GenericDatumReader<GenericRecord>(schema);
+        ByteArrayInputStream byteArrayInputStream = null;
+        try {
+            byteArrayInputStream = new ByteArrayInputStream(byteData);
+            Decoder decoder = DecoderFactory.get().binaryDecoder(byteArrayInputStream, null);
+            return reader.read(null, decoder);
+        } catch (IOException e) {
+            return null;
+        } finally {
+            try {
+                byteArrayInputStream.close();
+            } catch (IOException e) {
+
+            }
+        }
     }
 }

@@ -23,9 +23,9 @@ public class MySqlDataBaseMeta extends BaseDataBaseMeta implements DataBaseInter
 	public MySqlDataBaseMeta(DataBaseParam param) {
 		super(param);
 		if(param.getMainVersion()!=null && param.getMainVersion()!=0){
-			if(param.getMainVersion()<8){
+			if(param.getMainVersion()==5){
 				param.setDriverClassName("com.mysql.jdbc.Driver");
-			}else if(param.getMainVersion()>=5){
+			}else if(param.getMainVersion()>=8){
 				param.setDriverClassName("com.mysql.cj.jdbc.Driver");
 			}else {
 				param.setDriverClassName("org.gjt.mm.mysql.Driver");
@@ -80,5 +80,9 @@ public class MySqlDataBaseMeta extends BaseDataBaseMeta implements DataBaseInter
 	}
 	public BaseSqlGen getSqlGen() {
 		return new MysqlSqlGen();
+	}
+	@Override
+	public String getCatalog(String schema) {
+		return schema;
 	}
 }

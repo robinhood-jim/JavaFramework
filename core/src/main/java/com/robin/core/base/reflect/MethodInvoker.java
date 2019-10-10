@@ -20,7 +20,7 @@ import java.lang.reflect.Method;
 public class MethodInvoker {
 
 	public static void invokeSetMethod(Object baseobj,String methodName,Object value) throws Exception{
-		String methodname="set"+methodName.substring(0,1).toUpperCase()+methodName.substring(1,methodName.length());
+		String methodname="set"+methodName.substring(0,1).toUpperCase()+methodName.substring(1);
 		Method method=baseobj.getClass().getDeclaredMethod(methodname, value.getClass());
 		if(method!=null){
 			method.invoke(baseobj, value);

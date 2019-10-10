@@ -25,32 +25,32 @@ import com.robin.core.query.util.PageQuery;
 import com.robin.core.query.util.QueryString;
 
 public interface GenericService<V extends BaseObject,P extends Serializable> {
-	public V find(P id) throws ServiceException;
+	V find(P id) throws ServiceException;
 
-	public void create(V vo) throws ServiceException;
+	void create(V vo) throws ServiceException;
 	
-	public void update(V vo) throws ServiceException;
+	void update(V vo) throws ServiceException;
 
-	public void remove(P id) throws ServiceException;
+	void remove(P id) throws ServiceException;
 	
-	public void query(PageQuery pageQuery) throws ServiceException;
+	void query(PageQuery pageQuery) throws ServiceException;
    
-	public void removeByIds(Serializable[] ids) throws ServiceException;  
-	public List<V> findAll() throws ServiceException;
+	void removeByIds(Serializable[] ids) throws ServiceException;
+	List<V> findAll() throws ServiceException;
 	
-	public List<V> findByField(String fieldName, Object fieldValue,String orderName,boolean ascending) throws ServiceException;
-	public List<V> findByField(String fieldName, Object fieldValue) throws ServiceException;
+	List<V> findByField(String fieldName, Object fieldValue, String orderName, boolean ascending) throws ServiceException;
+	List<V> findByField(String fieldName, Object fieldValue) throws ServiceException;
 	
-	public List<V> findByFields(String[] fieldName, Object[] fieldValue) throws ServiceException;
+	List<V> findByFields(String[] fieldName, Object[] fieldValue) throws ServiceException;
 	
-	public List<V> findByFields(String[] fieldName, Object[] fieldValue,String orderName,boolean ascending) throws ServiceException;
+	List<V> findByFields(String[] fieldName, Object[] fieldValue, String orderName, boolean ascending) throws ServiceException;
 	
-	public List<V> findByFields(String[] fieldName, Object[] fieldValue,String[] orderName,boolean[] ascending) throws ServiceException;
+	List<V> findByFields(String[] fieldName, Object[] fieldValue, String[] orderName, boolean[] ascending) throws ServiceException;
 	
-	public PageQuery queryBySql(String querySQL,String countSql,String[] displayname,PageQuery pageQuery)throws ServiceException;
+	PageQuery queryBySql(String querySQL, String countSql, String[] displayname, PageQuery pageQuery)throws ServiceException;
 	
-	public void queryByParamter(QueryString qs, PageQuery pageQuery) throws ServiceException;
+	void queryByParamter(QueryString qs, PageQuery pageQuery) throws ServiceException;
 	
 	@Deprecated
-	public int executeSql(String sql)throws ServiceException;
+    int executeSql(String sql)throws ServiceException;
 }

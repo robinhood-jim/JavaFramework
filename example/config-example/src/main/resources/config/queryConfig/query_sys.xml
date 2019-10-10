@@ -7,7 +7,7 @@
 		       where 1=1 ${queryString}
 		 </FROMSQL>
 		 <FIELD>a.id AS id, a.user_name AS userName, a.user_account AS userAccount, a.account_type as accountType,
-		              a.org_id AS orgId,a.dept_id AS deptId,a.user_status AS userStatus, a.remark AS remark</FIELD>
+		              a.org_id AS orgId,a.user_status AS userStatus, a.remark AS remark</FIELD>
 	</SQLSCRIPT>
 	<SQLSCRIPT ID="GET_SYSORG_PAGE">  
 		<FROMSQL>from t_sys_org_info a where 1=1 ${queryString}
@@ -18,6 +18,21 @@
 		<FROMSQL>from t_sys_role_info a where 1=1 ${queryString}
 		 </FROMSQL>
 		 <FIELD>a.id AS id, a.role_name AS name, a.role_type AS type, a.role_status as status</FIELD>
+	</SQLSCRIPT>
+	<SQLSCRIPT ID="GET_SYSRESP_PAGE">
+		<FROMSQL>from t_sys_responsibility a where 1=1 ${queryString}
+		</FROMSQL>
+		<FIELD>a.id AS id, a.name AS name,a.status as status</FIELD>
+	</SQLSCRIPT>
+	<SQLSCRIPT ID="GET_SYSUSERRESP_PAGE">
+		<FROMSQL>from t_sys_user_resp_r b,t_sys_user_info a  where b.user_id=a.id ${queryString}
+		</FROMSQL>
+		<FIELD>b.id AS id, a.user_name AS userName, a.user_account AS userAccount, a.account_type as accountType,
+			a.org_id AS orgId</FIELD>
+	</SQLSCRIPT>
+	<SQLSCRIPT ID="GET_SYSRESP_COUNT">
+		<FROMSQL>from t_sys_responsibility a left join (select count(1) as cou,resp_id from t_sys_user_resp_r GROUP BY resp_id)b on a.id=b.resp_id</FROMSQL>
+		<FIELD>a.id as id,a.name as name,a.create_time as createTime,b.cou as rcount</FIELD>
 	</SQLSCRIPT>
 	<SQLSCRIPT ID="get_expert_question">  
 		<FROMSQL>select a.id as qid,b.name as cname,b.id as cid,a.title as qtitle from ask_question a , ask_category b where a.cid = b.id
@@ -50,11 +65,33 @@
 		 </FROMSQL>
 		 <FIELD>a.id as id,a.proj_name as name,a.proj_code as code,a.presist_type as presist,a.webframe_id as webFrame,b.name as datasourceName</FIELD>
 	</SQLSCRIPT>
+	<SQLSCRIPT ID="GET_SYSRESOURCEBYRESP">
+		<FROMSQL>from t_sys_resource_info a,t_sys_resource_resp_r b,t_sys_user_resp_r c
+			where a.id=b.res_id and b.resp_id=c.resp_id and c.user_id=? ORDER BY a.RES_CODE</FROMSQL>
+		<FIELD>
+			distinct(a.id) as id,a.res_name as name
+		</FIELD>
+	</SQLSCRIPT>
+	<SQLSCRIPT ID="GET_ORGRESOURCEBYRESP">
+		<FROMSQL>from t_sys_resource_info a,t_org_resource_resp_r b,t_org_user_resp_r c
+			where a.id=b.res_id and b.resp_id=c.resp_id and c.user_id=? ORDER BY a.RES_CODE</FROMSQL>
+		<FIELD>
+			distinct(a.id) as id,a.res_name as name
+		</FIELD>
+	</SQLSCRIPT>
 	<SQLSCRIPT ID="GET_RESOURCEINFO">
 		<FROMSQL>from (select a.* from t_sys_resource_info a,t_sys_resource_role_r b where a.ID=b.RES_ID and b.ROLE_ID in (${roleIds}) and a.STATUS=1
 			union 
-			select c.* from t_sys_resource_info c,t_sys_resource_user_r d where c.id=d.res_id and d.USER_ID=${userId} and c.STATUS=1)e order by res_code</FROMSQL>
+			select c.* from t_sys_resource_info c,t_sys_resource_user_r d where c.id=d.res_id and d.USER_ID=${userId} and c.STATUS=1)e order by res_code
+		</FROMSQL>
 			<FIELD>id,res_name as name,url,is_leaf as leafTag,res_code as code,pid,seq_no as seqNo</FIELD>
+	</SQLSCRIPT>
+	<SQLSCRIPT ID="GET_RESOURCEINFOBYSYSRESP">
+		<FROMSQL>from (select a.*,0 as assignType from t_sys_resource_info a,t_sys_resource_resp_r b where a.ID=b.RES_ID and b.RESP_ID in (${respIds}) and a.STATUS='1'
+			union
+			select c.*,d.ASSIGN_TYPE as assignType from t_sys_resource_info c,t_sys_resource_user_r d where c.id=d.res_id and d.USER_ID=${userId} and c.STATUS=1)e order by res_code,assignType desc
+		</FROMSQL>
+		<FIELD>id,res_name as name,url,is_leaf as leafTag,res_code as code,pid,seq_no as seqNo,assignType</FIELD>
 	</SQLSCRIPT>
 	<SQLSCRIPT ID="GET_DEPTINFO">
 		<FROMSQL>from t_sys_dept_info</FROMSQL>
@@ -74,11 +111,15 @@
 	</SQLSCRIPT>
 	<SQLSCRIPT ID="GET_SYSUSERINFO">
 		<FROMSQL>from t_sys_user_info  where 1=1 ${queryCondition}</FROMSQL>
-			<FIELD>id,user_name as name,user_account as account,dept_id as deptId,org_id as orgId</FIELD>
+		<FIELD>id,user_name as name,user_account as account,account_type as accountType,org_id as orgId</FIELD>
 	</SQLSCRIPT>
 	<SQLSCRIPT ID="$_GETCODESET">
 		<FROMSQL>from t_sys_code a,t_sys_codeset b where a.CS_ID=b.ID and en_name=?</FROMSQL>
 		<FIELD>a.ITEM_NAME as ITEMNAME,a.ITEM_VALUE as ITEMVALUE</FIELD>
+	</SQLSCRIPT>
+	<SQLSCRIPT ID="GETUSER_ORG">
+		<FROMSQL> from t_sys_org_info a,t_sys_user_org_r b where a.id=b.org_id and b.user_id=?</FROMSQL>
+		<FIELD>a.id as value,a.org_name as text</FIELD>
 	</SQLSCRIPT>
 
 	

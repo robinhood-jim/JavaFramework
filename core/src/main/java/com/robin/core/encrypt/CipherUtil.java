@@ -130,7 +130,6 @@ public class CipherUtil{
     	try{
     		byte[] bytes=CipherUtil.initSecretKey();
     		String ret=Base64.encodeBase64String(bytes);
-    		byte[] retbyte=Base64.decodeBase64(ret.getBytes());
     		System.out.println(ret);
     	}catch(Exception ex){
     		ex.printStackTrace();

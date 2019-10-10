@@ -16,11 +16,14 @@
 package com.robin.core.fileaccess.iterator;
 
 import com.robin.core.base.util.Const;
+import com.robin.core.base.util.FileUtils;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 @Slf4j
 public class TextFileIteratorFactory {
@@ -32,6 +35,15 @@ public class TextFileIteratorFactory {
 	}
 	public static AbstractFileIterator getProcessIteratorByType(String fileType,DataCollectionMeta colmeta,InputStream in) throws Exception{
 		AbstractFileIterator iterator=getIter(fileType,colmeta);
+		iterator.setInputStream(in);
+		iterator.init();
+		return iterator;
+	}
+	public static AbstractFileIterator getProcessIteratorByPath(DataCollectionMeta colmeta,InputStream in) throws Exception{
+		List<String> suffixList=new ArrayList<String>();
+		FileUtils.parseFileFormat(colmeta.getPath(),suffixList);
+		String fileFormat=suffixList.get(0);
+		AbstractFileIterator iterator=getIter(fileFormat,colmeta);
 		iterator.setInputStream(in);
 		iterator.init();
 		return iterator;

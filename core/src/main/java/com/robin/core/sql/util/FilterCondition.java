@@ -21,7 +21,7 @@ public class FilterCondition {
 	public static final String LIKE = "LIKE";
 	public static final String LEFT_LIKE="LLIKE";
 	public static final String RIGHT_LIKE="RLIKE";
-	public static final String EQS = "EQUALS";
+	public static final String EQS = "EQS";
     public static final String NOT_EQUALS = "NOT_EQUALS";
 	public static final String IS_NOT_NULL = "NOT_NULL";
 	public static final String IS_NULL = "IS_NULL";

@@ -183,6 +183,9 @@ public final class GenericComparator implements Comparator, Serializable {
 			case EQUAL:
 				compareState = EQUAL * determinePosition();
 				break;
+			case DEFAULT:
+				compareState = EQUAL * determinePosition();
+				break;
 		}
 		return compareState;
 	}	

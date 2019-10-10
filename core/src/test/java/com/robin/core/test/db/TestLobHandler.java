@@ -53,7 +53,7 @@ public class TestLobHandler extends TestCase {
     public void testQuerylob() {
         JdbcDao jdbcDao = SpringContextHolder.getBean("jdbcDao", JdbcDao.class);
         PageQuery query = new PageQuery();
-        query.setPageSize("1");
+        query.setPageSize(1);
         query.setSelectParamId("GET_LOB");
         query.getParameters().put("condition", "");
         jdbcDao.queryBySelectId(query);
@@ -62,7 +62,7 @@ public class TestLobHandler extends TestCase {
     }
 
     @Test
-    public void testQueryVO() throws Exception {
+    public void testQueryVO() {
         TestLobService service = (TestLobService) SpringContextHolder.getBean("lobService");
         TestLob obj = service.getEntity(Long.valueOf("1"));
         try {

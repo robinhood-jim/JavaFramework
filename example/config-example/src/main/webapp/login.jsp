@@ -58,97 +58,152 @@ div#winVP {
 </style>
 
 
-<script language="javascript" type="text/javascript">  
-var msg="";
-var ctx='<%=CONTEXT_PATH%>';
-var dhxWins, w1, myForm,mySlider;
-function openMsgDialog(title, msg, width, height, func) {
-    dhtmlx.message({
-        title : title,
-        type : "alert-warning",
-        text : msg,
-        callback : function() {
-            if (func != null)
-                eval(func)
+
+</head>
+<body onload="showmsg();">
+<script language="javascript" type="text/javascript">
+    var msg="";
+    var ctx='<%=CONTEXT_PATH%>';
+    var  dhxWins,w1, myForm,mySlider;
+    dhxWins = new dhtmlXWindows();
+    function openMsgDialog(title, msg, width, height, func) {
+        dhtmlx.message({
+            title : title,
+            type : "alert-warning",
+            text : msg,
+            callback : function() {
+                if (func != null)
+                    eval(func)
+            }
+        });
+    }
+    function checkInput(userName,password){
+        var bValid = true;
+
+        bValid = bValid & checkLength(userName,"<spring:message code="login.userName" />",4,30);
+        bValid = bValid & checkRegexp(userName,/^[a-z]([0-9a-z_])+$/i,"<spring:message code="login.userNameCheck" />");
+        bValid = bValid & checkLength(password,"<spring:message code="login.password" />",6,30);
+        return bValid;
+    }
+
+    function goValidate(myForm){
+        var sliderval=mySlider.getValue();
+        var uName = document.getElementById("userName");
+        var password =document.getElementById("password");
+        if(checkInput(uName,password)){
+            if(sliderval!=99){
+                openMsgDialog("<spring:message code="login.failed" />","<spring:message code="login.dragScrollBar" />",300,200);
+                return false;
+            }
+            login(myForm);
         }
-    });
-}
-function checkInput(userName,password){
-    var bValid = true;
+        else {
+            openMsgDialog("<spring:message code="login.failed" />","<spring:message code="message.errorMsg" />"+msg,300,200);
+        }
+    }
 
-    bValid = bValid & checkLength(userName,"<spring:message code="login.userName" />",4,30);
-    bValid = bValid & checkRegexp(userName,/^[a-z]([0-9a-z_])+$/i,"<spring:message code="login.userNameCheck" />");
-    bValid = bValid & checkLength(password,"<spring:message code="login.password" />",6,30);
-    return bValid;
-}
+    function login(myForm){
+        $.post(ctx+'login',
+            {accountName:$("#userName").val(),password:md5($("#password").val())}
+            ,function(retval){
+                var retjson=eval(retval);
+                if(retjson.success==true){
+                    if(retjson.selectOrg==true){
+                        selectOrg(retjson.userId);
+                    }else
+                        window.location.href=ctx+'main/index';
+                }else{
+                    openMsgDialog("<spring:message code="login.failed" />","<spring:message code="message.errorMsg" />"+retjson.message,300,200);
+                }
+            });
+    }
 
-function goValidate(myForm){
-    var sliderval=mySlider.getValue();
-    var uName = document.getElementById("userName");
-    var password =document.getElementById("password");
-    if(checkInput(uName,password)){
-        if(sliderval!=99){
-            openMsgDialog("<spring:message code="login.failed" />","<spring:message code="login.dragScrollBar" />",300,200);
+    function showmsg(){
+        var msg='<%=request.getAttribute("errMsg")%>';
+        if(msg!='null'){
+            openMsgDialog("<spring:message code="login.failed" />","<spring:message code="message.errorMsg" />"+msg,300,200);
+        }
+        doOnLoad();
+    }
+
+
+    function doOnLoad() {
+        mySlider = new dhtmlXSlider("sliderbar", 250);
+        mySlider.setSkin('dhx_terrace')
+    }
+
+    function checkLength(o,n,min,max) {
+        if(o.value.length > max || o.value.length < min) {
+            msg=msg+n+("<spring:message code="login.lengthCheck" />"+min+"<spring:message code="login.lengthCheckAnd" />"+max+"<spring:message code="login.lengthcheckEnd" />"+"\r\n");
             return false;
         }
-        login(myForm);
+        else {
+            return true;
+        }
     }
-    else {
-        openMsgDialog("<spring:message code="login.failed" />","<spring:message code="message.errorMsg" />"+msg,300,200);
-    }
-}
 
-function login(myForm){
-    $.post(ctx+'login',
-        {accountName:$("#userName").val(),password:md5($("#password").val())}
-        ,function(retval){
-            var retjson=eval(retval);
-            if(retjson.success==true){
-                window.location.href=ctx+'main/index';
-            }else{
-                openMsgDialog("<spring:message code="login.failed" />","<spring:message code="message.errorMsg" />"+retjson.message,300,200);
-			}
-        });
-}
-function showmsg(){
-    var msg='<%=request.getAttribute("errMsg")%>';
-    if(msg!='null'){
-        openMsgDialog("<spring:message code="login.failed" />","<spring:message code="message.errorMsg" />"+msg,300,200);
+    function checkRegexp(o,regexp,n,dmesg) {
+        if(regexp.test(o.value)) {
+            return true;
+        }
+        else {
+            msg=msg+n+dmesg+"\r\n";
+            return false;
+        }
     }
-    doOnLoad();
-}
-
-
-function doOnLoad() {
-    mySlider = new dhtmlXSlider("sliderbar", 150);
-    mySlider.setSkin('dhx_terrace')
-}
-
-function checkLength(o,n,min,max) {
-    if(o.value.length > max || o.value.length < min) {
-        msg=msg+n+("<spring:message code="login.lengthCheck" />"+min+"<spring:message code="login.lengthCheckAnd" />"+max+"<spring:message code="login.lengthcheckEnd" />"+"\r\n");
-        return false;
+    var formStructure=[
+        {
+            type: "block", width: 400-40, list: [
+                {type: "settings", position: "label-left", labelWidth: 120, inputWidth: 120, offsetLeft: 10},
+                {
+                    type: "fieldset", labelAlign: "left", inputWidth: 400-60, list: [
+                        {type: "hidden", name: "userId", value: ""},
+                        {type: "select", label: "<spring:message code="sysUser.Org" />", name: "orgId",connector:ctx + "system/user/listorg",NotNull:true}
+                    ]
+                }, {
+                    type: "block", inputWidth: 300-80, list: [
+                        {type: "settings", offsetTop: 5},
+                        {type: "button", name: "submit", value: "<spring:message code="btn.submit" />",offsetLeft:400/2-80},
+                    ]
+                }
+            ]
+        }
+    ];
+    function selectOrg(userId) {
+        var w = dhxWins.createWindow("selectOrg", 0, 0, 400, 190);
+        w.setText('<spring:message code="login.selectOrg" />');
+        w.keepInViewport(true);
+        w.setModal(true);
+        w.centerOnScreen();
+        w.button("minmax1").hide();
+        w.button("minmax2").hide();
+        w.button("park").hide();
+        var form=w.attachForm();
+        form.loadStruct(formStructure, "json");
+        form.setItemValue("userId",userId);
+        form.enableLiveValidation(true);
+        w.denyResize();
+        w.denyMove();
+        form.attachEvent("onButtonClick",function (name, command) {
+            if(name=='submit'){
+                this.send(ctx + "setDefaultOrg", function (loader, response) {
+                    var tobj = eval('(' + response + ')');
+                    if (tobj.success == true) {
+                        closedialog();
+                        window.location.href=ctx+'main/index';;
+                    } else {
+                        openMsgDialog("<spring:message code="message.saveFailed" />", "<spring:message code="message.errorMsg" />:" + tobj.message);
+                    }
+                });
+            }
+        })
     }
-    else {
-        return true;
+    function closedialog() {
+        dhxWins.window("selectOrg").close();
     }
-}
-
-function checkRegexp(o,regexp,n,dmesg) {
-    if(regexp.test(o.value)) {
-        return true;
-    }
-    else {
-        msg=msg+n+dmesg+"\r\n";
-        return false;
-    }
-}
-
 
 
 </script>
-</head>
-<body onload="showmsg();">
 	<div id="winVP" class=" dhxwins_vp_material" style="text-align: left !important;">
 		<div class="dhxwin_active"
 			style="z-index: 105; left: 315px; top: 156px; width: 700px; height: 300px;">
@@ -233,7 +288,7 @@ function checkRegexp(o,regexp,n,dmesg) {
 										</div>
 										<div class="dhxform_control">
 											<div class="dhxform_image" 
-												style="width: 160px; height: 28px;">
+												style="width: 300px; height: 28px;">
 												<div id="sliderbar" />
 														
 													</div>

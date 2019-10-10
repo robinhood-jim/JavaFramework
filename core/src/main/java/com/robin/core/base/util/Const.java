@@ -85,25 +85,7 @@ public class Const {
 	public static final String PREFIX_HDFS="hdfs";
 	public static final String PREFIX_S3="s3";
 
-	public enum ResourceType{
-		TYPE_LOCALFILE("0"),  //local
-		TYPE_HDFSFILE("1"),   //hdfs
-		TYPE_FTPFILE("2"),     //ftp
-		TYPE_SFTP("3"),   //
-		TYPE_DB("4"),
-		TYPE_WEBDAV("5"),
-		TYPE_AWS("6");
-		private String value;
 
-		private ResourceType(String value) {
-			this.value = value;
-		}
-
-		@Override
-		public String toString() {
-			return String.valueOf(this.value);
-		}
-	}
 	public enum FileFormat{
 		TYPE_CSV("1"),       //csv
 		TYPE_JSON("2"),   //json
@@ -112,7 +94,7 @@ public class Const {
 		TYPE_PARQUET("5"),  //parquet
 		TYPE_AVRO("6");   //avro
 		private String value;
-		private FileFormat(String value){this.value=value;}
+		FileFormat(String value){this.value=value;}
 		public String toString() {
 			return String.valueOf(this.value);
 		}
@@ -187,7 +169,7 @@ public class Const {
 		COMPRESS_TYPE_LZMA("lzma"),
 		COMPRESS_TYPE_NONE("none");
 		private String value;
-		private CompressType(String value){
+		CompressType(String value){
 			this.value=value;
 		}
 		@Override
@@ -195,7 +177,49 @@ public class Const {
 			return value;
 		}
 	}
+
+	public enum RESPONSEBILITY_TYPE{
+		SYS_RESP("1"),
+		ORG_RESP("2");
+		private String value;
+		RESPONSEBILITY_TYPE(String value){
+			this.value=value;
+		}
+
+		@Override
+		public String toString() {
+			return value;
+		}
+	}
+	public enum META_TYPE{
+		METATYPE_CHAR(META_TYPE_STRING,"CHAR"),
+		METATYPE_VARCHAR(META_TYPE_STRING,"VARCHAR"),
+		METATYPE_BIGINT(META_TYPE_BIGINT,"BIGINT"),
+		METATYPE_DOUBLE(META_TYPE_DOUBLE,"DOUBLE"),
+		METATYPE_NUMERIC(META_TYPE_DOUBLE,"NUMERIC"),
+		METATYPE_TIMESTAMP(META_TYPE_TIMESTAMP,"TIMESTMAP"),
+		METATYPE_INT(META_TYPE_INTEGER,"INT");
+
+		private String name;
+		private String id;
+		META_TYPE(String id,String name){
+			this.id=id;
+			this.name=name;
+		}
+
+		@Override
+		public String toString() {
+			return name;
+		}
+		public String getName(){
+			return name;
+		}
+		public String getValue(){
+			return id;
+		}
+	}
+
 	public final static List<String> ESCAPE_CHARACTERS = new ArrayList<String>(
-			Arrays.asList(new String[] { "$", "(", ")", "*", "+", ".", "[",
-					"?", "\\", "^", "{", "|" }));
+			Arrays.asList("$", "(", ")", "*", "+", ".", "[",
+					"?", "\\", "^", "{", "|"));
 }

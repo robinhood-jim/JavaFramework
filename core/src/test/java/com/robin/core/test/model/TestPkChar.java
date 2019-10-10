@@ -25,7 +25,7 @@ import java.sql.Timestamp;
 @MappingEntity(table = "t_test_pkvarchar")
 @Data
 public class TestPkChar extends BaseObject {
-    @MappingField(primary = "1")
+    @MappingField(primary = true)
     private String name;
     @MappingField
     private String code;

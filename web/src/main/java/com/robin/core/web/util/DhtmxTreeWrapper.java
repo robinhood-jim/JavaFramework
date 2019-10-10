@@ -15,7 +15,7 @@ import java.util.Map;
 public class DhtmxTreeWrapper {
 
 	public static void WrappSingleTree(List<String> list,HttpServletRequest request,HttpServletResponse response) throws Exception{
-		StringBuffer sb = new StringBuffer("");
+		StringBuffer sb = new StringBuffer();
 		sb.append("<?xml version='1.0' encoding='UTF-8' ?>");
 		sb.append("<tree id=\"0\">");
 		
@@ -30,7 +30,7 @@ public class DhtmxTreeWrapper {
 		response.getWriter().close();
 	}
 	public static String WrappSingleTreeXml(List<String> list) throws Exception{
-		StringBuffer sb = new StringBuffer("");
+		StringBuffer sb = new StringBuffer();
 		//sb.append("<?xml version='1.0' encoding='UTF-8' ?>");
 		sb.append("<tree id=\"0\">");
 		
@@ -84,7 +84,7 @@ public class DhtmxTreeWrapper {
 		return retmap;
 	}
 	public static String WrappObjectTreeRetXml(List<?> list,String parentkey,String key,String value,String userdatakeys,boolean hasChild) throws Exception{
-		StringBuffer sb = new StringBuffer("");
+		StringBuffer sb = new StringBuffer();
 		sb.append("<?xml version='1.0' encoding='UTF-8' ?>");
 		sb.append("<tree id=\""+parentkey+"\">");
 		String[] arr=null;
@@ -113,7 +113,7 @@ public class DhtmxTreeWrapper {
 		
 	}
 	public static void WrappObjectTree(List<?> list,String parentkey,String key,String value,String userdatakeys,HttpServletRequest request,HttpServletResponse response) throws Exception{
-		StringBuffer sb = new StringBuffer("");
+		StringBuffer sb = new StringBuffer();
 		sb.append("<?xml version='1.0' encoding='UTF-8' ?>");
 		sb.append("<tree id=\""+parentkey+"\">");
 		String[] arr=null;

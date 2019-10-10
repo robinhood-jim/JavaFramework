@@ -91,7 +91,7 @@ public class DataMappingContoller extends BaseCrudDhtmlxController<ProjectInfo,L
 			ProjectInfo info=projectInfoService.getEntity(Long.valueOf(id));
 			DataSource source=dataSourceService.getEntity(info.getDataSourceId());
 			String type=source.getDbType();
-			DataBaseParam param=new DataBaseParam(source.getHostIp(),Integer.valueOf(source.getPort()),source.getDatabaseName(), source.getUserName(), source.getPassword());
+			DataBaseParam param=new DataBaseParam(source.getHostIp(),Integer.parseInt(source.getPort()),source.getDatabaseName(), source.getUserName(), source.getPassword());
 			BaseDataBaseMeta meta=DataBaseMetaFactory.getDataBaseMetaByType(type, param);
 			util=new DataBaseUtil();
 			util.connect(meta);
@@ -115,7 +115,7 @@ public class DataMappingContoller extends BaseCrudDhtmlxController<ProjectInfo,L
 			ProjectInfo info=projectInfoService.getEntity(Long.valueOf(id));
 			DataSource source=dataSourceService.getEntity(info.getDataSourceId());
 			String type=source.getDbType();
-			DataBaseParam param=new DataBaseParam(source.getHostIp(),Integer.valueOf(source.getPort()),source.getDatabaseName(), source.getUserName(), source.getPassword());
+			DataBaseParam param=new DataBaseParam(source.getHostIp(),Integer.parseInt(source.getPort()),source.getDatabaseName(), source.getUserName(), source.getPassword());
 			BaseDataBaseMeta meta=DataBaseMetaFactory.getDataBaseMetaByType(type, param);
 			util=new DataBaseUtil();
 			util.connect(meta);
@@ -136,12 +136,12 @@ public class DataMappingContoller extends BaseCrudDhtmlxController<ProjectInfo,L
 		String table=request.getParameter("table");
 		DataBaseUtil util=null;
 		List<Map<String,String>> list=new ArrayList<Map<String,String>>();
-		Map<String,Object> retmap=new HashMap<String, Object>();
+		Map<String,Object> retmap;
 		try{
 			ProjectInfo info=projectInfoService.getEntity(Long.valueOf(projId));
 			DataSource source=dataSourceService.getEntity(info.getDataSourceId());
 			String type=source.getDbType();
-			DataBaseParam param=new DataBaseParam(source.getHostIp(),Integer.valueOf(source.getPort()),source.getDatabaseName(), source.getUserName(), source.getPassword());
+			DataBaseParam param=new DataBaseParam(source.getHostIp(),Integer.parseInt(source.getPort()),source.getDatabaseName(), source.getUserName(), source.getPassword());
 			BaseDataBaseMeta meta=DataBaseMetaFactory.getDataBaseMetaByType(type, param);
 			util=new DataBaseUtil();
 			util.connect(meta);
@@ -197,6 +197,10 @@ public class DataMappingContoller extends BaseCrudDhtmlxController<ProjectInfo,L
 		}catch(Exception ex){
 			request.setAttribute("err", ex);
 			return null;
+		}finally {
+			if(util!=null){
+				util.closeConnection();
+			}
 		}
 		return retmap;
 	}
@@ -213,7 +217,7 @@ public class DataMappingContoller extends BaseCrudDhtmlxController<ProjectInfo,L
 			ProjectInfo info=projectInfoService.getEntity(Long.valueOf(projId));
 			DataSource source=dataSourceService.getEntity( info.getDataSourceId());
 			String type=source.getDbType();
-			DataBaseParam param=new DataBaseParam(source.getHostIp(),Integer.valueOf(source.getPort()),source.getDatabaseName(), source.getUserName(), source.getPassword());
+			DataBaseParam param=new DataBaseParam(source.getHostIp(),Integer.parseInt(source.getPort()),source.getDatabaseName(), source.getUserName(), source.getPassword());
 			BaseDataBaseMeta meta=DataBaseMetaFactory.getDataBaseMetaByType(type, param);
 			util=new DataBaseUtil();
 			util.connect(meta);
@@ -251,7 +255,7 @@ public class DataMappingContoller extends BaseCrudDhtmlxController<ProjectInfo,L
 			String type=source.getDbType();
 			List<Map<String, Object>> driverList=jdbcDao.queryBySql("select db_type as dbType,driver_class as driverClass from t_base_dbdriver where id=?",new Object[]{source.getDriverId()});
 			
-			DataBaseParam param=new DataBaseParam(source.getHostIp(),Integer.valueOf(source.getPort()),source.getDatabaseName(), source.getUserName(), source.getPassword());
+			DataBaseParam param=new DataBaseParam(source.getHostIp(),Integer.parseInt(source.getPort()),source.getDatabaseName(), source.getUserName(), source.getPassword());
 			BaseDataBaseMeta meta=DataBaseMetaFactory.getDataBaseMetaByType(type, param);
 			util=new DataBaseUtil();
 			util.connect(meta);

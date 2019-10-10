@@ -16,19 +16,25 @@
 package com.robin.core.base.dao;
 
 import com.robin.core.base.exception.DAOException;
-import com.robin.core.base.spring.SpringContextHolder;
 import com.robin.core.base.util.Const;
+import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.query.util.PageQuery;
 import com.robin.core.query.util.QueryParam;
 import com.robin.core.query.util.QueryString;
 import com.robin.core.sql.util.BaseSqlGen;
+import org.apache.commons.dbutils.DbUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.core.*;
+import org.springframework.jdbc.core.BatchPreparedStatementSetter;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.PreparedStatementCreator;
+import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.support.lob.LobHandler;
 
+import java.lang.reflect.Method;
 import java.sql.*;
 import java.sql.Date;
 import java.text.ParseException;
@@ -49,7 +55,8 @@ public class CommJdbcUtil {
                         String columnType = pageQuery.getColumnTypes().get(String.valueOf(i - 1));
                         String value = pageQuery.getParameters().get(String.valueOf(i));
                         if (columnType.equals(QueryParam.COLUMN_TYPE_INT)) ps.setInt(i, Integer.parseInt(value));
-                        else if (columnType.equals(QueryParam.COLUMN_TYPE_DOUBLE)) ps.setDouble(i,Double.parseDouble(value));
+                        else if (columnType.equals(QueryParam.COLUMN_TYPE_DOUBLE))
+                            ps.setDouble(i, Double.parseDouble(value));
                         else if (columnType.equals(QueryParam.COLUMN_TYPE_LONG)) ps.setLong(i, Long.parseLong(value));
                         else if (columnType.equals(QueryParam.COLUMN_TYPE_DATE)) {
                             SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
@@ -64,12 +71,15 @@ public class CommJdbcUtil {
                     }
                 } catch (Exception e) {
                     throw new SQLException(e.getMessage());
+                } finally {
+                    if (ps != null) {
+                        DbUtils.closeQuietly(ps);
+                    }
                 }
                 return ps;
             }
         }, new ResultSetExtractor() {
             public Object extractData(ResultSet rs) throws SQLException, DataAccessException {
-
                 return rs;
             }
         });
@@ -77,20 +87,18 @@ public class CommJdbcUtil {
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    private static List getResultItemsByPreparedSimple(JdbcTemplate jdbcTemplate,LobHandler lobHandler, final BaseSqlGen sqlGen, final QueryString qs, final PageQuery pageQuery, final String pageSQL) {
+    private static List getResultItemsByPreparedSimple(JdbcTemplate jdbcTemplate,NamedParameterJdbcTemplate namedParameterJdbcTemplate, LobHandler lobHandler, final BaseSqlGen sqlGen, final QueryString qs, final PageQuery pageQuery, final String pageSQL) {
         final String[] fields = sqlGen.getResultColName(qs);
-        if (pageQuery.getNameParameters().isEmpty()) {
+        if (pageQuery.getNamedParameters().isEmpty()) {
             //Preparedstatment
-            return (List) jdbcTemplate.query(pageSQL, pageQuery.getParameterArr(), getDefaultExtract(fields,lobHandler));
+            return jdbcTemplate.query(pageSQL, pageQuery.getParameterArr(), getDefaultExtract(fields, lobHandler, pageQuery));
         } else {
-            //NamedParameter
-            NamedParameterJdbcTemplate template = new NamedParameterJdbcTemplate(jdbcTemplate);
-            return (List) template.query(pageSQL, pageQuery.getNameParameters(), getDefaultExtract(fields,lobHandler));
+            return namedParameterJdbcTemplate.query(pageSQL, pageQuery.getNamedParameters(), getDefaultExtract(fields, lobHandler, pageQuery));
         }
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    public static PageQuery queryByReplaceParamter(JdbcTemplate jdbcTemplate,LobHandler lobHandler, BaseSqlGen sqlGen, QueryString qs, PageQuery pageQuery) throws DAOException {
+    public static PageQuery queryByReplaceParamter(JdbcTemplate jdbcTemplate, LobHandler lobHandler, BaseSqlGen sqlGen, QueryString qs, PageQuery pageQuery) throws DAOException {
         List list = null;
         String querySQL = getReplacementSql(sqlGen, qs, pageQuery);
         if (logger.isInfoEnabled()) logger.info((new StringBuilder()).append("querySQL: ").append(querySQL).toString());
@@ -105,53 +113,51 @@ public class CommJdbcUtil {
         int pageSize = 0;
         //set pageSize by PageQuery Object
         try {
-            pageSize = Integer.parseInt(pageQuery.getPageSize());
+            pageSize = pageQuery.getPageSize();
         } catch (Exception e) {
             pageSize = Integer.parseInt(Const.DEFAULT_PAGE_SIZE);
         }
-        list = getResultList(jdbcTemplate,lobHandler, sqlGen, qs, pageQuery, querySQL, sumSQL, pageSize);
+        list = getResultList(jdbcTemplate, lobHandler, sqlGen, qs, pageQuery, querySQL, sumSQL, pageSize);
         pageQuery.setRecordSet(list);
         return pageQuery;
     }
 
-    private static List getResultList(JdbcTemplate jdbcTemplate,LobHandler lobHandler, BaseSqlGen sqlGen, QueryString qs, PageQuery pageQuery, String querySQL, String sumSQL, int pageSize) throws DAOException {
+    private static List getResultList(JdbcTemplate jdbcTemplate, LobHandler lobHandler, BaseSqlGen sqlGen, QueryString qs, PageQuery pageQuery, String querySQL, String sumSQL, int pageSize) throws DAOException {
         List list;
         if (pageSize != 0) {
             if (pageSize < Integer.parseInt(Const.MIN_PAGE_SIZE))
                 pageSize = Integer.parseInt(Const.DEFAULT_PAGE_SIZE);
             else if (pageSize > Integer.parseInt(Const.MAX_PAGE_SIZE))
                 pageSize = Integer.parseInt(Const.MAX_PAGE_SIZE);
-            pageQuery.setPageSize(String.valueOf(pageSize));
-            int total = (Integer) jdbcTemplate.query(sumSQL, new ResultSetExtractor() {
-                public Object extractData(ResultSet rs) throws SQLException, DataAccessException {
-                    rs.next();
-                    return new Integer(rs.getInt(1));
-                }
+            pageQuery.setPageSize(pageSize);
+            int total = jdbcTemplate.query(sumSQL, rs -> {
+                rs.next();
+                return rs.getInt(1);
             });
-            pageQuery.setRecordCount(String.valueOf(total));
+            pageQuery.setRecordCount(total);
             if (total > 0) {
-                int pages = total / Integer.parseInt(pageQuery.getPageSize());
-                if (total % Integer.parseInt(pageQuery.getPageSize()) != 0) pages++;
-                pageQuery.setPageCount(String.valueOf(pages));
+                int pages = total / pageQuery.getPageSize();
+                if (total % pageQuery.getPageSize() != 0) pages++;
+                pageQuery.setPageCount(pages);
                 //adjust pageNumber
-                if (Integer.parseInt(pageQuery.getPageNumber()) > pages)
-                    pageQuery.setPageNumber(String.valueOf(pages));
-                else if (Integer.parseInt(pageQuery.getPageNumber()) < 1)
-                    pageQuery.setPageNumber("1");
+                if (pageQuery.getPageNumber() > pages)
+                    pageQuery.setPageNumber(pages);
+                else if (pageQuery.getPageNumber() < 1)
+                    pageQuery.setPageNumber(1);
                 String pageSQL = sqlGen.generatePageSql(querySQL, pageQuery);
                 if (logger.isDebugEnabled()) {
                     logger.debug((new StringBuilder()).append("sumSQL: ").append(sumSQL).toString());
                     logger.debug((new StringBuilder()).append("pageSQL: ").append(pageSQL).toString());
                 }
-                list = getResultItems(jdbcTemplate,lobHandler, sqlGen, pageQuery, qs, pageSQL);
+                list = getResultItems(jdbcTemplate, lobHandler, sqlGen, pageQuery, qs, pageSQL);
             } else {
                 list = new ArrayList();
-                pageQuery.setPageCount("0");
+                pageQuery.setPageCount(0);
             }
         } else {
-            list = getResultItems(jdbcTemplate,lobHandler, sqlGen, pageQuery, qs, querySQL);
-            pageQuery.setRecordCount(String.valueOf(list.size()));
-            pageQuery.setPageCount("1");
+            list = getResultItems(jdbcTemplate, lobHandler, sqlGen, pageQuery, qs, querySQL);
+            pageQuery.setRecordCount(list.size());
+            pageQuery.setPageCount(1);
         }
         return list;
     }
@@ -168,11 +174,12 @@ public class CommJdbcUtil {
 
         Map<String, String> params = pageQuery.getParameters();
 
-        Iterator<String> keyiter = params.keySet().iterator();
+        Iterator<Map.Entry<String, String>> keyiter = params.entrySet().iterator();
         while (keyiter.hasNext()) {
-            String key = keyiter.next();
+            Map.Entry<String, String> entry = keyiter.next();
+            String key = entry.getKey();
             String replacestr = "\\$\\{" + key + "\\}";
-            String value = params.get(key);
+            String value = entry.getValue();
             if (value != null)
                 querySQL = querySQL.replaceAll(replacestr, value);
             else
@@ -182,76 +189,165 @@ public class CommJdbcUtil {
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private static List getResultItems(JdbcTemplate jdbcTemplate,LobHandler lobHandler, BaseSqlGen sqlGen, final PageQuery query, final QueryString qs, final String pageSQL) {
+    private static List getResultItems(JdbcTemplate jdbcTemplate, LobHandler lobHandler, BaseSqlGen sqlGen, final PageQuery query, final QueryString qs, final String pageSQL) {
         //getResultColumn from QueryString
         final String[] fields = sqlGen.getResultColName(qs);
-        Object ret = jdbcTemplate.query(pageSQL, getDefaultExtract(fields,lobHandler));
+        Object ret = jdbcTemplate.query(pageSQL, getDefaultExtract(fields, lobHandler, query));
         return (List) ret;
     }
 
-    public static boolean isNumeric(String str) {
-        for (int i = 0; i < str.length(); i++) {
-            //System.out.println(str.charAt(i));
-            if (!Character.isDigit(str.charAt(i))) {
-                return false;
-            }
-        }
-        return true;
-    }
 
     @SuppressWarnings("rawtypes")
-    private static ResultSetExtractor getDefaultExtract(final String[] fields,final LobHandler lobHandler) {
-        return new ResultSetExtractor() {
-            public Object extractData(ResultSet rs) throws SQLException, DataAccessException {
-                List<Map> list = new ArrayList<Map>();
-                if (rs.next()) {
-
-                    ResultSetMetaData rsmd = rs.getMetaData();
-                    int count = rsmd.getColumnCount();
-                    do {
-                        Map<String, Object> map = new HashMap<String, Object>();
-                        for (int i = 0; i < count; i++) {
-                            String columnName = rsmd.getColumnName(i + 1);
-                            String typeName = rsmd.getColumnTypeName(i + 1);
-                            String className = rsmd.getColumnClassName(i + 1);
-                            if (fields != null && i >= fields.length)
-                                continue;
-                            rs.getObject(i + 1);
-                            if (rs.wasNull()) {
-                                putValue(fields,i,columnName,null,map);
-                            } else if (typeName.equalsIgnoreCase("DATE")) {
-                                SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-                                Date date = rs.getDate(i + 1);
-                                String datestr = format.format(date);
-                                putValue(fields,i,columnName,datestr,map);
-                            } else if (typeName.equalsIgnoreCase("TIMESTAMP")) {
-                                SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                                Timestamp stamp = rs.getTimestamp(i + 1);
-                                String datestr = format.format(new Date(stamp.getTime()));
-                                putValue(fields,i,columnName,datestr,map);
-                            } else if (className.toLowerCase().contains("clob")) {
-                                if (lobHandler != null) {
-                                    String result = lobHandler.getClobAsString(rs, i + 1);
-                                    putValue(fields,i,columnName,result,map);
-                                }
-                            } else if (className.toLowerCase().contains("blob") ||typeName.toLowerCase().contains("blob") ) {
-                                if (lobHandler != null && fields!=null) {
-                                    byte[] bytes = lobHandler.getBlobAsBytes(rs, i + 1);
-                                    putValue(fields,i,columnName,bytes,map);
-                                }
-                            } else {
-                                putValue(fields,i,columnName,rs.getObject(i + 1),map);
+    private static ResultSetExtractor<List<Map>> getDefaultExtract(final String[] fields, final LobHandler lobHandler, PageQuery query) {
+        return  rs -> {
+            List<Map> list = new ArrayList<Map>();
+            if (rs.next()) {
+                ResultSetMetaData rsmd = rs.getMetaData();
+                int count = rsmd.getColumnCount();
+                do {
+                    Map<String, Object> map = new HashMap<String, Object>();
+                    for (int i = 0; i < count; i++) {
+                        String columnName = rsmd.getColumnName(i + 1);
+                        String typeName = rsmd.getColumnTypeName(i + 1);
+                        String className = rsmd.getColumnClassName(i + 1);
+                        if (fields != null && i >= fields.length)
+                            continue;
+                        rs.getObject(i + 1);
+                        if (rs.wasNull()) {
+                            putValue(fields, i, columnName, null, map);
+                        } else if (typeName.equalsIgnoreCase("DATE")) {
+                            Date date = rs.getDate(i + 1);
+                            String datestr = query.getDateFormater().format(date);
+                            putValue(fields, i, columnName, datestr, map);
+                        } else if (typeName.equalsIgnoreCase("TIMESTAMP")) {
+                            Timestamp stamp = rs.getTimestamp(i + 1);
+                            String datestr = query.getTimestampFormater().format(new Date(stamp.getTime()));
+                            putValue(fields, i, columnName, datestr, map);
+                        } else if (className.toLowerCase().contains("clob")) {
+                            if (lobHandler != null) {
+                                String result = lobHandler.getClobAsString(rs, i + 1);
+                                putValue(fields, i, columnName, result, map);
                             }
+                        } else if (className.toLowerCase().contains("blob") || typeName.toLowerCase().contains("blob")) {
+                            if (lobHandler != null && fields != null) {
+                                byte[] bytes = lobHandler.getBlobAsBytes(rs, i + 1);
+                                putValue(fields, i, columnName, bytes, map);
+                            }
+                        } else {
+                            putValue(fields, i, columnName, rs.getObject(i + 1), map);
                         }
-                        list.add(map);
                     }
-                    while (rs.next());
-                }
-                return list;
+                    list.add(map);
+                } while (rs.next());
             }
+            return list;
         };
     }
-    private static void putValue(String[] fields,int pos,String columnName,Object obj,Map<String,Object> map){
+
+    private Object getRecordValue(ResultSetMetaData rsmd, ResultSet rs, LobHandler lobHandler, int pos) throws SQLException {
+        Integer columnType = rsmd.getColumnType(pos + 1);
+        rs.getObject(pos + 1);
+        Object retObj = null;
+        if (!rs.wasNull()) {
+            switch (columnType) {
+                case Types.INTEGER:
+                case Types.TINYINT:
+                    retObj = rs.getInt(pos + 1);
+                    break;
+                case Types.BIGINT:
+                    retObj = rs.getLong(pos + 1);
+                    break;
+                case Types.DOUBLE:
+                    retObj = rs.getDouble(pos + 1);
+                    break;
+                case Types.DECIMAL:
+                    retObj = rs.getBigDecimal(pos + 1).doubleValue();
+                    break;
+                case Types.DATE:
+                    retObj = rs.getDate(pos + 1);
+                    break;
+                case Types.TIMESTAMP:
+                    retObj = rs.getTimestamp(pos + 1);
+                    break;
+                case Types.LONGVARCHAR:
+                case Types.CLOB:
+                    if (lobHandler != null) {
+                        retObj = lobHandler.getClobAsString(rs, pos + 1);
+                    }
+                    break;
+                case Types.BLOB:
+                    if (lobHandler != null) {
+                        retObj = lobHandler.getBlobAsBytes(rs, pos + 1);
+                    }
+                    break;
+                default:
+                    retObj = rs.getString(pos + 1);
+                    break;
+            }
+        }
+        return retObj;
+    }
+
+    public static void setTargetValue(Object target, Object value, String columnName, String columnType, LobHandler handler, PageQuery pageQuery) throws DAOException {
+        try {
+            if (value != null) {
+                Object targetValue = null;
+                if(columnType==null){
+                    targetValue=value;
+                }
+                else if (columnType.equals(Const.META_TYPE_INTEGER)) {
+                    if (NumberUtils.isDigits(value.toString())) {
+                        targetValue = NumberUtils.createInteger(value.toString());
+                    } else {
+                        throw new DAOException("Column " + columnName + " is not integer value");
+                    }
+                } else if (columnType.equals(Const.META_TYPE_DOUBLE) || columnType.equals(Const.META_TYPE_NUMERIC)) {
+                    if (NumberUtils.isNumber(value.toString())) {
+                        targetValue = NumberUtils.createDouble(value.toString());
+                    } else {
+                        throw new DAOException("Column " + columnName + " is not double value");
+                    }
+                } else if (columnType.equals(Const.META_TYPE_BIGINT)) {
+                    if (NumberUtils.isDigits(value.toString())) {
+                        targetValue = NumberUtils.createLong(value.toString());
+                    } else {
+                        throw new DAOException("Column " + columnName + " is not long value");
+                    }
+                } else if (columnType.equals(Const.META_TYPE_DATE)) {
+                    if (value instanceof Date) {
+                        targetValue = value;
+                    } else if (value instanceof java.util.Date) {
+                        targetValue = value;
+                    } else {
+                        targetValue = pageQuery.getDateFormater().parse(value.toString());
+                    }
+                } else if (columnType.equals(Const.META_TYPE_TIMESTAMP)) {
+                    if (value instanceof Timestamp) {
+                        targetValue = value;
+                    } else {
+                        targetValue = new Timestamp(pageQuery.getDateFormater().parse(value.toString()).getTime());
+                    }
+                } else if (columnType.equals(Const.META_TYPE_CLOB) || columnType.equals(Const.META_TYPE_BLOB)) {
+                    targetValue = value;
+                }else{
+                    targetValue=value;
+                }
+                if (target instanceof HashMap) {
+                    ((HashMap)target).put(columnName,targetValue);
+                } else {
+                    Map<String, Method> setMethods = ConvertUtil.returnSetMethold(target.getClass());
+                    if(setMethods.containsKey(columnName))
+                    setMethods.get(columnName).invoke(target,targetValue);
+                }
+            }
+        } catch (DAOException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            throw new DAOException(ex);
+        }
+    }
+
+    private static void putValue(String[] fields, int pos, String columnName, Object obj, Map<String, Object> map) {
         if (fields != null)
             map.put(fields[pos], obj);
         else
@@ -259,43 +355,47 @@ public class CommJdbcUtil {
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    public static void queryByPreparedParamter(JdbcTemplate jdbcTemplate,LobHandler lobHandler, BaseSqlGen sqlGen, QueryString qs, PageQuery pageQuery) throws DAOException {
+    public static void queryByPreparedParamter(JdbcTemplate jdbcTemplate,NamedParameterJdbcTemplate namedParameterJdbcTemplate, LobHandler lobHandler, BaseSqlGen sqlGen, QueryString qs, PageQuery pageQuery) throws DAOException {
         List list = null;
         try {
-            String querySQL = getReplacementSql(sqlGen,qs,pageQuery);
+            String querySQL = getReplacementSql(sqlGen, qs, pageQuery);
             if (logger.isInfoEnabled())
                 logger.info((new StringBuilder()).append("querySQL: ").append(querySQL).toString());
-            if (Integer.parseInt(pageQuery.getPageSize()) > 0) {
+            if (pageQuery.getPageSize() > 0) {
                 String sumSQL = "";
                 if (qs.getCountSql() == null || qs.getCountSql().trim().equals(""))
                     sumSQL = sqlGen.generateCountSql(querySQL);
                 else
                     sumSQL = sqlGen.getCountSqlByConfig(qs, pageQuery);
 
-                Object[] paramobj = pageQuery.getParameterArr();
-                Integer total = (Integer) jdbcTemplate.queryForObject(sumSQL, paramobj, Integer.class);
-                pageQuery.setRecordCount(String.valueOf(total));
+                Integer total = 0;
+                if(pageQuery.getNamedParameters()==null)
+                    total=jdbcTemplate.queryForObject(sumSQL, pageQuery.getParameterArr(), Integer.class);
+                else{
+                    total=namedParameterJdbcTemplate.queryForObject(sumSQL,pageQuery.getNamedParameters(),Integer.class);
+                }
+                pageQuery.setRecordCount(total);
                 String pageSQL = sqlGen.generatePageSql(querySQL, pageQuery);
                 if (logger.isDebugEnabled()) {
                     logger.debug((new StringBuilder()).append("sumSQL: ").append(sumSQL).toString());
                     logger.debug((new StringBuilder()).append("pageSQL: ").append(pageSQL).toString());
                 }
                 if (total > 0) {
-                    int pages = total / Integer.parseInt(pageQuery.getPageSize());
-                    if (total % Integer.parseInt(pageQuery.getPageSize()) != 0) pages++;
-                    pageQuery.setPageCount(String.valueOf(pages));
-                    list = getResultItemsByPreparedSimple(jdbcTemplate,lobHandler, sqlGen, qs, pageQuery, pageSQL);
+                    int pages = total / pageQuery.getPageSize();
+                    if (total % pageQuery.getPageSize() != 0) pages++;
+                    pageQuery.setPageCount(pages);
+                    list = getResultItemsByPreparedSimple(jdbcTemplate,namedParameterJdbcTemplate, lobHandler, sqlGen, qs, pageQuery, pageSQL);
                     //getResultItemsByPrepared(jdbcTemplate,pageQuery, pageSQL);
                 } else {
                     list = new ArrayList();
-                    pageQuery.setPageCount("0");
+                    pageQuery.setPageCount(0);
                 }
             } else {
-                list = getResultItemsByPreparedSimple(jdbcTemplate,lobHandler, sqlGen, qs, pageQuery, querySQL);
+                list = getResultItemsByPreparedSimple(jdbcTemplate,namedParameterJdbcTemplate, lobHandler, sqlGen, qs, pageQuery, querySQL);
                 //getResultItemsByPrepared(jdbcTemplate,pageQuery, querySQL);
                 int len1 = list.size();
-                pageQuery.setRecordCount(String.valueOf(len1));
-                pageQuery.setPageCount("1");
+                pageQuery.setRecordCount(len1);
+                pageQuery.setPageCount(1);
             }
         } catch (Exception e) {
             if (logger.isDebugEnabled())
@@ -309,7 +409,7 @@ public class CommJdbcUtil {
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    public static PageQuery queryBySql(JdbcTemplate jdbcTemplate,LobHandler lobHandler, BaseSqlGen sqlGen, String querySQL, String countSql, String[] displayname, PageQuery pageQuery) throws DAOException {
+    public static PageQuery queryBySql(JdbcTemplate jdbcTemplate, LobHandler lobHandler, BaseSqlGen sqlGen, String querySQL, String countSql, String[] displayname, PageQuery pageQuery) throws DAOException {
         String sumSQL = "";
         if (countSql == null || countSql.trim().equals(""))
             sumSQL = sqlGen.generateCountSql(querySQL);
@@ -340,11 +440,11 @@ public class CommJdbcUtil {
         qs.setField(selectSql);
 
         try {
-            pageSize = Integer.parseInt(pageQuery.getPageSize());
+            pageSize = pageQuery.getPageSize();
         } catch (Exception e) {
             pageSize = Integer.parseInt(Const.DEFAULT_PAGE_SIZE);
         }
-        List list = getResultList(jdbcTemplate,lobHandler, sqlGen, qs, pageQuery, querySQL, sumSQL, pageSize);
+        List list = getResultList(jdbcTemplate, lobHandler, sqlGen, qs, pageQuery, querySQL, sumSQL, pageSize);
         pageQuery.setRecordSet(list);
         return pageQuery;
     }
@@ -404,7 +504,7 @@ public class CommJdbcUtil {
                 if (value == null || value.equals(""))
                     ps.setNull(pos + 1, Types.INTEGER);
                 else
-                    ps.setInt(pos + 1, Integer.valueOf(value));
+                    ps.setInt(pos + 1, Integer.parseInt(value));
             } else if (typeMap.get("dataType").equals(Const.META_TYPE_DOUBLE)) {
                 if (value == null || value.equals(""))
                     ps.setNull(pos + 1, Types.DOUBLE);
@@ -487,16 +587,29 @@ public class CommJdbcUtil {
             String executeSQL = sqlGen.generateSqlBySelectId(qs, pageQuery);
             if (logger.isInfoEnabled())
                 logger.info((new StringBuilder()).append("executeSQL: ").append(executeSQL).toString());
-            if (pageQuery.getNameParameters().isEmpty()) {
+            if (pageQuery.getNamedParameters().isEmpty()) {
                 return jdbcTemplate.update(executeSQL, pageQuery.getParameterArr());
             } else {
                 NamedParameterJdbcTemplate template = new NamedParameterJdbcTemplate(jdbcTemplate);
-                return template.update(executeSQL, pageQuery.getNameParameters());
+                return template.update(executeSQL, pageQuery.getNamedParameters());
             }
         } catch (Exception e) {
             throw new DAOException(e);
         }
 
+    }
+    public static void setPageQuery(PageQuery pageQuery,int total){
+        pageQuery.setRecordCount(total);
+        if (total > 0) {
+            int pages = total / pageQuery.getPageSize();
+            if (total % pageQuery.getPageSize() != 0) pages++;
+            int pageNumber = pageQuery.getPageNumber();
+            if (pageNumber > pages)
+                pageQuery.setPageNumber(pages);
+            pageQuery.setPageCount(pages);
+        } else {
+            pageQuery.setPageCount(0);
+        }
     }
 
 

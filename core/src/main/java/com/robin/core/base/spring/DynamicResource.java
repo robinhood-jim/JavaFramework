@@ -18,6 +18,7 @@ package com.robin.core.base.spring;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
 import org.springframework.core.io.AbstractResource;
 import org.springframework.core.io.Resource;
@@ -32,7 +33,7 @@ public class DynamicResource extends AbstractResource implements Resource {
      * @see org.springframework.core.io.InputStreamSource#getInputStream() 
      */  
     public InputStream getInputStream() throws IOException {  
-        return new ByteArrayInputStream(dynamicBean.getXml().getBytes("UTF-8"));  
+        return new ByteArrayInputStream(dynamicBean.getXml().getBytes(StandardCharsets.UTF_8));
     }
 
 	public String getDescription() {

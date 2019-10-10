@@ -44,16 +44,15 @@ public class FtpResourceAccessUtil extends AbstractResourceAccessUtil{
 	@Override
 	public BufferedReader getInResourceByReader(DataCollectionMeta meta) throws Exception {
 		FtpParam param=new FtpParam();
-		ConvertUtil.convertToModel(param, meta.getResourceCfgMap());
+		ConvertUtil.convertToTarget(param, meta.getResourceCfgMap());
 		BufferedReader reader=null;
-		String suffix=getFileSuffix(meta.getPath());
 		FileObject fo=manager.resolveFile(getUriByParam(param, meta.getPath()).toString(),getOptions(param));
 		if (fo.exists()) {
 			if (FileType.FOLDER.equals(fo.getType())) {
 				logger.error("File {} is a directory！", meta.getPath());
 				throw new FileNotFoundException("File "+meta.getPath()+" is a directory!");
 			} else {
-				reader = getReaderBySuffix(suffix, fo.getContent().getInputStream(), meta.getEncode());
+				reader = getReaderByPath(meta.getPath(), fo.getContent().getInputStream(), meta.getEncode());
 			}
 		} else {
 			throw new FileNotFoundException("File "+meta.getPath()+" not found!");
@@ -66,8 +65,7 @@ public class FtpResourceAccessUtil extends AbstractResourceAccessUtil{
 		BufferedWriter writer=null;
 		try{
 			FileObject fo=checkFtpFileExist(meta);
-			String suffix=getFileSuffix(meta.getPath());
-			writer = getWriterBySuffix(suffix, fo.getContent().getOutputStream(), meta.getEncode());
+			writer = getWriterByPath(meta.getPath(), fo.getContent().getOutputStream(), meta.getEncode());
 		}catch(Exception ex){
 			ex.printStackTrace();
 		}
@@ -75,7 +73,7 @@ public class FtpResourceAccessUtil extends AbstractResourceAccessUtil{
 	}
 	private FileObject checkFtpFileExist(DataCollectionMeta meta) throws Exception{
 		FtpParam param=new FtpParam();
-		ConvertUtil.convertToModel(param, meta.getResourceCfgMap());
+		ConvertUtil.convertToTarget(param, meta.getResourceCfgMap());
 		FileObject fo=manager.resolveFile(getUriByParam(param, meta.getPath()).toString(),getOptions(param));
 		if (fo.exists()) {
 			if (FileType.FOLDER.equals(fo.getType())) {
@@ -98,8 +96,7 @@ public class FtpResourceAccessUtil extends AbstractResourceAccessUtil{
 		OutputStream out=null;
 		try{
 			FileObject fo=checkFtpFileExist(meta);
-			String suffix=getFileSuffix(meta.getPath());
-			out = getOutputStreamBySuffix(suffix, fo.getContent().getOutputStream());
+			out = getOutputStreamByPath(meta.getPath(), fo.getContent().getOutputStream());
 		}catch(Exception ex){
 			ex.printStackTrace();
 		}
@@ -121,16 +118,15 @@ public class FtpResourceAccessUtil extends AbstractResourceAccessUtil{
 	@Override
 	public InputStream getInResourceByStream(DataCollectionMeta meta) throws Exception {
 		FtpParam param=new FtpParam();
-		ConvertUtil.convertToModel(param, meta.getResourceCfgMap());
+		ConvertUtil.convertToTarget(param, meta.getResourceCfgMap());
 		InputStream reader=null;
-		String suffix=getFileSuffix(meta.getPath());
 		FileObject fo=manager.resolveFile(getUriByParam(param, meta.getPath()).toString(),getOptions(param));
 		if (fo.exists()) {
 			if (FileType.FOLDER.equals(fo.getType())) {
 				logger.error("File {} is a directory！", meta.getPath());
 				throw new FileNotFoundException("File "+meta.getPath()+" is a directory!");
 			} else {
-				reader = getInputStreamBySuffix(suffix, fo.getContent().getInputStream());
+				reader = getInputStreamByPath(meta.getPath(), fo.getContent().getInputStream());
 			}
 		} else {
 			throw new FileNotFoundException("File "+meta.getPath()+" not found!");

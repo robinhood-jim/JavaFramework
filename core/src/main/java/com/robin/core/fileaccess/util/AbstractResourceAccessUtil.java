@@ -15,24 +15,16 @@
  */
 package com.robin.core.fileaccess.util;
 
-import com.robin.core.base.util.Const;
+import com.robin.core.compress.util.CompressDecoder;
+import com.robin.core.compress.util.CompressEncoder;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
-import net.jpountz.lz4.*;
-import org.anarres.lzo.*;
-import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
-import org.apache.commons.compress.compressors.bzip2.BZip2CompressorOutputStream;
-import org.tukaani.xz.LZMA2Options;
-import org.tukaani.xz.LZMAInputStream;
-import org.tukaani.xz.LZMAOutputStream;
-import org.xerial.snappy.SnappyInputStream;
-import org.xerial.snappy.SnappyOutputStream;
 
 import java.io.*;
-import java.util.zip.*;
 
 public abstract class AbstractResourceAccessUtil {
 	public static String[] retrieveResource(String path){
 		String[] ret=new String[2];
+
 		ret[1]=getFileSuffix(path);
 		ret[0]=getFilePrefix(path);
 		return ret;
@@ -40,7 +32,7 @@ public abstract class AbstractResourceAccessUtil {
 	
 	public static String getFileSuffix(String path){
 		int pos=path.lastIndexOf(".");
-		String suffix=path.substring(pos+1,path.length());
+		String suffix=path.substring(pos+1);
 		if(suffix.contains(File.separator)){
 			suffix="";
 		}
@@ -64,37 +56,14 @@ public abstract class AbstractResourceAccessUtil {
 		int pos=name.lastIndexOf(File.separator);
 		return name.substring(0,pos);
 	}
-	protected BufferedReader getReaderBySuffix(String suffix,InputStream  in,String encode) throws IOException{
-		return new BufferedReader(new InputStreamReader(getInputStreamBySuffix(suffix,in),encode));
+	protected BufferedReader getReaderByPath(String path, InputStream  in, String encode) throws IOException{
+		return new BufferedReader(new InputStreamReader(getInputStreamByPath(path,in),encode));
 	}
-	protected InputStream getInputStreamBySuffix(String suffix,InputStream  in) throws IOException{
-		InputStream instream= null;
-		if(Const.SUFFIX_GZIP.equalsIgnoreCase(suffix)){
-			instream=new GZIPInputStream(wrapInputStream(in));
-		}else if(Const.SUFFIX_ZIP.equalsIgnoreCase(suffix)){
-			instream=new ZipInputStream(wrapInputStream(in));
-			((ZipInputStream)instream).getNextEntry();
-		}else if(Const.SUFFIX_BZIP2.equalsIgnoreCase(suffix)){
-			instream=new BZip2CompressorInputStream(wrapInputStream(in));
-		}else if(Const.SUFFIX_LZO.equalsIgnoreCase(suffix)){
-			LzoAlgorithm algorithm = LzoAlgorithm.LZO1X;
-			LzoDecompressor decompressor = LzoLibrary.getInstance().newDecompressor(algorithm, null);
-			instream = new LzoInputStream(wrapInputStream(in), decompressor);
-		}else if(Const.SUFFIX_SNAPPY.equalsIgnoreCase(suffix)){
-			instream=new SnappyInputStream(wrapInputStream(in));
-		}else if(Const.SUFFIX_LZMA.equalsIgnoreCase(suffix)){
-			instream=new LZMAInputStream(wrapInputStream(in));
-		}else if(Const.SUFFIX_LZ4.equalsIgnoreCase(suffix)){
-			LZ4Factory factory = LZ4Factory.fastestInstance();
-			LZ4FastDecompressor decompressor=factory.fastDecompressor();
-			instream=new LZ4BlockInputStream(wrapInputStream(in),decompressor);
-		}
-		else
-			instream=in;
-		return instream;
+	protected InputStream getInputStreamByPath(String path, InputStream  in) throws IOException{
+		return CompressDecoder.getInputStreamByCompressType(path,in);
 	}
-	protected BufferedWriter getWriterBySuffix(String suffix,OutputStream out,String encode) throws IOException{
-		return new BufferedWriter(new OutputStreamWriter(getOutputStreamBySuffix(suffix,out),encode));
+	protected BufferedWriter getWriterByPath(String path, OutputStream out, String encode) throws IOException{
+		return new BufferedWriter(new OutputStreamWriter(getOutputStreamByPath(path,out),encode));
 	}
 
 	private static OutputStream wrapOutputStream(OutputStream outputStream){
@@ -115,31 +84,8 @@ public abstract class AbstractResourceAccessUtil {
 		}
 		return in;
 	}
-	protected OutputStream getOutputStreamBySuffix(String suffix,OutputStream out) throws IOException{
-		OutputStream outputStream=null;
-		if(Const.SUFFIX_GZIP.equalsIgnoreCase(suffix)){
-			outputStream=new GZIPOutputStream(wrapOutputStream(out));
-		}else if(Const.SUFFIX_ZIP.equalsIgnoreCase(suffix)){
-			outputStream=new ZipOutputStream(wrapOutputStream(out));
-			((ZipOutputStream)outputStream).putNextEntry(new ZipEntry("result"));
-		}else if(Const.SUFFIX_BZIP2.equalsIgnoreCase(suffix)){
-			outputStream=new BZip2CompressorOutputStream(wrapOutputStream(out));
-		}else if(Const.SUFFIX_SNAPPY.equalsIgnoreCase(suffix)){
-			outputStream=new SnappyOutputStream(wrapOutputStream(out));
-		}else if(Const.SUFFIX_LZO.equalsIgnoreCase(suffix)){
-			LzoAlgorithm algorithm=LzoAlgorithm.LZO1X;
-			LzoCompressor compressor= LzoLibrary.getInstance().newCompressor(algorithm,null);
-			outputStream=new LzoOutputStream(wrapOutputStream(out),compressor);
-		}else if(Const.SUFFIX_LZMA.equalsIgnoreCase(suffix)){
-			outputStream=new LZMAOutputStream(wrapOutputStream(out),new LZMA2Options(),-1);
-		}else if(Const.SUFFIX_LZ4.equalsIgnoreCase(suffix)){
-			LZ4Factory factory = LZ4Factory.fastestInstance();
-			LZ4Compressor compressor= factory.fastCompressor();
-			outputStream=new LZ4BlockOutputStream(wrapOutputStream(out),8192,compressor);
-		}
-		else
-			outputStream=out;
-		return outputStream;
+	protected OutputStream getOutputStreamByPath(String path, OutputStream out) throws IOException{
+		return CompressEncoder.getOutputStreamByCompressType(path,out);
 	}
 	
 	public abstract BufferedReader getInResourceByReader(DataCollectionMeta meta) throws Exception;
