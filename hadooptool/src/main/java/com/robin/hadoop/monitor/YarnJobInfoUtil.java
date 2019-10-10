@@ -197,7 +197,7 @@ public class YarnJobInfoUtil extends AbstractJobInfoUtil{
 		    			 info.setAttempId(event.getTaskAttemptId().toString());
 		    			 info.setMachine(getMachine(event));
 		    			 info.setStatus(event.getStatus().name());
-		    			 if(info.getStatus().equals("SUCCEEDED"))
+		    			 if("SUCCEEDED".equals(info.getStatus()))
 		    				 info.setProgress(1);
 		    			 retList.add(info);
 		    		 }
@@ -270,11 +270,11 @@ public class YarnJobInfoUtil extends AbstractJobInfoUtil{
 					 trackurl=tele.get(0).attr("href");
 				 }
 				String tag=treles.get(i).select("th").first().text();
-				if(tag.equalsIgnoreCase("map")){
+				if("map".equalsIgnoreCase(tag)){
 					summary.setMapcount(Long.parseLong(tdeles.get(0).text()));
 					summary.setCompleteMaps(Integer.parseInt(tdeles.get(1).text()));
 					summary.setMapTrackUrl(trackurl);
-				}else if(tag.equalsIgnoreCase("reduce")){
+				}else if("reduce".equalsIgnoreCase(tag)){
 					summary.setReducecount(Long.parseLong(tdeles.get(2).text()));
 					summary.setCompleteReduces(Integer.parseInt(tdeles.get(3).text()));
 					summary.setReduceTrackUrl(trackurl);

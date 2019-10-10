@@ -104,7 +104,7 @@ public class CommJdbcUtil {
         if (logger.isInfoEnabled()) logger.info((new StringBuilder()).append("querySQL: ").append(querySQL).toString());
 
         String sumSQL = "";
-        if (qs.getCountSql() == null || qs.getCountSql().trim().equals(""))
+        if (qs.getCountSql() == null || "".equals(qs.getCountSql().trim()))
             sumSQL = sqlGen.generateCountSql(querySQL);
         else
             sumSQL = sqlGen.getCountSqlByConfig(qs, pageQuery);
@@ -215,11 +215,11 @@ public class CommJdbcUtil {
                         rs.getObject(i + 1);
                         if (rs.wasNull()) {
                             putValue(fields, i, columnName, null, map);
-                        } else if (typeName.equalsIgnoreCase("DATE")) {
+                        } else if ("DATE".equalsIgnoreCase(typeName)) {
                             Date date = rs.getDate(i + 1);
                             String datestr = query.getDateFormater().format(date);
                             putValue(fields, i, columnName, datestr, map);
-                        } else if (typeName.equalsIgnoreCase("TIMESTAMP")) {
+                        } else if ("TIMESTAMP".equalsIgnoreCase(typeName)) {
                             Timestamp stamp = rs.getTimestamp(i + 1);
                             String datestr = query.getTimestampFormater().format(new Date(stamp.getTime()));
                             putValue(fields, i, columnName, datestr, map);
@@ -363,7 +363,7 @@ public class CommJdbcUtil {
                 logger.info((new StringBuilder()).append("querySQL: ").append(querySQL).toString());
             if (pageQuery.getPageSize() > 0) {
                 String sumSQL = "";
-                if (qs.getCountSql() == null || qs.getCountSql().trim().equals(""))
+                if (qs.getCountSql() == null || "".equals(qs.getCountSql().trim()))
                     sumSQL = sqlGen.generateCountSql(querySQL);
                 else
                     sumSQL = sqlGen.getCountSqlByConfig(qs, pageQuery);
@@ -411,7 +411,7 @@ public class CommJdbcUtil {
     @SuppressWarnings({"unchecked", "rawtypes"})
     public static PageQuery queryBySql(JdbcTemplate jdbcTemplate, LobHandler lobHandler, BaseSqlGen sqlGen, String querySQL, String countSql, String[] displayname, PageQuery pageQuery) throws DAOException {
         String sumSQL = "";
-        if (countSql == null || countSql.trim().equals(""))
+        if (countSql == null || "".equals(countSql.trim()))
             sumSQL = sqlGen.generateCountSql(querySQL);
         else
             sumSQL = countSql;
@@ -496,24 +496,24 @@ public class CommJdbcUtil {
                 else
                     ps.setNull(pos + 1, Types.VARCHAR);
             } else if (typeMap.get("dataType").equals(Const.META_TYPE_NUMERIC)) {
-                if (value == null || value.equals(""))
+                if (value == null || "".equals(value))
                     ps.setNull(pos + 1, Types.DOUBLE);
                 else
                     ps.setDouble(pos + 1, Double.valueOf(value));
             } else if (typeMap.get("dataType").equals(Const.META_TYPE_INTEGER)) {
-                if (value == null || value.equals(""))
+                if (value == null || "".equals(value))
                     ps.setNull(pos + 1, Types.INTEGER);
                 else
                     ps.setInt(pos + 1, Integer.parseInt(value));
             } else if (typeMap.get("dataType").equals(Const.META_TYPE_DOUBLE)) {
-                if (value == null || value.equals(""))
+                if (value == null || "".equals(value))
                     ps.setNull(pos + 1, Types.DOUBLE);
                 else
                     ps.setDouble(pos + 1, Double.valueOf(value));
             } else if (typeMap.get("dataType").equals(Const.META_TYPE_DATE)) {
                 SimpleDateFormat oformat = new SimpleDateFormat("yyyy-MM-dd");
                 SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                if (value == null || value.equals(""))
+                if (value == null || "".equals(value))
                     ps.setNull(pos + 1, Types.DATE);
                 else {
                     Date date = null;

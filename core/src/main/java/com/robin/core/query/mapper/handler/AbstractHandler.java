@@ -99,13 +99,13 @@ public abstract class AbstractHandler implements IHandler {
                         doProcessNode(node,nameSpace,segments1);
                     }
                     CompositeSegment compSeg;
-                    if(type.equalsIgnoreCase("select")){
+                    if("select".equalsIgnoreCase(type)){
                         compSeg=new SelectSegment(nameSpace,id,null,type,segments1,resultMap,paramType);
                         if(ele.attributeValue("countRef")!=null){
                             ((SelectSegment) compSeg).setCountRef(ele.attributeValue("countRef"));
                         }
-                    }else if(type.equalsIgnoreCase("insert")){
-                        boolean useGenerateKeys=ele.attributeValue("useGeneratedKeys")!=null?ele.attributeValue("useGeneratedKeys").equalsIgnoreCase("true"):false;
+                    }else if("insert".equalsIgnoreCase(type)){
+                        boolean useGenerateKeys=ele.attributeValue("useGeneratedKeys")!=null? "true".equalsIgnoreCase(ele.attributeValue("useGeneratedKeys")) :false;
                         compSeg=new InsertSegment(nameSpace,id,null,type,segments1,resultMap,paramType,useGenerateKeys,ele.attributeValue("keyProperty"));
                     }else{
                         compSeg=new CompositeSegment(nameSpace,id,null,type,segments1,resultMap,paramType);

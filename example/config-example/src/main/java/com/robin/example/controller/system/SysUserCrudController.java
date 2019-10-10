@@ -273,7 +273,7 @@ public class SysUserCrudController extends BaseCrudDhtmlxController<SysUser, Lon
         }
         for (SysResource res : resList) {
             String pid = res.getPid().toString();
-            if (pid.equals("0")) {
+            if ("0".equals(pid)) {
                 Map<String, Object> tmap = new HashMap<String, Object>();
                 tmap.put("id", res.getId());
                 tmap.put("text", res.getName());

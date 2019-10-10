@@ -1,6 +1,6 @@
 package com.robin.core.query.util;
 
-import com.robin.core.base.exception.MissingConfigExecption;
+import com.robin.core.base.exception.MissingConfigException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
@@ -54,7 +54,7 @@ public class ConfigResourceScanner {
             } else {
                 File file = new File(xmlpath);
                 if (!file.isDirectory()) {
-                    throw new MissingConfigExecption("no query XML found in path!");
+                    throw new MissingConfigException("no query XML found in path!");
                 }
                 File[] files = file.listFiles();
                 for (int i = 0; i < files.length; i++) {

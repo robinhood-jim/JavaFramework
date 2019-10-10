@@ -22,7 +22,7 @@ public class  Hive2DataBaseMeta extends BaseDataBaseMeta{
 
 	public Hive2DataBaseMeta(DataBaseParam param) {
 		super(param);
-		if(param.getDatabaseName()==null || param.getDatabaseName().equals("")){
+		if(param.getDatabaseName()==null || "".equals(param.getDatabaseName())){
 			param.setDatabaseName("default");
 		}
 		param.setDriverClassName("org.apache.hive.jdbc.HiveDriver");

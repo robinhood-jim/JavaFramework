@@ -15,7 +15,7 @@
  */
 package com.robin.core.query.util;
 
-import com.robin.core.base.exception.MissingConfigExecption;
+import com.robin.core.base.exception.MissingConfigException;
 import com.robin.core.base.exception.QueryConfgNotFoundException;
 import org.dom4j.Document;
 import org.dom4j.Element;
@@ -24,7 +24,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 
-import java.io.File;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -76,7 +75,7 @@ public class QueryFactory implements InitializingBean {
             Element element = (Element) iter.next();
             id = element.attributeValue("ID");
             if (queryMap.containsKey(id))
-                throw new MissingConfigExecption((new StringBuilder()).append("Duplicated selectId:").append(id).toString());
+                throw new MissingConfigException((new StringBuilder()).append("Duplicated selectId:").append(id).toString());
 
             String sql = decodeSql(element.elementText("SQL"));
             String field = element.elementText("FIELD");

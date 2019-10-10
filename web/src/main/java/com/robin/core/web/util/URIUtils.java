@@ -30,7 +30,7 @@ public class URIUtils {
         return contentPath;
     }
     public static String getRequestRelativePathOrSuffix(String requestPath,String contentPath){
-        if (!requestPath.equals("/")) {
+        if (!"/".equals(requestPath)) {
             int pos = contentPath.indexOf(contentPath);
             contentPath = contentPath.substring(pos + contentPath.length());
         }

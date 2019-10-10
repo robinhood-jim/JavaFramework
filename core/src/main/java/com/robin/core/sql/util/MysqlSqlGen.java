@@ -126,7 +126,7 @@ public class MysqlSqlGen extends AbstractSqlGen implements BaseSqlGen{
 		}else if(dataType.equals(Const.META_TYPE_BLOB)){
 			builder.append("BLOB");
 		}
-		if(fieldMap.containsKey("increment") && fieldMap.get("increment").toString().equalsIgnoreCase("true")){
+		if(fieldMap.containsKey("increment") && "true".equalsIgnoreCase(fieldMap.get("increment").toString())){
 			builder.append(" AUTO_INCREMENT");
 		}
 		return builder.toString();

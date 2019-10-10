@@ -368,7 +368,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
             if (map1.containsKey(fieldName)) {
                 String namedstr = generateQuerySqlBySingleFields(map1.get(fieldName), fieldName, oper, queryBuffer);
                 String sql = buffer.toString() + queryBuffer.toString();
-                if (orderByStr != null && !orderByStr.equals(""))
+                if (orderByStr != null && !"".equals(orderByStr))
                     sql += " order by " + orderByStr;
                 rsList = executeQueryByParam(oper, namedstr, sql, fieldValues);
                 for (int i = 0; i < rsList.size(); i++) {

@@ -764,7 +764,7 @@ public class SimpleJdbcDao {
 			QueryRunner qRunner=new QueryRunner();
 			String querySql="select "+ columns+" from "+tableName+" where 1=0";			
 			StringBuilder insertSqlbuilder=new StringBuilder("insert into "+tableName);
-			if(!columns.equals("*"))
+			if(!"*".equals(columns))
 				insertSqlbuilder.append("("+columns+") values (");
 			else
 				insertSqlbuilder.append(" values (");			
@@ -803,7 +803,7 @@ public class SimpleJdbcDao {
 					}else{
 						Object[] obj1=new Object[arr.length];
 						for (int i = 0; i < columnCount; i++) {
-							if(arr[i].equals("")){
+							if("".equals(arr[i])){
 								obj1[i]=null;
 								continue;
 							}
@@ -859,19 +859,19 @@ public class SimpleJdbcDao {
 				else
 					objArr[row][pos]=null;
 			}else if(poolobj.get("dataType").equals(Const.META_TYPE_NUMERIC)){
-				if(value==null || value.equals(""))
+				if(value==null || "".equals(value))
 					objArr[row][pos]=null;
 				else{
 					objArr[row][pos]=Double.valueOf(value);
 				}
 			}else if(poolobj.get("dataType").equals(Const.META_TYPE_INTEGER)){
-				if(value==null || value.equals(""))
+				if(value==null || "".equals(value))
 					objArr[row][pos]=null;
 				else
 					objArr[row][pos]=Integer.valueOf(value);
 			}
 			else if(poolobj.get("dataType").equals(Const.META_TYPE_DOUBLE)){
-				if(value==null || value.equals(""))
+				if(value==null || "".equals(value))
 					objArr[row][pos]=null;
 				else{
 					objArr[row][pos]=Double.valueOf(value);
@@ -879,7 +879,7 @@ public class SimpleJdbcDao {
 			}
 			else if(poolobj.get("dataType").equals(Const.META_TYPE_DATE)){
 
-				if(value==null || value.equals(""))
+				if(value==null || "".equals(value))
 					objArr[row][pos]=null;
 				else{
 					java.sql.Date date=null;

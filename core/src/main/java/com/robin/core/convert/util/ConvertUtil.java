@@ -144,7 +144,7 @@ public class ConvertUtil {
                 target.AddDirtyColumn(key);
                 Class type = methodMap.get(key).getParameterTypes()[0];
                 Object retValue = null;
-                if (!type.getName().equalsIgnoreCase("java.lang.String") && value.equals(""))
+                if (!"java.lang.String".equalsIgnoreCase(type.getName()) && "".equals(value))
                     retValue = null;
                 else
                     retValue = parseParamenter(type, value);
@@ -166,7 +166,7 @@ public class ConvertUtil {
             if (targetMap.containsKey(key)) {
                 Class type = targetMap.get(key).getParameterTypes()[0];
                 Object retValue = null;
-                if (!type.getName().equalsIgnoreCase("java.lang.String") && value.equals("")) retValue = null;
+                if (!"java.lang.String".equalsIgnoreCase(type.getName()) && "".equals(value)) retValue = null;
                 else retValue = parseParamenter(type, value);
                 targetMap.get(key).invoke(target, new Object[]{retValue});
             }
@@ -225,7 +225,7 @@ public class ConvertUtil {
         if (value != null) {
             target.AddDirtyColumn(field);
             Class type = setMethod.getParameterTypes()[0];
-            if (!type.getName().equalsIgnoreCase("java.lang.String") && value.equals("")) {
+            if (!"java.lang.String".equalsIgnoreCase(type.getName()) && "".equals(value)) {
                 setMethod.invoke(target, new Object[]{null});
             } else {
                 Object retValue = parseParamenter(type, value);
@@ -281,13 +281,13 @@ public class ConvertUtil {
             typeName = "byte";
         }
         Object ret = null;
-        if (typeName.equals("int")) {
+        if ("int".equals(typeName)) {
             ret = Integer.parseInt(strValue.toString());
-        } else if (typeName.equals("long")) {
+        } else if ("long".equals(typeName)) {
             ret = Long.parseLong(strValue.toString());
-        } else if (typeName.equals("float")) {
+        } else if ("float".equals(typeName)) {
             ret = Float.parseFloat(strValue.toString());
-        } else if (typeName.equals("double")) {
+        } else if ("double".equals(typeName)) {
             ret = Double.parseDouble(strValue.toString());
         } else if (typeName.startsWith("java.math.") || "java.util.Date" .equals(typeName)) {
             String value = strValue.toString().trim();
@@ -296,10 +296,10 @@ public class ConvertUtil {
             SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
             ret = format.parse(value);
 
-        } else if (typeName.equals("java.lang.String")) {
+        } else if ("java.lang.String".equals(typeName)) {
             ret = strValue.toString();
         } else {
-            if (typeName.equals("java.sql.Timestamp")) {
+            if ("java.sql.Timestamp".equals(typeName)) {
                 String value = strValue.toString().trim();
                 int len = value.trim().length();
                 if (len > 7 && len < 11) {
@@ -308,14 +308,14 @@ public class ConvertUtil {
                     value = value + ".0";
                 }
                 strValue = value;
-            } else if (typeName.equals("java.sql.Date") && strValue != null) {
+            } else if ("java.sql.Date".equals(typeName) && strValue != null) {
                 String value = strValue.toString().trim();
                 if (value.length() > 10) {
                     value = value.substring(0, 10);
                 }
                 strValue = value;
             }
-            if (!typeName.equals("byte")) {
+            if (!"byte".equals(typeName)) {
                 if (!strValue.toString().isEmpty()) {
                     Method method = type.getMethod("valueOf", new Class[]{"java.lang.String" .getClass()});
                     if (method != null)

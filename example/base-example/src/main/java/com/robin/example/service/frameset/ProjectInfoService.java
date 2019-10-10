@@ -33,23 +33,23 @@ public class ProjectInfoService extends BaseAnnotationJdbcService<ProjectInfo, L
 	public Map<String,String> getTemplateNameByProject(ProjectInfo info){
 		Map<String, String> map=new HashMap<String, String>();
 		String webpagePrefix="";
-		if(info.getWebFrameId().toString().equals("1")){
+		if("1".equals(info.getWebFrameId().toString())){
 			webpagePrefix="dhtmlx";
-		}else if(info.getWebFrameId().toString().equals("2")){
+		}else if("2".equals(info.getWebFrameId().toString())){
 			webpagePrefix="easyui";
-		}else if(info.getWebFrameId().toString().equals("3")){
+		}else if("3".equals(info.getWebFrameId().toString())){
 			webpagePrefix="extjs";
 		}
 		map.put("webFramePrefix", webpagePrefix);
 		String modelconfigPrefix="";
-		if(info.getPresistType().equals("1")){
+		if("1".equals(info.getPresistType())){
 			modelconfigPrefix="hibernate";
-		}else if(info.getPresistType().equals("2")){
+		}else if("2".equals(info.getPresistType())){
 			modelconfigPrefix="jpa";
-		}else if(info.getPresistType().equals("3")){
+		}else if("3".equals(info.getPresistType())){
 			modelconfigPrefix="custom";
 		}
-		boolean usemvc=info.getUseMvc()!=null && info.getUseMvc().equals("1");
+		boolean usemvc=info.getUseMvc()!=null && "1".equals(info.getUseMvc());
 		if(usemvc){
 			map.put("actionType", "mvc");
 		}else

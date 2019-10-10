@@ -110,13 +110,13 @@ public class SplitPageResultSetExtractor implements ResultSetExtractor<List<Map<
 					if(rs.wasNull())
 					{
 						map.put(columnName[i], "");
-					}else if(typeName[i].equalsIgnoreCase("DATE"))
+					}else if("DATE".equalsIgnoreCase(typeName[i]))
 					{
 						SimpleDateFormat format=new SimpleDateFormat("yyyy-MM-dd");
 						Date date=rs.getDate(i+1);
 						String datestr=format.format(date);
 						map.put(columnName[i], datestr);
-					}else if(typeName[i].equalsIgnoreCase("TIMESTAMP"))
+					}else if("TIMESTAMP".equalsIgnoreCase(typeName[i]))
 					{
 						SimpleDateFormat format=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 						Timestamp stamp=rs.getTimestamp(i+1);
@@ -155,13 +155,13 @@ public class SplitPageResultSetExtractor implements ResultSetExtractor<List<Map<
 			if(rs.wasNull())
 			{
 				map.put(columnName[i], "");
-			}else if(typeName[i].equalsIgnoreCase("DATE"))
+			}else if("DATE".equalsIgnoreCase(typeName[i]))
 			{
 				SimpleDateFormat format=new SimpleDateFormat("yyyy-MM-dd");
 				Date date=rs.getDate(i+1);
 				String datestr=format.format(date);
 				map.put(columnName[i], datestr);
-			}else if(typeName[i].equalsIgnoreCase("TIMESTAMP"))
+			}else if("TIMESTAMP".equalsIgnoreCase(typeName[i]))
 			{
 				SimpleDateFormat format=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 				Timestamp stamp=rs.getTimestamp(i+1);

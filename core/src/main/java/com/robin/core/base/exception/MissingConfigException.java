@@ -6,11 +6,11 @@ package com.robin.core.base.exception;
  * @author robinjim
  * @version 1.0
  */
-public class MissingConfigExecption extends RuntimeException {
-    public MissingConfigExecption(RuntimeException ex) {
+public class MissingConfigException extends RuntimeException {
+    public MissingConfigException(RuntimeException ex) {
         super(ex);
     }
-    public MissingConfigExecption(String message) {
+    public MissingConfigException(String message) {
         super(message);
     }
 }

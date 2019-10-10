@@ -56,7 +56,7 @@ public class SqlMapperDao extends JdbcDaoSupport {
         StringBuilder builder = new StringBuilder();
         if (sqlMapperConfigure.getSegmentsMap().containsKey(nameSpace) && sqlMapperConfigure.getSegmentsMap().get(nameSpace).containsKey(id)) {
             ImmutablePair<String, List<AbstractSegment>> pair = sqlMapperConfigure.getSegmentsMap().get(nameSpace).get(id);
-            if (pair.left.equalsIgnoreCase("select")) {
+            if ("select".equalsIgnoreCase(pair.left)) {
                 SelectSegment segment = (SelectSegment) pair.right.get(0);
                 Map<String, Object> paramMap = wrapSqlAndParamter(nameSpace, id, builder, query, params);
                 String selectSql = builder.toString();
@@ -123,11 +123,11 @@ public class SqlMapperDao extends JdbcDaoSupport {
         try {
             if (sqlMapperConfigure.getSegmentsMap().containsKey(nameSpace) && sqlMapperConfigure.getSegmentsMap().get(nameSpace).containsKey(id)) {
                 ImmutablePair<String, List<AbstractSegment>> pair = sqlMapperConfigure.getSegmentsMap().get(nameSpace).get(id);
-                if (pair.left.equalsIgnoreCase("update") || pair.left.equalsIgnoreCase("insert") || pair.left.equalsIgnoreCase("delete")) {
+                if ("update".equalsIgnoreCase(pair.left) || "insert".equalsIgnoreCase(pair.left) || "delete".equalsIgnoreCase(pair.left)) {
 
                     boolean useGenerateKeys = false;
                     String keyProperty = null;
-                    if (pair.left.equalsIgnoreCase("insert")) {
+                    if ("insert".equalsIgnoreCase(pair.left)) {
                         InsertSegment segment = (InsertSegment) pair.right.get(0);
                         if (segment.isUseGenerateKeys()) {
                             useGenerateKeys = true;
@@ -136,7 +136,7 @@ public class SqlMapperDao extends JdbcDaoSupport {
                     }
                     Map<String, Object> paramMap = wrapSqlAndParamter(nameSpace, id, builder, null, targetObject);
                     log.debug("execute sql={}", builder.toString());
-                    if (pair.left.equalsIgnoreCase("insert") && useGenerateKeys) {
+                    if ("insert".equalsIgnoreCase(pair.left) && useGenerateKeys) {
                         KeyHolder keyHolder = new GeneratedKeyHolder();
                         updateRows = getNamedJdbcTemplate().update(builder.toString(), (new MapSqlParameterSource(paramMap)), keyHolder);
                         setGenerateKey(targetObject[0], keyProperty, keyHolder.getKey());
@@ -178,7 +178,7 @@ public class SqlMapperDao extends JdbcDaoSupport {
                     String resultMap = segment.getResultMap();
                     if (resultMap != null) {
                         ResultMapperSegment segment1 = (ResultMapperSegment) mapper.getSegmentsMap().get(nameSpace).get(resultMap).right.get(0);
-                        if (segment1.getClassName().equalsIgnoreCase("HashMap")) {
+                        if ("HashMap".equalsIgnoreCase(segment1.getClassName())) {
                             if (mapper.getSegmentsMap().get(nameSpace).containsKey(resultMap)) {
                                 Map<String, Object> map = new HashMap<>();
                                 for (int i = 0; i < count; i++) {

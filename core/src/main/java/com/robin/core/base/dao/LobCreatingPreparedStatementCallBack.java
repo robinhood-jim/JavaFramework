@@ -89,9 +89,9 @@ public class LobCreatingPreparedStatementCallBack extends
     }
 
     private void setValueByDataType(PreparedStatement ps, Object value, LobCreator lobCreator, String dataType, int pos) throws SQLException {
-        if (dataType.equalsIgnoreCase("clob")) {
+        if ("clob".equalsIgnoreCase(dataType)) {
             lobCreator.setClobAsString(ps, pos, value.toString());
-        } else if (dataType.equalsIgnoreCase("blob")) {
+        } else if ("blob".equalsIgnoreCase(dataType)) {
             lobCreator.setBlobAsBytes(ps, pos, (byte[]) value);
         } else {
             setValue(ps, pos, value);

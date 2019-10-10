@@ -112,7 +112,7 @@ public class DFSInfoGetUtil {
 		for (Element ele:boldeles) {
 			if(ele.select("div.security").isEmpty() && ele.select("a").isEmpty()){
 				String val=ele.text();
-				if(val!=null && !val.trim().equals("")){
+				if(val!=null && !"".equals(val.trim())){
 					info.setDmpMessage(val);
 					break;
 				}

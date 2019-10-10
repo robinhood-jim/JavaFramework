@@ -25,7 +25,7 @@ public class ConditionBuilder {
 		for (int i = 0; i < method.length; i++) {
 			methodName = method[i].getName();
 			methodFix = methodName.substring(3);
-			if (methodName.startsWith("get") && !methodName.equals("getClass") && (methods == null || methods.isEmpty() 
+			if (methodName.startsWith("get") && !"getClass".equals(methodName) && (methods == null || methods.isEmpty()
 					|| methods.containsKey(methodFix))) {
 				if (method[i].getParameterTypes().length > 0){
 					continue;
@@ -36,14 +36,14 @@ public class ConditionBuilder {
 				if(empty == 1 && args2[0] == null){
 					continue;
 				}
-				if(empty == 2 && (args2[0] == null || args2[0].equals("") || args2[0].equals(0)
+				if(empty == 2 && (args2[0] == null || "".equals(args2[0]) || args2[0].equals(0)
 						|| args2[0].equals(0L) || args2[0].equals(0.0)
 						|| args2[0].equals(new Float(0))) || args2[0].equals(new HashMap()) || args2[0].equals(new ArrayList())){
 					continue;
 				}
 				
 				Condition condition = null;
-				if (methods != null && !methods.isEmpty() && methods.get(methodFix) != null && !methods.get(methodFix).equals("")){
+				if (methods != null && !methods.isEmpty() && methods.get(methodFix) != null && !"".equals(methods.get(methodFix))){
 					condition = new Condition(methodFix,(String)methods.get(methodFix),args2[0]);
 				}else{
 					condition = new Condition(methodFix,Condition.EQUALS,args2[0]);

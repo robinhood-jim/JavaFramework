@@ -35,10 +35,10 @@ public class ResultSetExtractorUtils {
             className= fullclassName.substring(pos + 1).toUpperCase();
             if (rs.wasNull()) {
                 map.put(columnName, "");
-            } else if (typeName.equalsIgnoreCase("DATE")) {
+            } else if ("DATE".equalsIgnoreCase(typeName)) {
                 date = rs.getDate(i + 1);
                 map.put(columnName, date);
-            } else if (typeName.equalsIgnoreCase("TIMESTAMP") || typeName.equalsIgnoreCase("datetime")) {
+            } else if ("TIMESTAMP".equalsIgnoreCase(typeName) || "datetime".equalsIgnoreCase(typeName)) {
                 stamp = rs.getTimestamp(i + 1);
                 map.put(columnName, stamp);
             } else if (className.contains("CLOB")) {
@@ -48,7 +48,7 @@ public class ResultSetExtractorUtils {
                 } catch (UnsupportedEncodingException ex) {
                     throw new SQLException(ex);
                 }
-            } else if (className.contains("BLOB") || className.equals("OBJECT")) {
+            } else if (className.contains("BLOB") || "OBJECT".equals(className)) {
                 obj = rs.getBytes(i + 1);
                 map.put(columnName, obj);
             } else

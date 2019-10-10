@@ -48,7 +48,7 @@ public class ScriptExecutor implements InitializingBean {
         for (ScriptEngineFactory fac : factory.getEngineFactories()) {
             String name = fac.getLanguageName();
             // Use consistent Camel case, pretty naming.
-            if (name.toLowerCase().equals("ecmascript")) {
+            if ("ecmascript".equals(name.toLowerCase())) {
                 name = "js";
             } else if (name.toLowerCase().endsWith("ruby")) {
                 name = "jruby";

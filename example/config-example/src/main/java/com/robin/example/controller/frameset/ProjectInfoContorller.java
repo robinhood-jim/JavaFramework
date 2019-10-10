@@ -118,9 +118,9 @@ public class ProjectInfoContorller extends BaseCrudDhtmlxController<ProjectInfo,
     public Map<String, Object> genCvs(HttpServletRequest request, HttpServletResponse response, @PathVariable Long id) throws Exception {
         try {
             ProjectInfo projectInfo = this.service.getEntity(id);
-            if (projectInfo.getTeamType().equals("1")) {
+            if ("1".equals(projectInfo.getTeamType())) {
 
-            } else if (projectInfo.getTeamType().equals("2")) {
+            } else if ("2".equals(projectInfo.getTeamType())) {
                 GitUtil.cloneProject("test", projectInfo.getTeamUrl(), projectInfo.getProjBasePath(), "robinjim", "robin7704");
             }
             return wrapSuccess("OK");
@@ -286,9 +286,9 @@ public class ProjectInfoContorller extends BaseCrudDhtmlxController<ProjectInfo,
 
             String libbasePath = "web/WEB-INF/lib/";
             parammap.put("libBasePath", libbasePath);
-            if (projType.equals("1")) {
+            if ("1".equals(projType)) {
                 parammap.put("classOutPut", "bin");
-            } else if (projType.equals("2")) {
+            } else if ("2".equals(projType)) {
                 parammap.put("classOutPut", "web/WEB-INF/classes");
             } else {
                 parammap.put("classOutPut", "bin");
@@ -296,7 +296,7 @@ public class ProjectInfoContorller extends BaseCrudDhtmlxController<ProjectInfo,
             List<Map<String, Object>> libraryList = jdbcDao.queryBySql("select a.zip_file as file from t_base_javalibrary a,t_base_projrelay b where a.id=b.library_id and b.proj_id=?", new Object[]{info.getId()});
             List<Map<String, Object>> jarlist = jdbcDao.queryBySql("select d.file_name as jarPath,d.version as version,a.id as libid,d.maven_group as `group`,d.maven_artifact as artifact from t_base_javalibrary a,t_base_projrelay b,t_base_javalibrary_r c,t_base_jar d where a.id=b.library_id  and c.library_id=a.id and c.jar_id=d.id and b.proj_id=? order by a.id", new Object[]{info.getId()});
             parammap.put("relayjarList", jarlist);
-            if (info.getJarmanType().equals("1")) {
+            if ("1".equals(info.getJarmanType())) {
                 generateCode(freeutil, basePath + "pom.xml", "mavenconfig.ftl", parammap);
             }
             List<Map<String, Object>> templist = jdbcDao.queryBySql("select name,template_path as path from t_base_codetemplate");
@@ -334,13 +334,13 @@ public class ProjectInfoContorller extends BaseCrudDhtmlxController<ProjectInfo,
             if (request.getParameter("comment") != null && !request.getParameter("comment").isEmpty()) {
                 comment = request.getParameter("comment");
             }
-            if (teamType.equals("1")) {
+            if ("1".equals(teamType)) {
                 String localPath = info.getProjBasePath();
                 SvnUtil util = new SvnUtil(teamUrl + "/" + info.getProjCode());
                 util.authSvn("luoming", "123");
                 util.makeDirectory(util.getReposUrl(), comment);
                 util.importDirectory(new File(localPath), comment, true);
-            } else if (teamType.equals("2")) {
+            } else if ("2".equals(teamType)) {
                 GitUtil.addResource(info.getProjBasePath(), ".");
                 GitUtil.commit(info.getProjBasePath(), comment, "robinjim", "robin7704");
                 GitUtil.pull(info.getProjBasePath());

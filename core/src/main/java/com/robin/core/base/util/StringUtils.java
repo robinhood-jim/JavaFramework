@@ -181,9 +181,9 @@ public class StringUtils {
 	}
 	public static int getSplitCharInt(String split){
 		int retchar=0;
-		if(split.equals("\\t")){
+		if("\\t".equals(split)){
 			retchar=10;
-		}else if(split.equalsIgnoreCase("0x1F")){
+		}else if("0x1F".equalsIgnoreCase(split)){
 			retchar=31;
 		}else {
 			retchar=split.charAt(0);
@@ -192,9 +192,9 @@ public class StringUtils {
 	}
 	public static String getSplitChar(String split){
 		String retchar="";
-		if(split.equals("\\t")){
+		if("\\t".equals(split)){
 			retchar="\t";
-		}else if(split.equalsIgnoreCase("0x1F")){
+		}else if("0x1F".equalsIgnoreCase(split)){
 			retchar=String.valueOf('\u001F');
 		}else {
 			retchar=split;

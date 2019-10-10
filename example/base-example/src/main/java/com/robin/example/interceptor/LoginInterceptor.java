@@ -28,7 +28,7 @@ public class LoginInterceptor extends HandlerInterceptorAdapter {
         if(request.getSession().getAttribute(Const.SESSION)!=null){
             return super.preHandle(request, response, handler);
         }else{
-            if(!request.getContextPath().equals("/")){
+            if(!"/".equals(request.getContextPath())){
                 int pos=contentPath.indexOf(request.getContextPath());
                 contentPath=contentPath.substring(pos+request.getContextPath().length());
             }

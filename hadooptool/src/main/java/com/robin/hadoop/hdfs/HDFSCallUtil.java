@@ -53,7 +53,7 @@ public class HDFSCallUtil {
 		String url="";
 		try{
 			String hdfsUrl="";
-			if(toUrl!=null && !toUrl.equals(""))
+			if(toUrl!=null && !"".equals(toUrl))
 				hdfsUrl=toUrl;
 			int pos=0;
 			pos=hdfsUrl.lastIndexOf("/");
@@ -521,9 +521,9 @@ public class HDFSCallUtil {
 		File file=new File(path);
 		if(exists(config,path)){
 			String suffix=getFileSuffix(file);
-			if(suffix.equalsIgnoreCase("gz")){
+			if("gz".equalsIgnoreCase(suffix)){
 				reader=new BufferedReader(new InputStreamReader(new GZIPInputStream(FileSystem.get(config).open(new Path(path))),encode));
-			}else if(suffix.equalsIgnoreCase("zip")){
+			}else if("zip".equalsIgnoreCase(suffix)){
 				reader=new BufferedReader(new InputStreamReader(new ZipInputStream(FileSystem.get(config).open(new Path(path))),encode));
 			}else
 			reader=new BufferedReader(new InputStreamReader(FileSystem.get(config).open(new Path(path)),encode));
@@ -535,9 +535,9 @@ public class HDFSCallUtil {
 		File file=new File(path);
 		if(exists(config,path)){
 			String suffix=getFileSuffix(file);
-			if(suffix.equalsIgnoreCase("gz")){
+			if("gz".equalsIgnoreCase(suffix)){
 				reader=new BufferedInputStream(new GZIPInputStream(FileSystem.get(config).open(new Path(path))));
-			}else if(suffix.equalsIgnoreCase("zip")){
+			}else if("zip".equalsIgnoreCase(suffix)){
 				reader=new BufferedInputStream(new ZipInputStream(FileSystem.get(config).open(new Path(path))));
 			}else
 			reader=new BufferedInputStream(FileSystem.get(config).open(new Path(path)));
@@ -551,9 +551,9 @@ public class HDFSCallUtil {
 			delete(config, path);
 		}
 		String suffix=getFileSuffix(new File(path));
-		if(suffix.equalsIgnoreCase("gz")){
+		if("gz".equalsIgnoreCase(suffix)){
 			writer=new BufferedWriter(new OutputStreamWriter(new  GZIPOutputStream(FileSystem.get(config).create(new Path(path))),encode));
-		}else if(suffix.equalsIgnoreCase("zip")){
+		}else if("zip".equalsIgnoreCase(suffix)){
 			writer=new BufferedWriter(new OutputStreamWriter(new ZipOutputStream(FileSystem.get(config).create(new Path(path))),encode));
 		}else
 			writer=new BufferedWriter(new OutputStreamWriter(FileSystem.get(config).create(new Path(path)),encode));

@@ -154,7 +154,7 @@ public class EncryptJarPackage {
                         tmpbuffer.append(")");
                         if (!isinterface) {
                             tmpbuffer.append("{");
-                            if (!rettype.equals("void")) {
+                            if (!"void".equals(rettype)) {
                                 if (rettype.contains("long") || rettype.contains("Long")) {
                                     tmpbuffer.append("return 0L;");
                                 } else if (rettype.contains("int") || rettype.contains("Integer")) {
@@ -436,9 +436,9 @@ public class EncryptJarPackage {
         int pos = 1;
         for (int k = 0; k < parameters.size(); k++) {
             JavaParameter parameter = parameters.get(k);
-            if(parameter.getType().getValue().equalsIgnoreCase("Map")){
+            if("Map".equalsIgnoreCase(parameter.getType().getValue())){
                 getActualType(parameter.getType(),builder);
-            }else if(parameter.getType().getValue().equalsIgnoreCase("List")){
+            }else if("List".equalsIgnoreCase(parameter.getType().getValue())){
                 getActualType(parameter.getType(),builder);
             }else
                 builder.append(parameter.getValue());

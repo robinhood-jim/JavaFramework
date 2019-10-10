@@ -28,7 +28,7 @@ public class CodeSetController extends BaseController {
         Map<String,Object> retMap=new HashMap<>();
         boolean insertNullVal = true;
         String allowNull = request.getParameter("allowNull");
-        if (allowNull != null && !allowNull.isEmpty() && allowNull.equalsIgnoreCase("false")) {
+        if (allowNull != null && !allowNull.isEmpty() && "false".equalsIgnoreCase(allowNull)) {
             insertNullVal = false;
         }
         List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();

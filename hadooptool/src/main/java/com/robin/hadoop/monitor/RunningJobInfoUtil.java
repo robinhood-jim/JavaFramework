@@ -224,7 +224,7 @@ public class RunningJobInfoUtil extends AbstractJobInfoUtil {
 		List<JobTaskInfo> retList=new ArrayList<JobTaskInfo>();
 		String file=job.getJobFile();
 		if(file!=null){
-			if(type.equalsIgnoreCase("map")){
+			if("map".equalsIgnoreCase(type)){
 				TaskReport[] reports=jobClient.getMapTaskReports(getJobID(jobId));
 				for (int i = startIndex; i < reports.length; i++) {
 				    if(i < endIndex){
@@ -234,7 +234,7 @@ public class RunningJobInfoUtil extends AbstractJobInfoUtil {
 		            }else
 		                break;
 				}
-			}else if(type.equalsIgnoreCase("reduce")){
+			}else if("reduce".equalsIgnoreCase(type)){
 				TaskReport[] reports=jobClient.getReduceTaskReports(getJobID(jobId));
 				for (int i = startIndex; i < reports.length; i++) {
                     if(i < endIndex){
@@ -244,7 +244,7 @@ public class RunningJobInfoUtil extends AbstractJobInfoUtil {
                     }else
                         break;
                 }
-			}else if(type.equalsIgnoreCase("setup")){
+			}else if("setup".equalsIgnoreCase(type)){
 				TaskReport[] reports=jobClient.getSetupTaskReports(getJobID(jobId));
 				for (int i = startIndex; i < reports.length; i++) {
 					if(i < endIndex){
@@ -256,7 +256,7 @@ public class RunningJobInfoUtil extends AbstractJobInfoUtil {
 					}else
 					    break;
 				}
-			}else if(type.equalsIgnoreCase("cleanup")){
+			}else if("cleanup".equalsIgnoreCase(type)){
 				TaskReport[] reports=jobClient.getCleanupTaskReports(getJobID(jobId));
 				for (int i = startIndex; i < reports.length; i++) {
                     if(i < endIndex){
@@ -432,7 +432,7 @@ public class RunningJobInfoUtil extends AbstractJobInfoUtil {
 	    			 //info.setStartTime(new Timestamp(Long.parseLong(String.valueOf(event.getTaskRunTime()))));
 	    			 info.setMachine(getMachine(event));
 	    			 info.setStatus(event.getTaskStatus().name());
-	    			 if(info.getStatus().equals("SUCCEEDED"))
+	    			 if("SUCCEEDED".equals(info.getStatus()))
 	    				 info.setProgress(1);
 	    			 retList.add(info);
 	    		 }
@@ -503,7 +503,7 @@ public class RunningJobInfoUtil extends AbstractJobInfoUtil {
 		 List<Object> objList=new ArrayList<Object>();
 		 objList.add(arr[1]);
 		 objList.add(arr[2]);
-		objList.add(arr[3].equalsIgnoreCase("m")?"true":"false");
+		objList.add("m".equalsIgnoreCase(arr[3]) ?"true":"false");
 		objList.add(arr[4]);
 		objList.add(arr[5]);
 		return objList;
@@ -620,7 +620,7 @@ public class RunningJobInfoUtil extends AbstractJobInfoUtil {
 		 String str=reader.readLine();
 		 Document doc1=Jsoup.parse(str);
 		 summary.setDataNodeName(doc1.select("a").first().text());
-		 boolean isRetired=summary.getDataNodeName().equalsIgnoreCase("History Viewer");
+		 boolean isRetired= "History Viewer".equalsIgnoreCase(summary.getDataNodeName());
 		 List<String> fielddisplaynames=Arrays.asList(new String[]{"User:","Job Name:","Submit Host:","Submit Host Address:","Job Setup:","Status:","Started at:","Finished at:","Finished in:","Job Cleanup:","Job File:","Killed at:","Failed at:"});
 		 String[] methodNames={"user","name","submitHost","submitIp","jobSetup","state","startTime","finishTime","finishIn","jobCleanup","jobFile","finishTime","finishTime"};
 		if(isRetired){
@@ -659,9 +659,9 @@ public class RunningJobInfoUtil extends AbstractJobInfoUtil {
 				String tag=tagele.first().text();
 			Elements tdeles=treles.get(i).select("td");
 			int pos=0;
-			while (tdeles.get(pos+1).text()==null || tdeles.get(pos+1).text().trim().equals(""))
+			while (tdeles.get(pos+1).text()==null || "".equals(tdeles.get(pos + 1).text().trim()))
 				pos++;
-			if(tag.equalsIgnoreCase("map")){
+			if("map".equalsIgnoreCase(tag)){
 				String valstr=tdeles.get(0).text();
 				float val=Float.parseFloat(valstr.substring(0,valstr.length()-1))/100;
 				summary.setMapPrecent(val);
@@ -673,7 +673,7 @@ public class RunningJobInfoUtil extends AbstractJobInfoUtil {
 				valstr=tdeles.get(pos+6).text();
 				String[] tmpstr=valstr.split("/");
 				summary.setFailedMaps(Integer.parseInt(tmpstr[0].trim()));
-			}else if(tag.equalsIgnoreCase("reduce")){
+			}else if("reduce".equalsIgnoreCase(tag)){
 				String valstr=tdeles.get(0).text();
 				float val=Float.parseFloat(valstr.substring(0,valstr.length()-1))/100;
 				summary.setReducePrecent(val);

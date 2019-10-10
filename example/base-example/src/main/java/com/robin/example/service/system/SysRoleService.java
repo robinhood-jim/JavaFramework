@@ -35,7 +35,7 @@ public class SysRoleService extends BaseAnnotationJdbcService<SysRole, Long> imp
 		try{
 			this.getJdbcDao().deleteByField(SysResourceRole.class, "resId", Long.valueOf(resId));
 			for (int i = 0; i < ids.length; i++) {
-				if(!ids[i].equals("")){
+				if(!"".equals(ids[i])){
 					SysResourceRole resRole=new SysResourceRole();
 					resRole.setResId(Integer.valueOf(resId));
 					resRole.setRoleId(Integer.valueOf(ids[i]));
