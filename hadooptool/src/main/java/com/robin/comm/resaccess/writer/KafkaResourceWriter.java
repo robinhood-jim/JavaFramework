@@ -26,7 +26,7 @@ public class KafkaResourceWriter extends AbstractResourceWriter {
     private Schema schema;
     private String valueType;
 
-    private Gson gson=new Gson();
+
     byte[] output=null;
     String key=null;
     private StringBuilder builder=new StringBuilder();

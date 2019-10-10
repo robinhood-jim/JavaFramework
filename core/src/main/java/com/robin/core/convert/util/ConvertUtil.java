@@ -126,7 +126,7 @@ public class ConvertUtil {
             Map.Entry<String,Method> entry=iterator.next();
             if(entry.getValue().getParameterTypes().length==0) {
                 Object value = entry.getValue().invoke(src, (Object[]) null);
-                target.put(entry.getKey(), value == null ? "" : value);
+                target.put(entry.getKey(), value);
             }
         }
     }
@@ -157,11 +157,12 @@ public class ConvertUtil {
     public static void mapToObject(Object target, Map<String, Object> src) throws Exception {
         if (src == null || target == null) return;
 
-        Iterator it = src.keySet().iterator();
+        Iterator<Map.Entry<String,Object>> it = src.entrySet().iterator();
         Map<String,Method> targetMap=returnSetMethold(target.getClass());
         while (it.hasNext()) {
-            String key = (String) it.next();
-            String value = src.get(key).toString();
+            Map.Entry<String,Object> entry=it.next();
+            String key = entry.getKey();
+            Object value = entry.getValue();
             if (targetMap.containsKey(key)) {
                 Class type = targetMap.get(key).getParameterTypes()[0];
                 Object retValue = null;
@@ -210,13 +211,13 @@ public class ConvertUtil {
 
         Map<String, Method> map = returnSetMethold(target.getClass());
 
-        Iterator set = src.keySet().iterator();
+        Iterator<Map.Entry<String,String>> set = src.entrySet().iterator();
         while (set.hasNext()) {
-            String field = (String) set.next();
+            Map.Entry<String,String> entry=set.next();
+            String field = entry.getKey();
             Method setMethod = map.get(field);
             if (setMethod != null) {
-                String value = src.get(field);
-                setBaseObjectValue(target,value,field,setMethod);
+                setBaseObjectValue(target,entry.getValue(),field,setMethod);
             }
         }
     }
@@ -238,17 +239,17 @@ public class ConvertUtil {
         Map<String, Method> sourceMethodMap = returnGetMethold(src.getClass());
         if(src instanceof Map) {
             Map<String,Object> vMap=(Map<String,Object>)src;
-            Iterator set = vMap.keySet().iterator();
+            Iterator<Map.Entry<String,Object>> set = vMap.entrySet().iterator();
             while (set.hasNext()) {
-                String field = (String) set.next();
+                Map.Entry<String,Object> entry=set.next();
+                String field = entry.getKey();
                 Method setMethod = targetMethodMap.get(field);
                 if (setMethod != null) {
-                    String value = vMap.get(field).toString();
                     if(target instanceof BaseObject)
-                        setBaseObjectValue((BaseObject) target,value,field,setMethod);
+                        setBaseObjectValue((BaseObject) target,entry.getValue(),field,setMethod);
                     else{
                         if(targetMethodMap.containsKey(field)) {
-                            Object retValue = parseParamenter(targetMethodMap.get(field).getParameterTypes()[0], value);
+                            Object retValue = parseParamenter(targetMethodMap.get(field).getParameterTypes()[0], entry.getValue());
                             setObjectValue(targetMethodMap.get(field), target, retValue);
                         }
                     }

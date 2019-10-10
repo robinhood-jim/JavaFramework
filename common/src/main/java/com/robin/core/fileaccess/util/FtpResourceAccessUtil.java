@@ -157,7 +157,7 @@ public class FtpResourceAccessUtil extends AbstractResourceAccessUtil{
 		}
 		return opts;
 	}
-	public class FtpParam {
+	public static class FtpParam {
 		private String protocol;
 		private String hostName;
 		private int port;

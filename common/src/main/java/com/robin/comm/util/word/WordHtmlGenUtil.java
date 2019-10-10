@@ -90,7 +90,7 @@ public class WordHtmlGenUtil {
 		try{
 			com.lowagie.text.Document document=new com.lowagie.text.Document(PageSize.A4);
 			RtfWriter2.getInstance(document, out);  
-			PdfWriter pdfWriter = PdfWriter.getInstance(document, new FileOutputStream("D://testpdf.pdf"));
+
 			document.open();  
 			Paragraph context = new Paragraph();  
 			URL urlconn=new URL(url);

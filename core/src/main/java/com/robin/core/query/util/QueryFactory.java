@@ -57,12 +57,6 @@ public class QueryFactory implements InitializingBean {
     }
 
 
-    private void parseXML(File file) throws Exception {
-        if (file != null && file.isFile()) {
-            Document document = new SAXReader().read(file);
-            putQueryMap(document);
-        }
-    }
 
     private void parseXML(InputStream is) throws Exception {
         if (is == null) {

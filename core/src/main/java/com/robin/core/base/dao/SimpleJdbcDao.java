@@ -478,6 +478,9 @@ public class SimpleJdbcDao {
 			throw new DAOException(ex);
 		}
 		finally{
+			if(stmt!=null){
+				DbUtils.closeQuietly(stmt);
+			}
 		}
 	}
 	public int executeUpdate(final String sql,final Object[] param) throws DAOException{

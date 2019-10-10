@@ -71,7 +71,8 @@ public class DFSInfoGetUtil {
 		}catch(Exception ex){
 			throw ex;
 		}finally{
-			client.close();
+			if(client!=null)
+				client.close();
 		}
 	    return info;
 	}

@@ -45,7 +45,7 @@ public class EncryptWebClassLoader extends URLClassLoader {
 	private final Field parentField=null;
 	private Vector<Class> pclasses;
 	private Vector<Class> curclasses;
-	public static final int XorKey[] = { 0xB2, 0x09, 0xAA, 0x55, 0x93, 0x6D, 0x84,0x47 };
+	protected static final int[] XorKey = { 0xB2, 0x09, 0xAA, 0x55, 0x93, 0x6D, 0x84,0x47 };
 	//private Map<String,byte[]> decryptMap=new HashMap<String, byte[]>();
 	public static void init(){
 		
@@ -101,7 +101,7 @@ public class EncryptWebClassLoader extends URLClassLoader {
 			}
 			
 			// load bin file
-			instream = new DataInputStream(this.getClass().getClassLoader().getSystemResourceAsStream("META-INF/config.bin"));
+			instream = new DataInputStream(EncryptWebClassLoader.class.getClassLoader().getSystemResourceAsStream("META-INF/config.bin"));
 			if (instream != null) {
 				while (instream.available() > 0) {
 					String keystr = decrypt(instream.readUTF());
@@ -416,7 +416,7 @@ public class EncryptWebClassLoader extends URLClassLoader {
 	}
 
 	public static String encrypt(String inputStr) {
-		 int XorKey[] = { 0xB2, 0x09, 0xAA, 0x55, 0x93, 0x6D, 0x84,0x47 };
+		 int[] XorKey = { 0xB2, 0x09, 0xAA, 0x55, 0x93, 0x6D, 0x84,0x47 };
 		StringBuilder builder = new StringBuilder();
 		for (int i = 0; i < inputStr.length(); i++) {
 			int keypos = i % 8;

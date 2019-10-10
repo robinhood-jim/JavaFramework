@@ -240,7 +240,7 @@ public class SysUserCrudController extends BaseCrudDhtmlxController<SysUser, Lon
             List<Map<String, Object>> list = query.getRecordSet();
 
             for (Map<String, Object> map : list) {
-                resIdList.add(new Long(map.get("id").toString()));
+                resIdList.add(Long.valueOf(map.get("id").toString()));
             }
             List<SysResource> resList = sysResourceService.queryByField("status", BaseObject.OPER_EQ, "1");
             //正向方向赋权
@@ -263,12 +263,12 @@ public class SysUserCrudController extends BaseCrudDhtmlxController<SysUser, Lon
 
         if (typeMap.containsKey("1")) {
             for (Map<String, Object> map : typeMap.get("1")) {
-                addList.add(new Long(map.get("resId").toString()));
+                addList.add(Long.valueOf(map.get("resId").toString()));
             }
         }
         if (typeMap.containsKey("2")) {
             for (Map<String, Object> map : typeMap.get("2")) {
-                delList.add(new Long(map.get("resId").toString()));
+                delList.add(Long.valueOf(map.get("resId").toString()));
             }
         }
         for (SysResource res : resList) {

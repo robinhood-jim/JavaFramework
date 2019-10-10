@@ -147,7 +147,7 @@ public class DataBaseUtil {
             List<String> pklist = this.getAllPrimaryKeyByTableName(tablename, DbOrtablespacename);
             while (rs.next()) {
                 String columnname = rs.getString("COLUMN_NAME");
-                Integer datatype = Integer.parseInt(translateDbType(new Integer(rs.getInt("DATA_TYPE"))));
+                Integer datatype = Integer.valueOf(translateDbType(Integer.valueOf(rs.getInt("DATA_TYPE"))));
                 String datalength = rs.getString("COLUMN_SIZE");
                 boolean nullable = rs.getInt("NULLABLE") != DatabaseMetaData.columnNoNulls;
                 String comment = rs.getString("REMARKS");
@@ -237,7 +237,7 @@ public class DataBaseUtil {
             }
             while (rs.next()) {
                 String columnname = rs.getString("COLUMN_NAME");
-                Integer datatype = Integer.parseInt(translateDbType(new Integer(rs.getInt("DATA_TYPE"))));
+                Integer datatype = Integer.valueOf(translateDbType(Integer.valueOf(rs.getInt("DATA_TYPE"))));
                 String datalength = rs.getString("COLUMN_SIZE");
                 boolean nullable = rs.getInt("NULLABLE") != DatabaseMetaData.columnNoNulls;
                 String comment = "";

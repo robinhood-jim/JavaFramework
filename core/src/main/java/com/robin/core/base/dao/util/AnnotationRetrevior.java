@@ -302,7 +302,7 @@ public class AnnotationRetrevior {
                     content.setPrimary(true);
                     parsePrimaryKey(content, type);
                 }
-                if (!mapfield.sequenceName().equals("")) {
+                if (mapfield.sequenceName()!=null && !mapfield.sequenceName().isEmpty()) {
                     content.setSequential(true);
                     content.setSequenceName(mapfield.sequenceName());
                 }
@@ -330,9 +330,9 @@ public class AnnotationRetrevior {
                         content.setDataType(Const.META_TYPE_OBJECT);
                     }
                 } else {
-                    if (datatype.equalsIgnoreCase("clob"))
+                    if ("clob".equalsIgnoreCase(datatype))
                         content.setDataType(Const.META_TYPE_CLOB);
-                    else if (datatype.equalsIgnoreCase("blob")) {
+                    else if ("blob".equalsIgnoreCase(datatype)) {
                         content.setDataType(Const.META_TYPE_BLOB);
                     }
                 }

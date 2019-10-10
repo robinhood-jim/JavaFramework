@@ -43,17 +43,17 @@ public class SysResourceUser extends BaseObject {
 	public static final int ASSIGN_DEL = 2;
 
 
-	public static String REF_CLASS = "SysResourceUser";
-	public static String PROP_STATUS = "status";
-	public static String PROP_RES_ID = "resId";
-	public static String PROP_USER_ID = "userId";
-	public static String PROP_ID = "id";
+	public static final String REF_CLASS = "SysResourceUser";
+	public static final String PROP_STATUS = "status";
+	public static final String PROP_RES_ID = "resId";
+	public static final String PROP_USER_ID = "userId";
+	public static final String PROP_ID = "id";
 
-	public static String REF_TABLE = "t_sys_resource_user_r";
-	public static String COL_STATUS = "STATUS";
-	public static String COL_RES_ID = "RES_ID";
-	public static String COL_USER_ID = "USER_ID";
-	public static String COL_ID = "ID";
+	public static final String REF_TABLE = "t_sys_resource_user_r";
+	public static final String COL_STATUS = "STATUS";
+	public static final String COL_RES_ID = "RES_ID";
+	public static final String COL_USER_ID = "USER_ID";
+	public static final String COL_ID = "ID";
 
 	public boolean equals(Object obj) {
 		if (obj == null)

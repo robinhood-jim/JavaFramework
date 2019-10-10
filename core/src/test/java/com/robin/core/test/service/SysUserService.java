@@ -51,7 +51,7 @@ public class SysUserService extends BaseAnnotationJdbcService<SysUser,Long> {
     @Transactional(value="another",propagation=Propagation.REQUIRED,rollbackFor=RuntimeException.class)
     public int deleteEntity(SysUser [] vo) throws ServiceException{
         try{
-            return jdbcDao.deleteVO(type,vo);
+            return getJdbcDao().deleteVO(type,vo);
         }catch (DAOException e) {
             throw new ServiceException(e);
         }
@@ -59,7 +59,7 @@ public class SysUserService extends BaseAnnotationJdbcService<SysUser,Long> {
     @Transactional(value="another",propagation=Propagation.REQUIRED,rollbackFor=RuntimeException.class)
     public int deleteByField(String field,Object value) throws ServiceException{
         try{
-            return jdbcDao.deleteByField(type,field,value);
+            return getJdbcDao().deleteByField(type,field,value);
         }catch (DAOException e) {
             throw new ServiceException(e);
         }

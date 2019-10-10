@@ -143,7 +143,7 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
         buffer.append(SELECT);
         buffer.append(fields).append(" ");
         buffer.append(fromscript);
-        if (sql != null && !sql.trim().equals("")) {
+        if (sql != null && !sql.trim().isEmpty()) {
             return sql;
         } else {
             if (queryString.getGroupByString() != null && !"".equals(queryString.getGroupByString())) {
@@ -175,7 +175,7 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
         String fromscript = qs.getFromSql();
         String sql = qs.sql;
 
-        if (sql == null || sql.trim().equals("")) {
+        if (sql == null || sql.trim().isEmpty()) {
             String fields = qs.field;
             buffer.append(SELECT);
             buffer.append(fields).append(" ");
@@ -247,7 +247,7 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
         StringBuilder builder = new StringBuilder();
         String fromscript = qs.getFromSql();
         String sql = qs.sql;
-        if (sql == null || sql.trim().equals("")) {
+        if (sql == null || sql.trim().isEmpty()) {
             String fields = qs.field;
             builder.append(SELECT);
             builder.append(fields).append(" ");

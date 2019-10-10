@@ -83,4 +83,7 @@
         </script>
           where id=:id
     </update>
+    <delete id="del1" parameterType="">
+
+    </delete>
 </mapper>

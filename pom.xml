@@ -114,6 +114,7 @@
         <snappy.version>1.1.2.6</snappy.version>
         <xz.version>1.6</xz.version>
         <cassandradriver.version>3.6.0</cassandradriver.version>
+        <graal.version>1.0.0-rc7</graal.version>
     </properties>
 
     <repositories>
@@ -899,6 +900,11 @@
                 <groupId>org.eclipse.jgit</groupId>
                 <artifactId>org.eclipse.jgit</artifactId>
                 <version>5.0.3.201809091024-r</version>
+            </dependency>
+            <dependency>
+                <groupId>org.graalvm</groupId>
+                <artifactId>graal-sdk</artifactId>
+                <version>${graal.version}</version>
             </dependency>
             <!-- Other tool end -->
         </dependencies>

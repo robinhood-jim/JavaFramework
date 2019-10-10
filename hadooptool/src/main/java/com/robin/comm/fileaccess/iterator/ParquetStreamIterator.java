@@ -48,7 +48,6 @@ public class ParquetStreamIterator extends AbstractFileIterator {
         super(colmeta);
     }
     private List<Schema.Field> fields;
-    private String tmpFilePath="/tmp/";
     private static final int COPY_BUFFER_SIZE = 8192;
 
     @Override
@@ -125,7 +124,6 @@ public class ParquetStreamIterator extends AbstractFileIterator {
                 return new SeekableInputStream(){
 
                     private final byte[] tmpBuf = new byte[COPY_BUFFER_SIZE];
-                    private long markPos = 0;
 
                     @Override
                     public int read() throws IOException {
@@ -217,9 +215,7 @@ public class ParquetStreamIterator extends AbstractFileIterator {
         return msgtype;
     }
 
-    public void setTmpFilePath(String tmpFilePath) {
-        this.tmpFilePath = tmpFilePath;
-    }
+
 
 
     private static int readDirectBuffer(ByteBuffer byteBufr, byte[] tmpBuf, InputStream rdr) throws IOException {

@@ -124,17 +124,15 @@ public class SqlMapperDao extends JdbcDaoSupport {
             if (sqlMapperConfigure.getSegmentsMap().containsKey(nameSpace) && sqlMapperConfigure.getSegmentsMap().get(nameSpace).containsKey(id)) {
                 ImmutablePair<String, List<AbstractSegment>> pair = sqlMapperConfigure.getSegmentsMap().get(nameSpace).get(id);
                 if (pair.left.equalsIgnoreCase("update") || pair.left.equalsIgnoreCase("insert") || pair.left.equalsIgnoreCase("delete")) {
-                    CompositeSegment segment = null;
+
                     boolean useGenerateKeys = false;
                     String keyProperty = null;
                     if (pair.left.equalsIgnoreCase("insert")) {
-                        segment = (InsertSegment) pair.right.get(0);
-                        if (((InsertSegment) segment).isUseGenerateKeys()) {
+                        InsertSegment segment = (InsertSegment) pair.right.get(0);
+                        if (segment.isUseGenerateKeys()) {
                             useGenerateKeys = true;
                             keyProperty = ((InsertSegment) segment).getKeyProperty();
                         }
-                    } else {
-                        segment = (CompositeSegment) pair.right.get(0);
                     }
                     Map<String, Object> paramMap = wrapSqlAndParamter(nameSpace, id, builder, null, targetObject);
                     log.debug("execute sql={}", builder.toString());

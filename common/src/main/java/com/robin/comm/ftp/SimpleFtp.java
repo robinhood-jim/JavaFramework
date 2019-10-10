@@ -15,7 +15,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 public class SimpleFtp {
-	protected static Logger log = LoggerFactory.getLogger(SimpleFtp.class);
+	protected static final Logger log = LoggerFactory.getLogger(SimpleFtp.class);
 	public static final int PORT_DEFAULT = 21;
 	public static final String ENCODING_DEFAULT = "UTF-8";
 	protected FTPClient ftpClient;

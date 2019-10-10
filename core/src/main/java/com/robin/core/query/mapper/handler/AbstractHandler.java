@@ -15,8 +15,8 @@ public abstract class AbstractHandler implements IHandler {
     @Override
     public void analyse(Element element,String nameSpace, List<AbstractSegment> segments) {
         List<Node> elements=element.content();
-        if(elements.size()>1 && !element.getName().equalsIgnoreCase("resultMap")) {
-            if(element.getName().equalsIgnoreCase("select") || element.getName().equalsIgnoreCase("update") || element.getName().equalsIgnoreCase("insert") || element.getName().equalsIgnoreCase("batch")) {
+        if(elements.size()>1 && !"resultMap".equalsIgnoreCase(element.getName())) {
+            if("select".equalsIgnoreCase(element.getName()) || "update".equalsIgnoreCase(element.getName()) || "insert".equalsIgnoreCase(element.getName()) || "batch".equalsIgnoreCase(element.getName())) {
                 doProcessElement(element,nameSpace,segments);
             }else {
                 for (Node ele : elements) {
@@ -24,7 +24,7 @@ public abstract class AbstractHandler implements IHandler {
                 }
             }
         }else{
-            if(element.getName().equalsIgnoreCase("resultMap")){
+            if("resultMap".equalsIgnoreCase(element.getName())){
                 doProcessElement(element,nameSpace,segments);
             }else
                 doProcessNode(element,nameSpace, segments);
@@ -64,43 +64,59 @@ public abstract class AbstractHandler implements IHandler {
 
         String type = ele.getName();
         String id = ele.attributeValue("id");
+
         if (ele.elements().size() == 1 && type == null) {
             segments.add(new ConstantSegment(nameSpace, id, ele.getText()));
-        } else if (type.equalsIgnoreCase("include")) {
-            segments.add(new IncludeSegment(nameSpace, id, ele.attributeValue("refid")));
-        } else if (type.equalsIgnoreCase("script")) {
-            String language = ele.attributeValue("lang");
-            ScriptSegment segment = new ScriptSegment(nameSpace, id, ele.getStringValue());
-            segment.setScriptType(language);
-            segments.add(segment);
-        } else if (type.equalsIgnoreCase("sql")) {
-            segments.add(new SqlSegment(nameSpace, id, ele.getStringValue()));
-        } else if (type.equalsIgnoreCase("resultMap")) {
-            ResultMapperSegment segment = new ResultMapperSegment(nameSpace, id, null);
-            segment.parse(ele);
-            segments.add(segment);
-        } else if (type.equalsIgnoreCase("select") || type.equalsIgnoreCase("insert") || type.equalsIgnoreCase("update") || type.equalsIgnoreCase("delete") || type.equalsIgnoreCase("batch")) {
-            List<Node> elements=ele.content();
-            List<AbstractSegment> segments1=new ArrayList<>();
-            String resultMap=ele.attributeValue("resultMap");
-            String paramType=ele.attributeValue("parameterType");
-            for(Node node:elements){
-                doProcessNode(node,nameSpace,segments1);
+        } else
+        {
+            switch (type){
+                case "include":
+                    segments.add(new IncludeSegment(nameSpace, id, ele.attributeValue("refid")));
+                    break;
+                case "script":
+                    String language = ele.attributeValue("lang");
+                    ScriptSegment segment = new ScriptSegment(nameSpace, id, ele.getStringValue());
+                    segment.setScriptType(language);
+                    segments.add(segment);
+                    break;
+                case "sql":
+                    segments.add(new SqlSegment(nameSpace, id, ele.getStringValue()));
+                    break;
+                case "resultMap":
+                    ResultMapperSegment segment1 = new ResultMapperSegment(nameSpace, id, null);
+                    segment1.parse(ele);
+                    segments.add(segment1);
+                    break;
+                case "select":
+                case "insert":
+                case "update":
+                case "batch":
+                    List<Node> elements=ele.content();
+                    List<AbstractSegment> segments1=new ArrayList<>();
+                    String resultMap=ele.attributeValue("resultMap");
+                    String paramType=ele.attributeValue("parameterType");
+                    for(Node node:elements){
+                        doProcessNode(node,nameSpace,segments1);
+                    }
+                    CompositeSegment compSeg;
+                    if(type.equalsIgnoreCase("select")){
+                        compSeg=new SelectSegment(nameSpace,id,null,type,segments1,resultMap,paramType);
+                        if(ele.attributeValue("countRef")!=null){
+                            ((SelectSegment) compSeg).setCountRef(ele.attributeValue("countRef"));
+                        }
+                    }else if(type.equalsIgnoreCase("insert")){
+                        boolean useGenerateKeys=ele.attributeValue("useGeneratedKeys")!=null?ele.attributeValue("useGeneratedKeys").equalsIgnoreCase("true"):false;
+                        compSeg=new InsertSegment(nameSpace,id,null,type,segments1,resultMap,paramType,useGenerateKeys,ele.attributeValue("keyProperty"));
+                    }else{
+                        compSeg=new CompositeSegment(nameSpace,id,null,type,segments1,resultMap,paramType);
+                    }
+                    segments.add(compSeg);
+                    break;
+                default:
+                    break;
             }
-            CompositeSegment compSeg;
-            if(type.equalsIgnoreCase("select")){
-                compSeg=new SelectSegment(nameSpace,id,null,type,segments1,resultMap,paramType);
-                if(ele.attributeValue("countRef")!=null){
-                    ((SelectSegment) compSeg).setCountRef(ele.attributeValue("countRef"));
-                }
-            }else if(type.equalsIgnoreCase("insert")){
-                boolean useGenerateKeys=ele.attributeValue("useGeneratedKeys")!=null?ele.attributeValue("useGeneratedKeys").equalsIgnoreCase("true"):false;
-                compSeg=new InsertSegment(nameSpace,id,null,type,segments1,resultMap,paramType,useGenerateKeys,ele.attributeValue("keyProperty"));
-            }else{
-                compSeg=new CompositeSegment(nameSpace,id,null,type,segments1,resultMap,paramType);
-            }
-            segments.add(compSeg);
         }
+
     }
 
 

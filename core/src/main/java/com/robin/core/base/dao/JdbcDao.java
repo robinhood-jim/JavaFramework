@@ -55,6 +55,9 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
     private LobHandler lobHandler;
     private Logger logger = LoggerFactory.getLogger(this.getClass());
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+    public JdbcDao(){
+
+    }
     public JdbcDao(DataSource dataSource,LobHandler lobHandler,QueryFactory queryFactory,BaseSqlGen sqlGen){
         setDataSource(dataSource);
         this.lobHandler=lobHandler;

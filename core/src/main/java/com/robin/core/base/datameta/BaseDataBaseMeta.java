@@ -42,7 +42,7 @@ public abstract class BaseDataBaseMeta implements DataBaseInterface, Serializabl
 	public static final String TYPE_Impala="Impala";
 	protected DataBaseParam param;
 	//Enum type of all support DB
-	public static String[] dbTypeEnmu={"Oracle","MySql","DB2","SqlServer","Sybase","H2","Debry","PostgreSql","Phoenix","Hive","Hive2","OracleRac"};
+	public static final String[] dbTypeEnmu={"Oracle","MySql","DB2","SqlServer","Sybase","H2","Debry","PostgreSql","Phoenix","Hive","Hive2","OracleRac"};
 	//jdbc Url Template like jdbc:mysql://[hostName]:[port]/[databaseName]?useUnicode=true&characterEncoding=[encode]
 	public static final Pattern PATTERN_TEMPLATE_PARAM = Pattern.compile("\\[.*?\\]");
 	public List<DataBaseTableMeta> listAllTable(String schema) throws Exception {

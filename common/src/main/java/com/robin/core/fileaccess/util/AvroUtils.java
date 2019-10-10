@@ -146,7 +146,8 @@ public class AvroUtils {
             return null;
         } finally {
             try {
-                byteArrayInputStream.close();
+                if(byteArrayInputStream!=null)
+                    byteArrayInputStream.close();
             } catch (IOException e) {
 
             }
