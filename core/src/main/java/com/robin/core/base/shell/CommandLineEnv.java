@@ -54,8 +54,9 @@ public class CommandLineEnv {
 		return retryNums;
 	}
 	public void setRetryNums(int retryNums) {
-		if(retryNums>1)
-			this.retryNums = retryNums;
+		if(retryNums>1) {
+            this.retryNums = retryNums;
+        }
 	}
 	public boolean isSupervise() {
 		return supervise;

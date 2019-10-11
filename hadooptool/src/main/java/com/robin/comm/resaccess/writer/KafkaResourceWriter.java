@@ -43,8 +43,9 @@ public class KafkaResourceWriter extends AbstractResourceWriter {
             if("avro".equalsIgnoreCase(valueType)){
                 schema= AvroUtils.getSchemaFromMeta(colmeta);
             }
-        }else
+        }else {
             schema= AvroUtils.getSchemaFromMeta(colmeta);
+        }
         try {
             initalize();
         }catch (Exception ex){

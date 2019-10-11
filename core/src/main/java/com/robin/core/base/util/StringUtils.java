@@ -202,16 +202,18 @@ public class StringUtils {
 		return retchar;
 	}
 	public static String initailCharToUpperCase(String input){
-		if(input.length()>2)
-			return input.substring(0,1).toUpperCase()+input.substring(1);
-		else
-			return null;
+		if(input.length()>2) {
+            return input.substring(0,1).toUpperCase()+input.substring(1);
+        } else {
+            return null;
+        }
 	}
 	public static String initailCharToLowCase(String input){
-		if(input.length()>2)
-			return input.substring(0,1).toLowerCase()+input.substring(1);
-		else
-			return null;
+		if(input.length()>2) {
+            return input.substring(0,1).toLowerCase()+input.substring(1);
+        } else {
+            return null;
+        }
 	}
 	public static String generateRandomChar(int length){
 		StringBuilder builder=new StringBuilder();
@@ -231,9 +233,9 @@ public class StringUtils {
 		StringBuilder builder=new StringBuilder();
 		Random random=new Random();
 		for(int i=0;i<length;i++){
-			if(random.nextFloat()<0.5)
-				builder.append((char)getRandomUpperChar(random));
-			else{
+			if(random.nextFloat()<0.5) {
+                builder.append((char)getRandomUpperChar(random));
+            } else{
 				builder.append((char)getRandomLowerChar(random));
 			}
 		}

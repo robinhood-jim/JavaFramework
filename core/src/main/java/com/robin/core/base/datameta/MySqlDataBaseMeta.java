@@ -30,8 +30,9 @@ public class MySqlDataBaseMeta extends BaseDataBaseMeta implements DataBaseInter
 			}else {
 				param.setDriverClassName("org.gjt.mm.mysql.Driver");
 			}
-		}else
-			param.setDriverClassName("com.mysql.jdbc.Driver");
+		}else {
+            param.setDriverClassName("com.mysql.jdbc.Driver");
+        }
 		if(param.getEncode()==null || !"".equals(param.getEncode().trim())){
 			param.setEncode("utf-8");
 		}
@@ -39,46 +40,55 @@ public class MySqlDataBaseMeta extends BaseDataBaseMeta implements DataBaseInter
 
 	
 
-	public String getUrlTemplate() {
+	@Override
+    public String getUrlTemplate() {
 		if(param.getMainVersion()!=null && param.getMainVersion()!=0){
 			if(param.getMainVersion()<8){
 				return "jdbc:mysql://[hostName]:[port]/[databaseName]?useUnicode=true&characterEncoding=[encode]&zeroDateTimeBehavior=convertToNull&serverTimezone=[timeZone]";
 			}else{
 				return "jdbc:mysql://[hostName]:[port]/[databaseName]?useUnicode=true&characterEncoding=[encode]&zeroDateTimeBehavior=convertToNull&useSSL=false&serverTimezone=[timeZone]";
 			}
-		}else
-			return "jdbc:mysql://[hostName]:[port]/[databaseName]?useUnicode=true&characterEncoding=[encode]&zeroDateTimeBehavior=convertToNull&serverTimezone=[timeZone]";
+		}else {
+            return "jdbc:mysql://[hostName]:[port]/[databaseName]?useUnicode=true&characterEncoding=[encode]&zeroDateTimeBehavior=convertToNull&serverTimezone=[timeZone]";
+        }
 	}
-	public boolean suppportSequnce() {
+	@Override
+    public boolean suppportSequnce() {
 		return false;
 	}
 
-	public boolean supportAutoInc() {
+	@Override
+    public boolean supportAutoInc() {
 		return true;
 	}
 
-	public int getDefaultDatabasePort() {
+	@Override
+    public int getDefaultDatabasePort() {
 		return 3306;
 	}
 
 	
 
-	public boolean supportsSchemas() {
+	@Override
+    public boolean supportsSchemas() {
 		return true;
 	}
 
-	public String getAddColumnStatement(String tablename, String schema,
-			DataBaseColumnMeta v, String tk, boolean use_autoinc, String pk,
-			boolean semicolon) {
+	@Override
+    public String getAddColumnStatement(String tablename, String schema,
+                                        DataBaseColumnMeta v, String tk, boolean use_autoinc, String pk,
+                                        boolean semicolon) {
 		return null;
 	}
 
-	public String getDropColumnStatement(String tablename, String schema,
-			DataBaseColumnMeta v, String tk, boolean use_autoinc, String pk,
-			boolean semicolon) {
+	@Override
+    public String getDropColumnStatement(String tablename, String schema,
+                                         DataBaseColumnMeta v, String tk, boolean use_autoinc, String pk,
+                                         boolean semicolon) {
 		return null;
 	}
-	public BaseSqlGen getSqlGen() {
+	@Override
+    public BaseSqlGen getSqlGen() {
 		return new MysqlSqlGen();
 	}
 	@Override

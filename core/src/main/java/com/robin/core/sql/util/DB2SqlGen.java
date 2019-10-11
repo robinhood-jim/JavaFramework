@@ -29,29 +29,36 @@ import com.robin.core.query.util.QueryString;
 
 public class DB2SqlGen extends AbstractSqlGen implements BaseSqlGen{
 	private Logger log=LoggerFactory.getLogger(this.getClass());
-	public String generateCountSql(String strSQL) {
+	@Override
+    public String generateCountSql(String strSQL) {
 
 		String str= strSQL.trim();
 		str=str.replaceAll("\\n", "").replaceAll("\\r", "").replaceAll("\\t", " ");
 		
 		//int nFromPos = str.lastIndexOf("from");
 		int nFromPos = str.indexOf("from");
-		if(nFromPos==-1)
-			nFromPos=str.indexOf("FROM");
+		if(nFromPos==-1) {
+            nFromPos=str.indexOf("FROM");
+        }
 		
 		int nOrderPos = str.lastIndexOf("order by");
-		if(nOrderPos==-1)
-			nOrderPos=str.indexOf("ORDER BY");
+		if(nOrderPos==-1) {
+            nOrderPos=str.indexOf("ORDER BY");
+        }
 		int nGroupByPos=str.lastIndexOf("group by");
-		if(nGroupByPos==-1)
-			nGroupByPos=str.lastIndexOf("GROUP BY");
+		if(nGroupByPos==-1) {
+            nGroupByPos=str.lastIndexOf("GROUP BY");
+        }
 		
-		if (nOrderPos == -1) nOrderPos = str.length();
+		if (nOrderPos == -1) {
+            nOrderPos = str.length();
+        }
 		StringBuilder strBuf = new StringBuilder();
-		if(nGroupByPos==-1)
-			strBuf.append("select count(*) as total ").append(str, nFromPos, nOrderPos).append(" with ur");
-		else
-			strBuf.append("select count(1) as total from (select count(1) as cou ").append(str, nFromPos, nOrderPos).append(") a with ur");
+		if(nGroupByPos==-1) {
+            strBuf.append("select count(*) as total ").append(str, nFromPos, nOrderPos).append(" with ur");
+        } else {
+            strBuf.append("select count(1) as total from (select count(1) as cou ").append(str, nFromPos, nOrderPos).append(") a with ur");
+        }
 		return strBuf.toString();
 	}
 
@@ -60,7 +67,8 @@ public class DB2SqlGen extends AbstractSqlGen implements BaseSqlGen{
 		return super.getCountSqlBySubQuery(qs, query)+" with ur";
 	}
 
-	public String generatePageSql(String strSQL, PageQuery pageQuery) {
+	@Override
+    public String generatePageSql(String strSQL, PageQuery pageQuery) {
 		Integer[] startEnd=getStartEndRecord(pageQuery);
 
 		strSQL = strSQL.trim();
@@ -83,65 +91,89 @@ public class DB2SqlGen extends AbstractSqlGen implements BaseSqlGen{
 	}
 
 
-	protected String toSQLForString(QueryParam param) {
+	@Override
+    protected String toSQLForString(QueryParam param) {
 		StringBuilder sql = new StringBuilder();
 		String nQueryModel = param.getQueryMode();
-		if (param.getQueryValue() == null || "".equals(param.getQueryValue().trim())) return "";
+		if (param.getQueryValue() == null || "".equals(param.getQueryValue().trim())) {
+            return "";
+        }
 		String key = param.getColumnName();
-		if (param.getAliasName() != null && !"".equals(param.getAliasName())) key = param.getAliasName() + "." + key;
+		if (param.getAliasName() != null && !"".equals(param.getAliasName())) {
+            key = param.getAliasName() + "." + key;
+        }
 		String value = replace(param.getQueryValue());
 		if (value != null && !"".equals(value)) {
 			if (nQueryModel.equals(QueryParam.QUERYMODE_EQUAL)) {
 				String str=value.replaceAll("%", "");
-				if(str.length()>0)sql.append(key + "='" + str + "'");
+				if(str.length()>0) {
+                    sql.append(key + "='" + str + "'");
+                }
 			}
 			else if (nQueryModel.equals(QueryParam.QUERYMODE_NOTEQUAL)) {
 				String str=value.replaceAll("%", "");
-				if(str.length()>0)sql.append(key + "!='" + str + "'");
+				if(str.length()>0) {
+                    sql.append(key + "!='" + str + "'");
+                }
 			}
 			else if (nQueryModel.equals(QueryParam.QUERYMODE_LIKE)) {
 				if(value.startsWith("%")||value.endsWith("%")) {
 					String str=value.replaceAll("%", "");
-					if(str.length()>0) sql.append(key + " like '" + value + "'");
+					if(str.length()>0) {
+                        sql.append(key + " like '" + value + "'");
+                    }
 				}
-				else
-					sql.append(key + " ='" + value + "'");
+				else {
+                    sql.append(key + " ='" + value + "'");
+                }
 			}
 		}
 		return sql.toString();
 	}
 
-	protected String toSQLForDate(QueryParam param) {
+	@Override
+    protected String toSQLForDate(QueryParam param) {
 		StringBuilder sql = new StringBuilder();
 		String nQueryModel = param.getQueryMode();
-		if (param.getQueryValue() == null || "".equals(param.getQueryValue().trim())) return "";
+		if (param.getQueryValue() == null || "".equals(param.getQueryValue().trim())) {
+            return "";
+        }
 		String key = param.getColumnName();
-		if (param.getAliasName() != null && !"".equals(param.getAliasName())) key = param.getAliasName() + "." + key;
+		if (param.getAliasName() != null && !"".equals(param.getAliasName())) {
+            key = param.getAliasName() + "." + key;
+        }
 		String value = param.getQueryValue();
 		
-		if (nQueryModel.equals(QueryParam.QUERYMODE_GTANDEQUAL)) sql.append(key + ">=" + "'" + value + "'");
-		else if (nQueryModel.equals(QueryParam.QUERYMODE_LTANDEQUAL)) sql.append(key + "<=" + "'" + value + "'");
-		else if (nQueryModel.equals(QueryParam.QUERYMODE_BETWEEN) && !"".equals(value) && !";".equals(value)) {
+		if (nQueryModel.equals(QueryParam.QUERYMODE_GTANDEQUAL)) {
+            sql.append(key + ">=" + "'" + value + "'");
+        } else if (nQueryModel.equals(QueryParam.QUERYMODE_LTANDEQUAL)) {
+            sql.append(key + "<=" + "'" + value + "'");
+        } else if (nQueryModel.equals(QueryParam.QUERYMODE_BETWEEN) && !"".equals(value) && !";".equals(value)) {
 			String begindate = value.substring(0, value.indexOf(";"));
 			String enddate = value.substring(value.indexOf(";") + 1);
 			if(!"".equals(begindate)){
-				if(!"".equals(enddate))
-					sql.append("(" + key + " between '" + begindate + "' and '" + enddate + "')");
-				else
-					sql.append("(" + key + ">='" + begindate + "')");
-			}else if(!"".equals(enddate))
-				sql.append("(" + key + "<='" + enddate + "')");
+				if(!"".equals(enddate)) {
+                    sql.append("(" + key + " between '" + begindate + "' and '" + enddate + "')");
+                } else {
+                    sql.append("(" + key + ">='" + begindate + "')");
+                }
+			}else if(!"".equals(enddate)) {
+                sql.append("(" + key + "<='" + enddate + "')");
+            }
 		}
 		return sql.toString();
 	}
 
 
-	public String generateSingleRowSql(String querySql) {
+	@Override
+    public String generateSingleRowSql(String querySql) {
 		String str= querySql.trim();
 		str=str.replaceAll("\\n", "").replaceAll("\\r", "").replaceAll("\\t", " ");
 
 		int nOrderPos = str.lastIndexOf("order by");
-		if (nOrderPos == -1) nOrderPos = str.length();
+		if (nOrderPos == -1) {
+            nOrderPos = str.length();
+        }
 		StringBuilder pagingSelect = new StringBuilder();
 		pagingSelect.append("select * from ( select row.*,rownumber() over() as rownum");
 		pagingSelect.append(" from ( ").append(str, 0, nOrderPos);
@@ -150,12 +182,14 @@ public class DB2SqlGen extends AbstractSqlGen implements BaseSqlGen{
 	}
 
 
-	public String getSequnceScript(String sequnceName) throws DAOException {
+	@Override
+    public String getSequnceScript(String sequnceName) throws DAOException {
 		return sequnceName+".nextval";
 	}
 
 
-	public String getSelectPart(String columnName, String aliasName) {
+	@Override
+    public String getSelectPart(String columnName, String aliasName) {
 		String selectPart=columnName;
 		if(aliasName!=null && !"".equals(aliasName)){
 			selectPart+=" as \""+aliasName+"\"";
@@ -163,7 +197,8 @@ public class DB2SqlGen extends AbstractSqlGen implements BaseSqlGen{
 		return selectPart;
 	}
 
-	public String returnTypeDef(String dataType, Map<String, Object> fieldMap) {
+	@Override
+    public String returnTypeDef(String dataType, Map<String, Object> fieldMap) {
 		StringBuilder builder=new StringBuilder();
 		if(dataType.equals(Const.META_TYPE_BIGINT)){
 			builder.append("BIGINT");
@@ -172,10 +207,12 @@ public class DB2SqlGen extends AbstractSqlGen implements BaseSqlGen{
 		}else if(dataType.equals(Const.META_TYPE_DOUBLE) || dataType.equals(Const.META_TYPE_NUMERIC)){
 			int precise= Integer.parseInt(fieldMap.get("precise").toString());
 			int scale=Integer.parseInt(fieldMap.get("scale").toString());
-			if(precise==0)
-				precise=2;
-			if(scale==0)
-				scale=8;
+			if(precise==0) {
+                precise=2;
+            }
+			if(scale==0) {
+                scale=8;
+            }
 			builder.append("DECIMAL(").append(scale).append(",").append(precise).append(")");
 		}else if(dataType.equals(Const.META_TYPE_DATE)){
 			builder.append("DATE");
@@ -186,10 +223,11 @@ public class DB2SqlGen extends AbstractSqlGen implements BaseSqlGen{
 			if(length==0){
 				length=16;
 			}
-			if(length==1)
-				builder.append("CHAR(1)");
-			else
-				builder.append("VARCHAR(").append(length).append(")");
+			if(length==1) {
+                builder.append("CHAR(1)");
+            } else {
+                builder.append("VARCHAR(").append(length).append(")");
+            }
 		}else if(dataType.equals(Const.META_TYPE_CLOB)){
 			builder.append("CLOB");
 		}else if(dataType.equals(Const.META_TYPE_BLOB)){

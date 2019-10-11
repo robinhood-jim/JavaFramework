@@ -68,10 +68,11 @@ public abstract class AbstractDocumentDrawer {
 	}
 	public void prepareStyle(WordTableDef tabDef,WordTableHeaderDef headerDef){
 		int totalCount=0;
-		if(headerDef!=null)
+		if(headerDef!=null) {
 			totalCount=headerDef.getHeaderNums()+tabDef.getRecordSize();
-		else
+		} else {
 			totalCount=tabDef.getRecordSize()+1;
+		}
 		try{
 		Table table=new Table(tabDef.getDbColumnList().size(),totalCount);
 		table.setWidths(tabDef.getColWidthPercent());

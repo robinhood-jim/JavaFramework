@@ -280,8 +280,9 @@ public class EncryptWebClassLoader extends URLClassLoader {
 	}
 	private void init(String jarName) {
 		try {
-			if (!jarName.endsWith("jar"))
-				return;
+			if (!jarName.endsWith("jar")) {
+                return;
+            }
 			JarInputStream jar = new JarInputStream(new FileInputStream(
 					new File(jarName)));
 			JarEntry entry;
@@ -344,8 +345,9 @@ public class EncryptWebClassLoader extends URLClassLoader {
 			if (tmpname.contains(".")) {
 				tmpname = tmpname.replaceAll("\\.", "/");
 			}
-			if (!tmpname.endsWith(".class"))
-				tmpname += ".class";
+			if (!tmpname.endsWith(".class")) {
+                tmpname += ".class";
+            }
 			InputStream in = superloader.getResourceAsStream(tmpname);
 			byte[] bytes = new byte[in.available()];
 			in.read(bytes);
@@ -368,8 +370,9 @@ public class EncryptWebClassLoader extends URLClassLoader {
 			if (tmpname.contains(".")) {
 				tmpname = tmpname.replaceAll("\\.", "/");
 			}
-			if (!tmpname.endsWith(".class"))
-				tmpname += ".class";
+			if (!tmpname.endsWith(".class")) {
+                tmpname += ".class";
+            }
 			in = superloader.getResourceAsStream(tmpname);
 		} catch (Exception ex) {
 			logger.error("error load="+name);
@@ -396,8 +399,9 @@ public class EncryptWebClassLoader extends URLClassLoader {
 				return superloader.getResourceAsStream(name);
 			}
 		}
-		else
-			return superloader.getResourceAsStream(name);
+		else {
+            return superloader.getResourceAsStream(name);
+        }
 	}
 
 	@Override

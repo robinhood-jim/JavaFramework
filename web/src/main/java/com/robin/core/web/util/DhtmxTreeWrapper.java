@@ -43,8 +43,9 @@ public class DhtmxTreeWrapper {
 	}
 	public static Map<String,Object> WrappObjectTreeRetJson(List<?> list,String pid,String key,String valuekey,String userdatakeys,String leafKey) throws Exception{
 		String[] arr=null;
-		if(userdatakeys!=null && !"".equals(userdatakeys))
-			arr=userdatakeys.split(",");
+		if(userdatakeys!=null && !"".equals(userdatakeys)) {
+            arr=userdatakeys.split(",");
+        }
 		Map<String,Object> retmap=new HashMap<String, Object>();
 		retmap.put("id", pid);
 		List<Map<String,Object>> itemlist=new ArrayList<Map<String,Object>>();
@@ -88,17 +89,19 @@ public class DhtmxTreeWrapper {
 		sb.append("<?xml version='1.0' encoding='UTF-8' ?>");
 		sb.append("<tree id=\""+parentkey+"\">");
 		String[] arr=null;
-		if(userdatakeys!=null && !"".equals(userdatakeys))
-			arr=userdatakeys.split(",");
+		if(userdatakeys!=null && !"".equals(userdatakeys)) {
+            arr=userdatakeys.split(",");
+        }
 		for (int i = 0; i < list.size(); i++) {
 			Object org=list.get(i);
 			Object keyobj= BeanUtils.getProperty(org, key);
 			Object valueobj=BeanUtils.getProperty(org, value);
 			sb.append("<item id=\"" + keyobj.toString() + "\" text=\"" + valueobj.toString() + "\"");
-			if(hasChild)
-				sb.append(" child=\"1\">");
-			else
-				sb.append(" child=\"0\">");
+			if(hasChild) {
+                sb.append(" child=\"1\">");
+            } else {
+                sb.append(" child=\"0\">");
+            }
 			sb.append("<userdata name=\"parentid\">"+parentkey+"</userdata>");
 			if(arr!=null && arr.length>0){
 				for (int j = 0; j < arr.length; j++) {
@@ -117,8 +120,9 @@ public class DhtmxTreeWrapper {
 		sb.append("<?xml version='1.0' encoding='UTF-8' ?>");
 		sb.append("<tree id=\""+parentkey+"\">");
 		String[] arr=null;
-		if(userdatakeys!=null && !"".equals(userdatakeys))
-			arr=userdatakeys.split(",");
+		if(userdatakeys!=null && !"".equals(userdatakeys)) {
+            arr=userdatakeys.split(",");
+        }
 		for (int i = 0; i < list.size(); i++) {
 			Object org=list.get(i);
 			Object keyobj=PropertyUtils.getProperty(org, key);

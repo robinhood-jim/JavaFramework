@@ -32,8 +32,9 @@ public class HDFSCallUtil {
 		try{
 			for (int i = 0; i < fileArr.length; i++) {
 				buffer.append(upload(config,fileArr[i],null));
-				if(i<fileArr.length-1)
-					buffer.append(",");
+				if(i<fileArr.length-1) {
+                    buffer.append(",");
+                }
 			}
 		}catch (Exception e) {
 			e.printStackTrace();
@@ -53,8 +54,9 @@ public class HDFSCallUtil {
 		String url="";
 		try{
 			String hdfsUrl="";
-			if(toUrl!=null && !"".equals(toUrl))
-				hdfsUrl=toUrl;
+			if(toUrl!=null && !"".equals(toUrl)) {
+                hdfsUrl=toUrl;
+            }
 			int pos=0;
 			pos=hdfsUrl.lastIndexOf("/");
 			String hdfsUrlPath=hdfsUrl.substring(0,pos);
@@ -115,8 +117,9 @@ public class HDFSCallUtil {
 					strb.delete(0, strb.length());
 				}
 			}
-			if(strb.length()>0)
-				fsdo.write(strb.toString().getBytes(toCharset));
+			if(strb.length()>0) {
+                fsdo.write(strb.toString().getBytes(toCharset));
+            }
 
 		}catch (Exception e) {
 			e.printStackTrace();
@@ -166,10 +169,12 @@ public class HDFSCallUtil {
 		try{
 			String frompath=hdfsSource;
 			String topath=hdfstargetPath;
-			if(!frompath.endsWith("/"))
-				frompath+="/";
-			if(!topath.endsWith("/"))
-				topath+="/";
+			if(!frompath.endsWith("/")) {
+                frompath+="/";
+            }
+			if(!topath.endsWith("/")) {
+                topath+="/";
+            }
 			if(exists(config,hdfsSource) && isDirectory(config,hdfsSource)){
 				FileSystem fs=FileSystem.get(config);
 				if(!isDirectory(config,hdfstargetPath)){
@@ -209,8 +214,9 @@ public class HDFSCallUtil {
 			FileStatus[] status = fs.listStatus(path);
 			Path[] listPaths=FileUtil.stat2Paths(status);
 			for (int i = 0; i < listPaths.length; i++) {
-				if(!isDirectory(config,listPaths[i]))
-					hdfsUrlList.add(listPaths[i].getName());
+				if(!isDirectory(config,listPaths[i])) {
+                    hdfsUrlList.add(listPaths[i].getName());
+                }
 			}
 		}catch (Exception e) {
 			e.printStackTrace();
@@ -269,8 +275,9 @@ public class HDFSCallUtil {
 		boolean isd=false;
 		try{
 			FileSystem fs=FileSystem.get(config);
-			if(fs.exists(sourcePath))
-				isd= fs.getFileStatus(sourcePath).isDirectory();
+			if(fs.exists(sourcePath)) {
+                isd= fs.getFileStatus(sourcePath).isDirectory();
+            }
 		}catch (Exception e) {
 			e.printStackTrace();
 			log.error("",e);
@@ -296,8 +303,9 @@ public class HDFSCallUtil {
 			FileStatus[] status=fs.listStatus(path);
 			Path[] listPaths=FileUtil.stat2Paths(status);
 			for (int i = 0; i < listPaths.length; i++) {
-				if(!listPaths[i].toString().endsWith("_SUCCESS"))
-					hdfsUrlList.add(listPaths[i].toString());
+				if(!listPaths[i].toString().endsWith("_SUCCESS")) {
+                    hdfsUrlList.add(listPaths[i].toString());
+                }
 			}
 		}catch (Exception e) {
 			e.printStackTrace();
@@ -333,8 +341,9 @@ public class HDFSCallUtil {
 		try{
 			FileSystem fs=FileSystem.get(config);
 			Path path=new Path(hdfsUrl);
-			if(fs.exists(path))
-				isd= fs.getFileStatus(path).isDirectory();
+			if(fs.exists(path)) {
+                isd= fs.getFileStatus(path).isDirectory();
+            }
 		}catch (Exception e) {
 			e.printStackTrace();
 			log.error("",e);
@@ -423,8 +432,9 @@ public class HDFSCallUtil {
 	            retStr=new String(buffer,"UTF-8");
 	            is.close();
 	            return buffer;
-			}else 
-				return null;
+			}else {
+                return null;
+            }
 			
 		}catch (Exception e) {
 			log.error("",e);
@@ -525,8 +535,9 @@ public class HDFSCallUtil {
 				reader=new BufferedReader(new InputStreamReader(new GZIPInputStream(FileSystem.get(config).open(new Path(path))),encode));
 			}else if("zip".equalsIgnoreCase(suffix)){
 				reader=new BufferedReader(new InputStreamReader(new ZipInputStream(FileSystem.get(config).open(new Path(path))),encode));
-			}else
-			reader=new BufferedReader(new InputStreamReader(FileSystem.get(config).open(new Path(path)),encode));
+			}else {
+                reader=new BufferedReader(new InputStreamReader(FileSystem.get(config).open(new Path(path)),encode));
+            }
 		}
 		return reader;
 	}
@@ -539,8 +550,9 @@ public class HDFSCallUtil {
 				reader=new BufferedInputStream(new GZIPInputStream(FileSystem.get(config).open(new Path(path))));
 			}else if("zip".equalsIgnoreCase(suffix)){
 				reader=new BufferedInputStream(new ZipInputStream(FileSystem.get(config).open(new Path(path))));
-			}else
-			reader=new BufferedInputStream(FileSystem.get(config).open(new Path(path)));
+			}else {
+                reader=new BufferedInputStream(FileSystem.get(config).open(new Path(path)));
+            }
 		}
 		return reader;
 	}
@@ -555,8 +567,9 @@ public class HDFSCallUtil {
 			writer=new BufferedWriter(new OutputStreamWriter(new  GZIPOutputStream(FileSystem.get(config).create(new Path(path))),encode));
 		}else if("zip".equalsIgnoreCase(suffix)){
 			writer=new BufferedWriter(new OutputStreamWriter(new ZipOutputStream(FileSystem.get(config).create(new Path(path))),encode));
-		}else
-			writer=new BufferedWriter(new OutputStreamWriter(FileSystem.get(config).create(new Path(path)),encode));
+		}else {
+            writer=new BufferedWriter(new OutputStreamWriter(FileSystem.get(config).create(new Path(path)),encode));
+        }
 		return writer;
 	}
 	public static String getFileSuffix(File file){

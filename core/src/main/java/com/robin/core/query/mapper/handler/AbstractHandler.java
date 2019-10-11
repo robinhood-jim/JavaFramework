@@ -26,8 +26,9 @@ public abstract class AbstractHandler implements IHandler {
         }else{
             if("resultMap".equalsIgnoreCase(element.getName())){
                 doProcessElement(element,nameSpace,segments);
-            }else
+            }else {
                 doProcessNode(element,nameSpace, segments);
+            }
         }
     }
 

@@ -54,8 +54,9 @@ public class HbaseBaseDao {
 					//enable bloom filter to hash row key
 					dc.setBloomFilterType(BloomType.ROW);
 				}
-				if(param.getCompressType()!=null)
-					dc.setCompressionType(param.getCompressType());
+				if(param.getCompressType()!=null) {
+                    dc.setCompressionType(param.getCompressType());
+                }
 				desc.addFamily(dc);
 				if(param.getMaxversion()>0){
 					dc.setMaxVersions(param.getMaxversion());
@@ -204,8 +205,9 @@ public class HbaseBaseDao {
 			scan.setFilter(filter);
 			ResultScanner scanner=table.getScanner(scan);
 			Iterator<Result> iter=scanner.iterator();
-			if(iter.hasNext())
-				isexists=true;
+			if(iter.hasNext()) {
+                isexists=true;
+            }
 		}catch (Exception e) {
 			throw new HbaseException(e);
 		}finally{
@@ -248,10 +250,11 @@ public class HbaseBaseDao {
 			}
 		}
 		
-		if(!isok)
-			throw new HbaseException(ex);
-		else
-			return false;
+		if(!isok) {
+            throw new HbaseException(ex);
+        } else {
+            return false;
+        }
 	}
 	public Result getResultByKey(String tableName,String keyval,String family) throws HbaseException{
 		boolean isok=true;
@@ -280,10 +283,11 @@ public class HbaseBaseDao {
 				
 			}
 		}
-		if(!isok)
-			throw new HbaseException(ex);
-		else
-			return result;
+		if(!isok) {
+            throw new HbaseException(ex);
+        } else {
+            return result;
+        }
 	}
 	public Result getResultByKey(HTableInterface table,String keyval) throws HbaseException{
 		boolean isok=true;
@@ -296,10 +300,11 @@ public class HbaseBaseDao {
 			isok=false;
 			ex=e;
 		}
-		if(!isok)
-			throw new HbaseException(ex);
-		else
-			return result;
+		if(!isok) {
+            throw new HbaseException(ex);
+        } else {
+            return result;
+        }
 	}
 	
 	public Map<String, String> getResultValueByKey(String tableName,String familyName,String keyval) throws HbaseException{
@@ -475,8 +480,9 @@ public class HbaseBaseDao {
 							list.add(value);
 							map1.put(key, list);
 							tmpmap1.put(fname, map1);
-							if(!keyList.contains(key))
-								keyList.add(key);
+							if(!keyList.contains(key)) {
+                                keyList.add(key);
+                            }
 							if(!fnameList.contains(fname)){
 								fnameList.add(fname);
 							}
@@ -488,8 +494,9 @@ public class HbaseBaseDao {
 							}else{
 								tmpmap1.get(fname).get(key).add(value);
 							}
-							if(!keyList.contains(key))
-								keyList.add(key);
+							if(!keyList.contains(key)) {
+                                keyList.add(key);
+                            }
 						}
 				   }
 				for (int i = 0; i < keyList.size(); i++) {
@@ -561,8 +568,9 @@ public class HbaseBaseDao {
 							list.add(value);
 							map1.put(key, list);
 							tmpmap1.put(fname, map1);
-							if(!keyList.contains(key))
-								keyList.add(key);
+							if(!keyList.contains(key)) {
+                                keyList.add(key);
+                            }
 							if(!fnameList.contains(fname)){
 								fnameList.add(fname);
 							}
@@ -574,8 +582,9 @@ public class HbaseBaseDao {
 							}else{
 								tmpmap1.get(fname).get(key).add(value);
 							}
-							if(!keyList.contains(key))
-								keyList.add(key);
+							if(!keyList.contains(key)) {
+                                keyList.add(key);
+                            }
 						}
 				   }
 				
@@ -654,8 +663,9 @@ public class HbaseBaseDao {
 	}
 	private FilterList generateFamilyFilter(Map<String, String> valueMap){
 		FilterList filterlist=new FilterList();
-		if(valueMap==null || valueMap.isEmpty())
-			return filterlist;
+		if(valueMap==null || valueMap.isEmpty()) {
+            return filterlist;
+        }
 		Iterator<String> iter=valueMap.keySet().iterator();
 		while(iter.hasNext()){
 			Filter filter=null;
@@ -691,8 +701,9 @@ public class HbaseBaseDao {
 				for (Cell val:rs.listCells()) {
 					valueMap.put(new String(val.getQualifierArray()), new String(val.getValueArray()));
 				}
-				if(keyList!=null)
-					keyList.add(key);
+				if(keyList!=null) {
+                    keyList.add(key);
+                }
 				retMap.put(key, valueMap);
 			}
 		}catch(Exception ex){

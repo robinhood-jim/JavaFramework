@@ -84,9 +84,9 @@ public class HdfsResourceAccessUtil extends AbstractResourceAccessUtil {
 			hdfspropMap.put(defaultName, property);
 			hdfsUtilMap.put(defaultName, util);
 		}else{
-			if(hdfspropMap.containsKey(defaultName) && hdfspropMap.get(defaultName).equals(property))
-				util=hdfsUtilMap.get(defaultName);
-			else{
+			if(hdfspropMap.containsKey(defaultName) && hdfspropMap.get(defaultName).equals(property)) {
+                util=hdfsUtilMap.get(defaultName);
+            } else{
 				util=new HDFSUtil(property);
 				hdfspropMap.put(defaultName, property);
 				hdfsUtilMap.put(defaultName, util);

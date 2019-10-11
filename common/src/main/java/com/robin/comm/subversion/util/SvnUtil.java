@@ -52,10 +52,11 @@ public class SvnUtil {
 		}
 	}
 	public  void setupLibrary() { 
-        if(svnUrl.startsWith("svn:"))
-        	SVNRepositoryFactoryImpl.setup(); 
-        else
-        	DAVRepositoryFactory.setup();
+        if(svnUrl.startsWith("svn:")) {
+            SVNRepositoryFactoryImpl.setup();
+        } else {
+            DAVRepositoryFactory.setup();
+        }
         FSRepositoryFactory.setup();  
     }  
 	 public  void authSvn(String username,  

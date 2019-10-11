@@ -140,8 +140,9 @@ public class SqlMapperDao extends JdbcDaoSupport {
                         KeyHolder keyHolder = new GeneratedKeyHolder();
                         updateRows = getNamedJdbcTemplate().update(builder.toString(), (new MapSqlParameterSource(paramMap)), keyHolder);
                         setGenerateKey(targetObject[0], keyProperty, keyHolder.getKey());
-                    } else
+                    } else {
                         updateRows = getNamedJdbcTemplate().update(builder.toString(), paramMap);
+                    }
 
                 } else {
                     throw new DAOException("Mapper id" + id + " in namespace " + nameSpace + " is not a select Config!");

@@ -26,36 +26,44 @@ public class DB2DataBaseMeta extends BaseDataBaseMeta implements DataBaseInterfa
 	}
 
 
-	public String getUrlTemplate() {
+	@Override
+    public String getUrlTemplate() {
 		return "jdbc:db2://[hostName]:[port]/[dataBaseName]";
 	}
-	public boolean suppportSequnce() {
+	@Override
+    public boolean suppportSequnce() {
 		return true;
 	}
 
-	public boolean supportAutoInc() {
+	@Override
+    public boolean supportAutoInc() {
 		return true;
 	}
 
-	public int getDefaultDatabasePort() {
+	@Override
+    public int getDefaultDatabasePort() {
 		return 50000;
 	}
 
-	public boolean supportsSchemas() {
+	@Override
+    public boolean supportsSchemas() {
 		return true;
 	}
-	public String getAddColumnStatement(String tablename, String schema,
-			DataBaseColumnMeta v, String tk, boolean use_autoinc, String pk,
-			boolean semicolon) {
+	@Override
+    public String getAddColumnStatement(String tablename, String schema,
+                                        DataBaseColumnMeta v, String tk, boolean use_autoinc, String pk,
+                                        boolean semicolon) {
 		return null;
 	}
 
-	public String getDropColumnStatement(String tablename, String schema,
-			DataBaseColumnMeta v, String tk, boolean use_autoinc, String pk,
-			boolean semicolon) {
+	@Override
+    public String getDropColumnStatement(String tablename, String schema,
+                                         DataBaseColumnMeta v, String tk, boolean use_autoinc, String pk,
+                                         boolean semicolon) {
 		return null;
 	}
-	public BaseSqlGen getSqlGen() {
+	@Override
+    public BaseSqlGen getSqlGen() {
 		return new DB2SqlGen();
 	}
 

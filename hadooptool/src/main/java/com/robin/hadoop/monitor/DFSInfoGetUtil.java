@@ -31,10 +31,11 @@ public class DFSInfoGetUtil {
 	private Configuration conf;
 	public DFSInfoGetUtil(String ipAddress,int port,Configuration conf){
 		this.ipAddress=ipAddress;
-		if(port!=0)
-			this.port=port;
-		else
-			this.port=defaultport;
+		if(port!=0) {
+            this.port=port;
+        } else {
+            this.port=defaultport;
+        }
 		
 		this.conf=conf;
 	}
@@ -71,8 +72,9 @@ public class DFSInfoGetUtil {
 		}catch(Exception ex){
 			throw ex;
 		}finally{
-			if(client!=null)
-				client.close();
+			if(client!=null) {
+                client.close();
+            }
 		}
 	    return info;
 	}
@@ -86,8 +88,9 @@ public class DFSInfoGetUtil {
 		Elements boldeles=bodyele.select("b");
 		NameNodeInfo info=new NameNodeInfo();
 		info.setTitle(header.text());
-		if(securityele!=null)
-			info.setSecurity(securityele.text());
+		if(securityele!=null) {
+            info.setSecurity(securityele.text());
+        }
 		Elements runinfoeles=statusele.get(0).select("tr");
 		List<String> list=Arrays.asList(NameNodeInfo.displayArrs);
 		for (Element ele:runinfoeles) {

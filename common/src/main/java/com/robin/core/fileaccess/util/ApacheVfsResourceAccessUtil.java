@@ -139,8 +139,9 @@ public class ApacheVfsResourceAccessUtil extends AbstractResourceAccessUtil {
             remoteFilePath = "/" + remoteFilePath;
         }
         URI sftpUri = new URI(param.getProtocol(), userInfo, param.getHostName(), param.getPort(), remoteFilePath, null, null);
-        if (logger.isDebugEnabled())
+        if (logger.isDebugEnabled()) {
             logger.debug("uri ---> " + sftpUri.toString());
+        }
         return sftpUri;
     }
 

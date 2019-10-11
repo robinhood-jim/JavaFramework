@@ -28,8 +28,9 @@ public class DistributeCacheUtil {
 						try {
 							while ((line = br.readLine()) != null) {
 								tokens = line.split(sep);
-								if (tokens.length < columnNames.length)
-									continue;
+								if (tokens.length < columnNames.length) {
+                                    continue;
+                                }
 								Map<String, String> tmpMap = new HashMap<String, String>();
 								for (int j = 0; j < columnNames.length; j++) {
 									tmpMap.put(columnNames[j], tokens[j]);

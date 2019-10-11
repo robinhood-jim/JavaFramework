@@ -25,7 +25,9 @@ public class GenericUtils {
 		for(Field field:fields){
 			Class type=field.getType();
 			if(!type.isPrimitive()){
-				if(type.getName().startsWith("java.lang")) continue;
+				if(type.getName().startsWith("java.lang")) {
+                    continue;
+                }
 				ParameterizedType pt = (ParameterizedType)field.getGenericType();
 				String name=field.getName();
 				Class<?> claz=(Class<?>) pt.getActualTypeArguments()[0];

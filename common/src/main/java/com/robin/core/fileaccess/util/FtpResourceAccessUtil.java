@@ -140,8 +140,9 @@ public class FtpResourceAccessUtil extends AbstractResourceAccessUtil{
 			remoteFilePath = "/" + remoteFilePath;
 		}
 		URI sftpUri = new URI("sftp", userInfo, param.getHostName(), param.getPort(), remoteFilePath, null, null);
-		if(logger.isDebugEnabled())
-			logger.debug("uri ---> " + sftpUri.toString());
+		if(logger.isDebugEnabled()) {
+            logger.debug("uri ---> " + sftpUri.toString());
+        }
 		return sftpUri;
 	}
 	private FileSystemOptions getOptions(FtpParam param) throws Exception{

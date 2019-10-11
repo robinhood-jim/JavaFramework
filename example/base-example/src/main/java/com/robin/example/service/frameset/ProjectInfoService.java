@@ -52,8 +52,9 @@ public class ProjectInfoService extends BaseAnnotationJdbcService<ProjectInfo, L
 		boolean usemvc=info.getUseMvc()!=null && "1".equals(info.getUseMvc());
 		if(usemvc){
 			map.put("actionType", "mvc");
-		}else
-			map.put("actionType", "struts2");
+		}else {
+            map.put("actionType", "struts2");
+        }
 		
 		map.put("modelFramePrefix", modelconfigPrefix);
 		map.put("daobasepath", "src/dao");

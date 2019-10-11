@@ -40,12 +40,14 @@ public class DynamicBeanReaderImpl implements DynamicBeanReader,ApplicationConte
     }
 
 
-	public void setApplicationContext(ApplicationContext context)
+	@Override
+    public void setApplicationContext(ApplicationContext context)
 			throws BeansException {
 		this.applicationContext=(ConfigurableApplicationContext) context;
 		
 	}
-	public void loadBean(DynamicBean dynamicBean){
+	@Override
+    public void loadBean(AbstractDynamicBean dynamicBean){
         long startTime = System.currentTimeMillis();  
         String beanName = dynamicBean.getBeanName();  
         if(applicationContext.containsBean(beanName)){  

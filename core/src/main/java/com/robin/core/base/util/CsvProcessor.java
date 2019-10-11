@@ -133,8 +133,9 @@ public class CsvProcessor {
             CsvPreference preference = new CsvPreference.Builder('"', splitchar.charAt(0), "n").build();
             ICsvListWriter writer = new CsvListWriter(pwriter, preference);
             writer.writeHeader(header);
-            for (String[] strArr : resultList)
+            for (String[] strArr : resultList) {
                 writer.write(strArr);
+            }
             writer.close();
 
         } catch (Exception e) {
@@ -161,8 +162,9 @@ public class CsvProcessor {
     private static int readHeadAndContent(ICsvListReader reader, List<Map<String, String>> columnResultList) throws Exception {
         int pos = 0;
         String[] header = reader.getHeader(true);
-        if (header == null || header.length == 0)
+        if (header == null || header.length == 0) {
             throw new Exception("no file");
+        }
 
         List<String> resultlist;
         while ((resultlist = reader.read()) != null) {

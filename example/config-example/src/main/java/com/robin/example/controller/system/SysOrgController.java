@@ -175,8 +175,9 @@ public class SysOrgController extends BaseCrudDhtmlxController<SysOrg, Long, Sys
         }
         Map<String, Object> retMaps = new HashMap<>();
         retMaps.put("id", id);
-        if ("0".equals(id))
+        if ("0".equals(id)) {
             retMaps.put("text", displayName);
+        }
         retMaps.put("item", records);
         return retMaps;
     }

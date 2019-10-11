@@ -76,8 +76,9 @@ public class ExcelProcessor {
             int endpos = prop.getStartCol() + prop.getColumnPropList().size() - 1;
             boolean ishasrecord = false;
             for (int i = prop.getStartCol() - 1; i < endpos; i++) {
-                if (i >= prop.getColumnPropList().size())
+                if (i >= prop.getColumnPropList().size()) {
                     break;
+                }
                 String type = prop.getColumnPropList().get(i).getColumnType();
 
                 Cell cell = row.getCell(i);
@@ -90,10 +91,11 @@ public class ExcelProcessor {
                                 Date date = cell.getDateCellValue();
                                 strCell = format.format(date);
                             } else if (type.equals(Const.META_TYPE_INTEGER) || type.equals(Const.META_TYPE_DOUBLE)) {
-                                if (type.equals(Const.META_TYPE_INTEGER))
+                                if (type.equals(Const.META_TYPE_INTEGER)) {
                                     strCell = String.valueOf((int) cell.getNumericCellValue());
-                                else
+                                } else {
                                     strCell = String.valueOf(cell.getNumericCellValue());
+                                }
                             } else if (type.equals(Const.META_TYPE_STRING)) {
                                 double d = cell.getNumericCellValue();
                                 DecimalFormat df = new DecimalFormat("#.#");
@@ -115,13 +117,15 @@ public class ExcelProcessor {
                     }
                     //listMap.put(prop.getColumnName()[j], strCell);
                 }
-                if (strCell != null && !"".equals(strCell.trim()))
+                if (strCell != null && !"".equals(strCell.trim())) {
                     ishasrecord = true;
+                }
                 listMap.put(prop.getColumnPropList().get(j).getColumnCode(), strCell);
                 j++;
             }
-            if (ishasrecord)
+            if (ishasrecord) {
                 columnValueList.add(listMap);
+            }
         }
         prop.setColumnList(columnValueList);
     }
@@ -157,8 +161,9 @@ public class ExcelProcessor {
                         Cell cell = (Cell) row.getCell(i);
                         String cellName = cell.getStringCellValue();
                         DataTypeEnum column = columnMap.get(cellName.toUpperCase());
-                        if (column == null)
+                        if (column == null) {
                             column = columnMap.get(cellName.toLowerCase());
+                        }
                         if (column != null) {
                             collist.add(Integer.valueOf(i));
                             columnList.add(column);
@@ -167,8 +172,9 @@ public class ExcelProcessor {
                     continue;
                 } else if (pos < startRow) {
                     continue;
-                } else if (pos > endRow)
+                } else if (pos > endRow) {
                     break;
+                }
                 Map<String, String> listMap = new HashMap<String, String>();
 
                 boolean ishasrecord = false;
@@ -187,13 +193,14 @@ public class ExcelProcessor {
                                     double d = cell.getNumericCellValue();
                                     Date date = HSSFDateUtil.getJavaDate(d);
                                     strCell = format.format(date);
-                                } else if (type.equals(Const.META_TYPE_NUMERIC))
+                                } else if (type.equals(Const.META_TYPE_NUMERIC)) {
                                     strCell = String.valueOf(cell.getNumericCellValue());
-                                else if (type.equals(Const.META_TYPE_STRING)) {
+                                } else if (type.equals(Const.META_TYPE_STRING)) {
                                     double d = cell.getNumericCellValue();
                                     String str1 = String.valueOf(Double.valueOf(d).intValue());
-                                    if (str1 != null && !"".equals(str1.trim()))
+                                    if (str1 != null && !"".equals(str1.trim())) {
                                         strCell = String.valueOf(Double.valueOf(d).intValue());
+                                    }
                                 }
                                 break;
                             case HSSFCell.CELL_TYPE_STRING:
@@ -203,8 +210,9 @@ public class ExcelProcessor {
                                 } else if (type.equals(Const.META_TYPE_DATE)) {
                                     double d = cell.getNumericCellValue();
                                     Date date = HSSFDateUtil.getJavaDate(d);
-                                } else if (type.equals(Const.META_TYPE_STRING))
+                                } else if (type.equals(Const.META_TYPE_STRING)) {
                                     strCell = cell.getStringCellValue();
+                                }
                                 break;
                             case HSSFCell.CELL_TYPE_BOOLEAN:
                                 strCell = String.valueOf(cell.getBooleanCellValue());
@@ -215,13 +223,15 @@ public class ExcelProcessor {
                         }
                         //listMap.put(prop.getColumnName()[j], strCell);
                     }
-                    if (strCell != null && !"".equals(strCell.trim()))
+                    if (strCell != null && !"".equals(strCell.trim())) {
                         ishasrecord = true;
+                    }
                     listMap.put(column.getName(), strCell);
                 }
 
-                if (ishasrecord)
+                if (ishasrecord) {
                     columnValueList.add(listMap);
+                }
             }
         } catch (Exception e) {
             log.error("encounter error!pos=" + pos + "column size=" + columnValueList.size());
@@ -255,18 +265,19 @@ public class ExcelProcessor {
     public static Workbook generateExcelFile(ExcelSheetProp prop, String suffix) {
         boolean is2007 = ExcelBaseOper.TYPE_EXCEL2007.equalsIgnoreCase(prop.getFileext());
         Workbook wb = null;
-        if (!is2007)
+        if (!is2007) {
             wb = new HSSFWorkbook();
-        else {
-            if (!prop.isStreamInsert())
+        } else {
+            if (!prop.isStreamInsert()) {
                 wb = new XSSFWorkbook();
-            else {
+            } else {
                 wb = new SXSSFWorkbook(prop.getStreamRows());
             }
         }
         String sheetname = prop.getSheetName();
-        if (suffix != null && suffix.length() > 0)
+        if (suffix != null && suffix.length() > 0) {
             sheetname += "_" + suffix;
+        }
         Sheet sheet = wb.createSheet(sheetname);
         generateHeader(sheet, wb, prop);
 
@@ -486,10 +497,11 @@ public class ExcelProcessor {
     private static void fillColumns(Workbook wb, Sheet targetsheet, ExcelSheetProp prop, TableConfigProp header, CreationHelper helper) throws Exception {
         try {
             int headerrow = 1;
-            if (header != null)
+            if (header != null) {
                 headerrow = header.getContainrow();
-            else
+            } else {
                 throw new Exception("Excel Header is null");
+            }
             if (prop.getColumnPropList().size() != 0) {
                 List<Map<String, String>> list = prop.getColumnList();
                 //cell style Map
@@ -519,8 +531,9 @@ public class ExcelProcessor {
             int[] fromPos = new int[fieldCount];
             boolean[] shallMergin = new boolean[fieldCount];
 
-            for (int pos = 0; pos < fieldCount; pos++)
+            for (int pos = 0; pos < fieldCount; pos++) {
                 fromPos[pos] = -1;
+            }
             Row row = ExcelBaseOper.creatRow(targetsheet, startRow + i);
             for (int j = 0; j < prop.getColumnPropList().size(); j++) {
                 ExcelColumnProp excelprop = prop.getColumnPropList().get(j);
@@ -528,17 +541,20 @@ public class ExcelProcessor {
                 String columnType = excelprop.getColumnType();
                 boolean needMerge = excelprop.isNeedMerge();
                 String valueobj = map.get(columnCode).toString();
-                if (valueobj == null)
+                if (valueobj == null) {
                     valueobj = map.get(columnCode.toUpperCase()).toString();
-                if (valueobj == null)
+                }
+                if (valueobj == null) {
                     valueobj = map.get(columnCode.toLowerCase()).toString();
+                }
                 CellStyle stylesingle = ExcelCellStyleUtil.getCellStyle(wb, 1, 1, columnType, header, cellMap);
                 CellStyle stylemutil = ExcelCellStyleUtil.getCellStyle(wb, 1, 2, columnType, header, cellMap);
                 if (needMerge) {
                     if (isFollowingSame(list, i, columnCode)) {
                         valueArr[j] = valueobj;
-                        if (fromPos[j] == -1)
+                        if (fromPos[j] == -1) {
                             fromPos[j] = i;
+                        }
                     } else if (valueArr[j] != null && !"".equalsIgnoreCase(valueArr[j].trim())) {
                         if (fromPos[j] != -1) {
                             ExcelBaseOper.merged(targetsheet, ExcelBaseOper.getRow(targetsheet, fromPos[j] + startRow), columnType, fromPos[j] + startRow, startCol + j, i + startRow, startCol + j, stylemutil, valueobj, helper);
@@ -568,10 +584,11 @@ public class ExcelProcessor {
                         for (int p = k; p < fieldCount; p++) {
                             boolean subMerge = prop.getColumnPropList().get(p).isNeedMerge();
                             if (subMerge && valueArr[p] != null && !"".equals(valueArr[p].trim()) && fromPos[p] != -1) {
-                                if (fromPos[p] != i)
+                                if (fromPos[p] != i) {
                                     ExcelBaseOper.merged(targetsheet, ExcelBaseOper.getRow(targetsheet, fromPos[p] + startRow), columnType, fromPos[p] + startRow, startCol + k, i + startRow, startCol + k, stylemutil, valueArr[p], helper);
-                                else
+                                } else {
                                     ExcelBaseOper.createCell(ExcelBaseOper.getRow(targetsheet, fromPos[p] + startRow), p, valueArr[p], columnType, stylesingle, helper);
+                                }
                                 fromPos[p] = -1;
                                 valueArr[p] = "";
                             }
@@ -594,10 +611,12 @@ public class ExcelProcessor {
                             String columnType = prop.getColumnPropList().get(d).getColumnType();
                             CellStyle stylesingle = ExcelCellStyleUtil.getCellStyle(wb, 1, 1, columnType, header, cellMap);
                             String valueobj = map.get(columnCode).toString();
-                            if (valueobj == null)
+                            if (valueobj == null) {
                                 valueobj = map.get(columnCode.toUpperCase()).toString();
-                            if (valueobj == null)
+                            }
+                            if (valueobj == null) {
                                 valueobj = map.get(columnCode.toLowerCase()).toString();
+                            }
                             ExcelBaseOper.createCell(ExcelBaseOper.getRow(targetsheet, startRow + i), d, valueobj, columnType, stylesingle, helper);
                         }
                     }
@@ -608,11 +627,12 @@ public class ExcelProcessor {
 
     private static void autoSizeSheet(ExcelSheetProp prop, Sheet sheet, int count) {
         for (int i = 0; i < count; i++) {
-            if (!prop.isStreamInsert())
+            if (!prop.isStreamInsert()) {
                 sheet.autoSizeColumn(i);
-            else {
-                if (i == 0)
+            } else {
+                if (i == 0) {
                     ((SXSSFSheet) sheet).trackAllColumnsForAutoSizing();
+                }
                 sheet.autoSizeColumn(i);
             }
         }
@@ -641,20 +661,23 @@ public class ExcelProcessor {
                     String columname = prop.getColumnName()[j];
 
                     Object valueobj = map.get(columname);
-                    if (valueobj == null)
+                    if (valueobj == null) {
                         valueobj = map.get(columname.toUpperCase());
-                    if (valueobj == null)
+                    }
+                    if (valueobj == null) {
                         valueobj = map.get(columname.toLowerCase());
+                    }
                     String value = "";
-                    if (valueobj != null)
+                    if (valueobj != null) {
                         value = valueobj.toString();
+                    }
                     String colType = prop.getColumnType()[j];
 
                     if (columname != null && !"".equals(columname)) {
                         HSSFCellStyle cellStyle = (HSSFCellStyle) ExcelCellStyleUtil.getCellStyle(wb, 1, 1, colType, null, cellMap);
-                        if (colType.equals(Const.META_TYPE_STRING))
+                        if (colType.equals(Const.META_TYPE_STRING)) {
                             createCell(cellStyle, row1, (short) j, HSSFCellStyle.ALIGN_CENTER, value);
-                        else if (colType.equals(Const.META_TYPE_NUMERIC) || colType.equals(Const.META_TYPE_DOUBLE)) {
+                        } else if (colType.equals(Const.META_TYPE_NUMERIC) || colType.equals(Const.META_TYPE_DOUBLE)) {
                             if (!"".equals(value)) {
                                 createCell(cellStyle, row1, (short) j, HSSFCellStyle.ALIGN_CENTER, Double.parseDouble(value));
                             }
@@ -663,10 +686,12 @@ public class ExcelProcessor {
                         } else if (colType.equalsIgnoreCase(Const.META_TYPE_INTEGER)) {
                             createCell(cellStyle, row1, (short) j, HSSFCellStyle.ALIGN_CENTER, Integer.parseInt(value));
                         } else if (colType.equals(Const.META_TYPE_DATE)) {
-                            if (!"".equals(value))
+                            if (!"".equals(value)) {
                                 createCellDate(cellStyle, row1, (short) j, HSSFCellStyle.ALIGN_CENTER, value);
-                        } else
+                            }
+                        } else {
                             createCell(cellStyle, row1, (short) j, HSSFCellStyle.ALIGN_CENTER, value);
+                        }
                     }
                 }
                 i++;
@@ -683,8 +708,9 @@ public class ExcelProcessor {
         cell.setCellStyle(cellStyle);
         //cell.setEncoding(HSSFCell.ENCODING_UTF_16);
         String value = "";
-        if (objvalue != null)
+        if (objvalue != null) {
             value = objvalue.toString();
+        }
         cell.setCellValue(value);
     }
 

@@ -22,8 +22,9 @@ public class HbaseTableParam {
 		this.paramList = paramList;
 	}
 	public void addParamList(HbaseParam param){
-		if(paramList==null)
-			paramList=new ArrayList<HbaseParam>();
+		if(paramList==null) {
+            paramList=new ArrayList<HbaseParam>();
+        }
 		paramList.add(param);
 		
 	}

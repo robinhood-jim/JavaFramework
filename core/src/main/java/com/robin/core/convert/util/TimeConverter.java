@@ -29,6 +29,7 @@ public class TimeConverter implements Converter {
 		super();
 	}
 	
+    @Override
     public Object convert(Class type, Object value) {
     	log.debug("convert type:" + type + " value:" + value) ;
     	

@@ -25,31 +25,41 @@ import com.robin.core.query.util.QueryParam;
 import com.robin.core.query.util.QueryString;
 
 public class SybaseSqlGen extends AbstractSqlGen implements BaseSqlGen{
-	public String generateCountSql(String strSQL) {
+	@Override
+    public String generateCountSql(String strSQL) {
 
 		String str = strSQL.trim().toLowerCase();
 		int nFromPos = str.lastIndexOf(" from ");
 		int nOrderPos = str.lastIndexOf(" order by ");
-		if (nOrderPos == -1) nOrderPos = str.length();
+		if (nOrderPos == -1) {
+            nOrderPos = str.length();
+        }
 		StringBuffer strBuf = new StringBuffer();
 		strBuf.append("select count(*) as total ").append(strSQL, nFromPos, nOrderPos);
 		return strBuf.toString();
 	}
 
 
-	public String generatePageSql(String strSQL, PageQuery pageQuery) {
+	@Override
+    public String generatePageSql(String strSQL, PageQuery pageQuery) {
 		Integer[] startEnd=getStartEndRecord(pageQuery);
 		int nBegin = startEnd[0];
 		boolean hasOffset = nBegin > 0;
 		strSQL = strSQL.trim();
 
 		StringBuffer pagingSelect = new StringBuffer(strSQL.length() + 100);
-		if (hasOffset) pagingSelect.append("select * from ( select row_.*, rownum rownum_ from ( ");
-		else pagingSelect.append("select * from ( ");
+		if (hasOffset) {
+            pagingSelect.append("select * from ( select row_.*, rownum rownum_ from ( ");
+        } else {
+            pagingSelect.append("select * from ( ");
+        }
 		pagingSelect.append(strSQL);
 		int tonums=startEnd[1];
-		if (hasOffset) pagingSelect.append(" ) row_ ) where rownum_ <= ").append(tonums).append(" and rownum_ > ").append(nBegin);
-		else pagingSelect.append(" ) where rownum <= ").append(pageQuery.getPageSize());
+		if (hasOffset) {
+            pagingSelect.append(" ) row_ ) where rownum_ <= ").append(tonums).append(" and rownum_ > ").append(nBegin);
+        } else {
+            pagingSelect.append(" ) where rownum <= ").append(pageQuery.getPageSize());
+        }
 
 		return pagingSelect.toString();
 	}
@@ -60,20 +70,24 @@ public class SybaseSqlGen extends AbstractSqlGen implements BaseSqlGen{
 		return null;
 	}
 
-	public String generateSingleRowSql(String querySql) {
+	@Override
+    public String generateSingleRowSql(String querySql) {
 		return null;
 	}
-	public String getSequnceScript(String sequnceName) throws DAOException {
+	@Override
+    public String getSequnceScript(String sequnceName) throws DAOException {
 		throw new DAOException("sequnce not support in Sybase");
 	}
-	public String getSelectPart(String columnName, String aliasName) {
+	@Override
+    public String getSelectPart(String columnName, String aliasName) {
 		String selectPart=columnName;
 		if(aliasName!=null && !"".equals(aliasName)){
 			selectPart+=" as "+aliasName;
 		}
 		return selectPart;
 	}
-	public String returnTypeDef(String dataType, Map<String, Object> fieldMap) {
+	@Override
+    public String returnTypeDef(String dataType, Map<String, Object> fieldMap) {
 		StringBuilder builder=new StringBuilder();
 		if(dataType.equals(Const.META_TYPE_BIGINT)){
 			builder.append("BIGINT");
@@ -82,10 +96,12 @@ public class SybaseSqlGen extends AbstractSqlGen implements BaseSqlGen{
 		}else if(dataType.equals(Const.META_TYPE_DOUBLE) || dataType.equals(Const.META_TYPE_NUMERIC)){
 			int precise= Integer.parseInt(fieldMap.get("precise").toString());
 			int scale=Integer.parseInt(fieldMap.get("scale").toString());
-			if(precise==0)
-				precise=2;
-			if(scale==0)
-				scale=8;
+			if(precise==0) {
+                precise=2;
+            }
+			if(scale==0) {
+                scale=8;
+            }
 			builder.append("DECIMAL(").append(scale).append(",").append(precise).append(")");
 		}else if(dataType.equals(Const.META_TYPE_DATE)){
 			builder.append("DATE");
@@ -96,10 +112,11 @@ public class SybaseSqlGen extends AbstractSqlGen implements BaseSqlGen{
 			if(length==0){
 				length=16;
 			}
-			if(length==1)
-				builder.append("CHAR(1)");
-			else
-				builder.append("VARCHAR(").append(length).append(")");
+			if(length==1) {
+                builder.append("CHAR(1)");
+            } else {
+                builder.append("VARCHAR(").append(length).append(")");
+            }
 		}else if(dataType.equals(Const.META_TYPE_CLOB)){
 			builder.append("CLOB");
 		}else if(dataType.equals(Const.META_TYPE_BLOB)){

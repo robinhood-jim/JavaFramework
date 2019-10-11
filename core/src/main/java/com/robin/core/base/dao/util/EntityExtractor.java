@@ -23,6 +23,7 @@ public class EntityExtractor implements
         this.lobHandler=lobHandler;
     }
 
+    @Override
     public List<? extends BaseObject> mapRow(ResultSet rs, int colpos)
             throws SQLException, DataAccessException {
         ResultSetMetaData rsmd = rs.getMetaData();

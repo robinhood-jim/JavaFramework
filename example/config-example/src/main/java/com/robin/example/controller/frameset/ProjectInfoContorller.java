@@ -133,7 +133,9 @@ public class ProjectInfoContorller extends BaseCrudDhtmlxController<ProjectInfo,
     @RequestMapping("/view/{id}")
     @ResponseBody
     public Map<String, Object> viewProjectInfo(HttpServletRequest request, HttpServletResponse response, @PathVariable Long id) throws Exception {
-        if (log.isDebugEnabled()) log.debug("Entering 'viewProjectIn fo' method");
+        if (log.isDebugEnabled()) {
+            log.debug("Entering 'viewProjectIn fo' method");
+        }
         Map<String, Object> retmap = new HashMap<String, Object>();
         try {
             //DataSourceService DataSourceService = (DataSourceService) getBean("DataSourceService");
@@ -150,7 +152,9 @@ public class ProjectInfoContorller extends BaseCrudDhtmlxController<ProjectInfo,
     @RequestMapping("/edit/{id}")
     @ResponseBody
     public Map<String, Object> editProjectInfo(HttpServletRequest request, HttpServletResponse response, @PathVariable Long id) throws Exception {
-        if (log.isDebugEnabled()) log.debug("Entering 'editProjectInfo' method");
+        if (log.isDebugEnabled()) {
+            log.debug("Entering 'editProjectInfo' method");
+        }
         Map<String, Object> retmap = new HashMap<String, Object>();
         try {
             ProjectInfo projectInfo = this.service.getEntity(id);
@@ -167,7 +171,9 @@ public class ProjectInfoContorller extends BaseCrudDhtmlxController<ProjectInfo,
     @RequestMapping("/update")
     @ResponseBody
     public Map<String, Object> updateProjectInfo(HttpServletRequest request, HttpServletResponse response) throws Exception {
-        if (log.isDebugEnabled()) log.debug("Entering 'updateProjectInfo' method");
+        if (log.isDebugEnabled()) {
+            log.debug("Entering 'updateProjectInfo' method");
+        }
         Map<String, Object> retmap = new HashMap<String, Object>();
         try {
             ProjectInfo projectInfo = new ProjectInfo();
@@ -184,7 +190,9 @@ public class ProjectInfoContorller extends BaseCrudDhtmlxController<ProjectInfo,
     @RequestMapping("/delete")
     @ResponseBody
     public Map<String, Object> deleteProjectInfo(HttpServletRequest request, HttpServletResponse response) throws Exception {
-        if (log.isDebugEnabled()) log.debug("Entering 'deleteProjectInfo' method");
+        if (log.isDebugEnabled()) {
+            log.debug("Entering 'deleteProjectInfo' method");
+        }
         Map<String, Object> retmap = new HashMap<String, Object>();
         try {
             String del_ids = request.getParameter("ids");
@@ -361,7 +369,9 @@ public class ProjectInfoContorller extends BaseCrudDhtmlxController<ProjectInfo,
     @RequestMapping("/list")
     @ResponseBody
     public Map<String, Object> searchProjectInfo(HttpServletRequest request, HttpServletResponse response) throws Exception {
-        if (log.isDebugEnabled()) log.debug("Entering 'searchProjectInfo' method");
+        if (log.isDebugEnabled()) {
+            log.debug("Entering 'searchProjectInfo' method");
+        }
         Map<String, Object> retmap = new HashMap<String, Object>();
         try {
             //DataSourceService DataSourceService = (DataSourceService) getBean("DataSourceService");
@@ -391,11 +401,13 @@ public class ProjectInfoContorller extends BaseCrudDhtmlxController<ProjectInfo,
         StringBuffer buffer = new StringBuffer();
         /** Add Query Code here **/
         String orgname = pageQuery.getParameters().get("name");
-        if (orgname != null && orgname.length() > 0)
+        if (orgname != null && orgname.length() > 0) {
             buffer.append(" and a.proj_name like '%" + orgname + "%'");
+        }
         String webfrmId = pageQuery.getParameters().get("webfrmId");
-        if (webfrmId != null && webfrmId.length() > 0)
+        if (webfrmId != null && webfrmId.length() > 0) {
             buffer.append(" and  a.webframe_id= '" + webfrmId + "'");
+        }
         return buffer.toString();
     }
 

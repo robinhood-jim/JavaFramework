@@ -27,7 +27,8 @@ import java.io.OutputStream;
 @Slf4j
 public class OutputStreamHolder extends AbstractResourceHolder {
 	protected OutputStream out;
-	public void init(DataCollectionMeta colmeta) throws Exception{
+	@Override
+    public void init(DataCollectionMeta colmeta) throws Exception{
 		if(out!=null || busyTag){
 			throw new OperationInWorkException("last Opertaion OuputStream already Exists.May not be shutdown Propery");
 		}
@@ -40,7 +41,8 @@ public class OutputStreamHolder extends AbstractResourceHolder {
 	public OutputStream getOutputStream(){
 		return out;
 	}
-	public void close() throws IOException{
+	@Override
+    public void close() throws IOException{
 		try{
 			if(out!=null){
 				out.flush();
@@ -53,7 +55,8 @@ public class OutputStreamHolder extends AbstractResourceHolder {
 			setBusyTag(false);
 		}
 	}
-	public void setBusyTag(boolean tag){
+	@Override
+    public void setBusyTag(boolean tag){
 		this.busyTag=tag;
 	}
 }

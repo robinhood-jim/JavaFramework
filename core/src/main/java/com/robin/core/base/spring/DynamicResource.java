@@ -24,19 +24,21 @@ import org.springframework.core.io.AbstractResource;
 import org.springframework.core.io.Resource;
 
 public class DynamicResource extends AbstractResource implements Resource {
-	private DynamicBean dynamicBean;  
+	private AbstractDynamicBean dynamicBean;
     
-    public DynamicResource(DynamicBean dynamicBean){  
+    public DynamicResource(AbstractDynamicBean dynamicBean){
         this.dynamicBean = dynamicBean;  
     }  
     /* (non-Javadoc) 
      * @see org.springframework.core.io.InputStreamSource#getInputStream() 
      */  
-    public InputStream getInputStream() throws IOException {  
+    @Override
+    public InputStream getInputStream() throws IOException {
         return new ByteArrayInputStream(dynamicBean.getXml().getBytes(StandardCharsets.UTF_8));
     }
 
-	public String getDescription() {
+	@Override
+    public String getDescription() {
 		
 		return "Dynamic";
 	}

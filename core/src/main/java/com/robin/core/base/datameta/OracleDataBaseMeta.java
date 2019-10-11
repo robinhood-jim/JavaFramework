@@ -30,7 +30,8 @@ public class OracleDataBaseMeta extends BaseDataBaseMeta implements DataBaseInte
 	}
 
 
-	public String getUrlTemplate() {
+	@Override
+    public String getUrlTemplate() {
 		String ret="";
 		if(param.getType()==null){
 			ret= "jdbc:oracle:thin:@[hostName]:[port]:[databaseName]";
@@ -41,7 +42,8 @@ public class OracleDataBaseMeta extends BaseDataBaseMeta implements DataBaseInte
 		}
 		return ret;
 	}
-	protected void processParam(Map<String, String> map) throws Exception {
+	@Override
+    protected void processParam(Map<String, String> map) throws Exception {
 		super.processParam(map);
 		if(param.getType()!=null && param.getType().equals(ORA_TYPE_CLUSTER)){
 			String[] ipAdd=param.getHostName().split(";");
@@ -52,33 +54,40 @@ public class OracleDataBaseMeta extends BaseDataBaseMeta implements DataBaseInte
 		}
 	}
 
-	public boolean suppportSequnce() {
+	@Override
+    public boolean suppportSequnce() {
 		return true;
 	}
 
-	public boolean supportAutoInc() {
+	@Override
+    public boolean supportAutoInc() {
 		return true;
 	}
 
-	public int getDefaultDatabasePort() {
+	@Override
+    public int getDefaultDatabasePort() {
 		return 1521;
 	}
 
-	public boolean supportsSchemas() {
+	@Override
+    public boolean supportsSchemas() {
 		return false;
 	}
 
-	public String getAddColumnStatement(String tablename, String schema,DataBaseColumnMeta v, String tk, boolean use_autoinc, String pk,
-			boolean semicolon) {
+	@Override
+    public String getAddColumnStatement(String tablename, String schema, DataBaseColumnMeta v, String tk, boolean use_autoinc, String pk,
+                                        boolean semicolon) {
 		return null;
 	}
 
-	public String getDropColumnStatement(String tablename, String schema,DataBaseColumnMeta v, String tk, boolean use_autoinc, String pk,
-			boolean semicolon) {
+	@Override
+    public String getDropColumnStatement(String tablename, String schema, DataBaseColumnMeta v, String tk, boolean use_autoinc, String pk,
+                                         boolean semicolon) {
 		
 		return null;
 	}
-	public BaseSqlGen getSqlGen() {
+	@Override
+    public BaseSqlGen getSqlGen() {
 		return new OracleSqlGen();
 	}
 }

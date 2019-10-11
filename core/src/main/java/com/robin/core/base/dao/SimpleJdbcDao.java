@@ -69,8 +69,9 @@ public class SimpleJdbcDao {
 		this.passwd=param.getPasswd();
 		if(param.getUrl()!=null && !param.getUrl().isEmpty()){
 			this.jdbcUrl=param.getUrl();
-		}else
-			this.jdbcUrl=meta.getUrl();
+		}else {
+            this.jdbcUrl=meta.getUrl();
+        }
 		this.meta=meta;
 		this.param=param;
 	}
@@ -80,8 +81,9 @@ public class SimpleJdbcDao {
 		this.passwd=param.getPasswd();
 		if(param.getUrl()!=null && !param.getUrl().isEmpty()){
 			this.jdbcUrl=param.getUrl();
-		}else
-			this.jdbcUrl=meta.getUrl();
+		}else {
+            this.jdbcUrl=meta.getUrl();
+        }
 		this.meta=meta;
 		this.param=param;
 		this.retryNums=retryNums;
@@ -112,8 +114,9 @@ public class SimpleJdbcDao {
 				}
 			}
 		}
-		if(conn==null)
-			throw new DAOException(ex);
+		if(conn==null) {
+            throw new DAOException(ex);
+        }
 		return conn;
 	}
 	public static Connection getConnection(BaseDataBaseMeta meta,DataBaseParam param) throws DAOException{
@@ -164,8 +167,9 @@ public class SimpleJdbcDao {
 				logger.error("",ex1);
 			}
 		}
-		if(conn==null)
-			throw new DAOException(ex);
+		if(conn==null) {
+            throw new DAOException(ex);
+        }
 		return conn;
 	}
 	public long queryByLong(final String sql) throws DAOException{
@@ -616,8 +620,9 @@ public class SimpleJdbcDao {
 			DbUtils.closeQuietly(conn);
 		}
 		for (int i = 0; i < retarr.length; i++) {
-			if(retarr[i]>0)
-				retnum++;
+			if(retarr[i]>0) {
+                retnum++;
+            }
 		}
 		return retnum;
 	}
@@ -649,8 +654,9 @@ public class SimpleJdbcDao {
 			DbUtils.closeQuietly(stmt);
 		}
 		for (int i = 0; i < retarr.length; i++) {
-			if(retarr[i]>0)
-				retnum++;
+			if(retarr[i]>0) {
+                retnum++;
+            }
 		}
 		return retnum;
 	}
@@ -677,8 +683,9 @@ public class SimpleJdbcDao {
 			DbUtils.closeQuietly(conn);
 		}
 		for (int i = 0; i < retarr.length; i++) {
-			if(retarr[i]>0)
-				retnum++;
+			if(retarr[i]>0) {
+                retnum++;
+            }
 		}
 		return retnum;
 	}
@@ -723,9 +730,9 @@ public class SimpleJdbcDao {
 									resultList.add("");
 									continue;
 								}
-								if(!type.equals(Const.META_TYPE_DATE))
-									resultList.add(rs.getString(i+1));
-								else{
+								if(!type.equals(Const.META_TYPE_DATE)) {
+                                    resultList.add(rs.getString(i+1));
+                                } else{
 									resultList.add(dateformat.format(rs.getTimestamp(i+1)));
 								}
 							}
@@ -764,10 +771,11 @@ public class SimpleJdbcDao {
 			QueryRunner qRunner=new QueryRunner();
 			String querySql="select "+ columns+" from "+tableName+" where 1=0";			
 			StringBuilder insertSqlbuilder=new StringBuilder("insert into "+tableName);
-			if(!"*".equals(columns))
-				insertSqlbuilder.append("("+columns+") values (");
-			else
-				insertSqlbuilder.append(" values (");			
+			if(!"*".equals(columns)) {
+                insertSqlbuilder.append("("+columns+") values (");
+            } else {
+                insertSqlbuilder.append(" values (");
+            }
 			final List<String> columnTypes=new ArrayList<String>();
 			int columnCount=qRunner.query(conn, querySql, new ResultSetHandler<Integer>(){
 				@Override
@@ -849,51 +857,57 @@ public class SimpleJdbcDao {
 	}
 	public static void transformDateType(Map<String,String> resultMap,Map<String,String> poolobj,int pos,int row,Object[][] objArr) throws Exception{
 		String value=resultMap.get(poolobj.get("name"));
-		if(value==null)
-			value=resultMap.get(poolobj.get("name").toUpperCase());
-		if(value==null)
-			value=resultMap.get(poolobj.get("name").toLowerCase());
+		if(value==null) {
+            value=resultMap.get(poolobj.get("name").toUpperCase());
+        }
+		if(value==null) {
+            value=resultMap.get(poolobj.get("name").toLowerCase());
+        }
 			if(poolobj.get("dataType").equals(Const.META_TYPE_STRING)){
-				if(value!=null)
-					 objArr[row][pos]=value;
-				else
-					objArr[row][pos]=null;
+				if(value!=null) {
+                    objArr[row][pos]=value;
+                } else {
+                    objArr[row][pos]=null;
+                }
 			}else if(poolobj.get("dataType").equals(Const.META_TYPE_NUMERIC)){
-				if(value==null || "".equals(value))
-					objArr[row][pos]=null;
-				else{
+				if(value==null || "".equals(value)) {
+                    objArr[row][pos]=null;
+                } else{
 					objArr[row][pos]=Double.valueOf(value);
 				}
 			}else if(poolobj.get("dataType").equals(Const.META_TYPE_INTEGER)){
-				if(value==null || "".equals(value))
-					objArr[row][pos]=null;
-				else
-					objArr[row][pos]=Integer.valueOf(value);
+				if(value==null || "".equals(value)) {
+                    objArr[row][pos]=null;
+                } else {
+                    objArr[row][pos]=Integer.valueOf(value);
+                }
 			}
 			else if(poolobj.get("dataType").equals(Const.META_TYPE_DOUBLE)){
-				if(value==null || "".equals(value))
-					objArr[row][pos]=null;
-				else{
+				if(value==null || "".equals(value)) {
+                    objArr[row][pos]=null;
+                } else{
 					objArr[row][pos]=Double.valueOf(value);
 				}
 			}
 			else if(poolobj.get("dataType").equals(Const.META_TYPE_DATE)){
 
-				if(value==null || "".equals(value))
-					objArr[row][pos]=null;
-				else{
+				if(value==null || "".equals(value)) {
+                    objArr[row][pos]=null;
+                } else{
 					java.sql.Date date=null;
-					if(value.contains(":"))
-						date=new Date(nformat.parse(value).getTime());
-					else
-						date=new Date(shortformat.parse(value).getTime());
+					if(value.contains(":")) {
+                        date=new Date(nformat.parse(value).getTime());
+                    } else {
+                        date=new Date(shortformat.parse(value).getTime());
+                    }
 					objArr[row][pos] = date;
 				}
 			}else{
-				if(value!=null)
-					objArr[row][pos]=value;
-				else
-					objArr[row][pos]=null;
+				if(value!=null) {
+                    objArr[row][pos]=value;
+                } else {
+                    objArr[row][pos]=null;
+                }
 			}
 	}
 	

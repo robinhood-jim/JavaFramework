@@ -77,10 +77,11 @@ public class EncryptJarPackage {
                         StringBuilder tbuilder = new StringBuilder();
                         for (JavaTypeVariable<JavaGenericDeclaration> define : annotaions) {
                             tbuilder.append(define.getValue());
-                            if (define.getBounds() != null)
+                            if (define.getBounds() != null) {
                                 tbuilder.append(" extends ").append(define.getBounds().get(0).getCanonicalName()).append(",");
-                            else
+                            } else {
                                 tbuilder.append(",");
+                            }
                         }
                         buffer.append(tbuilder.substring(0, tbuilder.length() - 1)).append(">");
                     }
@@ -97,7 +98,9 @@ public class EncryptJarPackage {
                             if(types!=null && !types.isEmpty()){
                                 hasgenric=true;
                                 buffer.append("<");
-                                if(tmpBuilder.length()==0) tmpBuilder.delete(0,tmpBuilder.length());
+                                if(tmpBuilder.length()==0) {
+                                    tmpBuilder.delete(0,tmpBuilder.length());
+                                }
                                 for(JavaType type:types){
                                     tmpBuilder.append(type.getValue()).append(",");
                                 }
@@ -111,8 +114,9 @@ public class EncryptJarPackage {
                     buffer.append("{").append("\n");
                     if (props != null && props.size() > 0) {
                         for (JavaField prop : props) {
-                            if (!isinterface)
+                            if (!isinterface) {
                                 buffer.append("private " + prop.getType().getValue() + " " + prop.getName() + ";\n");
+                            }
                         }
                     }
                     List<JavaConstructor> constructList = clazz.getConstructors();
@@ -163,8 +167,9 @@ public class EncryptJarPackage {
                                     tmpbuffer.append("return 0.0;");
                                 } else if (rettype.contains("boolean") || rettype.contains("Boolean")) {
                                     tmpbuffer.append("return true;");
-                                } else
+                                } else {
                                     tmpbuffer.append(" return null;");
+                                }
                             }else{
                                 tmpbuffer.append("  return ;");
                             }
@@ -183,8 +188,9 @@ public class EncryptJarPackage {
                             List<JavaField> ifields = iclazz.getFields();
                             if (ifields != null && ifields.size() > 0) {
                                 for (JavaField prop : ifields) {
-                                    if (!iclazz.isInterface())
+                                    if (!iclazz.isInterface()) {
                                         buffer.append("private " + prop.getType().getValue() + " " + prop.getName() + ";\n");
+                                    }
                                 }
                             }
                             buffer.append("}\n");
@@ -202,8 +208,9 @@ public class EncryptJarPackage {
 
                 File srcFile = new File(srcFilepath);
                 File parentpath = new File(srcFile.getParent());
-                if (!parentpath.exists())
+                if (!parentpath.exists()) {
                     parentpath.mkdir();
+                }
                 FileUtils.writeStringToFile(srcFile, buffer.toString());
                 //compile classes
 
@@ -274,11 +281,11 @@ public class EncryptJarPackage {
 
 
     private static String getDeclaration(JavaMethod method) {
-        if (method.isPublic())
+        if (method.isPublic()) {
             return "public ";
-        else if (method.isProtected())
+        } else if (method.isProtected()) {
             return "protected ";
-        else if (method.isPrivate()) {
+        } else if (method.isPrivate()) {
             return "private ";
         }else {
             return "public ";
@@ -304,6 +311,7 @@ public class EncryptJarPackage {
     }
 
     public static class MyDiagnosticListener implements DiagnosticListener<JavaFileObject> {
+        @Override
         public void report(Diagnostic<? extends JavaFileObject> diagnostic) {
 
             System.out.println("Line Number->" + diagnostic.getLineNumber());
@@ -440,12 +448,14 @@ public class EncryptJarPackage {
                 getActualType(parameter.getType(),builder);
             }else if("List".equalsIgnoreCase(parameter.getType().getValue())){
                 getActualType(parameter.getType(),builder);
-            }else
+            }else {
                 builder.append(parameter.getValue());
+            }
             builder.append(" ");
             builder.append(parameterPrefix).append(pos++);
-            if (k != parameters.size() - 1)
+            if (k != parameters.size() - 1) {
                 builder.append(",");
+            }
         }
     }
     private static void getActualType(JavaType type,StringBuilder builder){

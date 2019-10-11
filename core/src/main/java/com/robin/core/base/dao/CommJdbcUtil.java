@@ -47,6 +47,7 @@ public class CommJdbcUtil {
     @SuppressWarnings({"unchecked", "rawtypes"})
     private static List getResultItemsByPrepared(JdbcTemplate jdbcTemplate, final PageQuery pageQuery, final String pageSQL) {
         Object ret = jdbcTemplate.query(new PreparedStatementCreator() {
+            @Override
             public PreparedStatement createPreparedStatement(Connection conn) throws SQLException {
                 PreparedStatement ps = conn.prepareStatement(pageSQL);
                 int len = pageQuery.getParameters().size();
@@ -54,11 +55,13 @@ public class CommJdbcUtil {
                     for (int i = 1; i <= len; i++) {
                         String columnType = pageQuery.getColumnTypes().get(String.valueOf(i - 1));
                         String value = pageQuery.getParameters().get(String.valueOf(i));
-                        if (columnType.equals(QueryParam.COLUMN_TYPE_INT)) ps.setInt(i, Integer.parseInt(value));
-                        else if (columnType.equals(QueryParam.COLUMN_TYPE_DOUBLE))
+                        if (columnType.equals(QueryParam.COLUMN_TYPE_INT)) {
+                            ps.setInt(i, Integer.parseInt(value));
+                        } else if (columnType.equals(QueryParam.COLUMN_TYPE_DOUBLE)) {
                             ps.setDouble(i, Double.parseDouble(value));
-                        else if (columnType.equals(QueryParam.COLUMN_TYPE_LONG)) ps.setLong(i, Long.parseLong(value));
-                        else if (columnType.equals(QueryParam.COLUMN_TYPE_DATE)) {
+                        } else if (columnType.equals(QueryParam.COLUMN_TYPE_LONG)) {
+                            ps.setLong(i, Long.parseLong(value));
+                        } else if (columnType.equals(QueryParam.COLUMN_TYPE_DATE)) {
                             SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
                             Date date = new Date(format.parse(value).getTime());
                             ps.setDate(i, date);
@@ -66,8 +69,9 @@ public class CommJdbcUtil {
                             SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:ss:mm");
                             Date date = new Date(format.parse(value).getTime());
                             ps.setDate(i, date);
-                        } else if (columnType.equals(QueryParam.COLUMN_TYPE_STRING))
+                        } else if (columnType.equals(QueryParam.COLUMN_TYPE_STRING)) {
                             ps.setString(i, value);
+                        }
                     }
                 } catch (Exception e) {
                     throw new SQLException(e.getMessage());
@@ -79,6 +83,7 @@ public class CommJdbcUtil {
                 return ps;
             }
         }, new ResultSetExtractor() {
+            @Override
             public Object extractData(ResultSet rs) throws SQLException, DataAccessException {
                 return rs;
             }
@@ -101,14 +106,19 @@ public class CommJdbcUtil {
     public static PageQuery queryByReplaceParamter(JdbcTemplate jdbcTemplate, LobHandler lobHandler, BaseSqlGen sqlGen, QueryString qs, PageQuery pageQuery) throws DAOException {
         List list = null;
         String querySQL = getReplacementSql(sqlGen, qs, pageQuery);
-        if (logger.isInfoEnabled()) logger.info((new StringBuilder()).append("querySQL: ").append(querySQL).toString());
+        if (logger.isInfoEnabled()) {
+            logger.info((new StringBuilder()).append("querySQL: ").append(querySQL).toString());
+        }
 
         String sumSQL = "";
-        if (qs.getCountSql() == null || "".equals(qs.getCountSql().trim()))
+        if (qs.getCountSql() == null || "".equals(qs.getCountSql().trim())) {
             sumSQL = sqlGen.generateCountSql(querySQL);
-        else
+        } else {
             sumSQL = sqlGen.getCountSqlByConfig(qs, pageQuery);
-        if (logger.isInfoEnabled()) logger.info("countSql: " + sumSQL);
+        }
+        if (logger.isInfoEnabled()) {
+            logger.info("countSql: " + sumSQL);
+        }
 
         int pageSize = 0;
         //set pageSize by PageQuery Object
@@ -125,10 +135,11 @@ public class CommJdbcUtil {
     private static List getResultList(JdbcTemplate jdbcTemplate, LobHandler lobHandler, BaseSqlGen sqlGen, QueryString qs, PageQuery pageQuery, String querySQL, String sumSQL, int pageSize) throws DAOException {
         List list;
         if (pageSize != 0) {
-            if (pageSize < Integer.parseInt(Const.MIN_PAGE_SIZE))
+            if (pageSize < Integer.parseInt(Const.MIN_PAGE_SIZE)) {
                 pageSize = Integer.parseInt(Const.DEFAULT_PAGE_SIZE);
-            else if (pageSize > Integer.parseInt(Const.MAX_PAGE_SIZE))
+            } else if (pageSize > Integer.parseInt(Const.MAX_PAGE_SIZE)) {
                 pageSize = Integer.parseInt(Const.MAX_PAGE_SIZE);
+            }
             pageQuery.setPageSize(pageSize);
             int total = jdbcTemplate.query(sumSQL, rs -> {
                 rs.next();
@@ -137,13 +148,16 @@ public class CommJdbcUtil {
             pageQuery.setRecordCount(total);
             if (total > 0) {
                 int pages = total / pageQuery.getPageSize();
-                if (total % pageQuery.getPageSize() != 0) pages++;
+                if (total % pageQuery.getPageSize() != 0) {
+                    pages++;
+                }
                 pageQuery.setPageCount(pages);
                 //adjust pageNumber
-                if (pageQuery.getPageNumber() > pages)
+                if (pageQuery.getPageNumber() > pages) {
                     pageQuery.setPageNumber(pages);
-                else if (pageQuery.getPageNumber() < 1)
+                } else if (pageQuery.getPageNumber() < 1) {
                     pageQuery.setPageNumber(1);
+                }
                 String pageSQL = sqlGen.generatePageSql(querySQL, pageQuery);
                 if (logger.isDebugEnabled()) {
                     logger.debug((new StringBuilder()).append("sumSQL: ").append(sumSQL).toString());
@@ -164,7 +178,9 @@ public class CommJdbcUtil {
 
     public static String getRealSql(BaseSqlGen sqlGen, QueryString qs, PageQuery pageQuery) throws DAOException {
         String querySQL = getReplacementSql(sqlGen, qs, pageQuery);
-        if (logger.isInfoEnabled()) logger.info((new StringBuilder()).append("operSQL: ").append(querySQL).toString());
+        if (logger.isInfoEnabled()) {
+            logger.info((new StringBuilder()).append("operSQL: ").append(querySQL).toString());
+        }
         return querySQL;
 
     }
@@ -180,10 +196,11 @@ public class CommJdbcUtil {
             String key = entry.getKey();
             String replacestr = "\\$\\{" + key + "\\}";
             String value = entry.getValue();
-            if (value != null)
+            if (value != null) {
                 querySQL = querySQL.replaceAll(replacestr, value);
-            else
+            } else {
                 querySQL = querySQL.replaceAll(replacestr, "");
+            }
         }
         return querySQL;
     }
@@ -210,8 +227,9 @@ public class CommJdbcUtil {
                         String columnName = rsmd.getColumnName(i + 1);
                         String typeName = rsmd.getColumnTypeName(i + 1);
                         String className = rsmd.getColumnClassName(i + 1);
-                        if (fields != null && i >= fields.length)
+                        if (fields != null && i >= fields.length) {
                             continue;
+                        }
                         rs.getObject(i + 1);
                         if (rs.wasNull()) {
                             putValue(fields, i, columnName, null, map);
@@ -336,8 +354,9 @@ public class CommJdbcUtil {
                     ((HashMap)target).put(columnName,targetValue);
                 } else {
                     Map<String, Method> setMethods = ConvertUtil.returnSetMethold(target.getClass());
-                    if(setMethods.containsKey(columnName))
-                    setMethods.get(columnName).invoke(target,targetValue);
+                    if(setMethods.containsKey(columnName)) {
+                        setMethods.get(columnName).invoke(target,targetValue);
+                    }
                 }
             }
         } catch (DAOException ex) {
@@ -348,10 +367,11 @@ public class CommJdbcUtil {
     }
 
     private static void putValue(String[] fields, int pos, String columnName, Object obj, Map<String, Object> map) {
-        if (fields != null)
+        if (fields != null) {
             map.put(fields[pos], obj);
-        else
+        } else {
             map.put(columnName, "");
+        }
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
@@ -359,19 +379,21 @@ public class CommJdbcUtil {
         List list = null;
         try {
             String querySQL = getReplacementSql(sqlGen, qs, pageQuery);
-            if (logger.isInfoEnabled())
+            if (logger.isInfoEnabled()) {
                 logger.info((new StringBuilder()).append("querySQL: ").append(querySQL).toString());
+            }
             if (pageQuery.getPageSize() > 0) {
                 String sumSQL = "";
-                if (qs.getCountSql() == null || "".equals(qs.getCountSql().trim()))
+                if (qs.getCountSql() == null || "".equals(qs.getCountSql().trim())) {
                     sumSQL = sqlGen.generateCountSql(querySQL);
-                else
+                } else {
                     sumSQL = sqlGen.getCountSqlByConfig(qs, pageQuery);
+                }
 
                 Integer total = 0;
-                if(pageQuery.getNamedParameters()==null)
+                if(pageQuery.getNamedParameters()==null) {
                     total=jdbcTemplate.queryForObject(sumSQL, pageQuery.getParameterArr(), Integer.class);
-                else{
+                } else{
                     total=namedParameterJdbcTemplate.queryForObject(sumSQL,pageQuery.getNamedParameters(),Integer.class);
                 }
                 pageQuery.setRecordCount(total);
@@ -382,7 +404,9 @@ public class CommJdbcUtil {
                 }
                 if (total > 0) {
                     int pages = total / pageQuery.getPageSize();
-                    if (total % pageQuery.getPageSize() != 0) pages++;
+                    if (total % pageQuery.getPageSize() != 0) {
+                        pages++;
+                    }
                     pageQuery.setPageCount(pages);
                     list = getResultItemsByPreparedSimple(jdbcTemplate,namedParameterJdbcTemplate, lobHandler, sqlGen, qs, pageQuery, pageSQL);
                     //getResultItemsByPrepared(jdbcTemplate,pageQuery, pageSQL);
@@ -398,10 +422,11 @@ public class CommJdbcUtil {
                 pageQuery.setPageCount(1);
             }
         } catch (Exception e) {
-            if (logger.isDebugEnabled())
+            if (logger.isDebugEnabled()) {
                 logger.debug("Encounter Error", e);
-            else
+            } else {
                 logger.error("Encounter Error", e);
+            }
             throw new DAOException(e);
         }
         pageQuery.setRecordSet(list);
@@ -411,10 +436,11 @@ public class CommJdbcUtil {
     @SuppressWarnings({"unchecked", "rawtypes"})
     public static PageQuery queryBySql(JdbcTemplate jdbcTemplate, LobHandler lobHandler, BaseSqlGen sqlGen, String querySQL, String countSql, String[] displayname, PageQuery pageQuery) throws DAOException {
         String sumSQL = "";
-        if (countSql == null || "".equals(countSql.trim()))
+        if (countSql == null || "".equals(countSql.trim())) {
             sumSQL = sqlGen.generateCountSql(querySQL);
-        else
+        } else {
             sumSQL = countSql;
+        }
         int pageSize = 0;
 
         int pos = -1;
@@ -430,10 +456,11 @@ public class CommJdbcUtil {
         } else {
             StringBuffer buffer = new StringBuffer();
             for (int i = 0; i < displayname.length; i++) {
-                if (i < displayname.length - 1)
+                if (i < displayname.length - 1) {
                     buffer.append(" A as ").append(displayname[i]).append(",");
-                else
+                } else {
                     buffer.append(" A as ").append(displayname[i]);
+                }
             }
             selectSql = buffer.toString();
         }
@@ -453,10 +480,12 @@ public class CommJdbcUtil {
         final List<Map<String, String>> list = resultList;
         final List<Map<String, String>> colList = columnTypeMapList;
         BatchPreparedStatementSetter setter = new BatchPreparedStatementSetter() {
+            @Override
             public int getBatchSize() {
                 return resultList.size();
             }
 
+            @Override
             public void setValues(PreparedStatement ps, int i) throws SQLException {
                 Map<String, String> resultMap = list.get(i);
                 try {
@@ -473,10 +502,11 @@ public class CommJdbcUtil {
         try {
             jdbcTemplate.batchUpdate(sql, setter);
         } catch (Exception e) {
-            if (logger.isDebugEnabled())
+            if (logger.isDebugEnabled()) {
                 logger.debug("Encounter Error", e);
-            else
+            } else {
                 logger.error("Encounter Error", e);
+            }
             throw new DAOException(e);
         }
     }
@@ -485,49 +515,57 @@ public class CommJdbcUtil {
         for (int pos = 0; pos < colList.size(); pos++) {
             Map<String, String> typeMap = colList.get(pos);
             String value = resultMap.get(typeMap.get("name"));
-            if (value == null)
+            if (value == null) {
                 value = resultMap.get(typeMap.get("name").toUpperCase());
-            if (value == null)
+            }
+            if (value == null) {
                 value = resultMap.get(typeMap.get("name").toLowerCase());
+            }
             //if(value!=null){
             if (typeMap.get("dataType").equals(Const.META_TYPE_STRING)) {
-                if (value != null)
+                if (value != null) {
                     ps.setString(pos + 1, value);
-                else
+                } else {
                     ps.setNull(pos + 1, Types.VARCHAR);
+                }
             } else if (typeMap.get("dataType").equals(Const.META_TYPE_NUMERIC)) {
-                if (value == null || "".equals(value))
+                if (value == null || "".equals(value)) {
                     ps.setNull(pos + 1, Types.DOUBLE);
-                else
+                } else {
                     ps.setDouble(pos + 1, Double.valueOf(value));
+                }
             } else if (typeMap.get("dataType").equals(Const.META_TYPE_INTEGER)) {
-                if (value == null || "".equals(value))
+                if (value == null || "".equals(value)) {
                     ps.setNull(pos + 1, Types.INTEGER);
-                else
+                } else {
                     ps.setInt(pos + 1, Integer.parseInt(value));
+                }
             } else if (typeMap.get("dataType").equals(Const.META_TYPE_DOUBLE)) {
-                if (value == null || "".equals(value))
+                if (value == null || "".equals(value)) {
                     ps.setNull(pos + 1, Types.DOUBLE);
-                else
+                } else {
                     ps.setDouble(pos + 1, Double.valueOf(value));
+                }
             } else if (typeMap.get("dataType").equals(Const.META_TYPE_DATE)) {
                 SimpleDateFormat oformat = new SimpleDateFormat("yyyy-MM-dd");
                 SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                if (value == null || "".equals(value))
+                if (value == null || "".equals(value)) {
                     ps.setNull(pos + 1, Types.DATE);
-                else {
+                } else {
                     Date date = null;
-                    if (value.contains(":"))
+                    if (value.contains(":")) {
                         date = new Date(format.parse(value).getTime());
-                    else
+                    } else {
                         date = new Date(oformat.parse(value).getTime());
+                    }
                     ps.setDate(pos + 1, date);
                 }
             } else {
-                if (value != null)
+                if (value != null) {
                     ps.setString(pos + 1, value);
-                else
+                } else {
                     ps.setNull(pos + 1, Types.VARCHAR);
+                }
             }
 
         }
@@ -547,17 +585,20 @@ public class CommJdbcUtil {
         final List<Map<String, String>> list = resultList;
         final List<Map<String, String>> colList = columnpoolList;
         BatchPreparedStatementSetter setter = new BatchPreparedStatementSetter() {
+            @Override
             public int getBatchSize() {
-                if (batchsize == 0)
+                if (batchsize == 0) {
                     return list.size();
-                else {
+                } else {
                     if (batchsize > list.size()) {
                         return list.size();
-                    } else
+                    } else {
                         return batchsize;
+                    }
                 }
             }
 
+            @Override
             public void setValues(PreparedStatement ps, int i) throws SQLException {
                 Map<String, String> resultMap = list.get(i);
                 try {
@@ -574,10 +615,11 @@ public class CommJdbcUtil {
         try {
             jdbcTemplate.batchUpdate(sql, setter);
         } catch (Exception e) {
-            if (logger.isDebugEnabled())
+            if (logger.isDebugEnabled()) {
                 logger.debug("Encounter Error", e);
-            else
+            } else {
                 logger.error("Encounter Error", e);
+            }
             throw new DAOException(e);
         }
     }
@@ -585,8 +627,9 @@ public class CommJdbcUtil {
     public static int executeByPreparedParamter(JdbcTemplate jdbcTemplate, BaseSqlGen sqlGen, QueryString qs, PageQuery pageQuery) throws DAOException {
         try {
             String executeSQL = sqlGen.generateSqlBySelectId(qs, pageQuery);
-            if (logger.isInfoEnabled())
+            if (logger.isInfoEnabled()) {
                 logger.info((new StringBuilder()).append("executeSQL: ").append(executeSQL).toString());
+            }
             if (pageQuery.getNamedParameters().isEmpty()) {
                 return jdbcTemplate.update(executeSQL, pageQuery.getParameterArr());
             } else {
@@ -602,10 +645,13 @@ public class CommJdbcUtil {
         pageQuery.setRecordCount(total);
         if (total > 0) {
             int pages = total / pageQuery.getPageSize();
-            if (total % pageQuery.getPageSize() != 0) pages++;
+            if (total % pageQuery.getPageSize() != 0) {
+                pages++;
+            }
             int pageNumber = pageQuery.getPageNumber();
-            if (pageNumber > pages)
+            if (pageNumber > pages) {
                 pageQuery.setPageNumber(pages);
+            }
             pageQuery.setPageCount(pages);
         } else {
             pageQuery.setPageCount(0);

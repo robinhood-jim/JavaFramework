@@ -47,7 +47,8 @@ public class MetaDataConst {
 		TYPE_AVRO("6");   //avro
 		private String value;
 		private FileFormat(String value){this.value=value;}
-		public String toString() {
+		@Override
+        public String toString() {
 			return String.valueOf(this.value);
 		}
 	}

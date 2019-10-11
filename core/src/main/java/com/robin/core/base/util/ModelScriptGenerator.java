@@ -78,8 +78,9 @@ public class ModelScriptGenerator {
         List<AnnotationRetrevior.FieldContent> fields = AnnotationRetrevior.getMappingFieldsCache(clazz);
         AnnotationRetrevior.FieldContent primarycol=AnnotationRetrevior.getPrimaryField(fields);
         builder.append("create table ");
-        if (tableMap.containsKey("schema"))
+        if (tableMap.containsKey("schema")) {
             builder.append(tableMap.get("schema")).append(".");
+        }
         builder.append(tableMap.get("tableName")).append("(").append("\n");
         for (AnnotationRetrevior.FieldContent field : fields) {
             if(field.isPrimary() && field.getPrimaryKeys()!=null){
@@ -101,8 +102,9 @@ public class ModelScriptGenerator {
             }
 
             builder.append("\tPRIMARY KEY(").append(StringUtils.join(pkColumns.toArray(),",")).append(")");
-        }else
+        }else {
             builder.deleteCharAt(builder.length() - 2);
+        }
         builder.append(");\n");
         return builder.toString();
     }

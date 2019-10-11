@@ -15,10 +15,10 @@
  */
 package com.robin.core.base.spring;
 
-public abstract class DynamicBean {  
+public abstract class AbstractDynamicBean {
     protected String beanName;  
   
-    public DynamicBean(String beanName) {  
+    public AbstractDynamicBean(String beanName) {
         this.beanName = beanName;  
     }  
   

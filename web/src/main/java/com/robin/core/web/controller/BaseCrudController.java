@@ -92,8 +92,9 @@ public abstract class BaseCrudController<O extends BaseObject, P extends Seriali
             finishTag = false;
             wrapResponse(retMap, ex);
         }
-        if (finishTag)
+        if (finishTag) {
             wrapResponse(retMap, null);
+        }
         return retMap;
     }
 
@@ -195,6 +196,7 @@ public abstract class BaseCrudController<O extends BaseObject, P extends Seriali
         return retMap;
     }
 
+    @Override
     @SuppressWarnings(value = "uncheck")
     public void afterPropertiesSet() {
         if (this.serviceType != null) {

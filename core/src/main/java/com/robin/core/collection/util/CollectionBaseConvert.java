@@ -68,24 +68,27 @@ public class CollectionBaseConvert {
 	public static List<String> extractKeyValueByList(List<Map<String, String>> list,String key){
 		List<String> retList=new ArrayList<String>();
 		for (Map<String,String> map:list) {
-			if(map.containsKey(key))
-				retList.add(map.get(key));
+			if(map.containsKey(key)) {
+                retList.add(map.get(key));
+            }
 		}
 		return retList;
 	}
 	public static List<Object> extractKeyValueByListObj(List<Map<String, Object>> list,String key){
 		List<Object> retList=new ArrayList<Object>();
 		for (Map<String,Object> map:list) {
-			if(map.containsKey(key))
-				retList.add(map.get(key));
+			if(map.containsKey(key)) {
+                retList.add(map.get(key));
+            }
 		}
 		return retList;
 	}
 	public static List<String> extractKeyStringValueByListObj(List<Map<String, Object>> list,String key){
 		List<String> retList=new ArrayList<String>();
 		for (Map<String,Object> map:list) {
-			if(map.containsKey(key))
-				retList.add(map.get(key).toString());
+			if(map.containsKey(key)) {
+                retList.add(map.get(key).toString());
+            }
 		}
 		return retList;
 	}

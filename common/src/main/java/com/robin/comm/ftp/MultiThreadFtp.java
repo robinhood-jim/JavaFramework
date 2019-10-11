@@ -142,8 +142,9 @@ public class MultiThreadFtp extends SimpleFtp {
             FTPClient client = getClient();
             client.enterLocalPassiveMode();
             client.setFileType(FTP.BINARY_FILE_TYPE);
-            if (formsize != 0)
+            if (formsize != 0) {
                 client.setRestartOffset(formsize);
+            }
             InputStream in = client.retrieveFileStream(remote);
 
             int processsize = 0;
@@ -171,8 +172,9 @@ public class MultiThreadFtp extends SimpleFtp {
                 log.error("",ex);
                 retflag = false;
             } finally {
-                if (in != null)
+                if (in != null) {
                     in.close();
+                }
                 if (file != null) {
                     file.close();
                 }

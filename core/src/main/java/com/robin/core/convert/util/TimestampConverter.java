@@ -53,6 +53,7 @@ public class TimestampConverter extends DateConverter {
                 + value.getClass().getName() + " to " + type.getName());
     }
 
+    @Override
     protected Object convertToString(Class type, Object value) {
         DateFormat df = new SimpleDateFormat(TS_FORMAT);
         if (value instanceof Date) {

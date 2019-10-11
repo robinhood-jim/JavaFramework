@@ -54,10 +54,11 @@ public class DataBaseTableMeta {
 	}
 
 	public String getRemark() {
-		if(remark!=null && !"".equals(remark))
-			return remark;
-		else
-			return tableName;
+		if(remark!=null && !"".equals(remark)) {
+            return remark;
+        } else {
+            return tableName;
+        }
 	}
 
 	public void setRemark(String remark) {

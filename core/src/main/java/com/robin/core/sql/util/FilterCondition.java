@@ -60,8 +60,9 @@ public class FilterCondition {
 	{
 		StringBuffer sbSQLStr = new StringBuffer();
 		String realColumn=columnCode;
-		if(fieldMap.containsKey(columnCode))
-			realColumn=fieldMap.get(columnCode).getFieldName();
+		if(fieldMap.containsKey(columnCode)) {
+            realColumn=fieldMap.get(columnCode).getFieldName();
+        }
 		if (BETWEEN.equals(operator)){
 			if (values.length < 2){
 			}
@@ -151,8 +152,9 @@ public class FilterCondition {
 				FilterCondition cond=(FilterCondition)values[i];
 				cond.setFieldMap(fieldMap);
 				sbSQLStr.append(cond.toSQLPart());
-				if(i!=values.length-1)
-					sbSQLStr.append(" and ");
+				if(i!=values.length-1) {
+                    sbSQLStr.append(" and ");
+                }
 			}
 			sbSQLStr.append(") ");
 		} else 

@@ -39,8 +39,9 @@ public class PlainTextFileIterator extends AbstractFileIterator{
 		try{
 			if(reader!=null){
 				readLineStr=reader.readLine();
-				if(readLineStr!=null)
-					hasNext=true;
+				if(readLineStr!=null) {
+                    hasNext=true;
+                }
 			}
 		}catch(Exception ex){
 			hasNext=false;

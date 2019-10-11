@@ -54,13 +54,16 @@ public class SpringContextHolder implements ApplicationContextAware, DisposableB
 	}
 
 
-	public void setApplicationContext(ApplicationContext appcontext)
+	@Override
+    public void setApplicationContext(ApplicationContext appcontext)
 			throws BeansException {
-		if(logger.isDebugEnabled())
-			logger.debug("begin to initalize context!!!");
+		if(logger.isDebugEnabled()) {
+            logger.debug("begin to initalize context!!!");
+        }
 		injectApplicationContext(appcontext);
-		if(logger.isDebugEnabled())
-			logger.debug("end to initalize context!!!");
+		if(logger.isDebugEnabled()) {
+            logger.debug("end to initalize context!!!");
+        }
 	}
 
 	@Override

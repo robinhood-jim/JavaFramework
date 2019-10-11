@@ -49,10 +49,11 @@ public class YarnJobInfoUtil extends AbstractJobInfoUtil{
 	}
 	public YarnJobInfoUtil(String ipAddress,int yarnport,Configuration conf){
 		this.ipAddress=ipAddress;
-		if(yarnport!=0)
-			this.yarnport=yarnport;
-		else
-			this.yarnport=defaultmrport;
+		if(yarnport!=0) {
+            this.yarnport=yarnport;
+        } else {
+            this.yarnport=defaultmrport;
+        }
 		
 		this.config=conf;
 	}
@@ -75,10 +76,11 @@ public class YarnJobInfoUtil extends AbstractJobInfoUtil{
 				String user=config.get("dfs.kerberos.username");
 				String keytab=config.get("dfs.kerberos.keytab");
 				String ticketCachePath=config.get("dfs.kerberos.ticketCache");
-				if(ticketCachePath!=null)
-					UserGroupInformation.getUGIFromTicketCache(ticketCachePath, user);
-				else
-					UserGroupInformation.loginUserFromKeytab(user, keytab);
+				if(ticketCachePath!=null) {
+                    UserGroupInformation.getUGIFromTicketCache(ticketCachePath, user);
+                } else {
+                    UserGroupInformation.loginUserFromKeytab(user, keytab);
+                }
 			}
 		}catch(Exception ex){
 			logger.error("",ex);
@@ -86,6 +88,7 @@ public class YarnJobInfoUtil extends AbstractJobInfoUtil{
 	
 	}
 	
+	@Override
 	public List<JobSummary> getAllJob() throws Exception {
 		YARNRunner runner=getRunner();
 		JobStatus[] status=runner.getAllJobs();
@@ -141,8 +144,9 @@ public class YarnJobInfoUtil extends AbstractJobInfoUtil{
 		 String tmppath=outPutStr+ymd;
 		 
 		 File tmpFile=new File(tmppath);
-		 if(!tmpFile.exists())
-			 tmpFile.mkdir();
+		 if(!tmpFile.exists()) {
+             tmpFile.mkdir();
+         }
 		 FileWriter writer=new FileWriter(new File(outPutStr+ymd+"/"+jobId+".html"));
 		 JobDetail detail=null;
 		 try{
@@ -156,6 +160,7 @@ public class YarnJobInfoUtil extends AbstractJobInfoUtil{
 		 }
 		 return detail;
 	 }
+	 @Override
 	 public JobDetail getJobDetail(String jobId) throws Exception{
 		 return getJobDetail(getJobID(jobId));
 	 }
@@ -197,8 +202,9 @@ public class YarnJobInfoUtil extends AbstractJobInfoUtil{
 		    			 info.setAttempId(event.getTaskAttemptId().toString());
 		    			 info.setMachine(getMachine(event));
 		    			 info.setStatus(event.getStatus().name());
-		    			 if("SUCCEEDED".equals(info.getStatus()))
-		    				 info.setProgress(1);
+		    			 if("SUCCEEDED".equals(info.getStatus())) {
+                             info.setProgress(1);
+                         }
 		    			 retList.add(info);
 		    		 }
 				}
@@ -309,21 +315,24 @@ public class YarnJobInfoUtil extends AbstractJobInfoUtil{
 	 }
 	 private void DynamicSetParameter(Object obj,String fieldName,Object value) throws Exception{
 		 Method method=obj.getClass().getMethod("set"+fieldName.substring(0,1).toUpperCase()+fieldName.substring(1,fieldName.length()),value.getClass());
-		 if(method!=null)
-			 method.invoke(obj, value);
+		 if(method!=null) {
+             method.invoke(obj, value);
+         }
 	 }
 
 	
-	public String getJobCounterXml(String jobId,Map<String, String> map,String... mindNames) throws Exception{
-		org.dom4j.Document _document = DocumentHelper.createDocument();  
-		org.dom4j.Element element=_document.addElement("Counters");
+	@Override
+	public String getJobCounterXml(String jobId, Map<String, String> map, String... mindNames) throws Exception{
+		org.dom4j.Document document = DocumentHelper.createDocument();
+		org.dom4j.Element element=document.addElement("Counters");
 		JobID id=getJobID(jobId);
 		YARNRunner runner=getRunner();
 		Format decimal = new DecimalFormat();
 		Counters counters=runner.getJobCounters(id);
 		List<String> list=new ArrayList<String>();
-		if(mindNames!=null)
-			list=Arrays.asList(mindNames);
+		if(mindNames!=null) {
+            list=Arrays.asList(mindNames);
+        }
 		for (String groupName:counters.getGroupNames()) {
 			CounterGroup totalgroup = counters.getGroup(groupName);
 			boolean isFirst=true;
@@ -341,7 +350,7 @@ public class YarnJobInfoUtil extends AbstractJobInfoUtil{
          format.setEncoding("UTF-8");// 设置XML文件的编码格式  
          ByteArrayOutputStream stream=new ByteArrayOutputStream();
          XMLWriter writer=new XMLWriter(stream,format);
-         writer.write(_document);
+         writer.write(document);
          writer.close();
          String retStr=stream.toString();
 		return retStr;

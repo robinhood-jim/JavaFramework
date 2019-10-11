@@ -19,7 +19,7 @@ import com.robin.core.base.datameta.BaseDataBaseMeta;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class DataSourceDynamicBean extends DynamicBean {
+public class DataSourceDynamicBean extends AbstractDynamicBean {
     public static final String DS_DRUID_CLASS = "com.alibaba.druid.pool.DruidDataSource";
 
     public static final String DS_DBCP_CLASS = "org.apache.commons.dbcp.BasicDataSource";

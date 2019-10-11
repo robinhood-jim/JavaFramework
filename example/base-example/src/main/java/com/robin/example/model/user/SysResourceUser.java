@@ -55,17 +55,20 @@ public class SysResourceUser extends BaseObject {
 	public static final String COL_USER_ID = "USER_ID";
 	public static final String COL_ID = "ID";
 
-	public boolean equals(Object obj) {
-		if (obj == null)
-			return false;
-		if (!(obj instanceof SysResourceUser))
-			return false;
-		else {
+	@Override
+    public boolean equals(Object obj) {
+		if (obj == null) {
+            return false;
+        }
+		if (!(obj instanceof SysResourceUser)) {
+            return false;
+        } else {
 			SysResourceUser o = (SysResourceUser) obj;
-			if (null == this.getId() || null == o.getId())
-				return false;
-			else
-				return (this.getId().equals(o.getId()));
+			if (null == this.getId() || null == o.getId()) {
+                return false;
+            } else {
+                return (this.getId().equals(o.getId()));
+            }
 		}
 	}
 
@@ -74,7 +77,8 @@ public class SysResourceUser extends BaseObject {
 		return super.hashCode();
 	}
 
-	public String toString() {
+	@Override
+    public String toString() {
 		StringBuffer buffer = new StringBuffer();
 		buffer.append("[SysResourceUser:");
 		buffer.append(" id:").append(id);
@@ -97,9 +101,10 @@ public class SysResourceUser extends BaseObject {
 	}
 
 	private String dealNull(Object str) {
-		if (str == null)
-			return "";
-		else
-			return str.toString();
+		if (str == null) {
+            return "";
+        } else {
+            return str.toString();
+        }
 	}
 }

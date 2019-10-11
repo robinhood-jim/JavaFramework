@@ -145,8 +145,9 @@ public class AnnotationRetrevior {
                 String tableName = table.name();
                 String schema = table.schema();
                 content = getEntityContent(tableName, schema, false);
-            } else
+            } else {
                 throw new DAOException("must using MappingEnity or JPA annotation");
+            }
         }
         return content;
     }
@@ -289,12 +290,15 @@ public class AnnotationRetrevior {
                     fieldName = field.getName();
                 }
                 content = new AnnotationRetrevior.FieldContent(field.getName(), fieldName, field, getMethod, setMethod);
-                if (mapfield.precise() != 0)
+                if (mapfield.precise() != 0) {
                     content.setPrecise(mapfield.precise());
-                if (mapfield.scale() != 0)
+                }
+                if (mapfield.scale() != 0) {
                     content.setScale(mapfield.scale());
-                if (mapfield.length() != 0)
+                }
+                if (mapfield.length() != 0) {
                     content.setLength(mapfield.length());
+                }
                 if (mapfield.increment()) {
                     content.setIncrement(true);
                 }
@@ -330,9 +334,9 @@ public class AnnotationRetrevior {
                         content.setDataType(Const.META_TYPE_OBJECT);
                     }
                 } else {
-                    if ("clob".equalsIgnoreCase(datatype))
+                    if ("clob".equalsIgnoreCase(datatype)) {
                         content.setDataType(Const.META_TYPE_CLOB);
-                    else if ("blob".equalsIgnoreCase(datatype)) {
+                    } else if ("blob".equalsIgnoreCase(datatype)) {
                         content.setDataType(Const.META_TYPE_BLOB);
                     }
                 }
@@ -357,8 +361,9 @@ public class AnnotationRetrevior {
             }
 
         }
-        if (!pkList.isEmpty())
+        if (!pkList.isEmpty()) {
             fieldContent.setPrimaryKeys(pkList);
+        }
     }
 
     public static int replacementPrepared(PreparedStatement ps, LobHandler lobHandler, AnnotationRetrevior.FieldContent field, BaseObject object, int pos) throws SQLException {
@@ -412,8 +417,9 @@ public class AnnotationRetrevior {
     public static void setParameter(PreparedStatement stmt, int pos, Object obj) {
         try {
             if (obj == null) {
-                if (pos != 0)
+                if (pos != 0) {
                     stmt.setNull(pos, Types.VARCHAR);
+                }
             } else if (obj instanceof Integer) {
                 stmt.setInt(pos, Integer.parseInt(obj.toString()));
             } else if (obj instanceof Double) {

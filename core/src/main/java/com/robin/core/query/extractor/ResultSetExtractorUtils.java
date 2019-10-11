@@ -51,8 +51,9 @@ public class ResultSetExtractorUtils {
             } else if (className.contains("BLOB") || "OBJECT".equals(className)) {
                 obj = rs.getBytes(i + 1);
                 map.put(columnName, obj);
-            } else
+            } else {
                 map.put(columnName, obj);
+            }
         }
 
     }

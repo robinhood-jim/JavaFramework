@@ -41,8 +41,9 @@ public class ExcelCellStyleUtil {
 			cs= cellMap.get("C_"+rowspan+"_"+colspan+"_"+metaType);
 		}else{
 			cs=wb.createCellStyle();
-			if (rowspan > 1)  
-	            cs.setVerticalAlignment(CellStyle.VERTICAL_CENTER);  
+			if (rowspan > 1) {
+                cs.setVerticalAlignment(CellStyle.VERTICAL_CENTER);
+            }
 	        cs.setAlignment(CellStyle.ALIGN_CENTER);  
 	        cs.setBottomBorderColor(IndexedColors.BLACK.getIndex());
 	        cs.setBorderLeft(CellStyle.BORDER_THIN); 

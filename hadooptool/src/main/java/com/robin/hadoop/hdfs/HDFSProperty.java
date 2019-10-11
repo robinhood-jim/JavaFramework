@@ -38,10 +38,11 @@ public class HDFSProperty {
     public void setHaConfig(Map<String, String> haConfig) {
         this.haConfig = haConfig;
         if (defaultName == null) {
-            if (haConfig.containsKey(Const.HDFS_NAME_HADOOP1))
+            if (haConfig.containsKey(Const.HDFS_NAME_HADOOP1)) {
                 defaultName = haConfig.get(Const.HDFS_NAME_HADOOP1);
-            else if (haConfig.containsKey(Const.HDFS_NAME_HADOOP2))
+            } else if (haConfig.containsKey(Const.HDFS_NAME_HADOOP2)) {
                 defaultName = haConfig.get(Const.HDFS_NAME_HADOOP2);
+            }
         }
     }
 
@@ -52,10 +53,11 @@ public class HDFSProperty {
             haConfig.put(key, config.get(key).toString());
         }
         if (defaultName == null) {
-            if (haConfig.containsKey(Const.HDFS_NAME_HADOOP1))
+            if (haConfig.containsKey(Const.HDFS_NAME_HADOOP1)) {
                 defaultName = haConfig.get(Const.HDFS_NAME_HADOOP1);
-            else if (haConfig.containsKey(Const.HDFS_NAME_HADOOP2))
+            } else if (haConfig.containsKey(Const.HDFS_NAME_HADOOP2)) {
                 defaultName = haConfig.get(Const.HDFS_NAME_HADOOP2);
+            }
         }
     }
 

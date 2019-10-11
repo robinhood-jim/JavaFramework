@@ -43,9 +43,9 @@ public class MergeCellUtil {
     private static void caculateStartColofRow(int row, int pos, TableConfigProp header, int[][] startColArr) {
         try {
             if (row == 0) {
-                if (pos == 0)
+                if (pos == 0) {
                     startColArr[0][0] = 0;
-                else {
+                } else {
                     startColArr[0][pos] = startColArr[0][pos - 1]
                             + header.getHeaderColumnList().get(0).get(pos - 1)
                             .getColspan();
@@ -110,8 +110,9 @@ public class MergeCellUtil {
                             startColArr[row][pos] = startColArr[row - 1][i];
                         }
                     }
-                    if (startColArr[row][pos] == 0)
+                    if (startColArr[row][pos] == 0) {
                         startColArr[row][pos] = startColArr[row][pos - 1] + header.getHeaderColumnList().get(row).get(pos - 1).getColspan();
+                    }
                 }
             }
         } catch (Exception e) {
@@ -132,8 +133,9 @@ public class MergeCellUtil {
                 nums += colspan;
             }
         }
-        if (nums == beforemaxnums)
+        if (nums == beforemaxnums) {
             isfrist = true;
+        }
         return isfrist;
 
     }

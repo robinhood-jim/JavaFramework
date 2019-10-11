@@ -29,7 +29,8 @@ import com.robin.core.query.util.QueryString;
 
 public class PostgreSqlSqlGen extends AbstractSqlGen implements BaseSqlGen {
 	private Logger log=LoggerFactory.getLogger(this.getClass());
-	public String generateCountSql(String strSQL) {
+	@Override
+    public String generateCountSql(String strSQL) {
 
 		String str = strSQL.trim().toLowerCase();
 		str=str.replaceAll("\\n", "");
@@ -37,21 +38,26 @@ public class PostgreSqlSqlGen extends AbstractSqlGen implements BaseSqlGen {
 		int nFromPos = str.lastIndexOf(" from ");
 		int nOrderPos = str.lastIndexOf(" order by ");
 		int nGroupByPos=str.lastIndexOf("group by");
-		if(nGroupByPos==-1)
-			nGroupByPos=str.lastIndexOf("GROUP BY");
+		if(nGroupByPos==-1) {
+            nGroupByPos=str.lastIndexOf("GROUP BY");
+        }
 		
-		if (nOrderPos == -1) nOrderPos = str.length();
+		if (nOrderPos == -1) {
+            nOrderPos = str.length();
+        }
 		StringBuffer strBuf = new StringBuffer();
-		if(nGroupByPos==-1)
-			strBuf.append("select count(*) as total ").append(str, nFromPos, nOrderPos);
-		else
-			strBuf.append("select count(1) as total from(select count(1) as cou ").append(str, nFromPos, nOrderPos).append(") tmp");
+		if(nGroupByPos==-1) {
+            strBuf.append("select count(*) as total ").append(str, nFromPos, nOrderPos);
+        } else {
+            strBuf.append("select count(1) as total from(select count(1) as cou ").append(str, nFromPos, nOrderPos).append(") tmp");
+        }
 		
 		return strBuf.toString();
 	}
 
 
-	public String generatePageSql(String strSQL, PageQuery pageQuery) {
+	@Override
+    public String generatePageSql(String strSQL, PageQuery pageQuery) {
 		Integer[] startEnd=getStartEndRecord(pageQuery);
 		int nBegin = startEnd[0];
 
@@ -72,27 +78,33 @@ public class PostgreSqlSqlGen extends AbstractSqlGen implements BaseSqlGen {
 		return null;
 	}
 
-	public String generateSingleRowSql(String querySql) {
+	@Override
+    public String generateSingleRowSql(String querySql) {
 		String str = querySql.trim().toLowerCase();
 		str=str.replaceAll("\\n", "");
 		str=str.replaceAll("\\r", "");
 		int nOrderPos = str.lastIndexOf(" order by ");
-		if (nOrderPos == -1) nOrderPos = str.length();
+		if (nOrderPos == -1) {
+            nOrderPos = str.length();
+        }
 		StringBuffer strBuf = new StringBuffer();
 		strBuf.append(str, 0, nOrderPos).append(" limit 1,1");
 		return strBuf.toString();
 	}
-	public String getSequnceScript(String sequnceName) {
+	@Override
+    public String getSequnceScript(String sequnceName) {
 		return sequnceName+".nextval";
 	}
-	public String getSelectPart(String columnName, String aliasName) {
+	@Override
+    public String getSelectPart(String columnName, String aliasName) {
 		String selectPart=columnName;
 		if(aliasName!=null && !"".equals(aliasName)){
 			selectPart+=" as "+aliasName;
 		}
 		return selectPart;
 	}
-	public String returnTypeDef(String dataType, Map<String, Object> fieldMap) {
+	@Override
+    public String returnTypeDef(String dataType, Map<String, Object> fieldMap) {
 		StringBuilder builder=new StringBuilder();
 		if(dataType.equals(Const.META_TYPE_BIGINT)){
 			builder.append("BIGINT");
@@ -101,10 +113,12 @@ public class PostgreSqlSqlGen extends AbstractSqlGen implements BaseSqlGen {
 		}else if(dataType.equals(Const.META_TYPE_DOUBLE) || dataType.equals(Const.META_TYPE_NUMERIC)){
 			int precise= Integer.parseInt(fieldMap.get("precise").toString());
 			int scale=Integer.parseInt(fieldMap.get("scale").toString());
-			if(precise==0)
-				precise=2;
-			if(scale==0)
-				scale=8;
+			if(precise==0) {
+                precise=2;
+            }
+			if(scale==0) {
+                scale=8;
+            }
 			builder.append("DECIMAL(").append(scale).append(",").append(precise).append(")");
 		}else if(dataType.equals(Const.META_TYPE_DATE)){
 			builder.append("DATE");
@@ -115,10 +129,11 @@ public class PostgreSqlSqlGen extends AbstractSqlGen implements BaseSqlGen {
 			if(length==0){
 				length=16;
 			}
-			if(length==1)
-				builder.append("CHAR(1)");
-			else
-				builder.append("VARCHAR(").append(length).append(")");
+			if(length==1) {
+                builder.append("CHAR(1)");
+            } else {
+                builder.append("VARCHAR(").append(length).append(")");
+            }
 		}else if(dataType.equals(Const.META_TYPE_CLOB)){
 			builder.append("TEXT");
 		}else if(dataType.equals(Const.META_TYPE_BLOB)){

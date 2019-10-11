@@ -95,6 +95,7 @@ public class Const {
 		TYPE_AVRO("6");   //avro
 		private String value;
 		FileFormat(String value){this.value=value;}
+		@Override
 		public String toString() {
 			return String.valueOf(this.value);
 		}

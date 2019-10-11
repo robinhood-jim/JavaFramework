@@ -65,8 +65,9 @@ public class SysUserCrudController extends BaseCrudDhtmlxController<SysUser, Lon
     @ResponseBody
     public Map<String, Object> listUser(HttpServletRequest request, HttpServletResponse response) {
         PageQuery query = wrapPageQuery(request);
-        if (query == null)
+        if (query == null) {
             query = new PageQuery();
+        }
         query.setSelectParamId("GET_SYSUSERINFO");
         String orgIds = null;
         if (request.getParameter("orgId") != null && !request.getParameter("orgId").isEmpty()) {
@@ -100,8 +101,9 @@ public class SysUserCrudController extends BaseCrudDhtmlxController<SysUser, Lon
         List<SysUser> list = this.service.queryByField("userAccount", BaseObject.OPER_EQ, request.getParameter("userAccount"));
         if (!list.isEmpty()) {
             return wrapError(new WebException(messageSource.getMessage("message.userNameExists", null, Locale.getDefault())));
-        } else
+        } else {
             return doSave(request, response);
+        }
     }
 
     @RequestMapping("/update")
@@ -113,8 +115,9 @@ public class SysUserCrudController extends BaseCrudDhtmlxController<SysUser, Lon
         List<SysUser> list = this.service.queryByField("userAccount", BaseObject.OPER_EQ, request.getParameter("userAccount"));
         if ((list.size() == 1 && id.equals(list.get(0).getId())) || list.isEmpty()) {
             return doUpdate(request, response, id);
-        } else
+        } else {
             return wrapError(new WebException(messageSource.getMessage("message.userNameExists", null, Locale.getDefault())));
+        }
     }
 
 
@@ -345,8 +348,9 @@ public class SysUserCrudController extends BaseCrudDhtmlxController<SysUser, Lon
             }
             List<String> addList = new ArrayList<String>();
             for (int i = 0; i < ids.length; i++) {
-                if (resMap.containsKey(ids[i]))
+                if (resMap.containsKey(ids[i])) {
                     addList.add(ids[i]);
+                }
             }
             for (int i = 0; i < ids.length; i++) {
                 int pos = delList.indexOf(ids[i]);

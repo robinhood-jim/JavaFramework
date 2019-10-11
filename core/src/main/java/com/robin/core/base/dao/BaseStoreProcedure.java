@@ -56,11 +56,13 @@ public class BaseStoreProcedure extends StoredProcedure{
 	}
 
 	private RowMapper<?> rm = new RowMapper<Object>(){ 
-        public Object mapRow(ResultSet rs,int rowNum) throws SQLException { 
+        @Override
+        public Object mapRow(ResultSet rs, int rowNum) throws SQLException {
         	 int count = rs.getMetaData().getColumnCount(); 
              String[] header = new String[count]; 
-             for(int i=0;i<count;i++) 
-             header[i] = rs.getMetaData().getColumnName(i+1); 
+             for(int i=0;i<count;i++) {
+                 header[i] = rs.getMetaData().getColumnName(i+1);
+             }
              HashMap<String,String> row = new HashMap<String,String>(); //count+7
              for(int i=0;i<count;i++){ 
                  row.put(header[i],rs.getString(i+1)); 
@@ -78,8 +80,9 @@ public class BaseStoreProcedure extends StoredProcedure{
         declareParameter(new SqlInOutParameter(column, type));
     } 
     public void setReturnResultSet(String column,SqlReturnResultSet rset){
-    	if(rset==null)
-    		rset=new SqlReturnResultSet(column,rm);
+    	if(rset==null) {
+            rset=new SqlReturnResultSet(column,rm);
+        }
     	declareParameter(rset);
     }
 

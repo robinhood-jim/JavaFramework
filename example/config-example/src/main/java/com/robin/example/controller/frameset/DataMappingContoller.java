@@ -156,8 +156,9 @@ public class DataMappingContoller extends BaseCrudDhtmlxController<ProjectInfo,L
 				map.put("propName", columnName);
 				map.put("propType", "");
 				map.put("isNull", meta1.isNullable()?"1":"0");
-				if(meta1.getComment()!=null)
-					map.put("name", meta1.getComment());
+				if(meta1.getComment()!=null) {
+                    map.put("name", meta1.getComment());
+                }
 				map.put("displayType", "1");
 				if(!meta1.isPrimaryKey()){
 					map.put("showIngrid", "true");
@@ -330,8 +331,9 @@ public class DataMappingContoller extends BaseCrudDhtmlxController<ProjectInfo,L
 			boolean genWeb=request.getParameter("genWeb")!=null && request.getParameter("genWeb").equals(Const.VALID);
 			if(genWeb){
 				String webpath=basePath+"src/main/webapp/";
-				if(info.getWebBasePath()!=null)
-					webpath+=info.getWebBasePath();
+				if(info.getWebBasePath()!=null) {
+                    webpath+=info.getWebBasePath();
+                }
 
 				File file=new File(webpath);
 				String webfrm=projectConfig.get("webFramePrefix");

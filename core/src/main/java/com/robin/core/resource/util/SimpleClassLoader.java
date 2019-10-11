@@ -56,6 +56,7 @@ public class SimpleClassLoader extends ClassLoader {
      * will always want the class resolved before it is returned
      * to them.
      */
+    @Override
     public Class loadClass(String className) throws ClassNotFoundException {
         return (loadClass(className, true));
     }
@@ -65,6 +66,7 @@ public class SimpleClassLoader extends ClassLoader {
      * both from loadClass above and from the internal function
      * FindClassFromClass.
      */
+    @Override
     public synchronized Class loadClass(String className, boolean resolveIt)
     	throws ClassNotFoundException {
         Class result;

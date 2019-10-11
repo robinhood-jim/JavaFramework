@@ -95,8 +95,9 @@ public class ProtoBufFileIterator extends AbstractFileIterator {
             if (mesgBuilder.mergeDelimitedFrom(instream)) {
                 message=mesgBuilder.build();
                 return true;
-            }else
+            }else {
                 return false;
+            }
         }catch (Exception ex){
 
         }

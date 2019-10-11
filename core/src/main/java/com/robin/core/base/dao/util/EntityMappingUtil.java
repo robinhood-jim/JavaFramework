@@ -25,8 +25,9 @@ public class EntityMappingUtil {
         AnnotationRetrevior.validateEntity(obj);
         StringBuilder buffer = new StringBuilder();
         buffer.append("insert into ");
-        if (tableDef.getSchema() != null && !tableDef.getSchema().isEmpty())
+        if (tableDef.getSchema() != null && !tableDef.getSchema().isEmpty()) {
             buffer.append(sqlGen.getSchemaName(tableDef.getSchema())).append(".");
+        }
         buffer.append(tableDef.getTableName());
         StringBuilder fieldBuffer = new StringBuilder();
         StringBuilder valuebuBuffer = new StringBuilder();
@@ -107,8 +108,9 @@ public class EntityMappingUtil {
         List<String> dirtyColumns = obj.getDirtyColumn();
         StringBuilder fieldBuffer = new StringBuilder();
         fieldBuffer.append("update ");
-        if (tableDef.getSchema() != null && !tableDef.getSchema().isEmpty())
+        if (tableDef.getSchema() != null && !tableDef.getSchema().isEmpty()) {
             fieldBuffer.append(sqlGen.getSchemaName(tableDef.getSchema())).append(".");
+        }
         fieldBuffer.append(tableDef.getTableName()).append(" set ");
 
         StringBuilder wherebuffer = new StringBuilder();
@@ -130,8 +132,9 @@ public class EntityMappingUtil {
                     } else {
                         for (AnnotationRetrevior.FieldContent pks : field.getPrimaryKeys()) {
                             Object tval = AnnotationRetrevior.getvalueFromVO(pks, (BasePrimaryObject) object);
-                            if (tval == null)
+                            if (tval == null) {
                                 throw new DAOException(" update MappingEntity Primary key must not be null");
+                            }
                             fieldBuffer.append(pks.getFieldName()).append("=?,");
                             objList.add(tval);
                         }
@@ -214,10 +217,11 @@ public class EntityMappingUtil {
                             StringBuilder tmpbuffer = new StringBuilder();
                             List<Object> inobj = (List<Object>) additonMap.get(field.getFieldName());
                             for (int i = 0; i < inobj.size(); i++) {
-                                if (i < inobj.size() - 1)
+                                if (i < inobj.size() - 1) {
                                     tmpbuffer.append("?,");
-                                else
+                                } else {
                                     tmpbuffer.append("?");
+                                }
                             }
                             builder.append(field.getFieldName() + " in (" + tmpbuffer + ")");
                             params.addAll(inobj);
@@ -228,8 +232,9 @@ public class EntityMappingUtil {
             }
         }
         String sql = builder.toString().substring(0, builder.length() - 5);
-        if (orderByStr != null && !orderByStr.isEmpty())
+        if (orderByStr != null && !orderByStr.isEmpty()) {
             sql += " order by " + orderByStr;
+        }
         List<Object> objs = new ArrayList<>();
         for (int i = 0; i < params.size(); i++) {
             objs.add(params.get(i));
@@ -240,8 +245,9 @@ public class EntityMappingUtil {
     }
 
     private static void appendSchemaAndTable(AnnotationRetrevior.EntityContent entityContent, StringBuilder builder, BaseSqlGen sqlGen) {
-        if (entityContent.getSchema() != null && !entityContent.getSchema().isEmpty())
+        if (entityContent.getSchema() != null && !entityContent.getSchema().isEmpty()) {
             builder.append(sqlGen.getSchemaName(entityContent.getSchema())).append(".");
+        }
         builder.append(entityContent.getTableName());
     }
 

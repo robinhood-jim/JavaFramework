@@ -34,9 +34,9 @@ public class DbConnectionHolder implements Closeable {
 
     }
     public Connection getConnection() throws SQLException {
-        if(pool!=null)
+        if(pool!=null) {
             return pool.getConnection();
-        else{
+        } else{
             return null;
         }
     }

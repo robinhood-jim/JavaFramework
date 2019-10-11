@@ -74,8 +74,9 @@ public class QueryFactory implements InitializingBean {
         while (iter.hasNext()) {
             Element element = (Element) iter.next();
             id = element.attributeValue("ID");
-            if (queryMap.containsKey(id))
+            if (queryMap.containsKey(id)) {
                 throw new MissingConfigException((new StringBuilder()).append("Duplicated selectId:").append(id).toString());
+            }
 
             String sql = decodeSql(element.elementText("SQL"));
             String field = element.elementText("FIELD");
@@ -98,19 +99,20 @@ public class QueryFactory implements InitializingBean {
     private String decodeSql(String sql) {
         String tmpSql = sql;
         if (tmpSql != null) {
-            if (tmpSql.indexOf("&lt;") > -1)
+            if (tmpSql.indexOf("&lt;") > -1) {
                 tmpSql = tmpSql.replaceAll("&lt;", "<");
-            else if (tmpSql.indexOf("&gt;") > -1)
+            } else if (tmpSql.indexOf("&gt;") > -1) {
                 tmpSql = tmpSql.replaceAll("&gt;", ">");
+            }
         }
         return tmpSql;
     }
 
     public QueryString getQuery(String selectId) throws QueryConfgNotFoundException {
         try {
-            if (selectId != null && !selectId.isEmpty() && queryMap.containsKey(selectId))
+            if (selectId != null && !selectId.isEmpty() && queryMap.containsKey(selectId)) {
                 return queryMap.get(selectId);
-            else {
+            } else {
                 throw new QueryConfgNotFoundException(new Exception("query id not found"));
             }
         } catch (Exception e) {
@@ -123,6 +125,7 @@ public class QueryFactory implements InitializingBean {
     }
 
 
+    @Override
     public void afterPropertiesSet() {
         init();
     }

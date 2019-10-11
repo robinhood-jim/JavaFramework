@@ -200,8 +200,9 @@ public class SourceFileExplorer {
     }
     public static final String getSpiltChar(String split){
         String tmpSplit=split;
-        if(Const.ESCAPE_CHARACTERS.contains(split))
+        if(Const.ESCAPE_CHARACTERS.contains(split)) {
             tmpSplit = "\\"+split;
+        }
         return tmpSplit;
     }
 

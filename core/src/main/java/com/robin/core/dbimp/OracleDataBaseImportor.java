@@ -19,7 +19,8 @@ public class OracleDataBaseImportor extends BaseDataBaseImportor{
 	public OracleDataBaseImportor() {
 		init();
 	}
-	public int importFromLocal(DataBaseImportParam inparam,DataBaseParam param) {
+	@Override
+    public int importFromLocal(DataBaseImportParam inparam, DataBaseParam param) {
 		int ret=-1;
 		String ctlFile=null;
 		try{

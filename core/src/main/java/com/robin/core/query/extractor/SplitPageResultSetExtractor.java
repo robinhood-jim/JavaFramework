@@ -60,8 +60,9 @@ public class SplitPageResultSetExtractor implements ResultSetExtractor<List<Map<
 	private List<Map<String,Object>> wrapMapper(ResultSet rs,int start,int len) throws SQLException,DataAccessException {
 		int end = start + len;
 		boolean allcode=false;
-		if(end==0)
-			allcode=true;
+		if(end==0) {
+            allcode=true;
+        }
 		int rowNum = 0;
 		List<Map<String,Object>> list = new ArrayList<Map<String,Object>>();
 			ResultSetMetaData rsmd = rs.getMetaData();
@@ -99,10 +100,11 @@ public class SplitPageResultSetExtractor implements ResultSetExtractor<List<Map<
 			while (rs.next()){
 				++rowNum;
 				if(!allcode){
-					if (rowNum <= start) 
-						continue ;
-					else if (rowNum > end) 
-						break ;
+					if (rowNum <= start) {
+                        continue ;
+                    } else if (rowNum > end) {
+                        break ;
+                    }
 				}
 				Map<String, Object> map = new HashMap<String, Object>();
 				for (int i = 0; i < count; i++) {
@@ -134,8 +136,9 @@ public class SplitPageResultSetExtractor implements ResultSetExtractor<List<Map<
 							map.put(columnName[i], bytes);
 						}
 					}
-					else
-						map.put(columnName[i], rs.getObject(i + 1).toString().trim());
+					else {
+                        map.put(columnName[i], rs.getObject(i + 1).toString().trim());
+                    }
 				}
 				list.add(map);
 			}
@@ -179,8 +182,9 @@ public class SplitPageResultSetExtractor implements ResultSetExtractor<List<Map<
 					map.put(columnName[i], new String(bytes));
 				}
 			}
-			else
-				map.put(columnName[i], rs.getObject(i + 1).toString().trim());
+			else {
+                map.put(columnName[i], rs.getObject(i + 1).toString().trim());
+            }
 		}
 		return map;
 	}

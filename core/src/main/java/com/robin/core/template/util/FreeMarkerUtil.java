@@ -35,23 +35,26 @@ public class FreeMarkerUtil {
 			config=new Configuration();
 			config.setDefaultEncoding("UTF-8");
 			config.setLocale(Locale.ENGLISH);
-			if(context!=null)
-				config.setServletContextForTemplateLoading(context, templatePath);
-			else
-				config.setClassForTemplateLoading(FreeMarkerUtil.class, templatePath);	
+			if(context!=null) {
+                config.setServletContextForTemplateLoading(context, templatePath);
+            } else {
+                config.setClassForTemplateLoading(FreeMarkerUtil.class, templatePath);
+            }
 		}
 		return config;
 		
 	}
 	public FreeMarkerUtil(ServletContext context,String templatePath){
 		this.context=context;
-		if(templatePath!=null && !"".equals(templatePath))
-			this.templatePath=templatePath;
+		if(templatePath!=null && !"".equals(templatePath)) {
+            this.templatePath=templatePath;
+        }
 		getConfiguration();
 	}
 	public FreeMarkerUtil(String templatePath){
-		if(templatePath!=null && !templatePath.isEmpty())
-			this.templatePath=templatePath;
+		if(templatePath!=null && !templatePath.isEmpty()) {
+            this.templatePath=templatePath;
+        }
 		getConfiguration();
 	}
 	public void setShareVariable(String name,Object obj) throws TemplateModelException{

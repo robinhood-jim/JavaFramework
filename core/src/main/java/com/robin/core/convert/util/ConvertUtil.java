@@ -42,7 +42,9 @@ public class ConvertUtil {
 
 
     public static void convertToTargetObj(Object target, Object src) throws Exception {
-        if (target == null || src == null) return;
+        if (target == null || src == null) {
+            return;
+        }
 
         Map<String, Method> srcmap = returnGetMethold(src.getClass());
         Map<String,Method> targetMap=returnSetMethold(target.getClass());
@@ -66,8 +68,9 @@ public class ConvertUtil {
                     map.put(name,method);
                 }
             }
-            if(!map.isEmpty())
+            if(!map.isEmpty()) {
                 cachedGetMethod.put(clazz.getCanonicalName(),map);
+            }
         }
         return cachedGetMethod.getIfPresent(clazz.getCanonicalName());
     }
@@ -82,8 +85,9 @@ public class ConvertUtil {
                     map.put(name,method);
                 }
             }
-            if(!map.isEmpty())
+            if(!map.isEmpty()) {
                 cachedSetMethod.put(clazz.getCanonicalName(),map);
+            }
         }
         return cachedSetMethod.getIfPresent(clazz.getCanonicalName());
     }
@@ -105,7 +109,9 @@ public class ConvertUtil {
     }
 
     public static void objectToMap(Map<String, String> target, Object src) throws Exception {
-        if (src == null || target == null) return;
+        if (src == null || target == null) {
+            return;
+        }
 
         Map<String,Method> getMetholds=returnGetMethold(src.getClass());
         Iterator<Map.Entry<String,Method>> iterator=getMetholds.entrySet().iterator();
@@ -119,7 +125,9 @@ public class ConvertUtil {
     }
 
     public static void objectToMapObj(Map<String, Object> target, Object src) throws Exception {
-        if (src == null || target == null) return;
+        if (src == null || target == null) {
+            return;
+        }
         Map<String,Method> getMetholds=returnGetMethold(src.getClass());
         Iterator<Map.Entry<String,Method>> iterator=getMetholds.entrySet().iterator();
         while(iterator.hasNext()){
@@ -132,8 +140,9 @@ public class ConvertUtil {
     }
 
     public static void mapToObject(BaseObject target, Map<String, String> src) throws Exception {
-        if (src == null || target == null)
+        if (src == null || target == null) {
             return;
+        }
         Iterator<Map.Entry<String, String>> it = src.entrySet().iterator();
         Map<String, Method> methodMap = returnSetMethold(target.getClass());
         while (it.hasNext()) {
@@ -144,10 +153,11 @@ public class ConvertUtil {
                 target.AddDirtyColumn(key);
                 Class type = methodMap.get(key).getParameterTypes()[0];
                 Object retValue = null;
-                if (!"java.lang.String".equalsIgnoreCase(type.getName()) && "".equals(value))
+                if (!"java.lang.String".equalsIgnoreCase(type.getName()) && "".equals(value)) {
                     retValue = null;
-                else
+                } else {
                     retValue = parseParamenter(type, value);
+                }
                 methodMap.get(key).invoke(target, new Object[]{retValue});
             }
         }
@@ -155,7 +165,9 @@ public class ConvertUtil {
     }
 
     public static void mapToObject(Object target, Map<String, Object> src) throws Exception {
-        if (src == null || target == null) return;
+        if (src == null || target == null) {
+            return;
+        }
 
         Iterator<Map.Entry<String,Object>> it = src.entrySet().iterator();
         Map<String,Method> targetMap=returnSetMethold(target.getClass());
@@ -166,8 +178,11 @@ public class ConvertUtil {
             if (targetMap.containsKey(key)) {
                 Class type = targetMap.get(key).getParameterTypes()[0];
                 Object retValue = null;
-                if (!"java.lang.String".equalsIgnoreCase(type.getName()) && "".equals(value)) retValue = null;
-                else retValue = parseParamenter(type, value);
+                if (!"java.lang.String".equalsIgnoreCase(type.getName()) && "".equals(value)) {
+                    retValue = null;
+                } else {
+                    retValue = parseParamenter(type, value);
+                }
                 targetMap.get(key).invoke(target, new Object[]{retValue});
             }
         }
@@ -183,8 +198,12 @@ public class ConvertUtil {
 
 
     public static void convertToModelForUpdate(BaseObject target, BaseObject src) throws Exception {
-        if (target == null || src == null) return;
-        if (!target.getClass().equals(src.getClass())) throw new RuntimeException("");
+        if (target == null || src == null) {
+            return;
+        }
+        if (!target.getClass().equals(src.getClass())) {
+            throw new RuntimeException("");
+        }
         Map<String, Method> srcmap = returnGetMethold(src.getClass());
         Map<String,Method> targetMap=returnSetMethold(target.getClass());
 
@@ -197,8 +216,9 @@ public class ConvertUtil {
                 Object value = getMethod.invoke(src, (Object[]) null);
                 if (value != null) {
                     setMethod.invoke(target, new Object[]{value});
-                } else
+                } else {
                     setMethod.invoke(target, new Object[]{null});
+                }
             }
 
         }
@@ -207,7 +227,9 @@ public class ConvertUtil {
 
 
     public static void convertToModel(BaseObject target, Map<String, String> src) throws Exception {
-        if (target == null || src == null) return;
+        if (target == null || src == null) {
+            return;
+        }
 
         Map<String, Method> map = returnSetMethold(target.getClass());
 
@@ -234,7 +256,9 @@ public class ConvertUtil {
         }
     }
     public static void convertToTarget(Object target, Object src) throws Exception {
-        if (target == null || src == null) return;
+        if (target == null || src == null) {
+            return;
+        }
         Map<String, Method> targetMethodMap = returnSetMethold(target.getClass());
         Map<String, Method> sourceMethodMap = returnGetMethold(src.getClass());
         if(src instanceof Map) {
@@ -245,9 +269,9 @@ public class ConvertUtil {
                 String field = entry.getKey();
                 Method setMethod = targetMethodMap.get(field);
                 if (setMethod != null) {
-                    if(target instanceof BaseObject)
+                    if(target instanceof BaseObject) {
                         setBaseObjectValue((BaseObject) target,entry.getValue(),field,setMethod);
-                    else{
+                    } else{
                         if(targetMethodMap.containsKey(field)) {
                             Object retValue = parseParamenter(targetMethodMap.get(field).getParameterTypes()[0], entry.getValue());
                             setObjectValue(targetMethodMap.get(field), target, retValue);
@@ -291,8 +315,9 @@ public class ConvertUtil {
             ret = Double.parseDouble(strValue.toString());
         } else if (typeName.startsWith("java.math.") || "java.util.Date" .equals(typeName)) {
             String value = strValue.toString().trim();
-            if (value.indexOf(":") == -1)
+            if (value.indexOf(":") == -1) {
                 value += " 00:00:00";
+            }
             SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
             ret = format.parse(value);
 
@@ -318,8 +343,9 @@ public class ConvertUtil {
             if (!"byte".equals(typeName)) {
                 if (!strValue.toString().isEmpty()) {
                     Method method = type.getMethod("valueOf", new Class[]{"java.lang.String" .getClass()});
-                    if (method != null)
+                    if (method != null) {
                         ret = method.invoke(Class.forName("java.lang.Byte"), new Object[]{strValue.toString()});
+                    }
                 } else {
                     ret = null;
                 }
@@ -397,13 +423,14 @@ public class ConvertUtil {
     private static Object translateValue(String value, String columnType, String columnName, SimpleDateFormat dateformat) throws Exception {
         Object retObj;
         try {
-            if (value == null || StringUtils.isEmpty(value.trim()))
+            if (value == null || StringUtils.isEmpty(value.trim())) {
                 return null;
+            }
             if (columnType.equals(Const.META_TYPE_INTEGER)) {
                 retObj = Integer.valueOf(value);
-            } else if (columnType.equals(Const.META_TYPE_BIGINT))
+            } else if (columnType.equals(Const.META_TYPE_BIGINT)) {
                 retObj = Long.valueOf(value);
-            else if (columnType.equals(Const.META_TYPE_NUMERIC)) {
+            } else if (columnType.equals(Const.META_TYPE_NUMERIC)) {
                 retObj = Double.valueOf(value);
             } else if (columnType.equals(Const.META_TYPE_DOUBLE)) {
                 retObj = Double.valueOf(value);

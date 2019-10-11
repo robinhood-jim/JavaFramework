@@ -69,8 +69,9 @@ public class ResourceAccessHolder implements InitializingBean {
 			return resouceAccessUtilMap.get(protocol);
 		}else{
 			AbstractResourceAccessUtil util=loadResourceUtil(protocol);
-			if(util!=null)
-				resouceAccessUtilMap.put(protocol,util);
+			if(util!=null) {
+                resouceAccessUtilMap.put(protocol,util);
+            }
 			return util;
 		}
 	}
@@ -185,7 +186,10 @@ public class ResourceAccessHolder implements InitializingBean {
 
 		@Override
 		protected void runOneIteration() throws Exception {
-			connectionHolderCache.entrySet().removeIf(e->{boolean canclose=e.getValue().canClose(); if(canclose) e.getValue().close(); return canclose;});
+			connectionHolderCache.entrySet().removeIf(e->{boolean canclose=e.getValue().canClose(); if(canclose) {
+                e.getValue().close();
+            }
+                return canclose;});
 		}
 
 		@Override

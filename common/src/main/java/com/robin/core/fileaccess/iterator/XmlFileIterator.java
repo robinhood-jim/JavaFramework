@@ -43,10 +43,11 @@ public class XmlFileIterator extends AbstractFileIterator {
 	public void init() {
 		try{
 			factory=XMLInputFactory.newFactory();
-			if(instream!=null)
-				streamReader=factory.createXMLStreamReader(instream,colmeta.getEncode());
-			else if(reader!=null)
-				streamReader=factory.createXMLStreamReader(reader);
+			if(instream!=null) {
+                streamReader=factory.createXMLStreamReader(instream,colmeta.getEncode());
+            } else if(reader!=null) {
+                streamReader=factory.createXMLStreamReader(reader);
+            }
 			while(streamReader.hasNext()){
 				streamReader.next();
 				if(streamReader.getEventType()==XMLStreamReader.START_ELEMENT){
@@ -91,8 +92,9 @@ public class XmlFileIterator extends AbstractFileIterator {
 					String curName=streamReader.getLocalName();
 					if(!secondContainEntity){
 						if(!curName.equals(entityName)){
-							if(finishget)
-								break;
+							if(finishget) {
+                                break;
+                            }
 							//contain attribute
 							if(streamReader.getAttributeCount()>0){
 								Map<String,Object> tmap=new HashMap<String, Object>();
@@ -109,8 +111,9 @@ public class XmlFileIterator extends AbstractFileIterator {
 							}
 						}
 					}else{
-						if(finishget)
-							break;
+						if(finishget) {
+                            break;
+                        }
 						if(curName.equals(entityName)){
 							int count=streamReader.getAttributeCount();
 							for (int i=0;i<count;i++){
@@ -144,8 +147,9 @@ public class XmlFileIterator extends AbstractFileIterator {
 			}
 		}
 		DataSetColumnMeta meta= columnMap.get(column);
-		if(meta!=null)
-			retmap.put(column, ConvertUtil.convertStringToTargetObject(value, meta, null));
+		if(meta!=null) {
+            retmap.put(column, ConvertUtil.convertStringToTargetObject(value, meta, null));
+        }
 	}
 	private void getValue(StringBuilder builder) throws Exception{
 		if(builder.length()>0){

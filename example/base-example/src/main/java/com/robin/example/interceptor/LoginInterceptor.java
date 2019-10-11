@@ -45,8 +45,9 @@ public class LoginInterceptor extends HandlerInterceptorAdapter {
                     }
                 }
             }
-            if(ignoreUrls.contains(contentPath)  || ignoreResources.contains(resourcePath))
+            if(ignoreUrls.contains(contentPath)  || ignoreResources.contains(resourcePath)) {
                 return super.preHandle(request, response, handler);
+            }
         }
         log.error("must login "+request.getRequestURI());
         response.sendRedirect(loginUrl);

@@ -51,10 +51,12 @@ public class CollectionMapConvert<T> {
 	         Field filed = targerobj.getClass().getField(colName);
 	         Object obj=filed.get(targerobj.getClass());
 	         String value = obj.toString();
-	         if(obj instanceof Double)
-	        	 value=String.valueOf(((Double)obj).intValue());
-	         if(obj instanceof Long)
-	        	 value=String.valueOf(((Long)obj).intValue());
+	         if(obj instanceof Double) {
+                 value=String.valueOf(((Double)obj).intValue());
+             }
+	         if(obj instanceof Long) {
+                 value=String.valueOf(((Long)obj).intValue());
+             }
 	         retMap.put(value,listobj.get(i));
 	      }
 	      return retMap;
@@ -68,10 +70,12 @@ public class CollectionMapConvert<T> {
 			Method method = targerobj.getClass().getMethod("get" + colName,null);
 			Object obj = method.invoke(targerobj, null);
 			String value = obj.toString();
-			if (obj instanceof Double)
-				value = String.valueOf(((Double) obj).intValue());
-			if (obj instanceof Long)
-				value = String.valueOf(((Long) obj).intValue());
+			if (obj instanceof Double) {
+                value = String.valueOf(((Double) obj).intValue());
+            }
+			if (obj instanceof Long) {
+                value = String.valueOf(((Long) obj).intValue());
+            }
 			retMap.put(value, listobj.get(i));
 		}
 		return retMap;
@@ -112,10 +116,12 @@ public class CollectionMapConvert<T> {
 	        	 continue;
 	         }
 	         String value = obj.toString();
-	         if(obj instanceof Double)
-	        	 value=String.valueOf(((Double)obj).intValue());
-	         if(obj instanceof Long)
-	        	 value=String.valueOf(((Long)obj).intValue());
+	         if(obj instanceof Double) {
+                 value=String.valueOf(((Double)obj).intValue());
+             }
+	         if(obj instanceof Long) {
+                 value=String.valueOf(((Long)obj).intValue());
+             }
 	         if(retMap.get(value)==null){
 	        	 List<T> list=new ArrayList<T>();
 	        	 list.add(t);
@@ -158,8 +164,9 @@ public class CollectionMapConvert<T> {
 	         Method method = targerobj.getClass().getMethod("get"+colName,null);
 	         Object obj=method.invoke(targerobj,null);
 	         String value = obj.toString();
-	         if(value.equals(colvalue))
-	        	 retList.add(t);
+	         if(value.equals(colvalue)) {
+                 retList.add(t);
+             }
 	   }
 	   return retList;
    }
@@ -173,8 +180,9 @@ public class CollectionMapConvert<T> {
 	         Object obj=method.invoke(targerobj,null);
 	         String value = obj.toString();
 	         buffer.append(value);
-	         if(i!=listobj.size()-1)
-	        	 buffer.append(separate);
+	         if(i!=listobj.size()-1) {
+                 buffer.append(separate);
+             }
 	   }
 	   }
 	   return buffer.toString();
@@ -226,8 +234,9 @@ public class CollectionMapConvert<T> {
 			if(map.get(val.toString())!=null)
 			{
 				retList.add(map.get(val.toString()));
-			}else
-				retList.add(obj);
+			}else {
+                retList.add(obj);
+            }
 		}
 		return retList;
 	}
@@ -241,8 +250,9 @@ public class CollectionMapConvert<T> {
 			if(map.get(val.toString())!=null)
 			{
 				retMap.put(val.toString(), map.get(val.toString()));
-			}else
-				retMap.put(val.toString(), obj);
+			}else {
+                retMap.put(val.toString(), obj);
+            }
 		}
 		return retMap;
 	}

@@ -264,7 +264,8 @@ public class Condition implements ICondition{
 	}
 	
 
-	public Object getValue() {
+	@Override
+    public Object getValue() {
 		return value;
 	}
 
@@ -272,7 +273,8 @@ public class Condition implements ICondition{
 		this.value = value;
 	}
 
-	public Object[] getValues() {
+	@Override
+    public Object[] getValues() {
 		return values;
 	}
 
@@ -280,11 +282,13 @@ public class Condition implements ICondition{
 		this.values = values;
 	}
 	
-	public String getState(){
+	@Override
+    public String getState(){
 		return state;
 	}
 	
-	public String getName(){
+	@Override
+    public String getName(){
 		return name;
 	}
 }

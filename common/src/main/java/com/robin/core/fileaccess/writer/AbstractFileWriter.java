@@ -55,14 +55,16 @@ public abstract class AbstractFileWriter implements IResourceWriter {
 		this.out=out;
 	}
 
+	@Override
 	public void writeRecord(List<Object> map) throws IOException {
 		writeRecord(wrapListToMap(map));
 	}
 	
 	protected Map<String, Object> wrapListToMap(List<Object> list){
 		Map<String, Object> valuemap=new HashMap<String, Object>();
-		if(list.size()<colmeta.getColumnList().size())
-			return null;
+		if(list.size()<colmeta.getColumnList().size()) {
+            return null;
+        }
 		for (int i=0;i<colmeta.getColumnList().size();i++) {
 			DataSetColumnMeta meta = colmeta.getColumnList().get(i);
 			valuemap.put(meta.getColumnName(), list.get(i));
@@ -74,10 +76,12 @@ public abstract class AbstractFileWriter implements IResourceWriter {
 		beginWrite();
 	}
 	public abstract void beginWrite() throws IOException;
+	@Override
 	public abstract void writeRecord(Map<String,?> map) throws IOException;
 
 	public abstract void finishWrite() throws IOException;
 	public abstract void flush() throws IOException;
+	@Override
 	public void close() throws IOException{
 		if(writer!=null){
 			writer.close();
@@ -89,9 +93,9 @@ public abstract class AbstractFileWriter implements IResourceWriter {
 	protected String getOutputStringByType(Map<String,?> valueMap,String columnName){
 		String columnType=columnMap.get(columnName);
 		Object obj=getMapValueByMeta(valueMap,columnName);
-		if(obj!=null)
-			return DataBaseUtil.toStringByDBType(obj,columnType,formatter);
-		else{
+		if(obj!=null) {
+            return DataBaseUtil.toStringByDBType(obj,columnType,formatter);
+        } else{
 			return null;
 		}
 	}
@@ -106,9 +110,10 @@ public abstract class AbstractFileWriter implements IResourceWriter {
 		}else if(valueMap.containsKey(columnName.toLowerCase())){
 			obj=valueMap.get(columnName.toLowerCase());
 		}
-		if(DataBaseUtil.isValueValid(obj,columnType))
-			return obj;
-		else
-			return null;
+		if(DataBaseUtil.isValueValid(obj,columnType)) {
+            return obj;
+        } else {
+            return null;
+        }
 	}
 }

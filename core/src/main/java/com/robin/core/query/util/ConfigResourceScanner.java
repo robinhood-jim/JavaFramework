@@ -22,10 +22,11 @@ public class ConfigResourceScanner {
             PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
             //default config at queryConfig in classpath
             if (xmlpath == null || "".equals(xmlpath)) {
-                if(defaultPath.length>0)
+                if(defaultPath.length>0) {
                     classesPath=defaultPath[0];
-                else
+                } else {
                     classesPath = "queryConfig";
+                }
             } else {
                 if (xmlpath.startsWith("classpath:")) {
                     String relativePath = xmlpath.substring(10);
@@ -59,8 +60,9 @@ public class ConfigResourceScanner {
                 File[] files = file.listFiles();
                 for (int i = 0; i < files.length; i++) {
                     File subfile = files[i];
-                    if (subfile.getName().toLowerCase().endsWith("xml"))
+                    if (subfile.getName().toLowerCase().endsWith("xml")) {
                         resList.add(new FileInputStream(subfile));
+                    }
                 }
             }
         } catch (Exception e) {
