@@ -1,0 +1,13 @@
+@charset "utf-8";
+#manuloper {
+	background-image: url("../images/icon48.png");
+	background-position: 2px 48px ;
+	height: 48px;
+	width: 48px;
+}
+.trangluar{
+	background-image: url("../images/icon48.png");
+	background-position: 0px 0px;
+	height: 48px;
+	width: 48px;
+}

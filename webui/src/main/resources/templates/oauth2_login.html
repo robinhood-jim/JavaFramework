@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>#{title.loginPage}</title>
+    <link rel="stylesheet" type="text/css" th:href="@{component/dhtmlxSuite/codebase/dhtmlx.css}"/>
+    <link rel="stylesheet" type="text/css" th:href="@{component/dhtmlxSuite/skins/terrace/dhtmlx.css}"/>
+    <script th:src="@{component/dhtmlxSuite/codebase/dhtmlx.js}"></script>
+    <script th:src="@{resources/js/jquery.js}"></script>
+
+</head>
+<body onload="goMain()">
+<script language="javascript" lang="text/javascript">
+
+    var ctx = "[[${#httpServletRequest.getContextPath()}]]";
+    function goMain() {
+        window.location.href=ctx+"main";
+    }
+
+</script>
+</body>
+</html>

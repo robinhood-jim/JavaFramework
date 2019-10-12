@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title th:text="#{title.userRight}"></title>
+    <link rel="stylesheet" type="text/css" th:href="@{/component/dhtmlxSuite/codebase/dhtmlx.css}"/>
+    <link rel="stylesheet" type="text/css" th:href="@{/resources/css/main.css}"/>
+
+    <style type="text/css">
+        div#layoutObj {
+            position: relative;
+            margin-top: 10px;
+            margin-left: 10px;
+            margin-right: 10px;
+            margin-bottom: 10px;
+            width: 95%;
+            height: 95%;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            margin: 10px;
+            overflow: hidden;
+        }
+    </style>
+    <script th:src="@{/component/dhtmlxSuite/codebase/dhtmlx.js}"></script>
+    <script language="javascript" th:src="@{/resources/js/jquery.js}"></script>
+    <script language="javascript" th:src="@{/resources/js/Array.js}"></script>
+</head>
+<body>
+<script language="javascript" th:src="@{/resources/js/crud.js}"></script>
+<script type="text/javascript">
+    dhtmlx.message.defPosition = "bottom";
+    var ctx = "[[${#httpServletRequest.getContextPath()}]]/";
+    var queryUrl = ctx + "system/user/showright";
+    var userId ="[[${userId}]]";
+    var cwidth = document.body.clientWidth;
+    var dhxLayout = new dhtmlXLayoutObject(document.body, "1C");
+    var dhxToobar = dhxLayout.cells("a").attachToolbar();
+    dhxLayout.cells("a").setText(decodeHTMLEntities("[[#{title.adjustUserRightTip}]]"));
+    dhxToobar.setIconsPath(ctx + "component/dhtmlxSuite/comm/imgs/");
+    dhxToobar.addButton("save", 0, "[[#{btn.save}]]", "new.gif", "new_dis.gif");
+    dhxToobar.addButton("cancel", 2, "[[#{btn.cancel}]]", "close.gif", "close_dis.gif");
+    var dhxTree = dhxLayout.cells("a").attachTree();
+    dhxTree.setImagePath(ctx+"component/dhtmlxSuite/codebase/imgs/dhxtree_material/");
+
+    dhxTree.enableCheckBoxes(true);
+
+    dhxToobar.attachEvent("onClick", function (id) {
+        if (id == 'save') {
+            goAssign();
+        }
+    });
+
+    $.ajax({
+        type: "post",
+        data: {"userId": userId},
+        url: ctx + "system/user/listright",
+        dataType: "json",
+        success: function (data) {
+            var obj = eval(data);
+            dhxTree.loadJSONObject(obj);
+        }
+    });
+
+    function goAssign() {
+        var id = dhxTree.getAllChecked();
+        if (id == '') {
+            openMsgDialog("[[#{title.adjustUserRight}]]", "[[#{message.selectMenu}]]");
+        } else {
+            $.ajax({
+                type: "post",
+                data: {"ids": id, "userId": userId},
+                url: ctx + "system/user/assignright",
+                dataType: "json",
+                success: function (data) {
+                    var obj = eval(data);
+                    if (obj.success == 'true') {
+                        dhtmlx.message({
+                            text: "[[#{message.updateSuccess}]]",
+                            expire: 10
+                    });
+                        parent.closedialog();
+                    } else {
+                        openMsgDialog("[[#{message.updateFailed}]]", "[[#{message.ErrorMsg}]]" + obj.message);
+                    }
+                }
+            });
+        }
+    }
+
+
+</script>
+</body>
+</html>

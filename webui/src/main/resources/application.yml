@@ -1,0 +1,75 @@
+spring:
+  application:
+    name: webui-service
+  profiles:
+    active: dev
+  cloud:
+    consul:
+      host: 172.16.102.129
+      port: 8500
+      discovery:
+        register: true
+        tags: version=1.0,author=robinjim
+        healthCheckInterval: 5s
+        healthCheckPath: /health
+        service-name: webui-service
+  redis:
+    host: localhost
+    lettuce:
+      pool:
+        max-active: 10
+  session:
+    store-type: redis
+  messages:
+    basename: i18n/messages
+  thymeleaf:
+    prefix: classpath:/templates/
+    check-template-location: true
+    suffix: .html
+    encoding: UTF-8
+  main:
+    allow-bean-definition-overriding: true
+
+server:
+  port: 9090
+  servlet:
+    session:
+      timeout: "PT10M"
+
+logging:
+  config: classpath:logback-spring.xml
+
+log:
+  level: INFO
+  home: ./logs
+
+login:
+  ignoreUrls: /login,/logout,/health,/error,/ssologin
+  ignoreResources: gif,bmp,png,jpg,js,flash,css,swf,flv,metaget
+  oauth2-uri: http://gatewayserver:9092/oauth2/
+  product-uri: http://gatewayserver:9092/product/
+  gateway-uri: http://gatewayserver:9092/
+  clientId: webui-client
+  clientSecret: 123456
+  loginUrl: http://gatewayserver:9092/login
+  checkLoginUrl: http://gatewayserver:9092/session
+
+static:
+  uriPrefix: http://localhost:80
+
+
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 5000
+        readTimeout: 5000
+        loggerLevel: basic
+  hystrix:
+    enabled: false
+backgroud:
+  serverUrl: http://gatewayserver:9092/
+  gatewayUrl: http://gatewayserver:9092/
+
+
+
