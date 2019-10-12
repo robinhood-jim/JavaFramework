@@ -14,12 +14,11 @@ import java.util.List;
  * @version 1.0
  */
 public class DefaultPrepareStatementSetter implements PreparedStatementSetter {
-    private String sql;
     private List<AnnotationRetrevior.FieldContent> fields;
     private BaseObject object;
 
-    public DefaultPrepareStatementSetter(List<AnnotationRetrevior.FieldContent> fields, final String sql, BaseObject object) {
-        this.sql = sql;
+    public DefaultPrepareStatementSetter(List<AnnotationRetrevior.FieldContent> fields,  BaseObject object) {
+
         this.fields = fields;
         this.object = object;
     }

@@ -115,6 +115,7 @@
         <xz.version>1.6</xz.version>
         <cassandradriver.version>3.6.0</cassandradriver.version>
         <graal.version>1.0.0-rc7</graal.version>
+        <calcite.version>1.21.0</calcite.version>
     </properties>
 
     <repositories>
@@ -905,6 +906,11 @@
                 <groupId>org.graalvm</groupId>
                 <artifactId>graal-sdk</artifactId>
                 <version>${graal.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.calcite</groupId>
+                <artifactId>calcite-core</artifactId>
+                <version>${calcite.version}</version>
             </dependency>
             <!-- Other tool end -->
         </dependencies>

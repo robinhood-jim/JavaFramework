@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015,wanchuan
+ * Copyright (c) 2015,robinjim
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,10 +23,7 @@ import com.robin.core.fileaccess.meta.DataSetColumnMeta;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.sql.Timestamp;
@@ -53,7 +50,7 @@ public class ConvertUtil {
         while(iterator.hasNext()){
             Map.Entry<String,Method> entry=iterator.next();
             if(targetMap.containsKey(entry.getKey())){
-                Object value=parseParamenter(targetMap.get(entry.getKey()).getParameterTypes()[0],srcmap.get(entry.getKey()).invoke(src,(Object[]) null));
+                Object value= parseParameter(targetMap.get(entry.getKey()).getParameterTypes()[0],srcmap.get(entry.getKey()).invoke(src,(Object[]) null));
                 targetMap.get(entry.getKey()).invoke(target,new Object[]{value});
             }
         }
@@ -156,7 +153,7 @@ public class ConvertUtil {
                 if (!"java.lang.String".equalsIgnoreCase(type.getName()) && "".equals(value)) {
                     retValue = null;
                 } else {
-                    retValue = parseParamenter(type, value);
+                    retValue = parseParameter(type, value);
                 }
                 methodMap.get(key).invoke(target, new Object[]{retValue});
             }
@@ -181,7 +178,7 @@ public class ConvertUtil {
                 if (!"java.lang.String".equalsIgnoreCase(type.getName()) && "".equals(value)) {
                     retValue = null;
                 } else {
-                    retValue = parseParamenter(type, value);
+                    retValue = parseParameter(type, value);
                 }
                 targetMap.get(key).invoke(target, new Object[]{retValue});
             }
@@ -250,7 +247,7 @@ public class ConvertUtil {
             if (!"java.lang.String".equalsIgnoreCase(type.getName()) && "".equals(value)) {
                 setMethod.invoke(target, new Object[]{null});
             } else {
-                Object retValue = parseParamenter(type, value);
+                Object retValue = parseParameter(type, value);
                 setMethod.invoke(target, new Object[]{retValue});
             }
         }
@@ -273,7 +270,7 @@ public class ConvertUtil {
                         setBaseObjectValue((BaseObject) target,entry.getValue(),field,setMethod);
                     } else{
                         if(targetMethodMap.containsKey(field)) {
-                            Object retValue = parseParamenter(targetMethodMap.get(field).getParameterTypes()[0], entry.getValue());
+                            Object retValue = parseParameter(targetMethodMap.get(field).getParameterTypes()[0], entry.getValue());
                             setObjectValue(targetMethodMap.get(field), target, retValue);
                         }
                     }
@@ -285,7 +282,7 @@ public class ConvertUtil {
             while(iter.hasNext()){
                 Map.Entry<String,Method> entry=iter.next();
                 if (targetMethodMap.containsKey(entry.getKey()) && entry.getValue().getParameterTypes().length==0){
-                    Object retValue = parseParamenter(targetMethodMap.get(entry.getKey()).getParameterTypes()[0], entry.getValue().invoke(src,new Object[]{}));
+                    Object retValue = parseParameter(targetMethodMap.get(entry.getKey()).getParameterTypes()[0], entry.getValue().invoke(src,new Object[]{}));
                     setObjectValue(targetMethodMap.get(entry.getKey()), target, retValue);
                 }
             }
@@ -296,7 +293,7 @@ public class ConvertUtil {
     }
 
 
-    public static Object parseParamenter(Class type, Object strValue) throws Exception {
+    public static Object parseParameter(Class type, Object strValue) throws Exception {
         if (strValue == null) {
             return null;
         }

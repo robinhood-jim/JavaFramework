@@ -31,7 +31,6 @@ import com.robin.core.sql.util.FilterCondition;
 import com.robin.core.sql.util.OracleSqlGen;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.*;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -790,7 +789,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
                 field.getSetMethod().invoke(obj, pkObj);
             } else {
                 if (map.containsKey(field.getPropertyName())) {
-                    field.getSetMethod().invoke(obj, ConvertUtil.parseParamenter(field.getGetMethod().getReturnType(), map.get(field.getPropertyName())));
+                    field.getSetMethod().invoke(obj, ConvertUtil.parseParameter(field.getGetMethod().getReturnType(), map.get(field.getPropertyName())));
                 }
             }
         }
@@ -800,17 +799,17 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
         for (AnnotationRetrevior.FieldContent field : fields) {
             if (field.isPrimary()) {
                 if (field.getPrimaryKeys() == null) {
-                    field.getSetMethod().invoke(obj, ConvertUtil.parseParamenter(field.getGetMethod().getReturnType(), map.get(field.getPropertyName())));
+                    field.getSetMethod().invoke(obj, ConvertUtil.parseParameter(field.getGetMethod().getReturnType(), map.get(field.getPropertyName())));
                 } else {
                     Object pkObj = field.getGetMethod().getReturnType().newInstance();
                     field.getSetMethod().invoke(obj, pkObj);
                     for (AnnotationRetrevior.FieldContent pkField : field.getPrimaryKeys()) {
-                        pkField.getSetMethod().invoke(pkObj, ConvertUtil.parseParamenter(pkField.getGetMethod().getReturnType(), map.get(pkField.getPropertyName())));
+                        pkField.getSetMethod().invoke(pkObj, ConvertUtil.parseParameter(pkField.getGetMethod().getReturnType(), map.get(pkField.getPropertyName())));
                     }
                 }
             } else {
                 if (map.containsKey(field.getPropertyName())) {
-                    field.getSetMethod().invoke(obj, ConvertUtil.parseParamenter(field.getGetMethod().getReturnType(), map.get(field.getPropertyName())));
+                    field.getSetMethod().invoke(obj, ConvertUtil.parseParameter(field.getGetMethod().getReturnType(), map.get(field.getPropertyName())));
                 }
             }
         }
@@ -867,7 +866,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
 
     private int executeUpdate(String sql, List<AnnotationRetrevior.FieldContent> fields, BaseObject obj) throws DAOException {
         try {
-            return this.getJdbcTemplate().update(sql, new DefaultPrepareStatementSetter(fields, sql, obj));
+            return this.getJdbcTemplate().update(sql, new DefaultPrepareStatementSetter(fields, obj));
         } catch (Exception e) {
             throw new DAOException(e);
         }
