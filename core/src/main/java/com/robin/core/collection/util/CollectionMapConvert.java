@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2015,robinjim(robinjim@126.com)
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -15,247 +15,345 @@
  */
 package com.robin.core.collection.util;
 
+import com.robin.core.base.exception.MissingConfigException;
+import com.robin.core.base.reflect.ReflectUtils;
+import com.robin.core.base.spring.SpringContextHolder;
+import com.robin.core.convert.util.ConvertUtil;
+import com.robin.core.script.ScriptExecutor;
+
+import javax.script.Bindings;
+import javax.script.CompiledScript;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class CollectionMapConvert<T> {
 
-   public CollectionMapConvert() {
+    public CollectionMapConvert() {
 
-   }
-   @SuppressWarnings ({"unchecked","deprecation","fallthrough"})
-   public Map<String,T> convertToMapByMethold(List<T> listobj, String identityCol) throws Exception {
-      Map<String,T> retMap = new HashMap<String,T>();
-      for(int i = 0; i < listobj.size(); i++) {
-         Object targerobj = listobj.get(i);
-         String colName=identityCol.substring(0,1).toUpperCase()+identityCol.substring(1,identityCol.length());
-         Method method = targerobj.getClass().getMethod("get"+colName,null);
-         Object obj=method.invoke(targerobj,null);
-         String value = obj.toString();
-         retMap.put(value,listobj.get(i));
-      }
-      return retMap;
-   }
+    }
 
-   @Deprecated
-   public Map<String,T> convertToMapByField(List<T> listobj, String identityCol) throws Exception {
-	      Map<String,T> retMap = new HashMap<String,T>();
-	      for(int i = 0; i < listobj.size(); i++) {
-	         Object targerobj = listobj.get(i);
-	         String colName=identityCol.substring(0,1).toUpperCase()+identityCol.substring(1,identityCol.length());
-	         Field filed = targerobj.getClass().getField(colName);
-	         Object obj=filed.get(targerobj.getClass());
-	         String value = obj.toString();
-	         if(obj instanceof Double) {
-                 value=String.valueOf(((Double)obj).intValue());
-             }
-	         if(obj instanceof Long) {
-                 value=String.valueOf(((Long)obj).intValue());
-             }
-	         retMap.put(value,listobj.get(i));
-	      }
-	      return retMap;
-   }
+    /**
+     * Convert ArrayList to Map by identify Column
+     * @param listobj ArrayList must not Primitive and not HashMap
+     * @param identityCol
+     * @return
+     * @throws Exception
+     */
+    public Map<String, T> convertListToMap(List<T> listobj, String identityCol) throws Exception {
+        if (listobj == null || listobj.size() == 0) {
+            throw new MissingConfigException("ArrayList is Empty!");
+        }
+        if (listobj.get(0).getClass().isPrimitive()) {
+            throw new MissingConfigException("Primitive type can not using this function!");
+        }
+        Map<String, T> retMap = new HashMap<String, T>();
+        Map<String, Method> methodMap = ReflectUtils.returnGetMethold(listobj.get(0).getClass());
+        Method method = methodMap.get(identityCol);
+        if (method != null) {
+            for (int i = 0; i < listobj.size(); i++) {
+                T targerobj = listobj.get(i);
 
-	public Map<String, T> convertListToMap(List<T> listobj, String identityCol) throws Exception {
-		Map<String, T> retMap = new HashMap<String, T>();
-		for (int i = 0; i < listobj.size(); i++) {
-			T targerobj = (T) listobj.get(i);
-			String colName = identityCol.substring(0, 1).toUpperCase()+ identityCol.substring(1, identityCol.length());
-			Method method = targerobj.getClass().getMethod("get" + colName,null);
-			Object obj = method.invoke(targerobj, null);
-			String value = obj.toString();
-			if (obj instanceof Double) {
-                value = String.valueOf(((Double) obj).intValue());
+                Object obj = method.invoke(targerobj, null);
+                String value = obj.toString();
+                if (obj instanceof Double) {
+                    value = String.valueOf(((Double) obj).intValue());
+                }
+                if (obj instanceof Long) {
+                    value = String.valueOf(((Long) obj).intValue());
+                }
+                retMap.put(value, listobj.get(i));
+
             }
-			if (obj instanceof Long) {
-                value = String.valueOf(((Long) obj).intValue());
+        } else {
+            throw new MissingConfigException("identify column not exists in object!");
+        }
+        return retMap;
+    }
+
+    public List<T> convertToList(Map<String, T> mapobj) throws Exception {
+        List<T> retList = new ArrayList<T>();
+        Iterator<T> iter = mapobj.values().iterator();
+        while (iter.hasNext()) {
+            retList.add(iter.next());
+        }
+        return retList;
+    }
+
+    /**
+     * Convert ArrayList to Map by identify Column
+     * @param listobj ArrayList must not Primitive,can input HashMap
+     * @param parentCol
+     * @return  Map<Key,List<T>>
+     * @throws Exception
+     */
+
+    public Map<String, List<T>> convertToMapByParentKey(List<T> listobj, String parentCol) throws Exception {
+        if (listobj == null || listobj.size() == 0) {
+            throw new MissingConfigException("ArrayList is Empty!");
+        }
+        if (listobj.get(0).getClass().isPrimitive()) {
+            throw new MissingConfigException("Primitive type can not using this function!");
+        }
+        Method method = null;
+        if (!(listobj.get(0) instanceof Map)) {
+            method = ReflectUtils.returnGetMethold(listobj.get(0).getClass()).get(parentCol);
+            if (method == null) {
+                throw new MissingConfigException("parent column not exists in object!");
             }
-			retMap.put(value, listobj.get(i));
-		}
-		return retMap;
-	}
+        }
+        Map<String, List<T>> retMap = new HashMap<String, List<T>>();
+        for (T t : listobj) {
+            Object targerobj = t;
+            Object obj = null;
+            if (t instanceof Map) {
+                obj = ((Map) t).get(parentCol);
+            } else {
+                obj = method.invoke(targerobj, null);
+            }
+            if (obj == null) {
+                addMapToList(retMap, "NULL", t);
+            } else {
+                addMapToList(retMap, obj.toString(), t);
+            }
+        }
 
-   public List<T> convertToList(Map<String,T> mapobj) throws Exception
-   {
-	   List<T> retList=new ArrayList<T>();
-	   Iterator<T> iter=mapobj.values().iterator();
-	   while(iter.hasNext())
-	   {
-		   retList.add(iter.next());
-	   }
-	   return retList;
-   }
+        return retMap;
+    }
 
-   public Map<String,List<T>> convertToMapByParentKey(List<T> listobj, String parentCol) throws Exception {
-	   Map<String,List<T>> retMap =new HashMap<String, List<T>>();
-	   for(T t:listobj){
-		   Object targerobj = t;
-		   Object obj=null;
-		   if(t instanceof Map){
-			   obj=((Map)t).get(parentCol);
-		   }else{
-	         String colName=parentCol.substring(0,1).toUpperCase()+parentCol.substring(1,parentCol.length());
-	         Method method = targerobj.getClass().getMethod("get"+colName,null);
-	         obj=method.invoke(targerobj,null);
-		   }
-	         if(obj==null){
-	        	 if(retMap.get("NULL")==null){
-		        	 List<T> list=new ArrayList<T>();
-		        	 list.add(t);
-		        	 retMap.put("NULL", list);
-		         }else{
-		        	 List<T> list=retMap.get("NULL");
-		        	 list.add(t);
-		         } 
-	        	 continue;
-	         }
-	         String value = obj.toString();
-	         if(obj instanceof Double) {
-                 value=String.valueOf(((Double)obj).intValue());
-             }
-	         if(obj instanceof Long) {
-                 value=String.valueOf(((Long)obj).intValue());
-             }
-	         if(retMap.get(value)==null){
-	        	 List<T> list=new ArrayList<T>();
-	        	 list.add(t);
-	        	 retMap.put(value, list);
-	         }else{
-	        	 List<T> list=retMap.get(value);
-	        	 list.add(t);
-	         }
-	   }
-	   return retMap;
-   }
-   public Map<String,List<String>> convertToSingleValueMapByParentKey(List<T> listobj, String parentCol,String valueCol) throws Exception{
-	   Map<String,List<String>> retMap =new HashMap<String, List<String>>();
-	   for(T t:listobj){
-		   Object targerobj = t;
-	         String colName=parentCol.substring(0,1).toUpperCase()+parentCol.substring(1,parentCol.length());
-	         Method method = targerobj.getClass().getMethod("get"+colName,null);
-	         Object obj=method.invoke(targerobj,null);
-	         String colName1=valueCol.substring(0,1).toUpperCase()+valueCol.substring(1,valueCol.length());
-	         Method method1 = targerobj.getClass().getMethod("get"+colName1,null);
-	         Object obj1=method1.invoke(targerobj,null);
-	         String value = obj.toString();
-	         String targetValue=obj1.toString();
-	         if(retMap.get(value)==null){
-	        	 List<String> list=new ArrayList<String>();
-	        	 list.add(targetValue);
-	        	 retMap.put(value, list);
-	         }else{
-	        	 List<String> list=retMap.get(value);
-	        	 list.add(targetValue);
-	         }
-	   }
-	   return retMap;
-   }
-   public List<T> FilterListByColumnValue(List<T> listobj,String colname,String colvalue) throws Exception{
-	   List<T> retList=new ArrayList<T>();
-	   for(T t:listobj){
-		   	 Object targerobj = t;
-	         String colName=colname.substring(0,1).toUpperCase()+colname.substring(1,colname.length());
-	         Method method = targerobj.getClass().getMethod("get"+colName,null);
-	         Object obj=method.invoke(targerobj,null);
-	         String value = obj.toString();
-	         if(value.equals(colvalue)) {
-                 retList.add(t);
-             }
-	   }
-	   return retList;
-   }
-   public String getListColumnValueSumBySeparater(List<T> listobj,String colname,String separate) throws Exception{
-	   StringBuffer buffer=new StringBuffer();
-	   if(listobj!=null){
-	   for(int i=0;i<listobj.size();i++){
-		   	 Object targerobj = listobj.get(i);
-	         String colName=colname.substring(0,1).toUpperCase()+colname.substring(1,colname.length());
-	         Method method = targerobj.getClass().getMethod("get"+colName,null);
-	         Object obj=method.invoke(targerobj,null);
-	         String value = obj.toString();
-	         buffer.append(value);
-	         if(i!=listobj.size()-1) {
-                 buffer.append(separate);
-             }
-	   }
-	   }
-	   return buffer.toString();
-   }
-   public List<String> getListColumnValueListBySeparater(List<T> listobj,String colname) throws Exception{
-	   List<String> retList=new ArrayList<String>();
-	   if(listobj!=null){
-	   for(int i=0;i<listobj.size();i++){
-		   	 Object targerobj = listobj.get(i);
-	         String colName=colname.substring(0,1).toUpperCase()+colname.substring(1,colname.length());
-	         Method method = targerobj.getClass().getMethod("get"+colName,null);
-	         Object obj=method.invoke(targerobj,null);
-	         String value = obj.toString();
-	         retList.add(value);
-	   }
-	   }
-	   return retList;
-   }
+    private final void addMapToList(Map<String, List<T>> retMap, String key, T t) {
+        if (!retMap.containsKey(key)) {
+            List<T> list = new ArrayList<T>();
+            list.add(t);
+            retMap.put(key, list);
+        } else {
+            retMap.get(key).add(t);
+        }
+    }
 
-	public List<Map<String,String>> getListMapFromListVO(List<T> list) throws Exception{
-		List<Map<String,String>> retList=new ArrayList<Map<String,String>>();
-		for(T t:list){
-		Object tmpobj=t;
-		
-		Field[] field=t.getClass().getDeclaredFields();
-		
-		Map<String,String> retmap=new HashMap<String, String>();
-		for(int i=0;i<field.length;i++){
-			try{
-				String propname=field[i].getName();
-				String mname="get"+propname.substring(0,1).toUpperCase()+propname.substring(1,propname.length());
-				Method meth=t.getClass().getDeclaredMethod(mname, null);				
-				Object val=meth.invoke(t,null);
-				retmap.put(field[i].getName(),val.toString());
-			}
-			catch(Exception e){ }
-		}
-		retList.add(retmap);
-		}
-		return retList;
-	}
-	public List<T> mergeListFromNew(List<T> orgList,List<T> newList,String indentifyCol) throws Exception{
-		Map<String,T> map=convertListToMap(newList, indentifyCol);
-		List<T> retList=new ArrayList<T>();
-		for(T obj:orgList){
-			String indentifyMethold="get"+indentifyCol.substring(0,1).toUpperCase()+indentifyCol.substring(1,indentifyCol.length());
-			Method meth=obj.getClass().getDeclaredMethod(indentifyMethold, null);				
-			Object val=meth.invoke(obj,null);
-			if(map.get(val.toString())!=null)
-			{
-				retList.add(map.get(val.toString()));
-			}else {
+    /**
+     * extract Key and List Value Map
+     * @param listobj  ArrayList must not Primitive and not HashMap
+     * @param parentCol
+     * @param valueCol
+     * @return
+     * @throws Exception
+     */
+    public Map<String, List<Object>> getValuesByParentKey(List<T> listobj, String parentCol, String valueCol) throws Exception {
+        if (listobj == null || listobj.size() == 0) {
+            throw new MissingConfigException("ArrayList is Empty!");
+        }
+        if (listobj.get(0).getClass().isPrimitive()) {
+            throw new MissingConfigException("Primitive type can not using this function!");
+        }
+
+        Map<String, List<Object>> retMap = new HashMap<String, List<Object>>();
+
+        Map<String, Method> getMetholds = ReflectUtils.returnGetMethold(listobj.get(0).getClass());
+        Method method = getMetholds.get(parentCol);
+        Method method1 = getMetholds.get(valueCol);
+        if (method == null || method1 == null) {
+            throw new MissingConfigException("parent column or value column not exist in object");
+        }
+        for (T t : listobj) {
+            Object value = method.invoke(t, null);
+            Object targetValue = method1.invoke(t, null);
+            if (value == null) {
+                value = "NULL";
+            }
+            if (targetValue != null) {
+                if (retMap.get(value) == null) {
+                    List<Object> list = new ArrayList<Object>();
+                    list.add(targetValue);
+                    retMap.put(value.toString(), list);
+                } else {
+                    retMap.get(value.toString()).add(targetValue);
+                }
+            }
+        }
+        return retMap;
+    }
+
+    /**
+     * same function like select from where
+     * @param listobj ArrayList must not Primitive and not HashMap
+     * @param colName select column
+     * @param colvalue  select value
+     * @return
+     * @throws Exception
+     */
+    public List<T> filterListByColumnValue(List<T> listobj, String colName, Object colvalue) throws Exception {
+        List<T> retList = new ArrayList<T>();
+        if (listobj == null || listobj.size() == 0) {
+            throw new MissingConfigException("ArrayList is Empty!");
+        }
+        if (listobj.get(0).getClass().isPrimitive()) {
+            throw new MissingConfigException("Primitive type can not using this function!");
+        }
+        Method method = ReflectUtils.returnGetMethold(listobj.get(0).getClass()).get(colName);
+        if (method == null) {
+            throw new MissingConfigException("parent column or value column not exist in object");
+        }
+
+        for (T t : listobj) {
+            Object value = method.invoke(t, null);
+            if (value != null && value.equals(colvalue)) {
+                retList.add(t);
+            }
+        }
+        return retList;
+    }
+
+    /**
+     * select from using complex condition with script engine
+     * @param listobj
+     * @param scriptType script type (js/groovy/jython)
+     * @param queryConditions script content return boolean
+     * @return
+     * @throws Exception
+     */
+    public List<T> filterListByColumnCondition(List<T> listobj,String scriptType, String queryConditions) throws Exception {
+        List<T> retList = new ArrayList<T>();
+        if (listobj == null || listobj.size() == 0) {
+            throw new MissingConfigException("ArrayList is Empty!");
+        }
+        if (listobj.get(0).getClass().isPrimitive()) {
+            throw new MissingConfigException("Primitive type can not using this function!");
+        }
+        Map<String, Method> getMetholds = ReflectUtils.returnGetMethold(listobj.get(0).getClass());
+        if (getMetholds == null) {
+            throw new MissingConfigException("object does not have get method");
+        }
+        if(SpringContextHolder.getBean(ScriptExecutor.class)==null){
+            throw new MissingConfigException("must use in spring context!");
+        }
+        CompiledScript script=SpringContextHolder.getBean(ScriptExecutor.class).returnScriptNoCache(scriptType,queryConditions);
+        Bindings bindings=SpringContextHolder.getBean(ScriptExecutor.class).createBindings(scriptType);
+
+        for (T t : listobj) {
+            Map<String,Object> valueMap=new HashMap<>();
+            ConvertUtil.objectToMapObj(valueMap,t);
+            bindings.putAll(valueMap);
+            boolean tag=(Boolean) script.eval(bindings);
+            if(tag){
+                retList.add(t);
+            }
+        }
+        return retList;
+    }
+
+
+    public String getColumnValueAppendBySeparater(List<T> listobj, String colName, String separate) throws Exception {
+        if (listobj == null || listobj.size() == 0) {
+            throw new MissingConfigException("ArrayList is Empty!");
+        }
+        if (listobj.get(0).getClass().isPrimitive()) {
+            throw new MissingConfigException("Primitive type can not using this function!");
+        }
+        StringBuilder buffer = new StringBuilder();
+        Method method = ReflectUtils.returnGetMethold(listobj.get(0).getClass()).get(colName);
+        if (method == null) {
+            throw new MissingConfigException("column not exist in object");
+        }
+
+        for (int i = 0; i < listobj.size(); i++) {
+            Object targerobj = listobj.get(i);
+            if (method != null) {
+                Object obj = method.invoke(targerobj, null);
+                String value = obj != null ? obj.toString() : "";
+                buffer.append(value);
+                if (i != listobj.size() - 1) {
+                    buffer.append(separate);
+                }
+            }
+        }
+
+        return buffer.toString();
+    }
+
+    public List<String> getValueListBySeparater(List<T> listobj, String colName) throws Exception {
+        List<String> retList = new ArrayList<String>();
+        if (listobj == null || listobj.size() == 0) {
+            throw new MissingConfigException("ArrayList is Empty!");
+        }
+        if (listobj.get(0).getClass().isPrimitive()) {
+            throw new MissingConfigException("Primitive type can not using this function!");
+        }
+        Method method = ReflectUtils.returnGetMethold(listobj.get(0).getClass()).get(colName);
+        if (method == null) {
+            throw new MissingConfigException("column not exist in object");
+        }
+        for (int i = 0; i < listobj.size(); i++) {
+            Object obj = method.invoke(listobj.get(i), null);
+            String value = obj.toString();
+            retList.add(value);
+        }
+        return retList;
+    }
+
+    public List<Map<String, Object>> getListMap(List<T> listobj) throws Exception {
+        if (listobj == null || listobj.size() == 0) {
+            throw new MissingConfigException("ArrayList is Empty!");
+        }
+        if (listobj.get(0).getClass().isPrimitive()) {
+            throw new MissingConfigException("Primitive type can not using this function!");
+        }
+        Map<String, Method> getMetholds = ReflectUtils.returnGetMethold(listobj.get(0).getClass());
+        if(getMetholds.isEmpty()){
+            throw new MissingConfigException("target object contain no get methold!");
+        }
+        List<Map<String, Object>> retList = new ArrayList<>();
+        for (T t : listobj) {
+            Map<String, Object> retmap = new HashMap<>();
+            Iterator<Map.Entry<String,Method>> iter=getMetholds.entrySet().iterator();
+            while(iter.hasNext()){
+                Map.Entry<String,Method> entry=iter.next();
+                Object obj=entry.getValue().invoke(t,null);
+                if(obj!=null){
+                    retmap.put(entry.getKey(),obj);
+                }
+            }
+            retList.add(retmap);
+        }
+        return retList;
+    }
+
+    public List<T> mergeListFromNew(List<T> orgList, List<T> newList, String identifyCol) throws Exception {
+        if(orgList==null || newList==null || orgList.size()==0 || newList.size()==0){
+            throw new MissingConfigException("Input ArrayList is Empty!");
+        }
+        Map<String, T> map = convertListToMap(newList, identifyCol);
+        List<T> retList = new ArrayList<>();
+        Method method=ReflectUtils.returnGetMethold(orgList.get(0).getClass()).get(identifyCol);
+        if (method == null) {
+            throw new MissingConfigException("identify column not exist in object");
+        }
+        for (T obj : orgList) {
+            Object val = method.invoke(obj, null);
+            if (map.get(val.toString()) != null) {
+                retList.add(map.get(val.toString()));
+            } else {
                 retList.add(obj);
             }
-		}
-		return retList;
-	}
-	public Map<String,T> mergeListMapFromNew(List<T> orgList,List<T> newList,String indentifyCol) throws Exception{
-		Map<String,T> map=convertListToMap(newList, indentifyCol);
-		Map<String,T> retMap=new HashMap<String, T>();
-		for(T obj:orgList){
-			String indentifyMethold="get"+indentifyCol.substring(0,1).toUpperCase()+indentifyCol.substring(1,indentifyCol.length());
-			Method meth=obj.getClass().getDeclaredMethod(indentifyMethold, null);				
-			Object val=meth.invoke(obj,null);
-			if(map.get(val.toString())!=null)
-			{
-				retMap.put(val.toString(), map.get(val.toString()));
-			}else {
+        }
+        return retList;
+    }
+
+   /* public Map<String, T> mergeListMapFromNew(List<T> orgList, List<T> newList, String indentifyCol) throws Exception {
+        Map<String, T> map = convertListToMap(newList, indentifyCol);
+        Map<String, T> retMap = new HashMap<String, T>();
+        for (T obj : orgList) {
+            String indentifyMethold = "get" + indentifyCol.substring(0, 1).toUpperCase() + indentifyCol.substring(1, indentifyCol.length());
+            Method meth = obj.getClass().getDeclaredMethod(indentifyMethold, null);
+            Object val = meth.invoke(obj, null);
+            if (map.get(val.toString()) != null) {
+                retMap.put(val.toString(), map.get(val.toString()));
+            } else {
                 retMap.put(val.toString(), obj);
             }
-		}
-		return retMap;
-	}
+        }
+        return retMap;
+    }*/
 
 }
 

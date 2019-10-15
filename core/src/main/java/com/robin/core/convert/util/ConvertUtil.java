@@ -18,6 +18,7 @@ package com.robin.core.convert.util;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.robin.core.base.model.BaseObject;
+import com.robin.core.base.reflect.ReflectUtils;
 import com.robin.core.base.util.Const;
 import com.robin.core.fileaccess.meta.DataSetColumnMeta;
 
@@ -34,8 +35,6 @@ import java.util.concurrent.TimeUnit;
 
 public class ConvertUtil {
 
-    private static Cache<String,Map<String,Method>> cachedGetMethod= CacheBuilder.newBuilder().maximumSize(200).expireAfterAccess(30, TimeUnit.MINUTES).build();
-    private static Cache<String,Map<String,Method>> cachedSetMethod= CacheBuilder.newBuilder().maximumSize(200).expireAfterAccess(30, TimeUnit.MINUTES).build();
 
 
     public static void convertToTargetObj(Object target, Object src) throws Exception {
@@ -43,8 +42,8 @@ public class ConvertUtil {
             return;
         }
 
-        Map<String, Method> srcmap = returnGetMethold(src.getClass());
-        Map<String,Method> targetMap=returnSetMethold(target.getClass());
+        Map<String, Method> srcmap = ReflectUtils.returnGetMethold(src.getClass());
+        Map<String,Method> targetMap= ReflectUtils.returnSetMethold(target.getClass());
 
         Iterator<Map.Entry<String,Method>> iterator=srcmap.entrySet().iterator();
         while(iterator.hasNext()){
@@ -55,62 +54,14 @@ public class ConvertUtil {
             }
         }
     }
-    public static Map<String,Method> returnGetMethold(Class clazz){
-        if(cachedGetMethod.getIfPresent(clazz.getCanonicalName())==null){
-            Map<String,Method> map=new HashMap<>();
-            Method[] methods=clazz.getMethods();
-            for(Method method:methods){
-                if(method.getName().startsWith("get")){
-                    String name=method.getName().substring(3,4).toLowerCase()+method.getName().substring(4);
-                    map.put(name,method);
-                }
-            }
-            if(!map.isEmpty()) {
-                cachedGetMethod.put(clazz.getCanonicalName(),map);
-            }
-        }
-        return cachedGetMethod.getIfPresent(clazz.getCanonicalName());
-    }
 
-    public static Map<String,Method> returnSetMethold(Class clazz){
-        if(cachedSetMethod.getIfPresent(clazz.getCanonicalName())==null){
-            Method[] methods=clazz.getMethods();
-            Map<String,Method> map=new HashMap<>();
-            for(Method method:methods){
-                if(method.getName().startsWith("set")){
-                    String name=method.getName().substring(3,4).toLowerCase()+method.getName().substring(4);
-                    map.put(name,method);
-                }
-            }
-            if(!map.isEmpty()) {
-                cachedSetMethod.put(clazz.getCanonicalName(),map);
-            }
-        }
-        return cachedSetMethod.getIfPresent(clazz.getCanonicalName());
-    }
-    private static Method getMethodByName(Class clazz,String methodName){
-        try{
-            return clazz.getDeclaredMethod(methodName);
-        }catch (NoSuchMethodException ex){
-
-        }
-        return null;
-    }
-    private static Method getMethodByName(Class clazz, String methodName, Type type){
-        try{
-            return clazz.getDeclaredMethod(methodName,(Class) type);
-        }catch (NoSuchMethodException ex){
-
-        }
-        return null;
-    }
 
     public static void objectToMap(Map<String, String> target, Object src) throws Exception {
         if (src == null || target == null) {
             return;
         }
 
-        Map<String,Method> getMetholds=returnGetMethold(src.getClass());
+        Map<String,Method> getMetholds= ReflectUtils.returnGetMethold(src.getClass());
         Iterator<Map.Entry<String,Method>> iterator=getMetholds.entrySet().iterator();
         while(iterator.hasNext()){
             Map.Entry<String,Method> entry=iterator.next();
@@ -125,7 +76,7 @@ public class ConvertUtil {
         if (src == null || target == null) {
             return;
         }
-        Map<String,Method> getMetholds=returnGetMethold(src.getClass());
+        Map<String,Method> getMetholds= ReflectUtils.returnGetMethold(src.getClass());
         Iterator<Map.Entry<String,Method>> iterator=getMetholds.entrySet().iterator();
         while(iterator.hasNext()){
             Map.Entry<String,Method> entry=iterator.next();
@@ -141,7 +92,7 @@ public class ConvertUtil {
             return;
         }
         Iterator<Map.Entry<String, String>> it = src.entrySet().iterator();
-        Map<String, Method> methodMap = returnSetMethold(target.getClass());
+        Map<String, Method> methodMap = ReflectUtils.returnSetMethold(target.getClass());
         while (it.hasNext()) {
             Map.Entry<String, String> entry = it.next();
             String key = entry.getKey();
@@ -167,7 +118,7 @@ public class ConvertUtil {
         }
 
         Iterator<Map.Entry<String,Object>> it = src.entrySet().iterator();
-        Map<String,Method> targetMap=returnSetMethold(target.getClass());
+        Map<String,Method> targetMap= ReflectUtils.returnSetMethold(target.getClass());
         while (it.hasNext()) {
             Map.Entry<String,Object> entry=it.next();
             String key = entry.getKey();
@@ -201,8 +152,8 @@ public class ConvertUtil {
         if (!target.getClass().equals(src.getClass())) {
             throw new RuntimeException("");
         }
-        Map<String, Method> srcmap = returnGetMethold(src.getClass());
-        Map<String,Method> targetMap=returnSetMethold(target.getClass());
+        Map<String, Method> srcmap = ReflectUtils.returnGetMethold(src.getClass());
+        Map<String,Method> targetMap= ReflectUtils.returnSetMethold(target.getClass());
 
         List<String> dirtyColumnList = src.getDirtyColumn();
         for (int i = 0; i < dirtyColumnList.size(); i++) {
@@ -228,7 +179,7 @@ public class ConvertUtil {
             return;
         }
 
-        Map<String, Method> map = returnSetMethold(target.getClass());
+        Map<String, Method> map = ReflectUtils.returnSetMethold(target.getClass());
 
         Iterator<Map.Entry<String,String>> set = src.entrySet().iterator();
         while (set.hasNext()) {
@@ -256,8 +207,8 @@ public class ConvertUtil {
         if (target == null || src == null) {
             return;
         }
-        Map<String, Method> targetMethodMap = returnSetMethold(target.getClass());
-        Map<String, Method> sourceMethodMap = returnGetMethold(src.getClass());
+        Map<String, Method> targetMethodMap = ReflectUtils.returnSetMethold(target.getClass());
+        Map<String, Method> sourceMethodMap = ReflectUtils.returnGetMethold(src.getClass());
         if(src instanceof Map) {
             Map<String,Object> vMap=(Map<String,Object>)src;
             Iterator<Map.Entry<String,Object>> set = vMap.entrySet().iterator();

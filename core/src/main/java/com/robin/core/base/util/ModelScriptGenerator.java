@@ -71,10 +71,12 @@ public class ModelScriptGenerator {
         }
     }
     public static String generateCreateSql(String clazzName,BaseSqlGen sqlGen) throws Exception{
-        StringBuilder builder=new StringBuilder();
-        String name="";
-        Map<String, String> tableMap = new HashMap<String, String>();
         Class<? extends BaseObject> clazz= (Class<? extends BaseObject>) Class.forName(clazzName);
+        return generateCreateSql(clazz,sqlGen);
+    }
+    public static String generateCreateSql(Class<? extends BaseObject> clazz,BaseSqlGen sqlGen) throws Exception{
+        StringBuilder builder=new StringBuilder();
+        Map<String, String> tableMap = new HashMap<String, String>();
         List<AnnotationRetrevior.FieldContent> fields = AnnotationRetrevior.getMappingFieldsCache(clazz);
         AnnotationRetrevior.FieldContent primarycol=AnnotationRetrevior.getPrimaryField(fields);
         builder.append("create table ");
@@ -84,10 +86,10 @@ public class ModelScriptGenerator {
         builder.append(tableMap.get("tableName")).append("(").append("\n");
         for (AnnotationRetrevior.FieldContent field : fields) {
             if(field.isPrimary() && field.getPrimaryKeys()!=null){
-                builder.append("\t").append(sqlGen.getCreateFieldPart(fieldContentToMap(field)).toLowerCase()).append(",\n");
+                builder.append("\t").append(sqlGen.getCreateFieldPart(AnnotationRetrevior.fieldContentToMap(field)).toLowerCase()).append(",\n");
             }
             if (field.getDataType() != null) {
-                builder.append("\t").append(sqlGen.getCreateFieldPart(fieldContentToMap(field)).toLowerCase()).append(",\n");
+                builder.append("\t").append(sqlGen.getCreateFieldPart(AnnotationRetrevior.fieldContentToMap(field)).toLowerCase()).append(",\n");
             }
         }
         if(primarycol!=null){
@@ -96,7 +98,6 @@ public class ModelScriptGenerator {
                 for(AnnotationRetrevior.FieldContent fieldContent:primarycol.getPrimaryKeys()){
                     pkColumns.add(fieldContent.getFieldName());
                 }
-
             }else{
                 pkColumns.add(primarycol.getFieldName());
             }
@@ -108,13 +109,5 @@ public class ModelScriptGenerator {
         builder.append(");\n");
         return builder.toString();
     }
-    private static Map<String,Object> fieldContentToMap(AnnotationRetrevior.FieldContent fieldContent){
-        Map<String,Object> retMap=new HashMap<>();
-        retMap.put("field",fieldContent.getFieldName());
-        retMap.put("datatype",fieldContent.getDataType());
-        retMap.put("precise",String.valueOf(fieldContent.getPrecise()));
-        retMap.put("scale",String.valueOf(fieldContent.getScale()));
-        retMap.put("length",String.valueOf(fieldContent.getLength()));
-        return retMap;
-    }
+
 }

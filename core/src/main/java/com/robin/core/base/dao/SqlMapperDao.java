@@ -1,6 +1,7 @@
 package com.robin.core.base.dao;
 
 import com.robin.core.base.exception.DAOException;
+import com.robin.core.base.reflect.ReflectUtils;
 import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.query.mapper.SqlMapperConfigure;
 import com.robin.core.query.mapper.segment.*;
@@ -163,7 +164,7 @@ public class SqlMapperDao extends JdbcDaoSupport {
     }
 
     private void setGenerateKey(Object targetObj, String columnName, Number number) throws Exception {
-        Map<String, Method> methodMap = ConvertUtil.returnSetMethold(targetObj.getClass());
+        Map<String, Method> methodMap = ReflectUtils.returnSetMethold(targetObj.getClass());
         if (methodMap.containsKey(columnName)) {
             methodMap.get(columnName).invoke(targetObj, ConvertUtil.parseParameter(methodMap.get(columnName).getParameterTypes()[0], number));
         }

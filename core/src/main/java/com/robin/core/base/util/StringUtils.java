@@ -249,6 +249,9 @@ public class StringUtils {
 		md.update(inputStr.getBytes());
 		return DatatypeConverter.printHexBinary(md.digest()).toUpperCase();
 	}
+	public static boolean isEmpty(Object object){
+		return object!=null && !object.toString().isEmpty();
+	}
 	public static void main(String[] args){
 		System.out.println(genarateRandomUpperLowerChar(8));
 	}

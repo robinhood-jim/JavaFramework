@@ -16,6 +16,7 @@
 package com.robin.core.base.dao;
 
 import com.robin.core.base.exception.DAOException;
+import com.robin.core.base.reflect.ReflectUtils;
 import com.robin.core.base.util.Const;
 import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.query.util.PageQuery;
@@ -353,7 +354,7 @@ public class CommJdbcUtil {
                 if (target instanceof HashMap) {
                     ((HashMap)target).put(columnName,targetValue);
                 } else {
-                    Map<String, Method> setMethods = ConvertUtil.returnSetMethold(target.getClass());
+                    Map<String, Method> setMethods = ReflectUtils.returnSetMethold(target.getClass());
                     if(setMethods.containsKey(columnName)) {
                         setMethods.get(columnName).invoke(target,targetValue);
                     }

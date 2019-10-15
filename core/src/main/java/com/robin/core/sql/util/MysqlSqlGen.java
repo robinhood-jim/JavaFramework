@@ -125,11 +125,11 @@ public class MysqlSqlGen extends AbstractSqlGen implements BaseSqlGen{
 		}else if(dataType.equals(Const.META_TYPE_DATE)){
 			builder.append("DATE");
 		}else if(dataType.equals(Const.META_TYPE_TIMESTAMP)){
-			builder.append("DATETIME");
+			builder.append("TIMESTAMP");
 		}else if(dataType.equals(Const.META_TYPE_STRING)){
 			int length=Integer.parseInt(fieldMap.get("length").toString());
 			if(length==0){
-				length=16;
+				length=32;
 			}
 			if(length==1) {
                 builder.append("CHAR(1)");

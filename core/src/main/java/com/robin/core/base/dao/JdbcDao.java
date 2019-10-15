@@ -169,19 +169,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
         }
     }
 
-    private void queryByParamter(QueryString qs, PageQuery pageQuery) throws DAOException {
 
-        String querySQL = sqlGen.generateSqlBySelectId(qs, pageQuery);
-        if (logger.isDebugEnabled()) {
-            logger.debug((new StringBuilder().append("querySQL: ").append(querySQL).toString()));
-        }
-        if ((pageQuery.getParameterArr() != null && pageQuery.getParameterArr().length > 0) || !pageQuery.getNamedParameters().isEmpty()) {
-            CommJdbcUtil.queryByPreparedParamter(this.getJdbcTemplate(),getNamedJdbcTemplate(),lobHandler, sqlGen, qs, pageQuery);
-        } else {
-            CommJdbcUtil.queryByReplaceParamter(this.getJdbcTemplate(), lobHandler, sqlGen, qs, pageQuery);
-        }
-
-    }
 
 
     @Override
@@ -703,7 +691,20 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
         } catch (Exception ex) {
             throw wrapException(ex);
         }
+    }
 
+
+
+    public void setSqlGen(BaseSqlGen sqlGen) {
+        this.sqlGen = sqlGen;
+    }
+
+    public void setQueryFactory(QueryFactory queryFactory) {
+        this.queryFactory = queryFactory;
+    }
+
+    public void setLobHandler(LobHandler lobHandler) {
+        this.lobHandler = lobHandler;
     }
 
     private String getWholeSelectSql(Class<? extends BaseObject> clazz) throws DAOException {
@@ -718,17 +719,18 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
             throw new DAOException(ex);
         }
     }
+    private void queryByParamter(QueryString qs, PageQuery pageQuery) throws DAOException {
 
-    public void setSqlGen(BaseSqlGen sqlGen) {
-        this.sqlGen = sqlGen;
-    }
+        String querySQL = sqlGen.generateSqlBySelectId(qs, pageQuery);
+        if (logger.isDebugEnabled()) {
+            logger.debug((new StringBuilder().append("querySQL: ").append(querySQL).toString()));
+        }
+        if ((pageQuery.getParameterArr() != null && pageQuery.getParameterArr().length > 0) || !pageQuery.getNamedParameters().isEmpty()) {
+            CommJdbcUtil.queryByPreparedParamter(this.getJdbcTemplate(),getNamedJdbcTemplate(),lobHandler, sqlGen, qs, pageQuery);
+        } else {
+            CommJdbcUtil.queryByReplaceParamter(this.getJdbcTemplate(), lobHandler, sqlGen, qs, pageQuery);
+        }
 
-    public void setQueryFactory(QueryFactory queryFactory) {
-        this.queryFactory = queryFactory;
-    }
-
-    public void setLobHandler(LobHandler lobHandler) {
-        this.lobHandler = lobHandler;
     }
 
     private long executeSqlWithReturn(List<AnnotationRetrevior.FieldContent> field, final String sql, BaseObject object)

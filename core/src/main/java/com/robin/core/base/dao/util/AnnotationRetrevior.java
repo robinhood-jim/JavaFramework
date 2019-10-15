@@ -400,6 +400,15 @@ public class AnnotationRetrevior {
         }
         return null;
     }
+    public static Map<String,Object> fieldContentToMap(FieldContent fieldContent){
+        Map<String,Object> retMap=new HashMap<>();
+        retMap.put("field",fieldContent.getFieldName());
+        retMap.put("datatype",fieldContent.getDataType());
+        retMap.put("precise",String.valueOf(fieldContent.getPrecise()));
+        retMap.put("scale",String.valueOf(fieldContent.getScale()));
+        retMap.put("length",String.valueOf(fieldContent.getLength()));
+        return retMap;
+    }
 
     private static void wrapValue(PreparedStatement ps, LobHandler lobHandler, AnnotationRetrevior.FieldContent field, BaseObject object, int pos) throws SQLException {
         Object value = getvalueFromVO(field, object);
