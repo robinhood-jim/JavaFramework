@@ -22,6 +22,7 @@ public class DB2DataBaseMeta extends BaseDataBaseMeta implements DataBaseInterfa
 
 	public DB2DataBaseMeta(DataBaseParam param) {
 		super(param);
+		setDbType(BaseDataBaseMeta.TYPE_DB2);
 		param.setDriverClassName("com.ibm.db2.jcc.DB2Driver");
 	}
 

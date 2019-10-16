@@ -24,6 +24,7 @@ public class OracleRacDataBaseMeta  extends BaseDataBaseMeta implements DataBase
 
 	public OracleRacDataBaseMeta(DataBaseParam param) {
 		super(param);
+		setDbType(BaseDataBaseMeta.TYPE_ORACLERAC);
 		param.setDriverClassName("oracle.jdbc.driver.OracleDriver");
 	}
 

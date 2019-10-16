@@ -11,6 +11,8 @@ import java.util.concurrent.TimeUnit;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.robin.core.base.annotation.MappingField;
+import com.robin.core.base.spring.SpringContextHolder;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -55,14 +57,19 @@ public class ReflectUtils {
 			}
 		}
 	}
-	public static final Map<String,Method> returnGetMethold(Class clazz){
+	public static final Map<String,Method> returnGetMethods(Class clazz){
+		Map<String,Method> map=null;
 		if(cachedGetMethod.getIfPresent(clazz.getCanonicalName())==null){
-			Map<String,Method> map=new HashMap<>();
-			Method[] methods=clazz.getMethods();
-			for(Method method:methods){
-				if(method.getName().startsWith("get")){
-					String name=StringUtils.uncapitalize(method.getName().substring(3));
-					map.put(name,method);
+			if(isUseClassGraphForReflect()){
+				map=SpringContextHolder.getBean(ClassGraphReflector.class).returnGetMethods(clazz);
+			}else {
+				map = new HashMap<>();
+				Method[] methods = clazz.getMethods();
+				for (Method method : methods) {
+					if (method.getName().startsWith("get") && method.getParameterTypes().length==0) {
+						String name = StringUtils.uncapitalize(method.getName().substring(3));
+						map.put(name, method);
+					}
 				}
 			}
 			if(!map.isEmpty()) {
@@ -72,14 +79,19 @@ public class ReflectUtils {
 		return cachedGetMethod.getIfPresent(clazz.getCanonicalName());
 	}
 
-	public static final Map<String,Method> returnSetMethold(Class clazz){
+	public static final Map<String,Method> returnSetMethods(Class clazz){
+		Map<String,Method> map=null;
 		if(cachedSetMethod.getIfPresent(clazz.getCanonicalName())==null){
-			Method[] methods=clazz.getMethods();
-			Map<String,Method> map=new HashMap<>();
-			for(Method method:methods){
-				if(method.getName().startsWith("set")){
-					String name=StringUtils.uncapitalize(method.getName().substring(3));
-					map.put(name,method);
+			if(isUseClassGraphForReflect()){
+				map=SpringContextHolder.getBean(ClassGraphReflector.class).returnSetMethods(clazz);
+			}else {
+				Method[] methods = clazz.getMethods();
+				map = new HashMap<>();
+				for (Method method : methods) {
+					if (method.getName().startsWith("set") && method.getParameterTypes().length==1) {
+						String name = StringUtils.uncapitalize(method.getName().substring(3));
+						map.put(name, method);
+					}
 				}
 			}
 			if(!map.isEmpty()) {
@@ -87,6 +99,24 @@ public class ReflectUtils {
 			}
 		}
 		return cachedSetMethod.getIfPresent(clazz.getCanonicalName());
+	}
+	public static boolean isAnnotationClassWithAnnotationFields(Class clazz,Class annotationClazz,Class annotationFields){
+		if(!isUseClassGraphForReflect()) {
+			if (clazz.getAnnotation(annotationClazz) != null) {
+				Field[] fields = clazz.getDeclaredFields();
+				for (Field field : fields) {
+					MappingField mapfield = field.getAnnotation(MappingField.class);
+					if (mapfield != null) {
+						return true;
+					}
+				}
+				return false;
+			} else {
+				return false;
+			}
+		}else{
+			return SpringContextHolder.getBean(ClassGraphReflector.class).isAnnotationClassWithAnnotationFields(clazz,annotationClazz,annotationFields);
+		}
 	}
 	private static final Method getMethodByName(Class clazz,String methodName){
 		try{
@@ -103,6 +133,12 @@ public class ReflectUtils {
 
 		}
 		return null;
+	}
+	private static boolean isUseClassGraphForReflect(){
+		if(SpringContextHolder.getApplicationContext()!=null && SpringContextHolder.getBean(ClassGraphReflector.class)!=null){
+			return true;
+		}
+		return false;
 	}
 
 }

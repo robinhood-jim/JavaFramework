@@ -200,6 +200,10 @@
             <groupId>org.graalvm</groupId>
             <artifactId>graal-sdk</artifactId>
         </dependency>
+        <dependency>
+            <groupId>io.github.classgraph</groupId>
+            <artifactId>classgraph</artifactId>
+        </dependency>
 
 
     </dependencies>
@@ -271,6 +275,12 @@
                     </execution>
                 </executions>
                 <configuration>
+                    <exclusions>
+                        <exclusion>
+                            <groupId>io.github.classgraph</groupId>
+                            <artifactId>classgraph</artifactId>
+                        </exclusion>
+                    </exclusions>
                     <proguardVersion>5.1</proguardVersion>
                     <injar>core-1.0-SNAPSHOT.jar</injar>
                     <addMavenDescriptor>true</addMavenDescriptor>

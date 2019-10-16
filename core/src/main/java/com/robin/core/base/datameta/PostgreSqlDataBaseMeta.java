@@ -22,6 +22,7 @@ public class PostgreSqlDataBaseMeta extends BaseDataBaseMeta{
 
 	public PostgreSqlDataBaseMeta(DataBaseParam param) {
 		super(param);
+		setDbType(BaseDataBaseMeta.TYPE_PGSQL);
 		param.setDriverClassName("org.postgresql.Driver");
 	}
 

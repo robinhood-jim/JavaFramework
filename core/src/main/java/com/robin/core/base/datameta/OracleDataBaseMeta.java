@@ -26,6 +26,7 @@ public class OracleDataBaseMeta extends BaseDataBaseMeta implements DataBaseInte
 	public static String ORA_TYPE_CLUSTER="2";
 	public OracleDataBaseMeta(DataBaseParam param) {
 		super(param);
+		setDbType(BaseDataBaseMeta.TYPE_ORACLE);
 		param.setDriverClassName("oracle.jdbc.driver.OracleDriver");
 	}
 

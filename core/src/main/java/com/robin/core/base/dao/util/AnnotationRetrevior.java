@@ -20,6 +20,7 @@ import com.robin.core.base.annotation.MappingField;
 import com.robin.core.base.exception.DAOException;
 import com.robin.core.base.model.BaseObject;
 import com.robin.core.base.model.BasePrimaryObject;
+import com.robin.core.base.reflect.ReflectUtils;
 import com.robin.core.base.util.Const;
 import org.springframework.jdbc.support.lob.LobHandler;
 
@@ -181,6 +182,10 @@ public class AnnotationRetrevior {
     }
 
     public static void validateEntity(BaseObject object) throws DAOException {
+        //check model must using Annotation MappingEntity or Jpa Entity
+        if(!ReflectUtils.isAnnotationClassWithAnnotationFields(object.getClass(),MappingEntity.class,MappingField.class) && !ReflectUtils.isAnnotationClassWithAnnotationFields(object.getClass(),Entity.class,Column.class)){
+            throw new DAOException("Model object "+ object.getClass().getSimpleName() +" must using Annotation MappingEntity or Jpa Entity");
+        }
         Map<String, FieldContent> fieldsMap = getMappingFieldsMapCache(object.getClass());
         Iterator<Map.Entry<String, FieldContent>> iterator = fieldsMap.entrySet().iterator();
         try {
@@ -207,6 +212,12 @@ public class AnnotationRetrevior {
         } catch (Exception ex) {
             throw new DAOException(ex);
         }
+    }
+    public static boolean isBaseObjectClassValid(Class<? extends BaseObject> clazz) throws DAOException{
+        if(!ReflectUtils.isAnnotationClassWithAnnotationFields(clazz,MappingEntity.class,MappingField.class) && !ReflectUtils.isAnnotationClassWithAnnotationFields(clazz,Entity.class,Column.class)){
+            throw new DAOException("Model object "+clazz.getSimpleName() +" must using Annotation MappingEntity or Jpa Entity");
+        }
+        return true;
     }
 
     private static FieldContent retrieveFieldJpa(Field field, Class<? extends BaseObject> clazz) throws DAOException {
@@ -407,6 +418,7 @@ public class AnnotationRetrevior {
         retMap.put("precise",String.valueOf(fieldContent.getPrecise()));
         retMap.put("scale",String.valueOf(fieldContent.getScale()));
         retMap.put("length",String.valueOf(fieldContent.getLength()));
+        retMap.put("nullable",!fieldContent.isRequired());
         return retMap;
     }
 

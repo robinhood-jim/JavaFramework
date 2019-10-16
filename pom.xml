@@ -95,7 +95,7 @@
         <guava.version>18.0</guava.version>
         <jsoup.version>1.6.3</jsoup.version>
         <freemarker.version>2.3.18</freemarker.version>
-        <compress.version>1.18</compress.version>
+        <compress.version>1.19</compress.version>
         <helix.version>0.6.5</helix.version>
         <quartz.version>2.2.1</quartz.version>
         <oracle.version>10.2.0.4.0</oracle.version>
@@ -911,6 +911,11 @@
                 <groupId>org.apache.calcite</groupId>
                 <artifactId>calcite-core</artifactId>
                 <version>${calcite.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.github.classgraph</groupId>
+                <artifactId>classgraph</artifactId>
+                <version>4.8.48</version>
             </dependency>
             <!-- Other tool end -->
         </dependencies>

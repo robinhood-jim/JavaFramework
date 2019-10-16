@@ -164,7 +164,7 @@ public class SqlMapperDao extends JdbcDaoSupport {
     }
 
     private void setGenerateKey(Object targetObj, String columnName, Number number) throws Exception {
-        Map<String, Method> methodMap = ReflectUtils.returnSetMethold(targetObj.getClass());
+        Map<String, Method> methodMap = ReflectUtils.returnSetMethods(targetObj.getClass());
         if (methodMap.containsKey(columnName)) {
             methodMap.get(columnName).invoke(targetObj, ConvertUtil.parseParameter(methodMap.get(columnName).getParameterTypes()[0], number));
         }

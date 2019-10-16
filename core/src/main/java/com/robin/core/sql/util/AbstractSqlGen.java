@@ -15,7 +15,9 @@
  */
 package com.robin.core.sql.util;
 
+import com.robin.core.base.dao.util.AnnotationRetrevior;
 import com.robin.core.base.util.Const;
+import com.robin.core.base.util.StringUtils;
 import com.robin.core.query.util.PageQuery;
 import com.robin.core.query.util.QueryParam;
 import com.robin.core.query.util.QueryString;
@@ -278,7 +280,7 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
     }
 
     @Override
-    public String getCreateFieldPart(Map<String, Object> fieldMap) {
+    public String getFieldDefineSqlPart(Map<String, Object> fieldMap) {
         String datatype = fieldMap.get("datatype").toString();
         StringBuilder builder = new StringBuilder();
         String name = fieldMap.get("field").toString();
@@ -286,6 +288,9 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
             name = fieldMap.get("name").toString();
         }
         builder.append(name).append(" ").append(returnTypeDef(datatype, fieldMap));
+        if(fieldMap.containsKey("nullable") && !(Boolean) fieldMap.get("nullable")){
+            builder.append(" NOT NULL");
+        }
         return builder.toString();
     }
 
@@ -501,7 +506,20 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
         return new Integer[]{nBegin, tonums};
     }
 
-
+    @Override
+    public String getAlertColumnSqlPart(AnnotationRetrevior.EntityContent entityContent, AnnotationRetrevior.FieldContent fieldContent, AlertType type) {
+        StringBuilder builder=new StringBuilder();
+        String fullName= StringUtils.isEmpty(entityContent.getSchema())?entityContent.getTableName():entityContent.getSchema()+"."+entityContent.getTableName();
+        builder.append("ALERT TABLE ").append(fullName);
+        if(type.equals(AlertType.ALERT)){
+            builder.append(" ALERT COLUMN ").append(getFieldDefineSqlPart(AnnotationRetrevior.fieldContentToMap(fieldContent)));
+        }else if(type.equals(AlertType.ADD)){
+            builder.append(" ADD COLUMN ").append(getFieldDefineSqlPart(AnnotationRetrevior.fieldContentToMap(fieldContent)));
+        }else if(type.equals(AlertType.DEL)){
+            builder.append(" DROP COLUMN ").append(fieldContent.getFieldName());
+        }
+        return builder.toString();
+    }
 
     protected boolean isSchemaIllegal(String schema) {
         boolean is_illeagl = true;

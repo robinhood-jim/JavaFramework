@@ -17,12 +17,16 @@ package com.robin.core.test.db;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.robin.core.base.annotation.MappingEntity;
+import com.robin.core.base.annotation.MappingField;
 import com.robin.core.base.datameta.BaseDataBaseMeta;
 import com.robin.core.base.datameta.DataBaseMetaFactory;
 import com.robin.core.base.datameta.DataBaseParam;
+import com.robin.core.base.service.SqlMapperService;
 import com.robin.core.base.spring.DynamicBeanReader;
 import com.robin.core.base.spring.JdbcDaoDynamicBean;
 import com.robin.core.base.util.Const;
@@ -31,11 +35,17 @@ import com.robin.core.query.util.Condition;
 import com.robin.core.sql.util.FilterCondition;
 import com.robin.core.test.model.*;
 import com.robin.core.test.service.*;
+import io.github.classgraph.*;
 import junit.framework.TestCase;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -204,6 +214,34 @@ public class JdbcDaoTest extends TestCase {
         condList.add(new FilterCondition("userPassword", Condition.EQUALS, StringUtils.getMd5Encry("123456")));
         condList.add(new FilterCondition("accountType", Condition.EQUALS,"1"));
         List<SysUser> list=sysUserService.queryByCondition(condList,"");
+    }
+    @Test
+    public void testQueryAndInsertMapper(){
+        TestModel model=new TestModel();
+        model.setName("test");
+        model.setDescription("test");
+        model.setCsId(2L);
+        //model.setId(22L);
+        Map<String,Object> paramMap=new HashMap<>();
+        paramMap.put("name","%a%");
+        paramMap.put("description","%a%");
+        paramMap.put("csId",1L);
+        List list=SpringContextHolder.getBean(SqlMapperService.class).queryByMapper("com.robin.test.query1","select1",new PageQuery(),paramMap);
+        int row=SpringContextHolder.getBean(SqlMapperService.class).executeByMapper("com.robin.test.query1","insert1",model);
+        //int row=SpringContextHolder.getBean(SqlMapperService.class).executeByMapper("com.robin.test.query1","update1",model);
+        System.out.println(model);
+    }
+    @Test
+    public void testAnnotationAware(){
+        try(ScanResult scanResult=new ClassGraph().verbose().enableAllInfo().whitelistPackages("com.robin").scan()){
+
+            for(ClassInfo info:scanResult.getClassesWithAnnotation(MappingEntity.class.getCanonicalName())){
+                AnnotationInfo rinfo=info.getAnnotationInfo(MappingEntity.class.getCanonicalName());
+                FieldInfoList flist=info.getFieldInfo().filter(fieldInfo -> fieldInfo.hasAnnotation(MappingField.class.getCanonicalName()));
+                System.out.println(flist);
+                System.out.println( info.getAnnotations());
+            }
+        }
     }
 
 }

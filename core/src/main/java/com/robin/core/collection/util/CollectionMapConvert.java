@@ -23,7 +23,6 @@ import com.robin.core.script.ScriptExecutor;
 
 import javax.script.Bindings;
 import javax.script.CompiledScript;
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.*;
 
@@ -48,7 +47,7 @@ public class CollectionMapConvert<T> {
             throw new MissingConfigException("Primitive type can not using this function!");
         }
         Map<String, T> retMap = new HashMap<String, T>();
-        Map<String, Method> methodMap = ReflectUtils.returnGetMethold(listobj.get(0).getClass());
+        Map<String, Method> methodMap = ReflectUtils.returnGetMethods(listobj.get(0).getClass());
         Method method = methodMap.get(identityCol);
         if (method != null) {
             for (int i = 0; i < listobj.size(); i++) {
@@ -97,7 +96,7 @@ public class CollectionMapConvert<T> {
         }
         Method method = null;
         if (!(listobj.get(0) instanceof Map)) {
-            method = ReflectUtils.returnGetMethold(listobj.get(0).getClass()).get(parentCol);
+            method = ReflectUtils.returnGetMethods(listobj.get(0).getClass()).get(parentCol);
             if (method == null) {
                 throw new MissingConfigException("parent column not exists in object!");
             }
@@ -149,7 +148,7 @@ public class CollectionMapConvert<T> {
 
         Map<String, List<Object>> retMap = new HashMap<String, List<Object>>();
 
-        Map<String, Method> getMetholds = ReflectUtils.returnGetMethold(listobj.get(0).getClass());
+        Map<String, Method> getMetholds = ReflectUtils.returnGetMethods(listobj.get(0).getClass());
         Method method = getMetholds.get(parentCol);
         Method method1 = getMetholds.get(valueCol);
         if (method == null || method1 == null) {
@@ -190,7 +189,7 @@ public class CollectionMapConvert<T> {
         if (listobj.get(0).getClass().isPrimitive()) {
             throw new MissingConfigException("Primitive type can not using this function!");
         }
-        Method method = ReflectUtils.returnGetMethold(listobj.get(0).getClass()).get(colName);
+        Method method = ReflectUtils.returnGetMethods(listobj.get(0).getClass()).get(colName);
         if (method == null) {
             throw new MissingConfigException("parent column or value column not exist in object");
         }
@@ -220,7 +219,7 @@ public class CollectionMapConvert<T> {
         if (listobj.get(0).getClass().isPrimitive()) {
             throw new MissingConfigException("Primitive type can not using this function!");
         }
-        Map<String, Method> getMetholds = ReflectUtils.returnGetMethold(listobj.get(0).getClass());
+        Map<String, Method> getMetholds = ReflectUtils.returnGetMethods(listobj.get(0).getClass());
         if (getMetholds == null) {
             throw new MissingConfigException("object does not have get method");
         }
@@ -251,7 +250,7 @@ public class CollectionMapConvert<T> {
             throw new MissingConfigException("Primitive type can not using this function!");
         }
         StringBuilder buffer = new StringBuilder();
-        Method method = ReflectUtils.returnGetMethold(listobj.get(0).getClass()).get(colName);
+        Method method = ReflectUtils.returnGetMethods(listobj.get(0).getClass()).get(colName);
         if (method == null) {
             throw new MissingConfigException("column not exist in object");
         }
@@ -279,7 +278,7 @@ public class CollectionMapConvert<T> {
         if (listobj.get(0).getClass().isPrimitive()) {
             throw new MissingConfigException("Primitive type can not using this function!");
         }
-        Method method = ReflectUtils.returnGetMethold(listobj.get(0).getClass()).get(colName);
+        Method method = ReflectUtils.returnGetMethods(listobj.get(0).getClass()).get(colName);
         if (method == null) {
             throw new MissingConfigException("column not exist in object");
         }
@@ -298,7 +297,7 @@ public class CollectionMapConvert<T> {
         if (listobj.get(0).getClass().isPrimitive()) {
             throw new MissingConfigException("Primitive type can not using this function!");
         }
-        Map<String, Method> getMetholds = ReflectUtils.returnGetMethold(listobj.get(0).getClass());
+        Map<String, Method> getMetholds = ReflectUtils.returnGetMethods(listobj.get(0).getClass());
         if(getMetholds.isEmpty()){
             throw new MissingConfigException("target object contain no get methold!");
         }
@@ -324,7 +323,7 @@ public class CollectionMapConvert<T> {
         }
         Map<String, T> map = convertListToMap(newList, identifyCol);
         List<T> retList = new ArrayList<>();
-        Method method=ReflectUtils.returnGetMethold(orgList.get(0).getClass()).get(identifyCol);
+        Method method=ReflectUtils.returnGetMethods(orgList.get(0).getClass()).get(identifyCol);
         if (method == null) {
             throw new MissingConfigException("identify column not exist in object");
         }

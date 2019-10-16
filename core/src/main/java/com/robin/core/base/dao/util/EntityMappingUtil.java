@@ -12,12 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-/**
- * <p>Created at: 2019-08-16 11:01:31</p>
- *
- * @author robinjim
- * @version 1.0
- */
+
 public class EntityMappingUtil {
     public static InsertSegment getInsertSegment(BaseObject obj, BaseSqlGen sqlGen) throws DAOException {
         AnnotationRetrevior.EntityContent tableDef = AnnotationRetrevior.getMappingTableByCache(obj.getClass());
@@ -155,6 +150,7 @@ public class EntityMappingUtil {
     }
 
     public static SelectSegment getSelectPkSegment(Class<? extends BaseObject> clazz, Serializable id, BaseSqlGen sqlGen) throws Exception {
+        AnnotationRetrevior.isBaseObjectClassValid(clazz);
         AnnotationRetrevior.EntityContent tableDef = AnnotationRetrevior.getMappingTableByCache(clazz);
         List<AnnotationRetrevior.FieldContent> fields = AnnotationRetrevior.getMappingFieldsCache(clazz);
         StringBuilder sqlbuffer = new StringBuilder("select ");
@@ -191,6 +187,7 @@ public class EntityMappingUtil {
     }
 
     public static SelectSegment getSelectByVOSegment(Class<? extends BaseObject> type, BaseSqlGen sqlGen, BaseObject vo, Map<String, Object> additonMap, String orderByStr, String wholeSelectSql) throws Exception {
+        AnnotationRetrevior.isBaseObjectClassValid(type);
         List<Object> params = new ArrayList<>();
         StringBuilder builder=new StringBuilder();
         builder.append(wholeSelectSql).append(" where ");

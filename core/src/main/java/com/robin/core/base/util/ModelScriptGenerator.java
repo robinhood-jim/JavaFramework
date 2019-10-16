@@ -25,13 +25,15 @@ import java.util.*;
 import org.scannotation.AnnotationDB;
 import org.scannotation.ClasspathUrlFinder;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.context.support.FileSystemXmlApplicationContext;
 
 import com.robin.core.base.annotation.MappingEntity;
 import com.robin.core.base.dao.util.AnnotationRetrevior;
 import com.robin.core.base.model.BaseObject;
 import com.robin.core.sql.util.BaseSqlGen;
+import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.core.type.filter.AnnotationTypeFilter;
 
 public class ModelScriptGenerator {
     public static void main(String[] args) {
@@ -49,11 +51,15 @@ public class ModelScriptGenerator {
             db.scanArchives(urls[0]);
             BaseSqlGen sqlgen = context.getBean(BaseSqlGen.class);
             final Set<String> clazzNames = db.getAnnotationIndex().get(MappingEntity.class.getName());
+
+
+
+
             Iterator<String> iter = clazzNames.iterator();
             writer = new BufferedWriter(new FileWriter(new File(outputFile)));
             StringBuilder builder = new StringBuilder();
             while (iter.hasNext()) {
-                builder.append(generateCreateSql(iter.next(),sqlgen));
+                builder.append(ModelSqlGenerator.generateCreateSql(iter.next(),sqlgen));
             }
             writer.write(builder.toString());
             writer.flush();
@@ -70,44 +76,6 @@ public class ModelScriptGenerator {
             ((ClassPathXmlApplicationContext) context).close();
         }
     }
-    public static String generateCreateSql(String clazzName,BaseSqlGen sqlGen) throws Exception{
-        Class<? extends BaseObject> clazz= (Class<? extends BaseObject>) Class.forName(clazzName);
-        return generateCreateSql(clazz,sqlGen);
-    }
-    public static String generateCreateSql(Class<? extends BaseObject> clazz,BaseSqlGen sqlGen) throws Exception{
-        StringBuilder builder=new StringBuilder();
-        Map<String, String> tableMap = new HashMap<String, String>();
-        List<AnnotationRetrevior.FieldContent> fields = AnnotationRetrevior.getMappingFieldsCache(clazz);
-        AnnotationRetrevior.FieldContent primarycol=AnnotationRetrevior.getPrimaryField(fields);
-        builder.append("create table ");
-        if (tableMap.containsKey("schema")) {
-            builder.append(tableMap.get("schema")).append(".");
-        }
-        builder.append(tableMap.get("tableName")).append("(").append("\n");
-        for (AnnotationRetrevior.FieldContent field : fields) {
-            if(field.isPrimary() && field.getPrimaryKeys()!=null){
-                builder.append("\t").append(sqlGen.getCreateFieldPart(AnnotationRetrevior.fieldContentToMap(field)).toLowerCase()).append(",\n");
-            }
-            if (field.getDataType() != null) {
-                builder.append("\t").append(sqlGen.getCreateFieldPart(AnnotationRetrevior.fieldContentToMap(field)).toLowerCase()).append(",\n");
-            }
-        }
-        if(primarycol!=null){
-            List<String> pkColumns=new ArrayList<>();
-            if(primarycol.getPrimaryKeys()!=null){
-                for(AnnotationRetrevior.FieldContent fieldContent:primarycol.getPrimaryKeys()){
-                    pkColumns.add(fieldContent.getFieldName());
-                }
-            }else{
-                pkColumns.add(primarycol.getFieldName());
-            }
 
-            builder.append("\tPRIMARY KEY(").append(StringUtils.join(pkColumns.toArray(),",")).append(")");
-        }else {
-            builder.deleteCharAt(builder.length() - 2);
-        }
-        builder.append(");\n");
-        return builder.toString();
-    }
 
 }

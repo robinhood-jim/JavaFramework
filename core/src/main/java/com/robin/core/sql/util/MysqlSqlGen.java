@@ -15,6 +15,7 @@
  */
 package com.robin.core.sql.util;
 
+import com.robin.core.base.datameta.BaseDataBaseMeta;
 import com.robin.core.base.exception.DAOException;
 import com.robin.core.base.util.Const;
 import com.robin.core.query.util.PageQuery;
@@ -155,4 +156,8 @@ public class MysqlSqlGen extends AbstractSqlGen implements BaseSqlGen{
             return "`"+schema+"`";
         }
 	}
+    @Override
+    public String getDbType() {
+        return BaseDataBaseMeta.TYPE_MYSQL;
+    }
 }

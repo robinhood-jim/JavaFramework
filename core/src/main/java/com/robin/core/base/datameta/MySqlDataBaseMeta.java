@@ -22,6 +22,7 @@ public class MySqlDataBaseMeta extends BaseDataBaseMeta implements DataBaseInter
 
 	public MySqlDataBaseMeta(DataBaseParam param) {
 		super(param);
+		setDbType(BaseDataBaseMeta.TYPE_MYSQL);
 		if(param.getMainVersion()!=null && param.getMainVersion()!=0){
 			if(param.getMainVersion()==5){
 				param.setDriverClassName("com.mysql.jdbc.Driver");

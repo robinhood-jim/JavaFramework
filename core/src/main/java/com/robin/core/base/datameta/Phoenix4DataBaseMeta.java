@@ -22,6 +22,7 @@ public class Phoenix4DataBaseMeta extends BaseDataBaseMeta {
 
 	public Phoenix4DataBaseMeta(DataBaseParam param) {
 		super(param);
+		setDbType(BaseDataBaseMeta.TYPE_PHONEIX);
 	}
 
 

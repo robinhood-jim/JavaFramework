@@ -22,6 +22,7 @@ public class SybaseDataBaseMeta extends BaseDataBaseMeta{
 
 	public SybaseDataBaseMeta(DataBaseParam param) {
 		super(param);
+		setDbType(BaseDataBaseMeta.TYPE_SYBASE);
 		param.setDriverClassName("com.sybase.jdbc.SybDriver");
 	}
 

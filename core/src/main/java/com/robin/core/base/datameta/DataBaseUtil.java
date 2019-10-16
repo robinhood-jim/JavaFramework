@@ -192,7 +192,7 @@ public class DataBaseUtil {
         return columnlist;
     }
 
-    public static List<DataBaseColumnMeta> getTableMetaByTableName(DataSource source, String tablename, String DbOrtablespacename, BaseDataBaseMeta basemeta) throws RuntimeException {
+    public static List<DataBaseColumnMeta> getTableMetaByTableName(DataSource source, String tablename, String DbOrtablespacename, String dbType) throws RuntimeException {
         Connection conn;
         try {
             try {
@@ -200,7 +200,7 @@ public class DataBaseUtil {
             } catch (Exception ex) {
                 throw new RuntimeException("failed to get Connection from " + ex.getMessage());
             }
-            return getTableMetaByTableName(conn, tablename, DbOrtablespacename, basemeta);
+            return getTableMetaByTableName(conn, tablename, DbOrtablespacename, dbType);
         } catch (Exception ex) {
             ex.printStackTrace();
         } finally {
@@ -209,15 +209,10 @@ public class DataBaseUtil {
         return null;
     }
 
-    public static List<DataBaseColumnMeta> getTableMetaByTableName(JdbcDao dao, String tablename, String DbOrtablespacename, BaseDataBaseMeta basemeta) throws RuntimeException {
-        Connection conn;
+    public static List<DataBaseColumnMeta> getTableMetaByTableName(JdbcDao dao, String tablename, String DbOrtablespacename, String dbType) throws RuntimeException {
+
         try {
-            try {
-                conn = dao.getDataSource().getConnection();
-            } catch (Exception ex) {
-                throw new RuntimeException("failed to get Connection from " + ex.getMessage());
-            }
-            return getTableMetaByTableName(conn, tablename, DbOrtablespacename, basemeta);
+            return getTableMetaByTableName(dao.getDataSource(), tablename, DbOrtablespacename, dbType);
         } catch (Exception ex) {
             ex.printStackTrace();
         } finally {
@@ -226,7 +221,7 @@ public class DataBaseUtil {
         return null;
     }
 
-    public static List<DataBaseColumnMeta> getTableMetaByTableName(Connection conn, String tablename, String DbOrtablespacename, BaseDataBaseMeta basemeta) throws Exception {
+    public static List<DataBaseColumnMeta> getTableMetaByTableName(Connection conn, String tablename, String DbOrtablespacename, String dbType) throws Exception {
         List<DataBaseColumnMeta> columnlist = new ArrayList<DataBaseColumnMeta>();
 
         try {
@@ -257,7 +252,8 @@ public class DataBaseUtil {
 
                 DataBaseColumnMeta datameta = new DataBaseColumnMeta();
                 //TODO SqlServer2005 may failed for not support  get AUTOINCREMENT  attribute
-                if (!(basemeta instanceof OracleDataBaseMeta) && !(basemeta instanceof HiveDataBaseMeta) && !(basemeta instanceof PhoenixDataBaseMeta)) {
+                if (dbType!=BaseDataBaseMeta.TYPE_ORACLE && dbType!=BaseDataBaseMeta.TYPE_ORACLERAC && dbType!=BaseDataBaseMeta.TYPE_HIVE
+                        && dbType!=BaseDataBaseMeta.TYPE_HIVE2 && dbType!=BaseDataBaseMeta.TYPE_PHONEIX) {
                     String autoInc = rs.getString("IS_AUTOINCREMENT");
                     if (autoInc != null && "YES".equals(autoInc)) {
                         datameta.setIncrement(true);

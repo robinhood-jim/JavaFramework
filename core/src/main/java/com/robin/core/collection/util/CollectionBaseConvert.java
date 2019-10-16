@@ -15,6 +15,12 @@
  */
 package com.robin.core.collection.util;
 
+import com.robin.core.base.exception.MissingConfigException;
+import com.robin.core.base.reflect.ReflectUtils;
+import com.robin.core.base.util.StringUtils;
+
+import java.io.Serializable;
+import java.lang.reflect.Method;
 import java.util.*;
 
 public class CollectionBaseConvert {
@@ -91,6 +97,47 @@ public class CollectionBaseConvert {
             }
 		}
 		return retList;
+	}
+	public static Map<String,? extends Serializable> listToMap(List<? extends Serializable> list,String identifyColumn) throws Exception{
+		if(list==null || list.isEmpty()){
+			throw new MissingConfigException("ArrayList is Empty!");
+		}
+		Class<? extends Serializable> clazz=list.get(0).getClass();
+		if(clazz.isPrimitive()){
+			throw new MissingConfigException("Primitive type can not using this function!");
+		}
+		Method method= null;
+
+		if(!(list.get(0) instanceof HashMap)){
+			method= ReflectUtils.returnGetMethods(clazz).get(identifyColumn);
+			if(method==null){
+				throw new MissingConfigException("identify column not exists in object!");
+			}
+		}
+		Map<String,Serializable> map=new HashMap<>();
+		for(Serializable s:list){
+			if(s instanceof HashMap){
+				Object key=((HashMap)s).get(identifyColumn);
+				if(!StringUtils.isEmpty(key)){
+					map.put(key.toString(),s);
+				}
+			}else{
+				Object key=method.invoke(s,null);
+				if(!StringUtils.isEmpty(key)){
+					map.put(key.toString(),s);
+				}
+			}
+		}
+		return map;
+	}
+	private final void addMapToList(Map<String, List<Serializable>> retMap, String key, Serializable t) {
+		if (!retMap.containsKey(key)) {
+			List list = new ArrayList<>();
+			list.add(t);
+			retMap.put(key, list);
+		} else {
+			retMap.get(key).add(t);
+		}
 	}
 	public static List<Map.Entry<String, ? extends Comparable>> sortMapByValue(Map<String,? extends Comparable> inputMap, final boolean order){
 		List<Map.Entry<String,? extends Comparable>> list=new LinkedList<Map.Entry<String, ? extends Comparable>>(inputMap.entrySet());

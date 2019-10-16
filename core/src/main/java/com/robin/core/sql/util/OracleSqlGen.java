@@ -18,6 +18,7 @@ package com.robin.core.sql.util;
 import java.util.List;
 import java.util.Map;
 
+import com.robin.core.base.datameta.BaseDataBaseMeta;
 import com.robin.core.base.exception.QueryConfgNotFoundException;
 import com.robin.core.base.util.Const;
 import com.robin.core.query.util.PageQuery;
@@ -196,5 +197,10 @@ public class OracleSqlGen extends AbstractSqlGen implements BaseSqlGen {
 		}
 
 		return builder.toString();
+	}
+
+	@Override
+	public String getDbType() {
+		return BaseDataBaseMeta.TYPE_ORACLE;
 	}
 }

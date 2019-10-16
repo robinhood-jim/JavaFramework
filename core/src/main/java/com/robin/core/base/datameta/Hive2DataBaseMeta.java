@@ -22,6 +22,7 @@ public class  Hive2DataBaseMeta extends BaseDataBaseMeta{
 
 	public Hive2DataBaseMeta(DataBaseParam param) {
 		super(param);
+		setDbType(BaseDataBaseMeta.TYPE_HIVE2);
 		if(param.getDatabaseName()==null || "".equals(param.getDatabaseName())){
 			param.setDatabaseName("default");
 		}

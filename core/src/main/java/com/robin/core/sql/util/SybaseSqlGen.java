@@ -18,6 +18,7 @@ package com.robin.core.sql.util;
 import java.util.List;
 import java.util.Map;
 
+import com.robin.core.base.datameta.BaseDataBaseMeta;
 import com.robin.core.base.exception.DAOException;
 import com.robin.core.base.util.Const;
 import com.robin.core.query.util.PageQuery;
@@ -123,5 +124,9 @@ public class SybaseSqlGen extends AbstractSqlGen implements BaseSqlGen{
 			builder.append("BLOB");
 		}
 		return builder.toString();
+	}
+	@Override
+	public String getDbType() {
+		return BaseDataBaseMeta.TYPE_SYBASE;
 	}
 }

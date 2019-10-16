@@ -22,6 +22,7 @@ public class PhoenixDataBaseMeta extends BaseDataBaseMeta {
 
 	public PhoenixDataBaseMeta(DataBaseParam param) {
 		super(param);
+		setDbType(BaseDataBaseMeta.TYPE_PHONEIX);
 		param.setDriverClassName("org.apache.phoenix.queryserver.client.Driver");
 	}
 

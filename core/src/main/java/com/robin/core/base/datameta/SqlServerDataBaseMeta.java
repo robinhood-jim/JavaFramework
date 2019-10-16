@@ -22,6 +22,7 @@ public class SqlServerDataBaseMeta extends BaseDataBaseMeta {
 
 	public SqlServerDataBaseMeta(DataBaseParam param) {
 		super(param);
+		setDbType(BaseDataBaseMeta.TYPE_SQLSERVER);
 		param.setDriverClassName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
 	}
 

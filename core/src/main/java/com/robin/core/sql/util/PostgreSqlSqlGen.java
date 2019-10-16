@@ -18,6 +18,7 @@ package com.robin.core.sql.util;
 import java.util.List;
 import java.util.Map;
 
+import com.robin.core.base.datameta.BaseDataBaseMeta;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -140,5 +141,9 @@ public class PostgreSqlSqlGen extends AbstractSqlGen implements BaseSqlGen {
 			builder.append("BYTEA");
 		}
 		return builder.toString();
+	}
+	@Override
+	public String getDbType() {
+		return BaseDataBaseMeta.TYPE_PGSQL;
 	}
 }

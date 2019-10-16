@@ -15,8 +15,6 @@
  */
 package com.robin.core.convert.util;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 import com.robin.core.base.model.BaseObject;
 import com.robin.core.base.reflect.ReflectUtils;
 import com.robin.core.base.util.Const;
@@ -26,12 +24,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 
 import java.lang.reflect.Method;
-import java.lang.reflect.Type;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 public class ConvertUtil {
 
@@ -42,8 +38,8 @@ public class ConvertUtil {
             return;
         }
 
-        Map<String, Method> srcmap = ReflectUtils.returnGetMethold(src.getClass());
-        Map<String,Method> targetMap= ReflectUtils.returnSetMethold(target.getClass());
+        Map<String, Method> srcmap = ReflectUtils.returnGetMethods(src.getClass());
+        Map<String,Method> targetMap= ReflectUtils.returnSetMethods(target.getClass());
 
         Iterator<Map.Entry<String,Method>> iterator=srcmap.entrySet().iterator();
         while(iterator.hasNext()){
@@ -61,7 +57,7 @@ public class ConvertUtil {
             return;
         }
 
-        Map<String,Method> getMetholds= ReflectUtils.returnGetMethold(src.getClass());
+        Map<String,Method> getMetholds= ReflectUtils.returnGetMethods(src.getClass());
         Iterator<Map.Entry<String,Method>> iterator=getMetholds.entrySet().iterator();
         while(iterator.hasNext()){
             Map.Entry<String,Method> entry=iterator.next();
@@ -76,7 +72,7 @@ public class ConvertUtil {
         if (src == null || target == null) {
             return;
         }
-        Map<String,Method> getMetholds= ReflectUtils.returnGetMethold(src.getClass());
+        Map<String,Method> getMetholds= ReflectUtils.returnGetMethods(src.getClass());
         Iterator<Map.Entry<String,Method>> iterator=getMetholds.entrySet().iterator();
         while(iterator.hasNext()){
             Map.Entry<String,Method> entry=iterator.next();
@@ -92,7 +88,7 @@ public class ConvertUtil {
             return;
         }
         Iterator<Map.Entry<String, String>> it = src.entrySet().iterator();
-        Map<String, Method> methodMap = ReflectUtils.returnSetMethold(target.getClass());
+        Map<String, Method> methodMap = ReflectUtils.returnSetMethods(target.getClass());
         while (it.hasNext()) {
             Map.Entry<String, String> entry = it.next();
             String key = entry.getKey();
@@ -118,7 +114,7 @@ public class ConvertUtil {
         }
 
         Iterator<Map.Entry<String,Object>> it = src.entrySet().iterator();
-        Map<String,Method> targetMap= ReflectUtils.returnSetMethold(target.getClass());
+        Map<String,Method> targetMap= ReflectUtils.returnSetMethods(target.getClass());
         while (it.hasNext()) {
             Map.Entry<String,Object> entry=it.next();
             String key = entry.getKey();
@@ -152,8 +148,8 @@ public class ConvertUtil {
         if (!target.getClass().equals(src.getClass())) {
             throw new RuntimeException("");
         }
-        Map<String, Method> srcmap = ReflectUtils.returnGetMethold(src.getClass());
-        Map<String,Method> targetMap= ReflectUtils.returnSetMethold(target.getClass());
+        Map<String, Method> srcmap = ReflectUtils.returnGetMethods(src.getClass());
+        Map<String,Method> targetMap= ReflectUtils.returnSetMethods(target.getClass());
 
         List<String> dirtyColumnList = src.getDirtyColumn();
         for (int i = 0; i < dirtyColumnList.size(); i++) {
@@ -179,7 +175,7 @@ public class ConvertUtil {
             return;
         }
 
-        Map<String, Method> map = ReflectUtils.returnSetMethold(target.getClass());
+        Map<String, Method> map = ReflectUtils.returnSetMethods(target.getClass());
 
         Iterator<Map.Entry<String,String>> set = src.entrySet().iterator();
         while (set.hasNext()) {
@@ -207,8 +203,8 @@ public class ConvertUtil {
         if (target == null || src == null) {
             return;
         }
-        Map<String, Method> targetMethodMap = ReflectUtils.returnSetMethold(target.getClass());
-        Map<String, Method> sourceMethodMap = ReflectUtils.returnGetMethold(src.getClass());
+        Map<String, Method> targetMethodMap = ReflectUtils.returnSetMethods(target.getClass());
+        Map<String, Method> sourceMethodMap = ReflectUtils.returnGetMethods(src.getClass());
         if(src instanceof Map) {
             Map<String,Object> vMap=(Map<String,Object>)src;
             Iterator<Map.Entry<String,Object>> set = vMap.entrySet().iterator();
