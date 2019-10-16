@@ -58,10 +58,12 @@ public class ConfigResourceScanner {
                     throw new MissingConfigException("no query XML found in path!");
                 }
                 File[] files = file.listFiles();
-                for (int i = 0; i < files.length; i++) {
-                    File subfile = files[i];
-                    if (subfile.getName().toLowerCase().endsWith("xml")) {
-                        resList.add(new FileInputStream(subfile));
+                if(files!=null) {
+                    for (int i = 0; i < files.length; i++) {
+                        File subfile = files[i];
+                        if (subfile.getName().toLowerCase().endsWith("xml")) {
+                            resList.add(new FileInputStream(subfile));
+                        }
                     }
                 }
             }

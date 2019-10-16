@@ -255,7 +255,7 @@ public class ProjectInfoContorller extends BaseCrudDhtmlxController<ProjectInfo,
     public String saveLibrary(HttpServletRequest request, HttpServletResponse response) {
         String projId = request.getParameter("projId");
         String[] ids = request.getParameter("ids").split(";");
-        System.out.println(ids);
+
         javaProjectRelayService.addProjectRelation(projId, ids);
         request.setAttribute("msg", "");
         return null;

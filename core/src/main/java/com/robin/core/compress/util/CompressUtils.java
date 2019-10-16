@@ -77,8 +77,10 @@ public class CompressUtils {
             File[] files = src.listFiles();
             out.putNextEntry(new ZipEntry(base + "/"));
             base = StringUtils.isBlank(base) ? "" : base + "/";
-            for (File f : files) {
-                pack(out, f, base + f.getName());
+            if(files!=null) {
+                for (File f : files) {
+                    pack(out, f, base + f.getName());
+                }
             }
         } else {
             out.putNextEntry(new JarEntry(base));

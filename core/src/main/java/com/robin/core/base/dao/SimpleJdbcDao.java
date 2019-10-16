@@ -19,15 +19,7 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.Serializable;
-import java.sql.CallableStatement;
-import java.sql.Connection;
-import java.sql.Date;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -39,6 +31,7 @@ import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.ScalarHandler;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,8 +54,8 @@ public class SimpleJdbcDao {
 	private BaseDataBaseMeta meta;
 	private DataBaseParam param;
 	private static  Logger logger=LoggerFactory.getLogger(SimpleJdbcDao.class);
-	private static SimpleDateFormat nformat=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-	private static SimpleDateFormat shortformat=new SimpleDateFormat("yyyy-MM-dd");
+	private static final String fullDateformat="yyyy-MM-dd HH:mm:ss";
+	private static final String shortDateformat="yyyy-MM-dd";
 	public SimpleJdbcDao(BaseDataBaseMeta meta,DataBaseParam param) throws Exception{
 		this.driverName=meta.getParam().getDriverClassName();
 		this.userName=param.getUserName();
@@ -855,8 +848,10 @@ public class SimpleJdbcDao {
 		}
 		return runOk;
 	}
-	public static void transformDateType(Map<String,String> resultMap,Map<String,String> poolobj,int pos,int row,Object[][] objArr) throws Exception{
+	public static void transformDateType(Map<String,String> resultMap,Map<String,String> poolobj,int pos,int row,Object[][] objArr,Object... dateFormatArr) throws Exception{
 		String value=resultMap.get(poolobj.get("name"));
+		String dateFormat=(dateFormatArr.length==1 && dateFormatArr[0]!=null)?dateFormatArr[0].toString():fullDateformat;
+		String dayFormat=(dateFormatArr.length==2 && dateFormatArr[2]!=null)?dateFormatArr[1].toString():shortDateformat;
 		if(value==null) {
             value=resultMap.get(poolobj.get("name").toUpperCase());
         }
@@ -894,15 +889,21 @@ public class SimpleJdbcDao {
 				if(value==null || "".equals(value)) {
                     objArr[row][pos]=null;
                 } else{
-					java.sql.Date date=null;
-					if(value.contains(":")) {
-                        date=new Date(nformat.parse(value).getTime());
-                    } else {
-                        date=new Date(shortformat.parse(value).getTime());
-                    }
+					java.sql.Date date=new Date(DateUtils.parseDate(value,dateFormat,dayFormat).getTime());
+
 					objArr[row][pos] = date;
 				}
-			}else{
+			}else if(poolobj.get("dataType").equals(Const.META_TYPE_TIMESTAMP)){
+
+				if(value==null || "".equals(value)) {
+					objArr[row][pos]=null;
+				} else{
+					java.sql.Timestamp ts=new Timestamp(DateUtils.parseDate(value,dayFormat,dayFormat).getTime());
+					objArr[row][pos] = ts;
+				}
+			}
+
+			else{
 				if(value!=null) {
                     objArr[row][pos]=value;
                 } else {

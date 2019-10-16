@@ -64,16 +64,17 @@ public class SvnUtil {
 		 	setupLibrary();
 	        SVNRepository repository = null;  
 	        try {  
-	            repository = SVNRepositoryFactory.create(reposUrl);  
-	        } catch (SVNException e) {  
+	            repository = SVNRepositoryFactory.create(reposUrl);
+				ISVNAuthenticationManager authManager = SVNWCUtil.createDefaultAuthenticationManager(username, password);
+				repository.setAuthenticationManager(authManager);
+
+				DefaultSVNOptions options = SVNWCUtil.createDefaultOptions(true);
+				clientManager = SVNClientManager.newInstance(options,
+						authManager);
+			} catch (SVNException e) {
 	            logger.error(e.getMessage(),e.getErrorMessage());  
 	        }  
-	        ISVNAuthenticationManager authManager = SVNWCUtil.createDefaultAuthenticationManager(username, password);  
-	        repository.setAuthenticationManager(authManager);  
-	  
-	        DefaultSVNOptions options = SVNWCUtil.createDefaultOptions(true);  
-	        clientManager = SVNClientManager.newInstance(options,  
-	                authManager);  
+
 	    }  
 
 	    public  SVNCommitInfo makeDirectory(SVNURL url, String commitMessage) {  

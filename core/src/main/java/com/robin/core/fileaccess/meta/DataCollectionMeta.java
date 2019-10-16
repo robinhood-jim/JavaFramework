@@ -34,7 +34,7 @@ public class DataCollectionMeta implements Serializable {
 	private String valueClassName="ValueObject";
 	private String classNamespace ="com.robin.avro.vo";
 	private String primaryKeys="";
-	private Map<String,Void> columnNameMap=new HashMap<String, Void>();
+	private Map<String,Integer> columnNameMap=new HashMap<>();
 	private String defaultTimestampFormat="yyyy-MM-dd HH:mm:ss";
 	private Long resType;
 	private Long dbSourceId;
@@ -50,7 +50,7 @@ public class DataCollectionMeta implements Serializable {
 
 	public void addColumnMeta(String columnName,String columnType,String defaultNullValue){
 		this.columnList.add(new DataSetColumnMeta(columnName, columnType, defaultNullValue));
-		columnNameMap.put(columnName,null);
+		columnNameMap.put(columnName,1);
 	}
 	public void addColumnMeta(String columnName,String columnType,String defaultNullValue,boolean required){
 		this.columnList.add(new DataSetColumnMeta(columnName, columnType, defaultNullValue,required));
@@ -64,7 +64,7 @@ public class DataCollectionMeta implements Serializable {
 	public  DataSetColumnMeta createColumnMeta(String columnName,String columnType,Object defaultNullValue){
 		return new DataSetColumnMeta(columnName,columnType,defaultNullValue);
 	}
-	public Map<String,Void> getColumnNameMap(){
+	public Map<String,Integer> getColumnNameMap(){
 		return columnNameMap;
 	}
 }

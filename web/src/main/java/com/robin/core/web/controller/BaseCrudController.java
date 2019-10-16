@@ -28,10 +28,7 @@ import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Single Table Mapping Background Controller
@@ -204,25 +201,21 @@ public abstract class BaseCrudController<O extends BaseObject, P extends Seriali
         }
     }
 
-    protected P[] parseId(String[] ids) throws Exception {
+    protected  P[] parseId(String[] ids) throws Exception {
         if (ids == null || ids.length == 0) {
             throw new Exception("ID not exists!");
         }
-        List<P> list = new ArrayList<P>();
+        P[] array=(P[])java.lang.reflect.Array.newInstance(pkType,ids.length);
         try {
             for (int i = 0; i < ids.length; i++) {
                 P p = pkType.newInstance();
                 valueOfMethod.invoke(p, ids[i]);
-                list.add(p);
+                array[i]=p;
             }
         } catch (Exception ex) {
             log.error("{}", ex);
         }
-        if (list.isEmpty()) {
-            return null;
-        } else {
-            return (P[]) list.toArray();
-        }
+        return array;
     }
 
 }

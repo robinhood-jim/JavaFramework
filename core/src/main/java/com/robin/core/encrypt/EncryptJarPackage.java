@@ -215,7 +215,7 @@ public class EncryptJarPackage {
                 //compile classes
 
                 JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
-                String classPath = packagename.replaceAll(".", "/");
+                String classPath = packagename.replaceAll("\\.", "/");
                 File absoluteClassPath = new File(srcPath + classPath);
                 if (!absoluteClassPath.exists()) {
                     absoluteClassPath.mkdir();
