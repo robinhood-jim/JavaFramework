@@ -509,8 +509,8 @@ public class SimpleJdbcDao {
 		}catch(Exception ex){
 			throw new DAOException(ex);
 		}finally{
-			DbUtils.closeQuietly(conn);
 			DbUtils.closeQuietly(stmt);
+			DbUtils.closeQuietly(conn);
 		}
 	}
 	public static boolean execute(final Connection conn,final String hql) throws DAOException{
@@ -522,8 +522,8 @@ public class SimpleJdbcDao {
 		}catch(Exception ex){
 			throw new DAOException(ex);
 		}finally{
-			DbUtils.closeQuietly(conn);
 			DbUtils.closeQuietly(stmt);
+			DbUtils.closeQuietly(conn);
 		}
 	}
 	public static int executeUpdate(final Connection conn,final String sql,final Object[] param) throws DAOException{

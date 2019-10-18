@@ -27,14 +27,14 @@ import com.robin.core.test.model.TestModel;
 
 @Component(value = "modelService")
 @Scope(value = "singleton")
-public class TestModelService extends BaseAnnotationJdbcService<TestModel, Long> {
+public class TestModelService extends BaseAnnotationJdbcService<TestModel, Integer> {
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = RuntimeException.class)
     public void testQueryWithException() {
         TestModel model = new TestModel();
         JdbcDao dao = (JdbcDao) SpringContextHolder.getBean("jdbcDao");
         model.setName("test123");
         model.setDescription("111");
-        Long id = saveEntity(model);
+        Integer id = saveEntity(model);
         System.out.println(id);
         TestModel model1 = new TestModel();
         model1.setId(id);

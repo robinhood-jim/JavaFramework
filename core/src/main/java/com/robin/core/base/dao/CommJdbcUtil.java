@@ -345,8 +345,6 @@ public class CommJdbcUtil {
                     } else {
                         targetValue = new Timestamp(pageQuery.getDateFormater().parse(value.toString()).getTime());
                     }
-                } else if (columnType.equals(Const.META_TYPE_CLOB) || columnType.equals(Const.META_TYPE_BLOB)) {
-                    targetValue = value;
                 }else{
                     targetValue=value;
                 }

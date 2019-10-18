@@ -40,6 +40,7 @@ public class SimpleClassLoader extends ClassLoader {
     	    FileInputStream fi = new FileInputStream("store\\"+className+".impl");
     	    result = new byte[fi.available()];
     	    fi.read(result);
+    	    fi.close();
     	    return result;
     	} catch (Exception e) {
 

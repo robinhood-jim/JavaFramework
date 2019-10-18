@@ -333,7 +333,7 @@
                         <option>-printmapping out.map</option>
                         <option>-optimizations !code/allocation/variable</option>
                         <option>-keep class **.package-info</option>
-                        <option>-keep public class com.robin.core.base.**</option>
+                        <!--<option>-keep public class com.robin.core.base.**</option>-->
                         <option>
                             -keepclasseswithmembers public class * {
                             public static void main(java.lang.String[]);

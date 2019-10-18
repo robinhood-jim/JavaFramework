@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.Cacheable;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.Serializable;
 import java.util.*;
 
 
@@ -237,15 +238,7 @@ public abstract class BaseController
         retMap.put(COL_SUCCESS, false);
         retMap.put(COL_MESSAGE, message);
     }
-    protected Long[] wrapPrimaryKeys(String keys)
-    {
-        String[] ids = keys.split(",");
-        Long[] idArr = new Long[ids.length];
-        for (int i = 0; i < idArr.length; i++) {
-            idArr[i] = Long.valueOf(ids[i]);
-        }
-        return idArr;
-    }
+
 
     protected Map<String, Object> wrapSuccess(String displayMsg)
     {

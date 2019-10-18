@@ -18,6 +18,7 @@ public class ClassGraphReflector implements InitializingBean {
     @Override
     public void afterPropertiesSet() {
         scanResult=new ClassGraph().enableAllInfo().whitelistPackages(scanPackage).scan();
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> scanResult.close()));
     }
 
 
@@ -57,5 +58,6 @@ public class ClassGraphReflector implements InitializingBean {
         return scanResult.getClassInfo(clazz.getCanonicalName()).hasAnnotation(annotationClazz.getCanonicalName())
                 && scanResult.getClassInfo(clazz.getCanonicalName()).hasFieldAnnotation(annotationFields.getCanonicalName());
     }
+
 
 }

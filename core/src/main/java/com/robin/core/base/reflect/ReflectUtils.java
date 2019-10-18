@@ -3,6 +3,7 @@ package com.robin.core.base.reflect;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -117,6 +118,19 @@ public class ReflectUtils {
 		}else{
 			return SpringContextHolder.getBean(ClassGraphReflector.class).isAnnotationClassWithAnnotationFields(clazz,annotationClazz,annotationFields);
 		}
+	}
+	public static Object getIncrementValueBySetMethod(Method method,Long input){
+		String typeName=method.getParameterTypes()[0].getTypeName();
+		if(typeName.equals(Long.class.getTypeName())){
+			return input;
+		}else if(typeName.equals(Integer.class.getTypeName())){
+			return input.intValue();
+		}else if(typeName.equals(String.class.getTypeName())){
+			return input.toString();
+		}else if(typeName.equals(BigDecimal.class.getTypeName())){
+			return BigDecimal.valueOf(input);
+		}
+		return null;
 	}
 	private static final Method getMethodByName(Class clazz,String methodName){
 		try{

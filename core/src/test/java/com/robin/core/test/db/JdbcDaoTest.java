@@ -87,7 +87,7 @@ public class JdbcDaoTest extends TestCase {
         model.setName("OOOOOOOOOO");
         model.setDescription("FFFFFFFFFF");
         model.setCsId(1L);
-        Long id = service.saveEntity(model);
+        Integer id = service.saveEntity(model);
         assertNotNull(id);
         model.setName("ressds");
         model.setCsId(2L);
@@ -155,7 +155,7 @@ public class JdbcDaoTest extends TestCase {
         vo.setCode("t2");
         vo.setTid(1);
         vo.setTs(new Timestamp(System.currentTimeMillis()));
-        Long id = service.saveEntity(vo);
+        String id = service.saveEntity(vo);
         assertNotNull(id);
     }
 
@@ -169,7 +169,7 @@ public class JdbcDaoTest extends TestCase {
         obj.setTobj(tobj);
         obj.setOutputval(1.1);
         obj.setTime(new Timestamp(System.currentTimeMillis()));
-        Long id = service.saveEntity(obj);
+        TestPkObj id = service.saveEntity(obj);
         assertNotNull(id);
 
     }

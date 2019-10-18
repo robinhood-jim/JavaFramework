@@ -19,6 +19,7 @@ import com.robin.core.base.dao.util.*;
 import com.robin.core.base.exception.DAOException;
 import com.robin.core.base.exception.QueryConfgNotFoundException;
 import com.robin.core.base.model.BaseObject;
+import com.robin.core.base.reflect.ReflectUtils;
 import com.robin.core.base.util.Const;
 import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.query.extractor.ResultSetOperationExtractor;
@@ -520,8 +521,9 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
 
 
     @Override
-    public Long createVO(BaseObject obj) throws DAOException {
+    public Serializable createVO(BaseObject obj) throws DAOException {
         Long retval = null;
+        Serializable retObj=null;
         try {
             List<AnnotationRetrevior.FieldContent> fields = AnnotationRetrevior.getMappingFieldsCache(obj.getClass());
             EntityMappingUtil.InsertSegment insertSegment = EntityMappingUtil.getInsertSegment(obj, sqlGen);
@@ -540,13 +542,16 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
                 if (insertSegment.getIncrementColumn() != null) {
                     AnnotationRetrevior.FieldContent pkColumn = AnnotationRetrevior.getPrimaryField(fields);
                     if (pkColumn.getPrimaryKeys() == null) {
-                        insertSegment.getIncrementColumn().getSetMethod().invoke(obj, retval);
+                        Object targetVal= ReflectUtils.getIncrementValueBySetMethod(insertSegment.getIncrementColumn().getSetMethod(),retval);
+                        insertSegment.getIncrementColumn().getSetMethod().invoke(obj, targetVal);
+                        retObj=(Serializable) targetVal;
                     } else {
                         for (AnnotationRetrevior.FieldContent field : pkColumn.getPrimaryKeys()) {
                             if (field.isIncrement() || field.isSequential()) {
                                 field.getSetMethod().invoke(insertSegment.getIncrementColumn().getGetMethod().invoke(obj, new Object[]{}), retval);
                             }
                         }
+                        retObj=(Serializable) pkColumn.getGetMethod().invoke(obj,null);
                     }
                 }
             } else {
@@ -556,7 +561,10 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
                     LobCreatingPreparedStatementCallBack back = new LobCreatingPreparedStatementCallBack(lobHandler, fields, obj);
                     this.getJdbcTemplate().execute(insertSql, back);
                 }
+                AnnotationRetrevior.FieldContent pkColumn = AnnotationRetrevior.getPrimaryField(fields);
+                retObj=(Serializable) pkColumn.getGetMethod().invoke(obj,null);
             }
+
         } catch (Exception ex) {
             if (logger.isDebugEnabled()) {
                 logger.debug("Encounter error", ex);
@@ -565,7 +573,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
             }
             throw new DAOException(ex);
         }
-        return retval;
+        return retObj;
     }
 
     @Override

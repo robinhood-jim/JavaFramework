@@ -64,11 +64,12 @@ public class FilterCondition {
             realColumn=fieldMap.get(columnCode).getFieldName();
         }
 		if (BETWEEN.equals(operator)){
-			if (values.length < 2){
+			if (values.length == 2){
+				sbSQLStr.append(" (");
+				sbSQLStr.append(realColumn);
+				sbSQLStr.append(" between ? and ?) ");
 			}
-			sbSQLStr.append(" (");
-			sbSQLStr.append(realColumn);
-			sbSQLStr.append(" between ? and ?) ");
+
 		} else 
 		if (LIKE .equals(operator) || LEFT_LIKE.equals(operator) || RIGHT_LIKE.equals(operator)){
 			sbSQLStr.append(" (");

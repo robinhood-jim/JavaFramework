@@ -71,7 +71,6 @@ public abstract class BaseCrudController<O extends BaseObject, P extends Seriali
      * @return
      */
     protected Map<String, Object> doSave(HttpServletRequest request, HttpServletResponse response,Object... obj) {
-        boolean finishTag = true;
         Map<String, Object> retMap = new HashMap();
         try {
             O object=null;
@@ -81,16 +80,12 @@ public abstract class BaseCrudController<O extends BaseObject, P extends Seriali
             }else if(obj[0] instanceof BaseObject){
                 object=(O) obj[0];
             }
-            this.service.saveEntity(object);
+            P pk=this.service.saveEntity(object);
             wrapSuccess(retMap);
-            doAfterAdd(request, response, object, retMap);
+            doAfterAdd(request, response, object,pk, retMap);
         } catch (Exception ex) {
             this.log.error("{}", ex);
-            finishTag = false;
             wrapResponse(retMap, ex);
-        }
-        if (finishTag) {
-            wrapResponse(retMap, null);
         }
         return retMap;
     }
@@ -131,7 +126,7 @@ public abstract class BaseCrudController<O extends BaseObject, P extends Seriali
             ConvertUtil.convertToModel(object, valueMap);
             ConvertUtil.convertToModelForUpdate(updateObj, object);
             service.updateEntity(updateObj);
-            doAfterUpdate(request, response, object, retMap);
+            doAfterUpdate(request, response, updateObj, retMap);
             wrapSuccess(retMap);
         } catch (Exception ex) {
             log.error("{}", ex);
@@ -140,8 +135,8 @@ public abstract class BaseCrudController<O extends BaseObject, P extends Seriali
         return retMap;
     }
 
-    protected void doAfterAdd(HttpServletRequest request, HttpServletResponse response, BaseObject obj, Map<String, Object> retMap) {
-
+    protected void doAfterAdd(HttpServletRequest request, HttpServletResponse response, BaseObject obj,P pk, Map<String, Object> retMap) {
+        retMap.put("primaryKey",pk);
     }
 
     protected void doAfterView(HttpServletRequest request, HttpServletResponse response, BaseObject obj, Map<String, Object> retMap) {

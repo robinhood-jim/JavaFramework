@@ -50,8 +50,6 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 {
 	// autowire by construct, getBean from BaseObject annotation field MappingEntity jdbcDao
 	protected JdbcDao jdbcDao;
-	@Autowired
-	protected BaseSqlGen sqlGen;
 	protected Class<V> type;
 	protected Logger logger=LoggerFactory.getLogger(getClass());
 	protected AnnotationRetrevior.EntityContent entityContent;
@@ -85,9 +83,9 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 
 	@Override
     @Transactional(propagation=Propagation.REQUIRED,rollbackFor=RuntimeException.class)
-	public Long saveEntity(V vo) throws ServiceException{
+	public P saveEntity(V vo) throws ServiceException{
 		try{
-			return jdbcDao.createVO(vo);
+			return (P)jdbcDao.createVO(vo);
 		}catch (DAOException e) {
 			throw new ServiceException(e);
 		}

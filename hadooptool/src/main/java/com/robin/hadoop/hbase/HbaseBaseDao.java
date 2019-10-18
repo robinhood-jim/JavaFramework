@@ -335,7 +335,7 @@ public class HbaseBaseDao {
 					conn.close();
 				}
 			}catch(Exception ex1){
-				
+				throw new HbaseException(ex1);
 			}
 		}
 	}

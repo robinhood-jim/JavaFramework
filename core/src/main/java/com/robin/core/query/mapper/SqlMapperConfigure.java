@@ -17,19 +17,19 @@ import java.util.List;
 import java.util.Map;
 
 
-public class SqlMapperConfigure implements InitializingBean {
+public class SqlMapperConfigure {
     String xmlConfigPath = "";
     Map<String, IHandler> handlerMap = new HashMap<>();
     Map<String, Map<String, ImmutablePair<String, List<AbstractSegment>>>> segmentsMap = new HashMap<>();
     QueryConfigMapperReader reader;
     private IHandler handler;
-
-    @Override
-    public void afterPropertiesSet() {
+    public SqlMapperConfigure(){
         reader = new QueryConfigMapperReader(handlerMap, segmentsMap);
         handler = new CommHandler();
         parseResource();
     }
+
+
 
     private void parseResource() {
         List<InputStream> configStreams = ConfigResourceScanner.doScan(xmlConfigPath, "queryMapper");

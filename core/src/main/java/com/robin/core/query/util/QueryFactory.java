@@ -31,13 +31,13 @@ import java.util.List;
 import java.util.Map;
 
 
-public class QueryFactory implements InitializingBean {
+public class QueryFactory {
     private String xmlConfigPath = "";
     private static Logger log = LoggerFactory.getLogger(QueryFactory.class);
     private static Map<String, QueryString> queryMap = new HashMap<>();
 
     public QueryFactory() {
-
+        init();
     }
 
     public void init() {
@@ -124,11 +124,6 @@ public class QueryFactory implements InitializingBean {
         return selectId != null && !selectId.isEmpty() && queryMap.containsKey(selectId);
     }
 
-
-    @Override
-    public void afterPropertiesSet() {
-        init();
-    }
 
 
     public String getXmlConfigPath() {
