@@ -15,19 +15,12 @@ import org.slf4j.LoggerFactory;
 
 public class CommandLineExecutor {
 	private Logger logger=LoggerFactory.getLogger(getClass());
-	private static CommandLineExecutor executor=null;
+	private static CommandLineExecutor executor=new CommandLineExecutor();
 	private Map<Long, Integer> processMap=new HashMap<Long, Integer>();
 	
 	private CommandLineExecutor(){
 	}
 	public static CommandLineExecutor getInstance(){
-		if(executor==null){
-			synchronized (CommandLineExecutor.class) {
-				if(executor==null){
-					executor=new CommandLineExecutor();
-				}
-			}
-		}
 		return executor;
 	}
 	public String executeCmd(String cmd) throws Exception{

@@ -16,6 +16,11 @@
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>com.robin</groupId>
+            <artifactId>license-core</artifactId>
+            <version>${frm.version}</version>
+        </dependency>
         <!-- Apache commons start -->
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -214,9 +219,9 @@
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
-                <excludes>
+                <!--<excludes>
                     <exclude>**/*</exclude>
-                </excludes>
+                </excludes>-->
             </resource>
         </resources>
         <plugins>

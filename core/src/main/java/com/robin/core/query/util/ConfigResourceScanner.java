@@ -13,6 +13,22 @@ import java.util.List;
 
 @Slf4j
 public class ConfigResourceScanner {
+    public static final InputStream loadResource(String resourcePath){
+        try{
+            PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
+            Resource[] configFiles = resolver.getResources("classpath:" + resourcePath);
+            if(configFiles!=null && configFiles.length>0){
+                return configFiles[0].getInputStream();
+            }else{
+                return null;
+            }
+
+        }catch (Exception ex){
+            log.error("{}",ex);
+        }
+        return null;
+    }
+
     public static List<InputStream> doScan(String xmlConfigPath,String... defaultPath){
         List<InputStream> resList=new ArrayList<>();
         try {
@@ -68,9 +84,7 @@ public class ConfigResourceScanner {
                 }
             }
         } catch (Exception e) {
-            log.error("", e);
-            e.printStackTrace();
-            System.out.println(e.getMessage());
+            log.error("{}", e);
         } finally {
 
         }
