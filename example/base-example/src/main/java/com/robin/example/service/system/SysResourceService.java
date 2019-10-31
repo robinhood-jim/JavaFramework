@@ -31,15 +31,15 @@ import java.util.List;
 @Component(value="sysResourceService")
 @Scope(value="singleton")
 public class SysResourceService extends BaseAnnotationJdbcService<SysResource, Long> implements IBaseAnnotationJdbcService<SysResource,Long> {
-	@Transactional(propagation= Propagation.REQUIRED,noRollbackFor=RuntimeException.class)
+	@Transactional(propagation= Propagation.REQUIRED,rollbackFor=RuntimeException.class)
 	public void updateUserResourceRight(String userId,List<String> addList,List<String> delList){
-		this.getJdbcDao().deleteByField(SysResourceUser.class, "userId", new Integer(userId));
+		this.getJdbcDao().deleteByField(SysResourceUser.class, "userId", Integer.valueOf(userId));
 		//Add Right
 		if(addList!=null && !addList.isEmpty()){
 			for (String addId:addList) {
 				SysResourceUser vo=new SysResourceUser();
-				vo.setUserId(new Integer(userId));
-				vo.setResId(new Integer(addId));
+				vo.setUserId(Integer.valueOf(userId));
+				vo.setResId(Integer.valueOf(addId));
 				vo.setAssignType(SysResourceUser.ASSIGN_ADD);
 				vo.setStatus("1");
 				this.getJdbcDao().createVO(vo);

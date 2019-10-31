@@ -23,6 +23,9 @@ public class SqlMapperConfigure implements InitializingBean {
     Map<String, Map<String, ImmutablePair<String, List<AbstractSegment>>>> segmentsMap = new HashMap<>();
     QueryConfigMapperReader reader;
     private IHandler handler;
+    public SqlMapperConfigure(){
+
+    }
 
     @Override
     public void afterPropertiesSet() {
@@ -30,6 +33,8 @@ public class SqlMapperConfigure implements InitializingBean {
         handler = new CommHandler();
         parseResource();
     }
+
+
 
     private void parseResource() {
         List<InputStream> configStreams = ConfigResourceScanner.doScan(xmlConfigPath, "queryMapper");

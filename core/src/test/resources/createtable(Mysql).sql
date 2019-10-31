@@ -6,7 +6,8 @@ CREATE TABLE `t_test` (
   `id` bigint(20) NOT NULL,
   `name` varchar(32) default NULL,
   `code_desc` varchar(32) default NULL,
-  `cs_id` int not null
+  `cs_id` int not null,
+  create_time TIMESTAMP,
   PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 

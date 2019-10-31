@@ -24,48 +24,59 @@ public class OracleRacDataBaseMeta  extends BaseDataBaseMeta implements DataBase
 
 	public OracleRacDataBaseMeta(DataBaseParam param) {
 		super(param);
+		setDbType(BaseDataBaseMeta.TYPE_ORACLERAC);
 		param.setDriverClassName("oracle.jdbc.driver.OracleDriver");
 	}
 
-	public String getUrlTemplate() {
+	@Override
+    public String getUrlTemplate() {
 		return "jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=TCP)(HOST=[ip1])(PORT=[port]))(ADDRESS=(PROTOCOL=TCP)(HOST=[ip2])(PORT=[port])))(LOAD_BALANCE=yes)(CONNECT_DATA=(SERVER=DEDICATED)(SERVICE_NAME=[databaseName])))";
 	}
 	public String getUrl(DataBaseParam param) {
 		if(param.getUrl()==null){
-			if(param.getPort()==0)
-				param.setPort(getDefaultDatabasePort());
+			if(param.getPort()==0) {
+                param.setPort(getDefaultDatabasePort());
+            }
 			return "jdbc:oracle:thin:@"+param.getHostName();
-		}else
-			return param.getUrl();
+		}else {
+            return param.getUrl();
+        }
 	}
 
-	public boolean suppportSequnce() {
+	@Override
+    public boolean suppportSequnce() {
 		return true;
 	}
 
-	public boolean supportAutoInc() {
+	@Override
+    public boolean supportAutoInc() {
 		return true;
 	}
 
-	public int getDefaultDatabasePort() {
+	@Override
+    public int getDefaultDatabasePort() {
 		return 1521;
 	}
 
-	public boolean supportsSchemas() {
+	@Override
+    public boolean supportsSchemas() {
 		return false;
 	}
 
-	public String getAddColumnStatement(String tablename, String schema,DataBaseColumnMeta v, String tk, boolean use_autoinc, String pk,
-			boolean semicolon) {
+	@Override
+    public String getAddColumnStatement(String tablename, String schema, DataBaseColumnMeta v, String tk, boolean use_autoinc, String pk,
+                                        boolean semicolon) {
 		return null;
 	}
 
-	public String getDropColumnStatement(String tablename, String schema,DataBaseColumnMeta v, String tk, boolean use_autoinc, String pk,
-			boolean semicolon) {
+	@Override
+    public String getDropColumnStatement(String tablename, String schema, DataBaseColumnMeta v, String tk, boolean use_autoinc, String pk,
+                                         boolean semicolon) {
 		
 		return null;
 	}
-	public BaseSqlGen getSqlGen() {
+	@Override
+    public BaseSqlGen getSqlGen() {
 		return new OracleSqlGen();
 	}
 }

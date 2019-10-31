@@ -53,7 +53,9 @@ public class DateUtil {
       Date date = null;
       df = new SimpleDateFormat(mask);
 
-      if (log.isDebugEnabled()) log.debug("converting '" + strdate + "' to date with mask '" + mask + "'");
+      if (log.isDebugEnabled()) {
+          log.debug("converting '" + strdate + "' to date with mask '" + mask + "'");
+      }
 
       try {
          date = df.parse(strdate);
@@ -100,7 +102,9 @@ public class DateUtil {
     * @see java.text.SimpleDateFormat
     */
    public static final String getDateTime(String mask, Date date) {
-      if (date == null) return null;
+      if (date == null) {
+          return null;
+      }
       SimpleDateFormat df = new SimpleDateFormat(mask);
       return df.format(date);
    }

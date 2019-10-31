@@ -28,10 +28,12 @@ public class  JdbcResIterator extends AbstractResIterator {
     }
     @Retryable(maxAttempts = 10,backoff = @Backoff(delay = 60000))
     public void getConnection() throws Exception{
-        if(holder==null)
+        if(holder==null) {
             holder = SpringContextHolder.getBean(ResourceAccessHolder.class).getPoolJdbcHolder();
-        if(connectionHolder==null)
+        }
+        if(connectionHolder==null) {
             connectionHolder = SpringContextHolder.getBean(ResourceAccessHolder.class).getConnectionHolder(colmeta.getDbSourceId(), colmeta.getDbMeta());
+        }
     }
 
 

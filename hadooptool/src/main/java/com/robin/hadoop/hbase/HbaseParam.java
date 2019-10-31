@@ -45,10 +45,11 @@ public class HbaseParam {
 		return compressType;
 	}
 	public void setCompressType(String compressType) {
-		if(compressType.equalsIgnoreCase("GZ"))
-			this.compressType = Algorithm.GZ;
-		else if(compressType.equalsIgnoreCase("lzo"))
-			this.compressType=Algorithm.LZO;
+		if("GZ".equalsIgnoreCase(compressType)) {
+            this.compressType = Algorithm.GZ;
+        } else if("lzo".equalsIgnoreCase(compressType)) {
+            this.compressType=Algorithm.LZO;
+        }
 	}
 	public int getMaxversion() {
 		return maxversion;

@@ -85,7 +85,7 @@ public class SysOrgController extends BaseCrudDhtmlxController<SysOrg, Long, Sys
     public Map<String, Object> getdeptJson(HttpServletRequest request, HttpServletResponse response) {
         String allowNull = request.getParameter("allowNull");
         boolean insertNullVal = true;
-        if (allowNull != null && !allowNull.isEmpty() && allowNull.equalsIgnoreCase("false")) {
+        if (allowNull != null && !allowNull.isEmpty() && "false".equalsIgnoreCase(allowNull)) {
             insertNullVal = false;
         }
         PageQuery query = new PageQuery();
@@ -175,8 +175,9 @@ public class SysOrgController extends BaseCrudDhtmlxController<SysOrg, Long, Sys
         }
         Map<String, Object> retMaps = new HashMap<>();
         retMaps.put("id", id);
-        if ("0".equals(id))
+        if ("0".equals(id)) {
             retMaps.put("text", displayName);
+        }
         retMaps.put("item", records);
         return retMaps;
     }

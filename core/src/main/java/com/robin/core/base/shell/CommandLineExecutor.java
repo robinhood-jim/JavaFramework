@@ -15,19 +15,12 @@ import org.slf4j.LoggerFactory;
 
 public class CommandLineExecutor {
 	private Logger logger=LoggerFactory.getLogger(getClass());
-	private static CommandLineExecutor executor=null;
+	private static CommandLineExecutor executor=new CommandLineExecutor();
 	private Map<Long, Integer> processMap=new HashMap<Long, Integer>();
 	
 	private CommandLineExecutor(){
 	}
 	public static CommandLineExecutor getInstance(){
-		if(executor==null){
-			synchronized (CommandLineExecutor.class) {
-				if(executor==null){
-					executor=new CommandLineExecutor();
-				}
-			}
-		}
 		return executor;
 	}
 	public String executeCmd(String cmd) throws Exception{
@@ -150,18 +143,20 @@ public class CommandLineExecutor {
 				runCode=process.waitFor();
 				thread.waitFor();
 				retStr=thread.getOutput();
-				if(runCode==0)
-					break;
-				else
-					logger.error("execute command failed {} times in taskStepId:{}",curnum,env.getKeyId());
+				if(runCode==0) {
+                    break;
+                } else {
+                    logger.error("execute command failed {} times in taskStepId:{}",curnum,env.getKeyId());
+                }
 			}catch(Exception ex){
 				logger.error("",ex);
 			}
 			finally{
 				stopCmd(processMap.get(env.getKeyId()));
 			}
-			if(env.getRetryNums()>1)
-				Thread.sleep(1000*env.getWaitSecond());
+			if(env.getRetryNums()>1) {
+                Thread.sleep(1000*env.getWaitSecond());
+            }
 		}
 		if(runCode!=0){
 			throw new RuntimeException("run script with error,output="+retStr);
@@ -225,8 +220,9 @@ public class CommandLineExecutor {
 				}
 				logger.info("begin to terminate thread="+pid);
 			}
-			else
-				logger.info(" taskStepId="+key+" already stopped.");
+			else {
+                logger.info(" taskStepId="+key+" already stopped.");
+            }
 		}else{
 			logger.error(" taskStepId="+key+" does not run command");
 		}
@@ -357,14 +353,16 @@ public class CommandLineExecutor {
 			String line=null;
 			try{
 				while((line=reader.readLine())!=null){
-					if(enableOuptut)
-						logger.info("message="+line);
+					if(enableOuptut) {
+                        logger.info("message="+line);
+                    }
 					builder.append(line).append("\n");
 				}
 				while((line=errreader.readLine())!=null){
 					
-					if(enableOuptut)
-						logger.error("error="+line);
+					if(enableOuptut) {
+                        logger.error("error="+line);
+                    }
 					builder.append(line).append("\n");
 				}
 			}catch(Exception ex){
@@ -387,13 +385,15 @@ public class CommandLineExecutor {
 		}
 		public String getOutput(){
 			String ret="";
-			if(builder.length()>0)
-				ret=builder.toString();
+			if(builder.length()>0) {
+                ret=builder.toString();
+            }
 			return ret;
 		}
 		public void waitFor() throws Exception{
-			if(!finished)
-				Thread.sleep(100);
+			if(!finished) {
+                Thread.sleep(100);
+            }
 		}
 		public boolean isExecuteOk() {
 			return executeOk;

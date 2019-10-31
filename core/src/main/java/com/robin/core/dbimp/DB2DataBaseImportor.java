@@ -13,7 +13,8 @@ public class DB2DataBaseImportor extends BaseDataBaseImportor {
 		super.init();
 	}
 
-	public int importFromLocal(DataBaseImportParam inparam,DataBaseParam param) {
+	@Override
+    public int importFromLocal(DataBaseImportParam inparam, DataBaseParam param) {
 		List<String> scriptList=new ArrayList<String>();
 		scriptList.add(userPath+Const.DB2EXECUTE_SCRIPTS);
 		scriptList.add(Const.DBIMP_SHELL_PARAM);

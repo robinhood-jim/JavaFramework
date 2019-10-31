@@ -20,6 +20,7 @@ import com.robin.core.base.annotation.MappingField;
 import com.robin.core.base.exception.DAOException;
 import com.robin.core.base.model.BaseObject;
 import com.robin.core.base.model.BasePrimaryObject;
+import com.robin.core.base.reflect.ReflectUtils;
 import com.robin.core.base.util.Const;
 import org.springframework.jdbc.support.lob.LobHandler;
 
@@ -145,8 +146,9 @@ public class AnnotationRetrevior {
                 String tableName = table.name();
                 String schema = table.schema();
                 content = getEntityContent(tableName, schema, false);
-            } else
+            } else {
                 throw new DAOException("must using MappingEnity or JPA annotation");
+            }
         }
         return content;
     }
@@ -180,6 +182,10 @@ public class AnnotationRetrevior {
     }
 
     public static void validateEntity(BaseObject object) throws DAOException {
+        //check model must using Annotation MappingEntity or Jpa Entity
+        if(!ReflectUtils.isAnnotationClassWithAnnotationFields(object.getClass(),MappingEntity.class,MappingField.class) && !ReflectUtils.isAnnotationClassWithAnnotationFields(object.getClass(),Entity.class,Column.class)){
+            throw new DAOException("Model object "+ object.getClass().getSimpleName() +" must using Annotation MappingEntity or Jpa Entity");
+        }
         Map<String, FieldContent> fieldsMap = getMappingFieldsMapCache(object.getClass());
         Iterator<Map.Entry<String, FieldContent>> iterator = fieldsMap.entrySet().iterator();
         try {
@@ -206,6 +212,12 @@ public class AnnotationRetrevior {
         } catch (Exception ex) {
             throw new DAOException(ex);
         }
+    }
+    public static boolean isBaseObjectClassValid(Class<? extends BaseObject> clazz) throws DAOException{
+        if(!ReflectUtils.isAnnotationClassWithAnnotationFields(clazz,MappingEntity.class,MappingField.class) && !ReflectUtils.isAnnotationClassWithAnnotationFields(clazz,Entity.class,Column.class)){
+            throw new DAOException("Model object "+clazz.getSimpleName() +" must using Annotation MappingEntity or Jpa Entity");
+        }
+        return true;
     }
 
     private static FieldContent retrieveFieldJpa(Field field, Class<? extends BaseObject> clazz) throws DAOException {
@@ -289,12 +301,15 @@ public class AnnotationRetrevior {
                     fieldName = field.getName();
                 }
                 content = new AnnotationRetrevior.FieldContent(field.getName(), fieldName, field, getMethod, setMethod);
-                if (mapfield.precise() != 0)
+                if (mapfield.precise() != 0) {
                     content.setPrecise(mapfield.precise());
-                if (mapfield.scale() != 0)
+                }
+                if (mapfield.scale() != 0) {
                     content.setScale(mapfield.scale());
-                if (mapfield.length() != 0)
+                }
+                if (mapfield.length() != 0) {
                     content.setLength(mapfield.length());
+                }
                 if (mapfield.increment()) {
                     content.setIncrement(true);
                 }
@@ -302,7 +317,7 @@ public class AnnotationRetrevior {
                     content.setPrimary(true);
                     parsePrimaryKey(content, type);
                 }
-                if (!mapfield.sequenceName().equals("")) {
+                if (mapfield.sequenceName()!=null && !mapfield.sequenceName().isEmpty()) {
                     content.setSequential(true);
                     content.setSequenceName(mapfield.sequenceName());
                 }
@@ -330,9 +345,9 @@ public class AnnotationRetrevior {
                         content.setDataType(Const.META_TYPE_OBJECT);
                     }
                 } else {
-                    if (datatype.equalsIgnoreCase("clob"))
+                    if ("clob".equalsIgnoreCase(datatype)) {
                         content.setDataType(Const.META_TYPE_CLOB);
-                    else if (datatype.equalsIgnoreCase("blob")) {
+                    } else if ("blob".equalsIgnoreCase(datatype)) {
                         content.setDataType(Const.META_TYPE_BLOB);
                     }
                 }
@@ -357,8 +372,9 @@ public class AnnotationRetrevior {
             }
 
         }
-        if (!pkList.isEmpty())
+        if (!pkList.isEmpty()) {
             fieldContent.setPrimaryKeys(pkList);
+        }
     }
 
     public static int replacementPrepared(PreparedStatement ps, LobHandler lobHandler, AnnotationRetrevior.FieldContent field, BaseObject object, int pos) throws SQLException {
@@ -395,6 +411,16 @@ public class AnnotationRetrevior {
         }
         return null;
     }
+    public static Map<String,Object> fieldContentToMap(FieldContent fieldContent){
+        Map<String,Object> retMap=new HashMap<>();
+        retMap.put("field",fieldContent.getFieldName());
+        retMap.put("datatype",fieldContent.getDataType());
+        retMap.put("precise",String.valueOf(fieldContent.getPrecise()));
+        retMap.put("scale",String.valueOf(fieldContent.getScale()));
+        retMap.put("length",String.valueOf(fieldContent.getLength()));
+        retMap.put("nullable",!fieldContent.isRequired());
+        return retMap;
+    }
 
     private static void wrapValue(PreparedStatement ps, LobHandler lobHandler, AnnotationRetrevior.FieldContent field, BaseObject object, int pos) throws SQLException {
         Object value = getvalueFromVO(field, object);
@@ -412,8 +438,9 @@ public class AnnotationRetrevior {
     public static void setParameter(PreparedStatement stmt, int pos, Object obj) {
         try {
             if (obj == null) {
-                if (pos != 0)
+                if (pos != 0) {
                     stmt.setNull(pos, Types.VARCHAR);
+                }
             } else if (obj instanceof Integer) {
                 stmt.setInt(pos, Integer.parseInt(obj.toString()));
             } else if (obj instanceof Double) {

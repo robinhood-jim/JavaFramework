@@ -39,8 +39,9 @@ public class AvroUtils {
     public static Schema getSchemaForDbMeta(String namespace,String className,List<DataBaseColumnMeta> columnList){
         Schema schema=null;
         String tmpnames=namespace;
-        if(tmpnames==null)
+        if(tmpnames==null) {
             tmpnames="com.zhcx.avro";
+        }
         if(columnList!=null && !columnList.isEmpty()){
             SchemaBuilder.FieldAssembler<Schema> fields=SchemaBuilder.record(className).namespace(tmpnames).fields();
 
@@ -107,8 +108,9 @@ public class AvroUtils {
                 }
                 schema=fields.endRecord();
                 logger.info(schema.toString(true));
-            }else
+            }else {
                 throw new ConfigurationIncorrectException("missing avro schema config file or Content");
+            }
         }
         return schema;
     }
@@ -146,7 +148,9 @@ public class AvroUtils {
             return null;
         } finally {
             try {
-                byteArrayInputStream.close();
+                if(byteArrayInputStream!=null) {
+                    byteArrayInputStream.close();
+                }
             } catch (IOException e) {
 
             }

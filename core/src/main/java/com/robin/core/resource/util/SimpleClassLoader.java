@@ -33,13 +33,14 @@ public class SimpleClassLoader extends ClassLoader {
      * This sample function for reading class implementations reads
      * them from the local file system
      */
-    private byte getClassImplFromDataBase(String className)[] {
+    private byte[] getClassImplFromDataBase(String className) {
     	System.out.println("        >>>>>> Fetching the implementation of "+className);
-    	byte result[];
+    	byte[] result;
     	try {
     	    FileInputStream fi = new FileInputStream("store\\"+className+".impl");
     	    result = new byte[fi.available()];
     	    fi.read(result);
+    	    fi.close();
     	    return result;
     	} catch (Exception e) {
 
@@ -56,6 +57,7 @@ public class SimpleClassLoader extends ClassLoader {
      * will always want the class resolved before it is returned
      * to them.
      */
+    @Override
     public Class loadClass(String className) throws ClassNotFoundException {
         return (loadClass(className, true));
     }
@@ -65,10 +67,11 @@ public class SimpleClassLoader extends ClassLoader {
      * both from loadClass above and from the internal function
      * FindClassFromClass.
      */
+    @Override
     public synchronized Class loadClass(String className, boolean resolveIt)
     	throws ClassNotFoundException {
         Class result;
-        byte  classData[];
+        byte[]  classData;
 
         System.out.println("        >>>>>> Load class : "+className);
 

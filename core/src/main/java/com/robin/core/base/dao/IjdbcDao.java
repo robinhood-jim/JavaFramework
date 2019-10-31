@@ -143,7 +143,7 @@ public interface IjdbcDao {
 	 * @return
 	 * @throws DAOException
 	 */
-	Long createVO(BaseObject obj) throws DAOException;
+	Serializable createVO(BaseObject obj) throws DAOException;
 
 	/**
 	 * Update Record by ORM

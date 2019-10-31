@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Data
-public class TableConfigProp implements Serializable {
+public class TableConfigProp {
 
     private int containrow;
     private boolean isBold = false;

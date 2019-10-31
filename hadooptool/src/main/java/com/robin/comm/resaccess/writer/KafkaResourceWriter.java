@@ -26,7 +26,7 @@ public class KafkaResourceWriter extends AbstractResourceWriter {
     private Schema schema;
     private String valueType;
 
-    private Gson gson=new Gson();
+
     byte[] output=null;
     String key=null;
     private StringBuilder builder=new StringBuilder();
@@ -40,11 +40,12 @@ public class KafkaResourceWriter extends AbstractResourceWriter {
         }
         if(colmeta.getResourceCfgMap().containsKey("valueType")){
             valueType=colmeta.getResourceCfgMap().get("valueType").toString();
-            if(valueType.equalsIgnoreCase("avro")){
+            if("avro".equalsIgnoreCase(valueType)){
                 schema= AvroUtils.getSchemaFromMeta(colmeta);
             }
-        }else
+        }else {
             schema= AvroUtils.getSchemaFromMeta(colmeta);
+        }
         try {
             initalize();
         }catch (Exception ex){
@@ -74,7 +75,7 @@ public class KafkaResourceWriter extends AbstractResourceWriter {
                 key=String.valueOf(System.currentTimeMillis());
             }
             output=AvroUtils.dataToByteArray(schema,record);
-        }else if(valueType.equalsIgnoreCase("json")){
+        }else if("json".equalsIgnoreCase(valueType)){
 
         }
         producer.send(new ProducerRecord(config.getTopicName(), key,output));

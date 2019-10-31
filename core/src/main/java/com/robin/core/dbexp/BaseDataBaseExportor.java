@@ -35,7 +35,7 @@ public abstract class BaseDataBaseExportor {
 			char[] chars={splitbyte};
 			retsplit=new String(chars);
 		}else{
-			if(split.equals("|")|| split.equals("\"")||split.equals("\\")){
+			if("|".equals(split) || "\"".equals(split) || "\\".equals(split)){
 				retsplit="\\"+split;
 			}
 		}

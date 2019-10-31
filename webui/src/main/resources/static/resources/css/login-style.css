@@ -1,0 +1,173 @@
+@charset "utf-8";
+/* CSS Document */
+body, div, dl, dt, dd, ul, ol, li, h1, h2, h3, h4, h5, h6, pre, form, fieldset, input, textarea, p, blockquote, th, td {
+	margin:0;
+	padding:0;
+	font-size:14px;
+}
+table {
+	border-collapse:collapse;
+	border-spacing:0;
+}
+fieldset, img {
+	border:0;
+}
+address, caption, cite, code, dfn, em, strong, th, var {
+	font-style:normal;
+	font-weight:normal;
+}
+ol, ul {
+	list-style:none;
+}
+caption, th {
+	text-align:left;
+}
+h1, h2, h3, h4, h5, h6 {
+	font-size:100%;
+}
+h1 {
+	font-size:22px;
+	color:#000;
+}
+h3 {
+	font-size:18px;
+	padding:8px 0;
+}
+q:before, q:after {
+	content:'';
+}
+abbr, acronym {
+	border:0;
+}
+/* ---------------------------------UP Reset------------------------------------------- */
+body {
+	font:100% Arial, sans-serif;
+	text-align:center;
+	background:#acdce0 url(../images/login-bg.jpg) repeat-x center top;
+	
+}
+div#loginWrap {
+	text-align:left;
+	margin:0 auto;
+	width:960px;
+}
+div#loginWrap h1 {
+	background:url(../images/top.jpg) no-repeat center 1px;
+	width:700px;
+	height:102px;
+	text-indent:-9999px;
+}
+div#loginWrap h2 {
+	text-indent:-9999px;
+	background:url(../images/name.gif) no-repeat center 13px;
+	width:700px;
+	height:65px;
+}
+div#login {
+	margin:85px auto 0;
+	width:700px;
+	height:387px;
+	text-align:center;
+	background:url(../images/center.jpg) no-repeat bottom;
+	position:relative;
+	z-index:3;
+}
+div#login div.wrap {
+	margin:0 0 13px 0;
+	padding:0;
+}
+span.inputContent {
+	width:73px;
+	height:20px;
+	display:block;
+	float:left;
+	clear:left;
+	text-indent:-9999px;
+}
+.inputB {/* --输入框样式-- */
+	width:179px;
+	height:21px;
+	background:url(../images/button.gif) no-repeat -1px -109px;
+	border:none;
+	margin-left:20px;
+	border:1px solid #2d6eb1
+	
+}
+#leftB, #rightB {/* --按钮-- */
+	margin-right:60px;
+	text-indent:-9999px;
+	width:121px;
+	height:44px;
+	display:block;
+	float:left;
+	position:relative;
+	left:205px;
+	bottom:13px;
+	cursor:pointer;
+	z-index:5;
+	border:none;
+}
+#leftB {
+	background:url(../images/button.gif) -1px top;
+}
+#rightB {
+	background:url(../images/button.gif) -1px bottom;
+}
+#nm, #pw, #va {
+	width:73px;
+	height:20px;
+	position:relative;
+	left:220px;
+}
+#nm {
+	background: url(../images/button.gif) no-repeat 0px -46px;
+}
+#pw {
+	background: url(../images/button.gif) no-repeat 0px -66px;
+}
+#va {
+	background: url(../images/button.gif) no-repeat 0px -87px;
+	width:73px;
+}
+hr {
+	visibility:hidden;
+	line-height:1px;
+	height:1px;
+	clear:both;
+}
+span.ajax {/* --验证信息-- */
+	position:absolute;
+	left:500px;
+	text-align:left;
+	color:#fff;
+	border:1px dotted #d1f7ff;
+	background:#1ab2d9;
+	padding:2px;
+	font-size:12px;
+	width:160px;
+	visibility:hidden;
+	
+}
+div#bottom {
+	background:url(../images/bottom.jpg) no-repeat center bottom;
+	width:982px;
+	height:106px;
+	display:block;
+	visibility:visible;
+	position:absolute;
+	bottom:-60px;
+	left:-138px;
+	z-index:1;
+}
+#left-input {
+	width:100px;
+	position:relative;
+	left:1px;
+}
+#right-img {
+	width:56px;
+	height:22px;
+	margin-left:22px;
+	vertical-align:bottom;
+	border:none;
+}

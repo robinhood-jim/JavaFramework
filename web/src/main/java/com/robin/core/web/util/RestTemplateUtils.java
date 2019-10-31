@@ -23,8 +23,9 @@ public class RestTemplateUtils {
         String url=requestUrl;
         HttpHeaders requestHeaders = new HttpHeaders();
         if(params!=null) {
-            if(params.length>0)
+            if(params.length>0) {
                 url = environment.getProperty(params[0]) + requestUrl;
+            }
             if(params.length>1){
                 requestHeaders.add(HttpHeaders.AUTHORIZATION,params[1]);
             }
@@ -52,8 +53,9 @@ public class RestTemplateUtils {
     public static Map<String,Object> postFromRestUrl(String requestUrl,Map<String,String> objectMap,String... configs){
         Environment environment= SpringContextHolder.getBean(Environment.class);
         String url=null;
-        if(configs!=null &&configs.length>0)
+        if(configs!=null &&configs.length>0) {
             url=environment.getProperty(configs[0])+requestUrl;
+        }
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
         if(configs!=null && configs.length>1){
@@ -71,8 +73,9 @@ public class RestTemplateUtils {
     public static Map<String,Object> postFromSsoRest(String requestUrl,Map<String,String> objectMap,String... configs){
         Environment environment= SpringContextHolder.getBean(Environment.class);
         String url=null;
-        if(configs!=null &&configs.length>0)
+        if(configs!=null &&configs.length>0) {
             url=environment.getProperty(configs[0])+requestUrl;
+        }
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
         if(configs!=null && configs.length>1){

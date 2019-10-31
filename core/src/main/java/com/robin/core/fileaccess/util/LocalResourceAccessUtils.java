@@ -6,7 +6,8 @@ import org.apache.commons.io.FileUtils;
 import java.io.*;
 
 public class LocalResourceAccessUtils extends AbstractResourceAccessUtil {
-	public BufferedReader getInResourceByReader(DataCollectionMeta meta) throws Exception{
+	@Override
+    public BufferedReader getInResourceByReader(DataCollectionMeta meta) throws Exception{
 		BufferedReader reader=null;
 		File file=new File(meta.getPath());
 		if(!file.exists()){
@@ -16,7 +17,8 @@ public class LocalResourceAccessUtils extends AbstractResourceAccessUtil {
 		return reader;
 	}
 	
-	public BufferedWriter getOutResourceByWriter(DataCollectionMeta meta) throws Exception{
+	@Override
+    public BufferedWriter getOutResourceByWriter(DataCollectionMeta meta) throws Exception{
 		BufferedWriter writer=null;
 		File file=new File(meta.getPath());
 		if(file.exists()){
@@ -25,14 +27,16 @@ public class LocalResourceAccessUtils extends AbstractResourceAccessUtil {
 		writer= getWriterByPath(meta.getPath(), FileUtils.openOutputStream(file), meta.getEncode());
 		return writer;
 	}
-	public OutputStream getOutResourceByStream(DataCollectionMeta meta) throws Exception{
+	@Override
+    public OutputStream getOutResourceByStream(DataCollectionMeta meta) throws Exception{
 		File file=new File(meta.getPath());
 		if(file.exists()){
 			FileUtils.forceDelete(file);
 		}
 		return getOutputStreamByPath(meta.getPath(),FileUtils.openOutputStream(file));
 	}
-	public InputStream getInResourceByStream(DataCollectionMeta meta) throws Exception{
+	@Override
+    public InputStream getInResourceByStream(DataCollectionMeta meta) throws Exception{
 		File file=new File(meta.getPath());
 		if(!file.exists()){
 			throw new IOException("file "+meta.getPath()+" not exist!");

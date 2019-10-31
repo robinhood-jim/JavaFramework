@@ -24,7 +24,7 @@ import com.robin.core.base.model.BaseObject;
 import com.robin.core.query.util.PageQuery;
 
 public interface IBaseAnnotationJdbcService<V extends BaseObject, P extends Serializable> {
-    Long saveEntity(V vo) throws ServiceException;
+    P saveEntity(V vo) throws ServiceException;
 
     int updateEntity(V vo) throws ServiceException;
 

@@ -22,45 +22,54 @@ public class PhoenixDataBaseMeta extends BaseDataBaseMeta {
 
 	public PhoenixDataBaseMeta(DataBaseParam param) {
 		super(param);
+		setDbType(BaseDataBaseMeta.TYPE_PHONEIX);
 		param.setDriverClassName("org.apache.phoenix.queryserver.client.Driver");
 	}
 
 
-	public String getAddColumnStatement(String arg0, String arg1,
-			DataBaseColumnMeta arg2, String arg3, boolean arg4, String arg5,
-			boolean arg6) {
+	@Override
+    public String getAddColumnStatement(String arg0, String arg1,
+                                        DataBaseColumnMeta arg2, String arg3, boolean arg4, String arg5,
+                                        boolean arg6) {
 		
 		return null;
 	}
 
-	public int getDefaultDatabasePort() {
+	@Override
+    public int getDefaultDatabasePort() {
 		return 2181;
 	}
 	
 
-	public String getDropColumnStatement(String arg0, String arg1,
-			DataBaseColumnMeta arg2, String arg3, boolean arg4, String arg5,
-			boolean arg6) {
+	@Override
+    public String getDropColumnStatement(String arg0, String arg1,
+                                         DataBaseColumnMeta arg2, String arg3, boolean arg4, String arg5,
+                                         boolean arg6) {
 		return null;
 	}
 
-	public String getUrlTemplate() {
+	@Override
+    public String getUrlTemplate() {
 		return "jdbc:phoenix:thin:url=[hostName]:[port]";
 	}
 
 
-	public boolean supportAutoInc() {
+	@Override
+    public boolean supportAutoInc() {
 		return false;
 	}
 
-	public boolean supportsSchemas() {
+	@Override
+    public boolean supportsSchemas() {
 		return false;
 	}
 
-	public boolean suppportSequnce() {
+	@Override
+    public boolean suppportSequnce() {
 		return false;
 	}
-	public BaseSqlGen getSqlGen() {
+	@Override
+    public BaseSqlGen getSqlGen() {
 		return new MysqlSqlGen();
 	}
 

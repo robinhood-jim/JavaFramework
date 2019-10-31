@@ -9,7 +9,8 @@ import com.robin.core.base.datameta.DataBaseParam;
 
 public class MySqlDataBaseImportor extends BaseDataBaseImportor {
 
-	public int importFromLocal(DataBaseImportParam inparam,DataBaseParam param) {
+	@Override
+    public int importFromLocal(DataBaseImportParam inparam, DataBaseParam param) {
 		String[] scriptArr={"mysql -u ",param.getUserName(),"-p"+param.getPasswd(),"-h ",param.getHostName(),"--database ",param.getDatabaseName()};
 		int ret=-1;
 		try{

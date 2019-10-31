@@ -25,8 +25,9 @@ public class CollectionsUtil {
 	public static ArrayList<Map.Entry<String,Long>> getSortedMapByLongValue(Map<String,Long> h,final boolean asc) {
 		ArrayList<Map.Entry<String, Long>> l = new ArrayList<Map.Entry<String, Long>>(h.entrySet());
 		Collections.sort(l, new Comparator<Map.Entry<String, Long>>() {
-			public int compare(Map.Entry<String, Long> o1,
-					Map.Entry<String, Long> o2) {
+			@Override
+            public int compare(Map.Entry<String, Long> o1,
+                               Map.Entry<String, Long> o2) {
 				return getCompareVal(o1, o2,asc);
 			}
 		});
@@ -36,39 +37,45 @@ public class CollectionsUtil {
 		int retval = 0;
 		if(o1.getValue() instanceof Long) {
 			if ((Long) o2.getValue() > (Long) o1.getValue()) {
-				if (asc)
-					retval = -1;
-				else
-					retval = 1;
+				if (asc) {
+                    retval = -1;
+                } else {
+                    retval = 1;
+                }
 			} else if ((Long)o2.getValue() < (Long)o1.getValue()) {
-				if (asc)
-					retval = 1;
-				else
-					retval = -1;
+				if (asc) {
+                    retval = 1;
+                } else {
+                    retval = -1;
+                }
 			}
 		}else if(o1.getValue() instanceof Integer){
 			if ((Integer) o2.getValue() > (Integer) o1.getValue()) {
-				if (asc)
-					retval = -1;
-				else
-					retval = 1;
+				if (asc) {
+                    retval = -1;
+                } else {
+                    retval = 1;
+                }
 			} else if ((Integer)o2.getValue() < (Integer) o1.getValue()) {
-				if (asc)
-					retval = 1;
-				else
-					retval = -1;
+				if (asc) {
+                    retval = 1;
+                } else {
+                    retval = -1;
+                }
 			}
 		}else if(o1.getValue() instanceof Double){
 			if ((Double) o2.getValue() > (Double) o1.getValue()) {
-				if (asc)
-					retval = -1;
-				else
-					retval = 1;
+				if (asc) {
+                    retval = -1;
+                } else {
+                    retval = 1;
+                }
 			} else if ((Double)o2.getValue() < (Double) o1.getValue()) {
-				if (asc)
-					retval = 1;
-				else
-					retval = -1;
+				if (asc) {
+                    retval = 1;
+                } else {
+                    retval = -1;
+                }
 			}
 		}
 		return retval;
@@ -76,8 +83,9 @@ public class CollectionsUtil {
 	public static ArrayList<Map.Entry<String,Integer>> getSortedMapByIntValue(Map<String,Integer> h,final boolean asc) {
 		ArrayList<Map.Entry<String, Integer>> l = new ArrayList<Map.Entry<String, Integer>>(h.entrySet());
 		Collections.sort(l, new Comparator<Map.Entry<String, Integer>>() {
-			public int compare(Map.Entry<String, Integer> o1,
-					Map.Entry<String, Integer> o2) {
+			@Override
+            public int compare(Map.Entry<String, Integer> o1,
+                               Map.Entry<String, Integer> o2) {
 				return getCompareVal(o1,o2,asc);
 			}
 		});
@@ -86,8 +94,9 @@ public class CollectionsUtil {
 	public static ArrayList<Map.Entry<String,Double>> getSortedMapByDoubleValue(Map<String,Double> h,final boolean asc) {
 		ArrayList<Map.Entry<String, Double>> l = new ArrayList<Map.Entry<String, Double>>(h.entrySet());
 		Collections.sort(l, new Comparator<Map.Entry<String, Double>>() {
-			public int compare(Map.Entry<String, Double> o1,
-							   Map.Entry<String, Double> o2) {
+			@Override
+            public int compare(Map.Entry<String, Double> o1,
+                               Map.Entry<String, Double> o2) {
 				return getCompareVal(o1,o2,asc);
 			}
 		});

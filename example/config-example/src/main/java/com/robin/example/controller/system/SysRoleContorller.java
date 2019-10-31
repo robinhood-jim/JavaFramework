@@ -24,8 +24,9 @@ public class SysRoleContorller extends BaseCrudDhtmlxController<SysRole,Long, Sy
 	public Map<String,Object> listRole(HttpServletRequest request,
 			HttpServletResponse response) {
 		PageQuery query=wrapPageQuery(request);
-		if(query==null)
-			query=new PageQuery();	
+		if(query==null) {
+            query=new PageQuery();
+        }
 		query.setSelectParamId("GET_SYSROLE_PAGE");
 		query.getParameters().put("queryString", wrapQuery(request));
 		service.queryBySelectId(query);

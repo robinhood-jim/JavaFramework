@@ -50,6 +50,7 @@ public class ResourceConst {
         TYPE_PROTO("7");
         private String value;
         FileFormat(String value){this.value=value;}
+        @Override
         public String toString() {
             return String.valueOf(this.value);
         }

@@ -29,11 +29,13 @@ package com.robin.comm.dal.holder;
 public abstract class AbstractResourceHolder implements IHolder{
 	protected boolean busyTag=false;
 
-	public void setBusyTag(boolean tag){
+	@Override
+    public void setBusyTag(boolean tag){
 		this.busyTag=tag;
 	}
 
-	public boolean isBusyTag() {
+	@Override
+    public boolean isBusyTag() {
 		return busyTag;
 	}
 }

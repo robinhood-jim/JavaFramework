@@ -71,12 +71,14 @@ public class DynamicJarLoader {
 		finally{
 			try{
 			for (InputStream stream:jarFiles) {
-				 if(stream!=null)
-					 stream.close();
+				 if(stream!=null) {
+                     stream.close();
+                 }
 			}
 			for (InputStream stream:configFiles) {
-				 if(stream!=null)
-					 stream.close();
+				 if(stream!=null) {
+                     stream.close();
+                 }
 			}
 			}catch(Exception ex){
 				ex.printStackTrace();
@@ -100,8 +102,9 @@ public class DynamicJarLoader {
 		}finally{
 			try{
 			for (InputStream stream:jarFiles) {
-				 if(stream!=null)
-					 stream.close();
+				 if(stream!=null) {
+                     stream.close();
+                 }
 			}
 			}catch(Exception ex){
 				ex.printStackTrace();
@@ -128,8 +131,9 @@ public class DynamicJarLoader {
 		}finally{
 			try{
 			for (InputStream stream:jarFiles) {
-				 if(stream!=null)
-					 stream.close();
+				 if(stream!=null) {
+                     stream.close();
+                 }
 			}
 			}catch(Exception ex){
 				ex.printStackTrace();
@@ -163,8 +167,9 @@ public class DynamicJarLoader {
 		}finally{
 			try{
 			for (InputStream stream:jarFiles) {
-				 if(stream!=null)
-					 stream.close();
+				 if(stream!=null) {
+                     stream.close();
+                 }
 			}
 			}catch(Exception ex){
 				ex.printStackTrace();

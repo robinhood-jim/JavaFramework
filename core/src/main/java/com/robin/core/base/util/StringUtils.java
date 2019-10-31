@@ -181,9 +181,9 @@ public class StringUtils {
 	}
 	public static int getSplitCharInt(String split){
 		int retchar=0;
-		if(split.equals("\\t")){
+		if("\\t".equals(split)){
 			retchar=10;
-		}else if(split.equalsIgnoreCase("0x1F")){
+		}else if("0x1F".equalsIgnoreCase(split)){
 			retchar=31;
 		}else {
 			retchar=split.charAt(0);
@@ -192,9 +192,9 @@ public class StringUtils {
 	}
 	public static String getSplitChar(String split){
 		String retchar="";
-		if(split.equals("\\t")){
+		if("\\t".equals(split)){
 			retchar="\t";
-		}else if(split.equalsIgnoreCase("0x1F")){
+		}else if("0x1F".equalsIgnoreCase(split)){
 			retchar=String.valueOf('\u001F');
 		}else {
 			retchar=split;
@@ -202,16 +202,18 @@ public class StringUtils {
 		return retchar;
 	}
 	public static String initailCharToUpperCase(String input){
-		if(input.length()>2)
-			return input.substring(0,1).toUpperCase()+input.substring(1);
-		else
-			return null;
+		if(input.length()>2) {
+            return input.substring(0,1).toUpperCase()+input.substring(1);
+        } else {
+            return null;
+        }
 	}
 	public static String initailCharToLowCase(String input){
-		if(input.length()>2)
-			return input.substring(0,1).toLowerCase()+input.substring(1);
-		else
-			return null;
+		if(input.length()>2) {
+            return input.substring(0,1).toLowerCase()+input.substring(1);
+        } else {
+            return null;
+        }
 	}
 	public static String generateRandomChar(int length){
 		StringBuilder builder=new StringBuilder();
@@ -231,9 +233,9 @@ public class StringUtils {
 		StringBuilder builder=new StringBuilder();
 		Random random=new Random();
 		for(int i=0;i<length;i++){
-			if(random.nextFloat()<0.5)
-				builder.append((char)getRandomUpperChar(random));
-			else{
+			if(random.nextFloat()<0.5) {
+                builder.append((char)getRandomUpperChar(random));
+            } else{
 				builder.append((char)getRandomLowerChar(random));
 			}
 		}
@@ -246,6 +248,9 @@ public class StringUtils {
 		MessageDigest md=MessageDigest.getInstance("MD5");
 		md.update(inputStr.getBytes());
 		return DatatypeConverter.printHexBinary(md.digest()).toUpperCase();
+	}
+	public static boolean isEmpty(Object object){
+		return object==null || object.toString().trim().isEmpty();
 	}
 	public static void main(String[] args){
 		System.out.println(genarateRandomUpperLowerChar(8));

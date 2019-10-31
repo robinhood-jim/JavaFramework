@@ -55,7 +55,8 @@ public abstract class BaseObject implements Serializable,Cloneable{
 	public List<String> getDirtyColumn(){
 		return dirtyColumnList;
 	}
-	public String toString(){
+	@Override
+    public String toString(){
 		String str="";
 		Gson gson=new Gson();
 		try{

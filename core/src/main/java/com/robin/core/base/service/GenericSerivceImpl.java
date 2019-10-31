@@ -27,6 +27,7 @@ import com.robin.core.query.util.QueryString;
 
 public abstract class GenericSerivceImpl<V extends BaseObject,P extends Serializable> implements GenericService<V,P> {
 	protected BaseGenricDao<V, P> genericDao; 
+	@Override
 	public void create(V vo) throws ServiceException {
 		try{
 			genericDao.save(vo);
@@ -35,6 +36,7 @@ public abstract class GenericSerivceImpl<V extends BaseObject,P extends Serializ
 		}
 	}
 
+	@Override
 	public V find(P id) throws ServiceException {
 		try{
 			return genericDao.get(id);
@@ -43,6 +45,7 @@ public abstract class GenericSerivceImpl<V extends BaseObject,P extends Serializ
 		}
 	}
 
+	@Override
 	public void query(PageQuery pageQuery) throws ServiceException {
 	
 		try{
@@ -54,6 +57,7 @@ public abstract class GenericSerivceImpl<V extends BaseObject,P extends Serializ
 		
 	}
 
+	@Override
 	public void remove(P id) throws ServiceException {
 		
 		try{
@@ -64,6 +68,7 @@ public abstract class GenericSerivceImpl<V extends BaseObject,P extends Serializ
 		}
 	}
 
+	@Override
 	public void removeByIds(Serializable[] ids) throws ServiceException {
 		
 		try{
@@ -74,6 +79,7 @@ public abstract class GenericSerivceImpl<V extends BaseObject,P extends Serializ
 		}
 	}
 
+	@Override
 	public void update(V vo) throws ServiceException {
 		try{
 			genericDao.update(vo);
@@ -87,6 +93,7 @@ public abstract class GenericSerivceImpl<V extends BaseObject,P extends Serializ
 		this.genericDao = genericDao;
 	}
 
+	@Override
 	public List<V> findAll() throws ServiceException {
 		try{
 			return genericDao.findAll();
@@ -95,7 +102,8 @@ public abstract class GenericSerivceImpl<V extends BaseObject,P extends Serializ
 			throw new ServiceException(e);
 		}
 	}
-	public List<V> findByField(String fieldName,Object fieldValue) throws ServiceException{
+	@Override
+	public List<V> findByField(String fieldName, Object fieldValue) throws ServiceException{
 		try{
 			return genericDao.findByField(fieldName, fieldValue);
 		}catch (DAOException e) {
@@ -103,7 +111,8 @@ public abstract class GenericSerivceImpl<V extends BaseObject,P extends Serializ
 			throw new ServiceException(e);
 		}
 	}
-	public List<V> findByFields(String[] fieldNames,Object[] fieldValues) throws ServiceException{
+	@Override
+	public List<V> findByFields(String[] fieldNames, Object[] fieldValues) throws ServiceException{
 		try{
 			return genericDao.findByFields(fieldNames, fieldValues);
 		}catch (DAOException e) {
@@ -111,7 +120,8 @@ public abstract class GenericSerivceImpl<V extends BaseObject,P extends Serializ
 			throw new ServiceException(e);
 		}
 	}
-	public List<V> findByFields(String[] fieldName, Object[] fieldValue,String[] orderName,boolean[] ascending) throws ServiceException{
+	@Override
+	public List<V> findByFields(String[] fieldName, Object[] fieldValue, String[] orderName, boolean[] ascending) throws ServiceException{
 		try{
 			return genericDao.findByFields(fieldName, fieldValue,orderName,ascending);
 		}catch (DAOException e) {
@@ -119,7 +129,8 @@ public abstract class GenericSerivceImpl<V extends BaseObject,P extends Serializ
 			throw new ServiceException(e);
 		}
 	}
-	public List<V> findByFields(String[] fieldName, Object[] fieldValue,String orderName,boolean ascending) throws ServiceException{
+	@Override
+	public List<V> findByFields(String[] fieldName, Object[] fieldValue, String orderName, boolean ascending) throws ServiceException{
 		try{
 			return genericDao.findByFields(fieldName, fieldValue,orderName,ascending);
 		}catch (DAOException e) {
@@ -127,7 +138,8 @@ public abstract class GenericSerivceImpl<V extends BaseObject,P extends Serializ
 			throw new ServiceException(e);
 		}
 	}
-	public List<V> findByField(String fieldName, Object fieldValue,String orderName,boolean ascending) throws ServiceException{
+	@Override
+	public List<V> findByField(String fieldName, Object fieldValue, String orderName, boolean ascending) throws ServiceException{
 		try{
 			return genericDao.findByField(fieldName, fieldValue,orderName,ascending);
 		}catch (DAOException e) {
@@ -164,7 +176,8 @@ public abstract class GenericSerivceImpl<V extends BaseObject,P extends Serializ
 		}
 	}
 	
-	public PageQuery queryBySql(String querySQL,String countSql,String[] displayname,PageQuery pageQuery)throws ServiceException
+	@Override
+	public PageQuery queryBySql(String querySQL, String countSql, String[] displayname, PageQuery pageQuery)throws ServiceException
 	{
 		try{
 			return genericDao.queryBySql(querySQL, countSql, displayname, pageQuery);
@@ -173,6 +186,7 @@ public abstract class GenericSerivceImpl<V extends BaseObject,P extends Serializ
 		}
 	}
 	
+	@Override
 	public void queryByParamter(QueryString qs, PageQuery pageQuery) throws ServiceException{
 		try{
 			genericDao.queryByParamter(qs, pageQuery);
@@ -180,6 +194,7 @@ public abstract class GenericSerivceImpl<V extends BaseObject,P extends Serializ
 			throw new ServiceException(e);
 		}
 	}
+	@Override
 	public int executeSql(String sql)throws ServiceException{
 		try{
 			return genericDao.executeSqlUpdate(sql);

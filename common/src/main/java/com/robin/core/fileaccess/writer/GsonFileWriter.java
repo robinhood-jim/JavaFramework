@@ -66,7 +66,8 @@ public class GsonFileWriter extends WriterBasedFileWriter{
 	public void flush() throws IOException{
 		jwriter.flush();
 	}
-	public void close() throws IOException{
+	@Override
+    public void close() throws IOException{
 		writer.close();
 	}
 	

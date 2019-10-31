@@ -32,9 +32,9 @@ public class RecordWriterHolder extends AbstractResourceHolder {
         String[] tag = AbstractResourceAccessUtil.retrieveResource(colmeta.getPath());
         AbstractResourceAccessUtil util = ResourceAccessHolder.getAccessUtilByProtocol(tag[0].toLowerCase());
         OutputStream inputStream = util.getOutResourceByStream(colmeta);
-        if(!colmeta.isFsTag())
+        if(!colmeta.isFsTag()) {
             writer = TextFileWriterFactory.getFileWriterByPath(colmeta, inputStream);
-        else{
+        } else{
             writer= CommResWriterFactory.getFileWriterByType(colmeta.getResType(),colmeta);
         }
     }

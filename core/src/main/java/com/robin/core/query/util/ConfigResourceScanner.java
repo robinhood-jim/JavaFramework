@@ -1,6 +1,6 @@
 package com.robin.core.query.util;
 
-import com.robin.core.base.exception.MissingConfigExecption;
+import com.robin.core.base.exception.MissingConfigException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
@@ -13,6 +13,22 @@ import java.util.List;
 
 @Slf4j
 public class ConfigResourceScanner {
+    public static final InputStream loadResource(String resourcePath){
+        try{
+            PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
+            Resource[] configFiles = resolver.getResources("classpath:" + resourcePath);
+            if(configFiles!=null && configFiles.length>0){
+                return configFiles[0].getInputStream();
+            }else{
+                return null;
+            }
+
+        }catch (Exception ex){
+            log.error("{}",ex);
+        }
+        return null;
+    }
+
     public static List<InputStream> doScan(String xmlConfigPath,String... defaultPath){
         List<InputStream> resList=new ArrayList<>();
         try {
@@ -22,10 +38,11 @@ public class ConfigResourceScanner {
             PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
             //default config at queryConfig in classpath
             if (xmlpath == null || "".equals(xmlpath)) {
-                if(defaultPath.length>0)
+                if(defaultPath.length>0) {
                     classesPath=defaultPath[0];
-                else
+                } else {
                     classesPath = "queryConfig";
+                }
             } else {
                 if (xmlpath.startsWith("classpath:")) {
                     String relativePath = xmlpath.substring(10);
@@ -54,19 +71,20 @@ public class ConfigResourceScanner {
             } else {
                 File file = new File(xmlpath);
                 if (!file.isDirectory()) {
-                    throw new MissingConfigExecption("no query XML found in path!");
+                    throw new MissingConfigException("no query XML found in path!");
                 }
                 File[] files = file.listFiles();
-                for (int i = 0; i < files.length; i++) {
-                    File subfile = files[i];
-                    if (subfile.getName().toLowerCase().endsWith("xml"))
-                        resList.add(new FileInputStream(subfile));
+                if(files!=null) {
+                    for (int i = 0; i < files.length; i++) {
+                        File subfile = files[i];
+                        if (subfile.getName().toLowerCase().endsWith("xml")) {
+                            resList.add(new FileInputStream(subfile));
+                        }
+                    }
                 }
             }
         } catch (Exception e) {
-            log.error("", e);
-            e.printStackTrace();
-            System.out.println(e.getMessage());
+            log.error("{}", e);
         } finally {
 
         }

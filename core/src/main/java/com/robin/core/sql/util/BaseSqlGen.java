@@ -15,6 +15,7 @@
  */
 package com.robin.core.sql.util;
 
+import com.robin.core.base.dao.util.AnnotationRetrevior;
 import com.robin.core.base.exception.DAOException;
 import com.robin.core.query.util.PageQuery;
 import com.robin.core.query.util.QueryParam;
@@ -58,7 +59,14 @@ public interface BaseSqlGen {
 
     String getSelectPart(String columnName, String aliasName);
 
-    String getCreateFieldPart(Map<String, Object> fieldMap);
+    String getFieldDefineSqlPart(Map<String, Object> fieldMap);
 
     String getSchemaName(String schema);
+    String getAlertColumnSqlPart(AnnotationRetrevior.EntityContent entityContent, AnnotationRetrevior.FieldContent fieldContent,AlertType type);
+    String getDbType();
+    enum AlertType{
+        ADD,
+        ALERT,
+        DEL;
+    }
 }

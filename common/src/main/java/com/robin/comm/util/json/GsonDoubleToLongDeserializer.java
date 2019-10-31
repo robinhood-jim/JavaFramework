@@ -30,9 +30,11 @@ public class GsonDoubleToLongDeserializer implements JsonDeserializer<Map<String
             return resMap;
         }else if(element.isJsonPrimitive()){
             JsonPrimitive element1=element.getAsJsonPrimitive();
-            if(element1.isBoolean()) return element1.getAsBoolean();
-            else if(element1.isString()) return element1.getAsString();
-            else if(element1.isNumber()){
+            if(element1.isBoolean()) {
+                return element1.getAsBoolean();
+            } else if(element1.isString()) {
+                return element1.getAsString();
+            } else if(element1.isNumber()){
                 Number number=element1.getAsNumber();
                 if (Math.ceil(number.doubleValue()) == number.longValue()){
                     Long longval=number.longValue();

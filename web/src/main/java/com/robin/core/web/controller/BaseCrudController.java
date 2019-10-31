@@ -28,10 +28,7 @@ import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Single Table Mapping Background Controller
@@ -74,7 +71,6 @@ public abstract class BaseCrudController<O extends BaseObject, P extends Seriali
      * @return
      */
     protected Map<String, Object> doSave(HttpServletRequest request, HttpServletResponse response,Object... obj) {
-        boolean finishTag = true;
         Map<String, Object> retMap = new HashMap();
         try {
             O object=null;
@@ -84,16 +80,13 @@ public abstract class BaseCrudController<O extends BaseObject, P extends Seriali
             }else if(obj[0] instanceof BaseObject){
                 object=(O) obj[0];
             }
-            this.service.saveEntity(object);
+            P pk=this.service.saveEntity(object);
             wrapSuccess(retMap);
-            doAfterAdd(request, response, object, retMap);
+            doAfterAdd(request, response, object,pk, retMap);
         } catch (Exception ex) {
             this.log.error("{}", ex);
-            finishTag = false;
             wrapResponse(retMap, ex);
         }
-        if (finishTag)
-            wrapResponse(retMap, null);
         return retMap;
     }
 
@@ -133,7 +126,7 @@ public abstract class BaseCrudController<O extends BaseObject, P extends Seriali
             ConvertUtil.convertToModel(object, valueMap);
             ConvertUtil.convertToModelForUpdate(updateObj, object);
             service.updateEntity(updateObj);
-            doAfterUpdate(request, response, object, retMap);
+            doAfterUpdate(request, response, updateObj, retMap);
             wrapSuccess(retMap);
         } catch (Exception ex) {
             log.error("{}", ex);
@@ -142,8 +135,8 @@ public abstract class BaseCrudController<O extends BaseObject, P extends Seriali
         return retMap;
     }
 
-    protected void doAfterAdd(HttpServletRequest request, HttpServletResponse response, BaseObject obj, Map<String, Object> retMap) {
-
+    protected void doAfterAdd(HttpServletRequest request, HttpServletResponse response, BaseObject obj,P pk, Map<String, Object> retMap) {
+        retMap.put("primaryKey",pk);
     }
 
     protected void doAfterView(HttpServletRequest request, HttpServletResponse response, BaseObject obj, Map<String, Object> retMap) {
@@ -195,6 +188,7 @@ public abstract class BaseCrudController<O extends BaseObject, P extends Seriali
         return retMap;
     }
 
+    @Override
     @SuppressWarnings(value = "uncheck")
     public void afterPropertiesSet() {
         if (this.serviceType != null) {
@@ -202,25 +196,21 @@ public abstract class BaseCrudController<O extends BaseObject, P extends Seriali
         }
     }
 
-    protected P[] parseId(String[] ids) throws Exception {
+    protected  P[] parseId(String[] ids) throws Exception {
         if (ids == null || ids.length == 0) {
             throw new Exception("ID not exists!");
         }
-        List<P> list = new ArrayList<P>();
+        P[] array=(P[])java.lang.reflect.Array.newInstance(pkType,ids.length);
         try {
             for (int i = 0; i < ids.length; i++) {
                 P p = pkType.newInstance();
                 valueOfMethod.invoke(p, ids[i]);
-                list.add(p);
+                array[i]=p;
             }
         } catch (Exception ex) {
             log.error("{}", ex);
         }
-        if (list.isEmpty()) {
-            return null;
-        } else {
-            return (P[]) list.toArray();
-        }
+        return array;
     }
 
 }

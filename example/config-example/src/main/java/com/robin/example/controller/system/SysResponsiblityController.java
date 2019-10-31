@@ -42,8 +42,9 @@ public class SysResponsiblityController extends BaseCrudDhtmlxController<SysResp
         if (request.getParameter("orgId") != null && !request.getParameter("orgId").isEmpty()) {
             orgIds = sysOrgService.getSubIdByParentOrgId(Long.valueOf(request.getParameter("orgId")));
         }
-        if(query==null)
+        if(query==null) {
             query=new PageQuery();
+        }
         query.setSelectParamId("GET_SYSUSERRESP_PAGE");
         query.getParameters().put("queryString", wrapQuery(request,orgIds));
         service.queryBySelectId(query);

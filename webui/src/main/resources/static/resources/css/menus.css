@@ -1,0 +1,51 @@
+@charset "utf-8";
+/* CSS Document */
+#container {
+	background: url(navImg/welcomeBg.jpg) no-repeat right bottom;
+}
+.dhtmlxMenu_dhx_blue_Middle {
+	background:url(navImg/navBg.gif) repeat-x center top;
+	height:31px;
+	line-height:31px;
+}
+div.dhtmlxMenu_dhx_blue_TopLevel_Item_Normal {
+	top:0;
+	background:url(navImg/navLine.gif) no-repeat center right;
+	padding-right:12px;
+	color:#002d65;
+}
+div.dhtmlxMenu_dhx_blue_TopLevel_Item_Selected {
+	height:29px;
+	line-height:29px;
+	background:#f3f8fe url(navImg/navBg.gif) repeat-x center -38px!important;
+	border-right:1px solid #ceddef!important;
+	border-left:1px solid #fff!important;
+}
+.dhtmlxMenu_dhx_blue_Middle img.dhtmlxMenu_TopLevel_Item_Icon_left {
+	left:8px;
+	top:9px;
+	width:16px;
+	height:16px;
+}
+div.dhtmlxMenu_dhx_blue_SubLevelArea_Polygon_left, div.dhtmlxMenu_dhx_blue_SubLevelArea_Polygon_right {
+	background:#f4f9ff url(navImg/selectBg.gif) repeat-x bottom;
+	border:1px solid #d0d0d0;
+	border-top:none;
+	top:100px!important;
+	
+}
+div.dhtmlxMenu_dhx_blue_SubLevelArea_Item_Normal {
+	border:1px solid #fff;
+	border-left:3px solid #fff;
+	border-top:none;
+	border-bottom:none;
+}
+div.dhtmlxMenu_dhx_blue_SubLevelArea_Item_Selected {
+	background:#e2eefb;
+	border-left:3px solid #fff;
+	border-right:1px solid #fff;
+	cursor:pointer;
+}
+div.dhtmlxMenu_dhx_blue_SubLevelArea_Polygon_left div.dhtmlxMenu_SubLevelArea_Item_Icon {
+	top:5px;
+}

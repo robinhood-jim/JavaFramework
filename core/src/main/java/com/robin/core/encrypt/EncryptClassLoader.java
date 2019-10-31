@@ -85,16 +85,18 @@ public class EncryptClassLoader extends ClassLoader{
 						ByteArrayOutputStream out=new ByteArrayOutputStream();
 						CipherUtil.decryptByte(key, in, out);
 						byte[] bytes=out.toByteArray();//CipherUtil.decryptByte(loadClassData(classname),key);
-						if(bytes!=null)
-							clazz=defineClass(name, bytes, 0, bytes.length);
+						if(bytes!=null) {
+                            clazz=defineClass(name, bytes, 0, bytes.length);
+                        }
 					}
 				}
 				}catch(Exception ex){
 					System.out.println("encounter error when load class"+classname);
 				}
 				
-				if(clazz!=null)
-					loadedClassPool.put(name, clazz);
+				if(clazz!=null) {
+                    loadedClassPool.put(name, clazz);
+                }
 			}
 			return clazz;
 		}catch(Exception ex){
@@ -128,8 +130,9 @@ public class EncryptClassLoader extends ClassLoader{
 		if(tmpname.contains(".")){
 			tmpname=tmpname.replaceAll("\\.","/");
 		}
-		if(!tmpname.endsWith(".class"))
-			tmpname+=".class";
+		if(!tmpname.endsWith(".class")) {
+            tmpname+=".class";
+        }
 		InputStream in=superloader.getResourceAsStream(tmpname);
 		byte[] bytes=new byte[in.available()];
 		in.read(bytes);
@@ -147,8 +150,9 @@ public class EncryptClassLoader extends ClassLoader{
 		if(tmpname.contains(".")){
 			tmpname=tmpname.replaceAll("\\.","/");
 		}
-		if(!tmpname.endsWith(".class"))
-			tmpname+=".class";
+		if(!tmpname.endsWith(".class")) {
+            tmpname+=".class";
+        }
 		in=superloader.getResourceAsStream(tmpname);
 		}catch(Exception ex){
 			System.out.println(name);

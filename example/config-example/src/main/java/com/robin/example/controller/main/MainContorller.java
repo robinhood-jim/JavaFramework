@@ -30,10 +30,11 @@ public class MainContorller {
 	@RequestMapping("index")
 	public String mainpage(HttpServletRequest request,HttpServletResponse response){
 		Session session=(Session) request.getSession().getAttribute(Const.SESSION);
-		if(session==null)
-			return "../login";
-		else
-			return "../main";
+		if(session==null) {
+            return "../login";
+        } else {
+            return "../main";
+        }
 	}
 	@RequestMapping("login")
 	public String login(HttpServletRequest request,HttpServletResponse response){

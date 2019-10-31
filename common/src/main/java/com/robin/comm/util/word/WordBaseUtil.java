@@ -25,8 +25,9 @@ public class WordBaseUtil {
 	}
 	public static void insertImg(Document document,WordImageSection section) throws MalformedURLException, IOException, DocumentException{  
        Image img = Image.getInstance(section.getImgUrl());  
-       if(img==null)  
-           return;  
+       if(img==null) {
+           return;
+       }
        img.setAbsolutePosition(section.getAbsoluteX(), section.getAbsoluteY());  
        img.setAlignment(section.getImageAlign());  
        img.scaleAbsolute(section.getHeight(), section.getWeight());  
@@ -55,10 +56,11 @@ public class WordBaseUtil {
     }  
 	public static void insertTable(Document document,WordConfig cfg,WordTableDef tabDef,WordTableHeaderDef headerDef,List<Map<String, String>> resultList) throws DocumentException{
 		int totalCount=0;
-		if(headerDef!=null)
-			totalCount=headerDef.getHeaderNums()+resultList.size();
-		else
-			totalCount=resultList.size()+1;
+		if(headerDef!=null) {
+            totalCount=headerDef.getHeaderNums()+resultList.size();
+        } else {
+            totalCount=resultList.size()+1;
+        }
 		Table table=new Table(tabDef.getDbColumnList().size(),totalCount);
 		table.setWidths(tabDef.getColWidthPercent());
 		table.setWidth(tabDef.getTableWidth());

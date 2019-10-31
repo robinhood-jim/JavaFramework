@@ -23,6 +23,7 @@ public class EntityExtractor implements
         this.lobHandler=lobHandler;
     }
 
+    @Override
     public List<? extends BaseObject> mapRow(ResultSet rs, int colpos)
             throws SQLException, DataAccessException {
         ResultSetMetaData rsmd = rs.getMetaData();
@@ -46,10 +47,10 @@ public class EntityExtractor implements
                     String columnName = fields[i].getName();
                     if (columnNameList.contains(columnName)) {
                         int pos = columnNameList.indexOf(columnName);
-                        if (!className[pos].equals("CLOB") && !className[pos].equals("BLOB")) {
+                        if (!"CLOB".equals(className[pos]) && !"BLOB".equals(className[pos])) {
                             Object obj = rs.getObject(columnName);
                             BeanUtils.copyProperty(tmpobj, columnName, obj);
-                        } else if (className[pos].equals("CLOB")) {
+                        } else if ("CLOB".equals(className[pos])) {
                             String result = lobHandler.getClobAsString(rs, pos + 1);
                             BeanUtils.copyProperty(tmpobj, columnName, result);
                         } else {

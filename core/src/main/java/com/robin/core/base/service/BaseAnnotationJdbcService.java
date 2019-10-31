@@ -50,8 +50,6 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 {
 	// autowire by construct, getBean from BaseObject annotation field MappingEntity jdbcDao
 	protected JdbcDao jdbcDao;
-	@Autowired
-	protected BaseSqlGen sqlGen;
 	protected Class<V> type;
 	protected Logger logger=LoggerFactory.getLogger(getClass());
 	protected AnnotationRetrevior.EntityContent entityContent;
@@ -83,15 +81,17 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 		}
 	}
 
-	@Transactional(propagation=Propagation.REQUIRED,rollbackFor=RuntimeException.class)
-	public Long saveEntity(V vo) throws ServiceException{
+	@Override
+    @Transactional(propagation=Propagation.REQUIRED,rollbackFor=RuntimeException.class)
+	public P saveEntity(V vo) throws ServiceException{
 		try{
-			return jdbcDao.createVO(vo);
+			return (P)jdbcDao.createVO(vo);
 		}catch (DAOException e) {
 			throw new ServiceException(e);
 		}
 	}
-	@Transactional(propagation=Propagation.REQUIRED,rollbackFor=RuntimeException.class)
+	@Override
+    @Transactional(propagation=Propagation.REQUIRED,rollbackFor=RuntimeException.class)
 	public int updateEntity(V vo) throws ServiceException{
 		try{
 			return jdbcDao.updateVO(type,vo);
@@ -99,7 +99,8 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 			throw new ServiceException(e);
 		}
 	}
-	@Transactional(propagation=Propagation.REQUIRED,rollbackFor=RuntimeException.class)
+	@Override
+    @Transactional(propagation=Propagation.REQUIRED,rollbackFor=RuntimeException.class)
 	public int deleteEntity(P [] vo) throws ServiceException{
 		try{
 			return jdbcDao.deleteVO(type,vo);
@@ -107,7 +108,8 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 			throw new ServiceException(e);
 		}
 	}
-	@Transactional(propagation=Propagation.REQUIRED,rollbackFor=RuntimeException.class)
+	@Override
+    @Transactional(propagation=Propagation.REQUIRED,rollbackFor=RuntimeException.class)
 	 public int deleteByField(String field,Object value) throws ServiceException{
 		 try{
 				return jdbcDao.deleteByField(type,field,value);
@@ -115,7 +117,8 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 				throw new ServiceException(e);
 			}
 	 }
-	@SuppressWarnings("unchecked")
+	@Override
+    @SuppressWarnings("unchecked")
 	@Transactional(readOnly=true)
 	public V getEntity(P id) throws ServiceException{
 		try{
@@ -124,7 +127,8 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 			throw new ServiceException(e);
 		}
 	}
-	@Transactional(readOnly=true)
+	@Override
+    @Transactional(readOnly=true)
 	public void queryBySelectId(PageQuery query) throws ServiceException{
 		try{
 			jdbcDao.queryBySelectId(query);
@@ -132,7 +136,8 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 			throw new ServiceException(ex);
 		}
 	}
-	@Transactional(readOnly=true)
+	@Override
+    @Transactional(readOnly=true)
 	public List<Map<String, Object>> queryByPageSql(String sql,PageQuery pageQuery) throws ServiceException{
 		try{
 			return jdbcDao.queryByPageSql(sql, pageQuery);
@@ -140,7 +145,8 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 			throw new ServiceException(ex);
 		}
 	}
-	@Transactional(propagation=Propagation.REQUIRED,rollbackFor=RuntimeException.class)
+	@Override
+    @Transactional(propagation=Propagation.REQUIRED,rollbackFor=RuntimeException.class)
 	public void executeBySelectId(PageQuery query) throws ServiceException{
 		try{
 			jdbcDao.executeBySelectId(query);
@@ -148,7 +154,8 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 			throw new ServiceException(ex);
 		}
 	}
-	@Transactional(readOnly=true)
+	@Override
+    @Transactional(readOnly=true)
 	public List<Map<String,Object>> queryBySql(String sqlstr) throws ServiceException{
 		try{
 			return jdbcDao.queryBySql(sqlstr);
@@ -156,7 +163,8 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 			throw new ServiceException(ex);
 		}
 	}
-	@Transactional(readOnly=true)
+	@Override
+    @Transactional(readOnly=true)
 	public PageQuery queryBySql(String querySQL,String countSql,String[] displayname,PageQuery pageQuery)throws ServiceException{
 		try{
 			return jdbcDao.queryBySql(querySQL, countSql, displayname, pageQuery);
@@ -164,7 +172,8 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 			throw new ServiceException(ex);
 		}
 	}
-	@Transactional(readOnly=true)
+	@Override
+    @Transactional(readOnly=true)
 	public List<Map<String,Object>> queryBySql(String sqlstr,Object[] obj) throws ServiceException{
 		try{
 			return jdbcDao.queryBySql(sqlstr, obj);
@@ -172,7 +181,8 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 			throw new ServiceException(ex);
 		}
 	}
-	@Transactional(readOnly=true)
+	@Override
+    @Transactional(readOnly=true)
 	public int queryByInt(String querySQL) throws ServiceException{
 		try{
 			return jdbcDao.queryByInt(querySQL);
@@ -180,7 +190,8 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 			throw new ServiceException(ex);
 		}
 	}
-	@SuppressWarnings("unchecked")
+	@Override
+    @SuppressWarnings("unchecked")
 	@Transactional(readOnly=true)
 	public List<V> queryByField(String fieldName,String oper,Object... fieldValues) throws ServiceException{
 		List<V> retlist;
@@ -203,7 +214,8 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 	 * @return
 	 * @throws ServiceException
 	 */
-	@SuppressWarnings("unchecked")
+	@Override
+    @SuppressWarnings("unchecked")
 	@Transactional(readOnly=true)
 	public List<V> queryByFieldOrderBy(String orderByStr,String fieldName,String oper,Object... fieldValues) throws ServiceException{
 		List<V> retlist;
@@ -218,7 +230,8 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 		return retlist;
 	}
 	
-	@Transactional(readOnly=true)
+	@Override
+    @Transactional(readOnly=true)
 	public List<V> queryAll() throws ServiceException{
 		List<V> retlist;
 		try{
@@ -229,7 +242,8 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 		return retlist;
     }
 	
-	@SuppressWarnings("unchecked")
+	@Override
+    @SuppressWarnings("unchecked")
 	@Transactional(readOnly=true)
 	public List<V> queryByVO(V vo,Map<String, Object> additonMap, String orderByStr)
 			throws ServiceException {

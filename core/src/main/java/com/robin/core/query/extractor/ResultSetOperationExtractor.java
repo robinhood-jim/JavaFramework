@@ -34,13 +34,15 @@ public abstract class ResultSetOperationExtractor implements ResultSetExtractor<
     }
 
     public ResultSetOperationExtractor(String dateFormat, String timestampFormat) {
-        if (dateFormat != null)
+        if (dateFormat != null) {
             this.dateFormat = dateFormat;
+        }
         if (timestampFormat != null) {
             this.timestampFormat = timestampFormat;
         }
     }
 
+    @Override
     public Integer extractData(ResultSet rs) throws SQLException,
             DataAccessException {
         ResultSetMetaData rsmd = rs.getMetaData();

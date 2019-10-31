@@ -58,7 +58,8 @@ public class BaseScriptExecutor  implements IscriptExecutor{
 	 * @param scripts
 	 * @return
 	 */
-	public CompiledScript returnScript(String names,String scripts) throws Exception{
+	@Override
+    public CompiledScript returnScript(String names, String scripts) throws Exception{
 		CompiledScript script=null;
 		String key=null;
 	
@@ -81,25 +82,27 @@ public class BaseScriptExecutor  implements IscriptExecutor{
 		}
 		return script;
 	}
-	public Bindings createBindings(){
+	@Override
+    public Bindings createBindings(){
 		Bindings bindings = scriptEngine.createBindings();
 		return bindings;
 	}
 	public Object eval(CompiledScript script,Bindings binding) throws Exception{
 		return script.eval(binding);
 	}
-	public Object invokeFunction(Map<String, Object> contextMap,String function,String name,Object[] params) throws Exception{
+	@Override
+    public Object invokeFunction(Map<String, Object> contextMap, String function, String name, Object[] params) throws Exception{
 		if(scriptEngine instanceof Invocable){
-			Iterator<String> it=contextMap.keySet().iterator();
+			Iterator<Map.Entry<String,Object>> it=contextMap.entrySet().iterator();
 			while(it.hasNext()){
-				String key=it.next();
-				scriptEngine.put(key, contextMap.get(key));
+				Map.Entry<String,Object> entry=it.next();
+				scriptEngine.put(entry.getKey(), entry.getValue());
 			}
 			scriptEngine.eval(function);
 			Invocable invocable=(Invocable) scriptEngine;
 			return invocable.invokeFunction(name, params);
 		}else{
-			throw new Exception("engine not support invocable");
+			throw new Exception("engine not support invokable");
 		}
 	}
 	public Object evaluate(String name,String scripts,Bindings bindings) throws Exception{

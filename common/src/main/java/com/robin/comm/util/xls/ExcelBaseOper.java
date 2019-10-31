@@ -44,23 +44,25 @@ public class ExcelBaseOper {
     public static Sheet createSheet(Workbook wb, String sheetName, ExcelSheetProp prop) {
         Sheet sheet = null;
         String fileext = prop.getFileext();
-        if (TYPE_EXCEL2003.equalsIgnoreCase(fileext))
+        if (TYPE_EXCEL2003.equalsIgnoreCase(fileext)) {
             sheet = wb.createSheet(sheetName);
-        else if (TYPE_EXCEL2007.equalsIgnoreCase(fileext))
+        } else if (TYPE_EXCEL2007.equalsIgnoreCase(fileext)) {
             sheet = wb.createSheet(sheetName);
+        }
         return sheet;
     }
 
     public static Workbook creatWorkBook(ExcelSheetProp prop) {
         Workbook wb = null;
         String fileext = prop.getFileext();
-        if (TYPE_EXCEL2003.equalsIgnoreCase(fileext))
+        if (TYPE_EXCEL2003.equalsIgnoreCase(fileext)) {
             wb = new HSSFWorkbook();
-        else if (TYPE_EXCEL2007.equalsIgnoreCase(fileext)) {
-            if (!prop.isStreamInsert())
+        } else if (TYPE_EXCEL2007.equalsIgnoreCase(fileext)) {
+            if (!prop.isStreamInsert()) {
                 wb = new XSSFWorkbook();
-            else
+            } else {
                 wb = new SXSSFWorkbook(prop.getStreamRows());
+            }
         }
         return wb;
     }
@@ -68,18 +70,20 @@ public class ExcelBaseOper {
     public static Workbook getWorkBook(ExcelSheetProp prop, InputStream stream) throws IOException {
         Workbook wb = null;
         String fileext = prop.getFileext();
-        if (TYPE_EXCEL2003.equalsIgnoreCase(fileext))
+        if (TYPE_EXCEL2003.equalsIgnoreCase(fileext)) {
             wb = new HSSFWorkbook(stream);
-        else if (TYPE_EXCEL2007.equalsIgnoreCase(fileext))
+        } else if (TYPE_EXCEL2007.equalsIgnoreCase(fileext)) {
             wb = new XSSFWorkbook(stream);
+        }
         return wb;
     }
 
     public static CellStyle getHeaderStyle(Workbook wb, int rowspan, int align, TableMergeRegion region, TableConfigProp header) {
         CellStyle cs = wb.createCellStyle();
 
-        if (rowspan > 1)
+        if (rowspan > 1) {
             cs.setVerticalAlignment(CellStyle.VERTICAL_CENTER);
+        }
         cs.setAlignment(getAlignment(align));
         cs.setBorderLeft(CellStyle.BORDER_THIN);
 
@@ -98,8 +102,9 @@ public class ExcelBaseOper {
         if (color != null && !"".equals(color.trim())) {
             int[] rgb = hex2rgb(color);
             cs.setFillForegroundColor(new XSSFColor(new Color(rgb[0], rgb[1], rgb[2])).getIndexed());
-        } else
+        } else {
             cs.setFillForegroundColor(IndexedColors.WHITE.getIndex());
+        }
 
         cs.setFillPattern(CellStyle.SOLID_FOREGROUND);
         return cs;
@@ -122,8 +127,9 @@ public class ExcelBaseOper {
     public static CellStyle getHeaderStyle(Workbook wb, int rowspan, int align, TableConfigProp header) {
         CellStyle cs = wb.createCellStyle();
 
-        if (rowspan > 1)
+        if (rowspan > 1) {
             cs.setVerticalAlignment(CellStyle.VERTICAL_CENTER);
+        }
         cs.setAlignment(getAlignment(align));
 
         cs.setBottomBorderColor(IndexedColors.BLACK.getIndex());
@@ -171,9 +177,9 @@ public class ExcelBaseOper {
 
     private static void caculateStartColofRow(int row, int pos, ExcelHeaderProp header, int[][] startColArr) {
         if (row == 0) {
-            if (pos == 0)
+            if (pos == 0) {
                 startColArr[0][0] = 0;
-            else {
+            } else {
                 startColArr[0][pos] = startColArr[0][pos - 1]
                         + header.getHeaderColumnList().get(0).get(pos - 1)
                         .getColspan();
@@ -237,8 +243,9 @@ public class ExcelBaseOper {
                         break;
                     }
                 }
-                if (startColArr[row][pos] == 0)
+                if (startColArr[row][pos] == 0) {
                     startColArr[row][pos] = startColArr[row][pos - 1] + header.getHeaderColumnList().get(row).get(pos - 1).getColspan();
+                }
             }
         }
 
@@ -256,8 +263,9 @@ public class ExcelBaseOper {
                 nums += colspan;
             }
         }
-        if (nums == beforemaxnums)
+        if (nums == beforemaxnums) {
             isfrist = true;
+        }
         return isfrist;
 
     }
@@ -281,19 +289,23 @@ public class ExcelBaseOper {
 
     public static Cell createCell(Row row1, int j, String value, String colType, CellStyle cellStyle, CreationHelper helper) {
         Cell cell = null;
-        if (colType.equals(Const.META_TYPE_STRING))
+        if (colType.equals(Const.META_TYPE_STRING)) {
             cell = createCell(row1, j, cellStyle, helper, value);
-        else if (colType.equals(Const.META_TYPE_NUMERIC) || colType.equals(Const.META_TYPE_DOUBLE)) {
-            if (!"".equals(value))
+        } else if (colType.equals(Const.META_TYPE_NUMERIC) || colType.equals(Const.META_TYPE_DOUBLE)) {
+            if (!"".equals(value)) {
                 cell = createCell(row1, j, cellStyle, helper, Double.parseDouble(value));
+            }
         } else if (colType.equals(Const.META_TYPE_INTEGER)) {
-            if (!"".equals(value))
+            if (!"".equals(value)) {
                 cell = createCell(row1, j, cellStyle, helper, Integer.parseInt(value));
+            }
         } else if (colType.equals(Const.META_TYPE_DATE) || colType.equals(Const.META_TYPE_TIMESTAMP)) {
-            if (!"".equals(value))
+            if (!"".equals(value)) {
                 cell = createCellDate(row1, j, cellStyle, helper, value);
-        } else
+            }
+        } else {
             cell = createCell(row1, j, cellStyle, helper, value);
+        }
         return cell;
     }
 
@@ -301,8 +313,9 @@ public class ExcelBaseOper {
         Cell cell = row.createCell(column);
 
         String value = "";
-        if (objvalue != null)
+        if (objvalue != null) {
             value = objvalue.toString();
+        }
         cell.setCellValue(value);
         cell.setCellStyle(cellStyle);
         return cell;
@@ -353,8 +366,9 @@ public class ExcelBaseOper {
     private static int[] hex2rgb(String colorstr) {
         int[] colorset = new int[3];
         String sr, sg, sb, sHex;
-        if (colorstr.length() != 6)
+        if (colorstr.length() != 6) {
             colorstr = "D6D3CE";
+        }
         sHex = colorstr.toUpperCase();
         sr = sHex.substring(0, 2);
         sg = sHex.substring(2, 4);
@@ -365,8 +379,9 @@ public class ExcelBaseOper {
             colorset[1] = Integer.parseInt(sg, 16);
             colorset[2] = Integer.parseInt(sb, 16);
             for (int i = 0; i < colorset.length; i++) {
-                if (colorset[i] > 255)
+                if (colorset[i] > 255) {
                     colorset[i] = 255;
+                }
             }
             System.out.println(" using color" + colorset[0] + "," + colorset[1] + "," + colorset[2]);
         } catch (Exception e) {

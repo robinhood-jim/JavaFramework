@@ -15,7 +15,7 @@
  */
 package com.robin.core.query.util;
 
-import com.robin.core.base.exception.MissingConfigExecption;
+import com.robin.core.base.exception.MissingConfigException;
 import com.robin.core.base.exception.QueryConfgNotFoundException;
 import org.dom4j.Document;
 import org.dom4j.Element;
@@ -24,7 +24,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 
-import java.io.File;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -38,7 +37,6 @@ public class QueryFactory implements InitializingBean {
     private static Map<String, QueryString> queryMap = new HashMap<>();
 
     public QueryFactory() {
-
     }
 
     public void init() {
@@ -57,12 +55,6 @@ public class QueryFactory implements InitializingBean {
     }
 
 
-    private void parseXML(File file) throws Exception {
-        if (file != null && file.isFile()) {
-            Document document = new SAXReader().read(file);
-            putQueryMap(document);
-        }
-    }
 
     private void parseXML(InputStream is) throws Exception {
         if (is == null) {
@@ -81,8 +73,9 @@ public class QueryFactory implements InitializingBean {
         while (iter.hasNext()) {
             Element element = (Element) iter.next();
             id = element.attributeValue("ID");
-            if (queryMap.containsKey(id))
-                throw new MissingConfigExecption((new StringBuilder()).append("Duplicated selectId:").append(id).toString());
+            if (queryMap.containsKey(id)) {
+                throw new MissingConfigException((new StringBuilder()).append("Duplicated selectId:").append(id).toString());
+            }
 
             String sql = decodeSql(element.elementText("SQL"));
             String field = element.elementText("FIELD");
@@ -105,19 +98,20 @@ public class QueryFactory implements InitializingBean {
     private String decodeSql(String sql) {
         String tmpSql = sql;
         if (tmpSql != null) {
-            if (tmpSql.indexOf("&lt;") > -1)
+            if (tmpSql.indexOf("&lt;") > -1) {
                 tmpSql = tmpSql.replaceAll("&lt;", "<");
-            else if (tmpSql.indexOf("&gt;") > -1)
+            } else if (tmpSql.indexOf("&gt;") > -1) {
                 tmpSql = tmpSql.replaceAll("&gt;", ">");
+            }
         }
         return tmpSql;
     }
 
     public QueryString getQuery(String selectId) throws QueryConfgNotFoundException {
         try {
-            if (selectId != null && !selectId.isEmpty() && queryMap.containsKey(selectId))
+            if (selectId != null && !selectId.isEmpty() && queryMap.containsKey(selectId)) {
                 return queryMap.get(selectId);
-            else {
+            } else {
                 throw new QueryConfgNotFoundException(new Exception("query id not found"));
             }
         } catch (Exception e) {
@@ -130,15 +124,15 @@ public class QueryFactory implements InitializingBean {
     }
 
 
-    public void afterPropertiesSet() {
-        init();
-    }
-
 
     public String getXmlConfigPath() {
         return xmlConfigPath;
     }
 
+    @Override
+    public void afterPropertiesSet() {
+        init();
+    }
 
     public void setXmlConfigPath(String xmlConfigPath) {
         this.xmlConfigPath = xmlConfigPath;

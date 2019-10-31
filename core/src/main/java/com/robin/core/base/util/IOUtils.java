@@ -108,7 +108,7 @@ public class IOUtils {
     public static void copyBytes(InputStream in, OutputStream out, int buffSize)
             throws IOException {
         PrintStream ps = out instanceof PrintStream ? (PrintStream) out : null;
-        byte buf[] = new byte[buffSize];
+        byte[] buf = new byte[buffSize];
         int bytesRead = in.read(buf);
         while (bytesRead >= 0) {
             out.write(buf, 0, bytesRead);

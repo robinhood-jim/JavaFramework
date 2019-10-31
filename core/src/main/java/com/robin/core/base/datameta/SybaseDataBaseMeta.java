@@ -22,43 +22,52 @@ public class SybaseDataBaseMeta extends BaseDataBaseMeta{
 
 	public SybaseDataBaseMeta(DataBaseParam param) {
 		super(param);
+		setDbType(BaseDataBaseMeta.TYPE_SYBASE);
 		param.setDriverClassName("com.sybase.jdbc.SybDriver");
 	}
 
-	public String getUrlTemplate() {
+	@Override
+    public String getUrlTemplate() {
 		return "jdbc:sybase:Tds:[hostName]:[port]/[databaseName]";
 	}
 
 
-	public boolean suppportSequnce() {
+	@Override
+    public boolean suppportSequnce() {
 		return false;
 	}
 
-	public boolean supportAutoInc() {
+	@Override
+    public boolean supportAutoInc() {
 		return true;
 	}
 
-	public int getDefaultDatabasePort() {
+	@Override
+    public int getDefaultDatabasePort() {
 		return 5007;
 	}
 
-	public boolean supportsSchemas() {
+	@Override
+    public boolean supportsSchemas() {
 		// TODO Auto-generated method stub
 		return true;
 	}
 
-	public String getAddColumnStatement(String tablename, String schema,
-			DataBaseColumnMeta v, String tk, boolean use_autoinc, String pk,
-			boolean semicolon) {
+	@Override
+    public String getAddColumnStatement(String tablename, String schema,
+                                        DataBaseColumnMeta v, String tk, boolean use_autoinc, String pk,
+                                        boolean semicolon) {
 		return null;
 	}
 
-	public String getDropColumnStatement(String tablename, String schema,
-			DataBaseColumnMeta v, String tk, boolean use_autoinc, String pk,
-			boolean semicolon) {
+	@Override
+    public String getDropColumnStatement(String tablename, String schema,
+                                         DataBaseColumnMeta v, String tk, boolean use_autoinc, String pk,
+                                         boolean semicolon) {
 		return null;
 	}
-	public BaseSqlGen getSqlGen() {
+	@Override
+    public BaseSqlGen getSqlGen() {
 		return new SybaseSqlGen();
 	}
 

@@ -16,8 +16,11 @@
 package com.robin.core.query.util;
 
 import com.robin.core.base.exception.ConfigurationIncorrectException;
+import com.robin.core.base.util.StringUtils;
 
-public class Condition implements ICondition{
+import java.io.Serializable;
+
+public class Condition implements ICondition, Serializable {
 	
 	public static final String BETWEEN = "BETWEEN";
 //	public static final String BETWEEN_AND_EQUALS = "BETWEEN_AND_EQUALS";
@@ -244,7 +247,7 @@ public class Condition implements ICondition{
 		} else 
 		if (OR == state){
 			if (values.length < 2 || values[0] == null || values[1] == null){
-				throw new ConfigurationIncorrectException("(in "+values+")");
+				throw new ConfigurationIncorrectException("(in "+ StringUtils.join(values,",")+")");
 			}
 			sbSQLStr.append(" (");
 			sbSQLStr.append(((Condition)values[0]).toSQLPart());
@@ -264,7 +267,8 @@ public class Condition implements ICondition{
 	}
 	
 
-	public Object getValue() {
+	@Override
+    public Object getValue() {
 		return value;
 	}
 
@@ -272,7 +276,8 @@ public class Condition implements ICondition{
 		this.value = value;
 	}
 
-	public Object[] getValues() {
+	@Override
+    public Object[] getValues() {
 		return values;
 	}
 
@@ -280,11 +285,13 @@ public class Condition implements ICondition{
 		this.values = values;
 	}
 	
-	public String getState(){
+	@Override
+    public String getState(){
 		return state;
 	}
 	
-	public String getName(){
+	@Override
+    public String getName(){
 		return name;
 	}
 }

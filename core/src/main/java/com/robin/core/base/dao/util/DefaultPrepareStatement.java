@@ -29,6 +29,7 @@ public class DefaultPrepareStatement implements PreparedStatementCreator {
         this.lobHandler=lobHandler;
     }
 
+    @Override
     public java.sql.PreparedStatement createPreparedStatement(Connection conn)
             throws SQLException {
         PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);

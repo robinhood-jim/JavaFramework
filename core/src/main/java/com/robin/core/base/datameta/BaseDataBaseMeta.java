@@ -30,6 +30,7 @@ public abstract class BaseDataBaseMeta implements DataBaseInterface, Serializabl
 	//static fields
 	public static final String TYPE_MYSQL="MySql";
 	public static final String TYPE_ORACLE="Oracle";
+	public static final String TYPE_ORACLERAC="OracleRac";
 	public static final String TYPE_DB2="DB2";
 	public static final String TYPE_SYBASE="Sybase";
 	public static final String TYPE_SQLSERVER="SqlServer";
@@ -41,10 +42,12 @@ public abstract class BaseDataBaseMeta implements DataBaseInterface, Serializabl
 	public static final String TYPE_HIVE2="Hive2";
 	public static final String TYPE_Impala="Impala";
 	protected DataBaseParam param;
+	protected String dbType;
 	//Enum type of all support DB
-	public static String[] dbTypeEnmu={"Oracle","MySql","DB2","SqlServer","Sybase","H2","Debry","PostgreSql","Phoenix","Hive","Hive2","OracleRac"};
+	public static final String[] dbTypeEnmu={"Oracle","MySql","DB2","SqlServer","Sybase","PostgreSql","Phoenix4","Hive","Hive2","OracleRac"};
 	//jdbc Url Template like jdbc:mysql://[hostName]:[port]/[databaseName]?useUnicode=true&characterEncoding=[encode]
 	public static final Pattern PATTERN_TEMPLATE_PARAM = Pattern.compile("\\[.*?\\]");
+	@Override
 	public List<DataBaseTableMeta> listAllTable(String schema) throws Exception {
 		DataBaseUtil util=new DataBaseUtil();
 		util.connect(this);
@@ -52,6 +55,7 @@ public abstract class BaseDataBaseMeta implements DataBaseInterface, Serializabl
 		util.closeConnection();
 		return list;
 	}
+	@Override
 	public String getUrl(){
 
 		return param.getUrlByMeta(this);
@@ -68,17 +72,21 @@ public abstract class BaseDataBaseMeta implements DataBaseInterface, Serializabl
 			}
 		}
 	}
+	@Override
 	public String getSQLNextSequenceValue(String sequenceName) {
 		return null;
 	}
 
+	@Override
 	public String getSQLCurrentSequenceValue(String sequenceName) {
 		return null;
 	}
+	@Override
 	public DataBaseParam getParam(){
 		return this.param;
 	}
 
+	@Override
 	public String getSQLSequenceExists(String sequenceName) {
 		return null;
 	}
@@ -103,5 +111,11 @@ public abstract class BaseDataBaseMeta implements DataBaseInterface, Serializabl
 	@Override
 	public String getCatalog(String schema) {
 		return null;
+	}
+	public String getDbType(){
+		return dbType;
+	}
+	public void setDbType(String dbType){
+		this.dbType=dbType;
 	}
 }

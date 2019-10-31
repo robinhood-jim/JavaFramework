@@ -65,8 +65,9 @@ public class SysUserCrudController extends BaseCrudDhtmlxController<SysUser, Lon
     @ResponseBody
     public Map<String, Object> listUser(HttpServletRequest request, HttpServletResponse response) {
         PageQuery query = wrapPageQuery(request);
-        if (query == null)
+        if (query == null) {
             query = new PageQuery();
+        }
         query.setSelectParamId("GET_SYSUSERINFO");
         String orgIds = null;
         if (request.getParameter("orgId") != null && !request.getParameter("orgId").isEmpty()) {
@@ -100,8 +101,9 @@ public class SysUserCrudController extends BaseCrudDhtmlxController<SysUser, Lon
         List<SysUser> list = this.service.queryByField("userAccount", BaseObject.OPER_EQ, request.getParameter("userAccount"));
         if (!list.isEmpty()) {
             return wrapError(new WebException(messageSource.getMessage("message.userNameExists", null, Locale.getDefault())));
-        } else
+        } else {
             return doSave(request, response);
+        }
     }
 
     @RequestMapping("/update")
@@ -113,8 +115,9 @@ public class SysUserCrudController extends BaseCrudDhtmlxController<SysUser, Lon
         List<SysUser> list = this.service.queryByField("userAccount", BaseObject.OPER_EQ, request.getParameter("userAccount"));
         if ((list.size() == 1 && id.equals(list.get(0).getId())) || list.isEmpty()) {
             return doUpdate(request, response, id);
-        } else
+        } else {
             return wrapError(new WebException(messageSource.getMessage("message.userNameExists", null, Locale.getDefault())));
+        }
     }
 
 
@@ -143,12 +146,12 @@ public class SysUserCrudController extends BaseCrudDhtmlxController<SysUser, Lon
     @ResponseBody
     public Map<String, Object> deleteUser(HttpServletRequest request,
                                           HttpServletResponse response) {
-        Long[] ids = wrapPrimaryKeys(request.getParameter("ids"));
         Map<String,Object> retMap=new HashMap<>();
         try{
+            Long[] ids = parseId(request.getParameter("ids").split(","));
             service.deleteUsers(ids);
             wrapSuccess(retMap);
-        }catch (ServiceException ex){
+        }catch (Exception ex){
             wrapFailed(retMap,ex);
         }
         return retMap;
@@ -240,7 +243,7 @@ public class SysUserCrudController extends BaseCrudDhtmlxController<SysUser, Lon
             List<Map<String, Object>> list = query.getRecordSet();
 
             for (Map<String, Object> map : list) {
-                resIdList.add(new Long(map.get("id").toString()));
+                resIdList.add(Long.valueOf(map.get("id").toString()));
             }
             List<SysResource> resList = sysResourceService.queryByField("status", BaseObject.OPER_EQ, "1");
             //正向方向赋权
@@ -263,17 +266,17 @@ public class SysUserCrudController extends BaseCrudDhtmlxController<SysUser, Lon
 
         if (typeMap.containsKey("1")) {
             for (Map<String, Object> map : typeMap.get("1")) {
-                addList.add(new Long(map.get("resId").toString()));
+                addList.add(Long.valueOf(map.get("resId").toString()));
             }
         }
         if (typeMap.containsKey("2")) {
             for (Map<String, Object> map : typeMap.get("2")) {
-                delList.add(new Long(map.get("resId").toString()));
+                delList.add(Long.valueOf(map.get("resId").toString()));
             }
         }
         for (SysResource res : resList) {
             String pid = res.getPid().toString();
-            if (pid.equals("0")) {
+            if ("0".equals(pid)) {
                 Map<String, Object> tmap = new HashMap<String, Object>();
                 tmap.put("id", res.getId());
                 tmap.put("text", res.getName());
@@ -345,8 +348,9 @@ public class SysUserCrudController extends BaseCrudDhtmlxController<SysUser, Lon
             }
             List<String> addList = new ArrayList<String>();
             for (int i = 0; i < ids.length; i++) {
-                if (resMap.containsKey(ids[i]))
+                if (resMap.containsKey(ids[i])) {
                     addList.add(ids[i]);
+                }
             }
             for (int i = 0; i < ids.length; i++) {
                 int pos = delList.indexOf(ids[i]);

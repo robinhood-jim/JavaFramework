@@ -15,7 +15,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 public class SimpleFtp {
-	protected static Logger log = LoggerFactory.getLogger(SimpleFtp.class);
+	protected static final Logger log = LoggerFactory.getLogger(SimpleFtp.class);
 	public static final int PORT_DEFAULT = 21;
 	public static final String ENCODING_DEFAULT = "UTF-8";
 	protected FTPClient ftpClient;
@@ -102,8 +102,9 @@ public class SimpleFtp {
 		List<String> ignorefiles=null;
 		if(length>=2){
 			ignorefiles=new ArrayList<String>();
-			for(int i=1;i<args.length;i++)
-				ignorefiles.add(args[i]);
+			for(int i=1;i<args.length;i++) {
+                ignorefiles.add(args[i]);
+            }
 		}
 		FTPFile[] files = ftpClient.listFiles(path);
 		for (int i = 0; i < files.length; i++) {
@@ -134,8 +135,9 @@ public class SimpleFtp {
 		FTPFile[] files = ftpClient.listFiles(path);
 		for (int i = 0; i < files.length; i++) {
 			Calendar filescal=files[i].getTimestamp();
-			if(filescal.after(cal1))
-				retStr.add(path+"/"+files[i].getName());
+			if(filescal.after(cal1)) {
+                retStr.add(path+"/"+files[i].getName());
+            }
 		}
 		return retStr;
 	}
@@ -169,8 +171,9 @@ public class SimpleFtp {
 			if(retrynum>0){
 				try{
 					retflag=doDownload(local, remote);
-					if(!retflag)
-						Thread.sleep(waitForReconnect);
+					if(!retflag) {
+                        Thread.sleep(waitForReconnect);
+                    }
 				}catch(InterruptedException ex){
 					log.error("",ex);
 					retrynum++;
@@ -240,11 +243,13 @@ public class SimpleFtp {
 
 	public boolean downloadFile(List<String> remotelist,String local,int retrys) throws IOException{
 		boolean ret=false;
-		if(!local.endsWith("/"))
-			local+="/";
+		if(!local.endsWith("/")) {
+            local+="/";
+        }
 		File localFile=new File(local);
-		if(!localFile.exists())
-			localFile.mkdir();
+		if(!localFile.exists()) {
+            localFile.mkdir();
+        }
 		for (int i = 0; i < remotelist.size(); i++) {
 			String remotefile=remotelist.get(i);
 			int pos=remotefile.lastIndexOf("/");
@@ -268,8 +273,9 @@ public class SimpleFtp {
 			if(retrynum>0){
 				try{
 					retflag=doUpload(localfile, remoteDir, remote);
-					if(!retflag)
-					Thread.sleep(waitForReconnect);
+					if(!retflag) {
+                        Thread.sleep(waitForReconnect);
+                    }
 				}catch(InterruptedException ex){
 					log.error("",ex);
 					retrynum++;
@@ -293,9 +299,9 @@ public class SimpleFtp {
 			FTPFile[] files = ftpClient.listFiles(remote);
 			remotesize = files[0].getSize();
 			long localsize = localfile.length();
-			if (localsize == remotesize)
-				return true;
-			else if (remotesize > localsize) {
+			if (localsize == remotesize) {
+                return true;
+            } else if (remotesize > localsize) {
 				log.error("remote file length larger than local");
 				remotesize=0L;
 				removeFile(remote);

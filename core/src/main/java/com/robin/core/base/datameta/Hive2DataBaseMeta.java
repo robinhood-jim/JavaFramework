@@ -22,48 +22,57 @@ public class  Hive2DataBaseMeta extends BaseDataBaseMeta{
 
 	public Hive2DataBaseMeta(DataBaseParam param) {
 		super(param);
-		if(param.getDatabaseName()==null || param.getDatabaseName().equals("")){
+		setDbType(BaseDataBaseMeta.TYPE_HIVE2);
+		if(param.getDatabaseName()==null || "".equals(param.getDatabaseName())){
 			param.setDatabaseName("default");
 		}
 		param.setDriverClassName("org.apache.hive.jdbc.HiveDriver");
 	}
 
-	public String getUrlTemplate() {
+	@Override
+    public String getUrlTemplate() {
 		return "jdbc:hive2://[hostName]:[port]/[databaseName]";
 	}
 
 
-	public boolean suppportSequnce() {
+	@Override
+    public boolean suppportSequnce() {
 		return false;
 	}
 
-	public boolean supportAutoInc() {
+	@Override
+    public boolean supportAutoInc() {
 		return false;
 	}
 
-	public int getDefaultDatabasePort() {
+	@Override
+    public int getDefaultDatabasePort() {
 		return 10000;
 	}
 
-	public boolean supportsSchemas() {
+	@Override
+    public boolean supportsSchemas() {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
-	public String getAddColumnStatement(String tablename, String schema,
-			DataBaseColumnMeta v, String tk, boolean use_autoinc, String pk,
-			boolean semicolon) {
+	@Override
+    public String getAddColumnStatement(String tablename, String schema,
+                                        DataBaseColumnMeta v, String tk, boolean use_autoinc, String pk,
+                                        boolean semicolon) {
 		
 		return null;
 	}
 
-	public String getDropColumnStatement(String tablename, String schema,
-			DataBaseColumnMeta v, String tk, boolean use_autoinc, String pk,
-			boolean semicolon) {
+	@Override
+    public String getDropColumnStatement(String tablename, String schema,
+                                         DataBaseColumnMeta v, String tk, boolean use_autoinc, String pk,
+                                         boolean semicolon) {
 		
 		return null;
 	}
-	public BaseSqlGen getSqlGen() {
+	@Override
+    public BaseSqlGen getSqlGen() {
 		return new MysqlSqlGen();
 	}
 }

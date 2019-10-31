@@ -59,14 +59,18 @@ public class QueryParam {
 		this.queryValue=queryValue;
 		
 		if(otherparams.length>0){
-			if(otherparams.length>=1)
-				this.aliasName=otherparams[0];
-			if(otherparams.length>=2)
-				this.combineOper=otherparams[1];
-			if(otherparams.length>=3)
-				this.prevoper=otherparams[2];
-			if(otherparams.length>=4)
-				this.nextoper=otherparams[3];
+			if(otherparams.length>=1) {
+                this.aliasName=otherparams[0];
+            }
+			if(otherparams.length>=2) {
+                this.combineOper=otherparams[1];
+            }
+			if(otherparams.length>=3) {
+                this.prevoper=otherparams[2];
+            }
+			if(otherparams.length>=4) {
+                this.nextoper=otherparams[3];
+            }
 		}
 	}
 

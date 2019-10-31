@@ -73,7 +73,7 @@ public class ProtoBufFileIterator extends AbstractFileIterator {
                 schemaBuilder.addMessageDefinition(definition);
                 schema = schemaBuilder.build();
                 mesgBuilder=DynamicMessage.newBuilder(schema.getMessageDescriptor(colmeta.getValueClassName()));
-                //registry=getExtension(schema,colmeta);
+                registry=getExtension(schema,colmeta);
             }
         }catch (Exception ex){
             ex.printStackTrace();
@@ -95,8 +95,9 @@ public class ProtoBufFileIterator extends AbstractFileIterator {
             if (mesgBuilder.mergeDelimitedFrom(instream)) {
                 message=mesgBuilder.build();
                 return true;
-            }else
+            }else {
                 return false;
+            }
         }catch (Exception ex){
 
         }

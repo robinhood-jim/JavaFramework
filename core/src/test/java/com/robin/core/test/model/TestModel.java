@@ -11,7 +11,7 @@ import java.sql.Timestamp;
 @Data
 public class TestModel extends BaseObject{
 	@MappingField(primary=true,increment=true)
-	private Long id;
+	private Integer id;
 	@MappingField(required=true,field="name")
 	private String name;
 	@MappingField(field="code_desc",datatype="clob")

@@ -1,6 +1,7 @@
 package com.robin.core.base.dao;
 
 import com.robin.core.base.exception.DAOException;
+import com.robin.core.base.reflect.ReflectUtils;
 import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.query.mapper.SqlMapperConfigure;
 import com.robin.core.query.mapper.segment.*;
@@ -56,7 +57,7 @@ public class SqlMapperDao extends JdbcDaoSupport {
         StringBuilder builder = new StringBuilder();
         if (sqlMapperConfigure.getSegmentsMap().containsKey(nameSpace) && sqlMapperConfigure.getSegmentsMap().get(nameSpace).containsKey(id)) {
             ImmutablePair<String, List<AbstractSegment>> pair = sqlMapperConfigure.getSegmentsMap().get(nameSpace).get(id);
-            if (pair.left.equalsIgnoreCase("select")) {
+            if ("select".equalsIgnoreCase(pair.left)) {
                 SelectSegment segment = (SelectSegment) pair.right.get(0);
                 Map<String, Object> paramMap = wrapSqlAndParamter(nameSpace, id, builder, query, params);
                 String selectSql = builder.toString();
@@ -123,27 +124,26 @@ public class SqlMapperDao extends JdbcDaoSupport {
         try {
             if (sqlMapperConfigure.getSegmentsMap().containsKey(nameSpace) && sqlMapperConfigure.getSegmentsMap().get(nameSpace).containsKey(id)) {
                 ImmutablePair<String, List<AbstractSegment>> pair = sqlMapperConfigure.getSegmentsMap().get(nameSpace).get(id);
-                if (pair.left.equalsIgnoreCase("update") || pair.left.equalsIgnoreCase("insert") || pair.left.equalsIgnoreCase("delete")) {
-                    CompositeSegment segment = null;
+                if ("update".equalsIgnoreCase(pair.left) || "insert".equalsIgnoreCase(pair.left) || "delete".equalsIgnoreCase(pair.left)) {
+
                     boolean useGenerateKeys = false;
                     String keyProperty = null;
-                    if (pair.left.equalsIgnoreCase("insert")) {
-                        segment = (InsertSegment) pair.right.get(0);
-                        if (((InsertSegment) segment).isUseGenerateKeys()) {
+                    if ("insert".equalsIgnoreCase(pair.left)) {
+                        InsertSegment segment = (InsertSegment) pair.right.get(0);
+                        if (segment.isUseGenerateKeys()) {
                             useGenerateKeys = true;
                             keyProperty = ((InsertSegment) segment).getKeyProperty();
                         }
-                    } else {
-                        segment = (CompositeSegment) pair.right.get(0);
                     }
                     Map<String, Object> paramMap = wrapSqlAndParamter(nameSpace, id, builder, null, targetObject);
                     log.debug("execute sql={}", builder.toString());
-                    if (pair.left.equalsIgnoreCase("insert") && useGenerateKeys) {
+                    if ("insert".equalsIgnoreCase(pair.left) && useGenerateKeys) {
                         KeyHolder keyHolder = new GeneratedKeyHolder();
                         updateRows = getNamedJdbcTemplate().update(builder.toString(), (new MapSqlParameterSource(paramMap)), keyHolder);
                         setGenerateKey(targetObject[0], keyProperty, keyHolder.getKey());
-                    } else
+                    } else {
                         updateRows = getNamedJdbcTemplate().update(builder.toString(), paramMap);
+                    }
 
                 } else {
                     throw new DAOException("Mapper id" + id + " in namespace " + nameSpace + " is not a select Config!");
@@ -164,9 +164,9 @@ public class SqlMapperDao extends JdbcDaoSupport {
     }
 
     private void setGenerateKey(Object targetObj, String columnName, Number number) throws Exception {
-        Map<String, Method> methodMap = ConvertUtil.returnSetMethold(targetObj.getClass());
+        Map<String, Method> methodMap = ReflectUtils.returnSetMethods(targetObj.getClass());
         if (methodMap.containsKey(columnName)) {
-            methodMap.get(columnName).invoke(targetObj, ConvertUtil.parseParamenter(methodMap.get(columnName).getParameterTypes()[0], number));
+            methodMap.get(columnName).invoke(targetObj, ConvertUtil.parseParameter(methodMap.get(columnName).getParameterTypes()[0], number));
         }
     }
 
@@ -180,7 +180,7 @@ public class SqlMapperDao extends JdbcDaoSupport {
                     String resultMap = segment.getResultMap();
                     if (resultMap != null) {
                         ResultMapperSegment segment1 = (ResultMapperSegment) mapper.getSegmentsMap().get(nameSpace).get(resultMap).right.get(0);
-                        if (segment1.getClassName().equalsIgnoreCase("HashMap")) {
+                        if ("HashMap".equalsIgnoreCase(segment1.getClassName())) {
                             if (mapper.getSegmentsMap().get(nameSpace).containsKey(resultMap)) {
                                 Map<String, Object> map = new HashMap<>();
                                 for (int i = 0; i < count; i++) {

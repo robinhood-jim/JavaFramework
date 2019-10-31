@@ -15,7 +15,9 @@
  */
 package com.robin.core.base.datameta;
 
-public class DataBaseColumnMeta {
+import java.io.Serializable;
+
+public class DataBaseColumnMeta implements Serializable {
 	private String columnName;
 	private Integer columnType;
 	private String propertyType;

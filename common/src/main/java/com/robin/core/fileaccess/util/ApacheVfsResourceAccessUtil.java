@@ -139,8 +139,9 @@ public class ApacheVfsResourceAccessUtil extends AbstractResourceAccessUtil {
             remoteFilePath = "/" + remoteFilePath;
         }
         URI sftpUri = new URI(param.getProtocol(), userInfo, param.getHostName(), param.getPort(), remoteFilePath, null, null);
-        if (logger.isDebugEnabled())
+        if (logger.isDebugEnabled()) {
             logger.debug("uri ---> " + sftpUri.toString());
+        }
         return sftpUri;
     }
 
@@ -162,13 +163,13 @@ public class ApacheVfsResourceAccessUtil extends AbstractResourceAccessUtil {
         VfsParam param = new VfsParam();
         param.setHostName(hostName);
         param.setProtocol(protocol);
-        if (protocol.equalsIgnoreCase("ftp")) {
+        if ("ftp".equalsIgnoreCase(protocol)) {
             if (port != 0) {
                 param.setPort(port);
             } else {
                 param.setPort(21);
             }
-        } else if (protocol.equalsIgnoreCase("sftp")) {
+        } else if ("sftp".equalsIgnoreCase(protocol)) {
             if (port != 0) {
                 param.setPort(port);
             } else {
@@ -180,7 +181,7 @@ public class ApacheVfsResourceAccessUtil extends AbstractResourceAccessUtil {
         return param;
     }
 
-    public class VfsParam {
+    public static class VfsParam {
         private String protocol;
         private String hostName;
         private int port;

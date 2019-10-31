@@ -93,7 +93,8 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
 	/**
 	 * Save Entity
 	 */
-	public void save(T o) {
+	@Override
+    public void save(T o) {
 		try{
 			getHibernateTemplate().save(o);
 		}catch (HibernateException e) {
@@ -104,7 +105,8 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
 	 * update Entity
 	 * 
 	 */
-	public  void update(T o) {
+	@Override
+    public  void update(T o) {
 		try{
 			getHibernateTemplate().saveOrUpdate(o);
 		}catch (HibernateException e) {
@@ -139,7 +141,8 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
 	 * @param fieldName fieldNameArr
 	 * @param fieldValue fieldValueArr
 	 */
-	public List<T> findByNamedParam(String hql,String[] fieldName,Object[] fieldValue) throws DAOException{
+	@Override
+    public List<T> findByNamedParam(String hql, String[] fieldName, Object[] fieldValue) throws DAOException{
 		try{
 			return (List<T>)getHibernateTemplate().findByNamedParam(hql, fieldName, fieldValue);
 		}catch (HibernateException e) {
@@ -232,8 +235,9 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
                  {
                      buffer.append(" a." + orderName[i] + (ascending[i] ? " Asc" : " Desc"));
                  }
-                 if(i!=orderName.length-1)
-                	 buffer.append(",");
+                 if(i!=orderName.length-1) {
+                     buffer.append(",");
+                 }
              }
          }
          hql=buffer.toString();
@@ -323,8 +327,11 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
 	}
 	public  int countByField(Class<T> entityClass, String fieldName, Object fieldValue) throws DAOException {
 		String hql;
-		if (fieldValue == null) hql = "select count(*) from " + getClassName(entityClass) + " a where a." + fieldName + " is null";
-		else hql = "select count(*) from " + getClassName(entityClass) + " a where a." + fieldName + "=:fieldValue";
+		if (fieldValue == null) {
+            hql = "select count(*) from " + getClassName(entityClass) + " a where a." + fieldName + " is null";
+        } else {
+            hql = "select count(*) from " + getClassName(entityClass) + " a where a." + fieldName + "=:fieldValue";
+        }
 		try{
 		return ((Long) getHibernateTemplate().findByNamedParam(hql, "fieldValue", fieldValue).iterator().next()).intValue();
 		}catch (HibernateException e) {
@@ -336,32 +343,42 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
 		return refClass.getSimpleName();
 	}
 	
-	public void batchUpdate(String sql, final List<Map<String, String>> resultList,List<Map<String,String>> columnTypeMapList) throws DAOException {
+	@Override
+    public void batchUpdate(String sql, final List<Map<String, String>> resultList, List<Map<String,String>> columnTypeMapList) throws DAOException {
 		CommJdbcUtil.batchUpdate(jdbcTemplate, sql, resultList, columnTypeMapList);
 	}
 
-	public long count() throws DAOException {
+	@Override
+    public long count() throws DAOException {
 		try{
 			List<?> countList= getHibernateTemplate().execute(new HibernateCallback<List<?>>(){
-				public List<?> doInHibernate(Session session) throws HibernateException {
+				@Override
+                public List<?> doInHibernate(Session session) throws HibernateException {
 					String hql="select count(*) from "+getClassName(entityClass);
 					Query query = session.createQuery(hql);
 					return query.list();
 				}
 			});
-			if (countList != null && !countList.isEmpty()) return ((Long) countList.get(0)).longValue();
-			else return 0;
+			if (countList != null && !countList.isEmpty()) {
+                return ((Long) countList.get(0)).longValue();
+            } else {
+                return 0;
+            }
 		}catch (HibernateException e) {
 			throw new DAOException(e);
 		}
 	}
 
-	public long countByField(String fieldName, Object fieldValue) throws DAOException {
+	@Override
+    public long countByField(String fieldName, Object fieldValue) throws DAOException {
 		try{
 			String hql="select count(*) from "+getClassName(entityClass)+" where "+fieldName+"=:fieldValue";
 			List<?> countList=getHibernateTemplate().findByNamedParam(hql, "fieldValue", fieldValue);
-			if (countList != null && !countList.isEmpty()) return ((Long) countList.get(0)).longValue();
-			else return 0;
+			if (countList != null && !countList.isEmpty()) {
+                return ((Long) countList.get(0)).longValue();
+            } else {
+                return 0;
+            }
 		}catch (HibernateException e) {
 			throw new DAOException(e);
 		}
@@ -370,7 +387,8 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
 
 
 	
-	public List<T> findAll() throws DAOException {
+	@Override
+    public List<T> findAll() throws DAOException {
 		
 		try{
 			return (List<T>)getHibernateTemplate().find("from " + getClassName(entityClass));
@@ -384,7 +402,8 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
 		return null;
 	}
 
-	public List<T> findByField(String fieldName, Object fieldValue) throws DAOException {
+	@Override
+    public List<T> findByField(String fieldName, Object fieldValue) throws DAOException {
 		String hql;
 		try{
 		if (fieldValue == null) {
@@ -399,7 +418,8 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
 			throw new DAOException(e);
 		}
 	}
-	public List<T> findByFieldPage(final String fieldName,final Object fieldValue,final int startpos,final int pageSize) throws DAOException {
+	@Override
+    public List<T> findByFieldPage(final String fieldName, final Object fieldValue, final int startpos, final int pageSize) throws DAOException {
 		final String hql;
 		try{
 		if (fieldValue == null) {
@@ -412,7 +432,8 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
 		}
 		return (List<T>)getHibernateTemplate().executeWithNativeSession(new HibernateCallback<List<?>>(){
 
-			public List<?> doInHibernate(Session session)
+			@Override
+            public List<?> doInHibernate(Session session)
 					throws HibernateException {
 				org.hibernate.Query query = (org.hibernate.Query) session.createQuery(hql);          
 	             
@@ -448,7 +469,8 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
 		}
 	}
 
-	public List<T> findByFieldPage(final String fieldName,final Object fieldValue, String orderName, boolean ascending,final int startpos,final int pageSize) throws DAOException {
+	@Override
+    public List<T> findByFieldPage(final String fieldName, final Object fieldValue, String orderName, boolean ascending, final int startpos, final int pageSize) throws DAOException {
 		final String hql;
 		String orderstr="";
 		try{
@@ -464,7 +486,8 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
 		}
 		return (List<T>)getHibernateTemplate().executeWithNativeSession(new HibernateCallback<List<?>>(){
 
-			public List<?> doInHibernate(Session session)
+			@Override
+            public List<?> doInHibernate(Session session)
 					throws HibernateException {
 				org.hibernate.Query query = (org.hibernate.Query) session.createQuery(hql);          
 				if(fieldValue instanceof java.lang.String){
@@ -499,7 +522,8 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
 		}
 	}
 
-	public List<T> findByField(String fieldName, Object fieldValue, String orderName, boolean ascending) throws DAOException {
+	@Override
+    public List<T> findByField(String fieldName, Object fieldValue, String orderName, boolean ascending) throws DAOException {
 		String hql;
 		String orderstr="";
 		try{
@@ -522,7 +546,8 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
 		}
 	}
 
-	public List<T> findByFieldsPage(final String[] fieldName, final Object[] fieldValue,final int startpos,final int pageSize) throws DAOException {
+	@Override
+    public List<T> findByFieldsPage(final String[] fieldName, final Object[] fieldValue, final int startpos, final int pageSize) throws DAOException {
 		final String hql;
 		StringBuffer buffer=new StringBuffer();
 		buffer.append("from " + getClassName(entityClass) + " a where 1=1");
@@ -558,7 +583,8 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
 			throw new DAOException(e);
 		}
 	}
-	public List<T> findByFields(String[] fieldName, Object[] fieldValue) throws DAOException {
+	@Override
+    public List<T> findByFields(String[] fieldName, Object[] fieldValue) throws DAOException {
 		String hql= "";
 		StringBuffer buffer=new StringBuffer();
 		buffer.append("from " + getClassName(entityClass) + " a where 1=1");
@@ -595,7 +621,8 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
 		}
 	}
 
-	public List<T> findByFields(String[] fieldName, Object[] fieldValue, String orderName, boolean ascending) throws DAOException {
+	@Override
+    public List<T> findByFields(String[] fieldName, Object[] fieldValue, String orderName, boolean ascending) throws DAOException {
 		String hql= "";
 		StringBuffer buffer=new StringBuffer();
 		buffer.append("from " + getClassName(entityClass) + " a where 1=1");
@@ -636,7 +663,8 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
 			throw new DAOException(e);
 		}
 	}
-	public List<T> findByFieldsPage(final String[] fieldName, final Object[] fieldValue, String orderName, boolean ascending,final int startpos,final int pageSize) throws DAOException {
+	@Override
+    public List<T> findByFieldsPage(final String[] fieldName, final Object[] fieldValue, String orderName, boolean ascending, final int startpos, final int pageSize) throws DAOException {
 		final String hql;
 		StringBuffer buffer=new StringBuffer();
 		buffer.append("from " + getClassName(entityClass) + " a where 1=1");
@@ -677,7 +705,8 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
 			throw new DAOException(e);
 		}
 	}
-	public List<T> findByFields(String[] fieldName, Object[] fieldValue, String[] orderName, boolean[] ascending) throws DAOException {
+	@Override
+    public List<T> findByFields(String[] fieldName, Object[] fieldValue, String[] orderName, boolean[] ascending) throws DAOException {
 		String hql= "";
 		StringBuffer buffer=new StringBuffer();
 		buffer.append("from " + getClassName(entityClass) + " a where 1=1");
@@ -725,8 +754,9 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
                  {
                      buffer.append(" a." + orderName[i] + (ascending[i] ? " Asc" : " Desc"));
                  }
-                 if(i!=orderName.length-1)
-                	 buffer.append(",");
+                 if(i!=orderName.length-1) {
+                     buffer.append(",");
+                 }
              }
          }
          hql=buffer.toString();
@@ -737,18 +767,21 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
 		}
 	}
 
-	public List<T> findByHql(String hql) throws DAOException {
+	@Override
+    public List<T> findByHql(String hql) throws DAOException {
 		try{
 			return (List<T>)getHibernateTemplate().find(hql);
 		}catch (Exception e) {
 			throw new DAOException(e);
 		}
 	}
-	public List<T> findByHqlPage(final String hql, final int startpox,final int pageSize) throws DAOException {
+	@Override
+    public List<T> findByHqlPage(final String hql, final int startpox, final int pageSize) throws DAOException {
 		try{
 			return (List<T>)getHibernateTemplate().executeWithNativeSession(new HibernateCallback<List<?>>(){
 
-				public List<?> doInHibernate(Session session)
+				@Override
+                public List<?> doInHibernate(Session session)
 						throws HibernateException {
 					 Query query = session.createQuery(hql);          
 		             query.setFirstResult(startpox);//record start pos  
@@ -763,28 +796,41 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
 		}
 	}
 
-	public T get(ID id) throws DAOException {
+	@Override
+    public T get(ID id) throws DAOException {
 		return get(entityClass, id);
 	}
 
-	public String getTableName() {
+	@Override
+    public String getTableName() {
 		return "";
 	}
 
-	public T load(ID id) throws DAOException {
+	@Override
+    public T load(ID id) throws DAOException {
 		return load(entityClass, id);
 	}
 
-	public void queryBySelectId(PageQuery pageQuery) throws DAOException {
+	@Override
+    public void queryBySelectId(PageQuery pageQuery) throws DAOException {
 		try{
-				if(pageQuery==null)
-					throw new DAOException("missing pagerQueryObject");
+				if(pageQuery==null) {
+                    throw new DAOException("missing pagerQueryObject");
+                }
 				String selectId = pageQuery.getSelectParamId();
-				if (selectId == null || selectId.trim().length() == 0) throw new IllegalArgumentException("Selectid");
-				if(sqlGen==null) throw new DAOException("SQLGen property is null!");
-				if(queryFactory==null) throw new DAOException("queryFactory is null");
+				if (selectId == null || selectId.trim().length() == 0) {
+                    throw new IllegalArgumentException("Selectid");
+                }
+				if(sqlGen==null) {
+                    throw new DAOException("SQLGen property is null!");
+                }
+				if(queryFactory==null) {
+                    throw new DAOException("queryFactory is null");
+                }
 				QueryString queryString1 = queryFactory.getQuery(selectId);
-				if(queryString1==null) throw new DAOException("query ID not found in config file!");
+				if(queryString1==null) {
+                    throw new DAOException("query ID not found in config file!");
+                }
 
 				queryByParamter(queryString1, pageQuery);
 			}catch (QueryConfgNotFoundException e) {
@@ -797,16 +843,26 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
 				throw new DAOException(e);
 			}
 	}
-	public int executeBySelectId(PageQuery pageQuery) throws DAOException {
+	@Override
+    public int executeBySelectId(PageQuery pageQuery) throws DAOException {
 		try{
-			if(pageQuery==null)
-				throw new DAOException("missing pagerQueryObject");
+			if(pageQuery==null) {
+                throw new DAOException("missing pagerQueryObject");
+            }
 			String selectId = pageQuery.getSelectParamId();
-			if (selectId == null || selectId.trim().length() == 0) throw new IllegalArgumentException("Selectid");
-			if(sqlGen==null) throw new DAOException("SQLGen property is null!");
-			if(queryFactory==null) throw new DAOException("queryFactory is null");
+			if (selectId == null || selectId.trim().length() == 0) {
+                throw new IllegalArgumentException("Selectid");
+            }
+			if(sqlGen==null) {
+                throw new DAOException("SQLGen property is null!");
+            }
+			if(queryFactory==null) {
+                throw new DAOException("queryFactory is null");
+            }
 			QueryString queryString1 = queryFactory.getQuery(selectId);
-			if(queryString1==null) throw new DAOException("query ID not found in config file!");
+			if(queryString1==null) {
+                throw new DAOException("query ID not found in config file!");
+            }
 
 			if(pageQuery.getParameterArr()!=null && pageQuery.getParameterArr().length>0){
 				return CommJdbcUtil.executeByPreparedParamter(jdbcTemplate,sqlGen,queryString1, pageQuery);
@@ -823,10 +879,12 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
 			}
 		return -1;
 	}
-	public PageQuery queryBySql(String querySQL,String countSql,String[] displayname,PageQuery pageQuery)throws DAOException{
+	@Override
+    public PageQuery queryBySql(String querySQL, String countSql, String[] displayname, PageQuery pageQuery)throws DAOException{
 		return CommJdbcUtil.queryBySql(jdbcTemplate,lobHandler, sqlGen, querySQL, countSql, displayname, pageQuery);
 	}
-	public Object queryBySingle(Class<?> clazz,String sql,Object[] values) throws DAOException{
+	@Override
+    public Object queryBySingle(Class<?> clazz, String sql, Object[] values) throws DAOException{
 		try{
 			return jdbcTemplate.queryForObject(sql,values,clazz);
 
@@ -835,7 +893,8 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
 		}
 
 	}
-	public void queryByParamter(QueryString qs, PageQuery pageQuery) throws DAOException {
+	@Override
+    public void queryByParamter(QueryString qs, PageQuery pageQuery) throws DAOException {
 		if(pageQuery.getParameterArr()!=null && pageQuery.getParameterArr().length>0){
 			CommJdbcUtil.queryByPreparedParamter(jdbcTemplate,namedParameterJdbcTemplate,lobHandler,sqlGen,qs, pageQuery);
 		}
@@ -851,7 +910,8 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
 	}
 
 
-	public List<Map<String,Object>> queryBySql(String sql) throws DAOException {
+	@Override
+    public List<Map<String,Object>> queryBySql(String sql) throws DAOException {
 		try{
 			int start =0;
 			int end=0;
@@ -861,7 +921,8 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
 			throw new DAOException(e);
 		}
 	}
-	public List<Map<String,Object>> queryBySql(String sql,Object[] args) throws DAOException {
+	@Override
+    public List<Map<String,Object>> queryBySql(String sql, Object[] args) throws DAOException {
 		try{
 			return jdbcTemplate.queryForList(sql, args);
 
@@ -869,19 +930,22 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
 			throw new DAOException(e);
 		}
 	}
-	public List<?> queryByRowWapper(String sql,RowMapper<?> mapper) throws DAOException {
+	@Override
+    public List<?> queryByRowWapper(String sql, RowMapper<?> mapper) throws DAOException {
 		try{
 			return jdbcTemplate.query(sql,mapper);
 		}catch (Exception e) {
 			throw new DAOException(e);
 		}
 	}
-	public int queryForInt(String sumSQL) throws DAOException
+	@Override
+    public int queryForInt(String sumSQL) throws DAOException
 	{
 		int count=-1;
 		try{
 			count =jdbcTemplate.query(sumSQL, new ResultSetExtractor<Integer>() {
-				public Integer extractData(ResultSet rs) throws SQLException, DataAccessException {
+				@Override
+                public Integer extractData(ResultSet rs) throws SQLException, DataAccessException {
 					rs.next();
 					return rs.getInt(1);
 				}
@@ -892,7 +956,8 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
 		return count;
 	}
 
-	public int remove(ID id) throws DAOException {
+	@Override
+    public int remove(ID id) throws DAOException {
 		try {
 			getHibernateTemplate().delete(get(id));
 			return 0;
@@ -902,7 +967,8 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
 		}
 	}
 
-	public int removeAll() throws DAOException {
+	@Override
+    public int removeAll() throws DAOException {
 		this.executeUpdate("delete from " + getClassName(entityClass));
 		return 0;
 	}
@@ -915,7 +981,8 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
 		}
 	}
 
-	public int removeAll(Serializable[] ids) throws DAOException {
+	@Override
+    public int removeAll(Serializable[] ids) throws DAOException {
 		for (Serializable id : ids) {
 			ID tmpid=(ID) id;
 			remove(tmpid);
@@ -923,14 +990,16 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
 		return 0;
 	}
 
-	public int removeByField(String fieldName, Object fieldValue) throws DAOException {
+	@Override
+    public int removeByField(String fieldName, Object fieldValue) throws DAOException {
 		List<T> removeList = this.findByField(fieldName, fieldValue);
 		if (removeList != null && !removeList.isEmpty()) {
 			getHibernateTemplate().deleteAll(removeList);
 		}
 		return 0;
 	}
-	public void removeByFields(String[] fieldName, Object[] fieldValue) throws DAOException {
+	@Override
+    public void removeByFields(String[] fieldName, Object[] fieldValue) throws DAOException {
 		List<T> removeList = this.findByFields(fieldName, fieldValue);
 		if (removeList != null && !removeList.isEmpty()) {
 			getHibernateTemplate().deleteAll(removeList);
@@ -947,7 +1016,8 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
 			throw new DAOException(e);
 		}
 	}
-	public void saveOrUpdate(final Object obj) throws DAOException {
+	@Override
+    public void saveOrUpdate(final Object obj) throws DAOException {
 		try {
 			getHibernateTemplate().saveOrUpdate(obj);
 		}
@@ -958,7 +1028,8 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
 	}
 	protected boolean executeUpdate(final String hql) throws DAOException {
 		HibernateCallback<Boolean> callback = new HibernateCallback<Boolean>() {
-			public Boolean doInHibernate(Session session) throws HibernateException {
+			@Override
+            public Boolean doInHibernate(Session session) throws HibernateException {
 				try {
 					Query query = session.createQuery(hql);
 					query.executeUpdate();
@@ -1000,10 +1071,14 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
 		switch (sqlType) {
 		case java.sql.Types.TIMESTAMP: // ']'
 			Timestamp t = rs.getTimestamp(field);
-			if (t == null) break;
+			if (t == null) {
+                break;
+            }
 			value = t.toString();
 			int index = value.indexOf(".");
-			if (index > -1) value = value.substring(0, index);
+			if (index > -1) {
+                value = value.substring(0, index);
+            }
 			break;
 
 		case java.sql.Types.DATE: // '['
@@ -1027,14 +1102,16 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
 	}
 
 
-	@Deprecated
+	@Override
+    @Deprecated
 	public int executeSqlUpdate(final String sql) throws DAOException {
 		int ret=-1;
 		try{
 			//jdbcTemplate.execute(sql);
 			ret=this.getHibernateTemplate().execute(new HibernateCallback<Integer>() {
 				
-				public Integer doInHibernate(Session session) throws HibernateException{
+				@Override
+                public Integer doInHibernate(Session session) throws HibernateException{
 					Query query=session.createSQLQuery(sql);
 					return query.executeUpdate();
 				}
@@ -1063,7 +1140,8 @@ public class HibernateGenricDao<T extends BaseObject,ID extends Serializable> ex
 	private List<T> doInHibernateQuery(final String hql,final String[] fieldName,final Object[] fieldValue,final int startpos,final int pageSize){
 		return (List<T>)getHibernateTemplate().executeWithNativeSession(new HibernateCallback<List<T>>(){
 
-			public List<T> doInHibernate(Session session)
+			@Override
+            public List<T> doInHibernate(Session session)
 					throws HibernateException {
 				org.hibernate.Query query = (org.hibernate.Query) session.createQuery(hql); 
 				for(int i=0;i<fieldName.length;i++){

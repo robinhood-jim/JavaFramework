@@ -28,7 +28,8 @@ public class ConditionList extends ArrayList {
 	/**
 	 * 转锟斤拷锟斤拷sql
 	 */
-	public String toString() {
+	@Override
+    public String toString() {
 		StringBuffer sql = new StringBuffer();
 		Iterator iterator = iterator();
 		while (iterator.hasNext()) {

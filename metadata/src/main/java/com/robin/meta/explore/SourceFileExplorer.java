@@ -84,13 +84,14 @@ public class SourceFileExplorer {
             String lineStr;
             while((lineStr=reader.readLine())!=null && columnPos<readLines) {
                 Map<String,Object> map=gson.fromJson(lineStr,new TypeToken<Map<String,Object>>(){}.getType());
-                Iterator<String> iter=map.keySet().iterator();
+                Iterator<Map.Entry<String,Object>> iter=map.entrySet().iterator();
                 while(iter.hasNext()){
-                    String column=iter.next();
+                    Map.Entry<String,Object> entry=iter.next();
+                    String column=entry.getKey();
                     if(columnPos==1 && !columns.contains(column)){
                         columns.add(column);
                     }
-                    getTypeByData(map.get(column).toString(),column,typeMap,dateFormatMap);
+                    getTypeByData(entry.getValue().toString(),column,typeMap,dateFormatMap);
                 }
                 columnPos++;
             }
@@ -199,8 +200,9 @@ public class SourceFileExplorer {
     }
     public static final String getSpiltChar(String split){
         String tmpSplit=split;
-        if(Const.ESCAPE_CHARACTERS.contains(split))
+        if(Const.ESCAPE_CHARACTERS.contains(split)) {
             tmpSplit = "\\"+split;
+        }
         return tmpSplit;
     }
 

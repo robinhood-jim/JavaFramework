@@ -156,8 +156,9 @@ public class DataMappingContoller extends BaseCrudDhtmlxController<ProjectInfo,L
 				map.put("propName", columnName);
 				map.put("propType", "");
 				map.put("isNull", meta1.isNullable()?"1":"0");
-				if(meta1.getComment()!=null)
-					map.put("name", meta1.getComment());
+				if(meta1.getComment()!=null) {
+                    map.put("name", meta1.getComment());
+                }
 				map.put("displayType", "1");
 				if(!meta1.isPrimaryKey()){
 					map.put("showIngrid", "true");
@@ -184,7 +185,7 @@ public class DataMappingContoller extends BaseCrudDhtmlxController<ProjectInfo,L
 					list.get(i).put("showIngrid", fieldmapList.get(i).getShowIngrid());
 					list.get(i).put("showInquery", fieldmapList.get(i).getShowInquery());
 					list.get(i).put("editable", fieldmapList.get(i).getEditable());
-					if(fieldmapList.get(i).getIsPrimary().equals("1")){
+					if("1".equals(fieldmapList.get(i).getIsPrimary())){
 						
 					}
 				}
@@ -314,7 +315,7 @@ public class DataMappingContoller extends BaseCrudDhtmlxController<ProjectInfo,L
 			if(genDao){
 				generateCode(freeutil, modelfile, tempmap.get(modeltype+"modelclass").get(0).get("path").toString(), parammap);
 			
-				if(modeltype.equals("hibernate")){
+				if("hibernate".equals(modeltype)){
 					generateCode(freeutil, daofile, tempmap.get(modeltype+"daoclass").get(0).get("path").toString(), parammap);
 					String mappingfile=modelsrc+className+".hbm.xml";
 					generateCode(freeutil,mappingfile , tempmap.get(modeltype+"mapping").get(0).get("path").toString(), parammap);
@@ -330,8 +331,9 @@ public class DataMappingContoller extends BaseCrudDhtmlxController<ProjectInfo,L
 			boolean genWeb=request.getParameter("genWeb")!=null && request.getParameter("genWeb").equals(Const.VALID);
 			if(genWeb){
 				String webpath=basePath+"src/main/webapp/";
-				if(info.getWebBasePath()!=null)
-					webpath+=info.getWebBasePath();
+				if(info.getWebBasePath()!=null) {
+                    webpath+=info.getWebBasePath();
+                }
 
 				File file=new File(webpath);
 				String webfrm=projectConfig.get("webFramePrefix");
@@ -340,7 +342,7 @@ public class DataMappingContoller extends BaseCrudDhtmlxController<ProjectInfo,L
 					CompressUtils.unzip(new File(path), new File(webpath));
 				}
 				String actionType=projectConfig.get("actionType");
-				String actionsuffix=projectConfig.get("actionType").equals("mvc")?"Contorller":"Action";
+				String actionsuffix= "mvc".equals(projectConfig.get("actionType")) ?"Contorller":"Action";
 				String actionsrc=basePath+"src/main/java/"+enmap.getWebPackage().replaceAll("\\.", "/")+"/";
 				FileUtils.forceMkdir(new File(actionsrc));
 				String actionfile=actionsrc+className+actionsuffix+".java";
@@ -349,13 +351,13 @@ public class DataMappingContoller extends BaseCrudDhtmlxController<ProjectInfo,L
 				List<Map<String, String>> displayFieldList=new ArrayList<Map<String,String>>();
 				List<Map<String, String>> editList=new ArrayList<Map<String,String>>();
 				for (int j = 0; j < fieldmapList.size(); j++) {
-					if(fieldmapList.get(j).get("showInquery").equals("1")){
+					if("1".equals(fieldmapList.get(j).get("showInquery"))){
 						queryFieldList.add(fieldmapList.get(j));
 					}
-					if(fieldmapList.get(j).get("showIngrid").equals("1")){
+					if("1".equals(fieldmapList.get(j).get("showIngrid"))){
 						displayFieldList.add(fieldmapList.get(j));
 					}
-					if(fieldmapList.get(j).get("editable").equals("1")){
+					if("1".equals(fieldmapList.get(j).get("editable"))){
 						editList.add(fieldmapList.get(j));
 					}
 				}
@@ -410,7 +412,7 @@ public class DataMappingContoller extends BaseCrudDhtmlxController<ProjectInfo,L
 	public Map<String,Object> getPkType(HttpServletRequest request,HttpServletResponse response){
 		String allowNull=request.getParameter("allowNull");
 		boolean insertNullVal=true;
-		if(allowNull!=null && !allowNull.isEmpty() && allowNull.equalsIgnoreCase("false")){
+		if(allowNull!=null && !allowNull.isEmpty() && "false".equalsIgnoreCase(allowNull)){
 			insertNullVal=false;
 		}
 		return returnCodeSetDhtmlxCombo("PKTYPE", insertNullVal);
@@ -420,7 +422,7 @@ public class DataMappingContoller extends BaseCrudDhtmlxController<ProjectInfo,L
 	public Map<String,Object> getPkGenType(HttpServletRequest request,HttpServletResponse response){
 		String allowNull=request.getParameter("allowNull");
 		boolean insertNullVal=true;
-		if(allowNull!=null && !allowNull.isEmpty() && allowNull.equalsIgnoreCase("false")){
+		if(allowNull!=null && !allowNull.isEmpty() && "false".equalsIgnoreCase(allowNull)){
 			insertNullVal=false;
 		}
 		return returnCodeSetDhtmlxCombo("PKGEN", insertNullVal);

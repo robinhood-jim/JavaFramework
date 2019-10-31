@@ -196,6 +196,14 @@
             <artifactId>qdox</artifactId>
             <version>2.0-M9</version>
         </dependency>
+        <dependency>
+            <groupId>org.graalvm</groupId>
+            <artifactId>graal-sdk</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.github.classgraph</groupId>
+            <artifactId>classgraph</artifactId>
+        </dependency>
 
 
     </dependencies>
@@ -206,9 +214,9 @@
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
-                <excludes>
+                <!--<excludes>
                     <exclude>**/*</exclude>
-                </excludes>
+                </excludes>-->
             </resource>
         </resources>
         <plugins>
@@ -267,6 +275,12 @@
                     </execution>
                 </executions>
                 <configuration>
+                    <exclusions>
+                        <exclusion>
+                            <groupId>io.github.classgraph</groupId>
+                            <artifactId>classgraph</artifactId>
+                        </exclusion>
+                    </exclusions>
                     <proguardVersion>5.1</proguardVersion>
                     <injar>core-1.0-SNAPSHOT.jar</injar>
                     <addMavenDescriptor>true</addMavenDescriptor>
@@ -319,7 +333,7 @@
                         <option>-printmapping out.map</option>
                         <option>-optimizations !code/allocation/variable</option>
                         <option>-keep class **.package-info</option>
-                        <option>-keep public class com.robin.core.base.**</option>
+                        <!--<option>-keep public class com.robin.core.base.**</option>-->
                         <option>
                             -keepclasseswithmembers public class * {
                             public static void main(java.lang.String[]);

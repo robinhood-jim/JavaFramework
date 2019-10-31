@@ -150,10 +150,11 @@ public class JobSummary implements Comparable<JobSummary>{
 		String orgJobId=this.jobId;
 		String cmpjobId=cmpobj.getJobId();
 		int cmpval=0;
-		if(retriveNumber(orgJobId)>retriveNumber(cmpjobId))
-			cmpval=1;
-		else if(retriveNumber(cmpjobId)<retriveNumber(cmpjobId))
-			cmpval=-1;
+		if(retriveNumber(orgJobId)>retriveNumber(cmpjobId)) {
+            cmpval=1;
+        } else if(retriveNumber(cmpjobId)<retriveNumber(cmpjobId)) {
+            cmpval=-1;
+        }
 		return cmpval;
 	}
 	private int retriveNumber(String jobId){

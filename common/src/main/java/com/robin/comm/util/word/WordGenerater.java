@@ -30,17 +30,19 @@ public class WordGenerater {
 			BaseFont font=BaseFont.createFont(config.getFontName(),BaseFont.IDENTITY_H,BaseFont.NOT_EMBEDDED);
 			List<WordParagraphSection> sectionList=config.getParagraphList();
 			WordHeaderFooterSection section=config.getHeaderFooter();
-			if(section!=null)
-				WordBaseUtil.insertHeader(document, section);
+			if(section!=null) {
+                WordBaseUtil.insertHeader(document, section);
+            }
 			for(WordParagraphSection para:sectionList){
-				if(para.getType().equalsIgnoreCase(WordParagraphSection.TYPE_PARAGRAPH))
-					WordBaseUtil.insertContext(document, font, para.getParagraphText(), para.getFontSize(), para.getFontStyle(), para.getAlignment());
-				else if(para.getType().equalsIgnoreCase(WordParagraphSection.TYPE_TITLE))
-					WordBaseUtil.insertTitle(document, font, para.getParagraphText(), para.getFontSize(), para.getFontStyle(), para.getAlignment());
-				else if(para.getType().equalsIgnoreCase(WordParagraphSection.TYPE_IMAGE))
-					WordBaseUtil.insertImg(document, para.getImgSection());
-				else if(para.getType().equalsIgnoreCase(WordParagraphSection.TYPE_TABLE))
-					WordBaseUtil.insertTable(document, config, para.getTableDef(), para.getHeaderDef(), para.getResultList());
+				if(para.getType().equalsIgnoreCase(WordParagraphSection.TYPE_PARAGRAPH)) {
+                    WordBaseUtil.insertContext(document, font, para.getParagraphText(), para.getFontSize(), para.getFontStyle(), para.getAlignment());
+                } else if(para.getType().equalsIgnoreCase(WordParagraphSection.TYPE_TITLE)) {
+                    WordBaseUtil.insertTitle(document, font, para.getParagraphText(), para.getFontSize(), para.getFontStyle(), para.getAlignment());
+                } else if(para.getType().equalsIgnoreCase(WordParagraphSection.TYPE_IMAGE)) {
+                    WordBaseUtil.insertImg(document, para.getImgSection());
+                } else if(para.getType().equalsIgnoreCase(WordParagraphSection.TYPE_TABLE)) {
+                    WordBaseUtil.insertTable(document, config, para.getTableDef(), para.getHeaderDef(), para.getResultList());
+                }
 				
 			}
 		}catch (Exception e) {

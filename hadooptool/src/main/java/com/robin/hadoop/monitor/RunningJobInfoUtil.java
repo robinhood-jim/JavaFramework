@@ -55,15 +55,17 @@ public class RunningJobInfoUtil extends AbstractJobInfoUtil {
 	
 	public RunningJobInfoUtil(String ipAddress,int mrport,Configuration conf){
 		this.ipAddress=ipAddress;
-		if(mrport!=0)
-			this.mrport=mrport;
-		else
-			this.mrport=defaultmrport;
+		if(mrport!=0) {
+            this.mrport=mrport;
+        } else {
+            this.mrport=defaultmrport;
+        }
 		
 		this.conf=conf;
 	}
 	
 
+	@Override
 	public List<JobSummary> getAllJob() throws Exception {
 		JobClient jobClient =getJobClient();
 		JobStatus[] status=jobClient.getAllJobs();
@@ -88,8 +90,9 @@ public class RunningJobInfoUtil extends AbstractJobInfoUtil {
 					break;
 				}
 			}
-			if(caninsert)
-				retList.add(getJobSummary(statue.getJobID().toString(),false));
+			if(caninsert) {
+                retList.add(getJobSummary(statue.getJobID().toString(),false));
+            }
 		}
 		Collections.sort(retList, new GenericComparator("jobId", false));
 		return retList;
@@ -123,8 +126,9 @@ public class RunningJobInfoUtil extends AbstractJobInfoUtil {
 					break;
 				}
 			}
-			if(contains)
-				count++;
+			if(contains) {
+                count++;
+            }
 		}
 		return count;
 	}
@@ -157,10 +161,11 @@ public class RunningJobInfoUtil extends AbstractJobInfoUtil {
 			}
 			if(caninsert){
 				if(coutnnum>=startIndex){
-					if(coutnnum<endIndex)
-						retList.add(getJobSummary(statue.getJobID().toString(),false));
-					else
-						break;
+					if(coutnnum<endIndex) {
+                        retList.add(getJobSummary(statue.getJobID().toString(),false));
+                    } else {
+                        break;
+                    }
 				}
 				coutnnum++;
 			}
@@ -224,27 +229,29 @@ public class RunningJobInfoUtil extends AbstractJobInfoUtil {
 		List<JobTaskInfo> retList=new ArrayList<JobTaskInfo>();
 		String file=job.getJobFile();
 		if(file!=null){
-			if(type.equalsIgnoreCase("map")){
+			if("map".equalsIgnoreCase(type)){
 				TaskReport[] reports=jobClient.getMapTaskReports(getJobID(jobId));
 				for (int i = startIndex; i < reports.length; i++) {
 				    if(i < endIndex){
 				        TaskReport report=reports[i];
 	                    JobTaskInfo info=getTaskInfoByReport(report);
 	                    retList.add(info);
-		            }else
-		                break;
+		            }else {
+                        break;
+                    }
 				}
-			}else if(type.equalsIgnoreCase("reduce")){
+			}else if("reduce".equalsIgnoreCase(type)){
 				TaskReport[] reports=jobClient.getReduceTaskReports(getJobID(jobId));
 				for (int i = startIndex; i < reports.length; i++) {
                     if(i < endIndex){
                         TaskReport report=reports[i];
                         JobTaskInfo info=getTaskInfoByReport(report);
                         retList.add(info);
-                    }else
+                    }else {
                         break;
+                    }
                 }
-			}else if(type.equalsIgnoreCase("setup")){
+			}else if("setup".equalsIgnoreCase(type)){
 				TaskReport[] reports=jobClient.getSetupTaskReports(getJobID(jobId));
 				for (int i = startIndex; i < reports.length; i++) {
 					if(i < endIndex){
@@ -253,10 +260,11 @@ public class RunningJobInfoUtil extends AbstractJobInfoUtil {
 	                        JobTaskInfo info=getTaskInfoByReport(report);
 	                        retList.add(info);
 	                    }
-					}else
-					    break;
+					}else {
+                        break;
+                    }
 				}
-			}else if(type.equalsIgnoreCase("cleanup")){
+			}else if("cleanup".equalsIgnoreCase(type)){
 				TaskReport[] reports=jobClient.getCleanupTaskReports(getJobID(jobId));
 				for (int i = startIndex; i < reports.length; i++) {
                     if(i < endIndex){
@@ -265,8 +273,9 @@ public class RunningJobInfoUtil extends AbstractJobInfoUtil {
                             JobTaskInfo info=getTaskInfoByReport(report);
                             retList.add(info);
                         }
-                    }else
+                    }else {
                         break;
+                    }
                 }
 			}
 		}
@@ -432,8 +441,9 @@ public class RunningJobInfoUtil extends AbstractJobInfoUtil {
 	    			 //info.setStartTime(new Timestamp(Long.parseLong(String.valueOf(event.getTaskRunTime()))));
 	    			 info.setMachine(getMachine(event));
 	    			 info.setStatus(event.getTaskStatus().name());
-	    			 if(info.getStatus().equals("SUCCEEDED"))
-	    				 info.setProgress(1);
+	    			 if("SUCCEEDED".equals(info.getStatus())) {
+                         info.setProgress(1);
+                     }
 	    			 retList.add(info);
 	    		 }
 			}
@@ -503,7 +513,7 @@ public class RunningJobInfoUtil extends AbstractJobInfoUtil {
 		 List<Object> objList=new ArrayList<Object>();
 		 objList.add(arr[1]);
 		 objList.add(arr[2]);
-		objList.add(arr[3].equalsIgnoreCase("m")?"true":"false");
+		objList.add("m".equalsIgnoreCase(arr[3]) ?"true":"false");
 		objList.add(arr[4]);
 		objList.add(arr[5]);
 		return objList;
@@ -595,8 +605,9 @@ public class RunningJobInfoUtil extends AbstractJobInfoUtil {
 		 String url="http://"+ipAddress+":50030/jobdetails.jsp?jobid="+jobId;
 		 String tmppath=outPutStr+ymd;
 		 File tmpFile=new File(tmppath);
-		 if(!tmpFile.exists())
-			 tmpFile.mkdir();
+		 if(!tmpFile.exists()) {
+             tmpFile.mkdir();
+         }
 		 FileWriter writer=new FileWriter(new File(outPutStr+ymd+"/"+jobId+".html"));
 		 JobDetail detail=null;
 		 try{
@@ -610,6 +621,7 @@ public class RunningJobInfoUtil extends AbstractJobInfoUtil {
 		 }
 		 return detail;
 	 }
+	 @Override
 	 public JobDetail getJobDetail(String jobId) throws Exception{
 		 String url="http://"+ipAddress+":50030/jobdetails.jsp?jobid="+jobId;
 		 Document doc=Jsoup.parse(getUrlHtml(url));
@@ -620,7 +632,7 @@ public class RunningJobInfoUtil extends AbstractJobInfoUtil {
 		 String str=reader.readLine();
 		 Document doc1=Jsoup.parse(str);
 		 summary.setDataNodeName(doc1.select("a").first().text());
-		 boolean isRetired=summary.getDataNodeName().equalsIgnoreCase("History Viewer");
+		 boolean isRetired= "History Viewer".equalsIgnoreCase(summary.getDataNodeName());
 		 List<String> fielddisplaynames=Arrays.asList(new String[]{"User:","Job Name:","Submit Host:","Submit Host Address:","Job Setup:","Status:","Started at:","Finished at:","Finished in:","Job Cleanup:","Job File:","Killed at:","Failed at:"});
 		 String[] methodNames={"user","name","submitHost","submitIp","jobSetup","state","startTime","finishTime","finishIn","jobCleanup","jobFile","finishTime","finishTime"};
 		if(isRetired){
@@ -640,8 +652,9 @@ public class RunningJobInfoUtil extends AbstractJobInfoUtil {
 				int namepos=fielddisplaynames.indexOf(displayName);
 				if(namepos==fielddisplaynames.size()-1 || namepos==4 || namepos==9){
 					str=reader.readLine();
-					if(!Jsoup.parse(str).select("a").isEmpty())
-						DynamicSetParameter(summary, methodNames[namepos],Jsoup.parse(str).select("a").first().text());
+					if(!Jsoup.parse(str).select("a").isEmpty()) {
+                        DynamicSetParameter(summary, methodNames[namepos],Jsoup.parse(str).select("a").first().text());
+                    }
 				}else if(pos!=-1 && pos+5<str.length()){
 					String value=str.substring(pos+5,str.length());
 					if(namepos!=-1){
@@ -659,9 +672,10 @@ public class RunningJobInfoUtil extends AbstractJobInfoUtil {
 				String tag=tagele.first().text();
 			Elements tdeles=treles.get(i).select("td");
 			int pos=0;
-			while (tdeles.get(pos+1).text()==null || tdeles.get(pos+1).text().trim().equals(""))
-				pos++;
-			if(tag.equalsIgnoreCase("map")){
+			while (tdeles.get(pos+1).text()==null || "".equals(tdeles.get(pos + 1).text().trim())) {
+                pos++;
+            }
+			if("map".equalsIgnoreCase(tag)){
 				String valstr=tdeles.get(0).text();
 				float val=Float.parseFloat(valstr.substring(0,valstr.length()-1))/100;
 				summary.setMapPrecent(val);
@@ -673,7 +687,7 @@ public class RunningJobInfoUtil extends AbstractJobInfoUtil {
 				valstr=tdeles.get(pos+6).text();
 				String[] tmpstr=valstr.split("/");
 				summary.setFailedMaps(Integer.parseInt(tmpstr[0].trim()));
-			}else if(tag.equalsIgnoreCase("reduce")){
+			}else if("reduce".equalsIgnoreCase(tag)){
 				String valstr=tdeles.get(0).text();
 				float val=Float.parseFloat(valstr.substring(0,valstr.length()-1))/100;
 				summary.setReducePrecent(val);
@@ -732,20 +746,23 @@ public class RunningJobInfoUtil extends AbstractJobInfoUtil {
 	
 	 private void DynamicSetParameter(Object obj,String fieldName,Object value) throws Exception{
 		 Method method=obj.getClass().getMethod("set"+fieldName.substring(0,1).toUpperCase()+fieldName.substring(1,fieldName.length()),value.getClass());
-		 if(method!=null)
-			 method.invoke(obj, value);
+		 if(method!=null) {
+             method.invoke(obj, value);
+         }
 	 }
-	 public String getJobCounterXml(String jobId,Map<String, String> map,String... mindNames) throws Exception{
-			org.dom4j.Document _document = DocumentHelper.createDocument();  
-			org.dom4j.Element element=_document.addElement("Counters");
+	 @Override
+	 public String getJobCounterXml(String jobId, Map<String, String> map, String... mindNames) throws Exception{
+			org.dom4j.Document document = DocumentHelper.createDocument();
+			org.dom4j.Element element=document.addElement("Counters");
 			JobID id=getJobID(jobId);
 			JobClient jobClient =getJobClient();
 			RunningJob job=jobClient.getJob(id);
 			Format decimal = new DecimalFormat();
 			Counters counters=job.getCounters();
 			List<String> list=new ArrayList<String>();
-			if(mindNames!=null)
-				list=Arrays.asList(mindNames);
+			if(mindNames!=null) {
+                list=Arrays.asList(mindNames);
+            }
 			for (String groupName:counters.getGroupNames()) {
 				Counters.Group totalgroup = counters.getGroup(groupName);
 				//org.dom4j.Element groupEle=element.addElement("Group");
@@ -765,7 +782,7 @@ public class RunningJobInfoUtil extends AbstractJobInfoUtil {
 	         format.setEncoding("UTF-8");// 设置XML文件的编码格式  
 	         ByteArrayOutputStream stream=new ByteArrayOutputStream();
 	         XMLWriter writer=new XMLWriter(stream,format);
-	         writer.write(_document);
+	         writer.write(document);
 	         writer.close();
 	         String retStr=stream.toString();
 			return retStr;

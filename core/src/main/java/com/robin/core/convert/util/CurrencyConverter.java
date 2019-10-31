@@ -46,6 +46,7 @@ public class CurrencyConverter implements Converter {
      * @param value the object to convert
      * @return object the converted object (Double or String)
      */
+    @Override
     public final Object convert(final Class type, final Object value) {
         // for a null value, return null
         if (value == null) {

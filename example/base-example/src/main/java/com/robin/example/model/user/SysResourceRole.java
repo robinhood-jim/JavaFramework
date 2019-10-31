@@ -51,13 +51,20 @@ public class SysResourceRole extends BaseObject {
     public static String COL_RES_ID = "RES_ID";
     public static String COL_ID = "ID";
 
+    @Override
     public boolean equals(Object obj) {
-        if (null == obj) return false;
-        if (!(obj instanceof SysResourceRole)) return false;
-        else {
+        if (null == obj) {
+            return false;
+        }
+        if (!(obj instanceof SysResourceRole)) {
+            return false;
+        } else {
             SysResourceRole o = (SysResourceRole) obj;
-            if (null == this.getId() || null == o.getId()) return false;
-            else return (this.getId().equals(o.getId()));
+            if (null == this.getId() || null == o.getId()) {
+                return false;
+            } else {
+                return (this.getId().equals(o.getId()));
+            }
         }
     }
 
@@ -66,6 +73,7 @@ public class SysResourceRole extends BaseObject {
         return super.hashCode();
     }
 
+    @Override
     public String toString() {
         StringBuffer buffer = new StringBuffer();
         buffer.append("[SysResourceRole:");
@@ -89,7 +97,10 @@ public class SysResourceRole extends BaseObject {
     }
 
     private String dealNull(Object str) {
-        if (str == null) return "";
-        else return str.toString();
+        if (str == null) {
+            return "";
+        } else {
+            return str.toString();
+        }
     }
 }

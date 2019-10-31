@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015,wanchuan
+ * Copyright (c) 2015,robinjim
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,99 +15,49 @@
  */
 package com.robin.core.convert.util;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 import com.robin.core.base.model.BaseObject;
+import com.robin.core.base.reflect.ReflectUtils;
 import com.robin.core.base.util.Const;
 import com.robin.core.fileaccess.meta.DataSetColumnMeta;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.lang.reflect.Type;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 public class ConvertUtil {
 
-    private static Cache<String,Map<String,Method>> cachedGetMethod= CacheBuilder.newBuilder().maximumSize(200).expireAfterAccess(30, TimeUnit.MINUTES).build();
-    private static Cache<String,Map<String,Method>> cachedSetMethod= CacheBuilder.newBuilder().maximumSize(200).expireAfterAccess(30, TimeUnit.MINUTES).build();
 
 
     public static void convertToTargetObj(Object target, Object src) throws Exception {
-        if (target == null || src == null) return;
+        if (target == null || src == null) {
+            return;
+        }
 
-        Map<String, Method> srcmap = returnGetMethold(src.getClass());
-        Map<String,Method> targetMap=returnSetMethold(target.getClass());
+        Map<String, Method> srcmap = ReflectUtils.returnGetMethods(src.getClass());
+        Map<String,Method> targetMap= ReflectUtils.returnSetMethods(target.getClass());
 
         Iterator<Map.Entry<String,Method>> iterator=srcmap.entrySet().iterator();
         while(iterator.hasNext()){
             Map.Entry<String,Method> entry=iterator.next();
             if(targetMap.containsKey(entry.getKey())){
-                Object value=parseParamenter(targetMap.get(entry.getKey()).getParameterTypes()[0],srcmap.get(entry.getKey()).invoke(src,(Object[]) null));
+                Object value= parseParameter(targetMap.get(entry.getKey()).getParameterTypes()[0],srcmap.get(entry.getKey()).invoke(src,(Object[]) null));
                 targetMap.get(entry.getKey()).invoke(target,new Object[]{value});
             }
         }
     }
-    public static Map<String,Method> returnGetMethold(Class clazz){
-        if(cachedGetMethod.getIfPresent(clazz.getCanonicalName())==null){
-            Map<String,Method> map=new HashMap<>();
-            Method[] methods=clazz.getMethods();
-            for(Method method:methods){
-                if(method.getName().startsWith("get")){
-                    String name=method.getName().substring(3,4).toLowerCase()+method.getName().substring(4);
-                    map.put(name,method);
-                }
-            }
-            if(!map.isEmpty())
-                cachedGetMethod.put(clazz.getCanonicalName(),map);
-        }
-        return cachedGetMethod.getIfPresent(clazz.getCanonicalName());
-    }
 
-    public static Map<String,Method> returnSetMethold(Class clazz){
-        if(cachedSetMethod.getIfPresent(clazz.getCanonicalName())==null){
-            Method[] methods=clazz.getMethods();
-            Map<String,Method> map=new HashMap<>();
-            for(Method method:methods){
-                if(method.getName().startsWith("set")){
-                    String name=method.getName().substring(3,4).toLowerCase()+method.getName().substring(4);
-                    map.put(name,method);
-                }
-            }
-            if(!map.isEmpty())
-                cachedSetMethod.put(clazz.getCanonicalName(),map);
-        }
-        return cachedSetMethod.getIfPresent(clazz.getCanonicalName());
-    }
-    private static Method getMethodByName(Class clazz,String methodName){
-        try{
-            return clazz.getDeclaredMethod(methodName);
-        }catch (NoSuchMethodException ex){
-
-        }
-        return null;
-    }
-    private static Method getMethodByName(Class clazz, String methodName, Type type){
-        try{
-            return clazz.getDeclaredMethod(methodName,(Class) type);
-        }catch (NoSuchMethodException ex){
-
-        }
-        return null;
-    }
 
     public static void objectToMap(Map<String, String> target, Object src) throws Exception {
-        if (src == null || target == null) return;
+        if (src == null || target == null) {
+            return;
+        }
 
-        Map<String,Method> getMetholds=returnGetMethold(src.getClass());
+        Map<String,Method> getMetholds= ReflectUtils.returnGetMethods(src.getClass());
         Iterator<Map.Entry<String,Method>> iterator=getMetholds.entrySet().iterator();
         while(iterator.hasNext()){
             Map.Entry<String,Method> entry=iterator.next();
@@ -119,23 +69,26 @@ public class ConvertUtil {
     }
 
     public static void objectToMapObj(Map<String, Object> target, Object src) throws Exception {
-        if (src == null || target == null) return;
-        Map<String,Method> getMetholds=returnGetMethold(src.getClass());
+        if (src == null || target == null) {
+            return;
+        }
+        Map<String,Method> getMetholds= ReflectUtils.returnGetMethods(src.getClass());
         Iterator<Map.Entry<String,Method>> iterator=getMetholds.entrySet().iterator();
         while(iterator.hasNext()){
             Map.Entry<String,Method> entry=iterator.next();
             if(entry.getValue().getParameterTypes().length==0) {
                 Object value = entry.getValue().invoke(src, (Object[]) null);
-                target.put(entry.getKey(), value == null ? "" : value);
+                target.put(entry.getKey(), value);
             }
         }
     }
 
     public static void mapToObject(BaseObject target, Map<String, String> src) throws Exception {
-        if (src == null || target == null)
+        if (src == null || target == null) {
             return;
+        }
         Iterator<Map.Entry<String, String>> it = src.entrySet().iterator();
-        Map<String, Method> methodMap = returnSetMethold(target.getClass());
+        Map<String, Method> methodMap = ReflectUtils.returnSetMethods(target.getClass());
         while (it.hasNext()) {
             Map.Entry<String, String> entry = it.next();
             String key = entry.getKey();
@@ -144,10 +97,11 @@ public class ConvertUtil {
                 target.AddDirtyColumn(key);
                 Class type = methodMap.get(key).getParameterTypes()[0];
                 Object retValue = null;
-                if (!type.getName().equalsIgnoreCase("java.lang.String") && value.equals(""))
+                if (!"java.lang.String".equalsIgnoreCase(type.getName()) && "".equals(value)) {
                     retValue = null;
-                else
-                    retValue = parseParamenter(type, value);
+                } else {
+                    retValue = parseParameter(type, value);
+                }
                 methodMap.get(key).invoke(target, new Object[]{retValue});
             }
         }
@@ -155,18 +109,24 @@ public class ConvertUtil {
     }
 
     public static void mapToObject(Object target, Map<String, Object> src) throws Exception {
-        if (src == null || target == null) return;
+        if (src == null || target == null) {
+            return;
+        }
 
-        Iterator it = src.keySet().iterator();
-        Map<String,Method> targetMap=returnSetMethold(target.getClass());
+        Iterator<Map.Entry<String,Object>> it = src.entrySet().iterator();
+        Map<String,Method> targetMap= ReflectUtils.returnSetMethods(target.getClass());
         while (it.hasNext()) {
-            String key = (String) it.next();
-            String value = src.get(key).toString();
+            Map.Entry<String,Object> entry=it.next();
+            String key = entry.getKey();
+            Object value = entry.getValue();
             if (targetMap.containsKey(key)) {
                 Class type = targetMap.get(key).getParameterTypes()[0];
                 Object retValue = null;
-                if (!type.getName().equalsIgnoreCase("java.lang.String") && value.equals("")) retValue = null;
-                else retValue = parseParamenter(type, value);
+                if (!"java.lang.String".equalsIgnoreCase(type.getName()) && "".equals(value)) {
+                    retValue = null;
+                } else {
+                    retValue = parseParameter(type, value);
+                }
                 targetMap.get(key).invoke(target, new Object[]{retValue});
             }
         }
@@ -182,10 +142,14 @@ public class ConvertUtil {
 
 
     public static void convertToModelForUpdate(BaseObject target, BaseObject src) throws Exception {
-        if (target == null || src == null) return;
-        if (!target.getClass().equals(src.getClass())) throw new RuntimeException("");
-        Map<String, Method> srcmap = returnGetMethold(src.getClass());
-        Map<String,Method> targetMap=returnSetMethold(target.getClass());
+        if (target == null || src == null) {
+            return;
+        }
+        if (!target.getClass().equals(src.getClass())) {
+            throw new RuntimeException("");
+        }
+        Map<String, Method> srcmap = ReflectUtils.returnGetMethods(src.getClass());
+        Map<String,Method> targetMap= ReflectUtils.returnSetMethods(target.getClass());
 
         List<String> dirtyColumnList = src.getDirtyColumn();
         for (int i = 0; i < dirtyColumnList.size(); i++) {
@@ -196,8 +160,9 @@ public class ConvertUtil {
                 Object value = getMethod.invoke(src, (Object[]) null);
                 if (value != null) {
                     setMethod.invoke(target, new Object[]{value});
-                } else
+                } else {
                     setMethod.invoke(target, new Object[]{null});
+                }
             }
 
         }
@@ -206,17 +171,19 @@ public class ConvertUtil {
 
 
     public static void convertToModel(BaseObject target, Map<String, String> src) throws Exception {
-        if (target == null || src == null) return;
+        if (target == null || src == null) {
+            return;
+        }
 
-        Map<String, Method> map = returnSetMethold(target.getClass());
+        Map<String, Method> map = ReflectUtils.returnSetMethods(target.getClass());
 
-        Iterator set = src.keySet().iterator();
+        Iterator<Map.Entry<String,String>> set = src.entrySet().iterator();
         while (set.hasNext()) {
-            String field = (String) set.next();
+            Map.Entry<String,String> entry=set.next();
+            String field = entry.getKey();
             Method setMethod = map.get(field);
             if (setMethod != null) {
-                String value = src.get(field);
-                setBaseObjectValue(target,value,field,setMethod);
+                setBaseObjectValue(target,entry.getValue(),field,setMethod);
             }
         }
     }
@@ -224,31 +191,33 @@ public class ConvertUtil {
         if (value != null) {
             target.AddDirtyColumn(field);
             Class type = setMethod.getParameterTypes()[0];
-            if (!type.getName().equalsIgnoreCase("java.lang.String") && value.equals("")) {
+            if (!"java.lang.String".equalsIgnoreCase(type.getName()) && "".equals(value)) {
                 setMethod.invoke(target, new Object[]{null});
             } else {
-                Object retValue = parseParamenter(type, value);
+                Object retValue = parseParameter(type, value);
                 setMethod.invoke(target, new Object[]{retValue});
             }
         }
     }
     public static void convertToTarget(Object target, Object src) throws Exception {
-        if (target == null || src == null) return;
-        Map<String, Method> targetMethodMap = returnSetMethold(target.getClass());
-        Map<String, Method> sourceMethodMap = returnGetMethold(src.getClass());
+        if (target == null || src == null) {
+            return;
+        }
+        Map<String, Method> targetMethodMap = ReflectUtils.returnSetMethods(target.getClass());
+        Map<String, Method> sourceMethodMap = ReflectUtils.returnGetMethods(src.getClass());
         if(src instanceof Map) {
             Map<String,Object> vMap=(Map<String,Object>)src;
-            Iterator set = vMap.keySet().iterator();
+            Iterator<Map.Entry<String,Object>> set = vMap.entrySet().iterator();
             while (set.hasNext()) {
-                String field = (String) set.next();
+                Map.Entry<String,Object> entry=set.next();
+                String field = entry.getKey();
                 Method setMethod = targetMethodMap.get(field);
                 if (setMethod != null) {
-                    String value = vMap.get(field).toString();
-                    if(target instanceof BaseObject)
-                        setBaseObjectValue((BaseObject) target,value,field,setMethod);
-                    else{
+                    if(target instanceof BaseObject) {
+                        setBaseObjectValue((BaseObject) target,entry.getValue(),field,setMethod);
+                    } else{
                         if(targetMethodMap.containsKey(field)) {
-                            Object retValue = parseParamenter(targetMethodMap.get(field).getParameterTypes()[0], value);
+                            Object retValue = parseParameter(targetMethodMap.get(field).getParameterTypes()[0], entry.getValue());
                             setObjectValue(targetMethodMap.get(field), target, retValue);
                         }
                     }
@@ -260,7 +229,7 @@ public class ConvertUtil {
             while(iter.hasNext()){
                 Map.Entry<String,Method> entry=iter.next();
                 if (targetMethodMap.containsKey(entry.getKey()) && entry.getValue().getParameterTypes().length==0){
-                    Object retValue = parseParamenter(targetMethodMap.get(entry.getKey()).getParameterTypes()[0], entry.getValue().invoke(src,new Object[]{}));
+                    Object retValue = parseParameter(targetMethodMap.get(entry.getKey()).getParameterTypes()[0], entry.getValue().invoke(src,new Object[]{}));
                     setObjectValue(targetMethodMap.get(entry.getKey()), target, retValue);
                 }
             }
@@ -271,7 +240,7 @@ public class ConvertUtil {
     }
 
 
-    public static Object parseParamenter(Class type, Object strValue) throws Exception {
+    public static Object parseParameter(Class type, Object strValue) throws Exception {
         if (strValue == null) {
             return null;
         }
@@ -280,25 +249,26 @@ public class ConvertUtil {
             typeName = "byte";
         }
         Object ret = null;
-        if (typeName.equals("int")) {
+        if ("int".equals(typeName)) {
             ret = Integer.parseInt(strValue.toString());
-        } else if (typeName.equals("long")) {
+        } else if ("long".equals(typeName)) {
             ret = Long.parseLong(strValue.toString());
-        } else if (typeName.equals("float")) {
+        } else if ("float".equals(typeName)) {
             ret = Float.parseFloat(strValue.toString());
-        } else if (typeName.equals("double")) {
+        } else if ("double".equals(typeName)) {
             ret = Double.parseDouble(strValue.toString());
         } else if (typeName.startsWith("java.math.") || "java.util.Date" .equals(typeName)) {
             String value = strValue.toString().trim();
-            if (value.indexOf(":") == -1)
+            if (value.indexOf(":") == -1) {
                 value += " 00:00:00";
+            }
             SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
             ret = format.parse(value);
 
-        } else if (typeName.equals("java.lang.String")) {
+        } else if ("java.lang.String".equals(typeName)) {
             ret = strValue.toString();
         } else {
-            if (typeName.equals("java.sql.Timestamp")) {
+            if ("java.sql.Timestamp".equals(typeName)) {
                 String value = strValue.toString().trim();
                 int len = value.trim().length();
                 if (len > 7 && len < 11) {
@@ -307,18 +277,19 @@ public class ConvertUtil {
                     value = value + ".0";
                 }
                 strValue = value;
-            } else if (typeName.equals("java.sql.Date") && strValue != null) {
+            } else if ("java.sql.Date".equals(typeName) && strValue != null) {
                 String value = strValue.toString().trim();
                 if (value.length() > 10) {
                     value = value.substring(0, 10);
                 }
                 strValue = value;
             }
-            if (!typeName.equals("byte")) {
+            if (!"byte".equals(typeName)) {
                 if (!strValue.toString().isEmpty()) {
                     Method method = type.getMethod("valueOf", new Class[]{"java.lang.String" .getClass()});
-                    if (method != null)
+                    if (method != null) {
                         ret = method.invoke(Class.forName("java.lang.Byte"), new Object[]{strValue.toString()});
+                    }
                 } else {
                     ret = null;
                 }
@@ -396,13 +367,14 @@ public class ConvertUtil {
     private static Object translateValue(String value, String columnType, String columnName, SimpleDateFormat dateformat) throws Exception {
         Object retObj;
         try {
-            if (value == null || StringUtils.isEmpty(value.trim()))
+            if (value == null || StringUtils.isEmpty(value.trim())) {
                 return null;
+            }
             if (columnType.equals(Const.META_TYPE_INTEGER)) {
                 retObj = Integer.valueOf(value);
-            } else if (columnType.equals(Const.META_TYPE_BIGINT))
+            } else if (columnType.equals(Const.META_TYPE_BIGINT)) {
                 retObj = Long.valueOf(value);
-            else if (columnType.equals(Const.META_TYPE_NUMERIC)) {
+            } else if (columnType.equals(Const.META_TYPE_NUMERIC)) {
                 retObj = Double.valueOf(value);
             } else if (columnType.equals(Const.META_TYPE_DOUBLE)) {
                 retObj = Double.valueOf(value);

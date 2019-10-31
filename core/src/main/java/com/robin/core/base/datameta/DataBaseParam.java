@@ -75,8 +75,9 @@ public class DataBaseParam implements Serializable {
 	public String getUrlByMeta(BaseDataBaseMeta dbMeta){
 		try{
 			if(this.getUrl()==null || this.getUrl().isEmpty()){
-				if(this.getPort()==0)
-					this.setPort(dbMeta.getDefaultDatabasePort());
+				if(this.getPort()==0) {
+                    this.setPort(dbMeta.getDefaultDatabasePort());
+                }
 				Matcher matcher=BaseDataBaseMeta.PATTERN_TEMPLATE_PARAM.matcher(dbMeta.getUrlTemplate());
 				Map<String,String> paramMap=processParam();
 				StringBuffer builder=new StringBuffer();

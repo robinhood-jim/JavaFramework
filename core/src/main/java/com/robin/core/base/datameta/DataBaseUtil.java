@@ -47,8 +47,9 @@ public class DataBaseUtil {
             if (connection == null) {
                 Class.forName(meta.getParam().getDriverClassName());
                 String url = meta.getUrl();
-                if (url == null || "".equals(url))
+                if (url == null || "".equals(url)) {
                     url = meta.getUrl();
+                }
                 connection = DriverManager.getConnection(url, meta.getParam().getUserName(), meta.getParam().getPasswd());
             }
         } catch (Exception e) {
@@ -147,7 +148,7 @@ public class DataBaseUtil {
             List<String> pklist = this.getAllPrimaryKeyByTableName(tablename, DbOrtablespacename);
             while (rs.next()) {
                 String columnname = rs.getString("COLUMN_NAME");
-                Integer datatype = Integer.parseInt(translateDbType(new Integer(rs.getInt("DATA_TYPE"))));
+                Integer datatype = Integer.valueOf(translateDbType(Integer.valueOf(rs.getInt("DATA_TYPE"))));
                 String datalength = rs.getString("COLUMN_SIZE");
                 boolean nullable = rs.getInt("NULLABLE") != DatabaseMetaData.columnNoNulls;
                 String comment = rs.getString("REMARKS");
@@ -157,8 +158,9 @@ public class DataBaseUtil {
                 DataBaseColumnMeta datameta = new DataBaseColumnMeta();
                 if (!(basemeta instanceof OracleDataBaseMeta)) {
                     String autoInc = rs.getString("IS_AUTOINCREMENT");
-                    if (autoInc != null && "YES".equals(autoInc))
+                    if (autoInc != null && "YES".equals(autoInc)) {
                         datameta.setIncrement(true);
+                    }
                 }
                 datameta.setColumnName(columnname);
                 datameta.setColumnType(datatype);
@@ -167,10 +169,11 @@ public class DataBaseUtil {
                 datameta.setDataPrecise(precise);
                 datameta.setDataScale(scale);
                 datameta.setColumnLength(datalength);
-                if (pklist.contains(columnname))
+                if (pklist.contains(columnname)) {
                     datameta.setPrimaryKey(true);
-                else
+                } else {
                     datameta.setPrimaryKey(false);
+                }
                 columnlist.add(datameta);
             }
             stmt.close();
@@ -189,7 +192,7 @@ public class DataBaseUtil {
         return columnlist;
     }
 
-    public static List<DataBaseColumnMeta> getTableMetaByTableName(DataSource source, String tablename, String DbOrtablespacename, BaseDataBaseMeta basemeta) throws RuntimeException {
+    public static List<DataBaseColumnMeta> getTableMetaByTableName(DataSource source, String tablename, String DbOrtablespacename, String dbType) throws RuntimeException {
         Connection conn;
         try {
             try {
@@ -197,7 +200,7 @@ public class DataBaseUtil {
             } catch (Exception ex) {
                 throw new RuntimeException("failed to get Connection from " + ex.getMessage());
             }
-            return getTableMetaByTableName(conn, tablename, DbOrtablespacename, basemeta);
+            return getTableMetaByTableName(conn, tablename, DbOrtablespacename, dbType);
         } catch (Exception ex) {
             ex.printStackTrace();
         } finally {
@@ -206,15 +209,10 @@ public class DataBaseUtil {
         return null;
     }
 
-    public static List<DataBaseColumnMeta> getTableMetaByTableName(JdbcDao dao, String tablename, String DbOrtablespacename, BaseDataBaseMeta basemeta) throws RuntimeException {
-        Connection conn;
+    public static List<DataBaseColumnMeta> getTableMetaByTableName(JdbcDao dao, String tablename, String DbOrtablespacename, String dbType) throws RuntimeException {
+
         try {
-            try {
-                conn = dao.getDataSource().getConnection();
-            } catch (Exception ex) {
-                throw new RuntimeException("failed to get Connection from " + ex.getMessage());
-            }
-            return getTableMetaByTableName(conn, tablename, DbOrtablespacename, basemeta);
+            return getTableMetaByTableName(dao.getDataSource(), tablename, DbOrtablespacename, dbType);
         } catch (Exception ex) {
             ex.printStackTrace();
         } finally {
@@ -223,7 +221,7 @@ public class DataBaseUtil {
         return null;
     }
 
-    public static List<DataBaseColumnMeta> getTableMetaByTableName(Connection conn, String tablename, String DbOrtablespacename, BaseDataBaseMeta basemeta) throws Exception {
+    public static List<DataBaseColumnMeta> getTableMetaByTableName(Connection conn, String tablename, String DbOrtablespacename, String dbType) throws Exception {
         List<DataBaseColumnMeta> columnlist = new ArrayList<DataBaseColumnMeta>();
 
         try {
@@ -237,7 +235,7 @@ public class DataBaseUtil {
             }
             while (rs.next()) {
                 String columnname = rs.getString("COLUMN_NAME");
-                Integer datatype = Integer.parseInt(translateDbType(new Integer(rs.getInt("DATA_TYPE"))));
+                Integer datatype = Integer.valueOf(translateDbType(Integer.valueOf(rs.getInt("DATA_TYPE"))));
                 String datalength = rs.getString("COLUMN_SIZE");
                 boolean nullable = rs.getInt("NULLABLE") != DatabaseMetaData.columnNoNulls;
                 String comment = "";
@@ -246,17 +244,20 @@ public class DataBaseUtil {
                 for (int i = 1; i <= rsmeta.getColumnCount(); i++) {
                     metaNames.add(rsmeta.getColumnName(i));
                 }
-                if (metaNames.contains("REMARKS"))
+                if (metaNames.contains("REMARKS")) {
                     comment = rs.getString("REMARKS");
+                }
                 String precise = rs.getString("DECIMAL_DIGITS");
                 String scale = rs.getString("TABLE_SCHEM");
 
                 DataBaseColumnMeta datameta = new DataBaseColumnMeta();
                 //TODO SqlServer2005 may failed for not support  get AUTOINCREMENT  attribute
-                if (!(basemeta instanceof OracleDataBaseMeta) && !(basemeta instanceof HiveDataBaseMeta) && !(basemeta instanceof PhoenixDataBaseMeta)) {
+                if (dbType!=BaseDataBaseMeta.TYPE_ORACLE && dbType!=BaseDataBaseMeta.TYPE_ORACLERAC && dbType!=BaseDataBaseMeta.TYPE_HIVE
+                        && dbType!=BaseDataBaseMeta.TYPE_HIVE2 && dbType!=BaseDataBaseMeta.TYPE_PHONEIX) {
                     String autoInc = rs.getString("IS_AUTOINCREMENT");
-                    if (autoInc != null && "YES".equals(autoInc))
+                    if (autoInc != null && "YES".equals(autoInc)) {
                         datameta.setIncrement(true);
+                    }
                 }
                 datameta.setColumnName(columnname);
                 datameta.setColumnType(datatype);
@@ -265,10 +266,11 @@ public class DataBaseUtil {
                 datameta.setDataPrecise(precise);
                 datameta.setDataScale(scale);
                 datameta.setColumnLength(datalength);
-                if (pklist != null && pklist.contains(columnname))
+                if (pklist != null && pklist.contains(columnname)) {
                     datameta.setPrimaryKey(true);
-                else
+                } else {
                     datameta.setPrimaryKey(false);
+                }
                 columnlist.add(datameta);
             }
         } catch (Exception e) {
@@ -359,14 +361,18 @@ public class DataBaseUtil {
         } catch (Exception ex) {
             throw ex;
         } finally {
-            if (rsmeta != null)
+            if (rsmeta != null) {
                 rsmeta = null;
-            if (rs != null)
+            }
+            if (rs != null) {
                 DbUtils.closeQuietly(rs);
-            if (stmt != null)
+            }
+            if (stmt != null) {
                 DbUtils.closeQuietly(stmt);
-            if (conn != null)
+            }
+            if (conn != null) {
                 DbUtils.closeQuietly(conn);
+            }
 
         }
         return columnlist;
@@ -377,9 +383,9 @@ public class DataBaseUtil {
         String retStr = "";
         if (type == Types.INTEGER || type == Types.TINYINT) {
             retStr = Const.META_TYPE_INTEGER;
-        } else if (type == Types.BIGINT)
+        } else if (type == Types.BIGINT) {
             retStr = Const.META_TYPE_BIGINT;
-        else if (type == Types.NUMERIC || type == Types.FLOAT || type == Types.DECIMAL) {
+        } else if (type == Types.NUMERIC || type == Types.FLOAT || type == Types.DECIMAL) {
             retStr = Const.META_TYPE_NUMERIC;
         } else if (type == Types.DOUBLE) {
             retStr = Const.META_TYPE_DOUBLE;
@@ -423,10 +429,11 @@ public class DataBaseUtil {
             } else if (isStringValueDate(obj.toString(), format3)) {
                 targetFormat = format3;
             }
-            if (targetFormat != null)
+            if (targetFormat != null) {
                 type = Const.META_TYPE_TIMESTAMP;
-            else
+            } else {
                 type = Const.META_TYPE_STRING;
+            }
         }
         retMap.put("type", type);
         retMap.put("dateFormat", targetFormat);
@@ -448,9 +455,9 @@ public class DataBaseUtil {
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
         if (type.equals(Const.META_TYPE_INTEGER)) {
             retObj = Integer.valueOf(value);
-        } else if (type.equals(Const.META_TYPE_BIGINT))
+        } else if (type.equals(Const.META_TYPE_BIGINT)) {
             retObj = Long.valueOf(value);
-        else if (type.equals(Const.META_TYPE_NUMERIC)) {
+        } else if (type.equals(Const.META_TYPE_NUMERIC)) {
             retObj = Double.valueOf(value);
         } else if (type.equals(Const.META_TYPE_DOUBLE)) {
             retObj = Double.valueOf(value);
@@ -466,8 +473,9 @@ public class DataBaseUtil {
         boolean validtag = false;
         if (value != null) {
             if (type.equals(Const.META_TYPE_INTEGER) || type.equals(Const.META_TYPE_BIGINT) || type.equals(Const.META_TYPE_NUMERIC) || type.equals(Const.META_TYPE_DOUBLE)) {
-                if (NumberUtils.isNumber(value.toString()))
+                if (NumberUtils.isNumber(value.toString())) {
                     validtag = true;
+                }
             } else if (type.equals(Const.META_TYPE_DATE) || type.equals(Const.META_TYPE_TIMESTAMP)) {
                 if (value instanceof java.util.Date) {
                     validtag = true;
@@ -487,8 +495,9 @@ public class DataBaseUtil {
         String retObj = null;
         if (value != null) {
             if (type.equals(Const.META_TYPE_INTEGER) || type.equals(Const.META_TYPE_BIGINT) || type.equals(Const.META_TYPE_NUMERIC) || type.equals(Const.META_TYPE_DOUBLE)) {
-                if (NumberUtils.isNumber(value.toString()))
+                if (NumberUtils.isNumber(value.toString())) {
                     retObj = value.toString();
+                }
             } else if (type.equals(Const.META_TYPE_DATE) || type.equals(Const.META_TYPE_TIMESTAMP)) {
                 long millsecod = 0L;
                 if (value instanceof java.util.Date) {
@@ -522,10 +531,12 @@ public class DataBaseUtil {
                 String remark = rs1.getString("REMARKS") == null ? "" : rs1.getString("REMARKS");
                 boolean canadd = false;
                 if (datameta instanceof OracleDataBaseMeta) {
-                    if (tablename.indexOf("BIN$") != 0 && tablename.lastIndexOf("$0") != 0)
+                    if (tablename.indexOf("BIN$") != 0 && tablename.lastIndexOf("$0") != 0) {
                         canadd = true;
-                } else
+                    }
+                } else {
                     canadd = true;
+                }
                 if (canadd) {
                     DataBaseTableMeta tablemeta = new DataBaseTableMeta();
                     tablemeta.setTableName(tablename);
@@ -541,8 +552,9 @@ public class DataBaseUtil {
             throw e;
         } finally {
             try {
-                if (rs1 != null)
+                if (rs1 != null) {
                     rs1.close();
+                }
             } catch (Exception e) {
 
             }

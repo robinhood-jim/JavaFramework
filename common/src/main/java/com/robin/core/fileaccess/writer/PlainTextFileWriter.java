@@ -44,8 +44,9 @@ public class PlainTextFileWriter extends WriterBasedFileWriter {
 			String value=getOutputStringByType(map,name);
 			if(value!=null){
 				retList.add(value);
-			}else
-				retList.add("");
+			}else {
+                retList.add("");
+            }
 		}
 		writer.write(StringUtils.join(retList, split)+"\n");
 	}

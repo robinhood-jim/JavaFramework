@@ -99,7 +99,8 @@ public class XmlFileWriter extends WriterBasedFileWriter{
 
 		}
 	}
-	public void close() throws IOException{
+	@Override
+    public void close() throws IOException{
 		writer.close();
 	}
 }

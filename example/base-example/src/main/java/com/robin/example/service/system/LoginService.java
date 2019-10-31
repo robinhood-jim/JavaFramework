@@ -91,8 +91,9 @@ public class LoginService {
                 respIdList.add(resp.getRespId());
             }
         }
-        if(!respIdList.isEmpty())
+        if(!respIdList.isEmpty()) {
             retMap.put("resps",StringUtils.join(respIdList,","));
+        }
         return retMap;
     }
     public Session ssoGetUser(String userName){

@@ -34,11 +34,11 @@ public class WordParagraphSection {
 	private WordImageSection imgSection;
 	private List<Map<String, String>> resultList=new ArrayList<Map<String,String>>();
 	
-	public static String TYPE_PARAGRAPH="PARAGRAPH";
-	public static String TYPE_IMAGE="IMG";
-	public static String TYPE_TABLE="TAB";
-	public static String TYPE_HEADER="HEADER";
-	public static String TYPE_TITLE="TITLE";
+	public static final String TYPE_PARAGRAPH="PARAGRAPH";
+	public static final String TYPE_IMAGE="IMG";
+	public static final String TYPE_TABLE="TAB";
+	public static final String TYPE_HEADER="HEADER";
+	public static final String TYPE_TITLE="TITLE";
 	
 	
 	public String getParagraphText() {
