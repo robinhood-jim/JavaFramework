@@ -250,7 +250,7 @@ public class StringUtils {
 		return DatatypeConverter.printHexBinary(md.digest()).toUpperCase();
 	}
 	public static boolean isEmpty(Object object){
-		return object!=null && !object.toString().isEmpty();
+		return object==null || object.toString().trim().isEmpty();
 	}
 	public static void main(String[] args){
 		System.out.println(genarateRandomUpperLowerChar(8));

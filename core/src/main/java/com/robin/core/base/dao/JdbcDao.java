@@ -15,6 +15,7 @@
  */
 package com.robin.core.base.dao;
 
+import com.robin.core.version.VersionInfo;
 import com.robin.core.base.dao.util.*;
 import com.robin.core.base.exception.DAOException;
 import com.robin.core.base.exception.QueryConfgNotFoundException;
@@ -30,6 +31,7 @@ import com.robin.core.query.util.QueryString;
 import com.robin.core.sql.util.BaseSqlGen;
 import com.robin.core.sql.util.FilterCondition;
 import com.robin.core.sql.util.OracleSqlGen;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
@@ -47,7 +49,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
-
+@Slf4j
 public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
 
     private BaseSqlGen sqlGen;
@@ -56,7 +58,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     public JdbcDao(){
-
+        log.debug(VersionInfo.getInstance().getVersion());
     }
     public JdbcDao(DataSource dataSource,LobHandler lobHandler,QueryFactory queryFactory,BaseSqlGen sqlGen){
         setDataSource(dataSource);
@@ -64,6 +66,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
         this.queryFactory=queryFactory;
         this.sqlGen=sqlGen;
         namedParameterJdbcTemplate=new NamedParameterJdbcTemplate(getJdbcTemplate());
+        log.debug(VersionInfo.getInstance().getVersion());
     }
 
     @Override

@@ -15,21 +15,21 @@
  */
 package com.robin.core.base.spring;
 
+import com.robin.core.version.VersionInfo;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Component;
 
-
+@Slf4j
 public class SpringContextHolder implements ApplicationContextAware, DisposableBean{
 	private static ApplicationContext context;
 	private Logger logger=LoggerFactory.getLogger(getClass());
 	public SpringContextHolder(){
-
+		log.info(VersionInfo.getInstance().getVersion());
 	}
 	
 	public static void injectApplicationContext(ApplicationContext appcontext){

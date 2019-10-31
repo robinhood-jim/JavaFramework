@@ -17,6 +17,8 @@ Slightly Framework design to  support Spring based java or Bigdata program.
         b.Support defined annotation or jpa annotation in JdbcDao with ORM.
         c. BaseAnnotationService can access DB with minimize code,and use transaction with annotation.
         d.A common db access meta and util,can access all kind of db.
+		e.Spring cloud based WebUI
+		f.support Hadoop plateform
         
  It is available under the terms of either the Apache Software License 2.0 or the Eclipse Public License 1.0.
  
@@ -100,12 +102,115 @@ Slightly Framework design to  support Spring based java or Bigdata program.
                     	<FIELD>a.ITEM_NAME as ITEMNAME,a.ITEM_VALUE as ITEMVALUE</FIELD>
                     </SQLSCRIPT>
                 SQLSCRIPT ID refrer to   queryBySelectId selectId.example see core test.    
+		5.mybatis like QueryMapper
+			<mapper namespace="com.robin.test.query1">
+			<resultMap id="rsMap1" type="com.robin.core.test.model.TestModel">
+				<result column="id" property="id" jdbcType="BIGINT" />
+				<result column="name" property="name" jdbcType="VARCHAR" />
+				<result column="code_desc" property="description" jdbcType="VARCHAR" />
+				<result column="cs_id" property="csId" jdbcType="BIGINT" />
+				<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+			</resultMap>
+			<sql id="sqlpart1">
+				id,name,code_desc,cs_id,create_time
+			</sql>
+			<sql id="sqlpart2">
+				name,code_desc,cs_id,create_time
+			</sql>
+			<select id="select1" resultMap="rsMap1">
+				select
+				<include refid="sqlpart1" />
+				 from t_test where 1=1
+				<script lang="js" id="test1" resultMap="rsMap1">
+					var returnstr="";
+					if(name!=null){
+						returnstr+=" and name like :name";
+					}
+					if(description!=null){
+						returnstr+=" and code_desc like :description";
+					}
+					if(csId!=null){
+						returnstr+=" and cs_id=:csId";
+					}
+					returnstr;
+				</script>
+			</select>
+			<insert id="insert1" resultMap="rsMap1" parameterType="com.robin.core.test.model.TestModel" useGeneratedKeys="true" keyProperty="id">
+				insert into t_test (
+				<script lang="js" id="test2">
+					var returnstr="";
+					if(name!=null){
+						returnstr+="name,"
+					}
+					if(description!=null){
+						returnstr+="code_desc,"
+					}
+					if(csId!=null){
+						returnstr+="cs_id,"
+					}
+					returnstr+="create_time";
+				</script>
+				) values (
+				<script lang="js" id="test3">
+					var returnstr="";
+					if(name!=null){
+						returnstr+=":name,";
+					}
+					if(description!=null){
+						returnstr+=":description,";
+					}if(csId!=null){
+						returnstr+=":csId,";
+					}
+					returnstr+="sysdate()";
+				</script>
+				)
+			</insert>
+			<batch id="batch1" resultMap="rsMap1" parameterType="com.robin.core.test.model.TestModel">
+				insert into t_test
+				<include refid="sqlpart2" />
+				values (:name,:description,:csId,sysdate())
+			</batch>
+			<update id="update1" resultMap="rsMap1" parameterType="com.robin.core.test.model.TestModel">
+				update t_test set
+				<script lang="js" id="test4">
+					var returnstr="";
+					if(name!=null){
+						returnstr+="name=:name,";
+					}
+					if(description!=null){
+						returnstr+="code_desc=:description,";
+					}
+					if(csId!=null){
+						returnstr+="cs_id=:csId,";
+					}
+					returnstr.substr(0,returnstr.length-1);
+				</script>
+				  where id=:id
+			</update>
+			<delete id="del1" parameterType="">
+
+			</delete>
+		</mapper>
+		no need to generate Mapper class,Only need QueryMapper xml file
+		exmaple: core/src/test/java/com/robin/core/test/db/JdbcDaoTest  testQueryAndInsertMapper
+		
+		insert update delete segement support script rather than ognl
                 
         4.Controller layer
-            under development
+            BaseCrudController basic Single Model base controller, exmaple see example/config-exmaple
+			BaseCrudDhtmlxController dhtmlxGrid base controller,make it easy to develop web and controller.
+			
+		upon feature aim to simplify the work to develop standard MVC java code.
             
-        
-    
+    II. Bigdata supprot
+		hadooptool: 
+			HDFS tool: com.robin.hadoop.hdfs  can access HDFS with kerberos security
+			Hbase tool: com.robin.hadoop.hbase hbase tool 
+			Cassandra tool : CassandraUtils
+			
+	III. Spring cloud support
+	WebUI simple webui base on dhtmlxGrid 5.1 with spring boot native 
+	related project in my another project microservices
  
  #
  Java简易框架 V1.0
