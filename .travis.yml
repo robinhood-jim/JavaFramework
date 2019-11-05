@@ -3,6 +3,7 @@ sudo: false
 branches:
   only:
   - master
+  - develop
 jdk:
   - oraclejdk8
 script:
