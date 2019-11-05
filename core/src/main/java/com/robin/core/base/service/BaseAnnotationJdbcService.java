@@ -25,6 +25,7 @@ import java.util.Map;
 
 import com.robin.core.base.dao.util.AnnotationRetrevior;
 import com.robin.core.base.spring.SpringContextHolder;
+import com.robin.core.sql.util.FilterConditions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -261,6 +262,16 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 		List<V> retlist ;
 		try{
 			retlist=(List<V>) jdbcDao.queryByCondition(type, conditions, orderByStr);
+		}catch (DAOException e) {
+			throw new ServiceException(e);
+		}
+		return retlist;
+	}
+	@Transactional(readOnly = true)
+	public List<V> queryByCondition(FilterConditions filterConditions,String orderByStr){
+		List<V> retlist ;
+		try{
+			retlist=(List<V>) jdbcDao.queryByCondition(type, filterConditions.getConditions(), orderByStr);
 		}catch (DAOException e) {
 			throw new ServiceException(e);
 		}
