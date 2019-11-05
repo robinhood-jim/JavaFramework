@@ -32,7 +32,6 @@ import com.robin.core.fileaccess.util.AbstractResourceAccessUtil;
 import com.robin.core.fileaccess.util.ApacheVfsResourceAccessUtil;
 import com.robin.core.fileaccess.util.AvroUtils;
 import com.robin.hadoop.hdfs.HDFSUtil;
-import com.robin.meta.config.AbstractSourceConfig;
 import com.robin.meta.explore.SourceFileExplorer;
 import com.robin.meta.model.resource.GlobalResource;
 import com.robin.meta.model.resource.ResourceConfig;
@@ -47,7 +46,6 @@ import org.springframework.stereotype.Component;
 import java.io.BufferedReader;
 import java.sql.Connection;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -125,13 +123,7 @@ public class GlobalResourceService extends BaseAnnotationJdbcService<GlobalResou
         return colmeta;
     }
 
-    public AbstractSourceConfig getResConfig(Long sourceId){
-        GlobalResource resource=getEntity(sourceId);
-        if(resource.getResType().equals(ResourceConst.ResourceType.TYPE_DB.getValue())){
-            return null;
-        }
-        return null;
-    }
+
 
 
     public Schema getDataSourceSchema(DataCollectionMeta colmeta,Long sourceId, String sourceParamInput,int maxReadLines){

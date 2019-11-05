@@ -1,5 +1,16 @@
 language: java
 sudo: false
+install: true
 branches:
   only:
   - master
+  - develop
+jdk:
+  - openjdk8
+
+script:
+  -   mvn -q clean install -DskipTests
+cache:
+  - directories:
+    - .autoconf
+    - $HOME/.m2

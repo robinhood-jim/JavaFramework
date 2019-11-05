@@ -88,7 +88,7 @@
         <lucence.version>3.6.2</lucence.version>
         <cglib.version>2.2.2</cglib.version>
         <phoenix.version>4.3.0</phoenix.version>
-        <jpa.version>2.0.0</jpa.version>
+        <jpa.version>2.2</jpa.version>
         <jcl.version>2.6</jcl.version>
         <hibernate.version>5.2.0.Final</hibernate.version>
         <poi.version>3.14</poi.version>
@@ -101,7 +101,7 @@
         <compress.version>1.19</compress.version>
         <helix.version>0.6.5</helix.version>
         <quartz.version>2.2.1</quartz.version>
-        <oracle.version>10.2.0.4.0</oracle.version>
+        <oracle.version>11.1.0.6.0</oracle.version>
         <sqlserver.version>4.0</sqlserver.version>
         <aspectj.version>1.6.2</aspectj.version>
         <avro.version>1.8.2</avro.version>
@@ -121,8 +121,6 @@
         <calcite.version>1.21.0</calcite.version>
     </properties>
 
-    <repositories>
-    </repositories>
 
     <dependencyManagement>
         <dependencies>
@@ -209,11 +207,7 @@
                 <artifactId>mysql-connector-java</artifactId>
                 <version>${mysql.version}</version>
             </dependency>
-            <dependency>
-                <groupId>com.oracle</groupId>
-                <artifactId>ojdbc14</artifactId>
-                <version>${oracle.version}</version>
-            </dependency>
+
             <dependency>
                 <groupId>com.microsoft.sqlserver</groupId>
                 <artifactId>mssql-jdbc</artifactId>
@@ -377,7 +371,7 @@
             </dependency>
             <dependency>
                 <groupId>javax.persistence</groupId>
-                <artifactId>com.springsource.javax.persistence</artifactId>
+                <artifactId>javax.persistence-api</artifactId>
                 <version>${jpa.version}</version>
             </dependency>
             <dependency>
@@ -575,7 +569,7 @@
             <dependency>
                 <groupId>org.apache.kafka</groupId>
                 <artifactId>kafka-clients</artifactId>
-                <version>2.2.0-cp2</version>
+                <version>2.2.0</version>
             </dependency>
             <dependency>
                 <groupId>org.dom4j</groupId>
