@@ -28,6 +28,26 @@
             <email>robinhoodjim7704@gmail.com</email>
         </developer>
     </developers>
+    <repositories>
+        <repository>
+            <id>maven.oracle.com</id>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <url>https://maven.oracle.com</url>
+            <layout>default</layout>
+        </repository>
+    </repositories>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>maven.oracle.com</id>
+            <url>https://maven.oracle.com</url>
+        </pluginRepository>
+    </pluginRepositories>
+
 
     <!-- Sub Model -->
     <modules>
@@ -101,7 +121,7 @@
         <compress.version>1.19</compress.version>
         <helix.version>0.6.5</helix.version>
         <quartz.version>2.2.1</quartz.version>
-        <oracle.version>10.2.0.4.0</oracle.version>
+        <oracle.version>11.1.0.6.0</oracle.version>
         <sqlserver.version>4.0</sqlserver.version>
         <aspectj.version>1.6.2</aspectj.version>
         <avro.version>1.8.2</avro.version>
@@ -121,8 +141,6 @@
         <calcite.version>1.21.0</calcite.version>
     </properties>
 
-    <repositories>
-    </repositories>
 
     <dependencyManagement>
         <dependencies>
@@ -211,7 +229,7 @@
             </dependency>
             <dependency>
                 <groupId>com.oracle</groupId>
-                <artifactId>ojdbc14</artifactId>
+                <artifactId>ojdbc6</artifactId>
                 <version>${oracle.version}</version>
             </dependency>
             <dependency>

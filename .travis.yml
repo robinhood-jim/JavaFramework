@@ -3,3 +3,7 @@ sudo: false
 branches:
   only:
   - master
+jdk:
+  - oraclejdk8
+script:
+  -   mvn clean install --settings mvnsettings.xml
