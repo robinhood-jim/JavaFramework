@@ -1,0 +1,31 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/openjdk:8-jdk
+
+    working_directory: ~/JavaFramework
+
+    environment:
+      MAVEN_OPTS: -Xmx3200m
+
+    branches:
+      ignore:
+        - develop
+
+    steps:
+      - checkout
+
+      - restore_cache:
+        keys:
+        - JavaFramework-{{ checksum "pom.xml" }}
+        - JavaFramework-
+
+      - run: mvn dependency:go-offline
+
+      - save_cache: # saves the project dependencies
+          paths:
+          - ~/.m2
+          key: JavaFramework-{{ checksum "pom.xml" }}
+
+      - run: mvn -q clean package -DskipTests
