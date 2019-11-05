@@ -1,5 +1,8 @@
 # SimpleJavaFrame
 
+[![Build Status](https://travis-ci.org/robinhood-jim/JavaFramework.svg?branch=master)](https://travis-ci.org/robinhood-jim/JavaFramework)
+[![CircleCI](https://circleci.com/gh/robinhood-jim/JavaFramework.svg?style=svg)](https://circleci.com/gh/robinhood-jim/JavaFramework)
+
 #### 介绍
 基于SpringBoot 和Spring2 与3两种模式的简易框架，ORM包含自定义的类似SpringData Jpa的ORM实现与类似Mybatis的可配置式SQL查询工具，hadoop工具支持基本的大数据工具包，统一的数据定义和数据访问接口，支持数据文件格式(CSV/JSON/XML/AVRO/PARQUET/PROTOBUF),数据源支持（本地/HDFS/APACHE VFS/）
 

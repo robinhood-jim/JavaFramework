@@ -3,6 +3,7 @@ Simple Java Frame V1.0
 Slightly Framework design to  support Spring based java or Bigdata program.
 
 [![Build Status](https://travis-ci.org/robinhood-jim/JavaFramework.svg?branch=master)](https://travis-ci.org/robinhood-jim/JavaFramework)
+[![CircleCI](https://circleci.com/gh/robinhood-jim/JavaFramework.svg?style=svg)](https://circleci.com/gh/robinhood-jim/JavaFramework)
 
 1.Introduction
 
