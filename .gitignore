@@ -9,6 +9,8 @@ logs
 .classpath
 .log
 .logs
+.sonar
+.backup
 
 # windows #
 Thumbs.db
@@ -30,7 +32,8 @@ Thumbs.db
 # Package Files #
 *.jar
 out.map
-backup
+*/backup
+*/.backup
 
 *.bak
 *.tmp
@@ -48,8 +51,3 @@ integration-repo
 /webapp/WEB-INF/classes/
 /webapp/WEB-INF/test-classes/
 /webapp/WEB-INF/target/
-
-
-
-
-
