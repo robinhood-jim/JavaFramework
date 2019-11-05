@@ -126,11 +126,11 @@
         <!-- if use redis as cache.uncomment below and config class CacheConfig  and comment below caffeine relay and application config -->
 
         <!-- use caffeine as default cache -->
-        <dependency>
+       <!-- <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-cache</artifactId>
             <version>${spring.boot.version}</version>
-        </dependency>
+        </dependency>-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-tomcat</artifactId>
