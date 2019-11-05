@@ -1,10 +1,12 @@
 language: java
 sudo: false
+install: true
 branches:
   only:
   - master
   - develop
-
+jdk:
+  - oraclejdk8
 script:
   -   mvn clean install -DskipTests
 cache:
