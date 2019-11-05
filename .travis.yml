@@ -6,4 +6,4 @@ branches:
   - develop
 
 script:
-  -   mvn clean install --settings mvnsettings.xml
+  -   mvn clean install -DskipTests
