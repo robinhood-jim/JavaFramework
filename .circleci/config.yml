@@ -1,31 +1,34 @@
+
 version: 2
 jobs:
   build:
     docker:
-      - image: circleci/openjdk:8-jdk
+    # specify the version you desire here
+    - image: circleci/openjdk:8-jdk
 
-    working_directory: ~/JavaFramework
+
+    working_directory: ~/frame
 
     environment:
+      # Customize the JVM maximum heap limit
       MAVEN_OPTS: -Xmx3200m
 
-    branches:
-      ignore:
-        - develop
-
     steps:
-      - checkout
+    - checkout
 
-      - restore_cache:
+    # Download and cache dependencies
+    - restore_cache:
         keys:
-        - JavaFramework-{{ checksum "pom.xml" }}
-        - JavaFramework-
+        - v1-dependencies-{{ checksum "pom.xml" }}
+        # fallback to using the latest cache if no exact match is found
+        - v1-dependencies-
 
-      - run: mvn dependency:go-offline
+    - run: mvn dependency:go-offline
 
-      - save_cache: # saves the project dependencies
-          paths:
-          - ~/.m2
-          key: JavaFramework-{{ checksum "pom.xml" }}
+    - save_cache:
+        paths:
+        - ~/.m2
+        key: v1-dependencies-{{ checksum "pom.xml" }}
 
-      - run: mvn -q clean package -DskipTests
+    # run tests!
+    - run: mvn -q clean package -DskipTests
