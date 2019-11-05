@@ -88,7 +88,7 @@
         <lucence.version>3.6.2</lucence.version>
         <cglib.version>2.2.2</cglib.version>
         <phoenix.version>4.3.0</phoenix.version>
-        <jpa.version>2.0.0</jpa.version>
+        <jpa.version>2.2</jpa.version>
         <jcl.version>2.6</jcl.version>
         <hibernate.version>5.2.0.Final</hibernate.version>
         <poi.version>3.14</poi.version>
@@ -371,7 +371,7 @@
             </dependency>
             <dependency>
                 <groupId>javax.persistence</groupId>
-                <artifactId>com.springsource.javax.persistence</artifactId>
+                <artifactId>javax.persistence-api</artifactId>
                 <version>${jpa.version}</version>
             </dependency>
             <dependency>
