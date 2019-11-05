@@ -33,6 +33,7 @@ import com.robin.core.base.util.Const;
 import com.robin.core.base.util.StringUtils;
 import com.robin.core.query.util.Condition;
 import com.robin.core.sql.util.FilterCondition;
+import com.robin.core.sql.util.FilterConditions;
 import com.robin.core.test.model.*;
 import com.robin.core.test.service.*;
 import io.github.classgraph.*;
@@ -208,12 +209,12 @@ public class JdbcDaoTest extends TestCase {
     }
     @Test
     public void testCondition() throws Exception{
-        List<FilterCondition> condList=new ArrayList<FilterCondition>();
+        FilterConditions filterConditions=new FilterConditions();
         SysUserService sysUserService=SpringContextHolder.getBean(SysUserService.class);
-        condList.add(new FilterCondition("userAccount", Condition.EQUALS,"admin"));
-        condList.add(new FilterCondition("userPassword", Condition.EQUALS, StringUtils.getMd5Encry("123456")));
-        condList.add(new FilterCondition("accountType", Condition.EQUALS,"1"));
-        List<SysUser> list=sysUserService.queryByCondition(condList,"");
+        filterConditions.withCondition(new FilterCondition("userAccount", Condition.EQUALS,"admin"))
+                .withCondition(new FilterCondition("userPassword", Condition.EQUALS, StringUtils.getMd5Encry("123456")))
+                .withCondition(new FilterCondition("accountType", Condition.EQUALS,"1"));
+        List<SysUser> list=sysUserService.queryByCondition(filterConditions,"");
     }
     @Test
     public void testQueryAndInsertMapper(){

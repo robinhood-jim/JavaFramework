@@ -22,6 +22,8 @@ import java.util.Map;
 import com.robin.core.base.exception.ServiceException;
 import com.robin.core.base.model.BaseObject;
 import com.robin.core.query.util.PageQuery;
+import com.robin.core.sql.util.FilterCondition;
+import com.robin.core.sql.util.FilterConditions;
 
 public interface IBaseAnnotationJdbcService<V extends BaseObject, P extends Serializable> {
     P saveEntity(V vo) throws ServiceException;
@@ -55,5 +57,7 @@ public interface IBaseAnnotationJdbcService<V extends BaseObject, P extends Seri
     List<V> queryAll() throws ServiceException;
 
     List<V> queryByVO(V vo, Map<String, Object> additonMap, String orderByStr)throws ServiceException;
+    List<V> queryByCondition(List<FilterCondition> filterConditions, String orderByStr);
+    List<V> queryByCondition(FilterConditions filterConditions, String orderByStr);
 
 }
