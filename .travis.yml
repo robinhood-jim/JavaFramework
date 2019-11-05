@@ -4,7 +4,6 @@ branches:
   only:
   - master
   - develop
-jdk:
-  - oraclejdk8
+
 script:
   -   mvn clean install --settings mvnsettings.xml
