@@ -9,4 +9,5 @@ script:
   -   mvn clean install -DskipTests
 cache:
   - directories:
-    - '$HOME/.m2/repository'
+    - .autoconf
+    - $HOME/.m2
