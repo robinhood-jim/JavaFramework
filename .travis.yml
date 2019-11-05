@@ -6,7 +6,7 @@ branches:
   - master
   - develop
 jdk:
-  - oraclejdk8
+  - openjdk8
 script:
   -   mvn clean install -DskipTests
 cache:
