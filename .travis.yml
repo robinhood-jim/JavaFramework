@@ -7,8 +7,9 @@ branches:
   - develop
 jdk:
   - openjdk8
+
 script:
-  -   mvn clean install -DskipTests
+  -   mvn -q clean install -DskipTests
 cache:
   - directories:
     - .autoconf
