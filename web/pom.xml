@@ -55,10 +55,6 @@
                     <groupId>org.hibernate</groupId>
                     <artifactId>hibernate-core</artifactId>
                 </exclusion>
-                <exclusion>
-                    <groupId>com.microsoft.sqlserver</groupId>
-                    <artifactId>mssql-jdbc</artifactId>
-                </exclusion>
             </exclusions>
         </dependency>
 
@@ -94,6 +90,46 @@
                  <exclusion>
                      <groupId>com.microsoft.sqlserver</groupId>
                      <artifactId>mssql-jdbc</artifactId>
+                 </exclusion>
+                 <exclusion>
+                     <groupId>org.apache.poi</groupId>
+                     <artifactId>poi</artifactId>
+                 </exclusion>
+                 <exclusion>
+                     <groupId>org.apache.poi</groupId>
+                     <artifactId>poi-ooxml</artifactId>
+                 </exclusion>
+                 <exclusion>
+                     <groupId>org.apache.poi</groupId>
+                     <artifactId>poi-ooxml-schemas</artifactId>
+                 </exclusion>
+                 <exclusion>
+                     <groupId>org.apache.poi</groupId>
+                     <artifactId>poi-scratchpad</artifactId>
+                 </exclusion>
+                 <exclusion>
+                     <groupId>com.lowagie</groupId>
+                     <artifactId>itext</artifactId>
+                 </exclusion>
+                 <exclusion>
+                     <groupId>com.lowagie</groupId>
+                     <artifactId>itext-rtf</artifactId>
+                 </exclusion>
+                 <exclusion>
+                     <groupId>com.itextpdf</groupId>
+                     <artifactId>itext-asian</artifactId>
+                 </exclusion>
+                 <exclusion>
+                     <groupId>org.tmatesoft.svnkit</groupId>
+                     <artifactId>svnkit</artifactId>
+                 </exclusion>
+                 <exclusion>
+                     <groupId>org.eclipse.jgit</groupId>
+                     <artifactId>org.eclipse.jgit</artifactId>
+                 </exclusion>
+                 <exclusion>
+                     <groupId>org.apache.calcite</groupId>
+                     <artifactId>calcite-core</artifactId>
                  </exclusion>
              </exclusions>
          </dependency>
@@ -177,24 +213,7 @@
                     </archive>
                 </configuration>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>copy</id>
-                        <phase>install</phase>
-                        <goals>
-                            <goal>copy-dependencies</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>
-                                ${project.build.directory}/lib
-                            </outputDirectory>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>

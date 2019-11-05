@@ -79,10 +79,6 @@
         </dependency>
         <!-- Spring end -->
         <dependency>
-            <groupId>postgresql</groupId>
-            <artifactId>postgresql</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
         </dependency>
@@ -164,16 +160,7 @@
             <groupId>org.tukaani</groupId>
             <artifactId>xz</artifactId>
         </dependency>
-        <dependency>
-            <groupId>com.microsoft.sqlserver</groupId>
-            <artifactId>mssql-jdbc</artifactId>
-            <exclusions>
-                <exclusion>
-                    <artifactId>azure-keyvault</artifactId>
-                    <groupId>com.microsoft.azure</groupId>
-                </exclusion>
-            </exclusions>
-        </dependency>
+
         <dependency>
             <groupId>org.lz4</groupId>
             <artifactId>lz4-java</artifactId>
