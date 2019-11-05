@@ -214,25 +214,5 @@ Slightly Framework design to  support Spring based java or Bigdata program.
 	III. Spring cloud support
 	WebUI simple webui base on dhtmlxGrid 5.1 with spring boot native 
 	related project in my another project microservices
- 
- #
- Java简易框架 V1.0
- 
- 本工程由4个子模块构成
- 
-    1.core ：核心类；
- 	2.comm：通用文件系统访问工具，文件系统支持本地、VFS和HDFS，文件格式支持csv/xml/json/avro/parquet/protobuf，
- 	        压缩格式支持gzip/bzip2/snappy/lzo/zip/lzma/lz4。通用工具：包含简单的excel、word、powerpoint的工具；
- 	3.hadooptool: 访问hadoop的通用工具类，包括访问HDFS,Hbase,Hive,Mongdb的工具；
- 	4.web：支持Struts1、Struts2、和SpringMVC。
- 
- 特点
- 
- 	1.类似于mybatis的xml配置查询工具，配置方便；
- 	2.支持jpa的注解和自定义方式的注解实现ORM操作；
- 	3.方便实用的BaseAnnotationService，支持快速工程搭建；
- 	4.通用的数据元和数据获取工具。
-  
-#
-开发        
+   
          
