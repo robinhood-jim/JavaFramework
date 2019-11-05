@@ -1,0 +1,183 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.robin</groupId>
+        <artifactId>frame</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+    <artifactId>license-core</artifactId>
+    <packaging>jar</packaging>
+    <name>license-core</name>
+    <url>http://maven.apache.org</url>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <dependencies>
+        <!-- Apache commons start -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+        </dependency>
+       
+        <dependency>
+            <groupId>commons-beanutils</groupId>
+            <artifactId>commons-beanutils</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.javassist</groupId>
+            <artifactId>javassist</artifactId>
+            <version>3.23.1-GA</version>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+
+
+
+    </dependencies>
+
+
+    <build>
+        <sourceDirectory>src/main/java</sourceDirectory>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <!--<excludes>
+                    <exclude>**/*</exclude>
+                </excludes>-->
+            </resource>
+        </resources>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addClasspath>true</addClasspath>
+                            <classpathPrefix>lib/</classpathPrefix>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>
+                                ${project.build.directory}/lib
+                            </outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <configuration>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>com.github.wvengen</groupId>
+                <artifactId>proguard-maven-plugin</artifactId>
+                <version>2.0.14</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>proguard</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <exclusions>
+                        <exclusion>
+                            <groupId>io.github.classgraph</groupId>
+                            <artifactId>classgraph</artifactId>
+                        </exclusion>
+                    </exclusions>
+                    <proguardVersion>5.1</proguardVersion>
+                    <injar>core-1.0-SNAPSHOT.jar</injar>
+                    <addMavenDescriptor>true</addMavenDescriptor>
+                    <injarNotExistsSkip>true</injarNotExistsSkip>
+                    <libs>
+                        <lib>${java.home}/lib/rt.jar</lib>
+                    </libs>
+
+                    <options> <!-- Detail see ProGuard Config -->
+
+                        <option>-keepattributes Signature,InnerClasses,Exceptions,SourceFile,LineNumberTable,*Annotation*</option>
+                        <option>
+                            <![CDATA[-keep public class * {public protected <fields>;public protected <methods>;}]]></option>
+                        <option>-keep public class * implements java.io.Serializable{public protected private *;}
+                        </option>
+
+                        <option>-keep public class * extends com.robin.core.base.model.BaseObject{ public protected
+                            private *; }
+                        </option>
+                        <option>-keep enum * { *; }</option>
+
+                        <option><![CDATA[-keepclassmembers enum * {
+							<fields>;
+							public static **[] values();
+    						public static ** valueOf(java.lang.String);
+						}]]></option>
+                        <option><![CDATA[-keepclassmembers class * implements org.apache.commons.dbutils.ResultSetHandler {
+							<methods>;
+							}]]></option>
+                        <option><![CDATA[-keepclassmembers class * implements org.springframework.orm.hibernate3.HibernateCallback {
+							<methods>;
+							}]]></option>
+                        <option><![CDATA[-keepclassmembers class * implements org.springframework.jdbc.core.RowMapper {
+							<methods>;
+							}]]></option>
+                        <option><![CDATA[-keepclassmembers class * extends com.robin.core.query.extractor.SplitPageResultSetExtractor {
+							<methods>;
+							}]]></option>
+                        <option><![CDATA[-keepclassmembers class * implements org.springframework.jdbc.core.ResultSetExtractor {
+							<methods>;
+							}]]></option>
+                        <option><![CDATA[-keepclassmembers class * implements java.util.Comparator {
+							<methods>;
+							}]]></option>
+                        <option><![CDATA[-keepclassmembers class * implements org.springframework.jdbc.core.PreparedStatementSetter {
+							<methods>;
+							}]]></option>
+                        <option>-ignorewarnings</option>
+                        <option>-dontshrink</option>
+                        <option>-printmapping out.map</option>
+                        <option>-optimizations !code/allocation/variable</option>
+                        <option>-keep class **.package-info</option>
+                        <!--<option>-keep public class com.robin.core.base.**</option>-->
+                        <option>
+                            -keepclasseswithmembers public class * {
+                            public static void main(java.lang.String[]);
+                            }
+                        </option>
+                    </options>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
