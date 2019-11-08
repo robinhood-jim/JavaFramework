@@ -136,20 +136,27 @@ public class ModelSqlGenerator {
     }
     public static String generateCreateSql(Class<? extends BaseObject> clazz,BaseSqlGen sqlGen) throws Exception{
         StringBuilder builder=new StringBuilder();
-        Map<String, String> tableMap = new HashMap<String, String>();
+        AnnotationRetrevior.EntityContent entityContent=AnnotationRetrevior.getMappingTableByCache(clazz);
         List<AnnotationRetrevior.FieldContent> fields = AnnotationRetrevior.getMappingFieldsCache(clazz);
         AnnotationRetrevior.FieldContent primarycol=AnnotationRetrevior.getPrimaryField(fields);
         builder.append("create table ");
-        if (tableMap.containsKey("schema")) {
-            builder.append(tableMap.get("schema")).append(".");
+        if (!StringUtils.isEmpty(entityContent.getSchema())) {
+            builder.append(entityContent.getSchema()).append(".");
         }
-        builder.append(tableMap.get("tableName")).append("(").append("\n");
+        builder.append(entityContent.getTableName()).append("(").append("\n");
         for (AnnotationRetrevior.FieldContent field : fields) {
-            if(field.isPrimary() && field.getPrimaryKeys()!=null){
-                builder.append("\t").append(sqlGen.getFieldDefineSqlPart(AnnotationRetrevior.fieldContentToMap(field)).toLowerCase()).append(",\n");
-            }
-            if (field.getDataType() != null) {
-                builder.append("\t").append(sqlGen.getFieldDefineSqlPart(AnnotationRetrevior.fieldContentToMap(field)).toLowerCase()).append(",\n");
+            if(field.isPrimary()){
+                if(field.getPrimaryKeys()!=null && !field.getPrimaryKeys().isEmpty()){
+                    for(AnnotationRetrevior.FieldContent content:field.getPrimaryKeys()){
+                        content.setRequired(true);
+                        builder.append("\t").append(sqlGen.getFieldDefineSqlPart(content).toLowerCase()).append(",\n");
+                    }
+                }else {
+                    field.setRequired(true);
+                    builder.append("\t").append(sqlGen.getFieldDefineSqlPart(field).toLowerCase()).append(",\n");
+                }
+            }else if (field.getDataType() != null) {
+                builder.append("\t").append(sqlGen.getFieldDefineSqlPart(field).toLowerCase()).append(",\n");
             }
         }
         if(primarycol!=null){

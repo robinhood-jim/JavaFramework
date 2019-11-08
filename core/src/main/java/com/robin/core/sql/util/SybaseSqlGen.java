@@ -87,46 +87,18 @@ public class SybaseSqlGen extends AbstractSqlGen implements BaseSqlGen{
 		}
 		return selectPart;
 	}
+
 	@Override
-    public String returnTypeDef(String dataType, Map<String, Object> fieldMap) {
-		StringBuilder builder=new StringBuilder();
-		if(dataType.equals(Const.META_TYPE_BIGINT)){
-			builder.append("BIGINT");
-		}else if(dataType.equals(Const.META_TYPE_INTEGER)){
-			builder.append("INT");
-		}else if(dataType.equals(Const.META_TYPE_DOUBLE) || dataType.equals(Const.META_TYPE_NUMERIC)){
-			int precise= Integer.parseInt(fieldMap.get("precise").toString());
-			int scale=Integer.parseInt(fieldMap.get("scale").toString());
-			if(precise==0) {
-                precise=2;
-            }
-			if(scale==0) {
-                scale=8;
-            }
-			builder.append("DECIMAL(").append(scale).append(",").append(precise).append(")");
-		}else if(dataType.equals(Const.META_TYPE_DATE)){
-			builder.append("DATE");
-		}else if(dataType.equals(Const.META_TYPE_TIMESTAMP)){
-			builder.append("DATETIME");
-		}else if(dataType.equals(Const.META_TYPE_STRING)){
-			int length=Integer.parseInt(fieldMap.get("length").toString());
-			if(length==0){
-				length=16;
-			}
-			if(length==1) {
-                builder.append("CHAR(1)");
-            } else {
-                builder.append("VARCHAR(").append(length).append(")");
-            }
-		}else if(dataType.equals(Const.META_TYPE_CLOB)){
-			builder.append("CLOB");
-		}else if(dataType.equals(Const.META_TYPE_BLOB)){
-			builder.append("BLOB");
-		}
-		return builder.toString();
+	public String getClobFormat() {
+		return "CLOB";
 	}
+
 	@Override
 	public String getDbType() {
 		return BaseDataBaseMeta.TYPE_SYBASE;
+	}
+	@Override
+	public boolean supportIncrement() throws DAOException {
+		return true;
 	}
 }

@@ -280,21 +280,18 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
     }
 
     @Override
-    public String getFieldDefineSqlPart(Map<String, Object> fieldMap) {
-        String datatype = fieldMap.get("datatype").toString();
+    public String getFieldDefineSqlPart(AnnotationRetrevior.FieldContent field) {
+        String datatype = field.getDataType();
         StringBuilder builder = new StringBuilder();
-        String name = fieldMap.get("field").toString();
+        String name = field.getFieldName();
         if (name == null || "".equals(name)) {
-            name = fieldMap.get("name").toString();
+            name = field.getField().getName();
         }
-        builder.append(name).append(" ").append(returnTypeDef(datatype, fieldMap));
-        if(fieldMap.containsKey("nullable") && !(Boolean) fieldMap.get("nullable")){
-            builder.append(" NOT NULL");
-        }
+        builder.append(name).append(" ").append(returnTypeDef(datatype, field));
+
         return builder.toString();
     }
 
-    public abstract String returnTypeDef(String dataType, Map<String, Object> fieldMap);
 
     protected String getQueryFromPart(QueryString qs, PageQuery query) {
         StringBuilder builder = new StringBuilder();
@@ -428,6 +425,90 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
         }
         return sql.toString();
     }
+    public String returnTypeDef(String dataType, AnnotationRetrevior.FieldContent field) {
+        StringBuilder builder=new StringBuilder();
+        if(dataType.equals(Const.META_TYPE_BIGINT)){
+            builder.append(getLongFormat());
+        }else if(dataType.equals(Const.META_TYPE_INTEGER)){
+            builder.append(getIntegerFormat());
+        }else if(dataType.equals(Const.META_TYPE_DOUBLE) || dataType.equals(Const.META_TYPE_NUMERIC)){
+            int precise= field.getPrecise();
+            int scale=field.getScale();
+            if(precise==0) {
+                precise=2;
+            }
+            if(scale==0) {
+                scale=8;
+            }
+            builder.append(getDecimalFormat(precise,scale));
+        }else if(dataType.equals(Const.META_TYPE_DATE)){
+            builder.append("DATE");
+        }else if(dataType.equals(Const.META_TYPE_TIMESTAMP)){
+            builder.append(getTimestampFormat());
+        }else if(dataType.equals(Const.META_TYPE_STRING)){
+            int length=field.getLength();
+            if(length==0){
+                length=32;
+            }
+            if(length==1) {
+                builder.append(getCharFormat(1));
+            } else {
+                builder.append(getVarcharFormat(length));
+            }
+        }else if(dataType.equals(Const.META_TYPE_CLOB)){
+            builder.append(getClobFormat());
+        }else if(dataType.equals(Const.META_TYPE_BLOB)){
+            builder.append(getBlobFormat());
+        }
+        if(field.isIncrement() && supportIncrement()){
+            builder.append(" AUTO INCREMENT");
+        }
+        if(field.isRequired()){
+            builder.append(" NOT NULL");
+        }
+
+        return builder.toString();
+    }
+
+    @Override
+    public String getDecimalFormat(int precise, int scale) {
+        return new StringBuilder("DECIMAL(").append(scale).append(",").append(precise).append(")").toString();
+    }
+
+    @Override
+    public String getVarcharFormat(int length) {
+        return new StringBuilder("VARCHAR(").append(length).append(")").toString();
+    }
+
+    @Override
+    public String getTimestampFormat() {
+        return "TIMESTAMP";
+    }
+
+    @Override
+    public String getIntegerFormat() {
+        return "INT";
+    }
+
+    @Override
+    public String getLongFormat() {
+        return "BIGINT";
+    }
+
+    @Override
+    public String getBlobFormat() {
+        return "BLOB";
+    }
+
+    @Override
+    public String getClobFormat() {
+        return "TEXT";
+    }
+
+    @Override
+    public String getCharFormat(int length) {
+        return new StringBuilder("CHAR(").append(length).append(")").toString();
+    }
 
     protected String toSQLForDate(QueryParam param) {
         StringBuffer sql = new StringBuffer();
@@ -512,9 +593,9 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
         String fullName= StringUtils.isEmpty(entityContent.getSchema())?entityContent.getTableName():entityContent.getSchema()+"."+entityContent.getTableName();
         builder.append("ALERT TABLE ").append(fullName);
         if(type.equals(AlertType.ALERT)){
-            builder.append(" ALERT COLUMN ").append(getFieldDefineSqlPart(AnnotationRetrevior.fieldContentToMap(fieldContent)));
+            builder.append(" ALERT COLUMN ").append(getFieldDefineSqlPart(fieldContent));
         }else if(type.equals(AlertType.ADD)){
-            builder.append(" ADD COLUMN ").append(getFieldDefineSqlPart(AnnotationRetrevior.fieldContentToMap(fieldContent)));
+            builder.append(" ADD COLUMN ").append(getFieldDefineSqlPart(fieldContent));
         }else if(type.equals(AlertType.DEL)){
             builder.append(" DROP COLUMN ").append(fieldContent.getFieldName());
         }

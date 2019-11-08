@@ -15,25 +15,19 @@
  */
 package com.robin.core.base.util;
 
+import com.robin.core.base.annotation.MappingEntity;
+import com.robin.core.base.model.BaseObject;
+import com.robin.core.base.reflect.ClassGraphReflector;
+import com.robin.core.sql.util.BaseSqlGen;
+import io.github.classgraph.ClassInfo;
+import io.github.classgraph.ClassInfoList;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.context.support.FileSystemXmlApplicationContext;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
-import java.net.URL;
-import java.util.*;
-
-
-import org.scannotation.AnnotationDB;
-import org.scannotation.ClasspathUrlFinder;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
-
-import com.robin.core.base.annotation.MappingEntity;
-import com.robin.core.base.dao.util.AnnotationRetrevior;
-import com.robin.core.base.model.BaseObject;
-import com.robin.core.sql.util.BaseSqlGen;
-import org.springframework.core.annotation.AnnotationUtils;
-import org.springframework.core.type.filter.AnnotationTypeFilter;
 
 public class ModelScriptGenerator {
     public static void main(String[] args) {
@@ -43,23 +37,29 @@ public class ModelScriptGenerator {
         }
         String configFile = args[0];
         String outputFile = args[1];
-        ApplicationContext context = new ClassPathXmlApplicationContext(configFile);
+        genrateScript(configFile,outputFile);
+    }
+    public static void genrateScript(String configFile,String outputFile){
+        ApplicationContext context = null;
+
         BufferedWriter writer = null;
         try {
-            URL[] urls = ClasspathUrlFinder.findClassPaths();
-            AnnotationDB db = new AnnotationDB();
-            db.scanArchives(urls[0]);
+            if(configFile.startsWith("classpath:")){
+                context=new ClassPathXmlApplicationContext(configFile);
+            }else{
+                context=new FileSystemXmlApplicationContext(configFile);
+            }
+            ClassGraphReflector reflector=context.getBean(ClassGraphReflector.class);
+            ClassInfoList classes=reflector.getAnnotationClasses(MappingEntity.class);
+
             BaseSqlGen sqlgen = context.getBean(BaseSqlGen.class);
-            final Set<String> clazzNames = db.getAnnotationIndex().get(MappingEntity.class.getName());
-
-
-
-
-            Iterator<String> iter = clazzNames.iterator();
+            //final Set<String> clazzNames = db.getAnnotationIndex().get(MappingEntity.class.getName());
             writer = new BufferedWriter(new FileWriter(new File(outputFile)));
             StringBuilder builder = new StringBuilder();
-            while (iter.hasNext()) {
-                builder.append(ModelSqlGenerator.generateCreateSql(iter.next(),sqlgen));
+            for(ClassInfo classInfo:classes){
+                if(classInfo.getSuperclass().loadClass().equals(BaseObject.class)) {
+                    builder.append(ModelSqlGenerator.generateCreateSql((Class<? extends BaseObject>) classInfo.loadClass(), sqlgen));
+                }
             }
             writer.write(builder.toString());
             writer.flush();
@@ -73,7 +73,7 @@ public class ModelScriptGenerator {
                     ex.printStackTrace();
                 }
             }
-            ((ClassPathXmlApplicationContext) context).close();
+            //((ApplicationContext) context).close();
         }
     }
 

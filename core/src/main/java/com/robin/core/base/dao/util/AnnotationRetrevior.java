@@ -419,6 +419,7 @@ public class AnnotationRetrevior {
         retMap.put("scale",String.valueOf(fieldContent.getScale()));
         retMap.put("length",String.valueOf(fieldContent.getLength()));
         retMap.put("nullable",!fieldContent.isRequired());
+        retMap.put("increment",fieldContent.isIncrement());
         return retMap;
     }
 

@@ -122,7 +122,10 @@ core与common工程由ProGuard进行混淆
                   
                 
     IV.Controller层
-            开发中
+            web工程
+            BaseController  Contorller 基类
+            BaseCrudController         基于单表增删改查
+            BaseCrudDhtmlxController   结合Dhtmlx 5.1，辅助类
 
     V.统一资源访问
 
@@ -130,3 +133,6 @@ core与common工程由ProGuard进行混淆
         实例代码:详见common工程的testcase com.robin.comm.test.TestJsonGen TestJsonRead
                 hadooptool：com.robin.test.TestResourceGen TestParquetWriter
 
+    VI.web工程
+        基于传统配置式 spring maven 项目 example/config-example
+        基于spring boot和 cloud的微服务架构  webui
