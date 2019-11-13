@@ -168,7 +168,7 @@ public class OracleSqlGen extends AbstractSqlGen implements BaseSqlGen {
 
 	@Override
 	public String getVarcharFormat(int length) {
-		return new StringBuilder("VARCHAR(").append(length).append(")").toString();
+		return new StringBuilder("VARCHAR2(").append(length).append(")").toString();
 	}
 
 	@Override

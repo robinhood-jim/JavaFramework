@@ -15,7 +15,6 @@
  */
 package com.robin.core.base.dao;
 
-import com.robin.core.version.VersionInfo;
 import com.robin.core.base.dao.util.*;
 import com.robin.core.base.exception.DAOException;
 import com.robin.core.base.exception.QueryConfgNotFoundException;
@@ -31,6 +30,7 @@ import com.robin.core.query.util.QueryString;
 import com.robin.core.sql.util.BaseSqlGen;
 import com.robin.core.sql.util.FilterCondition;
 import com.robin.core.sql.util.OracleSqlGen;
+import com.robin.core.version.VersionInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -544,6 +544,9 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
                 //assign increment column
                 if (insertSegment.getIncrementColumn() != null) {
                     AnnotationRetrevior.FieldContent pkColumn = AnnotationRetrevior.getPrimaryField(fields);
+                    if(pkColumn==null){
+                        throw new DAOException("model "+obj.getClass().getSimpleName()+" does not have primary key");
+                    }
                     if (pkColumn.getPrimaryKeys() == null) {
                         Object targetVal= ReflectUtils.getIncrementValueBySetMethod(insertSegment.getIncrementColumn().getSetMethod(),retval);
                         insertSegment.getIncrementColumn().getSetMethod().invoke(obj, targetVal);
