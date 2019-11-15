@@ -39,6 +39,7 @@
         <module>metadata</module>
         <module>webui</module>
         <module>license-core</module>
+        <module>license-server</module>
         <module>spring-starter</module>
     </modules>
     <!-- properties -->
@@ -268,6 +269,14 @@
                     <exclusion>
                         <groupId>javax.enterprise</groupId>
                         <artifactId>cdi-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.javassist</groupId>
+                        <artifactId>javassist</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.hibernate.javax.persistence</groupId>
+                        <artifactId>hibernate-jpa-2.1-api</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -811,6 +820,12 @@
                 <groupId>org.tmatesoft.svnkit</groupId>
                 <artifactId>svnkit</artifactId>
                 <version>${svn.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.jcraft</groupId>
+                        <artifactId>jsch.agentproxy.connector-factory</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.anarres.lzo</groupId>

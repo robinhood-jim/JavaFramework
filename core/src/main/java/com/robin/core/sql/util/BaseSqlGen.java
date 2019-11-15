@@ -56,14 +56,24 @@ public interface BaseSqlGen {
     String[] getResultColName(String selectSql);
 
     String getSequnceScript(String sequnceName) throws DAOException;
+    boolean supportIncrement() throws DAOException;
 
     String getSelectPart(String columnName, String aliasName);
 
-    String getFieldDefineSqlPart(Map<String, Object> fieldMap);
+    String getFieldDefineSqlPart(AnnotationRetrevior.FieldContent field);
+    String returnTypeDef(String dataType, AnnotationRetrevior.FieldContent field);
 
     String getSchemaName(String schema);
     String getAlertColumnSqlPart(AnnotationRetrevior.EntityContent entityContent, AnnotationRetrevior.FieldContent fieldContent,AlertType type);
     String getDbType();
+    String getDecimalFormat(int percise,int scale);
+    String getVarcharFormat(int length);
+    String getTimestampFormat();
+    String getCharFormat(int length);
+    String getIntegerFormat();
+    String getLongFormat();
+    String getBlobFormat();
+    String getClobFormat();
     enum AlertType{
         ADD,
         ALERT,

@@ -1,0 +1,1 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=com.robin.spring.boot.autoconfig.RobinCoreConfig

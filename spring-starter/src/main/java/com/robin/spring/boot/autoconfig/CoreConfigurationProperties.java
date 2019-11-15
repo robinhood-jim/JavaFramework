@@ -1,16 +1,16 @@
-package com.robin.spring.boot.autoconfigure;
+package com.robin.spring.boot.autoconfig;
 
 import com.robin.core.base.datameta.BaseDataBaseMeta;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 
 @ConfigurationProperties(prefix = CoreConfigurationProperties.CORE_CONFIG)
-
 public class CoreConfigurationProperties {
     public static final String CORE_CONFIG="core.config";
     private String queryConfigPath="classpath:queryConfig";
     private String queryMapperPath="classpath:queryMapper";
     private String dbDialect= BaseDataBaseMeta.TYPE_MYSQL;
+
 
     public String getQueryConfigPath() {
         return queryConfigPath;
@@ -35,4 +35,6 @@ public class CoreConfigurationProperties {
     public void setDbDialect(String dbDialect) {
         this.dbDialect = dbDialect;
     }
+
+
 }
