@@ -120,7 +120,7 @@ public class CollectionMapConvert<T> {
         return retMap;
     }
 
-    private final void addMapToList(Map<String, List<T>> retMap, String key, T t) {
+    private void addMapToList(Map<String, List<T>> retMap, String key, T t) {
         if (!retMap.containsKey(key)) {
             List<T> list = new ArrayList<T>();
             list.add(t);

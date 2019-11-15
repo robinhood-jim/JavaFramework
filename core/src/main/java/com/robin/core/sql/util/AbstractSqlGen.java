@@ -30,7 +30,7 @@ import java.util.StringTokenizer;
 
 @Slf4j
 public abstract class AbstractSqlGen implements BaseSqlGen {
-    public static final String illegal_SchemaChars = "!@#$%^&*()+.";
+    public static final String ILLEGAL_SCHEMA_CHARS = "!@#$%^&*()+.";
     protected static final String SELECT = "select ";
 
     /**
@@ -49,7 +49,6 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
     @Override
     public String getQueryStringPart(List<QueryParam> paramList, String linkOper) {
         StringBuffer buffer = new StringBuffer();
-        //buffer.append(" 1=1 and ");
 
         for (QueryParam param : paramList) {
             String prevoper = param.getPrevoper();
@@ -77,7 +76,6 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
     @Override
     public String getQueryStringPart(List<QueryParam> paramList) {
         StringBuffer buffer = new StringBuffer();
-        //buffer.append(" 1=1 and ");
         String lastoper = "";
         for (QueryParam param : paramList) {
             String prevoper = param.getPrevoper();
@@ -104,7 +102,6 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
     @Override
     public String getQueryStringByDiffOper(List<QueryParam> paramList) {
         StringBuffer buffer = new StringBuffer();
-        //buffer.append(" 1=1 and ");
         for (int i = 0; i < paramList.size(); i++) {
             QueryParam param = paramList.get(i);
             String linkOper = param.getCombineOper() == null ? "" : param.getCombineOper();
@@ -232,9 +229,6 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
         if (nOrderPos == -1) {
             nOrderPos = sql.indexOf("ORDER BY");
         }
-        /*int nGroupByPos = sql.lastIndexOf("group by");
-        if (nGroupByPos == -1)
-            nGroupByPos = sql.lastIndexOf("GROUP BY");*/
         if (nOrderPos == -1) {
             nOrderPos = sql.length();
         }
@@ -425,6 +419,7 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
         }
         return sql.toString();
     }
+    @Override
     public String returnTypeDef(String dataType, AnnotationRetrevior.FieldContent field) {
         StringBuilder builder=new StringBuilder();
         if(dataType.equals(Const.META_TYPE_BIGINT)){
@@ -511,7 +506,7 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
     }
 
     protected String toSQLForDate(QueryParam param) {
-        StringBuffer sql = new StringBuffer();
+        StringBuilder builder = new StringBuilder();
         String nQueryModel = param.getQueryMode();
         if (param.getQueryValue() == null || "".equals(param.getQueryValue().trim())) {
             return "";
@@ -521,26 +516,30 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
             key = param.getAliasName() + "." + key;
         }
         String value = param.getQueryValue();
+        appendSqlPartWithDate(param,builder,key,value);
+        return builder.toString();
+    }
+    protected void appendSqlPartWithDate(QueryParam param,StringBuilder builder,String key,String value){
+        String nQueryModel = param.getQueryMode();
         if (nQueryModel.equals(QueryParam.QUERYMODE_GT)) {
-            sql.append(key + ">" + "'" + value + "'");
+            builder.append(key + ">" + "'" + value + "'");
         } else if (nQueryModel.equals(QueryParam.QUERYMODE_GTANDEQUAL)) {
-            sql.append(key + ">=" + "'" + value + "'");
+            builder.append(key + ">=" + "'" + value + "'");
         } else if (nQueryModel.equals(QueryParam.QUERYMODE_LTANDEQUAL)) {
-            sql.append(key + "<=" + "'" + value + "'");
+            builder.append(key + "<=" + "'" + value + "'");
         } else if (nQueryModel.equals(QueryParam.QUERYMODE_BETWEEN) && !"".equals(value) && !";".equals(value)) {
             String begindate = value.substring(0, value.indexOf(";"));
             String enddate = value.substring(value.indexOf(";") + 1);
             if (!"".equals(begindate)) {
                 if (!"".equals(enddate)) {
-                    sql.append("(" + key + " between '" + begindate + "' and '" + enddate + "')");
+                    builder.append("(" + key + " between '" + begindate + "' and '" + enddate + "')");
                 } else {
-                    sql.append("(" + key + ">='" + begindate + "')");
+                    builder.append("(" + key + ">='" + begindate + "')");
                 }
             } else if (!"".equals(enddate)) {
-                sql.append("(" + key + "<='" + enddate + "')");
+                builder.append("(" + key + "<='" + enddate + "')");
             }
         }
-        return sql.toString();
     }
 
     private void fillSqlPart(String linkOper, StringBuffer buffer, QueryParam param, String prevoper, String nextoper) {
@@ -604,8 +603,8 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
 
     protected boolean isSchemaIllegal(String schema) {
         boolean is_illeagl = true;
-        for (int i = 0; i < illegal_SchemaChars.length(); i++) {
-            if (schema.contains(Character.toString(illegal_SchemaChars.charAt(i)))) {
+        for (int i = 0; i < ILLEGAL_SCHEMA_CHARS.length(); i++) {
+            if (schema.contains(Character.toString(ILLEGAL_SCHEMA_CHARS.charAt(i)))) {
                 is_illeagl = false;
                 break;
             }

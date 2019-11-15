@@ -27,19 +27,24 @@ public class CollectionBaseConvert {
 	
 	public static Map<String,List<Map<String,String>>> convertToMapByParentKey(List<Map<String, String>> listobj,String key) {
 		 Map<String,List<Map<String,String>>> retMap =new HashMap<String, List<Map<String,String>>>();
-	      for(int i = 0; i < listobj.size(); i++) {
-	    	  String parentKey=listobj.get(i).get(key);
-	         if(retMap.get(parentKey)==null){
-	        	 List<Map<String,String>> sublist=new ArrayList<Map<String,String>>();
-	        	 sublist.add(listobj.get(i));
-	        	 retMap.put(parentKey, sublist);
-	         }else
-	         {
-	        	 retMap.get(parentKey).add(listobj.get(i));
-	         }
-	      }
-	      return retMap;
+		doconvertByParentKey(listobj, key, retMap);
+		return retMap;
 	}
+
+	private static void doconvertByParentKey(List<Map<String, String>> listobj, String key, Map<String, List<Map<String, String>>> retMap) {
+		for(int i = 0; i < listobj.size(); i++) {
+			String parentKey=listobj.get(i).get(key);
+		   if(retMap.get(parentKey)==null){
+			   List<Map<String,String>> sublist=new ArrayList<Map<String,String>>();
+			   sublist.add(listobj.get(i));
+			   retMap.put(parentKey, sublist);
+		   }else
+		   {
+			   retMap.get(parentKey).add(listobj.get(i));
+		   }
+		}
+	}
+
 	public static Map<String,List<Map<String,Object>>> convertToMapByParentKeyWithObjVal(List<Map<String, Object>> listobj,String key) {
 		 Map<String,List<Map<String,Object>>> retMap =new HashMap<String, List<Map<String,Object>>>();
 	      for(int i = 0; i < listobj.size(); i++) {
@@ -57,18 +62,8 @@ public class CollectionBaseConvert {
 	}
 	public static Map<String,List<Map<String,String>>> convertToMapObjByParentKey(List<Map<String, String>> listobj,String key) {
 		 Map<String,List<Map<String,String>>> retMap =new HashMap<String, List<Map<String,String>>>();
-	      for(int i = 0; i < listobj.size(); i++) {
-	    	  String parentKey=listobj.get(i).get(key);
-	         if(retMap.get(parentKey)==null){
-	        	 List<Map<String,String>> sublist=new ArrayList<Map<String,String>>();
-	        	 sublist.add(listobj.get(i));
-	        	 retMap.put(parentKey, sublist);
-	         }else
-	         {
-	        	 retMap.get(parentKey).add(listobj.get(i));
-	         }
-	      }
-	      return retMap;
+		doconvertByParentKey(listobj, key, retMap);
+		return retMap;
 	}
 	
 	public static List<String> extractKeyValueByList(List<Map<String, String>> list,String key){
@@ -130,7 +125,7 @@ public class CollectionBaseConvert {
 		}
 		return map;
 	}
-	private final void addMapToList(Map<String, List<Serializable>> retMap, String key, Serializable t) {
+	private void addMapToList(Map<String, List<Serializable>> retMap, String key, Serializable t) {
 		if (!retMap.containsKey(key)) {
 			List list = new ArrayList<>();
 			list.add(t);

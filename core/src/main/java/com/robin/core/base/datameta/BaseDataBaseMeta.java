@@ -40,11 +40,11 @@ public abstract class BaseDataBaseMeta implements DataBaseInterface, Serializabl
 	public static final String TYPE_PHONEIX="Phoenix4";
 	public static final String TYPE_HIVE="Hive";
 	public static final String TYPE_HIVE2="Hive2";
-	public static final String TYPE_Impala="Impala";
+	public static final String TYPE_IMPALA ="Impala";
 	protected DataBaseParam param;
 	protected String dbType;
 	//Enum type of all support DB
-	public static final String[] dbTypeEnmu={"Oracle","MySql","DB2","SqlServer","Sybase","PostgreSql","Phoenix4","Hive","Hive2","OracleRac"};
+	public static final String[] DB_TYPE_ENMU ={"Oracle","MySql","DB2","SqlServer","Sybase","PostgreSql","Phoenix4","Hive","Hive2","OracleRac"};
 	//jdbc Url Template like jdbc:mysql://[hostName]:[port]/[databaseName]?useUnicode=true&characterEncoding=[encode]
 	public static final Pattern PATTERN_TEMPLATE_PARAM = Pattern.compile("\\[.*?\\]");
 	@Override

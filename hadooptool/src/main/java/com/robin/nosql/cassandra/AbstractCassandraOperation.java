@@ -15,10 +15,10 @@ public abstract class AbstractCassandraOperation {
     protected int rowPos;
     protected Map<String, Object> map = new LinkedHashMap<>();
 
-    public void doOperationInQuery(Session querysession, String sql, Object[] params) {
-        PreparedStatement statement = querysession.prepare(sql);
+    public void doOperationInQuery(Session querySession, String sql, Object[] params) {
+        PreparedStatement statement = querySession.prepare(sql);
         Statement bindstmt = statement.bind(params);
-        ResultSet rs = querysession.execute(bindstmt);
+        ResultSet rs = querySession.execute(bindstmt);
         Iterator<Row> iter = rs.iterator();
         while (iter.hasNext()) {
             doInQuery(iter.next());

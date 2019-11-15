@@ -21,9 +21,9 @@ import com.robin.core.sql.util.BaseSqlGen;
 import com.robin.core.sql.util.OracleSqlGen;
 
 public class OracleDataBaseMeta extends BaseDataBaseMeta implements DataBaseInterface{
-	public static String ORA_TYPE_NORMAL="0";
-	public static String ORA_TYPE_DATABASE="1";
-	public static String ORA_TYPE_CLUSTER="2";
+	public static final String ORA_TYPE_NORMAL="0";
+	public static final String ORA_TYPE_DATABASE="1";
+	public static final String ORA_TYPE_CLUSTER="2";
 	public OracleDataBaseMeta(DataBaseParam param) {
 		super(param);
 		setDbType(BaseDataBaseMeta.TYPE_ORACLE);

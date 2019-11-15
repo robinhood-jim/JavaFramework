@@ -266,11 +266,11 @@ public class HDFSUtil {
 			logger.error("",e);
 		}
 	}
-	public BufferedReader readStream(String hdfsUrl,DataInputStream dis,String encode) throws HdfsException{
+	public BufferedReader readStream(String hdfsUrl,String encode) throws HdfsException{
 		if(!useSecurity) {
-            return HDFSCallUtil.readStream(config, hdfsUrl, dis, encode);
+            return HDFSCallUtil.readStream(config, hdfsUrl, encode);
         } else {
-            return (BufferedReader) HDFSSecurityUtil.executeHdfsMethodWithSecurity(config, "readStream", new Object[]{config,hdfsUrl, dis, encode});
+            return (BufferedReader) HDFSSecurityUtil.executeHdfsMethodWithSecurity(config, "readStream", new Object[]{config,hdfsUrl, encode});
         }
 	}
 	public FileSystem getFileSystem() throws HdfsException{

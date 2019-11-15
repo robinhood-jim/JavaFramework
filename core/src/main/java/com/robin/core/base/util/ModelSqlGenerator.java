@@ -67,7 +67,7 @@ public class ModelSqlGenerator {
         }
     }
 
-    private static final boolean tableExists(Connection connection, String schema, String tableName) throws RuntimeException {
+    private static boolean tableExists(Connection connection, String schema, String tableName) throws RuntimeException {
         try {
             String fullName = StringUtils.isEmpty(schema) ? tableName : schema + "." + tableName;
             List list = SimpleJdbcDao.queryString(connection, "select COUNT(1) from " + fullName + " where 1!=1");
@@ -79,7 +79,7 @@ public class ModelSqlGenerator {
         }
     }
 
-    private static final List<String> adjustDiffSqls(AnnotationRetrevior.EntityContent entityContent, List<AnnotationRetrevior.FieldContent> fields, List<DataBaseColumnMeta> columnMetas, BaseSqlGen sqlGen) {
+    private static List<String> adjustDiffSqls(AnnotationRetrevior.EntityContent entityContent, List<AnnotationRetrevior.FieldContent> fields, List<DataBaseColumnMeta> columnMetas, BaseSqlGen sqlGen) {
         List<String> alertSqls = new ArrayList<>();
         try {
 
@@ -119,7 +119,7 @@ public class ModelSqlGenerator {
     }
 
 
-    private static final boolean tableExists(JdbcDao jdbcDao, String schema, String tableName) throws RuntimeException {
+    private static boolean tableExists(JdbcDao jdbcDao, String schema, String tableName) throws RuntimeException {
         try {
             String fullName = StringUtils.isEmpty(schema) ? tableName : schema + "." + tableName;
             List list = jdbcDao.queryBySql("select COUNT(1) from " + fullName + " where 1!=1");

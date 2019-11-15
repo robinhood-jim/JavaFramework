@@ -98,7 +98,7 @@ public class SimpleClassLoader extends ClassLoader {
         }
 
         /* Define it (parse the class file) */
-        result = defineClass(classData, 0, classData.length);
+        result = defineClass(null,classData, 0, classData.length);
         if (result == null) {
             throw new ClassFormatError();
         }

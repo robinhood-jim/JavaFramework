@@ -138,7 +138,7 @@ public class ReflectUtils {
         return null;
     }
 
-    private static final Method getMethodByName(Class clazz, String methodName) {
+    private static Method getMethodByName(Class clazz, String methodName) {
         try {
             return clazz.getDeclaredMethod(methodName);
         } catch (NoSuchMethodException ex) {
@@ -147,7 +147,7 @@ public class ReflectUtils {
         return null;
     }
 
-    private static final Method getMethodByName(Class clazz, String methodName, Type type) {
+    private static Method getMethodByName(Class clazz, String methodName, Type type) {
         try {
             return clazz.getDeclaredMethod(methodName, (Class) type);
         } catch (NoSuchMethodException ex) {

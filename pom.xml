@@ -20,6 +20,17 @@
             <url>http://apache.org/licenses/LICENSE-2.0.txt</url>
         </license>
     </licenses>
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <url>https://maven.pkg.github.com/robinhood-jim/JavaFrame</url>
+        </repository>
+        <snapshotRepository>
+            <id>githubsnap</id>
+            <url>https://maven.pkg.github.com/robinhood-jim/JavaFrame</url>
+        </snapshotRepository>
+    </distributionManagement>
+
 
     <developers>
         <developer>

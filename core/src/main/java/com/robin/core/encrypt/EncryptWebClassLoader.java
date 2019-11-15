@@ -35,7 +35,7 @@ public class EncryptWebClassLoader extends URLClassLoader {
 	private Map<String, String> classMappingMap = new HashMap<String, String>();
 	private String encryptPrefix = "";
 	private String scanPackage="";
-	
+
 	final byte[] m_datapadding = { 0x00 };
 	final Map<String, String> keymap = new HashMap<String, String>();
 	final Map<String,Integer> loadKeyMap=new HashMap<String, Integer>();
@@ -48,19 +48,19 @@ public class EncryptWebClassLoader extends URLClassLoader {
 	protected static final int[] XorKey = { 0xB2, 0x09, 0xAA, 0x55, 0x93, 0x6D, 0x84,0x47 };
 	//private Map<String,byte[]> decryptMap=new HashMap<String, byte[]>();
 	public static void init(){
-		
+
 	}
 	public void setParentClassLoader(ClassLoader cloader){
 		try{
-			Field field = ClassLoader.class.getDeclaredField("parent");  
-	        field.setAccessible(true);  
-	        field.set(cloader, this);  
-	    	
+			Field field = ClassLoader.class.getDeclaredField("parent");
+	        field.setAccessible(true);
+	        field.set(cloader, this);
+
 		}catch(Exception ex){
 			ex.printStackTrace();
 		}
 	}
-	
+
 	protected EncryptWebClassLoader(URLClassLoader loader) {
 		super(loader.getURLs(), EncryptWebClassLoader.class.getClassLoader().getParent());
 
@@ -99,9 +99,9 @@ public class EncryptWebClassLoader extends URLClassLoader {
 					}
 				}
 			}
-			
+
 			// load bin file
-			instream = new DataInputStream(EncryptWebClassLoader.class.getClassLoader().getSystemResourceAsStream("META-INF/config.bin"));
+			instream = new DataInputStream(ClassLoader.getSystemResourceAsStream("META-INF/config.bin"));
 			if (instream != null) {
 				while (instream.available() > 0) {
 					String keystr = decrypt(instream.readUTF());
@@ -115,7 +115,7 @@ public class EncryptWebClassLoader extends URLClassLoader {
 					loadDecrptClass(keystr);
 				}
 			}
-			
+
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}finally{
@@ -164,7 +164,7 @@ public class EncryptWebClassLoader extends URLClassLoader {
 		String classname = name;
 		try {
 			Class clazz = null;
-			
+
  			if (loadedClassPool.containsKey(name)) {
 				clazz = loadedClassPool.get(name);
 				//logger.info("load class in cache="+name);
@@ -198,13 +198,11 @@ public class EncryptWebClassLoader extends URLClassLoader {
 
 					}
 					//logger.info("load class in system="+name);
-					if(clazz!=null){
-						if(!loadKeyMap.containsKey(name)){
-							method.invoke(this, clazz);
-							loadKeyMap.put(name, 1);
-							loadedClassPool.put(name, clazz);
-							pclasses.add(clazz);
-						}
+					if(clazz!=null && !loadKeyMap.containsKey(name)){
+                        method.invoke(this, clazz);
+                        loadKeyMap.put(name, 1);
+                        loadedClassPool.put(name, clazz);
+                        pclasses.add(clazz);
 					}
 				} else {
 					try {
@@ -232,24 +230,24 @@ public class EncryptWebClassLoader extends URLClassLoader {
 							} catch (Exception ex) {
 
 							}
-							
+
 						}
 					} catch (Exception ex) {
 						logger.error("encounter error when load class"+ classname);
 					}
 				}
-				
+
 				if (clazz == null){
 					logger.error("load class with name" + name + " null ");
 				}
 			}
 			return clazz;
 		} catch (Exception ex) {
-			
+
 		}
 		return null;
 	}
-	
+
 	@Override
 	protected Class<?> findClass(String name) throws ClassNotFoundException {
 		return loadClass(name,false);
@@ -300,7 +298,7 @@ public class EncryptWebClassLoader extends URLClassLoader {
 		}
 	}
 
-	final static private byte[] getResourceData(JarInputStream jar)
+	static private byte[] getResourceData(JarInputStream jar)
 			throws IOException {
 		ByteArrayOutputStream data = new ByteArrayOutputStream();
 		byte[] buffer = new byte[8192];
@@ -409,7 +407,7 @@ public class EncryptWebClassLoader extends URLClassLoader {
 		return superloader.getResource(name);
 	}
 
-	
+
 
 	public byte[] getKey() {
 		return key;

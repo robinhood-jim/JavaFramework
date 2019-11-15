@@ -497,6 +497,10 @@ public class CommJdbcUtil {
             }
 
         };
+        doBatch(jdbcTemplate, sql, setter);
+    }
+
+    private static void doBatch(JdbcTemplate jdbcTemplate, String sql, BatchPreparedStatementSetter setter) {
         try {
             jdbcTemplate.batchUpdate(sql, setter);
         } catch (Exception e) {
@@ -610,16 +614,7 @@ public class CommJdbcUtil {
                 }
             }
         };
-        try {
-            jdbcTemplate.batchUpdate(sql, setter);
-        } catch (Exception e) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Encounter Error", e);
-            } else {
-                logger.error("Encounter Error", e);
-            }
-            throw new DAOException(e);
-        }
+        doBatch(jdbcTemplate, sql, setter);
     }
 
     public static int executeByPreparedParamter(JdbcTemplate jdbcTemplate, BaseSqlGen sqlGen, QueryString qs, PageQuery pageQuery) throws DAOException {

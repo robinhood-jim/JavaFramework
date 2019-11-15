@@ -34,20 +34,10 @@ public class ApacheVfsResourceAccessUtil extends AbstractResourceAccessUtil {
     public BufferedReader getInResourceByReader(DataCollectionMeta meta) throws Exception {
         VfsParam param = new VfsParam();
         ConvertUtil.convertToTarget(param, meta.getResourceCfgMap());
-        BufferedReader reader;
 
         FileObject fo = manager.resolveFile(getUriByParam(param, meta.getPath()).toString(), getOptions(param));
-        if (fo.exists()) {
-            if (FileType.FOLDER.equals(fo.getType())) {
-                logger.error("File {} is a directory！", meta.getPath());
-                throw new FileNotFoundException("File " + meta.getPath() + " is a directory!");
-            } else {
-                reader = getReaderByPath(meta.getPath(), fo.getContent().getInputStream(), meta.getEncode());
-            }
-        } else {
-            throw new FileNotFoundException("File " + meta.getPath() + " not found!");
-        }
-        return reader;
+
+        return new BufferedReader(new InputStreamReader(getInResource(fo,meta),meta.getEncode()));
     }
 
     @Override
@@ -70,8 +60,13 @@ public class ApacheVfsResourceAccessUtil extends AbstractResourceAccessUtil {
     public InputStream getInResourceByStream(DataCollectionMeta meta) throws Exception {
         VfsParam param = new VfsParam();
         ConvertUtil.convertToTarget(param, meta.getResourceCfgMap());
-        InputStream reader;
+
         FileObject fo = manager.resolveFile(getUriByParam(param, meta.getPath()).toString(), getOptions(param));
+        InputStream reader=getInResource(fo,meta);
+        return reader;
+    }
+    private InputStream getInResource(FileObject fo,DataCollectionMeta meta) throws Exception{
+        InputStream reader=null;
         if (fo.exists()) {
             if (FileType.FOLDER.equals(fo.getType())) {
                 logger.error("File {} is a directory！", meta.getPath());
@@ -113,7 +108,7 @@ public class ApacheVfsResourceAccessUtil extends AbstractResourceAccessUtil {
                 logger.error("File {} is a directory！", meta.getPath());
                 throw new FileNotFoundException("File " + meta.getPath() + " is a directory!");
             } else {
-                logger.warn("File " + meta.getPath() + " aready exists!,Overwirte");
+                logger.warn("File " + meta.getPath() + " already exists!,Overwrite");
             }
         } else {
             if (!fo.getParent().exists()) {

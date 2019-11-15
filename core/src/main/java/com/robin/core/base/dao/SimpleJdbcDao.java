@@ -501,17 +501,7 @@ public class SimpleJdbcDao {
 	 */
 	public boolean execute(final String hql) throws DAOException{
 		Connection conn=getConnection();
-		Statement stmt=null;
-		try{
-			stmt = conn.createStatement();
-			stmt.execute(hql);
-			return true;
-		}catch(Exception ex){
-			throw new DAOException(ex);
-		}finally{
-			DbUtils.closeQuietly(stmt);
-			DbUtils.closeQuietly(conn);
-		}
+		return execute(conn,hql);
 	}
 	public static boolean execute(final Connection conn,final String hql) throws DAOException{
 		Statement stmt=null;
@@ -583,41 +573,10 @@ public class SimpleJdbcDao {
 		}
 		return i;
 	}
-	public int simpleBatch(final String sql,final String[] columnTypes,final List<Object[]> valueList) throws DAOException{
+	public int simpleBatch(final String sql,final List<Object[]> valueList) throws DAOException{
 		Connection conn=getConnection();
-		PreparedStatement stmt=null;
-		int retnum=-1;
-		int[] retarr=null;
-		QueryRunner qRunner=new QueryRunner();
-		try{
-			conn.setAutoCommit(false);   
-			stmt=conn.prepareStatement(sql);
-			for (int i = 0; i < valueList.size(); i++) {
-				Object[] obj=valueList.get(i);
-				qRunner.fillStatement(stmt, obj);
-				stmt.addBatch();
-			}
-			retarr = stmt.executeBatch();
-			conn.commit();
-		}catch(Exception ex){
-			//logger.error("",ex);
-			try{
-			conn.rollback();
-			}catch(Exception e){
-				
-			}
-			throw new DAOException(ex);
-		}
-		finally{
-			DbUtils.closeQuietly(stmt);
-			DbUtils.closeQuietly(conn);
-		}
-		for (int i = 0; i < retarr.length; i++) {
-			if(retarr[i]>0) {
-                retnum++;
-            }
-		}
-		return retnum;
+
+		return simpleBatch(conn,sql,valueList);
 	}
 	public static int simpleBatch(Connection conn,final String sql,final List<Object[]> valueList) throws DAOException{
 		PreparedStatement stmt=null;
