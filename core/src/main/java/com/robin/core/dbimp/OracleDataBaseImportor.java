@@ -27,7 +27,7 @@ public class OracleDataBaseImportor extends BaseDataBaseImportor{
 			//generate Oracle control File
 			FreeMarkerUtil util=new FreeMarkerUtil("");
 			ctlFile=tmpPath+"run"+System.currentTimeMillis()+".ctl";
-			PrintWriter writer=new PrintWriter(new File(ctlFile));
+			PrintWriter writer=new PrintWriter(new File(ctlFile),"UTF-8");
 			Map<String, String> map=new HashMap<String, String>();
 			map.put("filePath", inparam.getFilePath());
 			map.put("tableName", inparam.getTableName());

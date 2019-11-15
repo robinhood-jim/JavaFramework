@@ -7,19 +7,19 @@ import java.util.Iterator;
 public class ConditionList extends ArrayList {
    private static final long serialVersionUID = 1L;
 
-	private final String	GREATNESS	= " > ";
+	public static final String	GREATNESS	= " > ";
 
-	private final String	SMALLNESS	= " < ";
+	public static final String	SMALLNESS	= " < ";
 
-	private final String	AND			= " AND ";
+	public static final String	AND			= " AND ";
 
-	private final String	EQUALS		= " = ";
+	public static final String	EQUALS		= " = ";
 
-	private final String	LIKE			= " LIKE ";
+	public static final String	LIKE			= " LIKE ";
 
-	private final String	IS_NOT_NULL	= " IS NOT NULL ";
+	public static final String	IS_NOT_NULL	= " IS NOT NULL ";
 
-	private final String	IS_NULL		= " IS NULL ";
+	public static final String	IS_NULL		= " IS NULL ";
 
 	public ConditionList() {
 		super();

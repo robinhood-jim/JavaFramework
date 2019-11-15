@@ -256,7 +256,8 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 		}
 		return retlist;
 	}
-	@Transactional(readOnly=true)
+	@Override
+    @Transactional(readOnly=true)
 	public List<V> queryByCondition(List<FilterCondition> conditions,String orderByStr)
 			throws ServiceException {
 		List<V> retlist ;
@@ -267,7 +268,8 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 		}
 		return retlist;
 	}
-	@Transactional(readOnly = true)
+	@Override
+    @Transactional(readOnly = true)
 	public List<V> queryByCondition(FilterConditions filterConditions,String orderByStr){
 		List<V> retlist ;
 		try{

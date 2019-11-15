@@ -59,9 +59,7 @@ public class QueryParam {
 		this.queryValue=queryValue;
 		
 		if(otherparams.length>0){
-			if(otherparams.length>=1) {
-                this.aliasName=otherparams[0];
-            }
+			this.aliasName=otherparams[0];
 			if(otherparams.length>=2) {
                 this.combineOper=otherparams[1];
             }

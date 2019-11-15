@@ -224,7 +224,7 @@ public final class GenericComparator implements Comparator, Serializable {
 	 * @param name a {@link java.lang.String}
 	 * @return methodName a {@link java.lang.String}
 	 */
-	private final static String prepareTargetMethod(String name) {
+	private static String prepareTargetMethod(String name) {
 		StringBuffer fieldName =  new StringBuffer(METHOD_GET_PREFIX);
 		fieldName.append(name.substring(0, 1).toUpperCase());
 		fieldName.append(name.substring(1));
@@ -238,7 +238,7 @@ public final class GenericComparator implements Comparator, Serializable {
 	 * @return method - a {@link java.lang.reflect.Method}
 	 * @throws NoSuchMethodException 
 	 */
-	private final Method getMethod(Object obj) throws NoSuchMethodException {
+	private Method getMethod(Object obj) throws NoSuchMethodException {
 		return obj.getClass().getMethod(targetMethod, null);
 	}
 
@@ -251,7 +251,7 @@ public final class GenericComparator implements Comparator, Serializable {
 	 * @throws InvocationTargetException
 	 * @throws IllegalAccessException
 	 */
-	private final static Object invoke(Method method, Object obj) throws InvocationTargetException, IllegalAccessException {		
+	private static Object invoke(Method method, Object obj) throws InvocationTargetException, IllegalAccessException {
 		return method.invoke(obj, null);
 	}
 	

@@ -25,9 +25,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
+import java.io.*;
 
 public class ModelScriptGenerator {
     public static void main(String[] args) {
@@ -54,7 +52,7 @@ public class ModelScriptGenerator {
 
             BaseSqlGen sqlgen = context.getBean(BaseSqlGen.class);
             //final Set<String> clazzNames = db.getAnnotationIndex().get(MappingEntity.class.getName());
-            writer = new BufferedWriter(new FileWriter(new File(outputFile)));
+            writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputFile),"UTF-8"));
             StringBuilder builder = new StringBuilder();
             for(ClassInfo classInfo:classes){
                 if(classInfo.getSuperclass().loadClass().equals(BaseObject.class)) {

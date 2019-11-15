@@ -51,9 +51,9 @@ public class RobinCoreConfig implements TransactionManagementConfigurer, BeanFac
     public DataSource getDataSource(){
         try {
             DataSourceConfig.DataSourceCfg config=dataSourceConfig.getDatasources().get("main");
-            if(config!=null)
+            if(config!=null) {
                 return DataSourceBuilder.create().type((Class<? extends DataSource>) Class.forName(config.getType())).url(config.getJdbcUrl()).driverClassName(config.getDriverClassName()).username(config.getUsername()).password(config.getPassword()).build();
-            else{
+            } else{
                 throw new ConfigurationIncorrectException("datasource main is missing");
             }
         }catch (Exception ex){
@@ -156,9 +156,9 @@ public class RobinCoreConfig implements TransactionManagementConfigurer, BeanFac
     }
     private DataSource createDataSource(DataSourceConfig.DataSourceCfg config){
         try {
-            if(config!=null)
+            if(config!=null) {
                 return DataSourceBuilder.create().type((Class<? extends DataSource>) Class.forName(config.getType())).url(config.getJdbcUrl()).driverClassName(config.getDriverClassName()).username(config.getUsername()).password(config.getPassword()).build();
-            else{
+            } else{
                 throw new ConfigurationIncorrectException("datasource construct error");
             }
         }catch (Exception ex){

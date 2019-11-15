@@ -26,7 +26,7 @@ public class DataBaseMetaFactory {
 	public static BaseDataBaseMeta getDataBaseMetaByType(String type,DataBaseParam param){
 		BaseDataBaseMeta datameta=null;
 		try{
-		List<String> dbTypes=Arrays.asList(BaseDataBaseMeta.dbTypeEnmu);
+		List<String> dbTypes=Arrays.asList(BaseDataBaseMeta.DB_TYPE_ENMU);
 		if(dbTypes.contains(type)){
 			Constructor<?> construct=null;
 			if(!constructorMap.containsKey(type)){

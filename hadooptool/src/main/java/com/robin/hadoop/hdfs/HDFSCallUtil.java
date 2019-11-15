@@ -464,12 +464,12 @@ public class HDFSCallUtil {
 			log.error("",e);
 		}
 	}
-	public static BufferedReader readStream(final Configuration config,String hdfsUrl,DataInputStream dis,String encode) throws HdfsException{
+	public static BufferedReader readStream(final Configuration config,String hdfsUrl,String encode) throws HdfsException{
 		FileSystem fs=null;
 
 		try{
 			fs=FileSystem.get(URI.create(hdfsUrl),config);
-			dis = new DataInputStream(fs.open(new Path(hdfsUrl)));
+			DataInputStream dis = new DataInputStream(fs.open(new Path(hdfsUrl)));
 			BufferedReader br = new BufferedReader(new InputStreamReader(dis,encode));
 			return br;
 		}catch (Exception e) {

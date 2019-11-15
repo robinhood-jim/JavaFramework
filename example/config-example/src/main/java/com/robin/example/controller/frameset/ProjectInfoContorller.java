@@ -266,7 +266,7 @@ public class ProjectInfoContorller extends BaseCrudDhtmlxController<ProjectInfo,
     public Map<String, Object> genConfig(HttpServletRequest request, HttpServletResponse response, @PathVariable Long id) {
 
         try {
-            ProjectInfo info = this.service.getEntity(Long.valueOf(id));
+            ProjectInfo info = this.service.getEntity(id);
             String projType = info.getProjType().toString();
             DataSource source = dataSourceService.getEntity(info.getDataSourceId());
             String type = source.getDbType();
@@ -335,7 +335,7 @@ public class ProjectInfoContorller extends BaseCrudDhtmlxController<ProjectInfo,
     @ResponseBody
     public Map<String, Object> checkInCode(HttpServletRequest request, HttpServletResponse response, @PathVariable Long id) throws Exception {
         try {
-            ProjectInfo info = this.service.getEntity(Long.valueOf(id));
+            ProjectInfo info = this.service.getEntity(id);
             String teamType = info.getTeamType();
             String teamUrl = info.getTeamUrl();
             String comment = "Commited by Frame Wizard";

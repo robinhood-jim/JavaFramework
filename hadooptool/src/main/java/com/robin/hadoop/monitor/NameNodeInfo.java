@@ -29,8 +29,8 @@ public class NameNodeInfo {
 	private String freecapacity;
 	private DatanodeInfo[] livenodeInfo;
 	private DatanodeInfo[] deadnodeInfo;
-	public static final String[] displayArrs={"Started:","Version:","Compiled:","Upgrades:","Cluster ID:","Block Pool ID:","Configured Capacity","DFS Used","Non DFS Used","DFS Remaining","DFS Used%","Live Nodes","Dead Nodes","Decommissioning Nodes","Number of Under-Replicated Blocks"};
-	public static final String[] columnsArr={"start","version","compiled","upgrades","clusterId","blockpoolId","configcapacity","dfsused","nodfsused","dfsremains","dfsusepercent","liveNodes","deadNodes","decomNodes","underRepliacte"};
+	protected static final String[] displayArrs={"Started:","Version:","Compiled:","Upgrades:","Cluster ID:","Block Pool ID:","Configured Capacity","DFS Used","Non DFS Used","DFS Remaining","DFS Used%","Live Nodes","Dead Nodes","Decommissioning Nodes","Number of Under-Replicated Blocks"};
+	protected static final String[] columnsArr={"start","version","compiled","upgrades","clusterId","blockpoolId","configcapacity","dfsused","nodfsused","dfsremains","dfsusepercent","liveNodes","deadNodes","decomNodes","underRepliacte"};
 	
 	
 	public String getVersion() {
