@@ -389,7 +389,7 @@ public class CommJdbcUtil {
                 }
 
                 Integer total = 0;
-                if(pageQuery.getNamedParameters()==null) {
+                if(pageQuery.getNamedParameters().isEmpty() && pageQuery.getParameterArr()!=null) {
                     total=jdbcTemplate.queryForObject(sumSQL, pageQuery.getParameterArr(), Integer.class);
                 } else{
                     total=namedParameterJdbcTemplate.queryForObject(sumSQL,pageQuery.getNamedParameters(),Integer.class);

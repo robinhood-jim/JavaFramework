@@ -608,14 +608,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
         return ret;
     }
 
-    /**
-     * now only support Single primary key
-     *
-     * @param clazz
-     * @param value
-     * @return
-     * @throws DAOException
-     */
+
     @Override
     public int deleteVO(Class<? extends BaseObject> clazz, Serializable[] value) throws DAOException {
         try {

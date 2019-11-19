@@ -395,7 +395,7 @@ public class RunningJobInfoUtil extends AbstractJobInfoUtil {
 			JobTrackerInfo info=util.getJobTrackerInfo();
 			
 			JobDetail detail=util.getJobDetail(jobId);
-			//JobDetail detail=util.getJobDetail(jobId,ymd,"/home/bigdata/apache-tomcat-6.0.35/webapps/hnydflowoperation/mrdetailpage/");
+
 			Map<String, String> map=new HashMap<String, String>();
 			String xml=util.getJobCounterXml(jobId, map, null);
 			System.out.println(detail);
