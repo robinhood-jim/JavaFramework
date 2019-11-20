@@ -8,10 +8,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/cache@v1.0.2
+    - name: Cache
+      uses: actions/cache@v1.0.2
       with:
-        path: /tmp/JavaFrame 
-        key: JavaFrame 
+          path: JavaFrame
+          key: ${{ runner.os }}-JavaFrame
+  
     - uses: actions/checkout@v1
     - name: Set up JDK 1.8
       uses: actions/setup-java@v1
