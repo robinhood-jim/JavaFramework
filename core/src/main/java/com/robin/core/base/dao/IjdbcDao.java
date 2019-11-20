@@ -155,7 +155,7 @@ public interface IjdbcDao {
 	int updateVO(Class<? extends BaseObject> clazz,BaseObject obj) throws DAOException;
 
 	/**
-	 * Delete Records by PK array
+	 * Delete Records by PK array,now only support single column pk
 	 * @param clazz
 	 * @param value
 	 * @return
@@ -183,5 +183,14 @@ public interface IjdbcDao {
 	List<? extends BaseObject> queryByField(Class<? extends BaseObject> type, String fieldName, String oper, Object[] fieldValues) throws DAOException;
 	List<? extends BaseObject> queryByFieldOrderBy(Class<? extends BaseObject> type, String orderByStr, String fieldName, String oper, Object[] fieldValues) throws DAOException;
 	List<? extends BaseObject> queryAll(Class<? extends BaseObject> type) throws DAOException;
+
+	/**
+	 * Delete entity by parameter
+	 * @param clazz
+	 * @param field  field
+	 * @param value
+	 * @return
+	 * @throws DAOException
+	 */
 	int deleteByField(Class<? extends BaseObject> clazz, String field, Object value) throws DAOException;
 }

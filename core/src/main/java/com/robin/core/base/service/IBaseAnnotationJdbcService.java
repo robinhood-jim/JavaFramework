@@ -15,15 +15,15 @@
  */
 package com.robin.core.base.service;
 
-import java.io.Serializable;
-import java.util.List;
-import java.util.Map;
-
 import com.robin.core.base.exception.ServiceException;
 import com.robin.core.base.model.BaseObject;
 import com.robin.core.query.util.PageQuery;
 import com.robin.core.sql.util.FilterCondition;
 import com.robin.core.sql.util.FilterConditions;
+
+import java.io.Serializable;
+import java.util.List;
+import java.util.Map;
 
 public interface IBaseAnnotationJdbcService<V extends BaseObject, P extends Serializable> {
     P saveEntity(V vo) throws ServiceException;

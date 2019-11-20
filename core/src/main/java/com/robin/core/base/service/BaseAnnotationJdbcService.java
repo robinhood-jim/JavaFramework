@@ -15,34 +15,26 @@
  */
 package com.robin.core.base.service;
 
-import java.io.Serializable;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import com.robin.core.base.dao.JdbcDao;
 import com.robin.core.base.dao.util.AnnotationRetrevior;
+import com.robin.core.base.exception.DAOException;
+import com.robin.core.base.exception.ServiceException;
+import com.robin.core.base.model.BaseObject;
 import com.robin.core.base.spring.SpringContextHolder;
+import com.robin.core.query.util.PageQuery;
+import com.robin.core.sql.util.FilterCondition;
 import com.robin.core.sql.util.FilterConditions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.robin.core.base.dao.JdbcDao;
-import com.robin.core.base.exception.DAOException;
-import com.robin.core.base.exception.ServiceException;
-import com.robin.core.base.model.BaseObject;
-import com.robin.core.convert.util.ConvertUtil;
-import com.robin.core.query.util.PageQuery;
-import com.robin.core.sql.util.BaseSqlGen;
-import com.robin.core.sql.util.FilterCondition;
+import java.io.Serializable;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.List;
+import java.util.Map;
 
 /**
  * <p>Description:<b>Auto wired Service With defalut methold</b></p>
