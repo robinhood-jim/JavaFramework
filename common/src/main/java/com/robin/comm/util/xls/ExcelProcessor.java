@@ -27,6 +27,7 @@ import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.sql.Connection;
 import java.text.DecimalFormat;
@@ -295,17 +296,29 @@ public class ExcelProcessor {
         Workbook wb = ExcelBaseOper.creatWorkBook(prop);
         String sheetname = prop.getSheetName();
         Sheet sheet = wb.createSheet(sheetname);
+        if(sheet instanceof SXSSFSheet){
+            ((SXSSFSheet) sheet).setRandomAccessWindowSize(prop.getStreamRows());
+        }
         CreationHelper helper = wb.getCreationHelper();
         int count = 0;
         if (!prop.getColumnPropList().isEmpty()) {
             generateHeader(sheet, wb, prop, header);
-            count = prop.getColumnList().size();
+            count = prop.getColumnPropList().size();
         } else {
             count = generateHeader(sheet, wb, prop, header, helper);
         }
         fillColumns(wb, sheet, prop, header, helper);
         autoSizeSheet(prop, sheet, count);
         return wb;
+    }
+    public static void generateExcelFileToLocal(ExcelSheetProp prop,TableConfigProp header,String localPath) throws Exception{
+        Workbook wb=generateExcelFile(prop,header);
+        FileOutputStream out=new FileOutputStream(localPath);
+        wb.write(out);
+        out.close();
+        if(wb instanceof SXSSFWorkbook){
+            ((SXSSFWorkbook) wb).dispose();
+        }
     }
 
     public static Workbook generateExcelFile(ExcelSheetProp prop, TableConfigProp header, Connection conn, String querySql, Object[] queryParam, ExcelRsExtractor extractor) throws Exception {

@@ -62,6 +62,7 @@ public class ExcelBaseOper {
                 wb = new XSSFWorkbook();
             } else {
                 wb = new SXSSFWorkbook(prop.getStreamRows());
+                ((SXSSFWorkbook) wb).setCompressTempFiles(true);
             }
         }
         return wb;

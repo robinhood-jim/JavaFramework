@@ -27,6 +27,7 @@ public class TestExcelOperation {
         prop.setStartCol(1);
         prop.setStartRow(1);
         prop.setSheetName("test");
+        prop.setStreamInsert(true);
         prop.addColumnProp(new ExcelColumnProp("name","name",Const.META_TYPE_STRING,false));
         prop.addColumnProp(new ExcelColumnProp("time","time",Const.META_TYPE_TIMESTAMP,false));
         prop.addColumnProp(new ExcelColumnProp("intcol","intcol",Const.META_TYPE_INTEGER,false));
@@ -35,7 +36,7 @@ public class TestExcelOperation {
         header.setContainrow(1);
         List<Map<String,String>> list=new ArrayList<Map<String, String>>();
         Random random=new Random(12312321321312L);
-        for(int i=0;i<1000;i++){
+        for(int i=0;i<500000;i++){
             Map<String,String> map=new HashMap<String, String>();
             map.put("name",StringUtils.generateRandomChar(12));
             map.put("time",String.valueOf(startTs+i*1000));
@@ -44,10 +45,8 @@ public class TestExcelOperation {
             list.add(map);
         }
         prop.setColumnList(list);
-        Workbook wb= ExcelProcessor.generateExcelFile(prop,header);
-        FileOutputStream out=new FileOutputStream("d:/test1.xlsx");
-        wb.write(out);
-        out.close();
+        ExcelProcessor.generateExcelFileToLocal(prop,header,"d:/test1.xlsx");
+
     }
     @Test
     public void testGenWithQuery(){

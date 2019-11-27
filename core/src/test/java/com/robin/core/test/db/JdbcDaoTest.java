@@ -244,5 +244,17 @@ public class JdbcDaoTest extends TestCase {
             }
         }
     }
+    @Test
+    public void testSysUserInsert(){
+        SysUser user=new SysUser();
+        //user.setDeptId(1);
+        user.setAccountType("1");
+        user.setOrderNo(1);
+        user.setUserAccount("t1");
+        user.setOrgId(1);
+        user.setUserPassword("t1");
+        user.setUserName("t1");
+        SpringContextHolder.getBean(SysUserService.class).saveEntity(user);
+    }
 
 }
