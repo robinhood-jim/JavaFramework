@@ -16,10 +16,12 @@
 package com.robin.core.base.dao;
 
 import java.io.Serializable;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import com.robin.core.base.dao.util.AnnotationRetrevior;
+import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.query.extractor.ResultSetOperationExtractor;
 import org.springframework.jdbc.core.SqlParameter;
 
@@ -60,6 +62,16 @@ public interface IjdbcDao {
 	 * @throws DAOException
 	 */
 	void batchUpdate(final String sql,final List<Map<String,String>> resultList,final List<Map<String,String>> columnMetaList,final int batchsize) throws DAOException;
+
+	/**
+	 * Batch update using Row iterator,this can reduce memory usage
+	 * @param sql
+	 * @param rowIterator Result Row iterator
+	 * @param collectionMeta  metddata define
+	 * @param batchsize      update every batchsize rows
+	 * @throws DAOException
+	 */
+	void batchUpdateWithRowIterator(String sql, Iterator<Map<String,String>> rowIterator, DataCollectionMeta collectionMeta, int batchsize) throws DAOException;
 	/**
 	 * Call Procedure 
 	 * @param procedurename   

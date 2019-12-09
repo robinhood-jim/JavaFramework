@@ -36,7 +36,17 @@ CREATE TABLE `t_test_mutilkey` (
   `outputval` double default NULL,
   `time` timestamp NULL default NULL on update CURRENT_TIMESTAMP,
   PRIMARY KEY  (`id`,`tname`,`tcode`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `t_batch_test` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `name` char(6) DEFAULT NULL,
+  `code` char(6) DEFAULT NULL,
+  `amount` double DEFAULT NULL,
+  `creator` int(11) DEFAULT NULL,
+  `time` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 use framset;
 CREATE TABLE `t_sys_user_info` (
@@ -52,6 +62,8 @@ CREATE TABLE `t_sys_user_info` (
   `REMARK` varchar(256) default NULL,
   PRIMARY KEY  (`ID`)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
 
 
 INSERT INTO `t_sys_user_info`(USER_ACCOUNT,USER_PASSWORD,USER_NAME,ACCOUNT_TYPE,USER_STATUS,ORDER_NO) VALUES("admin","E10ADC3949BA59ABBE56E057F20F883E","adminstrator",1,1,1),("guest","E10ADC3949BA59ABBE56E057F20F883E","guest",2,1,1)

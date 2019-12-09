@@ -22,6 +22,7 @@ import com.robin.core.base.model.BaseObject;
 import com.robin.core.base.reflect.ReflectUtils;
 import com.robin.core.base.util.Const;
 import com.robin.core.convert.util.ConvertUtil;
+import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.query.extractor.ResultSetOperationExtractor;
 import com.robin.core.query.extractor.SplitPageResultSetExtractor;
 import com.robin.core.query.util.PageQuery;
@@ -439,6 +440,9 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
     @Override
     public void batchUpdate(String sql, List<Map<String, String>> resultList, List<Map<String, String>> columnpoolList, final int batchsize) throws DAOException {
         CommJdbcUtil.batchUpdate(getJdbcTemplate(), sql, resultList, columnpoolList, batchsize);
+    }
+    public void batchUpdateWithRowIterator(String sql, Iterator<Map<String,String>> rowIterator, DataCollectionMeta collectionMeta,int batchsize) throws DAOException{
+        CommJdbcUtil.batchUpdateWithIterator(getJdbcTemplate(),sql,rowIterator,collectionMeta,batchsize);
     }
 
     @Override

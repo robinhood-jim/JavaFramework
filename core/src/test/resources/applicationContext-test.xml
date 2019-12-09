@@ -66,7 +66,7 @@
     <bean id="sqlMapperConfigure" class="com.robin.core.query.mapper.SqlMapperConfigure" autowire="byName" />
     <bean id="sqlMapperDao" class="com.robin.core.base.dao.SqlMapperDao" autowire="byName" />
     <bean id="sqlMapperService" class="com.robin.core.base.service.SqlMapperService" autowire="byName" />
-    <bean id="classGraphReflector" class="com.robin.core.base.reflect.ClassGraphReflector" />
+    <!--<bean id="classGraphReflector" class="com.robin.core.base.reflect.ClassGraphReflector" />-->
 	<context:component-scan base-package="com.robin"  />
 	
 </beans>
