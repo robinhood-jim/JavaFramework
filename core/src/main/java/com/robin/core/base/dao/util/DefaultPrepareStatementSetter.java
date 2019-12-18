@@ -7,12 +7,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
 
-/**
- * <p>Created at: 2019-08-16 14:29:55</p>
- *
- * @author robinjim
- * @version 1.0
- */
+
 public class DefaultPrepareStatementSetter implements PreparedStatementSetter {
     private List<AnnotationRetrevior.FieldContent> fields;
     private BaseObject object;

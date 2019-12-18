@@ -8,12 +8,7 @@ import org.slf4j.LoggerFactory;
 import java.io.Closeable;
 import java.util.*;
 
-/**
- * <p>Created at: 2019-09-20 11:06:39</p>
- *
- * @author robinjim
- * @version 1.0
- */
+
 public abstract class AbstractResIterator implements Iterator<Map<String,Object>>, Closeable {
 
     protected DataCollectionMeta colmeta;

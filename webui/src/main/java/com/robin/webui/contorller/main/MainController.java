@@ -16,12 +16,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.net.URLEncoder;
 import java.util.*;
 
-/**
- * <p>Created at: 2019-09-05 15:47:31</p>
- *
- * @author robinjim
- * @version 1.0
- */
+
 @Controller
 public class MainController {
     @Autowired

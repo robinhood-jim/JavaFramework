@@ -3,12 +3,7 @@ package com.robin.core.sql.util;
 import com.robin.core.base.datameta.BaseDataBaseMeta;
 import com.robin.core.base.exception.MissingConfigException;
 
-/**
- * <p>Created at: 2019-11-04 16:59:23</p>
- *
- * @author robinjim
- * @version 1.0
- */
+
 public class SqlDialectFactory {
     public static final BaseSqlGen getSqlGeneratorByDialect(String dbType) throws MissingConfigException {
         BaseSqlGen sqlGen=null;

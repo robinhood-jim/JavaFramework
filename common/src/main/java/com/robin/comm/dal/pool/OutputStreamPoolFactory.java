@@ -5,12 +5,7 @@ import org.apache.commons.pool2.PooledObject;
 import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.DefaultPooledObject;
 
-/**
- * <p>Created at: 2019-09-19 17:15:11</p>
- *
- * @author robinjim
- * @version 1.0
- */
+
 public class OutputStreamPoolFactory implements PooledObjectFactory<OutputStreamHolder> {
     @Override
     public PooledObject<OutputStreamHolder> makeObject() throws Exception {

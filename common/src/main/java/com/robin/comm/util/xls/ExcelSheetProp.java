@@ -32,7 +32,7 @@ public class ExcelSheetProp {
 	private Integer tableId;
 	// using SXSSFWorkbook with streamingWrite
 	private boolean streamInsert;
-	private Integer streamRows;
+	private Integer streamRows=100;
 	
 	public List<Map<String,String>> getColumnList() {
 		return columnList;

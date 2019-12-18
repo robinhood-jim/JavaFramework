@@ -5,12 +5,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import java.util.List;
 import java.util.Map;
 
-/**
- * <p>Created at: 2019-09-29 11:02:30</p>
- *
- * @author robinjim
- * @version 1.0
- */
+
 public class IncludeSegment extends AbstractSegment {
 
     public IncludeSegment(String nameSpace,String id, String inputStr) {

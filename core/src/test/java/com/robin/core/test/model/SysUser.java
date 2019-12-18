@@ -26,8 +26,7 @@ public class SysUser extends BaseObject {
     private static final long serialVersionUID = 1L;
     @MappingField(primary=true, increment=true)
     private Long id;
-    @MappingField(field="dept_id")
-    private Integer deptId;
+
     @MappingField(field="org_id")
     private Integer orgId;
     @MappingField(field="account_type")

@@ -2,12 +2,7 @@ package com.robin.nosql.cassandra.network;
 
 import java.util.Properties;
 
-/**
- * <p>Created at: 2019-10-15 09:29:40</p>
- *
- * @author robinjim
- * @version 1.0
- */
+
 public class SslConfig {
     public static final String KEY_STORE_LOCATION = "keyStore.location";
     public static final String KEY_STORE_PASSWORD = "keyStore.password";

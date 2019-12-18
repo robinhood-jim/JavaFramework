@@ -1,6 +1,6 @@
 package com.robin.hadoop.monitor;
 /**
- * <p>Project:  flowoperation</p>
+ * <p>Project:  core</p>
  *
  * <p>Description:</p>
  *
