@@ -2,12 +2,7 @@ package com.robin.nosql.cassandra;
 
 import lombok.Data;
 
-/**
- * <p>Created at: 2019-09-10 10:37:08</p>
- *
- * @author robinjim
- * @version 1.0
- */
+
 @Data
 public class CassandraConfig {
     private String clusterNames;

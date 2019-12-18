@@ -10,12 +10,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 
-/**
- * <p>Created at: 2019-08-16 14:31:12</p>
- *
- * @author robinjim
- * @version 1.0
- */
+
 public class DefaultPrepareStatement implements PreparedStatementCreator {
     private String sql;
     private List<AnnotationRetrevior.FieldContent> fields;

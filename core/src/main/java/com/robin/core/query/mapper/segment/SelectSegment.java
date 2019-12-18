@@ -2,12 +2,7 @@ package com.robin.core.query.mapper.segment;
 
 import java.util.List;
 
-/**
- * <p>Created at: 2019-10-09 14:22:27</p>
- *
- * @author robinjim
- * @version 1.0
- */
+
 public class SelectSegment extends CompositeSegment {
     private String countRef;
 

@@ -11,13 +11,13 @@ import java.util.Map;
 import org.apache.commons.codec.binary.Base64;
 
 /**
- * <p>Project:  talkwebfrm</p>
+ * <p>Project:  core</p>
  *
  * <p>Description:</p>
  *
  * <p>Copyright: Copyright (c) 2014 modified at 2014-1-12</p>
  *
- * <p>Company: TW_DEV</p>
+ * <p>Company: </p>
  *
  * @author robinjim
  * @version 1.0

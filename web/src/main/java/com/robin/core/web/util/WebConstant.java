@@ -1,11 +1,6 @@
 package com.robin.core.web.util;
 
-/**
- * <p>Created at: 2019-09-02 10:53:24</p>
- *
- * @author robinjim
- * @version 1.0
- */
+
 public class WebConstant {
     public static final Long DEFAULT_ORG=0L;
     public enum SYS_RESPONSIBLITIY{

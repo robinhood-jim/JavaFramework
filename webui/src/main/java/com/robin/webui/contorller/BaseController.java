@@ -15,12 +15,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-/**
- * <p>Created at: 2019-09-06 16:39:25</p>
- *
- * @author robinjim
- * @version 1.0
- */
+
 public abstract class BaseController {
     protected Map<String,Object> getResultFromRest(String requestUrl,Object[] objects){
         Environment environment= SpringContextHolder.getBean(Environment.class);

@@ -9,12 +9,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.HashSet;
 import java.util.Set;
 
-/**
- * <p>Created at: 2019-08-14 19:37:43</p>
- *
- * @author robinjim
- * @version 1.0
- */
+
 @Slf4j
 public class LoginInterceptor extends HandlerInterceptorAdapter {
     private Set<String> ignoreUrls=new HashSet<>();

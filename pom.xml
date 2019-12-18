@@ -50,6 +50,7 @@
         <module>metadata</module>
         <module>webui</module>
         <module>license-core</module>
+        <module>license-server</module>
         <module>spring-starter</module>
     </modules>
     <!-- properties -->

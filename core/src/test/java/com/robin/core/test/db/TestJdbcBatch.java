@@ -18,12 +18,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Random;
 
-/**
- * <p>Created at: 2019-12-07 15:48:56</p>
- *
- * @author robinjim
- * @version 1.0
- */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = "classpath:applicationContext-test.xml")
 public class TestJdbcBatch extends TestCase {

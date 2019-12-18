@@ -5,12 +5,7 @@ import com.robin.core.web.util.Session;
 
 import javax.servlet.http.HttpServletRequest;
 
-/**
- * <p>Created at: 2019-09-18 17:39:17</p>
- *
- * @author robinjim
- * @version 1.0
- */
+
 public class AuthUtils {
     public static String[] getRequestParam(String config, HttpServletRequest request) throws RuntimeException{
         String tmpConfig=config;
