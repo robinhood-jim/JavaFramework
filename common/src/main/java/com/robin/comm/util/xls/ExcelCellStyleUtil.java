@@ -44,7 +44,8 @@ public class ExcelCellStyleUtil {
 			if (rowspan > 1) {
                 cs.setVerticalAlignment(CellStyle.VERTICAL_CENTER);
             }
-	        cs.setAlignment(CellStyle.ALIGN_CENTER);  
+	        cs.setAlignment(CellStyle.ALIGN_CENTER);
+			cs.setBorderBottom(CellStyle.BORDER_THIN);
 	        cs.setBottomBorderColor(IndexedColors.BLACK.getIndex());
 	        cs.setBorderLeft(CellStyle.BORDER_THIN); 
 	        cs.setLeftBorderColor(IndexedColors.BLACK.getIndex());
@@ -52,7 +53,7 @@ public class ExcelCellStyleUtil {
 	        cs.setRightBorderColor(IndexedColors.BLACK.getIndex());
 	        cs.setBorderTop(CellStyle.BORDER_THIN);  
 	        cs.setTopBorderColor(IndexedColors.BLACK.getIndex());
-	        cs.setFillForegroundColor(IndexedColors.WHITE.getIndex());
+	        //cs.setFillForegroundColor(IndexedColors.WHITE.getIndex());
 	        	 if(header!=null){
 	             	Font font=wb.createFont();
 					 font.setFontName((header.getContentFontName()==null || header.getContentFontName().isEmpty())?defaultFontName:header.getContentFontName());

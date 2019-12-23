@@ -197,7 +197,7 @@ public class ProjectInfoContorller extends BaseCrudDhtmlxController<ProjectInfo,
         try {
             String del_ids = request.getParameter("ids");
             if (del_ids != null && del_ids.trim().length() > 0) {
-                this.service.deleteEntity(parseId(del_ids.split(";")));
+                this.service.deleteEntity(parseId(del_ids));
             }
             retmap.put("success", true);
         } catch (Exception e) {

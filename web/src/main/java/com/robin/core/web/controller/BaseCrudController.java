@@ -15,12 +15,14 @@
  */
 package com.robin.core.web.controller;
 
+import com.robin.core.base.exception.ServiceException;
 import com.robin.core.base.model.BaseObject;
 import com.robin.core.base.service.IBaseAnnotationJdbcService;
 import com.robin.core.base.spring.SpringContextHolder;
 import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.query.util.PageQuery;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.util.Assert;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -196,19 +198,20 @@ public abstract class BaseCrudController<O extends BaseObject, P extends Seriali
         }
     }
 
-    protected  P[] parseId(String[] ids) throws Exception {
-        if (ids == null || ids.length == 0) {
-            throw new Exception("ID not exists!");
-        }
-        P[] array=(P[])java.lang.reflect.Array.newInstance(pkType,ids.length);
+    protected  P[] parseId(String ids) throws ServiceException {
+        P[] array=null;
         try {
-            for (int i = 0; i < ids.length; i++) {
+            Assert.notNull(ids,"input id is null");
+            Assert.isTrue(ids.length()>0,"input ids is empty");
+            String[] idsArr = ids.split(",");
+            array=(P[])java.lang.reflect.Array.newInstance(pkType,idsArr.length);
+            for (int i = 0; i < idsArr.length; i++) {
                 P p = pkType.newInstance();
-                valueOfMethod.invoke(p, ids[i]);
+                valueOfMethod.invoke(p, idsArr[i]);
                 array[i]=p;
             }
         } catch (Exception ex) {
-            log.error("{}", ex);
+            throw new ServiceException(ex);
         }
         return array;
     }
