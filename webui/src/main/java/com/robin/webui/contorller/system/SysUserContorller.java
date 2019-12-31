@@ -10,6 +10,7 @@ import com.robin.webui.util.AuthUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -20,19 +21,19 @@ import java.util.Map;
 @RequestMapping("/system/user")
 public class SysUserContorller {
     @RequestMapping("/show")
-    public String userList(HttpServletRequest request, HttpServletResponse response) {
+    public ModelAndView userList(HttpServletRequest request, HttpServletResponse response) {
         Session session=(Session)request.getSession().getAttribute(Const.SESSION);
         if(session.getOrgId()!=null){
             request.setAttribute("orgId",session.getOrgId());
         }
         request.setAttribute("resps", StringUtils.join(session.getResponsiblitys().toArray(),","));
-        return "/user/user_list";
+        return new ModelAndView("user/user_list");
     }
     @RequestMapping("/showright")
-    public String userRight(HttpServletRequest request, HttpServletResponse response) {
+    public ModelAndView userRight(HttpServletRequest request, HttpServletResponse response) {
         String userId = request.getParameter("userId");
         request.setAttribute("userId", userId);
-        return "user/show_right";
+        return new ModelAndView("user/show_right");
     }
     @RequestMapping("/list")
     @ResponseBody

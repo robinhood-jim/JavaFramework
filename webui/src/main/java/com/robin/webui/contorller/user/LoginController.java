@@ -73,9 +73,9 @@ public class LoginController {
         CookieUtils.delCookie(request, Arrays.asList("accountType","userId","authCode"));
         Map<String, Object> retMap = RestTemplateUtils.getResultFromGateWayRest("logout?code={1}",new Object[]{code});
         if(retMap.get("success").equals(true)){
-            return "/logout";
+            return "logout";
         }else{
-            return "/error/401";
+            return "error/401";
         }
 
     }
