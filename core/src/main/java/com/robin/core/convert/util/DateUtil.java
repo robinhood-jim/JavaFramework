@@ -15,14 +15,18 @@
  */
 package com.robin.core.convert.util;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneOffset;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 
 public class DateUtil {
@@ -147,5 +151,13 @@ public class DateUtil {
       }
 
       return aDate;
+   }
+   public static Long getTsByBase(LocalDate baseTime){
+      LocalDateTime today_start = LocalDateTime.of(baseTime, LocalTime.MIN);
+      return today_start.toInstant(ZoneOffset.of("+8")).toEpochMilli();
+   }
+   public static Long getTsByBaseAndOffset(LocalDate baseTime,Integer offsetDay){
+      Long baseTs=getTsByBase(baseTime);
+      return baseTs+offsetDay*24*60*60*1000;
    }
 }

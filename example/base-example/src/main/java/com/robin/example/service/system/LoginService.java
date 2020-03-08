@@ -168,8 +168,7 @@ public class LoginService {
         List<SysResource> commresources = getResourcesByOrg(WebConstant.DEFAULT_ORG);
         Map<String, SysResource> resmap = null;
         try {
-            CollectionMapConvert<SysResource> convert = new CollectionMapConvert<>();
-            resmap = convert.convertListToMap(commresources, "id");
+            resmap = CollectionMapConvert.convertListToMap(commresources, "id");
         } catch (Exception ex) {
 
         }

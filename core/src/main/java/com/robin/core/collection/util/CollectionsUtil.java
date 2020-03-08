@@ -15,10 +15,7 @@
  */
 package com.robin.core.collection.util;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Map;
+import java.util.*;
 
 public class CollectionsUtil {
 
@@ -101,6 +98,15 @@ public class CollectionsUtil {
 			}
 		});
 		return l;
+	}
+	public static boolean isEmpty(Collection collection){
+		return collection==null || collection.isEmpty();
+	}
+	public static boolean isEmpty(Map map){
+		return map==null || map.isEmpty();
+	}
+	public static boolean isEmpty(Object[] objects){
+		return objects==null || objects.length==0;
 	}
 
 }
