@@ -60,6 +60,15 @@ public class CollectionBaseConvert {
 	      }
 	      return retMap;
 	}
+	public static Map<String,Map<String,Object>> listObjectToMap(List<Map<String, Object>> listobj,String key){
+		Map<String,Map<String,Object>> retMap=new HashMap<>();
+		if(!CollectionsUtil.isEmpty(listobj)){
+			listobj.forEach(f->{
+				retMap.put(f.get(key).toString(),f);
+			});
+		}
+		return retMap;
+	}
 	public static Map<String,List<Map<String,String>>> convertToMapObjByParentKey(List<Map<String, String>> listobj,String key) {
 		 Map<String,List<Map<String,String>>> retMap =new HashMap<String, List<Map<String,String>>>();
 		doconvertByParentKey(listobj, key, retMap);

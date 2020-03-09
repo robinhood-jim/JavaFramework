@@ -19,7 +19,7 @@ public class ResultMapperSegment extends AbstractSegment {
     }
 
     public void parse(Element element) {
-        className=element.attributeValue("type");
+        className=element.attributeValue("resultType");
         List<Element> elements = element.elements();
         for (Element ele : elements) {
             String column = ele.attributeValue("column");
