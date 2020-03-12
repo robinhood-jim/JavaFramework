@@ -8,6 +8,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -26,9 +27,9 @@ public class SysResourceContorller  {
 		return RestTemplateUtils.getResultFromRestUrl("product/system/menu/list",new Object[]{}, AuthUtils.getRequestParam(null,request));
 	}
 	@RequestMapping("/show")
-	public String show(ModelMap model,HttpServletRequest request,
-			HttpServletResponse response){
-		return "/menu/show_menu";
+	public ModelAndView show(ModelMap model, HttpServletRequest request,
+							 HttpServletResponse response){
+		return new ModelAndView("/menu/show_menu");
 	}
 	@RequestMapping("/save")
 	@ResponseBody
@@ -38,13 +39,13 @@ public class SysResourceContorller  {
 	}
 	
 	@RequestMapping("/showrole")
-	public String showAssignRole(HttpServletRequest request,HttpServletResponse response){
+	public ModelAndView showAssignRole(HttpServletRequest request,HttpServletResponse response){
 		
 		Map<String,Object> retMap=RestTemplateUtils.getResultFromRestUrl("system/menu/showrole",new Object[]{},AuthUtils.getRequestParam(null,request));
 		request.setAttribute("roleList", retMap.get("roleList"));
 		request.setAttribute("avaliableList", retMap.get("avaliableList"));
 		request.setAttribute("resId", retMap.get("resId"));
-		return "/menu/assign_role";
+		return new ModelAndView("/menu/assign_role");
 	}
 	@RequestMapping("/edit")
 	@ResponseBody

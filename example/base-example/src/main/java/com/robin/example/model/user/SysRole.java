@@ -32,8 +32,8 @@ public class SysRole extends BaseObject
     private String roleName;
     @MappingField(field="role_type")
     private String roleType;
-    @MappingField(field="role_status")
-    private String roleStatus;
+    @MappingField
+    private String status;
     @MappingField(field="role_code")
     private String roleCode;
     @MappingField(field="role_desc")

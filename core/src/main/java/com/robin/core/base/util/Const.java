@@ -160,6 +160,8 @@ public class Const {
 	public static final String MRFRAME_YARN="yarn";
 	public static final String SQL_SELECT="SELECT ";
 	public static final String USER_DEFAULTPASSWORD="123456";
+	public static final String RESOURCE_ASSIGN_ACCESS="1";
+	public static final String RESOURCE_ASSIGN_DENIED="2";
 
 	public enum CompressType{
 		COMPRESS_TYPE_GZ("gz"),

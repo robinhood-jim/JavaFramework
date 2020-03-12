@@ -5,7 +5,7 @@ spring:
     active: dev
   cloud:
     consul:
-      host: 172.16.102.129
+      host: localhost
       port: 8500
       discovery:
         register: true

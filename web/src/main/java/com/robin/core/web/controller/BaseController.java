@@ -285,6 +285,18 @@ public abstract class BaseController
         }
         return map;
     }
+    protected PageQuery wrapPageQuery(Map<String,Object> paramMap){
+        PageQuery query = new PageQuery();
+        try
+        {
+            ConvertUtil.mapToObject(query, paramMap);
+        }
+        catch (Exception ex)
+        {
+            ex.printStackTrace();
+        }
+        return query;
+    }
 
 
     protected PageQuery wrapPageQuery(HttpServletRequest request)

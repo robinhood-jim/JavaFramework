@@ -18,7 +18,6 @@ package com.robin.example.service.system;
 import com.robin.core.base.exception.DAOException;
 import com.robin.core.base.exception.ServiceException;
 import com.robin.core.base.service.BaseAnnotationJdbcService;
-
 import com.robin.core.base.service.IBaseAnnotationJdbcService;
 import com.robin.example.model.user.SysResourceRole;
 import com.robin.example.model.user.SysRole;

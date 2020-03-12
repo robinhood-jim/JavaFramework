@@ -28,7 +28,7 @@ import java.util.*;
 
 public class CollectionMapConvert<T> {
 
-    public CollectionMapConvert() {
+    private CollectionMapConvert() {
 
     }
 
@@ -39,13 +39,8 @@ public class CollectionMapConvert<T> {
      * @return
      * @throws Exception
      */
-    public Map<String, T> convertListToMap(List<T> listobj, String identityCol) throws Exception {
-        if (listobj == null || listobj.size() == 0) {
-            throw new MissingConfigException("ArrayList is Empty!");
-        }
-        if (listobj.get(0).getClass().isPrimitive()) {
-            throw new MissingConfigException("Primitive type can not using this function!");
-        }
+    public static <T> Map<String, T> convertListToMap(List<T> listobj, String identityCol) throws Exception {
+        checkType(listobj);
         Map<String, T> retMap = new HashMap<String, T>();
         Map<String, Method> methodMap = ReflectUtils.returnGetMethods(listobj.get(0).getClass());
         Method method = methodMap.get(identityCol);
@@ -70,13 +65,21 @@ public class CollectionMapConvert<T> {
         return retMap;
     }
 
-    public List<T> convertToList(Map<String, T> mapobj) throws Exception {
+    public static <T> List<T> convertToList(Map<String, T> mapobj) throws Exception {
         List<T> retList = new ArrayList<T>();
         Iterator<T> iter = mapobj.values().iterator();
         while (iter.hasNext()) {
             retList.add(iter.next());
         }
         return retList;
+    }
+    private static <T> void checkType(List<T> listobj) throws MissingConfigException{
+        if (listobj == null || listobj.size() == 0) {
+            throw new MissingConfigException("ArrayList is Empty!");
+        }
+        if (listobj.get(0).getClass().isPrimitive()) {
+            throw new MissingConfigException("Primitive type can not using this function!");
+        }
     }
 
     /**
@@ -87,13 +90,8 @@ public class CollectionMapConvert<T> {
      * @throws Exception
      */
 
-    public Map<String, List<T>> convertToMapByParentKey(List<T> listobj, String parentCol) throws Exception {
-        if (listobj == null || listobj.size() == 0) {
-            throw new MissingConfigException("ArrayList is Empty!");
-        }
-        if (listobj.get(0).getClass().isPrimitive()) {
-            throw new MissingConfigException("Primitive type can not using this function!");
-        }
+    public static <T> Map<String, List<T>> convertToMapByParentKey(List<T> listobj, String parentCol) throws Exception {
+        checkType(listobj);
         Method method = null;
         if (!(listobj.get(0) instanceof Map)) {
             method = ReflectUtils.returnGetMethods(listobj.get(0).getClass()).get(parentCol);
@@ -120,7 +118,7 @@ public class CollectionMapConvert<T> {
         return retMap;
     }
 
-    private void addMapToList(Map<String, List<T>> retMap, String key, T t) {
+    private static <T> void addMapToList(Map<String, List<T>> retMap, String key, T t) {
         if (!retMap.containsKey(key)) {
             List<T> list = new ArrayList<T>();
             list.add(t);
@@ -138,13 +136,8 @@ public class CollectionMapConvert<T> {
      * @return
      * @throws Exception
      */
-    public Map<String, List<Object>> getValuesByParentKey(List<T> listobj, String parentCol, String valueCol) throws Exception {
-        if (listobj == null || listobj.size() == 0) {
-            throw new MissingConfigException("ArrayList is Empty!");
-        }
-        if (listobj.get(0).getClass().isPrimitive()) {
-            throw new MissingConfigException("Primitive type can not using this function!");
-        }
+    public static <T> Map<String, List<Object>> getValuesByParentKey(List<T> listobj, String parentCol, String valueCol) throws Exception {
+        checkType(listobj);
 
         Map<String, List<Object>> retMap = new HashMap<String, List<Object>>();
 
@@ -181,14 +174,9 @@ public class CollectionMapConvert<T> {
      * @return
      * @throws Exception
      */
-    public List<T> filterListByColumnValue(List<T> listobj, String colName, Object colvalue) throws Exception {
+    public static <T> List<T> filterListByColumnValue(List<T> listobj, String colName, Object colvalue) throws Exception {
         List<T> retList = new ArrayList<T>();
-        if (listobj == null || listobj.size() == 0) {
-            throw new MissingConfigException("ArrayList is Empty!");
-        }
-        if (listobj.get(0).getClass().isPrimitive()) {
-            throw new MissingConfigException("Primitive type can not using this function!");
-        }
+        checkType(listobj);
         Method method = ReflectUtils.returnGetMethods(listobj.get(0).getClass()).get(colName);
         if (method == null) {
             throw new MissingConfigException("parent column or value column not exist in object");
@@ -211,14 +199,9 @@ public class CollectionMapConvert<T> {
      * @return
      * @throws Exception
      */
-    public List<T> filterListByColumnCondition(List<T> listobj,String scriptType, String queryConditions) throws Exception {
+    public static <T> List<T> filterListByColumnCondition(List<T> listobj,String scriptType, String queryConditions) throws Exception {
         List<T> retList = new ArrayList<T>();
-        if (listobj == null || listobj.size() == 0) {
-            throw new MissingConfigException("ArrayList is Empty!");
-        }
-        if (listobj.get(0).getClass().isPrimitive()) {
-            throw new MissingConfigException("Primitive type can not using this function!");
-        }
+        checkType(listobj);
         Map<String, Method> getMetholds = ReflectUtils.returnGetMethods(listobj.get(0).getClass());
         if (getMetholds == null) {
             throw new MissingConfigException("object does not have get method");
@@ -242,13 +225,8 @@ public class CollectionMapConvert<T> {
     }
 
 
-    public String getColumnValueAppendBySeparater(List<T> listobj, String colName, String separate) throws Exception {
-        if (listobj == null || listobj.size() == 0) {
-            throw new MissingConfigException("ArrayList is Empty!");
-        }
-        if (listobj.get(0).getClass().isPrimitive()) {
-            throw new MissingConfigException("Primitive type can not using this function!");
-        }
+    public static <T> String getColumnValueAppendBySeparater(List<T> listobj, String colName, String separate) throws Exception {
+        checkType(listobj);
         StringBuilder buffer = new StringBuilder();
         Method method = ReflectUtils.returnGetMethods(listobj.get(0).getClass()).get(colName);
         if (method == null) {
@@ -270,14 +248,9 @@ public class CollectionMapConvert<T> {
         return buffer.toString();
     }
 
-    public List<String> getValueListBySeparater(List<T> listobj, String colName) throws Exception {
+    public static <T> List<String> getValueListBySeparater(List<T> listobj, String colName) throws Exception {
         List<String> retList = new ArrayList<String>();
-        if (listobj == null || listobj.size() == 0) {
-            throw new MissingConfigException("ArrayList is Empty!");
-        }
-        if (listobj.get(0).getClass().isPrimitive()) {
-            throw new MissingConfigException("Primitive type can not using this function!");
-        }
+        checkType(listobj);
         Method method = ReflectUtils.returnGetMethods(listobj.get(0).getClass()).get(colName);
         if (method == null) {
             throw new MissingConfigException("column not exist in object");
@@ -290,13 +263,8 @@ public class CollectionMapConvert<T> {
         return retList;
     }
 
-    public List<Map<String, Object>> getListMap(List<T> listobj) throws Exception {
-        if (listobj == null || listobj.size() == 0) {
-            throw new MissingConfigException("ArrayList is Empty!");
-        }
-        if (listobj.get(0).getClass().isPrimitive()) {
-            throw new MissingConfigException("Primitive type can not using this function!");
-        }
+    public static <T> List<Map<String, Object>> getListMap(List<T> listobj) throws Exception {
+        checkType(listobj);
         Map<String, Method> getMetholds = ReflectUtils.returnGetMethods(listobj.get(0).getClass());
         if(getMetholds.isEmpty()){
             throw new MissingConfigException("target object contain no get methold!");
@@ -317,7 +285,7 @@ public class CollectionMapConvert<T> {
         return retList;
     }
 
-    public List<T> mergeListFromNew(List<T> orgList, List<T> newList, String identifyCol) throws Exception {
+    public static <T> List<T> mergeListFromNew(List<T> orgList, List<T> newList, String identifyCol) throws Exception {
         if(orgList==null || newList==null || orgList.size()==0 || newList.size()==0){
             throw new MissingConfigException("Input ArrayList is Empty!");
         }
@@ -337,22 +305,6 @@ public class CollectionMapConvert<T> {
         }
         return retList;
     }
-
-   /* public Map<String, T> mergeListMapFromNew(List<T> orgList, List<T> newList, String indentifyCol) throws Exception {
-        Map<String, T> map = convertListToMap(newList, indentifyCol);
-        Map<String, T> retMap = new HashMap<String, T>();
-        for (T obj : orgList) {
-            String indentifyMethold = "get" + indentifyCol.substring(0, 1).toUpperCase() + indentifyCol.substring(1, indentifyCol.length());
-            Method meth = obj.getClass().getDeclaredMethod(indentifyMethold, null);
-            Object val = meth.invoke(obj, null);
-            if (map.get(val.toString()) != null) {
-                retMap.put(val.toString(), map.get(val.toString()));
-            } else {
-                retMap.put(val.toString(), obj);
-            }
-        }
-        return retMap;
-    }*/
 
 }
 

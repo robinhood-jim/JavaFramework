@@ -104,7 +104,7 @@ public abstract class BaseCrudDhtmlxController<O extends BaseObject, P extends S
                 retList.add(tmap);
             }
             retMap.put("rows", retList);
-            retMap.put("query", tquery);
+            wrapPageQuery(tquery,retMap);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -188,11 +188,22 @@ public abstract class BaseCrudDhtmlxController<O extends BaseObject, P extends S
                 retList.add(tmap);
             }
             retMap.put("rows", retList);
-            retMap.put("query", tquery);
+            wrapPageQuery(query,retMap);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
         return retMap;
+    }
+    private void wrapPageQuery(PageQuery pageQuery,Map<String,Object> retMap){
+
+        if(pageQuery!=null){
+            retMap.put("pageSize",pageQuery.getPageSize());
+            retMap.put("pageNumber",pageQuery.getPageNumber());
+            retMap.put("pageCount",pageQuery.getPageCount());
+            retMap.put("recordCount",pageQuery.getRecordCount());
+            retMap.put("order",pageQuery.getOrder());
+            retMap.put("orderDirection",pageQuery.getOrderDirection());
+        }
     }
 
 }

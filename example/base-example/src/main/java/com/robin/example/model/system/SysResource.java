@@ -49,6 +49,8 @@ public class SysResource extends BaseObject {
 	private String remark;
 	@MappingField(field = "org_id")
 	private Long orgId;
+	@MappingField
+	private String permission;
 	
 
 }

@@ -148,7 +148,7 @@ public class SysUserCrudController extends BaseCrudDhtmlxController<SysUser, Lon
                                           HttpServletResponse response) {
         Map<String,Object> retMap=new HashMap<>();
         try{
-            Long[] ids = parseId(request.getParameter("ids").split(","));
+            Long[] ids = parseId(request.getParameter("ids"));
             service.deleteUsers(ids);
             wrapSuccess(retMap);
         }catch (Exception ex){

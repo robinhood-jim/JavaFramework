@@ -19,10 +19,12 @@ import com.robin.core.base.dao.JdbcDao;
 import com.robin.core.base.exception.ServiceException;
 import com.robin.core.base.model.BaseObject;
 import com.robin.core.base.util.Const;
+import com.robin.core.collection.util.CollectionBaseConvert;
 import com.robin.core.collection.util.CollectionMapConvert;
 import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.query.util.PageQuery;
 import com.robin.core.web.util.Session;
+import com.robin.core.web.util.WebConstant;
 import com.robin.example.model.system.SysOrg;
 import com.robin.example.model.system.SysResource;
 import com.robin.example.model.user.SysResourceUser;
@@ -31,7 +33,6 @@ import com.robin.example.model.user.SysUserOrg;
 import com.robin.example.model.user.SysUserResponsiblity;
 import com.robin.example.service.user.SysUserResponsiblityService;
 import com.robin.example.service.user.SysUserService;
-import com.robin.core.web.util.WebConstant;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -81,10 +82,12 @@ public class LoginService {
         }
         SysUser queryUser = users.get(0);
         List<SysUserResponsiblity> respList=sysUserResponsiblityService.queryByField("userId", BaseObject.OPER_EQ,queryUser.getId());
-        retMap.put("accountName",queryUser.getUserAccount());
-        retMap.put("userName",queryUser.getUserName());
-        retMap.put("accountType",queryUser.getAccountType());
-        retMap.put("password",queryUser.getUserPassword());
+
+        try{
+            ConvertUtil.objectToMapObj(retMap,queryUser);
+        }catch (Exception ex){
+            throw new ServiceException(ex);
+        }
         List<Long> respIdList=new ArrayList<>();
         if(!respList.isEmpty()){
             for(SysUserResponsiblity resp:respList){
@@ -92,7 +95,65 @@ public class LoginService {
             }
         }
         if(!respIdList.isEmpty()) {
-            retMap.put("resps",StringUtils.join(respIdList,","));
+            retMap.put("resps",respIdList);
+        }
+        return retMap;
+    }
+    public SysUser getUserInfo(String userName){
+        SysUser user = new SysUser();
+        user.setUserAccount(userName);
+        user.setUserStatus(Const.VALID);
+        List<SysUser> users = sysUserService.queryByVO(user, null, null);
+        if (users.isEmpty()) {
+            throw new ServiceException("AccountName or password incorrect or Account is locked!Please retry");
+        }
+        return users.get(0);
+    }
+    public Map<String,Object> getUserRights(Long userId){
+        Map<String,Object> retMap=new HashMap<>();
+        //get userRole
+        PageQuery query=new PageQuery();
+        query.setPageSize(0);
+        query.setSelectParamId("GETUSER_ROLE");
+        query.setParameterArr(new Object[]{userId});
+        jdbcDao.queryBySelectId(query);
+        List<Long> roleIds=new ArrayList<>();
+        List<String> roleCodes=new ArrayList<>();
+        if(!query.getRecordSet().isEmpty()){
+            query.getRecordSet().forEach(f->{
+                roleIds.add(Long.parseLong(f.get("role_id").toString()));
+                roleCodes.add(f.get("code").toString());
+            });
+        }
+        if(roleIds.isEmpty()){
+            throw new ServiceException("user "+userId+" does not have any role");
+        }
+        retMap.put("roles",roleCodes);
+        //get user access resources
+        PageQuery query1=new PageQuery();
+        query1.setPageSize(0);
+        query1.setSelectParamId("GET_RESOURCEINFO");
+        Map<String,Object> paramMap=new HashMap<>();
+        paramMap.put("userId",userId);
+        paramMap.put("roleIds",roleIds);
+        query1.setNamedParameters(paramMap);
+        jdbcDao.queryBySelectId(query1);
+        if(!query1.getRecordSet().isEmpty()){
+            try {
+                Map<String,List<Map<String,Object>>> resTypeMap= CollectionMapConvert.convertToMapByParentKey(query1.getRecordSet(), "assignType");
+                Map<String,Map<String,Object>> accessResMap= CollectionBaseConvert.listObjectToMap(resTypeMap.get(Const.RESOURCE_ASSIGN_ACCESS),"id");
+                if(resTypeMap.containsKey(Const.RESOURCE_ASSIGN_DENIED)){
+                    //reverse assign,remove denied resources
+                    for(Map<String,Object> tmap:resTypeMap.get(Const.RESOURCE_ASSIGN_DENIED)){
+                        if(accessResMap.containsKey(tmap.get("id").toString())){
+                            accessResMap.remove(tmap.get("id").toString());
+                        }
+                    }
+                }
+                retMap.put("permission",accessResMap);
+            }catch (Exception ex) {
+                throw new ServiceException(" internal error");
+            }
         }
         return retMap;
     }
@@ -168,8 +229,7 @@ public class LoginService {
         List<SysResource> commresources = getResourcesByOrg(WebConstant.DEFAULT_ORG);
         Map<String, SysResource> resmap = null;
         try {
-            CollectionMapConvert<SysResource> convert = new CollectionMapConvert<>();
-            resmap = convert.convertListToMap(commresources, "id");
+            resmap = CollectionMapConvert.convertListToMap(commresources, "id");
         } catch (Exception ex) {
 
         }
