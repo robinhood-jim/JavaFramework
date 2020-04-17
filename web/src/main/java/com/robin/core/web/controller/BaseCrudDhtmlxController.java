@@ -180,7 +180,10 @@ public abstract class BaseCrudDhtmlxController<O extends BaseObject, P extends S
                     if (key.equals(idColumn)) {
                         tmpList.add("0");
                     } else if (map.containsKey(key)) {
-                        tmpList.add(map.get(key).toString());
+                        if (map.get(key)!=null)
+                            tmpList.add(map.get(key).toString());
+                        else
+                            tmpList.add("");
                     }
                 }
                 tmap.put("data", tmpList);

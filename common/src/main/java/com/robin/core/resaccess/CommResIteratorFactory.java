@@ -3,7 +3,7 @@ package com.robin.core.resaccess;
 import com.robin.core.base.util.ResourceConst;
 import com.robin.core.fileaccess.iterator.AbstractResIterator;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
-import com.robin.core.resaccess.iterator.JdbcResIterator;
+
 import lombok.extern.slf4j.Slf4j;
 
 
@@ -21,7 +21,7 @@ public class CommResIteratorFactory {
         Class<AbstractResIterator> clazz = null;
         try {
             if(resType.equals(ResourceConst.ResourceType.TYPE_DB.getValue())){
-                iterator=new JdbcResIterator(colmeta);
+                //iterator=new JdbcResIterator(colmeta);
             }
             if (resType.equals(ResourceConst.ResourceType.TYPE_KAFKA.getValue())) {
                 clazz = (Class<AbstractResIterator>) Class.forName(KAFKA_ITER_CLASS);

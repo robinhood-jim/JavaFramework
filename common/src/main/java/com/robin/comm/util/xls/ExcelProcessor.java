@@ -60,7 +60,7 @@ public class ExcelProcessor {
             wb = new HSSFWorkbook(myxls);
         }
 
-        Sheet sheet = wb.getSheetAt(0);
+        Sheet sheet = wb.getSheetAt(prop.getSheetNum());
         List<Map<String, String>> columnValueList = new ArrayList<Map<String, String>>();
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");//hh24:mi:ss
         int pos = 0;
@@ -159,7 +159,7 @@ public class ExcelProcessor {
                 Row row = rit.next();
                 if (pos == startRow) {
                     for (int i = startCol - 1; i < endCol; i++) {
-                        Cell cell = (Cell) row.getCell(i);
+                        Cell cell =  row.getCell(i);
                         String cellName = cell.getStringCellValue();
                         DataTypeEnum column = columnMap.get(cellName.toUpperCase());
                         if (column == null) {
