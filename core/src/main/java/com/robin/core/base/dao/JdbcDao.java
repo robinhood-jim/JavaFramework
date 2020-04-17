@@ -208,7 +208,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
     }
 
     @Override
-    public List<Map<String, Object>> queryBySql(String sqlstr, Object[] obj) throws DAOException {
+    public List<Map<String, Object>> queryBySql(String sqlstr, Object... obj) throws DAOException {
         List<Map<String, Object>> list;
         try {
             String querySQL = sqlstr;
@@ -224,7 +224,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
 
 
     @Override
-    public List<? extends BaseObject> queryEntityBySql(String querySQL, Object[] obj, final Class<? extends BaseObject> targetclazz) {
+    public List<? extends BaseObject> queryEntityBySql(String querySQL, final Class<? extends BaseObject> targetclazz,Object... obj) {
         List<? extends BaseObject> list;
         try {
             if (logger.isDebugEnabled()) {
@@ -255,7 +255,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
     }
 
     @Override
-    public int executeOperationWithSql(String sql, Object[] paramObj, ResultSetOperationExtractor oper) throws DAOException {
+    public int executeOperationWithSql(String sql, ResultSetOperationExtractor oper,Object... paramObj) throws DAOException {
         Integer ret;
         try {
             oper.setLobHandler(lobHandler);
@@ -748,6 +748,12 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
             throws DAOException {
         KeyHolder keyHolder = new GeneratedKeyHolder();
         getJdbcTemplate().update(new DefaultPrepareStatement(field, sql, object, lobHandler), keyHolder);
+        return keyHolder.getKey().longValue();
+    }
+    public long executeSqlWithReturn(final String sql, Object[] object)
+            throws DAOException {
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        getJdbcTemplate().update(new SimplePrepareStatement(sql, object, lobHandler), keyHolder);
         return keyHolder.getKey().longValue();
     }
 

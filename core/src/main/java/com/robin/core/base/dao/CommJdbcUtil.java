@@ -478,6 +478,23 @@ public class CommJdbcUtil {
         pageQuery.setRecordSet(list);
         return pageQuery;
     }
+    public static void batchUpdate(JdbcTemplate jdbcTemplate,String sql,final List<Object[]> valueList){
+        BatchPreparedStatementSetter setter=new BatchPreparedStatementSetter() {
+            @Override
+            public void setValues(PreparedStatement ps, int i) throws SQLException {
+                Object[] objs=valueList.get(i);
+                for(int pos=0;pos<objs.length;pos++){
+                    ps.setObject(pos+1,objs[pos]);
+                }
+            }
+
+            @Override
+            public int getBatchSize() {
+                return valueList.size();
+            }
+        };
+        doBatch(jdbcTemplate, sql, setter);
+    }
 
     public static void batchUpdate(JdbcTemplate jdbcTemplate, String sql, final List<Map<String, String>> resultList, List<Map<String, String>> columnTypeMapList) throws DAOException {
         final List<Map<String, String>> list = resultList;

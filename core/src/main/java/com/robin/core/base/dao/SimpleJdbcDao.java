@@ -19,6 +19,7 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.Serializable;
+import java.math.BigInteger;
 import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -491,6 +492,20 @@ public class SimpleJdbcDao {
 		}
 		finally{
 			DbUtils.closeQuietly(conn);
+		}
+	}
+	public static long executeUpdateWithIdentity(final Connection connection,final String sql,final Object[] params) throws DAOException{
+		String sql2="select @@identity";
+		try{
+			QueryRunner qRunner=new QueryRunner();
+			qRunner.update(connection,sql, params);
+			Long num= (Long) qRunner.query(connection,sql2,new ScalarHandler(1));
+			return num.longValue();
+		}catch(Exception ex){
+			//logger.error("",ex);
+			throw new DAOException(ex);
+		}
+		finally{
 		}
 	}
 	/**

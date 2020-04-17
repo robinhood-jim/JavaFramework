@@ -129,7 +129,7 @@ public interface IjdbcDao {
 	 * @return
 	 * @throws DAOException
 	 */
-	List<Map<String,Object>> queryBySql(String sqlstr,Object[] obj) throws DAOException;
+	List<Map<String,Object>> queryBySql(String sqlstr,Object... obj) throws DAOException;
 	/**
 	 * Query With PageQuery
 	 * @param pageQuery
@@ -189,9 +189,9 @@ public interface IjdbcDao {
 	 * @throws DAOException
 	 */
 	int executeBySelectId(PageQuery pageQuery) throws DAOException;
-	List<? extends BaseObject> queryEntityBySql(String querySQL, Object[] obj, final Class<? extends BaseObject> targetclazz);
+	List<? extends BaseObject> queryEntityBySql(String querySQL, final Class<? extends BaseObject> targetclazz,Object... obj);
 	int executeOperationWithSql(String sql, ResultSetOperationExtractor oper) throws DAOException;
-	int executeOperationWithSql(String sql, Object[] paramObj, ResultSetOperationExtractor oper) throws DAOException;
+	int executeOperationWithSql(String sql, ResultSetOperationExtractor oper,Object... paramObj) throws DAOException;
 	List<? extends BaseObject> queryByField(Class<? extends BaseObject> type, String fieldName, String oper, Object[] fieldValues) throws DAOException;
 	List<? extends BaseObject> queryByFieldOrderBy(Class<? extends BaseObject> type, String orderByStr, String fieldName, String oper, Object[] fieldValues) throws DAOException;
 	List<? extends BaseObject> queryAll(Class<? extends BaseObject> type) throws DAOException;
