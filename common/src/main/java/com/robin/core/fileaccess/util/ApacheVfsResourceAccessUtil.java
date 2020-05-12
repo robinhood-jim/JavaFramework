@@ -31,37 +31,37 @@ public class ApacheVfsResourceAccessUtil extends AbstractResourceAccessUtil {
     private Logger logger = LoggerFactory.getLogger(getClass());
 
     @Override
-    public BufferedReader getInResourceByReader(DataCollectionMeta meta) throws Exception {
+    public BufferedReader getInResourceByReader(DataCollectionMeta meta, String resourcePath) throws Exception {
         VfsParam param = new VfsParam();
         ConvertUtil.convertToTarget(param, meta.getResourceCfgMap());
 
-        FileObject fo = manager.resolveFile(getUriByParam(param, meta.getPath()).toString(), getOptions(param));
+        FileObject fo = manager.resolveFile(getUriByParam(param, resourcePath).toString(), getOptions(param));
 
         return new BufferedReader(new InputStreamReader(getInResource(fo,meta),meta.getEncode()));
     }
 
     @Override
-    public BufferedWriter getOutResourceByWriter(DataCollectionMeta meta) throws Exception {
+    public BufferedWriter getOutResourceByWriter(DataCollectionMeta meta, String resourcePath) throws Exception {
         BufferedWriter writer;
-        FileObject fo = checkFileExist(meta);
-        writer = getWriterByPath(meta.getPath(), fo.getContent().getOutputStream(), meta.getEncode());
+        FileObject fo = checkFileExist(meta, resourcePath);
+        writer = getWriterByPath(resourcePath, fo.getContent().getOutputStream(), meta.getEncode());
         return writer;
     }
 
     @Override
-    public OutputStream getOutResourceByStream(DataCollectionMeta meta) throws Exception {
+    public OutputStream getOutResourceByStream(DataCollectionMeta meta, String resourcePath) throws Exception {
         OutputStream out;
-        FileObject fo = checkFileExist(meta);
-        out = getOutputStreamByPath(meta.getPath(), fo.getContent().getOutputStream());
+        FileObject fo = checkFileExist(meta, resourcePath);
+        out = getOutputStreamByPath(resourcePath, fo.getContent().getOutputStream());
         return out;
     }
 
     @Override
-    public InputStream getInResourceByStream(DataCollectionMeta meta) throws Exception {
+    public InputStream getInResourceByStream(DataCollectionMeta meta, String resourcePath) throws Exception {
         VfsParam param = new VfsParam();
         ConvertUtil.convertToTarget(param, meta.getResourceCfgMap());
 
-        FileObject fo = manager.resolveFile(getUriByParam(param, meta.getPath()).toString(), getOptions(param));
+        FileObject fo = manager.resolveFile(getUriByParam(param, resourcePath).toString(), getOptions(param));
         InputStream reader=getInResource(fo,meta);
         return reader;
     }
@@ -99,16 +99,16 @@ public class ApacheVfsResourceAccessUtil extends AbstractResourceAccessUtil {
         return list;
     }
 
-    private FileObject checkFileExist(DataCollectionMeta meta) throws Exception {
+    private FileObject checkFileExist(DataCollectionMeta meta, String resourcePath) throws Exception {
         VfsParam param = new VfsParam();
         ConvertUtil.convertToTarget(param, meta.getResourceCfgMap());
-        FileObject fo = manager.resolveFile(getUriByParam(param, meta.getPath()).toString(), getOptions(param));
+        FileObject fo = manager.resolveFile(getUriByParam(param, resourcePath).toString(), getOptions(param));
         if (fo.exists()) {
             if (FileType.FOLDER.equals(fo.getType())) {
-                logger.error("File {} is a directory！", meta.getPath());
-                throw new FileNotFoundException("File " + meta.getPath() + " is a directory!");
+                logger.error("File {} is a directory！", resourcePath);
+                throw new FileNotFoundException("File " + resourcePath + " is a directory!");
             } else {
-                logger.warn("File " + meta.getPath() + " already exists!,Overwrite");
+                logger.warn("File " + resourcePath + " already exists!,Overwrite");
             }
         } else {
             if (!fo.getParent().exists()) {
@@ -120,9 +120,9 @@ public class ApacheVfsResourceAccessUtil extends AbstractResourceAccessUtil {
     }
 
     @Override
-    public OutputStream getRawOutputStream(DataCollectionMeta meta) throws Exception {
+    public OutputStream getRawOutputStream(DataCollectionMeta meta, String resourcePath) throws Exception {
         OutputStream out;
-        FileObject fo = checkFileExist(meta);
+        FileObject fo = checkFileExist(meta, resourcePath);
         out = fo.getContent().getOutputStream();
         return out;
     }

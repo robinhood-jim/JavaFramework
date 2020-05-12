@@ -37,7 +37,8 @@ public interface IjdbcDao {
 	 * @return
 	 * @throws DAOException
 	 */
-	int queryByInt(String querySQL) throws DAOException;
+
+	int queryByInt(String querySQL,Object... objects) throws DAOException;
 	/**
 	 * Query With page
 	 * @param sqlstr
@@ -100,12 +101,7 @@ public interface IjdbcDao {
 	 * @throws DAOException
 	 */
 	Map<String,Object> executeCallResultList(String procedurename, List<SqlParameter> declaredParameters, Map<String,Object> inPara) throws DAOException;
-	/**
-	 * Execute SQL
-	 * @param sql
-	 * @throws DAOException
-	 */
-	void executeUpdate(String sql) throws DAOException;
+
 	/**
 	 * Execute Update with PreparedStmt
 	 * @param sql
@@ -190,7 +186,6 @@ public interface IjdbcDao {
 	 */
 	int executeBySelectId(PageQuery pageQuery) throws DAOException;
 	List<? extends BaseObject> queryEntityBySql(String querySQL, final Class<? extends BaseObject> targetclazz,Object... obj);
-	int executeOperationWithSql(String sql, ResultSetOperationExtractor oper) throws DAOException;
 	int executeOperationWithSql(String sql, ResultSetOperationExtractor oper,Object... paramObj) throws DAOException;
 	List<? extends BaseObject> queryByField(Class<? extends BaseObject> type, String fieldName, String oper, Object[] fieldValues) throws DAOException;
 	List<? extends BaseObject> queryByFieldOrderBy(Class<? extends BaseObject> type, String orderByStr, String fieldName, String oper, Object[] fieldValues) throws DAOException;

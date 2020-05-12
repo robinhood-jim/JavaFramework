@@ -33,6 +33,7 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
     public static final String ILLEGAL_SCHEMA_CHARS = "!@#$%^&*()+.";
     protected static final String SELECT = "select ";
 
+
     /**
      * @param str
      * @return
@@ -456,7 +457,7 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
             builder.append(getBlobFormat());
         }
         if(field.isIncrement() && supportIncrement()){
-            builder.append(" AUTO INCREMENT");
+            builder.append(getAutoIncrementDef());
         }
         if(field.isRequired()){
             builder.append(" NOT NULL");
@@ -610,5 +611,8 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
             }
         }
         return is_illeagl;
+    }
+    protected String getAutoIncrementDef(){
+        return " AUTO INCREMENT";
     }
 }

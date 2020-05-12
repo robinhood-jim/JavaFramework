@@ -27,14 +27,24 @@ import java.util.List;
 
 @Slf4j
 public class TextFileIteratorFactory {
-	public static AbstractFileIterator getProcessIteratorByType(String fileType,DataCollectionMeta colmeta,BufferedReader reader) throws Exception{
-		AbstractFileIterator iterator=getIter(fileType,colmeta);;
+	public static AbstractFileIterator getProcessIteratorByType(DataCollectionMeta colmeta){
+		AbstractFileIterator iterator=getIter(colmeta);
+		try {
+			iterator.init();
+		}catch (Exception ex){
+			log.error("{}",ex);
+		}
+		return iterator;
+	}
+
+	public static AbstractFileIterator getProcessIteratorByType(DataCollectionMeta colmeta, BufferedReader reader) throws Exception{
+		AbstractFileIterator iterator=getIter(colmeta);
 		iterator.setReader(reader);
 		iterator.init();
 		return iterator;
 	}
-	public static AbstractFileIterator getProcessIteratorByType(String fileType,DataCollectionMeta colmeta,InputStream in) throws Exception{
-		AbstractFileIterator iterator=getIter(fileType,colmeta);
+	public static AbstractFileIterator getProcessIteratorByType(DataCollectionMeta colmeta, InputStream in) throws Exception{
+		AbstractFileIterator iterator=getIter(colmeta);
 		iterator.setInputStream(in);
 		iterator.init();
 		return iterator;
@@ -43,20 +53,22 @@ public class TextFileIteratorFactory {
 		List<String> suffixList=new ArrayList<String>();
 		FileUtils.parseFileFormat(colmeta.getPath(),suffixList);
 		String fileFormat=suffixList.get(0);
-		AbstractFileIterator iterator=getIter(fileFormat,colmeta);
+		AbstractFileIterator iterator=getIter(colmeta);
 		iterator.setInputStream(in);
 		iterator.init();
 		return iterator;
 	}
-	private static AbstractFileIterator getIter(String fileType,DataCollectionMeta colmeta){
+	private static AbstractFileIterator getIter(DataCollectionMeta colmeta){
 		AbstractFileIterator iterator=null;
+		String fileType=colmeta.getFileFormat();
 		try {
 			if (fileType.equalsIgnoreCase(Const.FILESUFFIX_JSON)) {
 				iterator = new GsonFileIterator(colmeta);
 			} else if (fileType.equalsIgnoreCase(Const.FILESUFFIX_XML)) {
 				iterator = new XmlFileIterator(colmeta);
 			} else if (fileType.equalsIgnoreCase(Const.FILESUFFIX_AVRO)) {
-				iterator = new AvroFileIterator(colmeta);
+				Class<AbstractFileIterator> clazz = (Class<AbstractFileIterator>) Class.forName(Const.ITERATOR_AVRO_CLASSNAME);
+				iterator = clazz.getConstructor(DataCollectionMeta.class).newInstance(colmeta);
 			} else if (fileType.equalsIgnoreCase(Const.FILESUFFIX_PARQUET)) {
 				Class<AbstractFileIterator> clazz = (Class<AbstractFileIterator>) Class.forName(Const.FILEITERATOR_PARQUET_CLASSNAME);
 				iterator = clazz.getConstructor(DataCollectionMeta.class).newInstance(colmeta);

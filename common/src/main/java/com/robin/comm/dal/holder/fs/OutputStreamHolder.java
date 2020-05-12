@@ -34,7 +34,7 @@ public class OutputStreamHolder extends AbstractResourceHolder {
 		}
 		String[] tag= AbstractResourceAccessUtil.retrieveResource(colmeta.getPath());
 		AbstractResourceAccessUtil util= ResourceAccessHolder.getAccessUtilByProtocol(tag[0].toLowerCase());
-		out=util.getOutResourceByStream(colmeta);
+		out=util.getOutResourceByStream(colmeta,colmeta.getPath() );
 
 	}
 

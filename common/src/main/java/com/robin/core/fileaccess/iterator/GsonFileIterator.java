@@ -32,6 +32,12 @@ public class GsonFileIterator extends AbstractFileIterator{
 	}
 	@Override
 	public void init() {
+
+	}
+
+	@Override
+	public void beforeProcess(String resourcePath) {
+		super.beforeProcess(resourcePath);
 		jreader=new JsonReader(reader);
 		try{
 			jreader.beginArray();

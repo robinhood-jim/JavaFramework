@@ -138,4 +138,8 @@ public class DB2SqlGen extends AbstractSqlGen implements BaseSqlGen{
 	public boolean supportIncrement() throws DAOException {
 		return true;
 	}
+	@Override
+	protected String getAutoIncrementDef() {
+		return " IDENTITY";
+	}
 }

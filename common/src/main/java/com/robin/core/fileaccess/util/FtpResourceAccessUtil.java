@@ -42,45 +42,45 @@ public class FtpResourceAccessUtil extends AbstractResourceAccessUtil{
 		}
 	}
 	@Override
-	public BufferedReader getInResourceByReader(DataCollectionMeta meta) throws Exception {
+	public BufferedReader getInResourceByReader(DataCollectionMeta meta, String resourcePath) throws Exception {
 		FtpParam param=new FtpParam();
 		ConvertUtil.convertToTarget(param, meta.getResourceCfgMap());
 		BufferedReader reader=null;
-		FileObject fo=manager.resolveFile(getUriByParam(param, meta.getPath()).toString(),getOptions(param));
+		FileObject fo=manager.resolveFile(getUriByParam(param, resourcePath).toString(),getOptions(param));
 		if (fo.exists()) {
 			if (FileType.FOLDER.equals(fo.getType())) {
-				logger.error("File {} is a directory！", meta.getPath());
-				throw new FileNotFoundException("File "+meta.getPath()+" is a directory!");
+				logger.error("File {} is a directory！", reader);
+				throw new FileNotFoundException("File "+resourcePath+" is a directory!");
 			} else {
-				reader = getReaderByPath(meta.getPath(), fo.getContent().getInputStream(), meta.getEncode());
+				reader = getReaderByPath(resourcePath, fo.getContent().getInputStream(), meta.getEncode());
 			}
 		} else {
-			throw new FileNotFoundException("File "+meta.getPath()+" not found!");
+			throw new FileNotFoundException("File "+resourcePath+" not found!");
 		}
 		return reader;
 	}
 
 	@Override
-	public BufferedWriter getOutResourceByWriter(DataCollectionMeta meta) throws Exception {
+	public BufferedWriter getOutResourceByWriter(DataCollectionMeta meta, String resourcePath) throws Exception {
 		BufferedWriter writer=null;
 		try{
-			FileObject fo=checkFtpFileExist(meta);
-			writer = getWriterByPath(meta.getPath(), fo.getContent().getOutputStream(), meta.getEncode());
+			FileObject fo=checkFtpFileExist(meta,resourcePath);
+			writer = getWriterByPath(resourcePath, fo.getContent().getOutputStream(), meta.getEncode());
 		}catch(Exception ex){
 			ex.printStackTrace();
 		}
 		return writer;
 	}
-	private FileObject checkFtpFileExist(DataCollectionMeta meta) throws Exception{
+	private FileObject checkFtpFileExist(DataCollectionMeta meta, String resourcePath) throws Exception{
 		FtpParam param=new FtpParam();
 		ConvertUtil.convertToTarget(param, meta.getResourceCfgMap());
-		FileObject fo=manager.resolveFile(getUriByParam(param, meta.getPath()).toString(),getOptions(param));
+		FileObject fo=manager.resolveFile(getUriByParam(param, resourcePath).toString(),getOptions(param));
 		if (fo.exists()) {
 			if (FileType.FOLDER.equals(fo.getType())) {
-				logger.error("File {} is a directory！", meta.getPath());
-				throw new FileNotFoundException("File "+meta.getPath()+" is a directory!");
+				logger.error("File {} is a directory！", resourcePath);
+				throw new FileNotFoundException("File "+resourcePath+" is a directory!");
 			} else {
-				logger.warn("File "+meta.getPath()+" aready exists!,Overwirte");
+				logger.warn("File "+resourcePath+" aready exists!,Overwirte");
 			}
 		}else{
 			if(!fo.getParent().exists()){
@@ -92,11 +92,11 @@ public class FtpResourceAccessUtil extends AbstractResourceAccessUtil{
 	}
 
 	@Override
-	public OutputStream getOutResourceByStream(DataCollectionMeta meta) throws Exception {
+	public OutputStream getOutResourceByStream(DataCollectionMeta meta, String resourcePath) throws Exception {
 		OutputStream out=null;
 		try{
-			FileObject fo=checkFtpFileExist(meta);
-			out = getOutputStreamByPath(meta.getPath(), fo.getContent().getOutputStream());
+			FileObject fo=checkFtpFileExist(meta, resourcePath);
+			out = getOutputStreamByPath(resourcePath, fo.getContent().getOutputStream());
 		}catch(Exception ex){
 			ex.printStackTrace();
 		}
@@ -104,10 +104,10 @@ public class FtpResourceAccessUtil extends AbstractResourceAccessUtil{
 	}
 
 	@Override
-	public OutputStream getRawOutputStream(DataCollectionMeta meta) throws Exception {
+	public OutputStream getRawOutputStream(DataCollectionMeta meta, String resourcePath) throws Exception {
 		OutputStream out=null;
 		try{
-			FileObject fo=checkFtpFileExist(meta);
+			FileObject fo=checkFtpFileExist(meta, resourcePath);
 			out = fo.getContent().getOutputStream();
 		}catch(Exception ex){
 			ex.printStackTrace();
@@ -116,7 +116,7 @@ public class FtpResourceAccessUtil extends AbstractResourceAccessUtil{
 	}
 
 	@Override
-	public InputStream getInResourceByStream(DataCollectionMeta meta) throws Exception {
+	public InputStream getInResourceByStream(DataCollectionMeta meta, String resourcePath) throws Exception {
 		FtpParam param=new FtpParam();
 		ConvertUtil.convertToTarget(param, meta.getResourceCfgMap());
 		InputStream reader=null;

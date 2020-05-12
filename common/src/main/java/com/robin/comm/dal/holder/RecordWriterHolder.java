@@ -1,8 +1,6 @@
 package com.robin.comm.dal.holder;
 
-import com.robin.comm.dal.holder.AbstractResourceHolder;
 import com.robin.core.base.exception.OperationInWorkException;
-import com.robin.core.base.util.ResourceConst;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.comm.dal.pool.ResourceAccessHolder;
 import com.robin.core.fileaccess.util.AbstractResourceAccessUtil;
@@ -26,7 +24,7 @@ public class RecordWriterHolder extends AbstractResourceHolder {
         }
         String[] tag = AbstractResourceAccessUtil.retrieveResource(colmeta.getPath());
         AbstractResourceAccessUtil util = ResourceAccessHolder.getAccessUtilByProtocol(tag[0].toLowerCase());
-        OutputStream inputStream = util.getOutResourceByStream(colmeta);
+        OutputStream inputStream = util.getOutResourceByStream(colmeta, colmeta.getPath());
         if(!colmeta.isFsTag()) {
             writer = TextFileWriterFactory.getFileWriterByPath(colmeta, inputStream);
         } else{

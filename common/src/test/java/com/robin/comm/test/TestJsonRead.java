@@ -1,10 +1,12 @@
 package com.robin.comm.test;
 
-import com.robin.core.base.util.Const;
+import com.robin.core.base.util.ResourceConst;
 import com.robin.core.fileaccess.iterator.AbstractFileIterator;
 import com.robin.core.fileaccess.iterator.TextFileIteratorFactory;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
+import com.robin.core.fileaccess.util.AbstractResourceAccessUtil;
 import com.robin.core.fileaccess.util.ApacheVfsResourceAccessUtil;
+import com.robin.core.fileaccess.util.ResourceAccessorFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,12 +30,13 @@ public class TestJsonRead {
 			colmeta.setResourceCfgMap(ftpparam);
 			colmeta.setPath("/tmp/robin/testdata/test1.avro.gz");
 			colmeta.setEncode("UTF-8");
+			colmeta.setResType(ResourceConst.ResourceType.TYPE_SFTPFILE.getValue());
 			//ftpparam.put("schemaContent", "{\"namespace\":\"com.robin.avro\",\"name\":\"Content\",\"type\":\"record\",\"fields\":[{\"name\":\"info_id\",\"type\":\"string\"},{\"name\":\"url\",\"type\":\"string\"},{\"name\":\"title\",\"type\":\"string\"},{\"name\":\"content\",\"type\":\"string\"}]}");
 			List<Map<String, Object>> list=new ArrayList<Map<String,Object>>();
-			ApacheVfsResourceAccessUtil util=new ApacheVfsResourceAccessUtil();
+			AbstractResourceAccessUtil util= ResourceAccessorFactory.getResourceAccessorByType(colmeta);
 			//BufferedReader reader=util.getInResourceByReader(colmeta);//new BufferedReader(new FileReader(new File("e:/test1.data")));
-			InputStream reader=util.getInResourceByStream(colmeta);
-			AbstractFileIterator jreader=TextFileIteratorFactory.getProcessIteratorByType(Const.FILETYPE_AVRO, colmeta, reader);
+			InputStream reader=util.getInResourceByStream(colmeta,colmeta.getPath() );
+			AbstractFileIterator jreader=TextFileIteratorFactory.getProcessIteratorByType(colmeta, reader);
 			while(jreader.hasNext()){
 				Map<String,Object> map=jreader.next();
 				logger.info("{}",map);

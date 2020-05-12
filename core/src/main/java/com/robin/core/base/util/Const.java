@@ -131,6 +131,9 @@ public class Const {
 	public static final String FILEWRITER_PROTOBUF_CLASSNAME="com.robin.comm.fileaccess.writer.ProtoBufFileWriter";
 	public static final String FILEITERATOR_PARQUET_CLASSNAME="com.robin.comm.fileaccess.iterator.ParquetFileIterator";
 	public static final String FILEITERATOR_PROTOBUF_CLASSNAME="com.robin.comm.fileaccess.iterator.ProtoBufFileIterator";
+
+	public static final String RESOURCE_ACCESS_HDFS_CLASSNAME="com.robin.comm.fileaccess.util.HdfsResourceAccessUtil";
+	public static final String ITERATOR_AVRO_CLASSNAME="com.robin.comm.fileaccess.iterator.AvroFileIterator";
 	
 	//InStream enum
 	public static final String LOCAL_INSTREAM_CLASS="com.robin.core.local.LocalInStream";

@@ -16,32 +16,53 @@
 package com.robin.core.fileaccess.iterator;
 
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
-import com.robin.core.fileaccess.meta.DataSetColumnMeta;
+import com.robin.core.fileaccess.util.AbstractResourceAccessUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.Assert;
 
-import java.io.*;
-import java.util.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
 
 public abstract class AbstractFileIterator extends AbstractResIterator{
 	protected BufferedReader reader;
 	protected InputStream instream;
+	protected AbstractResourceAccessUtil accessUtil;
+	protected Logger logger= LoggerFactory.getLogger(getClass());
 
 	public AbstractFileIterator(DataCollectionMeta colmeta){
 		super(colmeta);
 	}
-	public abstract void init() throws Exception;
+	public AbstractFileIterator(DataCollectionMeta colmeta,AbstractResourceAccessUtil accessUtil){
+		super(colmeta);
+		this.accessUtil=accessUtil;
+	}
+	public abstract void init();
+
+	public void beforeProcess(String resourcePath){
+		Assert.notNull(accessUtil,"ResourceAccessUtil is required!");
+		try {
+			this.reader = accessUtil.getInResourceByReader(colmeta,resourcePath );
+		}catch (Exception ex){
+
+		}
+	}
+	public void afterProcess(){
+		try{
+			close();
+		}catch (Exception ex){
+
+		}
+	}
+
 	public void setReader(BufferedReader reader){
 		this.reader=reader;
 	}
 	public void setInputStream(InputStream stream){
 		this.instream=stream;
 	}
-	public void initReader() throws UnsupportedEncodingException{
-		if (reader == null && instream!=null) {
-			reader = new BufferedReader(new InputStreamReader(instream, colmeta.getEncode()));
-		}
-	}
+
 
 	@Override
 	public void close() throws IOException {

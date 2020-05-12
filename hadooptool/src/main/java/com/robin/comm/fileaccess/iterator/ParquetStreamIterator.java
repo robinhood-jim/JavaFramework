@@ -51,20 +51,24 @@ public class ParquetStreamIterator extends AbstractFileIterator {
     private static final int COPY_BUFFER_SIZE = 8192;
 
     @Override
-    public void init() throws Exception {
+    public void init()  {
         conf=new HDFSUtil(colmeta).getConfigration();
-        if(colmeta.getColumnList().isEmpty()) {
-            ParquetMetadata meta = ParquetFileReader.readFooter(conf, new Path(colmeta.getPath()), ParquetMetadataConverter.NO_FILTER);
-            msgtype = meta.getFileMetaData().getSchema();
-            parseSchemaByType();
-        }else{
-            schema= AvroUtils.getSchemaFromMeta(colmeta);
-        }
-        //seek remote file to local tmp
+        try {
+            if (colmeta.getColumnList().isEmpty()) {
+                ParquetMetadata meta = ParquetFileReader.readFooter(conf, new Path(colmeta.getPath()), ParquetMetadataConverter.NO_FILTER);
+                msgtype = meta.getFileMetaData().getSchema();
+                parseSchemaByType();
+            } else {
+                schema = AvroUtils.getSchemaFromMeta(colmeta);
+            }
+            //seek remote file to local tmp
 
-        reader= AvroParquetReader
-                .<GenericData.Record>builder(makeInputFile()).withConf(conf).build();
-        fields=schema.getFields();
+            reader = AvroParquetReader
+                    .<GenericData.Record>builder(makeInputFile()).withConf(conf).build();
+            fields = schema.getFields();
+        }catch (Exception ex){
+            logger.error("{}",ex);
+        }
     }
 
     @Override

@@ -293,7 +293,7 @@ public class ExcelProcessor {
      * @return
      */
     public static Workbook generateExcelFile(ExcelSheetProp prop, TableConfigProp header) throws Exception {
-        Workbook wb = ExcelBaseOper.creatWorkBook(prop);
+        Workbook wb = ExcelBaseOper.createWorkBook(prop);
         String sheetname = prop.getSheetName();
         Sheet sheet = wb.createSheet(sheetname);
         if(sheet instanceof SXSSFSheet){
@@ -322,7 +322,7 @@ public class ExcelProcessor {
     }
 
     public static Workbook generateExcelFile(ExcelSheetProp prop, TableConfigProp header, Connection conn, String querySql, Object[] queryParam, ExcelRsExtractor extractor) throws Exception {
-        Workbook wb = ExcelBaseOper.creatWorkBook(prop);
+        Workbook wb = ExcelBaseOper.createWorkBook(prop);
         String sheetname = prop.getSheetName();
         Sheet sheet = wb.createSheet(sheetname);
         CreationHelper helper = wb.getCreationHelper();
@@ -369,7 +369,7 @@ public class ExcelProcessor {
      * @return
      */
     public static Workbook generateExcelFileWithMutilSheet(List<ExcelProperty> propList) throws Exception {
-        Workbook wb = ExcelBaseOper.creatWorkBook(propList.get(0).getSheetProp());
+        Workbook wb = ExcelBaseOper.createWorkBook(propList.get(0).getSheetProp());
 
         for (ExcelProperty prop : propList) {
             generateExcelFile(wb, prop.getSheetProp(), prop.getTableProp());

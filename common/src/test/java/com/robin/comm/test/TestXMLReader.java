@@ -18,14 +18,16 @@ public class TestXMLReader {
         colmeta.addColumnMeta("key",Const.META_TYPE_STRING,null);
         colmeta.setEncode("UTF-8");
         colmeta.setPath("f:/test.xml");
+        colmeta.setFileFormat(Const.FILESUFFIX_XML);
         BufferedReader reader=null;
         try {
             LocalResourceAccessUtils utils = new LocalResourceAccessUtils();
-            reader = utils.getInResourceByReader(colmeta);
-            AbstractFileIterator iter= TextFileIteratorFactory.getProcessIteratorByType(Const.FILETYPE_XML,colmeta,reader);
+            AbstractFileIterator iter= TextFileIteratorFactory.getProcessIteratorByType(colmeta);
+            iter.beforeProcess(colmeta.getPath());
             while(iter.hasNext()){
                 System.out.println(iter.next());
             }
+            iter.afterProcess();
         }catch (Exception ex){
             ex.printStackTrace();
         }finally {

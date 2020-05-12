@@ -14,9 +14,12 @@ import com.robin.core.base.datameta.BaseDataBaseMeta;
 import com.robin.core.base.datameta.DataBaseMetaFactory;
 import com.robin.core.base.datameta.DataBaseParam;
 import com.robin.core.base.util.Const;
+import com.robin.core.base.util.ResourceConst;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 
+import com.robin.core.fileaccess.util.AbstractResourceAccessUtil;
 import com.robin.core.fileaccess.util.ApacheVfsResourceAccessUtil;
+import com.robin.core.fileaccess.util.ResourceAccessorFactory;
 import com.robin.core.fileaccess.writer.AbstractFileWriter;
 import com.robin.core.fileaccess.writer.TextFileWriterFactory;
 import com.robin.core.query.extractor.ResultSetOperationExtractor;
@@ -36,7 +39,7 @@ public class TestJsonGen {
 			conn=SimpleJdbcDao.getConnection(meta, param);
 			
 
-			ApacheVfsResourceAccessUtil util=new ApacheVfsResourceAccessUtil();
+
 			Map<String, Object> ftpparam=new HashMap<String, Object>();
 			ftpparam.put("hostName", "172.16.102.129");
 			ftpparam.put("protocol", "sftp");
@@ -47,10 +50,10 @@ public class TestJsonGen {
 			colmeta.setResourceCfgMap(ftpparam);
 			colmeta.setPath("/tmp/robin/testdata/test1.avro.gz");
 			colmeta.setEncode("UTF-8");
-			
-			//LocalResourceAccessUtils util=new LocalResourceAccessUtils();
-			//BufferedWriter writer=util.getOutResourceByWriter(colmeta);
-			OutputStream stream=util.getOutResourceByStream(colmeta);
+			colmeta.setResType(ResourceConst.ResourceType.TYPE_SFTPFILE.getValue());
+
+			AbstractResourceAccessUtil util= ResourceAccessorFactory.getResourceAccessorByType(colmeta);
+			OutputStream stream=util.getOutResourceByStream(colmeta, colmeta.getPath());
 			//GsonFileWriter jwriter=new GsonFileWriter(colmeta, writer);
 			final AbstractFileWriter jwriter=TextFileWriterFactory.getFileWriterByType(Const.FILETYPE_AVRO, colmeta,stream);
 			System.out.println(new Date());

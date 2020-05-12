@@ -21,53 +21,53 @@ public class HdfsResourceAccessUtil extends AbstractResourceAccessUtil {
 	private Map<String, HDFSUtil> hdfsUtilMap=new MapMaker().concurrencyLevel(16).weakKeys().makeMap();
 	private Map<String, HDFSProperty> hdfspropMap=new HashMap<String, HDFSProperty>();
 	@Override
-	public BufferedReader getInResourceByReader(DataCollectionMeta meta)
+	public BufferedReader getInResourceByReader(DataCollectionMeta meta, String resourcePath)
 			throws Exception {
 		HDFSUtil util=getHdfsUtil(meta);
 
-		return getReaderByPath(meta.getPath(), util.getFileSystem().open(new Path(meta.getPath())), meta.getEncode());
+		return getReaderByPath(resourcePath, util.getFileSystem().open(new Path(resourcePath)), meta.getEncode());
 	}
 	
 	@Override
-	public BufferedWriter getOutResourceByWriter(DataCollectionMeta meta)
+	public BufferedWriter getOutResourceByWriter(DataCollectionMeta meta, String resourcePath)
 			throws Exception {
 		HDFSUtil util=getHdfsUtil(meta);
-		if(util.exists(meta.getPath())){
-			logger.error("output file "+meta.getPath()+" exist!,remove it");
+		if(util.exists(resourcePath)){
+			logger.error("output file "+resourcePath+" exist!,remove it");
 			util.delete(meta.getPath());
 		}
-		return getWriterByPath(meta.getPath(), util.getFileSystem().create(new Path(meta.getPath())), meta.getEncode());
+		return getWriterByPath(meta.getPath(), util.getFileSystem().create(new Path(resourcePath)), meta.getEncode());
 	}
 	@Override
-	public OutputStream getOutResourceByStream(DataCollectionMeta meta)
+	public OutputStream getOutResourceByStream(DataCollectionMeta meta, String resourcePath)
 			throws Exception {
 		HDFSUtil util=getHdfsUtil(meta);
-		if(util.exists(meta.getPath())){
-			logger.error("output file "+meta.getPath()+" exist!,remove it");
+		if(util.exists(resourcePath)){
+			logger.error("output file "+resourcePath+" exist!,remove it");
 			util.delete(meta.getPath());
 		}
-		return getOutputStreamByPath(meta.getPath(), util.getFileSystem().create(new Path(meta.getPath())));
-	}
-
-	@Override
-	public OutputStream getRawOutputStream(DataCollectionMeta meta) throws Exception {
-		HDFSUtil util=getHdfsUtil(meta);
-		if(util.exists(meta.getPath())){
-			logger.error("output file "+meta.getPath()+" exist!,remove it");
-			util.delete(meta.getPath());
-		}
-		return util.getFileSystem().create(new Path(meta.getPath()));
+		return getOutputStreamByPath(resourcePath, util.getFileSystem().create(new Path(resourcePath)));
 	}
 
 	@Override
-	public InputStream getInResourceByStream(DataCollectionMeta meta)
+	public OutputStream getRawOutputStream(DataCollectionMeta meta, String resourcePath) throws Exception {
+		HDFSUtil util=getHdfsUtil(meta);
+		if(util.exists(resourcePath)){
+			logger.error("output file "+resourcePath+" exist!,remove it");
+			util.delete(resourcePath);
+		}
+		return util.getFileSystem().create(new Path(resourcePath));
+	}
+
+	@Override
+	public InputStream getInResourceByStream(DataCollectionMeta meta, String resourcePath)
 			throws Exception {
 		HDFSUtil util=getHdfsUtil(meta);
-		if(util.exists(meta.getPath())){
-			logger.error("output file "+meta.getPath()+" exist!,remove it");
-			util.delete(meta.getPath());
+		if(util.exists(resourcePath)){
+			logger.error("output file "+resourcePath+" exist!,remove it");
+			util.delete(resourcePath);
 		}
-		return getInputStreamByPath(meta.getPath(), util.getFileSystem().open(new Path(meta.getPath())));
+		return getInputStreamByPath(resourcePath, util.getFileSystem().open(new Path(resourcePath)));
 	}
 	public HDFSUtil getHdfsUtil(DataCollectionMeta meta){
 		HDFSUtil util=null;

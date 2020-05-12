@@ -7,47 +7,47 @@ import java.io.*;
 
 public class LocalResourceAccessUtils extends AbstractResourceAccessUtil {
 	@Override
-    public BufferedReader getInResourceByReader(DataCollectionMeta meta) throws Exception{
+    public BufferedReader getInResourceByReader(DataCollectionMeta meta, String resourcePath) throws Exception{
 		BufferedReader reader=null;
-		File file=new File(meta.getPath());
+		File file=new File(resourcePath);
 		if(!file.exists()){
-			throw new IOException("input file "+meta.getPath()+" does not exist!");
+			throw new IOException("input file "+resourcePath+" does not exist!");
 		}
-		reader= getReaderByPath(meta.getPath(), FileUtils.openInputStream(file), meta.getEncode());
+		reader= getReaderByPath(resourcePath, FileUtils.openInputStream(file), meta.getEncode());
 		return reader;
 	}
 	
 	@Override
-    public BufferedWriter getOutResourceByWriter(DataCollectionMeta meta) throws Exception{
+    public BufferedWriter getOutResourceByWriter(DataCollectionMeta meta, String resourcePath) throws Exception{
 		BufferedWriter writer=null;
-		File file=new File(meta.getPath());
+		File file=new File(resourcePath);
 		if(file.exists()){
 			FileUtils.forceDelete(file);
 		}
-		writer= getWriterByPath(meta.getPath(), FileUtils.openOutputStream(file), meta.getEncode());
+		writer= getWriterByPath(resourcePath, FileUtils.openOutputStream(file), meta.getEncode());
 		return writer;
 	}
 	@Override
-    public OutputStream getOutResourceByStream(DataCollectionMeta meta) throws Exception{
-		File file=new File(meta.getPath());
+    public OutputStream getOutResourceByStream(DataCollectionMeta meta, String resourcePath) throws Exception{
+		File file=new File(resourcePath);
 		if(file.exists()){
 			FileUtils.forceDelete(file);
 		}
-		return getOutputStreamByPath(meta.getPath(),FileUtils.openOutputStream(file));
+		return getOutputStreamByPath(resourcePath,FileUtils.openOutputStream(file));
 	}
 	@Override
-    public InputStream getInResourceByStream(DataCollectionMeta meta) throws Exception{
-		File file=new File(meta.getPath());
+    public InputStream getInResourceByStream(DataCollectionMeta meta, String resourcePath) throws Exception{
+		File file=new File(resourcePath);
 		if(!file.exists()){
-			throw new IOException("file "+meta.getPath()+" not exist!");
+			throw new IOException("file "+resourcePath+" not exist!");
 		}
-		return getInputStreamByPath(meta.getPath(),FileUtils.openInputStream(file));
+		return getInputStreamByPath(resourcePath,FileUtils.openInputStream(file));
 
 	}
 
 	@Override
-	public OutputStream getRawOutputStream(DataCollectionMeta meta) throws Exception {
-		File file=new File(meta.getPath());
+	public OutputStream getRawOutputStream(DataCollectionMeta meta, String resourcePath) throws Exception {
+		File file=new File(resourcePath);
 		if(!file.exists()){
 			FileUtils.forceDelete(file);
 		}

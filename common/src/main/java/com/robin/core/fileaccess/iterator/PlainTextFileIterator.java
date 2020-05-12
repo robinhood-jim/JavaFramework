@@ -30,9 +30,11 @@ public class PlainTextFileIterator extends AbstractFileIterator{
 		super(metaList);
 	}
 	@Override
-	public void init() throws Exception{
-		initReader();
+	public void init(){
+
 	}
+
+
 	@Override
 	public boolean hasNext() {
 		boolean hasNext=false;
