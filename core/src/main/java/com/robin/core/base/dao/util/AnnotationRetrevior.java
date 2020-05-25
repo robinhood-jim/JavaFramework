@@ -22,6 +22,7 @@ import com.robin.core.base.model.BaseObject;
 import com.robin.core.base.model.BasePrimaryObject;
 import com.robin.core.base.reflect.ReflectUtils;
 import com.robin.core.base.util.Const;
+import com.robin.core.base.util.StringUtils;
 import org.springframework.jdbc.support.lob.LobHandler;
 
 import javax.persistence.*;
@@ -74,6 +75,7 @@ public class AnnotationRetrevior {
                 }
             }
         } else {
+            //annotation with JPA
             flag = clazz.isAnnotationPresent(Entity.class);
             if (flag) {
                 Field[] fields = clazz.getDeclaredFields();
@@ -234,7 +236,7 @@ public class AnnotationRetrevior {
             if (mapfield != null && mapfield.name() != null && !mapfield.name().isEmpty()) {
                 fieldName = mapfield.name();
             } else {
-                fieldName = field.getName();
+                fieldName = StringUtils.getFieldNameByCamelCase(field.getName());
             }
             content = new FieldContent(field.getName(), fieldName, field, getMethod, setMethod);
             Id idfield = field.getAnnotation(Id.class);
@@ -294,11 +296,11 @@ public class AnnotationRetrevior {
             if (mapfield != null) {
                 String colfield = mapfield.field();
                 String datatype = mapfield.datatype();
-                String fieldName;
+                String fieldName=null;
                 if (colfield != null && !"".equals(colfield.trim())) {
                     fieldName = colfield;
                 } else {
-                    fieldName = field.getName();
+                    fieldName = StringUtils.getFieldNameByCamelCase(field.getName());
                 }
                 content = new AnnotationRetrevior.FieldContent(field.getName(), fieldName, field, getMethod, setMethod);
                 if (mapfield.precise() != 0) {

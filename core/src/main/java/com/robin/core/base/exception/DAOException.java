@@ -16,16 +16,21 @@
 package com.robin.core.base.exception;
 
 @SuppressWarnings("serial")
-public class DAOException extends RuntimeException
+public class DAOException extends AbstractCodeException
 {
 
     public DAOException()
     {
+        super(500);
     }
 
     public DAOException(String s)
     {
-        super(s);
+        super(500,s);
+    }
+    public DAOException(int retCode,String message)
+    {
+        super(retCode,message);
     }
     public DAOException(Exception e){
     	super(e);

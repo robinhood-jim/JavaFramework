@@ -37,5 +37,6 @@ public class WebConstant {
         }
     }
     public static final String TOKEN="tokenMap";
+    public static final String LOCALE_KEY="application.locale";
 
 }

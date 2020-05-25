@@ -73,6 +73,10 @@
 					<groupId>tomcat</groupId>
 					<artifactId>jasper-runtime</artifactId>
 				</exclusion>
+				<exclusion>
+					<groupId>io.github.classgraph</groupId>
+					<artifactId>classgraph</artifactId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>
@@ -152,6 +156,11 @@
 
 	<build>
 		<sourceDirectory>src/main/java</sourceDirectory>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+			</resource>
+		</resources>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.tomcat.maven</groupId>

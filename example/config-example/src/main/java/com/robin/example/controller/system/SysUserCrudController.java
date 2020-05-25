@@ -21,6 +21,7 @@ import com.robin.core.base.model.BaseObject;
 import com.robin.core.base.util.Const;
 import com.robin.core.base.util.StringUtils;
 import com.robin.core.collection.util.CollectionBaseConvert;
+import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.query.util.PageQuery;
 import com.robin.core.web.controller.BaseCrudDhtmlxController;
 import com.robin.core.web.util.Session;
@@ -74,7 +75,7 @@ public class SysUserCrudController extends BaseCrudDhtmlxController<SysUser, Lon
             orgIds = sysOrgService.getSubIdByParentOrgId(Long.valueOf(request.getParameter("orgId")));
         }
         query.getParameters().put("queryCondition", wrapQuery(request, orgIds));
-        doQuery(request, response, query);
+        doQuery(null, query);
 
         List<SysOrg> orgList = sysOrgService.queryByField("orgStatus", BaseObject.OPER_EQ, Const.VALID);
         setCode("ORG", orgList, "orgName", "id");
@@ -89,20 +90,20 @@ public class SysUserCrudController extends BaseCrudDhtmlxController<SysUser, Lon
     public Map<String, Object> editUser(HttpServletRequest request,
                                         HttpServletResponse response) {
         String id = request.getParameter("id");
-        return doEdit(request, response, Long.valueOf(id));
+        return doEdit(Long.valueOf(id));
     }
 
     @RequestMapping("/save")
     @ResponseBody
     public Map<String, Object> saveUser(HttpServletRequest request,
-                                        HttpServletResponse response) {
+                                        HttpServletResponse response){
 
         //check userAccount unique
         List<SysUser> list = this.service.queryByField("userAccount", BaseObject.OPER_EQ, request.getParameter("userAccount"));
         if (!list.isEmpty()) {
             return wrapError(new WebException(messageSource.getMessage("message.userNameExists", null, Locale.getDefault())));
         } else {
-            return doSave(request, response);
+            return doSave(wrapRequest(request));
         }
     }
 
@@ -114,7 +115,7 @@ public class SysUserCrudController extends BaseCrudDhtmlxController<SysUser, Lon
         //check userAccount unique
         List<SysUser> list = this.service.queryByField("userAccount", BaseObject.OPER_EQ, request.getParameter("userAccount"));
         if ((list.size() == 1 && id.equals(list.get(0).getId())) || list.isEmpty()) {
-            return doUpdate(request, response, id);
+            return doUpdate(wrapRequest(request), id);
         } else {
             return wrapError(new WebException(messageSource.getMessage("message.userNameExists", null, Locale.getDefault())));
         }

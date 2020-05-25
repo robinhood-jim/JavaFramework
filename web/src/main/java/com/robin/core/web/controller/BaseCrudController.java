@@ -24,13 +24,12 @@ import com.robin.core.query.util.PageQuery;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Single Table Mapping Background Controller
@@ -68,23 +67,29 @@ public abstract class BaseCrudController<O extends BaseObject, P extends Seriali
     /**
      * Add Enitty
      *
-     * @param request
-     * @param response
+     * @param obj BaseObject
      * @return
      */
-    protected Map<String, Object> doSave(HttpServletRequest request, HttpServletResponse response,Object... obj) {
+    protected Map<String, Object> doSave(O obj) {
         Map<String, Object> retMap = new HashMap();
         try {
-            O object=null;
-            if(obj.length==0) {
-                object=this.objectType.newInstance();
-                ConvertUtil.mapToObject(object, wrapRequest(request));
-            }else if(obj[0] instanceof BaseObject){
-                object=(O) obj[0];
-            }
+            P pk=this.service.saveEntity(obj);
+            wrapSuccess(retMap);
+            doAfterAdd(obj,pk, retMap);
+        } catch (ServiceException ex) {
+            this.log.error("{}", ex);
+            wrapResponse(retMap, ex);
+        }
+        return retMap;
+    }
+    protected Map<String, Object> doSave(Map<String,String> paramMap) {
+        Map<String, Object> retMap = new HashMap();
+        try {
+            O object=this.objectType.newInstance();
+            ConvertUtil.convertToModel(object,paramMap);
             P pk=this.service.saveEntity(object);
             wrapSuccess(retMap);
-            doAfterAdd(request, response, object,pk, retMap);
+            doAfterAdd(object,pk, retMap);
         } catch (Exception ex) {
             this.log.error("{}", ex);
             wrapResponse(retMap, ex);
@@ -92,12 +97,12 @@ public abstract class BaseCrudController<O extends BaseObject, P extends Seriali
         return retMap;
     }
 
-    protected Map<String, Object> doView(HttpServletRequest request, HttpServletResponse response, P id) {
+    protected Map<String, Object> doView(P id) {
         Map<String, Object> retMap = new HashMap<String, Object>();
         try {
             O object = service.getEntity(id);
             retMap = wrapSuccess("success");
-            doAfterView(request, response, object, retMap);
+            doAfterView(object, retMap);
             wrapSuccess(retMap);
         } catch (Exception e) {
             log.error("{}", e);
@@ -106,11 +111,11 @@ public abstract class BaseCrudController<O extends BaseObject, P extends Seriali
         return retMap;
     }
 
-    protected Map<String, Object> doEdit(HttpServletRequest request, HttpServletResponse response, P id) {
+    protected Map<String, Object> doEdit(P id) {
         Map<String, Object> retMap = new HashMap<String, Object>();
         try {
             BaseObject object = service.getEntity(id);
-            doAfterEdit(request, response, object, retMap);
+            doAfterEdit(object, retMap);
             wrapSuccess(retMap);
         } catch (Exception e) {
             log.error("{}", e);
@@ -119,17 +124,12 @@ public abstract class BaseCrudController<O extends BaseObject, P extends Seriali
         return retMap;
     }
 
-    protected Map<String, Object> doUpdate(HttpServletRequest request, HttpServletResponse response, P id) {
+    protected Map<String, Object> doUpdate(Map<String,String> paramMap,P id) {
         Map<String, Object> retMap = new HashMap<>();
         try {
-            Map<String, String> valueMap = wrapRequest(request);
-            O object = objectType.newInstance();
-            O updateObj = service.getEntity(id);
-            ConvertUtil.convertToModel(object, valueMap);
-            ConvertUtil.convertToModelForUpdate(updateObj, object);
-            service.updateEntity(updateObj);
-            doAfterUpdate(request, response, updateObj, retMap);
-            wrapSuccess(retMap);
+            O originObj= this.objectType.newInstance();
+            ConvertUtil.convertToModel(originObj,paramMap);
+            updateWithOrigin(id, retMap, originObj);
         } catch (Exception ex) {
             log.error("{}", ex);
             wrapFailed(retMap, ex);
@@ -137,35 +137,58 @@ public abstract class BaseCrudController<O extends BaseObject, P extends Seriali
         return retMap;
     }
 
-    protected void doAfterAdd(HttpServletRequest request, HttpServletResponse response, BaseObject obj,P pk, Map<String, Object> retMap) {
-        retMap.put("primaryKey",pk);
+    private void updateWithOrigin(P id, Map<String, Object> retMap, O originObj) throws Exception {
+        O updateObj = service.getEntity(id);
+        ConvertUtil.convertToModelForUpdate(updateObj, originObj);
+        service.updateEntity(updateObj);
+        doAfterUpdate(updateObj, retMap);
+        wrapSuccess(retMap);
     }
 
-    protected void doAfterView(HttpServletRequest request, HttpServletResponse response, BaseObject obj, Map<String, Object> retMap) {
-        retMap.put("model", obj);
+    protected Map<String, Object> doUpdate(O base,P id) {
+        Map<String, Object> retMap = new HashMap<>();
+        try {
+            updateWithOrigin(id, retMap, base);
+        } catch (Exception ex) {
+            log.error("{}", ex);
+            wrapFailed(retMap, ex);
+        }
+        return retMap;
     }
 
-    protected void doAfterEdit(HttpServletRequest request, HttpServletResponse response, BaseObject obj, Map<String, Object> retMap) {
-        retMap.put("model", obj);
+    protected void doAfterAdd(BaseObject obj,P pk, Map<String, Object> retMap) {
+        retMap.put("data",obj);
     }
 
-    protected void doAfterUpdate(HttpServletRequest request, HttpServletResponse response, BaseObject obj, Map<String, Object> retMap) {
+    protected void doAfterView(BaseObject obj, Map<String, Object> retMap) {
+        retMap.put("data", obj);
     }
 
-    protected void doAfterQuery(HttpServletRequest request, HttpServletResponse response, PageQuery query, Map<String, Object> retMap) {
-        retMap.put("query", query);
+    protected void doAfterEdit(BaseObject obj, Map<String, Object> retMap) {
+        retMap.put("data", obj);
     }
 
-    protected void doAfterDelete(HttpServletRequest request, HttpServletResponse response, P[] ids, Map<String, Object> retMap) {
+    protected void doAfterUpdate(BaseObject obj, Map<String, Object> retMap) {
+    }
+
+    protected void doAfterQuery(PageQuery query, Map<String, Object> retMap) {
+        retMap.put("recordCount", query.getRecordCount());
+        retMap.put("pageNumber", query.getPageNumber());
+        retMap.put("pageCount", query.getPageCount());
+        retMap.put("pageSize", query.getPageSize());
+        retMap.put("data",query.getRecordSet());
+    }
+
+    protected void doAfterDelete(P[] ids, Map<String, Object> retMap) {
 
     }
 
 
-    protected Map<String, Object> doDelete(HttpServletRequest request, HttpServletResponse response, P[] ids) {
+    protected Map<String, Object> doDelete(P[] ids) {
         Map<String, Object> retMap = new HashMap();
         try {
             this.service.deleteEntity(ids);
-            doAfterDelete(request, response, ids, retMap);
+            doAfterDelete(ids, retMap);
             wrapSuccess(retMap);
         } catch (Exception ex) {
             wrapFailed(retMap, ex);
@@ -173,16 +196,14 @@ public abstract class BaseCrudController<O extends BaseObject, P extends Seriali
         return retMap;
     }
 
-    protected Map<String, Object> doQuery(HttpServletRequest request, HttpServletResponse response, PageQuery query) {
+    protected Map<String, Object> doQuery(Map<String,String> params, PageQuery query) {
         Map<String, Object> retMap = new HashMap<>();
         try {
-            Map<String, String> valueMap = wrapRequest(request);
-
-            if (query.getParameters().isEmpty()) {
-                query.setParameters(valueMap);
+            if (query.getParameters().isEmpty() && params!=null) {
+                query.setParameters(params);
             }
             this.service.queryBySelectId(query);
-            doAfterQuery(request, response, query, retMap);
+            doAfterQuery(query, retMap);
             wrapSuccess(retMap);
         } catch (Exception ex) {
             wrapFailed(retMap, ex);
