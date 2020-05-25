@@ -208,7 +208,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
     }
 
     @Override
-    public List<Map<String, Object>> queryBySql(String sqlstr, Object[] obj) throws DAOException {
+    public List<Map<String, Object>> queryBySql(String sqlstr, Object... obj) throws DAOException {
         List<Map<String, Object>> list;
         try {
             String querySQL = sqlstr;
@@ -224,7 +224,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
 
 
     @Override
-    public List<? extends BaseObject> queryEntityBySql(String querySQL, Object[] obj, final Class<? extends BaseObject> targetclazz) {
+    public List<? extends BaseObject> queryEntityBySql(String querySQL, final Class<? extends BaseObject> targetclazz,Object... obj) {
         List<? extends BaseObject> list;
         try {
             if (logger.isDebugEnabled()) {
@@ -238,24 +238,10 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
     }
 
 
-    @Override
-    public int executeOperationWithSql(String sql, ResultSetOperationExtractor oper) throws DAOException {
-        Integer ret = null;
-        try {
-            oper.setLobHandler(lobHandler);
-            ret = this.getJdbcTemplate().query(sql, oper);
-        } catch (Exception ex) {
-            throw new DAOException(ex);
-        }
-        if (ret != null) {
-            return ret.intValue();
-        } else {
-            return -1;
-        }
-    }
+
 
     @Override
-    public int executeOperationWithSql(String sql, Object[] paramObj, ResultSetOperationExtractor oper) throws DAOException {
+    public int executeOperationWithSql(String sql, ResultSetOperationExtractor oper,Object... paramObj) throws DAOException {
         Integer ret;
         try {
             oper.setLobHandler(lobHandler);
@@ -338,7 +324,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
 
 
     @Override
-    public int queryByInt(String querySQL) throws DAOException {
+    public int queryByInt(String querySQL,Object... objects) throws DAOException {
         try {
             return this.getJdbcTemplate().queryForObject(querySQL, new RowMapper<Integer>() {
                 @Override
@@ -346,7 +332,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
                     rs.next();
                     return rs.getInt(1);
                 }
-            });
+            },objects);
         } catch (Exception e) {
             throw new DAOException(e);
         }
@@ -445,17 +431,10 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
         CommJdbcUtil.batchUpdateWithIterator(getJdbcTemplate(),sql,rowIterator,collectionMeta,batchsize);
     }
 
-    @Override
-    public void executeUpdate(String sql) throws DAOException {
-        try {
-            this.getJdbcTemplate().update(sql);
-        } catch (Exception e) {
-            throw new DAOException(e);
-        }
-    }
+
 
     @Override
-    public int executeUpdate(String sql, Object[] objs) throws DAOException {
+    public int executeUpdate(String sql, Object... objs) throws DAOException {
         try {
             return this.getJdbcTemplate().update(sql, objs);
         } catch (Exception e) {
@@ -748,6 +727,12 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
             throws DAOException {
         KeyHolder keyHolder = new GeneratedKeyHolder();
         getJdbcTemplate().update(new DefaultPrepareStatement(field, sql, object, lobHandler), keyHolder);
+        return keyHolder.getKey().longValue();
+    }
+    public long executeSqlWithReturn(final String sql, Object[] object)
+            throws DAOException {
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        getJdbcTemplate().update(new SimplePrepareStatement(sql, object, lobHandler), keyHolder);
         return keyHolder.getKey().longValue();
     }
 

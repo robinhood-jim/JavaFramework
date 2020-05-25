@@ -24,10 +24,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 public abstract class ResultSetOperationExtractor implements ResultSetExtractor<Integer> {
-    private String dateFormat = "yyyy-MM-dd";
-    private String timestampFormat = "yyyy-MM-dd HH:mm:ss";
+    protected String dateFormat = "yyyy-MM-dd";
+    protected String timestampFormat = "yyyy-MM-dd HH:mm:ss";
     protected String encode = "UTF-8";
-    private LobHandler lobHandler;
+    protected LobHandler lobHandler;
 
     public ResultSetOperationExtractor() {
         init();

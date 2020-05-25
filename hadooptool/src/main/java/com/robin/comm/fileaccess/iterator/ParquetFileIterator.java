@@ -35,18 +35,22 @@ public class ParquetFileIterator extends AbstractFileIterator {
     private List<Schema.Field> fields;
 
     @Override
-    public void init() throws Exception {
+    public void init(){
         conf=new HDFSUtil(colmeta).getConfigration();
-        if(colmeta.getColumnList().isEmpty()) {
-            ParquetMetadata meta = ParquetFileReader.readFooter(conf, new Path(colmeta.getPath()), ParquetMetadataConverter.NO_FILTER);
-            msgtype = meta.getFileMetaData().getSchema();
-            parseSchemaByType();
-        }else{
-            schema=AvroUtils.getSchemaFromMeta(colmeta);
+        try {
+            if (colmeta.getColumnList().isEmpty()) {
+                ParquetMetadata meta = ParquetFileReader.readFooter(conf, new Path(colmeta.getPath()), ParquetMetadataConverter.NO_FILTER);
+                msgtype = meta.getFileMetaData().getSchema();
+                parseSchemaByType();
+            } else {
+                schema = AvroUtils.getSchemaFromMeta(colmeta);
+            }
+            reader = AvroParquetReader
+                    .<GenericData.Record>builder(new Path(colmeta.getPath())).withConf(conf).build();
+            fields = schema.getFields();
+        }catch (Exception ex){
+            logger.error("{}",ex);
         }
-        reader=AvroParquetReader
-                .<GenericData.Record>builder(new Path(colmeta.getPath())).withConf(conf).build();
-        fields=schema.getFields();
     }
 
     @Override

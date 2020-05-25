@@ -38,6 +38,8 @@ public class DataCollectionMeta implements Serializable {
 	private String defaultTimestampFormat="yyyy-MM-dd HH:mm:ss";
 	private Long resType;
 	private Long dbSourceId;
+	private Long sourceType;
+	private String fileFormat;
 	private List<String> pkColumns;
 	private boolean fsTag=false;
 	private BaseDataBaseMeta dbMeta;

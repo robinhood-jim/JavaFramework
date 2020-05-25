@@ -52,7 +52,7 @@ public class ExcelBaseOper {
         return sheet;
     }
 
-    public static Workbook creatWorkBook(ExcelSheetProp prop) {
+    public static Workbook createWorkBook(ExcelSheetProp prop) {
         Workbook wb = null;
         String fileext = prop.getFileext();
         if (TYPE_EXCEL2003.equalsIgnoreCase(fileext)) {

@@ -15,21 +15,23 @@
  */
 package com.robin.core.web.controller;
 
-import com.robin.core.base.exception.DAOException;
+import com.robin.core.base.exception.ServiceException;
+import com.robin.core.base.exception.WebException;
 import com.robin.core.base.spring.SpringContextHolder;
 import com.robin.core.base.util.Const;
+import com.robin.core.base.util.MessageUtils;
 import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.query.util.PageQuery;
 import com.robin.core.web.codeset.Code;
 import com.robin.core.web.international.Translator;
 import com.robin.core.web.codeset.CodeSetService;
+
+
 import org.apache.commons.beanutils.PropertyUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.cache.annotation.Cacheable;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.Serializable;
 import java.util.*;
 
 
@@ -39,6 +41,8 @@ public abstract class BaseController
     protected Logger log = LoggerFactory.getLogger(getClass());
     protected static final String COL_MESSAGE="message";
     protected static final String COL_SUCCESS="success";
+    protected static final String COL_COED="code";
+    protected MessageUtils messageUtils=SpringContextHolder.getBean(MessageUtils.class);
 
     protected List<Map<String, String>> convertObjToMapList(List<?> orglist)
             throws Exception
@@ -226,12 +230,22 @@ public abstract class BaseController
     protected void wrapSuccess(Map<String, Object> retMap)
     {
         retMap.put(COL_SUCCESS, true);
+        retMap.put(COL_COED, 0);
     }
 
     protected void wrapFailed( Map<String, Object> retMap, Exception ex)
     {
-        retMap.put(COL_SUCCESS, false);
-        retMap.put(COL_MESSAGE, ex.getMessage());
+        if(ex instanceof ServiceException){
+            retMap.put(COL_COED,((ServiceException)ex).getRetCode());
+            retMap.put(COL_MESSAGE,MessageUtils.getMessage(((ServiceException)ex).getRetCode()));
+        }
+        else if(ex instanceof WebException){
+            retMap.put(COL_COED,((WebException)ex).getRetCode());
+            retMap.put(COL_MESSAGE,MessageUtils.getMessage(((WebException)ex).getRetCode()));
+        }else {
+            retMap.put(COL_SUCCESS, false);
+            retMap.put(COL_MESSAGE, ex.getMessage());
+        }
     }
     protected void wrapFailed( Map<String, Object> retMap, String message)
     {

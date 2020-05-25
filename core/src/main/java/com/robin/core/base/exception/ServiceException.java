@@ -16,17 +16,30 @@
 package com.robin.core.base.exception;
 
 @SuppressWarnings("serial")
-public class ServiceException extends RuntimeException {
+public class ServiceException extends AbstractCodeException {
+
 
 	public ServiceException() {
+		super(500);
 	}
 
 	public ServiceException(String s) {
-		super(s);
+		super(500,s);
 	}
 
+
 	public ServiceException(Exception e) {
-		super(e.getMessage());
+		super(e);
+	}
+	public ServiceException(int retCode,Exception e){
+		super(retCode,e.getMessage());
+
+	}
+	public ServiceException(int retCode,String msg){
+		super(retCode,msg);
+	}
+	public ServiceException(int retCode){
+		super(retCode);
 	}
 
 }

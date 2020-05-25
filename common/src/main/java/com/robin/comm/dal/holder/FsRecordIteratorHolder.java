@@ -15,7 +15,6 @@
  */
 package com.robin.comm.dal.holder;
 
-import com.robin.comm.dal.holder.AbstractResourceHolder;
 import com.robin.core.base.exception.OperationInWorkException;
 import com.robin.core.fileaccess.iterator.AbstractFileIterator;
 import com.robin.core.fileaccess.iterator.TextFileIteratorFactory;
@@ -39,7 +38,7 @@ public class FsRecordIteratorHolder extends AbstractResourceHolder {
         }
         String[] tag = AbstractResourceAccessUtil.retrieveResource(colmeta.getPath());
         AbstractResourceAccessUtil util = ResourceAccessHolder.getAccessUtilByProtocol(tag[0].toLowerCase());
-        InputStream inputStream = util.getInResourceByStream(colmeta);
+        InputStream inputStream = util.getInResourceByStream(colmeta, colmeta.getPath());
         iterator = TextFileIteratorFactory.getProcessIteratorByPath(colmeta, inputStream);
     }
 

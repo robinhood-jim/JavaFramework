@@ -94,7 +94,7 @@ public abstract class BaseCrudDhtmlxController<O extends BaseObject, P extends S
                 for (String key : fieldNames) {
                     if (withcheck && key.equals(idColumn)) {
                         tmpList.add("0");
-                    } else if (map.containsKey(key)) {
+                    } else if (map.containsKey(key) && map.get(key)!=null) {
                         tmpList.add(map.get(key));
                     }
                 }
@@ -180,7 +180,10 @@ public abstract class BaseCrudDhtmlxController<O extends BaseObject, P extends S
                     if (key.equals(idColumn)) {
                         tmpList.add("0");
                     } else if (map.containsKey(key)) {
-                        tmpList.add(map.get(key).toString());
+                        if (map.get(key)!=null)
+                            tmpList.add(map.get(key).toString());
+                        else
+                            tmpList.add("");
                     }
                 }
                 tmap.put("data", tmpList);

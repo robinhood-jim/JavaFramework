@@ -13,6 +13,25 @@ package com.robin.core.base.util;
  * @version 1.0
  */
 public class ResourceConst {
+
+    public enum InputSourceType{
+        TYPE_HDFS(1L),
+        TYPE_LOCAL(2L),
+        TYPE_FTP(3L),
+        TYPE_SFTP(4L),
+        TYPE_AWS(5L);
+        private Long value;
+        InputSourceType(Long value){
+            this.value=value;
+        }
+        public Long getValue(){
+            return this.value;
+        }
+        @Override
+        public String toString(){
+            return this.value.toString();
+        }
+    }
     public  enum ResourceType{
         TYPE_LOCALFILE(0L),  //local
         TYPE_HDFSFILE(1L),   //hdfs

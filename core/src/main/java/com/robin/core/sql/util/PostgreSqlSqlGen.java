@@ -118,4 +118,8 @@ public class PostgreSqlSqlGen extends AbstractSqlGen implements BaseSqlGen {
 	public boolean supportIncrement() throws DAOException {
 		return true;
 	}
+	@Override
+	protected String getAutoIncrementDef() {
+		return " AUTO_INCREMENT";
+	}
 }

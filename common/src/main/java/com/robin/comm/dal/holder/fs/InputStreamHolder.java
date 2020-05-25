@@ -37,7 +37,7 @@ public class InputStreamHolder extends AbstractResourceHolder {
 		}
 		String[] tag=AbstractResourceAccessUtil.retrieveResource(colmeta.getPath());
 		AbstractResourceAccessUtil util= ResourceAccessHolder.getAccessUtilByProtocol(tag[0].toLowerCase());
-		in=util.getInResourceByStream(colmeta);
+		in=util.getInResourceByStream(colmeta, colmeta.getPath());
 	}
 
 	public InputStream getInputStream(){

@@ -249,11 +249,32 @@ public class StringUtils {
 		md.update(inputStr.getBytes());
 		return DatatypeConverter.printHexBinary(md.digest()).toUpperCase();
 	}
+	public static String getFieldNameByCamelCase(String fieldName){
+		if(org.apache.commons.lang3.StringUtils.isEmpty(fieldName)){
+			return fieldName;
+		}
+		StringBuilder builder=new StringBuilder();
+		//if String contains UpperCase
+		if(!fieldName.equals(fieldName.toLowerCase())){
+			for(int i=0;i<fieldName.length();i++){
+				if(Character.isUpperCase(fieldName.charAt(i))){
+					builder.append("_");
+					builder.append(Character.toLowerCase(fieldName.charAt(i)));
+				}else{
+					builder.append(fieldName.charAt(i));
+				}
+			}
+		}else{
+			builder.append(fieldName);
+		}
+		return builder.toString();
+	}
 	public static boolean isEmpty(Object object){
 		return object==null || object.toString().trim().isEmpty();
 	}
 	public static void main(String[] args){
-		System.out.println(genarateRandomUpperLowerChar(8));
+		//System.out.println(genarateRandomUpperLowerChar(8));
+		System.out.println(getFieldNameByCamelCase("asdsadTTsdadDDasda"));
 	}
 
 }

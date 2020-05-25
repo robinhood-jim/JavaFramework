@@ -33,6 +33,7 @@ public class ExcelSheetProp {
 	// using SXSSFWorkbook with streamingWrite
 	private boolean streamInsert;
 	private Integer streamRows=100;
+	private int sheetNum=0;
 	
 	public List<Map<String,String>> getColumnList() {
 		return columnList;
@@ -118,5 +119,13 @@ public class ExcelSheetProp {
 
 	public void setStreamRows(Integer streamRows) {
 		this.streamRows = streamRows;
+	}
+
+	public int getSheetNum() {
+		return sheetNum;
+	}
+
+	public void setSheetNum(int sheetNum) {
+		this.sheetNum = sheetNum;
 	}
 }

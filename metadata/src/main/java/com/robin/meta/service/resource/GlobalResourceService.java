@@ -15,6 +15,7 @@
  */
 package com.robin.meta.service.resource;
 
+import com.robin.comm.fileaccess.iterator.AvroFileIterator;
 import com.robin.comm.fileaccess.iterator.ParquetFileIterator;
 import com.robin.comm.fileaccess.util.HdfsResourceAccessUtil;
 import com.robin.core.base.dao.SimpleJdbcDao;
@@ -25,7 +26,6 @@ import com.robin.core.base.util.Const;
 import com.robin.core.base.util.FileUtils;
 import com.robin.core.base.util.ResourceConst;
 import com.robin.core.fileaccess.iterator.AbstractFileIterator;
-import com.robin.core.fileaccess.iterator.AvroFileIterator;
 import com.robin.core.fileaccess.iterator.TextFileIteratorFactory;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.util.AbstractResourceAccessUtil;
@@ -173,7 +173,7 @@ public class GlobalResourceService extends BaseAnnotationJdbcService<GlobalResou
         int columnPos=0;
         //read Header 10000 Line
         int readLines=maxReadLines>0?maxReadLines:10000;
-        BufferedReader reader=util.getInResourceByReader(meta);
+        BufferedReader reader=util.getInResourceByReader(meta,meta.getPath());
 
         if(fileFormat.equalsIgnoreCase(Const.FILESUFFIX_CSV)){
             SourceFileExplorer.exploreCsv(reader,meta,resource.getRecordContent()==null?null:resource.getRecordContent().split(","),readLines);
@@ -185,12 +185,12 @@ public class GlobalResourceService extends BaseAnnotationJdbcService<GlobalResou
 
         }
         else if(fileFormat.equalsIgnoreCase(Const.FILESUFFIX_PARQUET)){
-            AbstractFileIterator iterator= TextFileIteratorFactory.getProcessIteratorByType(Const.FILETYPE_PARQUET,meta,reader);
+            AbstractFileIterator iterator= TextFileIteratorFactory.getProcessIteratorByType(meta,reader);
             if(iterator.hasNext()){
                 schema=((ParquetFileIterator)iterator).getSchema();
             }
         }else if(fileFormat.equalsIgnoreCase(Const.FILESUFFIX_AVRO)){
-            AbstractFileIterator iterator= TextFileIteratorFactory.getProcessIteratorByType(Const.FILETYPE_AVRO,meta,reader);
+            AbstractFileIterator iterator= TextFileIteratorFactory.getProcessIteratorByType(meta,reader);
             if(iterator.hasNext()){
                 schema=((AvroFileIterator)iterator).getSchema();
             }

@@ -60,7 +60,7 @@ public class ExcelProcessor {
             wb = new HSSFWorkbook(myxls);
         }
 
-        Sheet sheet = wb.getSheetAt(0);
+        Sheet sheet = wb.getSheetAt(prop.getSheetNum());
         List<Map<String, String>> columnValueList = new ArrayList<Map<String, String>>();
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");//hh24:mi:ss
         int pos = 0;
@@ -159,7 +159,7 @@ public class ExcelProcessor {
                 Row row = rit.next();
                 if (pos == startRow) {
                     for (int i = startCol - 1; i < endCol; i++) {
-                        Cell cell = (Cell) row.getCell(i);
+                        Cell cell =  row.getCell(i);
                         String cellName = cell.getStringCellValue();
                         DataTypeEnum column = columnMap.get(cellName.toUpperCase());
                         if (column == null) {
@@ -293,7 +293,7 @@ public class ExcelProcessor {
      * @return
      */
     public static Workbook generateExcelFile(ExcelSheetProp prop, TableConfigProp header) throws Exception {
-        Workbook wb = ExcelBaseOper.creatWorkBook(prop);
+        Workbook wb = ExcelBaseOper.createWorkBook(prop);
         String sheetname = prop.getSheetName();
         Sheet sheet = wb.createSheet(sheetname);
         if(sheet instanceof SXSSFSheet){
@@ -322,7 +322,7 @@ public class ExcelProcessor {
     }
 
     public static Workbook generateExcelFile(ExcelSheetProp prop, TableConfigProp header, Connection conn, String querySql, Object[] queryParam, ExcelRsExtractor extractor) throws Exception {
-        Workbook wb = ExcelBaseOper.creatWorkBook(prop);
+        Workbook wb = ExcelBaseOper.createWorkBook(prop);
         String sheetname = prop.getSheetName();
         Sheet sheet = wb.createSheet(sheetname);
         CreationHelper helper = wb.getCreationHelper();
@@ -369,7 +369,7 @@ public class ExcelProcessor {
      * @return
      */
     public static Workbook generateExcelFileWithMutilSheet(List<ExcelProperty> propList) throws Exception {
-        Workbook wb = ExcelBaseOper.creatWorkBook(propList.get(0).getSheetProp());
+        Workbook wb = ExcelBaseOper.createWorkBook(propList.get(0).getSheetProp());
 
         for (ExcelProperty prop : propList) {
             generateExcelFile(wb, prop.getSheetProp(), prop.getTableProp());

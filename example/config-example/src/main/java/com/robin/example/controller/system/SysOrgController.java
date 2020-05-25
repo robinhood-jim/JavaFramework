@@ -37,14 +37,15 @@ public class SysOrgController extends BaseCrudDhtmlxController<SysOrg, Long, Sys
     @ResponseBody
     public Map<String, Object> editOrg(HttpServletRequest request,
                                        HttpServletResponse response, @PathVariable Long id) {
-        return doEdit(request, response, id);
+        return doEdit(id);
     }
 
     @RequestMapping("/update")
     @ResponseBody
     public Map<String, Object> updateOrg(HttpServletRequest request,
                                          HttpServletResponse response) {
-        return doUpdate(request, response, Long.valueOf(request.getParameter("id")));
+        Map<String, String> valueMap = wrapRequest(request);
+        return doUpdate(valueMap, Long.valueOf(request.getParameter("id")));
     }
 
     @RequestMapping("/save")
@@ -73,7 +74,7 @@ public class SysOrgController extends BaseCrudDhtmlxController<SysOrg, Long, Sys
             } else {
                 vo.setTreeLevel(1);
             }
-            return doSave(request, response, vo);
+            return doSave(vo);
         } catch (Exception ex) {
             wrapFailed(retMap, ex);
         }
