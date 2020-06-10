@@ -77,7 +77,7 @@
         <commons-dbcp.version>1.4</commons-dbcp.version>
         <commons-io.version>2.4</commons-io.version>
         <commons-net.version>1.4.1</commons-net.version>
-        <commons-beanutils.version>1.8.3</commons-beanutils.version>
+        <commons-beanutils.version>1.9.2</commons-beanutils.version>
         <comm-codec.version>1.4</comm-codec.version>
         <vfs.version>2.0</vfs.version>
         <lang.version>2.6</lang.version>
