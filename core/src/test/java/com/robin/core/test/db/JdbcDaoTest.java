@@ -15,6 +15,7 @@
  */
 package com.robin.core.test.db;
 
+import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -146,6 +147,18 @@ public class JdbcDaoTest extends TestCase {
         user.setOrderNo(1);
         sysUserService.saveEntity(user);
         assertNotNull(user.getId());
+    }
+    @Test
+    public  void testCamelCaseInsert(){
+        JdbcDao jdbcDao = SpringContextHolder.getBean("jdbcDao", JdbcDao.class);
+        AffairMain affairMain=new AffairMain();
+        affairMain.setName("test");
+        affairMain.setCreateTime(System.currentTimeMillis());
+        affairMain.setModifyTime(System.currentTimeMillis());
+        affairMain.setDeptId(1L);
+        affairMain.setParentId(1L);
+        Serializable ids=jdbcDao.createVO(affairMain);
+        Assert.assertNotNull(ids);
     }
 
     @Test

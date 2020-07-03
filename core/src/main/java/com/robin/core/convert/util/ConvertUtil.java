@@ -23,6 +23,7 @@ import com.robin.core.fileaccess.meta.DataSetColumnMeta;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 
+import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.sql.Timestamp;
 import java.text.ParseException;
@@ -138,7 +139,25 @@ public class ConvertUtil {
         return value.substring(0, 1).toUpperCase() + value.substring(1);
     }
 
-
+    public static void convertSerializableForUpdate(Serializable target, Serializable src) throws Exception {
+        if (target == null || src == null) {
+            return;
+        }
+        if (!target.getClass().equals(src.getClass())) {
+            throw new RuntimeException("source and target class mismatch");
+        }
+        Map<String, Method> srcmap = ReflectUtils.returnGetMethods(src.getClass());
+        Iterator<Map.Entry<String,Method>> set = srcmap.entrySet().iterator();
+        while (set.hasNext()) {
+            Map.Entry<String,Method> entry=set.next();
+            String field = entry.getKey();
+            Method setMethod = entry.getValue();
+            Object value=entry.getValue().invoke(null);
+            if (value!=null && setMethod != null) {
+                setObjectValue(target,value,field,setMethod);
+            }
+        }
+    }
 
 
     public static void convertToModelForUpdate(BaseObject target, BaseObject src) throws Exception {
@@ -190,6 +209,17 @@ public class ConvertUtil {
     private static void setBaseObjectValue(BaseObject target,Object value,String field,Method setMethod) throws Exception{
         if (value != null) {
             target.AddDirtyColumn(field);
+            Class type = setMethod.getParameterTypes()[0];
+            if (!"java.lang.String".equalsIgnoreCase(type.getName()) && "".equals(value)) {
+                setMethod.invoke(target, new Object[]{null});
+            } else {
+                Object retValue = parseParameter(type, value);
+                setMethod.invoke(target, new Object[]{retValue});
+            }
+        }
+    }
+    private static void setObjectValue(Serializable target,Object value,String field,Method setMethod) throws Exception{
+        if (value != null) {
             Class type = setMethod.getParameterTypes()[0];
             if (!"java.lang.String".equalsIgnoreCase(type.getName()) && "".equals(value)) {
                 setMethod.invoke(target, new Object[]{null});

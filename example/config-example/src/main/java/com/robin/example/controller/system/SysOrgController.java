@@ -217,4 +217,8 @@ public class SysOrgController extends BaseCrudDhtmlxController<SysOrg, Long, Sys
         return map;
     }
 
+    @Override
+    protected String wrapQuery(HttpServletRequest request, PageQuery query) {
+        return null;
+    }
 }

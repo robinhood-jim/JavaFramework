@@ -4,8 +4,10 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.robin.core.base.annotation.MappingField;
 import com.robin.core.base.spring.SpringContextHolder;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.util.Assert;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -18,11 +20,12 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 
+@Slf4j
 public class ReflectUtils {
 
     private static final Cache<String, Map<String, Method>> cachedGetMethod = CacheBuilder.newBuilder().maximumSize(1000).expireAfterAccess(30, TimeUnit.MINUTES).build();
     private static final Cache<String, Map<String, Method>> cachedSetMethod = CacheBuilder.newBuilder().maximumSize(1000).expireAfterAccess(30, TimeUnit.MINUTES).build();
-
+    private static final Cache<String, Map<String, List<Field>>> cacheField= CacheBuilder.newBuilder().maximumSize(1000).expireAfterAccess(30,TimeUnit.MINUTES).build();;
     public static final List<String> getAllPropety(Object obj) {
         List<String> nameList = new ArrayList<String>();
         if (obj != null && !obj.getClass().isPrimitive()) {
@@ -165,6 +168,52 @@ public class ReflectUtils {
 
         }
         return false;
+    }
+    public static List<Field> getValueByAnnotationFields(Class baseClazz,Class annotationClazz){
+        Assert.isTrue(annotationClazz.isAnnotation(),"field class must be annotation!");
+        Map<String,List<Field>> tmap=cacheField.getIfPresent(baseClazz.getCanonicalName());
+        if(null==tmap){
+            tmap=new HashMap<>();
+            Field[] fields=baseClazz.getDeclaredFields();
+            for(int i=0;i<fields.length;i++){
+                if(fields[i].isAnnotationPresent(annotationClazz)){
+                    String clazzName=annotationClazz.getCanonicalName();
+                    if(tmap.containsKey(clazzName)){
+                        tmap.get(clazzName).add(fields[i]);
+                    }else{
+                        List<Field> fieldList=new ArrayList<>();
+                        fieldList.add(fields[i]);
+                        tmap.put(clazzName,fieldList);
+                    }
+                }
+            }
+            cacheField.put(baseClazz.getCanonicalName(),tmap);
+        }
+        if(tmap.containsKey(annotationClazz.getCanonicalName())){
+            return tmap.get(annotationClazz.getCanonicalName());
+        }else {
+            return null;
+        }
+    }
+
+    /**
+     * 返回指定Annotation字段的值，返回第一个属性
+     * @param baseClazz
+     * @param baseObj
+     * @param annotationClazz
+     * @return
+     */
+    public static Object getFieldValueByAnnotation(Class baseClazz, Object baseObj,Class annotationClazz) {
+        List<Field> fields=getValueByAnnotationFields(baseClazz,annotationClazz);
+        try {
+            if (null != fields && !fields.isEmpty()) {
+                fields.get(0).setAccessible(true);
+                return fields.get(0).get(baseObj);
+            }
+        }catch (Exception ex){
+            log.error("{}",ex);
+        }
+        return null;
     }
 
 }

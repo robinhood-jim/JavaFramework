@@ -28,7 +28,7 @@ public class SysRoleContorller extends BaseCrudDhtmlxController<SysRole,Long, Sy
             query=new PageQuery();
         }
 		query.setSelectParamId("GET_SYSROLE_PAGE");
-		query.getParameters().put("queryString", wrapQuery(request));
+		query.getParameters().put("queryString", wrapQuery(request,query));
 		service.queryBySelectId(query);
 		setCode("ROLETYPE,VALIDTAG");
 		filterListByCodeSet(query,"type","ROLETYPE",null);
@@ -112,7 +112,8 @@ public class SysRoleContorller extends BaseCrudDhtmlxController<SysRole,Long, Sy
 		}
 		return retmap;
 	}
-	public String wrapQuery(HttpServletRequest request){
+	@Override
+	public String wrapQuery(HttpServletRequest request,PageQuery query){
 		StringBuilder builder=new StringBuilder();
 		if( request.getParameter("roleName")!=null && !"".equals(request.getParameter("roleName"))){
 			builder.append(" and name like '%"+request.getParameter("roleName")+"%'");

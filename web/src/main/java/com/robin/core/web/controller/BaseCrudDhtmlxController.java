@@ -16,7 +16,6 @@
 package com.robin.core.web.controller;
 
 import com.robin.core.base.model.BaseObject;
-import com.robin.core.base.service.BaseAnnotationJdbcService;
 import com.robin.core.base.service.IBaseAnnotationJdbcService;
 import com.robin.core.base.spring.SpringContextHolder;
 import com.robin.core.convert.util.ConvertUtil;
@@ -24,8 +23,8 @@ import com.robin.core.query.util.PageQuery;
 import com.robin.core.query.util.QueryFactory;
 import com.robin.core.query.util.QueryString;
 import com.robin.core.web.codeset.Code;
-import com.robin.core.web.international.Translator;
 import com.robin.core.web.codeset.CodeSetService;
+import com.robin.core.web.international.Translator;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.Serializable;
@@ -41,8 +40,8 @@ public abstract class BaseCrudDhtmlxController<O extends BaseObject, P extends S
 
 
     protected Map<String, Object> wrapComobo(List<Map<String, Object>> rsList, String keyColumn, String valueColumn, boolean insertNullVal) {
-        Map<String, Object> map = new HashMap();
-        List<Map<String, Object>> list = new ArrayList();
+        Map<String, Object> map = new HashMap<>();
+        List<Map<String, Object>> list = new ArrayList<>();
         if (insertNullVal) {
             insertNullSelect(list);
         }
@@ -59,8 +58,8 @@ public abstract class BaseCrudDhtmlxController<O extends BaseObject, P extends S
     }
 
     protected Map<String, Object> wrapComoboWithCode(List<Code> rsList, boolean insertNullVal) {
-        Map<String, Object> map = new HashMap();
-        List<Map<String, Object>> list = new ArrayList();
+        Map<String, Object> map = new HashMap<>();
+        List<Map<String, Object>> list = new ArrayList<>();
         if (insertNullVal) {
             insertNullSelect(list);
         }
@@ -81,10 +80,10 @@ public abstract class BaseCrudDhtmlxController<O extends BaseObject, P extends S
     }
 
     private Map<String, Object> wrapDhtmlxGridOutputWithCheck(List<Map<String, String>> list, String queryKeys, String idColumn, boolean withcheck) {
-        Map<String, Object> retMap = new HashMap<String, Object>();
+        Map<String, Object> retMap = new HashMap<>();
         try {
             String[] fieldNames = queryKeys.split(",");
-            List<Map<String, Object>> retList = new ArrayList<Map<String, Object>>();
+            List<Map<String, Object>> retList = new ArrayList<>();
             PageQuery tquery = new PageQuery();
             tquery.setRecordCount(list.size());
             tquery.setPageSize(0);
@@ -117,8 +116,8 @@ public abstract class BaseCrudDhtmlxController<O extends BaseObject, P extends S
 
     protected Map<String, Object> returnCodeSetDhtmlxCombo(String codeSetNo, boolean allowNulls) {
         setCode(codeSetNo);
-        Map<String, Object> retmap = new HashMap<String, Object>();
-        List<Map<String, String>> list = new ArrayList<Map<String, String>>();
+        Map<String, Object> retmap = new HashMap<>();
+        List<Map<String, String>> list = new ArrayList<>();
         CodeSetService util = SpringContextHolder.getBean(CodeSetService.class);
         List<Code> codeList =getCodeList(util.getCacheCode(codeSetNo));
         if (codeList != null) {
@@ -208,5 +207,6 @@ public abstract class BaseCrudDhtmlxController<O extends BaseObject, P extends S
             retMap.put("orderDirection",pageQuery.getOrderDirection());
         }
     }
+
 
 }

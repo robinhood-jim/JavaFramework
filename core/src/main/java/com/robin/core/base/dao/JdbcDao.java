@@ -329,7 +329,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
             return this.getJdbcTemplate().queryForObject(querySQL, new RowMapper<Integer>() {
                 @Override
                 public Integer mapRow(ResultSet rs, int pos) throws SQLException, DataAccessException {
-                    rs.next();
+                    //rs.next();
                     return rs.getInt(1);
                 }
             },objects);

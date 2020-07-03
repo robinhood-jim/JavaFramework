@@ -51,10 +51,10 @@ public class CollectionMapConvert<T> {
                 Object obj = method.invoke(targerobj, null);
                 String value = obj.toString();
                 if (obj instanceof Double) {
-                    value = String.valueOf(((Double) obj).intValue());
+                    value = String.valueOf(((Double) obj).longValue());
                 }
                 if (obj instanceof Long) {
-                    value = String.valueOf(((Long) obj).intValue());
+                    value = String.valueOf(((Long) obj).longValue());
                 }
                 retMap.put(value, listobj.get(i));
 

@@ -70,11 +70,8 @@ public class SysUserCrudController extends BaseCrudDhtmlxController<SysUser, Lon
             query = new PageQuery();
         }
         query.setSelectParamId("GET_SYSUSERINFO");
-        String orgIds = null;
-        if (request.getParameter("orgId") != null && !request.getParameter("orgId").isEmpty()) {
-            orgIds = sysOrgService.getSubIdByParentOrgId(Long.valueOf(request.getParameter("orgId")));
-        }
-        query.getParameters().put("queryCondition", wrapQuery(request, orgIds));
+        wrapQuery(request,query);
+
         doQuery(null, query);
 
         List<SysOrg> orgList = sysOrgService.queryByField("orgStatus", BaseObject.OPER_EQ, Const.VALID);
@@ -83,6 +80,16 @@ public class SysUserCrudController extends BaseCrudDhtmlxController<SysUser, Lon
         filterListByCodeSet(query, "accountType", "ACCOUNTTYPE",null);
         filterListByCodeSet(query, "orgId", "ORG",messageSource.getMessage("title.defaultOrg",null,Locale.getDefault()));
         return wrapDhtmlxGridOutput(query);
+    }
+
+    @Override
+    protected String wrapQuery(HttpServletRequest request, PageQuery query) {
+        String orgIds = null;
+        if (request.getParameter("orgId") != null && !request.getParameter("orgId").isEmpty()) {
+            orgIds = sysOrgService.getSubIdByParentOrgId(Long.valueOf(request.getParameter("orgId")));
+        }
+        query.getParameters().put("queryCondition", wrapQuery(request, orgIds));
+        return null;
     }
 
     @RequestMapping("/edit")
