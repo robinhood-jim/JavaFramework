@@ -112,7 +112,7 @@
         <freemarker.version>2.3.18</freemarker.version>
         <compress.version>1.19</compress.version>
         <helix.version>0.6.5</helix.version>
-        <quartz.version>2.2.1</quartz.version>
+        <quartz.version>2.3.2</quartz.version>
         <oracle.version>11.1.0.6.0</oracle.version>
         <sqlserver.version>4.0</sqlserver.version>
         <aspectj.version>1.6.2</aspectj.version>
