@@ -8,6 +8,7 @@ import com.robin.core.collection.util.CollectionBaseConvert;
 import com.robin.core.compress.util.CompressUtils;
 import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.query.util.Condition;
+import com.robin.core.query.util.PageQuery;
 import com.robin.core.sql.util.FilterCondition;
 import com.robin.core.sql.util.FilterConditions;
 import com.robin.core.template.util.FreeMarkerUtil;
@@ -475,4 +476,8 @@ public class DataMappingContoller extends BaseCrudDhtmlxController<ProjectInfo, 
         this.mapping = mapping;
     }
 
+    @Override
+    protected String wrapQuery(HttpServletRequest request, PageQuery query) {
+        return null;
+    }
 }

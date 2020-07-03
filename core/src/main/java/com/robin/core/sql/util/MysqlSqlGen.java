@@ -129,4 +129,9 @@ public class MysqlSqlGen extends AbstractSqlGen implements BaseSqlGen{
 	protected String getAutoIncrementDef() {
 		return " AUTO_INCREMENT";
 	}
+
+	@Override
+	public String getTimestampFormat() {
+		return super.getTimestampFormat()+" not null default CURRENT_TIMESTAMP";
+	}
 }

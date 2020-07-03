@@ -411,6 +411,10 @@ public class ProjectInfoContorller extends BaseCrudDhtmlxController<ProjectInfo,
         return buffer.toString();
     }
 
+    @Override
+    protected String wrapQuery(HttpServletRequest request, PageQuery query) {
+        return null;
+    }
 
     public String getProjId() {
         return projId;

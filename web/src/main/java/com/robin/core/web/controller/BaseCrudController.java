@@ -24,6 +24,7 @@ import com.robin.core.query.util.PageQuery;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
@@ -236,5 +237,5 @@ public abstract class BaseCrudController<O extends BaseObject, P extends Seriali
         }
         return array;
     }
-
+    protected abstract String wrapQuery(HttpServletRequest request, PageQuery query);
 }

@@ -169,4 +169,9 @@ public class SysResponsiblityController extends BaseCrudDhtmlxController<SysResp
         }
         return builder.toString();
     }
+
+    @Override
+    protected String wrapQuery(HttpServletRequest request, PageQuery query) {
+        return null;
+    }
 }
