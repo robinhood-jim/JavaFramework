@@ -15,46 +15,37 @@
  */
 package com.robin.core.test.db;
 
-import java.io.Serializable;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import com.robin.core.base.annotation.MappingEntity;
 import com.robin.core.base.annotation.MappingField;
+import com.robin.core.base.dao.JdbcDao;
 import com.robin.core.base.datameta.BaseDataBaseMeta;
 import com.robin.core.base.datameta.DataBaseMetaFactory;
 import com.robin.core.base.datameta.DataBaseParam;
+import com.robin.core.base.model.BaseObject;
 import com.robin.core.base.service.SqlMapperService;
 import com.robin.core.base.spring.DynamicBeanReader;
 import com.robin.core.base.spring.JdbcDaoDynamicBean;
+import com.robin.core.base.spring.SpringContextHolder;
 import com.robin.core.base.util.Const;
 import com.robin.core.base.util.StringUtils;
 import com.robin.core.query.util.Condition;
+import com.robin.core.query.util.PageQuery;
 import com.robin.core.sql.util.FilterCondition;
 import com.robin.core.sql.util.FilterConditions;
 import com.robin.core.test.model.*;
 import com.robin.core.test.service.*;
 import io.github.classgraph.*;
 import junit.framework.TestCase;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.robin.core.base.dao.JdbcDao;
-import com.robin.core.base.model.BaseObject;
-import com.robin.core.base.spring.SpringContextHolder;
-import com.robin.core.query.util.PageQuery;
+import java.sql.Timestamp;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = "classpath:applicationContext-test.xml")
@@ -148,18 +139,7 @@ public class JdbcDaoTest extends TestCase {
         sysUserService.saveEntity(user);
         assertNotNull(user.getId());
     }
-    @Test
-    public  void testCamelCaseInsert(){
-        JdbcDao jdbcDao = SpringContextHolder.getBean("jdbcDao", JdbcDao.class);
-        AffairMain affairMain=new AffairMain();
-        affairMain.setName("test");
-        affairMain.setCreateTime(System.currentTimeMillis());
-        affairMain.setModifyTime(System.currentTimeMillis());
-        affairMain.setDeptId(1L);
-        affairMain.setParentId(1L);
-        Serializable ids=jdbcDao.createVO(affairMain);
-        Assert.assertNotNull(ids);
-    }
+
 
     @Test
     public void testInsertAssignVarcharKeyTable() {
