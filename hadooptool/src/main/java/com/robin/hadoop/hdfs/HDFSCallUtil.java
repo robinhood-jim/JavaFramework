@@ -381,7 +381,6 @@ public class HDFSCallUtil {
 			FileSystem fs=FileSystem.get(config);
 			fs.setReplication(new Path(hdfsUrl), (short)resp);
 		}catch (Exception e) {
-			// TODO: handle exception
 			throw new HdfsException(e);
 		}
 	}

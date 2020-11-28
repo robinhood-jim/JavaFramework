@@ -259,23 +259,23 @@ public class AnnotationRetrevior {
             }
             if (type.equals(Void.TYPE)) {
             } else if (type.equals(Long.TYPE)) {
-                content.setDataType("int");
+                content.setDataType(Const.META_TYPE_BIGINT);
             } else if (type.equals(Integer.TYPE)) {
-                content.setDataType("int");
+                content.setDataType(Const.META_TYPE_INTEGER);
             } else if (type.equals(Double.TYPE)) {
-                content.setDataType("numeric");
+                content.setDataType(Const.META_TYPE_DOUBLE);
             } else if (type.equals(Float.TYPE)) {
-                content.setDataType("numeric");
+                content.setDataType(Const.META_TYPE_DOUBLE);
             } else if (type.equals(String.class)) {
-                content.setDataType("string");
+                content.setDataType(Const.META_TYPE_STRING);
             } else if (type.equals(java.util.Date.class)) {
-                content.setDataType("date");
+                content.setDataType(Const.META_TYPE_TIMESTAMP);
             } else if (type.equals(Date.class)) {
-                content.setDataType("date");
+                content.setDataType(Const.META_TYPE_DATE);
             } else if (type.equals(byte[].class)) {
-                content.setDataType("blob");
+                content.setDataType(Const.META_TYPE_BLOB);
             } else if (type.equals(Timestamp.class)) {
-                content.setDataType("timestamp");
+                content.setDataType(Const.META_TYPE_TIMESTAMP);
             }
         } catch (Exception ex) {
             throw new DAOException(ex);

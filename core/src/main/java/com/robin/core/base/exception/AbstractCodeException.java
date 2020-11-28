@@ -1,12 +1,9 @@
 package com.robin.core.base.exception;
 
-import com.robin.core.base.spring.SpringContextHolder;
-import com.robin.core.base.util.MessageUtils;
-
 public abstract class AbstractCodeException extends RuntimeException {
     private int retCode;
     private String message;
-    private MessageUtils messageUtils= SpringContextHolder.getBean(MessageUtils.class);
+    //private MessageUtils messageUtils= SpringContextHolder.getBean(MessageUtils.class);
 
     public AbstractCodeException(int retCode){
         this.retCode=retCode;

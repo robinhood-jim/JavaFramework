@@ -159,7 +159,7 @@ public class ExcelProcessor {
                 Row row = rit.next();
                 if (pos == startRow) {
                     for (int i = startCol - 1; i < endCol; i++) {
-                        Cell cell =  row.getCell(i);
+                        Cell cell = row.getCell(i);
                         String cellName = cell.getStringCellValue();
                         DataTypeEnum column = columnMap.get(cellName.toUpperCase());
                         if (column == null) {
@@ -296,7 +296,7 @@ public class ExcelProcessor {
         Workbook wb = ExcelBaseOper.createWorkBook(prop);
         String sheetname = prop.getSheetName();
         Sheet sheet = wb.createSheet(sheetname);
-        if(sheet instanceof SXSSFSheet){
+        if (sheet instanceof SXSSFSheet) {
             ((SXSSFSheet) sheet).setRandomAccessWindowSize(prop.getStreamRows());
         }
         CreationHelper helper = wb.getCreationHelper();
@@ -311,12 +311,13 @@ public class ExcelProcessor {
         autoSizeSheet(prop, sheet, count);
         return wb;
     }
-    public static void generateExcelFileToLocal(ExcelSheetProp prop,TableConfigProp header,String localPath) throws Exception{
-        Workbook wb=generateExcelFile(prop,header);
-        FileOutputStream out=new FileOutputStream(localPath);
+
+    public static void generateExcelFileToLocal(ExcelSheetProp prop, TableConfigProp header, String localPath) throws Exception {
+        Workbook wb = generateExcelFile(prop, header);
+        FileOutputStream out = new FileOutputStream(localPath);
         wb.write(out);
         out.close();
-        if(wb instanceof SXSSFWorkbook){
+        if (wb instanceof SXSSFWorkbook) {
             ((SXSSFWorkbook) wb).dispose();
         }
     }
@@ -520,7 +521,7 @@ public class ExcelProcessor {
                 //cell style Map
                 Map<String, CellStyle> cellMap = new HashMap<String, CellStyle>();
                 for (int i = 0; i < list.size(); i++) {
-                    processSingleLine(list.get(i), wb, targetsheet, i + 1, prop, header, helper,cellMap);
+                    processSingleLine(list.get(i), wb, targetsheet, i + 1, prop, header, helper, cellMap);
                     if (prop.isStreamInsert() && (i + 1) % prop.getStreamRows() == 0) {
                         ((SXSSFSheet) targetsheet).flushRows(prop.getStreamRows());
                     }

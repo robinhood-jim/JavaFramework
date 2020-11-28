@@ -251,7 +251,7 @@ public class DataBaseUtil {
                 String scale = rs.getString("TABLE_SCHEM");
 
                 DataBaseColumnMeta datameta = new DataBaseColumnMeta();
-                //TODO SqlServer2005 may failed for not support  get AUTOINCREMENT  attribute
+                //SqlServer2005 may failed for not support  get AUTOINCREMENT  attribute
                 if (dbType!=BaseDataBaseMeta.TYPE_ORACLE && dbType!=BaseDataBaseMeta.TYPE_ORACLERAC && dbType!=BaseDataBaseMeta.TYPE_HIVE
                         && dbType!=BaseDataBaseMeta.TYPE_HIVE2 && dbType!=BaseDataBaseMeta.TYPE_PHONEIX) {
                     String autoInc = rs.getString("IS_AUTOINCREMENT");

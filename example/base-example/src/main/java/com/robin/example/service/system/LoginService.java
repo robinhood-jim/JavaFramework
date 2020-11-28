@@ -34,7 +34,7 @@ import com.robin.example.model.user.SysUserResponsiblity;
 import com.robin.example.service.user.SysUserResponsiblityService;
 import com.robin.example.service.user.SysUserService;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;

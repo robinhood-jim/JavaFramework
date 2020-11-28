@@ -260,7 +260,9 @@ public class ConvertUtil {
                 Map.Entry<String,Method> entry=iter.next();
                 if (targetMethodMap.containsKey(entry.getKey()) && entry.getValue().getParameterTypes().length==0){
                     Object retValue = parseParameter(targetMethodMap.get(entry.getKey()).getParameterTypes()[0], entry.getValue().invoke(src,new Object[]{}));
-                    setObjectValue(targetMethodMap.get(entry.getKey()), target, retValue);
+                    if(null!=retValue) {
+                        setObjectValue(targetMethodMap.get(entry.getKey()), target, retValue);
+                    }
                 }
             }
         }

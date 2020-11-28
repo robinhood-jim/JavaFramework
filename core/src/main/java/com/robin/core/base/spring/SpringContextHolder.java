@@ -66,6 +66,10 @@ public class SpringContextHolder implements ApplicationContextAware, DisposableB
         }
 	}
 
+	public static ApplicationContext getContext() {
+		return context;
+	}
+
 	@Override
 	public void destroy() throws Exception {
 		context = null;

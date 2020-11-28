@@ -52,6 +52,7 @@
         <module>license-core</module>
        <!-- <module>license-server</module>-->
         <module>spring-starter</module>
+        <module>estool</module>
     </modules>
     <!-- properties -->
     <properties>
@@ -142,6 +143,7 @@
                 <groupId>commons-lang</groupId>
                 <artifactId>commons-lang</artifactId>
                 <version>${lang.version}</version>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>org.apache.commons</groupId>
@@ -152,42 +154,50 @@
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-pool2</artifactId>
                 <version>${pool.version}</version>
+                <optional>true</optional>
             </dependency>
 
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-vfs2</artifactId>
                 <version>${vfs.version}</version>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>commons-httpclient</groupId>
                 <artifactId>commons-httpclient</artifactId>
                 <version>${httpclient.version}</version>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>commons-dbcp</groupId>
                 <artifactId>commons-dbcp</artifactId>
                 <version>${commons-dbcp.version}</version>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>commons-dbutils</groupId>
                 <artifactId>commons-dbutils</artifactId>
                 <version>${comm.dbutil}</version>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>commons-codec</groupId>
                 <artifactId>commons-codec</artifactId>
                 <version>${comm-codec.version}</version>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>commons-beanutils</groupId>
                 <artifactId>commons-beanutils</artifactId>
                 <version>${commons-beanutils.version}</version>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>commons-io</groupId>
                 <artifactId>commons-io</artifactId>
                 <version>${commons-io.version}</version>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>commons-net</groupId>
@@ -199,17 +209,20 @@
                         <groupId>commons-logging</groupId>
                     </exclusion>
                 </exclusions>
+                <optional>true</optional>
             </dependency>
 
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-compress</artifactId>
                 <version>${compress.version}</version>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>commons-fileupload</groupId>
                 <artifactId>commons-fileupload</artifactId>
                 <version>1.4</version>
+                <optional>true</optional>
             </dependency>
             <!-- Apache commons end -->
 
@@ -218,27 +231,32 @@
                 <groupId>mysql</groupId>
                 <artifactId>mysql-connector-java</artifactId>
                 <version>${mysql.version}</version>
+                <optional>true</optional>
             </dependency>
 
             <dependency>
                 <groupId>com.microsoft.sqlserver</groupId>
                 <artifactId>mssql-jdbc</artifactId>
                 <version>6.1.0.jre7</version>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>postgresql</groupId>
                 <artifactId>postgresql</artifactId>
                 <version>${postgresql.version}</version>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>org.mybatis</groupId>
                 <artifactId>mybatis-spring</artifactId>
                 <version>${mybatis-spring.version}</version>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>org.mybatis</groupId>
                 <artifactId>mybatis</artifactId>
                 <version>${mybatis.version}</version>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>org.hibernate</groupId>
@@ -290,6 +308,7 @@
                         <artifactId>hibernate-jpa-2.1-api</artifactId>
                     </exclusion>
                 </exclusions>
+                <optional>true</optional>
             </dependency>
             <!-- db definition end -->
 
@@ -298,11 +317,13 @@
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
                 <version>${slf4j.version}</version>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-log4j12</artifactId>
                 <version>${slf4j.version}</version>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>ch.qos.logback</groupId>
@@ -321,6 +342,7 @@
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-core</artifactId>
                 <version>${spring.version}</version>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>org.springframework</groupId>
@@ -332,56 +354,67 @@
                         <groupId>commons-logging</groupId>
                     </exclusion>
                 </exclusions>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-orm</artifactId>
                 <version>${spring.version}</version>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-webmvc</artifactId>
                 <version>${spring.version}</version>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-beans</artifactId>
                 <version>${spring.version}</version>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-jdbc</artifactId>
                 <version>${spring.version}</version>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-aop</artifactId>
                 <version>${spring.version}</version>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-tx</artifactId>
                 <version>${spring.version}</version>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-context</artifactId>
                 <version>${spring.version}</version>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-aspects</artifactId>
                 <version>${spring.version}</version>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-context-support</artifactId>
                 <version>${spring.version}</version>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-expression</artifactId>
                 <version>${spring.version}</version>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>org.springframework</groupId>
@@ -393,11 +426,13 @@
                 <groupId>javax.persistence</groupId>
                 <artifactId>javax.persistence-api</artifactId>
                 <version>${jpa.version}</version>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>org.aspectj</groupId>
                 <artifactId>aspectjlib</artifactId>
                 <version>${aspectj.version}</version>
+                <optional>true</optional>
             </dependency>
             <!-- Spring jar end -->
 
@@ -416,6 +451,7 @@
                         <artifactId>netty</artifactId>
                     </exclusion>
                 </exclusions>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>org.apache.hadoop</groupId>
@@ -427,6 +463,7 @@
                         <artifactId>netty</artifactId>
                     </exclusion>
                 </exclusions>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>org.apache.hadoop</groupId>
@@ -461,6 +498,7 @@
                         <artifactId>netty</artifactId>
                     </exclusion>
                 </exclusions>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>org.apache.hadoop</groupId>
@@ -480,6 +518,7 @@
                         <groupId>io.netty</groupId>
                     </exclusion>
                 </exclusions>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>org.apache.hadoop</groupId>
@@ -499,11 +538,13 @@
                         <artifactId>log4j</artifactId>
                     </exclusion>
                 </exclusions>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>org.apache.hadoop</groupId>
                 <artifactId>hadoop-aws</artifactId>
                 <version>${hadoop.version}</version>
+                <optional>true</optional>
             </dependency>
             <!-- Hadoop jar end -->
 
@@ -518,12 +559,13 @@
                         <artifactId>netty-all</artifactId>
                     </exclusion>
                 </exclusions>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>org.apache.hbase</groupId>
                 <artifactId>hbase-common</artifactId>
                 <version>${hbase.version}</version>
-
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>org.apache.hbase</groupId>
@@ -539,6 +581,7 @@
                         <artifactId>netty-all</artifactId>
                     </exclusion>
                 </exclusions>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>org.apache.phoenix</groupId>
@@ -550,6 +593,7 @@
                         <artifactId>netty-all</artifactId>
                     </exclusion>
                 </exclusions>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>org.apache.hive</groupId>
@@ -577,11 +621,13 @@
                         <artifactId>slf4j-log4j12</artifactId>
                     </exclusion>
                 </exclusions>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>com.datastax.cassandra</groupId>
                 <artifactId>cassandra-driver-core</artifactId>
                 <version>${cassandradriver.version}</version>
+                <optional>true</optional>
             </dependency>
             <!-- Hbase Hive and Phonenix end -->
 
@@ -590,16 +636,19 @@
                 <groupId>org.apache.kafka</groupId>
                 <artifactId>kafka-clients</artifactId>
                 <version>2.2.0</version>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>org.dom4j</groupId>
                 <artifactId>dom4j</artifactId>
                 <version>${dom4j.version}</version>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>jaxen</groupId>
                 <artifactId>jaxen</artifactId>
                 <version>${jaxen.version}</version>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>javax.servlet</groupId>
@@ -611,16 +660,19 @@
                 <groupId>org.codehaus.jackson</groupId>
                 <artifactId>jackson-core-asl</artifactId>
                 <version>${jackson-core-asl.version}</version>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>org.codehaus.jackson</groupId>
                 <artifactId>jackson-mapper-asl</artifactId>
                 <version>${jackson-mapper-asl.version}</version>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>org.codehaus.jackson</groupId>
                 <artifactId>com.springsource.org.codehaus.jackson</artifactId>
                 <version>${codehausejackson.version}</version>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>junit</groupId>
@@ -632,16 +684,19 @@
                 <groupId>com.google.code.gson</groupId>
                 <artifactId>gson</artifactId>
                 <version>${gson.version}</version>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>xstream</groupId>
                 <artifactId>xstream</artifactId>
                 <version>${xstream.version}</version>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>cglib</groupId>
                 <artifactId>cglib-nodep</artifactId>
                 <version>${cglib.version}</version>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>org.xeustechnologies</groupId>
@@ -653,11 +708,13 @@
                         <artifactId>cglib-nodep</artifactId>
                     </exclusion>
                 </exclusions>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>net.sf.supercsv</groupId>
                 <artifactId>super-csv</artifactId>
                 <version>2.2.0</version>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>org.apache.poi</groupId>
@@ -668,26 +725,31 @@
                 <groupId>org.apache.poi</groupId>
                 <artifactId>poi-examples</artifactId>
                 <version>${poi.version}</version>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>org.apache.poi</groupId>
                 <artifactId>poi-ooxml</artifactId>
                 <version>${poi.version}</version>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>org.apache.poi</groupId>
                 <artifactId>poi-ooxml-schemas</artifactId>
                 <version>${poi.version}</version>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>org.apache.poi</groupId>
                 <artifactId>poi-scratchpad</artifactId>
                 <version>${poi.version}</version>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>net.sf.json-lib</groupId>
                 <artifactId>json-lib</artifactId>
                 <version>${jsonlib.version}</version>
+                <optional>true</optional>
                 <classifier>jdk15</classifier>
                 <exclusions>
                     <exclusion>
@@ -712,56 +774,67 @@
                 <groupId>com.lowagie</groupId>
                 <artifactId>itext</artifactId>
                 <version>${itext.version}</version>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>com.lowagie</groupId>
                 <artifactId>itext-rtf</artifactId>
                 <version>${itext.version}</version>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>com.itextpdf</groupId>
                 <artifactId>itext-asian</artifactId>
                 <version>5.2.0</version>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>net.sf.jtidy</groupId>
                 <artifactId>jtidy</artifactId>
                 <version>r938</version>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>org.xhtmlrenderer</groupId>
                 <artifactId>core-renderer</artifactId>
                 <version>R8</version>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
                 <version>${guava.version}</version>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>org.jsoup</groupId>
                 <artifactId>jsoup</artifactId>
                 <version>${jsoup.version}</version>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>org.freemarker</groupId>
                 <artifactId>freemarker</artifactId>
                 <version>${freemarker.version}</version>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>org.quartz-scheduler</groupId>
                 <artifactId>quartz</artifactId>
                 <version>${quartz.version}</version>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>org.apache.avro</groupId>
                 <artifactId>avro</artifactId>
                 <version>${avro.version}</version>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>org.apache.avro</groupId>
                 <artifactId>avro-ipc</artifactId>
                 <version>${avro.version}</version>
+                <optional>true</optional>
                 <exclusions>
                     <exclusion>
                         <groupId>org.mortbay.jetty</groupId>
@@ -773,21 +846,25 @@
                 <groupId>com.google.protobuf</groupId>
                 <artifactId>protobuf-java</artifactId>
                 <version>2.5.0</version>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>org.apache.parquet</groupId>
                 <artifactId>parquet-avro</artifactId>
                 <version>${parquet.avro.version}</version>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>org.scannotation</groupId>
                 <artifactId>scannotation</artifactId>
                 <version>${scannotation.version}</version>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava-concurrent</artifactId>
                 <version>r03</version>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>org.apache.curator</groupId>
@@ -799,6 +876,7 @@
                         <artifactId>zookeeper</artifactId>
                     </exclusion>
                 </exclusions>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>org.apache.curator</groupId>
@@ -810,6 +888,7 @@
                         <artifactId>zookeeper</artifactId>
                     </exclusion>
                 </exclusions>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>org.apache.curator</groupId>
@@ -821,11 +900,13 @@
                         <artifactId>zookeeper</artifactId>
                     </exclusion>
                 </exclusions>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>com.octo.captcha</groupId>
                 <artifactId>jcaptcha</artifactId>
                 <version>${jcaptcha.version}</version>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>org.tmatesoft.svnkit</groupId>
@@ -837,6 +918,7 @@
                         <artifactId>jsch.agentproxy.connector-factory</artifactId>
                     </exclusion>
                 </exclusions>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>org.anarres.lzo</groupId>
@@ -868,6 +950,7 @@
                         <artifactId>junit</artifactId>
                     </exclusion>
                 </exclusions>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>org.anarres.lzo</groupId>
@@ -899,46 +982,55 @@
                         <artifactId>junit</artifactId>
                     </exclusion>
                 </exclusions>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>org.xerial.snappy</groupId>
                 <artifactId>snappy-java</artifactId>
                 <version>${snappy.version}</version>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>org.tukaani</groupId>
                 <artifactId>xz</artifactId>
                 <version>${xz.version}</version>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>org.lz4</groupId>
                 <artifactId>lz4-java</artifactId>
                 <version>1.4</version>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>org.projectlombok</groupId>
                 <artifactId>lombok</artifactId>
                 <version>1.16.18</version>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>org.eclipse.jgit</groupId>
                 <artifactId>org.eclipse.jgit</artifactId>
                 <version>5.0.3.201809091024-r</version>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>org.graalvm</groupId>
                 <artifactId>graal-sdk</artifactId>
                 <version>${graal.version}</version>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>org.apache.calcite</groupId>
                 <artifactId>calcite-core</artifactId>
                 <version>${calcite.version}</version>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>io.github.classgraph</groupId>
                 <artifactId>classgraph</artifactId>
                 <version>4.8.48</version>
+                <optional>true</optional>
             </dependency>
             <!-- Other tool end -->
         </dependencies>

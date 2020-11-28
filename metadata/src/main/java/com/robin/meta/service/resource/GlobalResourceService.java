@@ -15,9 +15,12 @@
  */
 package com.robin.meta.service.resource;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.robin.comm.fileaccess.iterator.AvroFileIterator;
 import com.robin.comm.fileaccess.iterator.ParquetFileIterator;
 import com.robin.comm.fileaccess.util.HdfsResourceAccessUtil;
+import com.robin.comm.util.es.ESSchemaAwareUtil;
 import com.robin.core.base.dao.SimpleJdbcDao;
 import com.robin.core.base.datameta.*;
 import com.robin.core.base.model.BaseObject;
@@ -39,6 +42,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.avro.Schema;
 import org.apache.commons.dbutils.DbUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
@@ -46,8 +50,10 @@ import org.springframework.stereotype.Component;
 import java.io.BufferedReader;
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * <p>Description:Get all Available MetaData information from all kind Input source </p>
@@ -60,18 +66,21 @@ public class GlobalResourceService extends BaseAnnotationJdbcService<GlobalResou
     private HadoopClusterDefService service;
     @Autowired
     private ResourceConfigService resourceConfigService;
+    private Cache<String,Map<String,Object>> cache= CacheBuilder.newBuilder().initialCapacity(10).maximumSize(100).expireAfterWrite(60, TimeUnit.MINUTES).build();
 
-    @Cacheable(value = "schemaCache",key = "#sourceId.toString()")
+    //@Cacheable(value = "schemaCache",key = "#sourceId.toString()")
     public String getDataSourceSchemaDesc(DataCollectionMeta colmeta,Long sourceId, String sourceParamInput,int maxReadLines){
         return getDataSourceSchema(colmeta,sourceId,sourceParamInput,maxReadLines).toString(true);
     }
-    @CacheEvict(value = "schemaCache",key="#sourceId.toString()")
-    public void evictSourceCache(Long sourceId){
+    @CacheEvict(value = "schemaCache",key="#keyword")
+    public void evictSourceCache(String keyword){
 
     }
-    @Cacheable(value = "metaCache",key = "#sourceId")
-    public DataCollectionMeta getResourceMetaDef(Long sourceId,String resPath){
-
+    @Cacheable(value = "metaCache",key = "#keyword")
+    public DataCollectionMeta getResourceMetaDef(String keyword){
+        String[] arr=keyword.split(",");
+        Long sourceId=Long.valueOf(arr[0]);
+        String selectSource=arr[1];
         GlobalResource resource=getEntity(sourceId);
 
         DataCollectionMeta colmeta=new DataCollectionMeta();
@@ -79,9 +88,9 @@ public class GlobalResourceService extends BaseAnnotationJdbcService<GlobalResou
         try {
             colmeta.setResType(resource.getResType());
             if (resource.getResType().equals(ResourceConst.ResourceType.TYPE_DB.getValue())) {
-                String[] tableNames=resPath.split("\\.");
+                String[] tableNames=selectSource.split("\\.");
                 String tableName=tableNames.length==1?tableNames[0]:tableNames[1];
-                String schema=tableNames.length==1?resource.getSchema():tableNames[0];
+                String schema=tableNames.length==1?resource.getDbSchema():tableNames[0];
                 DataBaseParam param = new DataBaseParam(resource.getHostName(), 0, schema, resource.getUserName(), resource.getPassword());
                 BaseDataBaseMeta meta = DataBaseMetaFactory.getDataBaseMetaByType(resource.getDbType(), param);
                 connection=SimpleJdbcDao.getConnection(meta, param);
@@ -96,7 +105,7 @@ public class GlobalResourceService extends BaseAnnotationJdbcService<GlobalResou
             }else if (resource.getResType().equals(ResourceConst.ResourceType.TYPE_FTPFILE.getValue()) || resource.getResType().equals(ResourceConst.ResourceType.TYPE_SFTPFILE.getValue())) {
                 Map<String, Object> ftpparam = colmeta.getResourceCfgMap();
                 ftpparam.put("hostName", resource.getHostName());
-                if (resource.getResType().equals(Long.valueOf(ResourceConst.ResourceType.TYPE_FTPFILE.toString()))) {
+                if (resource.getResType().equals(ResourceConst.ResourceType.TYPE_FTPFILE.getValue())) {
                     ftpparam.put("protocol", "ftp");
                     ftpparam.put("port", resource.getPort() == 0 ? 21 : resource.getPort());
                 } else {
@@ -105,7 +114,21 @@ public class GlobalResourceService extends BaseAnnotationJdbcService<GlobalResou
                 }
                 ftpparam.put("userName", resource.getUserName());
                 ftpparam.put("password", resource.getPassword());
-            }else {
+            }else if(resource.getResType().equals(ResourceConst.ResourceType.TYPE_ES.getValue())){
+                Map<String,Object> schemaMap= getEsSchemaMeta(resource);
+                if(schemaMap.containsKey(selectSource.toLowerCase())){
+                    Map<String,Object> indexDefineMap=(Map<String,Object>)schemaMap.get(selectSource.toLowerCase());
+                    Map<String,Object> propMap=(Map<String,Object>)indexDefineMap.get("props");
+                    String docType=indexDefineMap.get("doctype").toString();
+                    Iterator<Map.Entry<String,Object>> iterator=propMap.entrySet().iterator();
+                    while(iterator.hasNext()){
+                        Map.Entry<String,Object> entry=iterator.next();
+                        Map<String,Object> columnMap=(Map<String,Object>)entry.getValue();
+                        colmeta.addColumnMeta(entry.getKey(),ESSchemaAwareUtil.translateEsType(columnMap.get("type").toString()),null);
+                    }
+                }
+            }
+            else {
                 List<ResourceConfig> configs=resourceConfigService.queryByField("resourceId", BaseObject.OPER_EQ,sourceId);
                 Map<String, Object> cfgMap = colmeta.getResourceCfgMap();
                 for(ResourceConfig rsConfig:configs){
@@ -122,7 +145,15 @@ public class GlobalResourceService extends BaseAnnotationJdbcService<GlobalResou
         }
         return colmeta;
     }
-
+    public Map<String,Object> getEsSchemaMeta(GlobalResource resource){
+        String esUrl="http://"+resource.getHostName()+":"+resource.getPort();
+        Map<String,Object> schemaMap= cache.getIfPresent(esUrl);
+        if(null == schemaMap) {
+            schemaMap= ESSchemaAwareUtil.getIndexs(esUrl);
+            cache.put(esUrl,schemaMap);
+        }
+        return schemaMap;
+    }
 
 
 
@@ -131,15 +162,15 @@ public class GlobalResourceService extends BaseAnnotationJdbcService<GlobalResou
         Schema schema=null;
 
         try {
-            if (resource.getResType().equals(Long.valueOf(ResourceConst.ResourceType.TYPE_DB.toString()))) {
+            if (resource.getResType().equals(ResourceConst.ResourceType.TYPE_DB.toString())|| resource.getResType().equals(ResourceConst.ResourceType.TYPE_ES.getValue())) {
                 schema=AvroUtils.getSchemaFromMeta(colmeta);
-            } else if (resource.getResType().equals(Long.valueOf(ResourceConst.ResourceType.TYPE_HDFSFILE.toString()))) {
+            } else if (resource.getResType().equals(ResourceConst.ResourceType.TYPE_HDFSFILE.getValue())) {
                 HdfsResourceAccessUtil util=new HdfsResourceAccessUtil();
                 HDFSUtil dfsutil=new HDFSUtil(colmeta);
                 List<String> fileList=dfsutil.listFile(sourceParamInput);
                 colmeta.setPath(fileList.get(0));
                 schema=getFileSchema(util,colmeta,resource,maxReadLines);
-            } else if (resource.getResType().equals(Long.valueOf(ResourceConst.ResourceType.TYPE_FTPFILE.toString())) || resource.getResType().equals(Long.valueOf(ResourceConst.ResourceType.TYPE_SFTPFILE.toString()))) {
+            } else if (resource.getResType().equals(ResourceConst.ResourceType.TYPE_FTPFILE.getValue()) || resource.getResType().equals(ResourceConst.ResourceType.TYPE_SFTPFILE.getValue())) {
                 ApacheVfsResourceAccessUtil util=new ApacheVfsResourceAccessUtil();
                 ApacheVfsResourceAccessUtil.VfsParam param=util.returnFtpParam(resource.getHostName(),resource.getPort(),resource.getUserName(),resource.getPassword(),resource.getProtocol());
                 String inputPath=sourceParamInput.endsWith("/")?sourceParamInput:sourceParamInput+"/";
@@ -148,10 +179,10 @@ public class GlobalResourceService extends BaseAnnotationJdbcService<GlobalResou
                     colmeta.setPath( inputPath+fileList.get(0));
                 }
                 schema=getFileSchema(util,colmeta,resource,maxReadLines);
-            }else if(resource.getResType().equals(Long.valueOf(ResourceConst.ResourceType.TYPE_LOCALFILE.toString()))){
+            }else if(resource.getResType().equals(ResourceConst.ResourceType.TYPE_LOCALFILE.getValue())){
 
 
-            }else if(resource.getResType().equals(Long.valueOf(ResourceConst.ResourceType.TYPE_REDIS.toString()))){
+            }else if(resource.getResType().equals(ResourceConst.ResourceType.TYPE_REDIS.getValue())){
 
             }
         }catch (Exception ex){
