@@ -145,7 +145,6 @@ public class OracleSqlGen extends AbstractSqlGen implements BaseSqlGen {
 
 	@Override
     public String generateSingleRowSql(String querySql) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 	@Override

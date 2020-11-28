@@ -52,7 +52,6 @@ public class  Hive2DataBaseMeta extends BaseDataBaseMeta{
 
 	@Override
     public boolean supportsSchemas() {
-		// TODO Auto-generated method stub
 		return false;
 	}
 

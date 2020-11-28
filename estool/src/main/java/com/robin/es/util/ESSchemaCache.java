@@ -4,13 +4,14 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.RemovalListener;
 import com.google.common.cache.RemovalNotification;
+import com.robin.comm.util.es.ESSchemaAwareUtil;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-public class SchemaCache {
+public class ESSchemaCache {
     private static Cache<String, Map<String,Object>> cache= CacheBuilder.newBuilder().initialCapacity(100).expireAfterWrite(30, TimeUnit.HOURS)
             .removalListener(new RemovalListener<String, Map>() {
                 @Override
@@ -33,10 +34,10 @@ public class SchemaCache {
             cfgMap.put("userName",userName);
         }
         if(null!=passwd &&!StringUtils.isEmpty(passwd)){
-            cfgMap.put("userName",passwd);
+            cfgMap.put("passwd",passwd);
         }
         esClusterMap.put(clusterName,cfgMap);
-        Map<String,Object> map=SchemaAwareUtil.getIndexs(clusterUrl);
+        Map<String,Object> map= ESSchemaAwareUtil.getIndexs(clusterUrl);
         cache.put(clusterName,map);
     }
     public static Map<String,Object> getIndexDefine(String clusterName,String indexName){
@@ -47,7 +48,7 @@ public class SchemaCache {
                 if(!url.endsWith("/")){
                     url+="/_all";
                 }
-                schemaMap=SchemaAwareUtil.getIndexs(url);
+                schemaMap= ESSchemaAwareUtil.getIndexs(url);
                 cache.put(clusterName,schemaMap);
             }
             if(schemaMap.containsKey(indexName.toLowerCase())){
@@ -56,6 +57,9 @@ public class SchemaCache {
             return null;
         }
         return null;
+    }
+    public static Map<String,Object> getClusterConfig(String clusterName){
+        return cache.getIfPresent(clusterName);
     }
 
     public static Map<String, Map<String, Object>> getEsClusterMap() {

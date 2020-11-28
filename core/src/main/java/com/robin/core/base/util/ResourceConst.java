@@ -43,7 +43,8 @@ public class ResourceConst {
         TYPE_KAFKA(7L),
         TYPE_CASSANDRA(8L),
         TYPE_HBASE(9L),
-        TYPE_ROCKETDB(10L);
+        TYPE_ROCKETDB(10L),
+        TYPE_ES(11L);
         private Long value;
 
         ResourceType(Long value) {

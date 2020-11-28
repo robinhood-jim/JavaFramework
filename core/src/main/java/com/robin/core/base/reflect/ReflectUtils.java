@@ -9,6 +9,7 @@ import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.Assert;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
@@ -26,6 +27,7 @@ public class ReflectUtils {
     private static final Cache<String, Map<String, Method>> cachedGetMethod = CacheBuilder.newBuilder().maximumSize(1000).expireAfterAccess(30, TimeUnit.MINUTES).build();
     private static final Cache<String, Map<String, Method>> cachedSetMethod = CacheBuilder.newBuilder().maximumSize(1000).expireAfterAccess(30, TimeUnit.MINUTES).build();
     private static final Cache<String, Map<String, List<Field>>> cacheField= CacheBuilder.newBuilder().maximumSize(1000).expireAfterAccess(30,TimeUnit.MINUTES).build();;
+
     public static final List<String> getAllPropety(Object obj) {
         List<String> nameList = new ArrayList<String>();
         if (obj != null && !obj.getClass().isPrimitive()) {
@@ -73,7 +75,7 @@ public class ReflectUtils {
                 map = new HashMap<>();
                 Method[] methods = clazz.getMethods();
                 for (Method method : methods) {
-                    if (method.getName().startsWith("get") && method.getParameterTypes().length == 0) {
+                    if (method.getName().startsWith("get") && !method.getName().equals("getClass") && method.getParameterTypes().length == 0) {
                         String name = StringUtils.uncapitalize(method.getName().substring(3));
                         map.put(name, method);
                     }
@@ -169,9 +171,33 @@ public class ReflectUtils {
         }
         return false;
     }
-    public static List<Field> getValueByAnnotationFields(Class baseClazz,Class annotationClazz){
+    public static <T extends Annotation> T getAnnotationByFieldName(Class baseClazz, String fieldName, Class<T> annotationClazz){
         Assert.isTrue(annotationClazz.isAnnotation(),"field class must be annotation!");
-        Map<String,List<Field>> tmap=cacheField.getIfPresent(baseClazz.getCanonicalName());
+        List<Field> fields= getFieldsByAnnotation(baseClazz,annotationClazz);
+        String clazzName=annotationClazz.getCanonicalName();
+        for(Field field:fields){
+            if(field.getName().equals(fieldName)){
+                if(field.isAnnotationPresent(annotationClazz)){
+                    return field.getAnnotation(annotationClazz);
+                }
+            }
+        }
+        return null;
+    }
+    public static Map<String,Field> getFieldsMapByAnnotation(Class baseClazz,Class annotationClazz){
+        List<Field> fields= getFieldsByAnnotation(baseClazz,annotationClazz);
+        if(null!=fields) {
+            Map<String, Field> map = new HashMap<>();
+            for (Field field : fields) {
+                map.put(field.getName(), field);
+            }
+            return map;
+        }
+        return null;
+    }
+    public static List<Field> getFieldsByAnnotation(Class baseClazz, Class annotationClazz){
+        Assert.isTrue(annotationClazz.isAnnotation(),"field class must be annotation!");
+        Map<String,List<Field>> tmap=cacheField.getIfPresent(baseClazz.getCanonicalName()+annotationClazz.getCanonicalName());
         if(null==tmap){
             tmap=new HashMap<>();
             Field[] fields=baseClazz.getDeclaredFields();
@@ -187,7 +213,9 @@ public class ReflectUtils {
                     }
                 }
             }
-            cacheField.put(baseClazz.getCanonicalName(),tmap);
+            if(!tmap.isEmpty()) {
+                cacheField.put(baseClazz.getCanonicalName() + annotationClazz.getCanonicalName(), tmap);
+            }
         }
         if(tmap.containsKey(annotationClazz.getCanonicalName())){
             return tmap.get(annotationClazz.getCanonicalName());
@@ -204,11 +232,22 @@ public class ReflectUtils {
      * @return
      */
     public static Object getFieldValueByAnnotation(Class baseClazz, Object baseObj,Class annotationClazz) {
-        List<Field> fields=getValueByAnnotationFields(baseClazz,annotationClazz);
+        List<Field> fields= getFieldsByAnnotation(baseClazz,annotationClazz);
         try {
             if (null != fields && !fields.isEmpty()) {
                 fields.get(0).setAccessible(true);
                 return fields.get(0).get(baseObj);
+            }
+        }catch (Exception ex){
+            log.error("{}",ex);
+        }
+        return null;
+    }
+    public static String getFieldNameByAnnotation(Class baseClazz,Class annotationClazz) {
+        List<Field> fields= getFieldsByAnnotation(baseClazz,annotationClazz);
+        try {
+            if (null != fields && !fields.isEmpty()) {
+                return fields.get(0).getName();
             }
         }catch (Exception ex){
             log.error("{}",ex);

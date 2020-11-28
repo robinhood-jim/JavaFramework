@@ -20,12 +20,13 @@ import com.robin.core.base.reflect.ReflectUtils;
 import com.robin.core.base.spring.SpringContextHolder;
 import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.script.ScriptExecutor;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.script.Bindings;
 import javax.script.CompiledScript;
 import java.lang.reflect.Method;
 import java.util.*;
-
+@Slf4j
 public class CollectionMapConvert<T> {
 
     private CollectionMapConvert() {
@@ -75,7 +76,8 @@ public class CollectionMapConvert<T> {
     }
     private static <T> void checkType(List<T> listobj) throws MissingConfigException{
         if (listobj == null || listobj.size() == 0) {
-            throw new MissingConfigException("ArrayList is Empty!");
+            log.warn("ArrayList is Empty");
+            //throw new MissingConfigException("ArrayList is Empty!");
         }
         if (listobj.get(0).getClass().isPrimitive()) {
             throw new MissingConfigException("Primitive type can not using this function!");

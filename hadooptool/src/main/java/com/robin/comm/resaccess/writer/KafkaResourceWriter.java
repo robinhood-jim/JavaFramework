@@ -1,6 +1,5 @@
 package com.robin.comm.resaccess.writer;
 
-import com.google.gson.Gson;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.util.AvroUtils;
 import com.robin.core.fileaccess.writer.AbstractResourceWriter;

@@ -18,14 +18,12 @@ import java.util.Map;
 public class  JdbcResIterator extends AbstractResIterator {
     private JdbcResourceHolder holder;
     private DbConnectionHolder connectionHolder;
+    private String querySql;
 
     public JdbcResIterator(DataCollectionMeta colmeta) {
         super(colmeta);
     }
-    public void init(DataCollectionMeta colmeta,String sql,Object[] objects) throws Exception{
-        this.colmeta=colmeta;
-        getConnection();
-    }
+
     @Retryable(maxAttempts = 10,backoff = @Backoff(delay = 60000))
     public void getConnection() throws Exception{
         if(holder==null) {
@@ -36,6 +34,30 @@ public class  JdbcResIterator extends AbstractResIterator {
         }
     }
 
+    @Override
+    public void init() {
+        try {
+            getConnection();
+            querySql=colmeta.getResourceCfgMap().get("querySql").toString();
+            Object[] objs=null;
+            if(colmeta.getResourceCfgMap().containsKey("queryParams")){
+                objs=(Object[]) colmeta.getResourceCfgMap().get("queryParams");
+            }
+
+        }catch (Exception ex){
+            log.error("{}",ex);
+        }
+    }
+
+    @Override
+    public void beforeProcess(String resourcePath) {
+
+    }
+
+    @Override
+    public void afterProcess() {
+
+    }
 
     @Override
     public void close() throws IOException {

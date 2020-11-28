@@ -5,16 +5,30 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.*;
 import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpRequestRetryHandler;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.*;
+import org.apache.http.client.protocol.HttpClientContext;
+import org.apache.http.config.Registry;
+import org.apache.http.config.RegistryBuilder;
+import org.apache.http.conn.ConnectTimeoutException;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.socket.LayeredConnectionSocketFactory;
+import org.apache.http.conn.socket.PlainConnectionSocketFactory;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
 
+import javax.net.ssl.SSLException;
+import javax.net.ssl.SSLHandshakeException;
 import java.io.IOException;
+import java.io.InterruptedIOException;
+import java.net.UnknownHostException;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -29,11 +43,64 @@ import java.util.Map;
  */
 @Slf4j
 public class HttpUtils {
-    static PoolingHttpClientConnectionManager manager=new PoolingHttpClientConnectionManager();
-
+    static PoolingHttpClientConnectionManager manager;
+    static HttpRequestRetryHandler handler;
     static {
+        ConnectionSocketFactory plainSocketFactory = PlainConnectionSocketFactory.getSocketFactory();
+        LayeredConnectionSocketFactory sslSocketFactory = SSLConnectionSocketFactory.getSocketFactory();
+        Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory> create().register("http", plainSocketFactory)
+                .register("https", sslSocketFactory).build();
+
+        manager = new PoolingHttpClientConnectionManager(registry);
         manager.setMaxTotal(50);
         manager.setDefaultMaxPerRoute(20);
+        handler = new HttpRequestRetryHandler() {
+            @Override
+            public boolean retryRequest(IOException e, int i, HttpContext httpContext) {
+                if (i > 3){
+                    //重试超过3次,放弃请求
+                    log.error("retry has more than 3 time, give up request");
+                    return false;
+                }
+                if (e instanceof NoHttpResponseException){
+                    //服务器没有响应,可能是服务器断开了连接,应该重试
+                    log.error("receive no response from server, retry");
+                    return true;
+                }
+                if (e instanceof SSLHandshakeException){
+                    // SSL握手异常
+                    log.error("SSL hand shake exception");
+                    return false;
+                }
+                if (e instanceof InterruptedIOException){
+                    //超时
+                    log.error("InterruptedIOException");
+                    return false;
+                }
+                if (e instanceof UnknownHostException){
+                    // 服务器不可达
+                    log.error("server host unknown");
+                    return false;
+                }
+                if (e instanceof ConnectTimeoutException){
+                    // 连接超时
+                    log.error("Connection Time out");
+                    return false;
+                }
+                if (e instanceof SSLException){
+                    log.error("SSLException");
+                    return false;
+                }
+
+                HttpClientContext context = HttpClientContext.adapt(httpContext);
+                HttpRequest request = context.getRequest();
+                if (!(request instanceof HttpEntityEnclosingRequest)){
+                    //如果请求不是关闭连接的请求
+                    return true;
+                }
+                return false;
+            }
+        };
     }
     @Data
     public static class Response{
@@ -49,8 +116,12 @@ public class HttpUtils {
             this.responseBytes = respData;
         }
     }
+    public static CloseableHttpClient createHttpClient(){
+        return HttpClients.custom().setConnectionManager(manager).setRetryHandler(handler).build();
+    }
+
     public static final Response doPost(String url,String data, String charset, Map<String,String> headerMap){
-        CloseableHttpClient httpClient= HttpClients.custom().setConnectionManager(manager).build();
+        CloseableHttpClient httpClient= createHttpClient();
         HttpPost post=new HttpPost(url);
         fillHeader(post,headerMap);
         try {
@@ -72,7 +143,7 @@ public class HttpUtils {
         return null;
     }
     public static final Response doPost(String url,String charset,Map<String,String> postData,Map<String,String> headerMap){
-        CloseableHttpClient httpClient= HttpClients.custom().setConnectionManager(manager).build();
+        CloseableHttpClient httpClient= createHttpClient();
         HttpPost post=new HttpPost(url);
         fillHeader(post,headerMap);
         try {
@@ -94,7 +165,7 @@ public class HttpUtils {
         return null;
     }
     public static final Response doGet(String url,String charset,Map<String,String> headerMap){
-        CloseableHttpClient httpClient= HttpClients.custom().setConnectionManager(manager).build();
+        CloseableHttpClient httpClient= createHttpClient();
         HttpGet get=new HttpGet(url);
         fillHeader(get,headerMap);
         try {
@@ -107,7 +178,7 @@ public class HttpUtils {
         return null;
     }
     public static final Response doPut(String url,String data,String charset,Map<String,String> headerMap){
-        CloseableHttpClient httpClient= HttpClients.custom().setConnectionManager(manager).build();
+        CloseableHttpClient httpClient= createHttpClient();
         HttpPut put=new HttpPut(url);
         fillHeader(put,headerMap);
         try {
@@ -129,7 +200,7 @@ public class HttpUtils {
         return null;
     }
     public static final Response doDelete(String url,String charset,Map<String,String> headerMap){
-        CloseableHttpClient httpClient= HttpClients.custom().setConnectionManager(manager).build();
+        CloseableHttpClient httpClient= createHttpClient();
         HttpDelete delete=new HttpDelete(url);
         fillHeader(delete,headerMap);
         try {

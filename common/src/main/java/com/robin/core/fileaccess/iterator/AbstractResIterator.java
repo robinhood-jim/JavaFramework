@@ -23,4 +23,7 @@ public abstract class AbstractResIterator implements Iterator<Map<String,Object>
             columnMap.put(meta.getColumnName(), meta);
         }
     }
+    public abstract void init();
+    public abstract void beforeProcess(String resourcePath);
+    public abstract void afterProcess();
 }

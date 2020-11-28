@@ -3,12 +3,11 @@ package com.robin.meta.starter;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.freemarker.FreeMarkerAutoConfiguration;
-import org.springframework.boot.autoconfigure.web.servlet.DispatcherServletAutoConfiguration;
-import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
-@SpringBootApplication(exclude = FreeMarkerAutoConfiguration.class)
+@SpringBootApplication(exclude = {FreeMarkerAutoConfiguration.class, WebMvcAutoConfiguration.class})
 @EnableTransactionManagement(proxyTargetClass = true)
 @ComponentScan("com.robin")
 

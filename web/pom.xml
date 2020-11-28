@@ -26,118 +26,47 @@
     </properties>
 
     <dependencies>
-        <dependency>
-            <groupId>com.robin</groupId>
-            <artifactId>core</artifactId>
-            <version>${frm.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.apache.commons</groupId>
-                    <artifactId>commons-vfs2</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.curator</groupId>
-                    <artifactId>curator-framework</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.curator</groupId>
-                    <artifactId>curator-client</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.curator</groupId>
-                    <artifactId>curator-recipes</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.google.guava</groupId>
-                    <artifactId>guava</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.hibernate</groupId>
-                    <artifactId>hibernate-core</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
 
          <dependency>
              <groupId>com.robin</groupId>
              <artifactId>common</artifactId>
              <version>${frm.version}</version>
-             <exclusions>
-                 <exclusion>
-                     <groupId>org.apache.commons</groupId>
-                     <artifactId>commons-vfs2</artifactId>
-                 </exclusion>
-                 <exclusion>
-                     <groupId>org.apache.curator</groupId>
-                     <artifactId>curator-framework</artifactId>
-                 </exclusion>
-                 <exclusion>
-                     <groupId>org.apache.curator</groupId>
-                     <artifactId>curator-client</artifactId>
-                 </exclusion>
-                 <exclusion>
-                     <groupId>org.apache.curator</groupId>
-                     <artifactId>curator-recipes</artifactId>
-                 </exclusion>
-                 <exclusion>
-                     <groupId>com.google.guava</groupId>
-                     <artifactId>guava</artifactId>
-                 </exclusion>
-                 <exclusion>
-                     <groupId>org.hibernate</groupId>
-                     <artifactId>hibernate-core</artifactId>
-                 </exclusion>
-                 <exclusion>
-                     <groupId>com.microsoft.sqlserver</groupId>
-                     <artifactId>mssql-jdbc</artifactId>
-                 </exclusion>
-                 <exclusion>
-                     <groupId>org.apache.poi</groupId>
-                     <artifactId>poi</artifactId>
-                 </exclusion>
-                 <exclusion>
-                     <groupId>org.apache.poi</groupId>
-                     <artifactId>poi-ooxml</artifactId>
-                 </exclusion>
-                 <exclusion>
-                     <groupId>org.apache.poi</groupId>
-                     <artifactId>poi-ooxml-schemas</artifactId>
-                 </exclusion>
-                 <exclusion>
-                     <groupId>org.apache.poi</groupId>
-                     <artifactId>poi-scratchpad</artifactId>
-                 </exclusion>
-                 <exclusion>
-                     <groupId>com.lowagie</groupId>
-                     <artifactId>itext</artifactId>
-                 </exclusion>
-                 <exclusion>
-                     <groupId>com.lowagie</groupId>
-                     <artifactId>itext-rtf</artifactId>
-                 </exclusion>
-                 <exclusion>
-                     <groupId>com.itextpdf</groupId>
-                     <artifactId>itext-asian</artifactId>
-                 </exclusion>
-                 <exclusion>
-                     <groupId>org.tmatesoft.svnkit</groupId>
-                     <artifactId>svnkit</artifactId>
-                 </exclusion>
-                 <exclusion>
-                     <groupId>org.eclipse.jgit</groupId>
-                     <artifactId>org.eclipse.jgit</artifactId>
-                 </exclusion>
-                 <exclusion>
-                     <groupId>org.apache.calcite</groupId>
-                     <artifactId>calcite-core</artifactId>
-                 </exclusion>
-             </exclusions>
          </dependency>
-
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-core</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-tx</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-orm</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-jdbc</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+            <scope>test</scope>
+        </dependency>
 
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
+            <optional>true</optional>
         </dependency>
 
         <dependency>

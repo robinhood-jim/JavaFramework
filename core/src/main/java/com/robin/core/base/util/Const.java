@@ -58,6 +58,7 @@ public class Const {
 	public static final String	META_TYPE_CLOB		= "10";
 	public static final String	META_TYPE_BLOB		= "11";
 	public static final String	META_TYPE_OBJECT		= "12";
+	public static final String	META_TYPE_SHORT		= "13";
 	//filter type
 	public static final String	FILTER_OPER_BETWEEN	= "BT";
 	public static final String	FILTER_OPER_LIKE		= "LK";
@@ -225,6 +226,29 @@ public class Const {
 			return id;
 		}
 	}
+	public enum CYCLE_TYPE{
+		YEAR("8"),    //年
+		QUARTER("7"), //季度
+		XUN("6"),  //旬
+		MONTH("5"),
+		WEEK("4"),
+		DAY("3"),
+		HOUR("2"),
+		MINUTES("1");
+		private String value;
+		CYCLE_TYPE(String value){
+			this.value=value;
+		}
+		@Override
+		public String toString() {
+			return this.value;
+		}
+		public Integer getInt(){
+			return Integer.valueOf(value);
+		}
+	}
+	//定时任务触发时间点
+	public static final String TRIGGER_TIMESPAN="triggerTimeSpan";
 
 	public final static List<String> ESCAPE_CHARACTERS = new ArrayList<String>(
 			Arrays.asList("$", "(", ")", "*", "+", ".", "[",

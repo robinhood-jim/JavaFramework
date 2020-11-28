@@ -38,8 +38,7 @@ public abstract class AbstractFileIterator extends AbstractResIterator{
 		super(colmeta);
 		this.accessUtil=accessUtil;
 	}
-	public abstract void init();
-
+	@Override
 	public void beforeProcess(String resourcePath){
 		Assert.notNull(accessUtil,"ResourceAccessUtil is required!");
 		try {
@@ -48,6 +47,7 @@ public abstract class AbstractFileIterator extends AbstractResIterator{
 
 		}
 	}
+	@Override
 	public void afterProcess(){
 		try{
 			close();
