@@ -549,8 +549,9 @@ public class CommJdbcUtil {
                         }
                     }
                 }
-               if (setter.getCurrentRow() % batchSize != 0)
-                    ps.executeBatch();
+               if (setter.getCurrentRow() % batchSize != 0) {
+                   ps.executeBatch();
+               }
                 return 1;
             });
         } catch (Exception ex) {
@@ -572,9 +573,9 @@ public class CommJdbcUtil {
                 if (StringUtils.isEmpty(value)) {
                     ps.setNull(pos + 1, Types.INTEGER);
                 } else {
-                    if (NumberUtils.isDigits(value))
+                    if (NumberUtils.isDigits(value)) {
                         ps.setInt(pos + 1, Integer.parseInt(value));
-                    else {
+                    } else {
                         ps.setNull(pos + 1, Types.INTEGER);
                     }
                 }
@@ -582,9 +583,9 @@ public class CommJdbcUtil {
                 if (StringUtils.isEmpty(value)) {
                     ps.setNull(pos + 1, Types.BIGINT);
                 } else {
-                    if (NumberUtils.isDigits(value))
+                    if (NumberUtils.isDigits(value)) {
                         ps.setLong(pos + 1, Long.parseLong(value));
-                    else {
+                    } else {
                         ps.setNull(pos + 1, Types.BIGINT);
                     }
                 }
@@ -592,9 +593,9 @@ public class CommJdbcUtil {
                 if (StringUtils.isEmpty(value)) {
                     ps.setNull(pos + 1, Types.DOUBLE);
                 } else {
-                    if (NumberUtils.isNumber(value))
+                    if (NumberUtils.isNumber(value)) {
                         ps.setDouble(pos + 1, Double.parseDouble(value));
-                    else {
+                    } else {
                         ps.setNull(pos + 1, Types.DOUBLE);
                     }
                 }
@@ -604,10 +605,11 @@ public class CommJdbcUtil {
                 } else {
                     if (NumberUtils.isDigits(value)) {
                         ps.setTimestamp(pos + 1, new Timestamp(Long.parseLong(value)));
-                    } else if (!value.contains(":"))
+                    } else if (!value.contains(":")) {
                         ps.setDate(pos + 1, new Date(LocalDateTime.parse(value, dayFormat).toInstant(ZoneOffset.UTC).toEpochMilli()));
-                    else
+                    } else {
                         ps.setDate(pos + 1, new Date(LocalDateTime.parse(value, timeFormat).toInstant(ZoneOffset.UTC).toEpochMilli()));
+                    }
                 }
             } else if (Const.META_TYPE_STRING.equals(columnMeta.getColumnType())) {
                 if (value != null) {

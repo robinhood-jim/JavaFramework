@@ -73,7 +73,7 @@ public class ESSchemaAwareUtil {
             while(fielditer.hasNext()){
                 Map.Entry<String,Object> fieldEntry=fielditer.next();
                 String fieldName=fieldEntry.getKey();
-                if(fieldName.equalsIgnoreCase("type")) {
+                if("type".equalsIgnoreCase(fieldName)) {
                     String type = fieldEntry.getValue().toString();
                     Map<String, Object> fieldCfgMap = new HashMap<>();
                     fieldCfgMap.put("fieldName", propEntry.getKey());
@@ -111,15 +111,15 @@ public class ESSchemaAwareUtil {
     public static String translateEsType(String columnType) {
         Assert.notNull(columnType,"type is null");
         String retType= Const.META_TYPE_STRING;
-        if (columnType.equalsIgnoreCase("auto") || columnType.equalsIgnoreCase("keyword") || columnType.equalsIgnoreCase("text")) {
+        if ("auto".equalsIgnoreCase(columnType) || "keyword".equalsIgnoreCase(columnType) || "text".equalsIgnoreCase(columnType)) {
             retType=Const.META_TYPE_STRING;
-        }else if(columnType.equalsIgnoreCase("double")){
+        }else if("double".equalsIgnoreCase(columnType)){
             retType=Const.META_TYPE_DOUBLE;
-        }else if(columnType.equalsIgnoreCase("integer")){
+        }else if("integer".equalsIgnoreCase(columnType)){
             retType=Const.META_TYPE_INTEGER;
-        }else if(columnType.equalsIgnoreCase("float")){
+        }else if("float".equalsIgnoreCase(columnType)){
             retType=Const.META_TYPE_NUMERIC;
-        }else if(columnType.equalsIgnoreCase("short")){
+        }else if("short".equalsIgnoreCase(columnType)){
             retType=Const.META_TYPE_SHORT;
         }
         return retType;

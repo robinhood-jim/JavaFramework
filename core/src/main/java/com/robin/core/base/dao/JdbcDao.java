@@ -427,7 +427,8 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
     public void batchUpdate(String sql, List<Map<String, String>> resultList, List<Map<String, String>> columnpoolList, final int batchsize) throws DAOException {
         CommJdbcUtil.batchUpdate(getJdbcTemplate(), sql, resultList, columnpoolList, batchsize);
     }
-    public void batchUpdateWithRowIterator(String sql, Iterator<Map<String,String>> rowIterator, DataCollectionMeta collectionMeta,int batchsize) throws DAOException{
+    @Override
+    public void batchUpdateWithRowIterator(String sql, Iterator<Map<String,String>> rowIterator, DataCollectionMeta collectionMeta, int batchsize) throws DAOException{
         CommJdbcUtil.batchUpdateWithIterator(getJdbcTemplate(),sql,rowIterator,collectionMeta,batchsize);
     }
 
