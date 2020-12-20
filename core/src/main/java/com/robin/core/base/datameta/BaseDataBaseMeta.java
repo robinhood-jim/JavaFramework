@@ -20,10 +20,8 @@ import com.robin.core.sql.util.BaseSqlGen;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 @Slf4j
 public abstract class BaseDataBaseMeta implements DataBaseInterface, Serializable {

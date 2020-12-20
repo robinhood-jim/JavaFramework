@@ -25,6 +25,7 @@ import org.apache.avro.generic.GenericDatumWriter;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.io.DatumWriter;
 
+import javax.naming.OperationNotSupportedException;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
@@ -52,7 +53,7 @@ public class AvroFileWriter extends AbstractFileWriter{
 
 
 	@Override
-	public void writeRecord(Map<String, ?> map) throws IOException {
+	public void writeRecord(Map<String, ?> map) throws IOException, OperationNotSupportedException {
 
 		GenericRecord record=new GenericData.Record(schema);
 

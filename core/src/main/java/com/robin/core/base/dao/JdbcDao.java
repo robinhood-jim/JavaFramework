@@ -32,7 +32,6 @@ import com.robin.core.sql.util.BaseSqlGen;
 import com.robin.core.sql.util.FilterCondition;
 import com.robin.core.sql.util.OracleSqlGen;
 import com.robin.core.version.VersionInfo;
-import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
@@ -50,7 +49,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
-@Slf4j
+
 public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
 
     private BaseSqlGen sqlGen;
@@ -59,7 +58,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     public JdbcDao(){
-        log.debug(VersionInfo.getInstance().getVersion());
+        logger.debug(VersionInfo.getInstance().getVersion());
     }
     public JdbcDao(DataSource dataSource,LobHandler lobHandler,QueryFactory queryFactory,BaseSqlGen sqlGen){
         setDataSource(dataSource);
@@ -67,7 +66,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
         this.queryFactory=queryFactory;
         this.sqlGen=sqlGen;
         namedParameterJdbcTemplate=new NamedParameterJdbcTemplate(getJdbcTemplate());
-        log.debug(VersionInfo.getInstance().getVersion());
+        logger.debug(VersionInfo.getInstance().getVersion());
     }
 
     @Override
@@ -241,11 +240,11 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
 
 
     @Override
-    public int executeOperationWithSql(String sql, ResultSetOperationExtractor oper,Object... paramObj) throws DAOException {
+    public int executeOperationWithSql(String sql, ResultSetOperationExtractor oper,Object... paramObj2) throws DAOException {
         Integer ret;
         try {
             oper.setLobHandler(lobHandler);
-            ret = this.getJdbcTemplate().query(sql, paramObj, oper);
+            ret = this.getJdbcTemplate().query(sql, paramObj2, oper);
         } catch (Exception ex) {
             throw new DAOException(ex);
         }
@@ -427,7 +426,8 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
     public void batchUpdate(String sql, List<Map<String, String>> resultList, List<Map<String, String>> columnpoolList, final int batchsize) throws DAOException {
         CommJdbcUtil.batchUpdate(getJdbcTemplate(), sql, resultList, columnpoolList, batchsize);
     }
-    public void batchUpdateWithRowIterator(String sql, Iterator<Map<String,String>> rowIterator, DataCollectionMeta collectionMeta,int batchsize) throws DAOException{
+    @Override
+    public void batchUpdateWithRowIterator(String sql, Iterator<Map<String,String>> rowIterator, DataCollectionMeta collectionMeta, int batchsize) throws DAOException{
         CommJdbcUtil.batchUpdateWithIterator(getJdbcTemplate(),sql,rowIterator,collectionMeta,batchsize);
     }
 

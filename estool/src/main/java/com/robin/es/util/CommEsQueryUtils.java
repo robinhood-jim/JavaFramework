@@ -66,9 +66,8 @@ public class CommEsQueryUtils {
             HttpUtils.Response response = HttpUtils.doGet(url + "/_cluster/health?pretty", "UTF-8", new HashMap<>());
             if (200 == response.getStatusCode()) {
                 String healthJson = response.getResponseData();
-                Map<String, Object> map = gson.fromJson(healthJson, new TypeToken<Map<String, Object>>() {
+                return gson.fromJson(healthJson, new TypeToken<Map<String, Object>>() {
                 }.getType());
-                return map;
             }
         }
         return null;
@@ -96,14 +95,17 @@ public class CommEsQueryUtils {
 
     public static <T> Page<T> executeQuery(String clusterName, Map<String, Object> queryParam, String indexName, Pageable pageable, Class<T> serializableClass, QueryBuilderWrapper wrapper) throws ServiceException {
         Map<String, Object> indexDefineMap = ESSchemaCache.getIndexDefine(clusterName, indexName);
-        return executeQuery(esClientMap.get(clusterName),indexDefineMap,queryParam,indexName,pageable,serializableClass,wrapper);
+        String includeFields=queryParam.containsKey("_includefields") && !StringUtils.isEmpty(queryParam.get("_includefields").toString())?queryParam.get("_includefields").toString():null;
+        String orderField=queryParam.containsKey("_orderField") && !StringUtils.isEmpty(queryParam.get("_orderField").toString())?queryParam.get("_includefields").toString():null;
+        boolean orderDir=queryParam.containsKey("_orderDir") && !StringUtils.isEmpty(queryParam.get("_orderDir").toString())?queryParam.get("_orderField").toString().equalsIgnoreCase("asc"):false;
+        return executeQuery(esClientMap.get(clusterName),indexDefineMap,queryParam,indexName,pageable,includeFields,orderField,orderDir,serializableClass,wrapper);
     }
 
 
-    public static <T> Page<T> executeQuery(RestHighLevelClient client,Map<String,Object> indexDefineMap,Map<String, Object> queryParam, String indexName, Pageable pageable, Class<T> serializableClass, QueryBuilderWrapper wrapper) throws ServiceException {
+    public static <T> Page<T> executeQuery(RestHighLevelClient client,Map<String,Object> indexDefineMap,Map<String, Object> queryParam, String indexName, Pageable pageable,String includeFields,String orderField,boolean orderDir, Class<T> serializableClass, QueryBuilderWrapper wrapper) throws ServiceException {
         Page retPage = null;
         Environment environment = SpringContextHolder.getBean(Environment.class);
-        boolean useCamelCaseConvert=environment.containsProperty("es.query.keyconvert") && environment.getProperty("es.query.keyconvert").equalsIgnoreCase("true");
+        boolean useCamelCaseConvert=environment.containsProperty("es.query.keyconvert") && "true".equalsIgnoreCase(environment.getProperty("es.query.keyconvert"));
         if (null != indexDefineMap) {
             Map<String, Object> propMap = (Map<String, Object>) indexDefineMap.get("props");
             String docType = indexDefineMap.get("doctype").toString();
@@ -112,23 +114,15 @@ public class CommEsQueryUtils {
             searchRequest.types(docType);
             SearchSourceBuilder sourceBuilder = SearchSourceBuilder.searchSource();
             BoolQueryBuilder queryBuilder = QueryBuilders.boolQuery();
-            String includeFields;
-            String orderField = null;
-            boolean orderDir = false;
+
             while (iter.hasNext()) {
                 Map.Entry<String, Object> entry = iter.next();
                 String key = entry.getKey();
-                if (key.startsWith("_")) {
-                    if (key.equalsIgnoreCase("_includefields")) {
-                        includeFields = entry.getValue().toString();
-                        sourceBuilder.fetchSource(includeFields.split(","), null);
-                    } else if (key.equalsIgnoreCase("_orderField")) {
-                        orderField = entry.getValue().toString();
-                    }
-                } else {
-                    String columnName=StringUtils.getFieldNameByCamelCase(key);
-                    wrapQueryParam(propMap, queryBuilder, columnName, entry.getValue().toString());
+                if(null!=includeFields){
+                    sourceBuilder.fetchSource(includeFields.split(","), null);
                 }
+                String columnName=StringUtils.getFieldNameByCamelCase(key);
+                wrapQueryParam(propMap, queryBuilder, columnName, entry.getValue().toString());
             }
             if (null != wrapper) {
                 wrapper.wrapBuilder(queryBuilder);
@@ -323,9 +317,9 @@ public class CommEsQueryUtils {
                 queryBuilders.mustNot(QueryBuilders.termQuery(columnName, value.substring(2)));
             } else if (value.startsWith("=")) {
                 queryBuilders.must(QueryBuilders.termQuery(columnName, value.substring(1)));
-            } else if (value.equalsIgnoreCase("NULLABLE")) {
+            } else if ("NULLABLE".equalsIgnoreCase(value)) {
                 queryBuilders.mustNot(QueryBuilders.existsQuery(columnName));
-            } else if (value.equalsIgnoreCase("NOTNULL")) {
+            } else if ("NOTNULL".equalsIgnoreCase(value)) {
                 queryBuilders.must(QueryBuilders.existsQuery(columnName));
             } else if (value.startsWith("script:") || value.startsWith("SCRIPT:")) {
                 queryBuilders.must(QueryBuilders.scriptQuery(new Script(value.substring(7))));

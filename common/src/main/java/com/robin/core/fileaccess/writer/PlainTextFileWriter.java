@@ -24,6 +24,8 @@ import org.apache.commons.lang.StringUtils;
 
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 
+import javax.naming.OperationNotSupportedException;
+
 public class PlainTextFileWriter extends WriterBasedFileWriter {
 	private List<String> retList=null; 
 	private String split;
@@ -37,7 +39,7 @@ public class PlainTextFileWriter extends WriterBasedFileWriter {
 	}
 
 	@Override
-	public void writeRecord(Map<String, ?> map) throws IOException {
+	public void writeRecord(Map<String, ?> map) throws IOException, OperationNotSupportedException {
 		retList.clear();
 		for (int i = 0; i < colmeta.getColumnList().size(); i++) {
 			String name=colmeta.getColumnList().get(i).getColumnName();
@@ -52,7 +54,7 @@ public class PlainTextFileWriter extends WriterBasedFileWriter {
 	}
 
 	@Override
-	public void writeRecord(List<Object> list) throws IOException {
+	public void writeRecord(List<Object> list) throws IOException,OperationNotSupportedException {
 		writer.write(StringUtils.join(list, split)+"\n");
 	}
 

@@ -2,6 +2,7 @@ package com.robin.comm.resaccess.writer;
 
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.util.AvroUtils;
+import com.robin.core.fileaccess.writer.AbstractQueueWriter;
 import com.robin.core.fileaccess.writer.AbstractResourceWriter;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
@@ -11,6 +12,7 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.apache.kafka.common.serialization.StringSerializer;
+import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -19,77 +21,46 @@ import java.util.Map;
 import java.util.Properties;
 
 
-public class KafkaResourceWriter extends AbstractResourceWriter {
+public class KafkaResourceWriter extends AbstractQueueWriter {
     KafkaProducerConfig config=new KafkaProducerConfig();
     private KafkaProducer<String, byte[]> producer;
-    private Schema schema;
-    private String valueType;
-
-
-    byte[] output=null;
-    String key=null;
-    private StringBuilder builder=new StringBuilder();
     public KafkaResourceWriter(DataCollectionMeta colmeta) {
         super(colmeta);
-        if(colmeta.getResourceCfgMap().containsKey("brokerUrl")){
-            config.setBrokerUrl(colmeta.getResourceCfgMap().get("brokerUrl").toString());
-        }
-        if(colmeta.getResourceCfgMap().containsKey("topic")){
-            config.setTopicName(colmeta.getResourceCfgMap().get("topic").toString());
-        }
-        if(colmeta.getResourceCfgMap().containsKey("valueType")){
-            valueType=colmeta.getResourceCfgMap().get("valueType").toString();
-            if("avro".equalsIgnoreCase(valueType)){
-                schema= AvroUtils.getSchemaFromMeta(colmeta);
+        if(!CollectionUtils.isEmpty(cfgMap)) {
+            if (cfgMap.containsKey("brokerUrl")) {
+                config.setBrokerUrl(cfgMap.get("brokerUrl").toString());
             }
-        }else {
-            schema= AvroUtils.getSchemaFromMeta(colmeta);
-        }
-        try {
-            initalize();
-        }catch (Exception ex){
+            if (cfgMap.containsKey("topic")) {
+                config.setTopicName(cfgMap.get("topic").toString());
+            }
+            if (cfgMap.containsKey("valueType")) {
+                valueType = cfgMap.get("valueType").toString();
+                if ("avro".equalsIgnoreCase(valueType)) {
+                    schema = AvroUtils.getSchemaFromMeta(colmeta);
+                }
+            } else {
+                schema = AvroUtils.getSchemaFromMeta(colmeta);
+            }
+            try {
+                initalize();
+            } catch (Exception ex) {
 
+            }
         }
     }
 
     @Override
-    public void writeRecord(Map<String, ?> map) throws IOException {
-
-        if(schema!=null) {
-            GenericRecord record = new GenericData.Record(schema);
-            Iterator iterator = map.entrySet().iterator();
-            while (iterator.hasNext()) {
-                Map.Entry entry = (Map.Entry) iterator.next();
-                record.put(entry.getKey().toString(), entry.getValue());
-            }
-            if(colmeta.getPkColumns()!=null && !colmeta.getPkColumns().isEmpty()){
-                if(builder.length()>0){
-                    builder.delete(0,builder.length());
-                }
-                for(String pkColumn:colmeta.getPkColumns()){
-                    builder.append(map.get(pkColumn)).append("-");
-                }
-                key=builder.substring(builder.length()-1);
-            }else{
-                key=String.valueOf(System.currentTimeMillis());
-            }
-            output=AvroUtils.dataToByteArray(schema,record);
-        }else if("json".equalsIgnoreCase(valueType)){
-
-        }
-        producer.send(new ProducerRecord(config.getTopicName(), key,output));
+    public void writeMessage(String topic, Map<String, ?> map) throws IOException {
+        consturctContent(map);
+        producer.send(new ProducerRecord(topic, key,output));
     }
+
+
 
     @Override
     public void writeRecord(List<Object> list) throws IOException {
 
     }
-
-    @Override
-    public void writeRecord(GenericRecord genericRecord) throws IOException{
-        producer.send(new ProducerRecord(config.getTopicName(), key,AvroUtils.dataToByteArray(schema,genericRecord)));
-    }
-
     @Override
     public void initalize() throws IOException {
         Properties properties=new Properties();

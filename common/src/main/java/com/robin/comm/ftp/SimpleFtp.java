@@ -9,7 +9,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
-import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -50,21 +49,19 @@ public class SimpleFtp {
 
 	public boolean connect(String host, int port, String username, String password){
 		try {
+			log.info("login to {} {} using {} {}",host,port,username,password);
 			ftpClient.connect(host, port);
 			ftpClient.setDataTimeout(20000);
+			ftpClient.login(username, password);
+			ftpClient.enterLocalPassiveMode();//Enter PassiveMode
+			ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
 		} catch (Exception e) {
 			log.error("",e);
 		}
 		
 		
 		if(FTPReply.isPositiveCompletion(ftpClient.getReplyCode())){
-			try {
-				if(ftpClient.login(username, password)){
-					return true;
-				}
-			} catch (IOException e) {
-				log.error("",e);
-			}
+			return true;
 		}
 		
 		return false;
@@ -170,7 +167,7 @@ public class SimpleFtp {
 		while(!retflag && retrynum<retrys){
 			if(retrynum>0){
 				try{
-					retflag=doDownload(local, remote);
+					retflag=doDownload(remote,local);
 					if(!retflag) {
                         Thread.sleep(waitForReconnect);
                     }
@@ -182,17 +179,17 @@ public class SimpleFtp {
 		}
 		return retflag;
 	}
-	private boolean doDownload(String local,String remote) throws IOException{
+	private boolean doDownload(String remote,String local) throws IOException{
 		boolean retflag=true;
 		File localfile = new File(local);
-		long lRemoteSize = filesize(remote);
+		//long lRemoteSize = filesize(remote);
 		if (localfile.exists()) {
 			log.info("local file Exist");
 			long localSize = localfile.length();
-			if (localSize >= lRemoteSize) {
+			/*if (localSize >= lRemoteSize) {
 				log.info("file length not fit");
 				return true;
-			}
+			}*/
 			InputStream in = ftpClient.retrieveFileStream(remote);
 			FileOutputStream os = new FileOutputStream(localfile, true);
 			ftpClient.setRestartOffset(localSize);

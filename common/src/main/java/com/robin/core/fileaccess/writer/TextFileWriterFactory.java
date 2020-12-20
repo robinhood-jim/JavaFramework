@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedWriter;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,18 +31,18 @@ import java.util.List;
 public class TextFileWriterFactory {
     private static Logger logger = LoggerFactory.getLogger(TextFileWriterFactory.class);
 
-    public static AbstractFileWriter getFileWriterByType(String fileType, DataCollectionMeta colmeta, BufferedWriter writer) {
+    public static AbstractFileWriter getFileWriterByType(String fileType, DataCollectionMeta colmeta, BufferedWriter writer) throws IOException {
         AbstractFileWriter fileWriter = getFileWriterByType(fileType, colmeta);
         fileWriter.setWriter(writer);
         return fileWriter;
     }
 
-    public static AbstractFileWriter getFileWriterByType(String fileSuffix, DataCollectionMeta colmeta, OutputStream writer) {
+    public static AbstractFileWriter getFileWriterByType(String fileSuffix, DataCollectionMeta colmeta, OutputStream writer) throws IOException{
         AbstractFileWriter fileWriter = getFileWriterByType(fileSuffix, colmeta);
         fileWriter.setOutputStream(writer);
         return fileWriter;
     }
-    public static AbstractFileWriter getFileWriterByPath(DataCollectionMeta colmeta, OutputStream writer) {
+    public static AbstractFileWriter getFileWriterByPath(DataCollectionMeta colmeta, OutputStream writer) throws IOException{
         List<String> suffixList=new ArrayList<String>();
         FileUtils.parseFileFormat(colmeta.getPath(),suffixList);
         String fileFormat=suffixList.get(0);
@@ -50,7 +51,7 @@ public class TextFileWriterFactory {
         return fileWriter;
     }
 
-    private static AbstractFileWriter getFileWriterByType(String fileSuffix, DataCollectionMeta colmeta) {
+    private static AbstractFileWriter getFileWriterByType(String fileSuffix, DataCollectionMeta colmeta) throws IOException {
         AbstractFileWriter fileWriter = null;
         try {
             if (fileSuffix.equalsIgnoreCase(Const.FILESUFFIX_JSON)) {
@@ -70,7 +71,7 @@ public class TextFileWriterFactory {
             }
 
         } catch (Exception ex) {
-            logger.error("{}", ex);
+            throw new IOException(ex);
         }
         return fileWriter;
     }

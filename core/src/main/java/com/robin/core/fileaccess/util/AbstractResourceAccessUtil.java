@@ -88,9 +88,10 @@ public abstract class AbstractResourceAccessUtil {
 		return CompressEncoder.getOutputStreamByCompressType(path,out);
 	}
 	
-	public abstract BufferedReader getInResourceByReader(DataCollectionMeta meta, String resourcePath) throws Exception;
-	public abstract BufferedWriter getOutResourceByWriter(DataCollectionMeta meta, String resourcePath) throws Exception;
-	public abstract OutputStream getOutResourceByStream(DataCollectionMeta meta, String resourcePath) throws Exception;
-	public abstract OutputStream getRawOutputStream(DataCollectionMeta meta, String resourcePath) throws Exception;
-	public abstract InputStream getInResourceByStream(DataCollectionMeta meta, String resourcePath) throws Exception;
+	public abstract BufferedReader getInResourceByReader(DataCollectionMeta meta, String resourcePath) throws IOException;
+	public abstract BufferedWriter getOutResourceByWriter(DataCollectionMeta meta, String resourcePath) throws IOException;
+	public abstract OutputStream getOutResourceByStream(DataCollectionMeta meta, String resourcePath) throws IOException;
+	public abstract OutputStream getRawOutputStream(DataCollectionMeta meta, String resourcePath) throws IOException;
+	public abstract InputStream getInResourceByStream(DataCollectionMeta meta, String resourcePath) throws IOException;
+	public abstract boolean exists(DataCollectionMeta meta, String resourcePath) throws IOException;
 }

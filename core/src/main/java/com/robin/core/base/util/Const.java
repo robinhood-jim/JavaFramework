@@ -81,8 +81,6 @@ public class Const {
 	public static final String DBDUMP_SHELL_PARAM="exp";
 	public static final String DBIMP_SHELL_PARAM="imp";
 	//URI protocol
-	public static final String PREFIX_FTP="ftp";
-	public static final String PREFIX_SFTP="sftp";
 	public static final String PREFIX_HDFS="hdfs";
 	public static final String PREFIX_S3="s3";
 
@@ -247,10 +245,45 @@ public class Const {
 			return Integer.valueOf(value);
 		}
 	}
+	public enum VFS_PROTOCOL{
+		FTP("ftp"),
+		SFTP("sftp"),
+		FTPS("ftps"),
+		WEBDAV("webdav"),
+		MIME("mime"),
+		SMB("smb");
+		VFS_PROTOCOL(String value){
+			this.value=value;
+		}
+		private String value;
+
+		public String getValue() {
+			return value;
+		}
+	}
 	//定时任务触发时间点
 	public static final String TRIGGER_TIMESPAN="triggerTimeSpan";
 
 	public final static List<String> ESCAPE_CHARACTERS = new ArrayList<String>(
 			Arrays.asList("$", "(", ")", "*", "+", ".", "[",
 					"?", "\\", "^", "{", "|"));
+
+	public static final String ASC = "asc";
+	public static final String DESC = "desc";
+	/**
+	 * 当前页码
+	 */
+	public static final String PAGE = "page";
+	/**
+	 * 每页显示记录数
+	 */
+	public static final String LIMIT = "limit";
+	/**
+	 * 排序字段
+	 */
+	public static final String ORDER_FIELD = "orderField";
+	/**
+	 * 排序方式
+	 */
+	public static final String ORDER = "order";
 }

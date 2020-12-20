@@ -14,6 +14,7 @@ import org.apache.hadoop.conf.Configuration;
  * @author robinjim
  * @version 1.0
  */
+@FunctionalInterface
 public interface HDFSSecurityProxy {
 	Object run(final Configuration config);
 }

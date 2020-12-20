@@ -125,7 +125,11 @@ public class DFSInfoGetUtil {
 	}
 	public static void main(String[] args){
 		try{
-			DFSInfoGetUtil util=new DFSInfoGetUtil("192.168.147.15", 0, new Configuration());
+			int port=0;
+			if(args.length==2){
+				port=Integer.parseInt(args[1]);
+			}
+			DFSInfoGetUtil util=new DFSInfoGetUtil(args[0], port, new Configuration());
 			NameNodeInfo info=util.getNameNodeInfo();
 			System.out.println(info);
 		}catch (Exception e) {

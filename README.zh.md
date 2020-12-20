@@ -10,14 +10,20 @@
 #### 软件架构
 软件架构说明
 
-目前框架由4个模块组成
+目前框架由6个模块组成
 
-    1.Core：核心包，包含Model/DAO/Service及ORM的基础类及DB Dialect。数据库Dump和Import的工具包等
-    2.Common：包含统一资源访问的接口定义和Apache VFS与本地资源的实现
+    1.Core：核心包，包含Model/DAO/Service及ORM的基础类及DB Dialect。数据库Dump和Import的工具包等，支持JAVA基本框架的内容
+    2.Common：通用工具包，包含统一资源访问的接口定义和Apache VFS与本地资源的实现，基于poi的xls读取和生成工具（支持Stream），
     3.hadooptool：包含大数据相关的基本工具类和统一资源访问的大数据实现
     4.web：基于strut2和SpringMVC的基础类及Spring message的基础类（支持多国语言）
+    5.metadata 基于统一资源访问的关系数据源与NoSql数据源的元数据数据探索和管理；
+    6.estool 通用的ElasticSearch查询访问工具类，能自动感知es下的所有索引，基于restapi
 
-core与common工程由ProGuard进行混淆
+Spring Boot 支持
+
+    spring-start 工程，与spring boot 进行整合，支持链路追踪相关的配置（基于zipkin），基于探针的链路追踪详见另一个开源工程comm-probe
+
+core与common工程由ProGuard进行混淆保护
 
 #### 安装教程
 
