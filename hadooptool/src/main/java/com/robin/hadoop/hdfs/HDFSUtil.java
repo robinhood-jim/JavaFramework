@@ -252,7 +252,7 @@ public class HDFSUtil {
             return (byte[]) HDFSSecurityUtil.executeHdfsMethodWithSecurity(config, "readByte", new Object[]{config,hdfsUrl});
         }
 	}
-	public FSDataOutputStream createFile(String hdfsUrl,boolean overwriteOrigion) throws HdfsException{
+	public FSDataOutputStream createFile(String hdfsUrl,Boolean overwriteOrigion) throws HdfsException{
 		if(!useSecurity) {
             return HDFSCallUtil.createFile(config, hdfsUrl,overwriteOrigion);
         } else {
@@ -273,12 +273,17 @@ public class HDFSUtil {
             return (BufferedReader) HDFSSecurityUtil.executeHdfsMethodWithSecurity(config, "readStream", new Object[]{config,hdfsUrl, encode});
         }
 	}
-	public FileSystem getFileSystem() throws HdfsException{
-		if(!useSecurity) {
-            return HDFSCallUtil.getFileSystem(config);
-        } else {
-            return (FileSystem) HDFSSecurityUtil.executeHdfsMethodWithSecurity(config, "getFileSystem", new Object[]{config});
-        }
+	public FileSystem getFileSystem(){
+		try {
+			if (!useSecurity) {
+				return HDFSCallUtil.getFileSystem(config);
+			} else {
+				return (FileSystem) HDFSSecurityUtil.executeHdfsMethodWithSecurity(config, "getFileSystem", new Object[]{config});
+			}
+		}catch (Exception ex){
+			logger.error("{}",ex);
+			return null;
+		}
 	}
 	/**
 	 * 获取HDFS文件大小，返回byte

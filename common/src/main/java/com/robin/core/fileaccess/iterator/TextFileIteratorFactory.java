@@ -21,13 +21,14 @@ import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
 public class TextFileIteratorFactory {
-	public static AbstractFileIterator getProcessIteratorByType(DataCollectionMeta colmeta){
+	public static AbstractFileIterator getProcessIteratorByType(DataCollectionMeta colmeta) throws IOException{
 		AbstractFileIterator iterator=getIter(colmeta);
 		try {
 			iterator.init();
@@ -37,19 +38,19 @@ public class TextFileIteratorFactory {
 		return iterator;
 	}
 
-	public static AbstractFileIterator getProcessIteratorByType(DataCollectionMeta colmeta, BufferedReader reader) throws Exception{
+	public static AbstractFileIterator getProcessIteratorByType(DataCollectionMeta colmeta, BufferedReader reader) throws IOException {
 		AbstractFileIterator iterator=getIter(colmeta);
 		iterator.setReader(reader);
 		iterator.init();
 		return iterator;
 	}
-	public static AbstractFileIterator getProcessIteratorByType(DataCollectionMeta colmeta, InputStream in) throws Exception{
+	public static AbstractFileIterator getProcessIteratorByType(DataCollectionMeta colmeta, InputStream in) throws IOException{
 		AbstractFileIterator iterator=getIter(colmeta);
 		iterator.setInputStream(in);
 		iterator.init();
 		return iterator;
 	}
-	public static AbstractFileIterator getProcessIteratorByPath(DataCollectionMeta colmeta,InputStream in) throws Exception{
+	public static AbstractFileIterator getProcessIteratorByPath(DataCollectionMeta colmeta,InputStream in) throws IOException{
 		List<String> suffixList=new ArrayList<String>();
 		FileUtils.parseFileFormat(colmeta.getPath(),suffixList);
 		String fileFormat=suffixList.get(0);
@@ -58,7 +59,7 @@ public class TextFileIteratorFactory {
 		iterator.init();
 		return iterator;
 	}
-	private static AbstractFileIterator getIter(DataCollectionMeta colmeta){
+	private static AbstractFileIterator getIter(DataCollectionMeta colmeta) throws IOException{
 		AbstractFileIterator iterator=null;
 		String fileType=colmeta.getFileFormat();
 		try {
@@ -79,7 +80,7 @@ public class TextFileIteratorFactory {
 				iterator = new PlainTextFileIterator(colmeta);
 			}
 		}catch (Exception ex){
-			log.error("",ex);
+			throw new IOException(ex);
 		}
 		return iterator;
 	}

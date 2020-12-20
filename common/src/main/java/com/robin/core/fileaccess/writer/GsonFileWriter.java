@@ -20,6 +20,7 @@ import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.naming.OperationNotSupportedException;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
@@ -39,7 +40,7 @@ public class GsonFileWriter extends WriterBasedFileWriter{
 	}
 
 	@Override
-	public void writeRecord(Map<String, ?> map) throws IOException{
+	public void writeRecord(Map<String, ?> map) throws IOException, OperationNotSupportedException {
 		try{
 			jwriter.beginObject();
 			for (int i = 0; i < colmeta.getColumnList().size(); i++) {

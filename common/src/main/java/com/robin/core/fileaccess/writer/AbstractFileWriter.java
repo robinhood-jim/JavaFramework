@@ -21,6 +21,7 @@ import com.robin.core.fileaccess.meta.DataSetColumnMeta;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.naming.OperationNotSupportedException;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -56,7 +57,7 @@ public abstract class AbstractFileWriter implements IResourceWriter {
 	}
 
 	@Override
-	public void writeRecord(List<Object> map) throws IOException {
+	public void writeRecord(List<Object> map) throws IOException, OperationNotSupportedException {
 		writeRecord(wrapListToMap(map));
 	}
 	
@@ -76,8 +77,7 @@ public abstract class AbstractFileWriter implements IResourceWriter {
 		beginWrite();
 	}
 	public abstract void beginWrite() throws IOException;
-	@Override
-	public abstract void writeRecord(Map<String,?> map) throws IOException;
+
 
 	public abstract void finishWrite() throws IOException;
 	public abstract void flush() throws IOException;

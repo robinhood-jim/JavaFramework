@@ -9,6 +9,7 @@ import com.robin.core.fileaccess.writer.IResourceWriter;
 import com.robin.core.fileaccess.writer.TextFileWriterFactory;
 import com.robin.core.resaccess.CommResWriterFactory;
 
+import javax.naming.OperationNotSupportedException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Map;
@@ -24,14 +25,14 @@ public class RecordWriterHolder extends AbstractResourceHolder {
         }
         String[] tag = AbstractResourceAccessUtil.retrieveResource(colmeta.getPath());
         AbstractResourceAccessUtil util = ResourceAccessHolder.getAccessUtilByProtocol(tag[0].toLowerCase());
-        OutputStream inputStream = util.getOutResourceByStream(colmeta, colmeta.getPath());
+        OutputStream outStream = util.getOutResourceByStream(colmeta, colmeta.getPath());
         if(!colmeta.isFsTag()) {
-            writer = TextFileWriterFactory.getFileWriterByPath(colmeta, inputStream);
+            writer = TextFileWriterFactory.getFileWriterByPath(colmeta, outStream);
         } else{
             writer= CommResWriterFactory.getFileWriterByType(colmeta.getResType(),colmeta);
         }
     }
-    public void writeRecord(Map<String,Object> map) throws IOException{
+    public void writeRecord(Map<String,Object> map) throws IOException, OperationNotSupportedException {
         writer.writeRecord(map);
     }
 

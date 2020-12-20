@@ -75,8 +75,16 @@ public interface BaseSqlGen {
     String getBlobFormat();
     String getClobFormat();
     enum AlertType{
-        ADD,
-        ALERT,
-        DEL;
+        ADD("ADD"),
+        ALERT("ALERT"),
+        DEL("DEL");
+        private String value;
+        AlertType(String value){
+            this.value=value;
+        }
+
+        public String getValue() {
+            return value;
+        }
     }
 }

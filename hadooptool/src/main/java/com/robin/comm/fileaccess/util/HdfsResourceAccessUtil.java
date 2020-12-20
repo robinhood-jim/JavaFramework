@@ -9,10 +9,7 @@ import org.apache.hadoop.fs.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -22,7 +19,7 @@ public class HdfsResourceAccessUtil extends AbstractResourceAccessUtil {
 	private Map<String, HDFSProperty> hdfspropMap=new HashMap<String, HDFSProperty>();
 	@Override
 	public BufferedReader getInResourceByReader(DataCollectionMeta meta, String resourcePath)
-			throws Exception {
+			throws IOException {
 		HDFSUtil util=getHdfsUtil(meta);
 
 		return getReaderByPath(resourcePath, util.getFileSystem().open(new Path(resourcePath)), meta.getEncode());
@@ -30,44 +27,60 @@ public class HdfsResourceAccessUtil extends AbstractResourceAccessUtil {
 	
 	@Override
 	public BufferedWriter getOutResourceByWriter(DataCollectionMeta meta, String resourcePath)
-			throws Exception {
+			throws IOException {
 		HDFSUtil util=getHdfsUtil(meta);
-		if(util.exists(resourcePath)){
-			logger.error("output file "+resourcePath+" exist!,remove it");
-			util.delete(meta.getPath());
+		try {
+			if (util.exists(resourcePath)) {
+				logger.error("output file " + resourcePath + " exist!,remove it");
+				util.delete(meta.getPath());
+			}
+			return getWriterByPath(meta.getPath(), util.getFileSystem().create(new Path(resourcePath)), meta.getEncode());
+		}catch (Exception ex){
+			throw new IOException(ex);
 		}
-		return getWriterByPath(meta.getPath(), util.getFileSystem().create(new Path(resourcePath)), meta.getEncode());
 	}
 	@Override
 	public OutputStream getOutResourceByStream(DataCollectionMeta meta, String resourcePath)
-			throws Exception {
+			throws IOException {
 		HDFSUtil util=getHdfsUtil(meta);
-		if(util.exists(resourcePath)){
-			logger.error("output file "+resourcePath+" exist!,remove it");
-			util.delete(meta.getPath());
+		try {
+			if (util.exists(resourcePath)) {
+				logger.error("output file " + resourcePath + " exist!,remove it");
+				util.delete(meta.getPath());
+			}
+			return getOutputStreamByPath(resourcePath, util.getFileSystem().create(new Path(resourcePath)));
+		}catch (Exception ex){
+			throw new IOException(ex);
 		}
-		return getOutputStreamByPath(resourcePath, util.getFileSystem().create(new Path(resourcePath)));
 	}
 
 	@Override
-	public OutputStream getRawOutputStream(DataCollectionMeta meta, String resourcePath) throws Exception {
+	public OutputStream getRawOutputStream(DataCollectionMeta meta, String resourcePath) throws IOException {
 		HDFSUtil util=getHdfsUtil(meta);
-		if(util.exists(resourcePath)){
-			logger.error("output file "+resourcePath+" exist!,remove it");
-			util.delete(resourcePath);
+		try {
+			if (util.exists(resourcePath)) {
+				logger.error("output file " + resourcePath + " exist!,remove it");
+				util.delete(resourcePath);
+			}
+			return util.getFileSystem().create(new Path(resourcePath));
+		}catch (Exception ex){
+			throw new IOException(ex);
 		}
-		return util.getFileSystem().create(new Path(resourcePath));
 	}
 
 	@Override
 	public InputStream getInResourceByStream(DataCollectionMeta meta, String resourcePath)
-			throws Exception {
+			throws IOException {
 		HDFSUtil util=getHdfsUtil(meta);
-		if(util.exists(resourcePath)){
-			logger.error("output file "+resourcePath+" exist!,remove it");
-			util.delete(resourcePath);
+		try {
+			if (util.exists(resourcePath)) {
+				logger.error("output file " + resourcePath + " exist!,remove it");
+				util.delete(resourcePath);
+			}
+			return getInputStreamByPath(resourcePath, util.getFileSystem().open(new Path(resourcePath)));
+		}catch (Exception ex){
+			throw new IOException(ex);
 		}
-		return getInputStreamByPath(resourcePath, util.getFileSystem().open(new Path(resourcePath)));
 	}
 	public HDFSUtil getHdfsUtil(DataCollectionMeta meta){
 		HDFSUtil util=null;
@@ -93,5 +106,15 @@ public class HdfsResourceAccessUtil extends AbstractResourceAccessUtil {
 			}
 		}
 		return util;
+	}
+
+	@Override
+	public boolean exists(DataCollectionMeta meta, String resourcePath) throws IOException {
+		HDFSUtil util=getHdfsUtil(meta);
+		try {
+			return util.exists(resourcePath);
+		}catch (Exception ex){
+			throw new IOException(ex);
+		}
 	}
 }

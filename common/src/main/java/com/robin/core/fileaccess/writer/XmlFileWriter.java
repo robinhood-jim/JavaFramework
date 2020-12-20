@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tukaani.xz.FinishableOutputStream;
 
+import javax.naming.OperationNotSupportedException;
 import javax.xml.stream.XMLEventFactory;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamWriter;
@@ -54,7 +55,7 @@ public class XmlFileWriter extends WriterBasedFileWriter{
 	}
 
 	@Override
-	public void writeRecord(Map<String, ?> map) throws IOException {
+	public void writeRecord(Map<String, ?> map) throws IOException, OperationNotSupportedException {
 
 		try {
 			streamWriter.writeCharacters("\t");

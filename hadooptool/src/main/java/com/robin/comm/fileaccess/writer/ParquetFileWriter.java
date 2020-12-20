@@ -14,6 +14,7 @@ import org.apache.parquet.avro.AvroParquetWriter;
 import org.apache.parquet.hadoop.ParquetWriter;
 import org.apache.parquet.hadoop.metadata.CompressionCodecName;
 
+import javax.naming.OperationNotSupportedException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -58,7 +59,7 @@ public class ParquetFileWriter extends AbstractFileWriter {
     }
 
     @Override
-    public void writeRecord(Map<String, ?> map) throws IOException {
+    public void writeRecord(Map<String, ?> map) throws IOException, OperationNotSupportedException {
         GenericRecord record=new GenericData.Record(schema);
 
         for (int i = 0; i < colmeta.getColumnList().size(); i++) {
@@ -77,7 +78,7 @@ public class ParquetFileWriter extends AbstractFileWriter {
     }
 
     @Override
-    public void writeRecord(List<Object> map) throws IOException {
+    public void writeRecord(List<Object> map) throws IOException,OperationNotSupportedException {
 
     }
 
