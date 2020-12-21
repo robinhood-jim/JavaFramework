@@ -42,11 +42,7 @@ public class AvroFileIterator extends AbstractFileIterator {
 		}
 		return false;
 	}
-	@Override
-	public void init() {
 
-
-	}
 
 	@Override
 	public void beforeProcess(String resourcePath) {

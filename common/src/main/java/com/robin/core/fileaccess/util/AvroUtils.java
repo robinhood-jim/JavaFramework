@@ -20,7 +20,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * <p>Project:  frame</p>
@@ -135,6 +137,16 @@ public class AvroUtils {
         } finally {
             os.close();
         }
+    }
+    public static Map<String,Object>  byteArrayToMap(DataCollectionMeta meta,Schema schema,byte[] byteData){
+        GenericRecord genericRecord=byteArrayToData(schema,byteData);
+        Map<String,Object> map=new HashMap<>();
+        for(DataSetColumnMeta columnMeta:meta.getColumnList()){
+            if(null!=genericRecord.get(columnMeta.getColumnName())){
+                map.put(columnMeta.getColumnName(),genericRecord.get(columnMeta.getColumnName()));
+            }
+        }
+        return map;
     }
 
     public static GenericRecord byteArrayToData(Schema schema, byte[] byteData) {

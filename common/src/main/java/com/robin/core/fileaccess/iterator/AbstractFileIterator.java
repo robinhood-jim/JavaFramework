@@ -55,6 +55,10 @@ public abstract class AbstractFileIterator extends AbstractResIterator{
 
 		}
 	}
+	@Override
+	public void init(){
+
+	}
 
 	public void setReader(BufferedReader reader){
 		this.reader=reader;
