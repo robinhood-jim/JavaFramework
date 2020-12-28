@@ -1,11 +1,8 @@
 package com.robin.comm.resaccess.writer;
 
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
-import com.robin.core.fileaccess.util.AvroUtils;
 import com.robin.core.fileaccess.writer.AbstractQueueWriter;
-import com.robin.core.fileaccess.writer.AbstractResourceWriter;
-import org.apache.avro.Schema;
-import org.apache.avro.generic.GenericData;
+import com.twitter.bijection.Injection;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -15,7 +12,6 @@ import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -24,6 +20,7 @@ import java.util.Properties;
 public class KafkaResourceWriter extends AbstractQueueWriter {
     KafkaProducerConfig config=new KafkaProducerConfig();
     private KafkaProducer<String, byte[]> producer;
+    private Injection<GenericRecord,byte[]> recordInjection;
     public KafkaResourceWriter(DataCollectionMeta colmeta) {
         super(colmeta);
         if(!CollectionUtils.isEmpty(cfgMap)) {
@@ -33,14 +30,7 @@ public class KafkaResourceWriter extends AbstractQueueWriter {
             if (cfgMap.containsKey("topic")) {
                 config.setTopicName(cfgMap.get("topic").toString());
             }
-            if (cfgMap.containsKey("valueType")) {
-                valueType = cfgMap.get("valueType").toString();
-                if ("avro".equalsIgnoreCase(valueType)) {
-                    schema = AvroUtils.getSchemaFromMeta(colmeta);
-                }
-            } else {
-                schema = AvroUtils.getSchemaFromMeta(colmeta);
-            }
+
             try {
                 initalize();
             } catch (Exception ex) {
@@ -51,7 +41,7 @@ public class KafkaResourceWriter extends AbstractQueueWriter {
 
     @Override
     public void writeMessage(String topic, Map<String, ?> map) throws IOException {
-        consturctContent(map);
+        byte[] output=consturctContent(map);
         producer.send(new ProducerRecord(topic, key,output));
     }
 

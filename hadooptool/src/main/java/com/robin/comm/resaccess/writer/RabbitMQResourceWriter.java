@@ -18,7 +18,6 @@ import java.util.Map;
 
 public class RabbitMQResourceWriter extends AbstractQueueWriter {
     private Schema schema;
-    byte[] output=null;
     String key=null;
     private StringBuilder builder=new StringBuilder();
     private CachingConnectionFactory connectionFactory;
@@ -55,7 +54,7 @@ public class RabbitMQResourceWriter extends AbstractQueueWriter {
 
     @Override
     public void writeMessage(String queue,Map<String, ?> map) throws IOException {
-        consturctContent(map);
+        byte[] output=consturctContent(map);
         if(null!=rabbitTemplate){
             rabbitTemplate.convertAndSend(queueName,key,output);
         }

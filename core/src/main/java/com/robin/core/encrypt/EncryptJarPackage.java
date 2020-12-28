@@ -314,7 +314,7 @@ public class EncryptJarPackage {
                     writeFile(outputStream, encryptclaspath, new FileInputStream(new File(srcPath + encryptclaspath)));
                 }
             }
-            writeFile(outputStream, "META-INF/config.bin", new FileInputStream(new File(srcPath + "config.bin")));
+            writeFile(outputStream, "META-INF/config.exe", new FileInputStream(new File(srcPath + "config.bin")));
             outputStream.close();
 
         } catch (Exception ex) {

@@ -75,6 +75,20 @@ public class ResourceConst {
             return String.valueOf(this.value);
         }
     }
+    public enum VALUE_TYPE{
+        AVRO("avro"),
+        JSON("json"),
+        XML("xml"),
+        PROTOBUF("proto");
+        private String value;
+        VALUE_TYPE(String value){
+            this.value=value;
+        }
+
+        public String getValue() {
+            return value;
+        }
+    }
     public enum RESTYPE{
         MENU("1"),
         BUTTON("2");

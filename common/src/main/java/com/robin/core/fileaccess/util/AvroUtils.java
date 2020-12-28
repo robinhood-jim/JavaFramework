@@ -1,10 +1,13 @@
 package com.robin.core.fileaccess.util;
 
+import com.google.common.collect.Maps;
 import com.robin.core.base.datameta.DataBaseColumnMeta;
 import com.robin.core.base.exception.ConfigurationIncorrectException;
 import com.robin.core.base.util.Const;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.meta.DataSetColumnMeta;
+import com.twitter.bijection.Injection;
+import com.twitter.bijection.avro.GenericAvroCodecs;
 import org.apache.avro.LogicalTypes;
 import org.apache.avro.Protocol;
 import org.apache.avro.Schema;
@@ -137,6 +140,24 @@ public class AvroUtils {
         } finally {
             os.close();
         }
+    }
+    public static byte[] dataToByteWithBijection(GenericRecord record, Injection<GenericRecord, byte[]> injection){
+        return injection.apply(record);
+    }
+    public static byte[] dataToByteWithBijection(Schema schema, GenericRecord record){
+        Injection<GenericRecord, byte[]> injection= GenericAvroCodecs.apply(schema);
+        return injection.apply(record);
+    }
+    public static Map<String,Object> byteArrayBijectionToMap(Schema schema,Injection<GenericRecord, byte[]> injection,byte[] input){
+        GenericRecord record=injection.invert(input).get();
+        List<Schema.Field> fields=schema.getFields();
+        Map<String,Object> map= Maps.newHashMap();
+        for(Schema.Field field:fields){
+            if(null!=record.get(field.name())){
+                map.put(field.name(),record.get(field.name()));
+            }
+        }
+        return map;
     }
     public static Map<String,Object>  byteArrayToMap(DataCollectionMeta meta,Schema schema,byte[] byteData){
         GenericRecord genericRecord=byteArrayToData(schema,byteData);

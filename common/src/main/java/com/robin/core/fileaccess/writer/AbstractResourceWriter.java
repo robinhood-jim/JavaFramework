@@ -2,12 +2,15 @@ package com.robin.core.fileaccess.writer;
 
 import com.google.gson.Gson;
 import com.robin.comm.util.json.GsonUtil;
+import com.robin.core.base.util.ResourceConst;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.meta.DataSetColumnMeta;
 import com.robin.core.fileaccess.util.AvroUtils;
+import com.twitter.bijection.Injection;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericRecord;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,16 +32,17 @@ import java.util.*;
  */
 public abstract class AbstractResourceWriter implements IResourceWriter{
     protected DataCollectionMeta colmeta;
-    protected byte[] output=null;
+
     protected String key=null;
 
     protected Map<String, Void> columnMap=new HashMap<String, Void>();
     protected List<String> columnList=new ArrayList<String>();
     protected Logger logger= LoggerFactory.getLogger(getClass());
-    protected String valueType;
+    protected String valueType= ResourceConst.VALUE_TYPE.AVRO.getValue();
     protected Schema schema;
     protected Map<String,Object> cfgMap;
     protected Gson gson= GsonUtil.getGson();
+
 
     protected StringBuilder builder=new StringBuilder();
     public AbstractResourceWriter(DataCollectionMeta colmeta){
@@ -48,32 +52,11 @@ public abstract class AbstractResourceWriter implements IResourceWriter{
             columnList.add(meta.getColumnName());
             columnMap.put(meta.getColumnName(), null);
         }
-    }
-    protected void consturctContent(Map<String, ?> map) throws IOException {
-        if(colmeta.getPkColumns()!=null && !colmeta.getPkColumns().isEmpty()){
-            if(builder.length()>0){
-                builder.delete(0,builder.length());
-            }
-            for(String pkColumn:colmeta.getPkColumns()){
-                builder.append(map.get(pkColumn)).append("-");
-            }
-            key=builder.substring(builder.length()-1);
-        }else{
-            key=String.valueOf(System.currentTimeMillis());
+        if(null!=cfgMap.get("resource.valueType") && !StringUtils.isEmpty(cfgMap.get("resource.valueType").toString())){
+            valueType=cfgMap.get("resource.valueType").toString().toLowerCase();
         }
-        if(schema!=null) {
-            GenericRecord record = new GenericData.Record(schema);
-            Iterator iterator = map.entrySet().iterator();
-            while (iterator.hasNext()) {
-                Map.Entry entry = (Map.Entry) iterator.next();
-                record.put(entry.getKey().toString(), entry.getValue());
-            }
-            output= AvroUtils.dataToByteArray(schema,record);
-        }else if("json".equalsIgnoreCase(valueType)){
-            output=gson.toJson(map).getBytes();
-        }else if("protobuf".equalsIgnoreCase(valueType)){
+        schema=AvroUtils.getSchemaFromMeta(colmeta);
+    }
 
-        }
-    }
     public abstract void writeRecord(GenericRecord genericRecord) throws IOException, OperationNotSupportedException;
 }

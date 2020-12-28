@@ -1,7 +1,7 @@
 package com.robin.comm.resaccess.iterator;
 
 import com.google.common.base.Splitter;
-import com.robin.core.fileaccess.iterator.AbstractQueueIterator;
+import com.robin.core.resaccess.iterator.AbstractQueueIterator;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.util.AvroUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -53,12 +53,12 @@ public class KafkaIterator extends AbstractQueueIterator {
     }
 
     @Override
-    public List<Map<String, Object>> pollMessage() {
+    public List<Map<String, Object>> pollMessage() throws IOException{
         ConsumerRecords<String, byte[]> records = consumer.poll(Duration.ofSeconds(pollSeconds));
         List<Map<String,Object>> retList=new ArrayList<>();
         if(null!=records){
             for(ConsumerRecord<String,byte[]> record:records){
-                retList.add(AvroUtils.byteArrayToMap(colmeta,schema,record.value()));
+                retList.add(AvroUtils.byteArrayBijectionToMap(schema,recordInjection,record.value()));
             }
         }
         return retList;
