@@ -240,6 +240,12 @@
             <version>2.6.0</version>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>com.twitter</groupId>
+            <artifactId>bijection-avro_2.11</artifactId>
+            <version>0.9.6</version>
+            <optional>true</optional>
+        </dependency>
 
 
     </dependencies>

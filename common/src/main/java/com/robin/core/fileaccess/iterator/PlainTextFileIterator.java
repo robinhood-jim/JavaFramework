@@ -29,10 +29,7 @@ public class PlainTextFileIterator extends AbstractFileIterator{
 	public PlainTextFileIterator(DataCollectionMeta metaList) {
 		super(metaList);
 	}
-	@Override
-	public void init(){
 
-	}
 
 
 	@Override

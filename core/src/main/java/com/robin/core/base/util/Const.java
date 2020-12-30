@@ -83,6 +83,8 @@ public class Const {
 	//URI protocol
 	public static final String PREFIX_HDFS="hdfs";
 	public static final String PREFIX_S3="s3";
+	public static final String TRUE="true";
+	public static final String FALSE="false";
 
 
 	public enum FileFormat{
