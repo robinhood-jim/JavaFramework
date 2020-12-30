@@ -45,6 +45,7 @@ public class DataCollectionMeta implements Serializable {
 	private BaseDataBaseMeta dbMeta;
 	private Long sourceId;
 	private Long contentFormat;
+	private String pathTemplate;
 	public void setAvroSchema(Class<?> clazz){
 		String fullClassName=clazz.getClass().getCanonicalName();
 		int pos=fullClassName.lastIndexOf(".");
