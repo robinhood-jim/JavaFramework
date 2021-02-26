@@ -15,8 +15,11 @@
  */
 package com.robin.core.base.datameta;
 
+import lombok.Data;
+
 import java.io.Serializable;
 
+@Data
 public class DataBaseColumnMeta implements Serializable {
 	private String columnName;
 	private Integer columnType;
@@ -30,6 +33,10 @@ public class DataBaseColumnMeta implements Serializable {
 	private boolean foreignKey;
 	private boolean nullable=true;
 	private boolean increment;
+	private String foreignTableName;
+	private String foreignColumnName;
+	private Integer keySeq;
+
 	public DataBaseColumnMeta() {
 		
 	}
@@ -37,100 +44,5 @@ public class DataBaseColumnMeta implements Serializable {
 		this.columnName=columnName;
 		this.columnType=columnType;
 	}
-	public String getColumnName() {
-		return columnName;
-	}
 
-	public void setColumnName(String columnName) {
-		this.columnName = columnName;
-	}
-
-	public Integer getColumnType() {
-		return columnType;
-	}
-
-	public void setColumnType(Integer columnType) {
-		this.columnType = columnType;
-	}
-
-	public String getPropertyType() {
-		return propertyType;
-	}
-
-	public void setPropertyType(String propertyType) {
-		this.propertyType = propertyType;
-	}
-
-	public String getPropertyName() {
-		return propertyName;
-	}
-
-	public void setPropertyName(String propertyName) {
-		this.propertyName = propertyName;
-	}
-
-	public String getColumnLength() {
-		return columnLength;
-	}
-
-	public void setColumnLength(String columnLength) {
-		this.columnLength = columnLength;
-	}
-
-	public String getDataPrecise() {
-		return dataPrecise;
-	}
-
-	public void setDataPrecise(String dataPrecise) {
-		this.dataPrecise = dataPrecise;
-	}
-
-	public String getDataScale() {
-		return dataScale;
-	}
-
-	public void setDataScale(String dataScale) {
-		this.dataScale = dataScale;
-	}
-
-	public String getComment() {
-		return comment;
-	}
-
-	public void setComment(String comment) {
-		this.comment = comment;
-	}
-
-	public boolean isPrimaryKey() {
-		return primaryKey;
-	}
-
-	public void setPrimaryKey(boolean primaryKey) {
-		this.primaryKey = primaryKey;
-	}
-
-	public boolean isForeignKey() {
-		return foreignKey;
-	}
-
-	public void setForeignKey(boolean foreignKey) {
-		this.foreignKey = foreignKey;
-	}
-
-	public boolean isNullable() {
-		return nullable;
-	}
-
-	public void setNullable(boolean nullable) {
-		this.nullable = nullable;
-	}
-
-	public boolean isIncrement() {
-		return increment;
-	}
-
-	public void setIncrement(boolean increment) {
-		this.increment = increment;
-	}
-	
 }	

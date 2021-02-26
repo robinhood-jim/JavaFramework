@@ -25,16 +25,24 @@ import org.apache.commons.lang3.math.NumberUtils;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 public class ConvertUtil {
+    public static final DateTimeFormatter ymdformatter=DateTimeFormatter.ofPattern("yyyyMMdd");
+    public static final DateTimeFormatter ymdSepformatter=DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    public static final DateTimeFormatter ymdSecondformatter=DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+    public static final DateTimeFormatter ymdSepSecondformatter=DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    public static final DateTimeFormatter ymdEupformatter=DateTimeFormatter.ofPattern("yyyy/MM/dd");
 
 
-
-    public static void convertToTargetObj(Object target, Object src) throws Exception {
+    public static void convertToTargetObj(Object target, Object src,String... defaultDateTimeFormatter) throws Exception {
         if (target == null || src == null) {
             return;
         }
@@ -46,18 +54,16 @@ public class ConvertUtil {
         while(iterator.hasNext()){
             Map.Entry<String,Method> entry=iterator.next();
             if(targetMap.containsKey(entry.getKey())){
-                Object value= parseParameter(targetMap.get(entry.getKey()).getParameterTypes()[0],srcmap.get(entry.getKey()).invoke(src,(Object[]) null));
+                Object value= parseParameter(targetMap.get(entry.getKey()).getParameterTypes()[0],srcmap.get(entry.getKey()).invoke(src,(Object[]) null),defaultDateTimeFormatter);
                 targetMap.get(entry.getKey()).invoke(target,new Object[]{value});
             }
         }
     }
 
-
     public static void objectToMap(Map<String, String> target, Object src) throws Exception {
         if (src == null || target == null) {
             return;
         }
-
         Map<String,Method> getMetholds= ReflectUtils.returnGetMethods(src.getClass());
         Iterator<Map.Entry<String,Method>> iterator=getMetholds.entrySet().iterator();
         while(iterator.hasNext()){
@@ -84,7 +90,7 @@ public class ConvertUtil {
         }
     }
 
-    public static void mapToObject(BaseObject target, Map<String, String> src) throws Exception {
+    public static void mapToObject(BaseObject target, Map<String, String> src,String... defaultDateTimeFormatter) throws Exception {
         if (src == null || target == null) {
             return;
         }
@@ -101,7 +107,7 @@ public class ConvertUtil {
                 if (!"java.lang.String".equalsIgnoreCase(type.getName()) && "".equals(value)) {
                     retValue = null;
                 } else {
-                    retValue = parseParameter(type, value);
+                    retValue = parseParameter(type, value,defaultDateTimeFormatter);
                 }
                 methodMap.get(key).invoke(target, new Object[]{retValue});
             }
@@ -109,7 +115,7 @@ public class ConvertUtil {
 
     }
 
-    public static void mapToObject(Object target, Map<String, Object> src) throws Exception {
+    public static void mapToObject(Object target, Map<String, Object> src,String... defaultDateTimeFormatter) throws Exception {
         if (src == null || target == null) {
             return;
         }
@@ -126,7 +132,7 @@ public class ConvertUtil {
                 if (!"java.lang.String".equalsIgnoreCase(type.getName()) && "".equals(value)) {
                     retValue = null;
                 } else {
-                    retValue = parseParameter(type, value);
+                    retValue = parseParameter(type, value,defaultDateTimeFormatter);
                 }
                 targetMap.get(key).invoke(target, new Object[]{retValue});
             }
@@ -135,11 +141,10 @@ public class ConvertUtil {
 
 
     private static String wordCase(String value) {
-
         return value.substring(0, 1).toUpperCase() + value.substring(1);
     }
 
-    public static void convertSerializableForUpdate(Serializable target, Serializable src) throws Exception {
+    public static void convertSerializableForUpdate(Serializable target, Serializable src,String... defaultDateTime) throws Exception {
         if (target == null || src == null) {
             return;
         }
@@ -154,7 +159,7 @@ public class ConvertUtil {
             Method setMethod = entry.getValue();
             Object value=entry.getValue().invoke(null);
             if (value!=null && setMethod != null) {
-                setObjectValue(target,value,field,setMethod);
+                setObjectValue(target,value,field,setMethod,defaultDateTime);
             }
         }
     }
@@ -187,9 +192,7 @@ public class ConvertUtil {
         }
     }
 
-
-
-    public static void convertToModel(BaseObject target, Map<String, String> src) throws Exception {
+    public static void convertToModel(BaseObject target, Map<String, String> src,String... defaultDateTimeFormatter) throws Exception {
         if (target == null || src == null) {
             return;
         }
@@ -202,34 +205,34 @@ public class ConvertUtil {
             String field = entry.getKey();
             Method setMethod = map.get(field);
             if (setMethod != null) {
-                setBaseObjectValue(target,entry.getValue(),field,setMethod);
+                setBaseObjectValue(target,entry.getValue(),field,setMethod,defaultDateTimeFormatter);
             }
         }
     }
-    private static void setBaseObjectValue(BaseObject target,Object value,String field,Method setMethod) throws Exception{
+    private static void setBaseObjectValue(BaseObject target,Object value,String field,Method setMethod,String... defaultDateTimeFormatter) throws Exception{
         if (value != null) {
             target.AddDirtyColumn(field);
             Class type = setMethod.getParameterTypes()[0];
             if (!"java.lang.String".equalsIgnoreCase(type.getName()) && "".equals(value)) {
                 setMethod.invoke(target, new Object[]{null});
             } else {
-                Object retValue = parseParameter(type, value);
+                Object retValue = parseParameter(type, value,defaultDateTimeFormatter);
                 setMethod.invoke(target, new Object[]{retValue});
             }
         }
     }
-    private static void setObjectValue(Serializable target,Object value,String field,Method setMethod) throws Exception{
+    private static void setObjectValue(Serializable target,Object value,String field,Method setMethod,String... defaultDateTimeFormatter) throws Exception{
         if (value != null) {
             Class type = setMethod.getParameterTypes()[0];
             if (!"java.lang.String".equalsIgnoreCase(type.getName()) && "".equals(value)) {
                 setMethod.invoke(target, new Object[]{null});
             } else {
-                Object retValue = parseParameter(type, value);
+                Object retValue = parseParameter(type, value,defaultDateTimeFormatter);
                 setMethod.invoke(target, new Object[]{retValue});
             }
         }
     }
-    public static void convertToTarget(Object target, Object src) throws Exception {
+    public static void convertToTarget(Object target, Object src,String... defaultDateTimeFormatter) throws Exception {
         if (target == null || src == null) {
             return;
         }
@@ -247,19 +250,18 @@ public class ConvertUtil {
                         setBaseObjectValue((BaseObject) target,entry.getValue(),field,setMethod);
                     } else{
                         if(targetMethodMap.containsKey(field)) {
-                            Object retValue = parseParameter(targetMethodMap.get(field).getParameterTypes()[0], entry.getValue());
+                            Object retValue = parseParameter(targetMethodMap.get(field).getParameterTypes()[0], entry.getValue(),defaultDateTimeFormatter);
                             setObjectValue(targetMethodMap.get(field), target, retValue);
                         }
                     }
                 }
             }
         }else {
-
             Iterator<Map.Entry<String,Method>> iter=sourceMethodMap.entrySet().iterator();
             while(iter.hasNext()){
                 Map.Entry<String,Method> entry=iter.next();
                 if (targetMethodMap.containsKey(entry.getKey()) && entry.getValue().getParameterTypes().length==0){
-                    Object retValue = parseParameter(targetMethodMap.get(entry.getKey()).getParameterTypes()[0], entry.getValue().invoke(src,new Object[]{}));
+                    Object retValue = parseParameter(targetMethodMap.get(entry.getKey()).getParameterTypes()[0], entry.getValue().invoke(src,new Object[]{}),defaultDateTimeFormatter);
                     if(null!=retValue) {
                         setObjectValue(targetMethodMap.get(entry.getKey()), target, retValue);
                     }
@@ -272,51 +274,50 @@ public class ConvertUtil {
     }
 
 
-    public static Object parseParameter(Class type, Object strValue) throws Exception {
+    public static Object parseParameter(Class type, Object strValue,String... defaultDateTimeFormatter) throws Exception {
         if (strValue == null) {
             return null;
         }
-        String typeName = type.getName();
-        if (type.equals(byte[].class)) {
-            typeName = "byte";
-        }
+        DateTimeFormatter formatter=null;
         Object ret = null;
-        if ("int".equals(typeName)) {
+        if (type.isAssignableFrom(Integer.class)) {
             ret = Integer.parseInt(strValue.toString());
-        } else if ("long".equals(typeName)) {
+        } else if (type.isAssignableFrom(Long.class)) {
             ret = Long.parseLong(strValue.toString());
-        } else if ("float".equals(typeName)) {
+        } else if (type.isAssignableFrom(Float.class)) {
             ret = Float.parseFloat(strValue.toString());
-        } else if ("double".equals(typeName)) {
+        } else if (type.isAssignableFrom(Double.class)) {
             ret = Double.parseDouble(strValue.toString());
-        } else if (typeName.startsWith("java.math.") || "java.util.Date" .equals(typeName)) {
+        }else if(type.isAssignableFrom(Short.class)){
+            ret=Short.valueOf(strValue.toString());
+        }else if(type.isAssignableFrom(BigDecimal.class)){
+            ret=BigDecimal.valueOf(Double.valueOf(strValue.toString()));
+        }
+        else if (type.isAssignableFrom(java.util.Date.class) || type.isAssignableFrom(LocalDateTime.class) || type.isAssignableFrom(Timestamp.class)) {
             String value = strValue.toString().trim();
-            if (value.indexOf(":") == -1) {
-                value += " 00:00:00";
+            if(defaultDateTimeFormatter.length==0) {
+                formatter = getFormatter(value);
+            }else{
+                if(formatter==null) {
+                    formatter = DateTimeFormatter.ofPattern(defaultDateTimeFormatter[0]);
+                }
             }
-            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-            ret = format.parse(value);
+            if(null!=formatter) {
+                LocalDateTime localDateTime = LocalDateTime.parse(value, formatter);
+                if(type.isAssignableFrom(java.util.Date.class)){
+                    ret=new java.util.Date(localDateTime.toInstant(ZoneOffset.ofHours(8)).toEpochMilli());
+                }else if(type.isAssignableFrom(Timestamp.class)){
+                    ret=new Timestamp(localDateTime.toInstant(ZoneOffset.ofHours(8)).toEpochMilli());
+                }else if(type.isAssignableFrom(LocalDateTime.class)) {
+                    ret = localDateTime;
+                }
+            }
 
-        } else if ("java.lang.String".equals(typeName)) {
+        } else if (type.isAssignableFrom(String.class)) {
             ret = strValue.toString();
         } else {
-            if ("java.sql.Timestamp".equals(typeName)) {
-                String value = strValue.toString().trim();
-                int len = value.trim().length();
-                if (len > 7 && len < 11) {
-                    value = value + " 00:00:00.0";
-                } else if (len > 11 && value.indexOf(".") == -1) {
-                    value = value + ".0";
-                }
-                strValue = value;
-            } else if ("java.sql.Date".equals(typeName) && strValue != null) {
-                String value = strValue.toString().trim();
-                if (value.length() > 10) {
-                    value = value.substring(0, 10);
-                }
-                strValue = value;
-            }
-            if (!"byte".equals(typeName)) {
+
+            if (type.isAssignableFrom(byte.class)) {
                 if (!strValue.toString().isEmpty()) {
                     Method method = type.getMethod("valueOf", new Class[]{"java.lang.String" .getClass()});
                     if (method != null) {
@@ -325,11 +326,40 @@ public class ConvertUtil {
                 } else {
                     ret = null;
                 }
-            } else {
+            }else if(type.isAssignableFrom(byte[].class)){
+                ret=strValue.toString().getBytes();
+            }
+            else {
                 ret = strValue;
             }
         }
         return ret;
+    }
+
+
+    public static DateTimeFormatter getFormatter(String value){
+        DateTimeFormatter retFormatter=null;
+        if(isFormatterFit(value,ymdformatter)){
+            retFormatter=ymdformatter;
+        }else if(isFormatterFit(value,ymdSepformatter)){
+            retFormatter=ymdSepformatter;
+        }else if(isFormatterFit(value,ymdSecondformatter)){
+            retFormatter=ymdSecondformatter;
+        }else if(isFormatterFit(value,ymdSepSecondformatter)){
+            retFormatter=ymdSepSecondformatter;
+        }else if(isFormatterFit(value,ymdEupformatter)){
+            retFormatter=ymdEupformatter;
+        }
+        return retFormatter;
+    }
+    private static boolean isFormatterFit(String value,DateTimeFormatter formatter){
+        try{
+            formatter.parse(value);
+            return true;
+        }catch (Exception ex){
+
+        }
+        return false;
     }
 
     public static Object convertStringToTargetObject(String value, DataSetColumnMeta meta, String defaultDateTimefromat) throws Exception {

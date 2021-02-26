@@ -30,7 +30,9 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Slf4j
@@ -47,6 +49,8 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>,T extends S
     protected TableId tableId;
     protected Map<String,Method> getMethods;
     protected Map<String,Method> setMethods;
+    public final List<String> compareOperations=Arrays.asList(new String[]{">",">=","!=","<","<="});
+    public final List<Integer> compareOperationLens=Arrays.asList(new Integer[]{1,2,2,1,2});
     public AbstractMybatisService(){
         Type genericSuperClass = getClass().getGenericSuperclass();
         ParameterizedType parametrizedType;
@@ -435,6 +439,9 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>,T extends S
     }
 
     private void wrapQueryWithTypeAndValue(Class valueType, String fiterColumn, String value, QueryWrapper queryWrapper) throws Exception {
+        if(null==value || org.apache.commons.lang3.StringUtils.isEmpty(value)){
+            return;
+        }
         //数值型
         if (valueType.isAssignableFrom(Long.TYPE) || valueType.isAssignableFrom(Integer.TYPE) || valueType.isAssignableFrom(Float.TYPE)) {
             if (value.contains("|")) {
@@ -444,33 +451,76 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>,T extends S
                     list.add(ConvertUtil.parseParameter(valueType, str));
                 }
                 queryWrapper.in(queryWrapper, list);
-            } else if (value.contains(",")) {
-                String[] sepArr = value.split(",", -1);
-                if (!org.apache.commons.lang3.StringUtils.isEmpty(sepArr[0])) {
-                    if(!org.apache.commons.lang3.StringUtils.isEmpty(sepArr[1])){
+            } else {
+                if (value.contains(",") && value.split(",").length == 2) {
+                    String[] sepArr = value.split(",");
+                    if (!org.apache.commons.lang3.StringUtils.isEmpty(sepArr[1])) {
                         queryWrapper.between(fiterColumn, ConvertUtil.parseParameter(valueType, sepArr[0]), ConvertUtil.parseParameter(valueType, sepArr[0]));
-                    }else {
+                    } else {
                         queryWrapper.gt(fiterColumn, ConvertUtil.parseParameter(valueType, sepArr[0]));
                     }
-                } else {
-                    queryWrapper.lt(fiterColumn, ConvertUtil.parseParameter(valueType, sepArr[1]));
+                }else {
+                    wrapWithCompare(queryWrapper,valueType,fiterColumn,value);
                 }
-
             }
-        } else if (valueType.isAssignableFrom(Date.class) || valueType.isAssignableFrom(LocalDateTime.class)) {
+        } else if (valueType.isAssignableFrom(Date.class) || valueType.isAssignableFrom(LocalDateTime.class) || valueType.isAssignableFrom(Timestamp.class)) {
             //时间类型
-
-        }else {
-            if (value.contains("|")){
-                String[] arr=value.split("\\|");
-                queryWrapper.in(fiterColumn,Arrays.asList(arr));
-            }else{
-                if(value.contains("*")){
-                    queryWrapper.like(fiterColumn,value.replaceAll("\\*",""));
-                }else{
-                    queryWrapper.eq(fiterColumn,value);
+            if (value.contains(",")) {
+                String[] arr = value.split(",");
+                if (arr.length == 2) {
+                    queryWrapper.ge(fiterColumn, ConvertUtil.parseParameter(valueType, arr[0]));
+                    queryWrapper.le(fiterColumn, ConvertUtil.parseParameter(valueType, arr[1]));
+                }
+            }else {
+                wrapWithCompare(queryWrapper,valueType,fiterColumn,value);
+            }
+        } else {
+            if (value.contains("|")) {
+                String[] arr = value.split("\\|");
+                queryWrapper.in(fiterColumn, Arrays.asList(arr));
+            } else {
+                if (value.contains("*")) {
+                    queryWrapper.like(fiterColumn, value.replaceAll("\\*", ""));
+                } else {
+                    wrapWithCompare(queryWrapper,valueType,fiterColumn,value);
                 }
             }
+        }
+    }
+    protected void wrapWithCompare(QueryWrapper queryWrapper,Class valueType, String filterColumn,String value){
+        int pos=-1;
+        int startPos=-1;
+        for(int i=0;i<compareOperations.size();i++){
+            if(value.startsWith(compareOperations.get(i))){
+                pos=i;
+                startPos=compareOperationLens.get(pos);
+                break;
+            }
+        }
+        try {
+            if (pos != -1) {
+                switch (pos) {
+                    case 0:
+                        queryWrapper.gt(filterColumn, ConvertUtil.parseParameter(valueType, value.substring(startPos)));
+                        break;
+                    case 1:
+                        queryWrapper.ge(filterColumn,ConvertUtil.parseParameter(valueType,value.substring(startPos)));
+                        break;
+                    case 2:
+                        queryWrapper.ne(filterColumn,ConvertUtil.parseParameter(valueType,value.substring(startPos)));
+                        break;
+                    case 3:
+                        queryWrapper.lt(filterColumn,ConvertUtil.parseParameter(valueType,value.substring(startPos)));
+                        break;
+                    case 4:
+                        queryWrapper.le(filterColumn,ConvertUtil.parseParameter(valueType,value.substring(startPos)));
+                        break;
+                }
+            }else{
+                queryWrapper.eq(filterColumn,ConvertUtil.parseParameter(valueType,value));
+            }
+        }catch (Exception ex){
+
         }
     }
 }

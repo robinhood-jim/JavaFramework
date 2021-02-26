@@ -29,17 +29,17 @@ public class EncryptJarPackage {
     private static char[] avaiablechar = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '-', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '/'};
     private static byte[] m_datapadding = {0x7F};
     //EXE header,pretent as a exe file
-    private static byte[] mzHeader={0x4D,0x5A,0x50,0x00,0x02,0x00,0x00,0x00,0x04,0x00,0x0f,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
-    private static String[] str = {"i", "I", "l","O","0","1"};
+    private static byte[] mzHeader = {0x4D, 0x5A, 0x50, 0x00, 0x02, 0x00, 0x00, 0x00, 0x04, 0x00, 0x0f, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+    private static String[] str = {"i", "I", "l", "O", "0", "1"};
     private static final String parameterPrefix = "$";
     private static String metholdName;
-    private static final int beginchar='/';
-    private static final int avaiableCharLength=124;
+    private static final int beginchar = '/';
+    private static final int avaiableCharLength = 124;
     private static ByteBuffer buffer = ByteBuffer.allocate(8);
 
     public static void main(String[] args) {
         String sourcePath = "D:/dev/workspaceframe/JavaFramework/core/src/main/java";
-        String compileclassPath = ".;D:/dev/workspaceframe/JavaFramework/core/target/lib/*;d:/servlet-api-2.5.jar;D:/dev/workspaceframe/JavaFramework/core/target/core-1.0-SNAPSHOT_proguard_base.jar";
+        String compileclassPath = ".;D:/dev/workspaceframe/JavaFramework/core/target/lib/*;d:/servlet-api-2.5.jar;D:/dev/workspaceframe/JavaFramework/core/target/core-1.0-SNAPSHOT_proguard_base.jar;d:/jdk1.8/lib/tools.jar";
         String srcPath = "d:/tmp/corencrypt/src/";
         JavaProjectBuilder builder = new JavaProjectBuilder();
         builder.addSourceFolder(new File(sourcePath));
@@ -75,9 +75,9 @@ public class EncryptJarPackage {
                 StringBuilder tmpBuilder = new StringBuilder();
                 for (int i = 0; i < classlist.size(); i++) {
                     JavaClass clazz = classlist.get(i);
-                    List<JavaAnnotation> annotations= clazz.getAnnotations();
-                    if(!CollectionUtils.isEmpty(annotations)){
-                        for(JavaAnnotation annotation:annotations){
+                    List<JavaAnnotation> annotations = clazz.getAnnotations();
+                    if (!CollectionUtils.isEmpty(annotations)) {
+                        for (JavaAnnotation annotation : annotations) {
                             buffer.append(annotation.getCodeBlock());
                         }
                     }
@@ -97,10 +97,10 @@ public class EncryptJarPackage {
                         StringBuilder tbuilder = new StringBuilder();
                         for (JavaTypeVariable<JavaGenericDeclaration> define : annotaions) {
                             tbuilder.append(define.getValue());
-                            StringBuilder tBuffer=new StringBuilder();
+                            StringBuilder tBuffer = new StringBuilder();
                             if (define.getBounds() != null) {
                                 tbuilder.append(" extends ");
-                                for(JavaType type:define.getBounds()){
+                                for (JavaType type : define.getBounds()) {
                                     tbuilder.append(type.getGenericCanonicalName()).append(",");
                                 }
                                 //tbuilder.append(" extends ").append(define.getBounds().get(0).getCanonicalName()).append(",");
@@ -140,17 +140,17 @@ public class EncryptJarPackage {
                     String tmpStr;
                     if (props != null && props.size() > 0) {
                         for (JavaField prop : props) {
-                            tmpStr=null;
+                            tmpStr = null;
                             if (!isinterface) {
-                                tmpStr=prop.getCodeBlock().replaceAll(clazz.getPackage().getName()+"."+clazz.getName()+".","");
+                                tmpStr = prop.getCodeBlock().replaceAll(clazz.getPackage().getName() + "." + clazz.getName() + ".", "");
                                 //log.info(" tmpStr {}",tmpStr);
-                                if(tmpStr.indexOf("\n")< tmpStr.lastIndexOf("\n")){
-                                    int pos=tmpStr.indexOf("=");
-                                    if(pos!=-1) {
-                                        if(!tmpStr.contains("static")) {
+                                if (tmpStr.indexOf("\n") < tmpStr.lastIndexOf("\n")) {
+                                    int pos = tmpStr.indexOf("=");
+                                    if (pos != -1) {
+                                        if (!tmpStr.contains("static")) {
                                             tmpStr = tmpStr.substring(0, pos - 1) + ";\n";
-                                        }else{
-                                            if(tmpStr.substring(pos+1).replaceAll("\r","").replaceAll("\n","").trim().equals(";")) {
+                                        } else {
+                                            if (tmpStr.substring(pos + 1).replaceAll("\r", "").replaceAll("\n", "").trim().equals(";")) {
                                                 if (!prop.getType().isPrimitive()) {
                                                     tmpStr = tmpStr.substring(0, pos - 1) + "=null;\n";
                                                 } else {
@@ -166,7 +166,7 @@ public class EncryptJarPackage {
                                         }
                                     }
 
-                                }else{
+                                } else {
 
                                 }
                             }
@@ -196,8 +196,8 @@ public class EncryptJarPackage {
                     for (int j = 0; j < methods.size(); j++) {
                         JavaMethod method = methods.get(j);
                         metholdName = method.getName();
-                        if(clazz.isAnnotation()){
-                            buffer.append(method.getCodeBlock().replaceAll(clazz.getCanonicalName()+".",""));
+                        if (clazz.isAnnotation()) {
+                            buffer.append(method.getCodeBlock().replaceAll(clazz.getCanonicalName() + ".", ""));
                             continue;
                         }
                         StringBuilder tmpbuffer = new StringBuilder(getDeclaration(method));
@@ -360,9 +360,9 @@ public class EncryptJarPackage {
             if (clazz.isAbstract()) {
                 buffer.append("abstract ");
             }
-            if(clazz.isAnnotation()){
+            if (clazz.isAnnotation()) {
                 buffer.append("@interface ").append(clazz.getName());
-            }else {
+            } else {
                 buffer.append("class ").append(clazz.getName());
             }
         }
@@ -421,10 +421,11 @@ public class EncryptJarPackage {
         }
         return builder.toString();
     }
-    private static byte[] getKeyByte(String key){
-        byte[] retbyte=new byte[12];
-        for(int i=0;i<key.length();i++){
-            retbyte[i]=(byte)(key.charAt(i)-beginchar);
+
+    private static byte[] getKeyByte(String key) {
+        byte[] retbyte = new byte[12];
+        for (int i = 0; i < key.length(); i++) {
+            retbyte[i] = (byte) (key.charAt(i) - beginchar);
         }
         return retbyte;
     }
@@ -442,6 +443,7 @@ public class EncryptJarPackage {
         }
         return builder.toString();
     }
+
     public static String encrypt(byte[] inputBytes) {
         StringBuilder builder = new StringBuilder();
         for (int i = 0; i < inputBytes.length; i++) {
@@ -463,67 +465,69 @@ public class EncryptJarPackage {
     }
 
     private static ZipOutputStream getJarClasses(String jarFile, String basePath, DataOutputStream dout, String machineSerial) throws Exception {
-        ZipInputStream inputStream = new ZipInputStream(new FileInputStream(new File(jarFile)));
-        ZipEntry entry = null;
-        int range = avaiablechar.length;
-        Random random = new Random(range);
-        ZipOutputStream outputStream = new ZipOutputStream(new FileOutputStream(new File("E:/output.jar")));
-        List<String> randomFolders = new ArrayList<>();
-        for (int i = 0; i < 8; i++) {
-            generateRandomFolder(9, 3, randomFolders);
-        }
-        Random random1 = new Random();
-        //List<String> insertFloder = new ArrayList<>();
-        String[] caculateStr = caculateMachineSerail(machineSerial, System.currentTimeMillis() + 365 * 3600 * 24 * 1000);
-        byte[] machineSerailbytes = Base64.decodeBase64(caculateStr[1].getBytes());
-        //core key ,contains machineId and expireTs
-        dout.write(mzHeader);
-        dout.writeUTF(encrypt(caculateStr[0]));
-        dout.write(m_datapadding);
-        while ((entry = inputStream.getNextEntry()) != null) {
-            String path = entry.getName();
-            int pos = path.lastIndexOf("/");
-            if (pos == -1) {
-                continue;
-            }
-            String packageName = path.substring(0, pos).replaceAll("/", ".");
-            if (entry.isDirectory()) {
+        try (ZipInputStream inputStream = new ZipInputStream(new FileInputStream(new File(jarFile)))) {
+            ZipEntry entry = null;
+            int range = avaiablechar.length;
+            Random random = new Random(range);
+            try (ZipOutputStream outputStream = new ZipOutputStream(new FileOutputStream(new File("E:/output.jar")))) {
+                List<String> randomFolders = new ArrayList<>();
+                for (int i = 0; i < 8; i++) {
+                    generateRandomFolder(9, 3, randomFolders);
+                }
 
-            } else if (entry.getName().endsWith("class")) {
-                String className = path.substring(pos + 1);
-                pos = className.indexOf(".");
-                String clazzName = className.substring(0, pos);
-                String keystr = generateEncrytKey(range, 12, random);
-                byte[] key = Base64.decodeBase64(keystr.getBytes());
-                byte[] bytes = getZipByte(inputStream);
-                //使用随机密码加密
-                byte[] outbyte = CipherUtil.encryptByte(bytes, key);
-                //使用机器码加密，用于失效验证
-                byte[] encryptbytes = CipherUtil.encryptByte(outbyte, machineSerailbytes);
-                //FileUtils.writeByteArrayToFile(new File(basePath + path), outbyte);
-                String randomoutputPath = randomFolders.get(random1.nextInt(8));
-                List<String> params = getRandomName(9, random);
-                String fileName=params.get(0);
-                dout.writeUTF(encrypt(packageName + "." + clazzName));
+                Random random1 = new Random();
+                //List<String> insertFloder = new ArrayList<>();
+                String[] caculateStr = caculateMachineSerail(machineSerial, System.currentTimeMillis() + 365 * 3600 * 24 * 1000);
+                byte[] machineSerailbytes = Base64.decodeBase64(caculateStr[1].getBytes());
+                //core key ,contains machineId and expireTs
+                dout.write(mzHeader);
+                dout.writeUTF(
+
+                        encrypt(caculateStr[0]));
                 dout.write(m_datapadding);
-                //dout.writeUTF(encrypt(basePath + randomoutputPath + fileName));
-                dout.write(longToBytes(Long.valueOf(params.get(1))));
-                dout.write(m_datapadding);
-                dout.write(getKeyByte(keystr));
-                dout.write(m_datapadding);
-               /* if (!insertFloder.contains(randomoutputPath)) {
-                    outputStream.putNextEntry(new ZipEntry(basePath + randomoutputPath));
-                    insertFloder.add(randomoutputPath);
-                }*/
-                outputStream.putNextEntry(new JarEntry(basePath  + fileName));
-                IOUtils.copyBytes(new ByteArrayInputStream(encryptbytes), outputStream, 8094);
-                System.out.println(packageName + "." + clazzName + "=" + keystr);
-            } else {
-                outputStream.putNextEntry(new JarEntry(entry.getName()));
-                IOUtils.copyBytes(inputStream, outputStream, 1024);
+                while ((entry = inputStream.getNextEntry()) != null) {
+                    String path = entry.getName();
+                    int pos = path.lastIndexOf("/");
+                    if (pos == -1) {
+                        continue;
+                    }
+                    String packageName = path.substring(0, pos).replaceAll("/", ".");
+                    if (entry.isDirectory()) {
+
+                    } else if (entry.getName().endsWith("class")) {
+                        String className = path.substring(pos + 1);
+                        pos = className.indexOf(".");
+                        String clazzName = className.substring(0, pos);
+                        String keystr = generateEncrytKey(range, 12, random);
+                        byte[] key = Base64.decodeBase64(keystr.getBytes());
+                        byte[] bytes = getZipByte(inputStream);
+                        //使用随机密码加密
+                        byte[] outbyte = CipherUtil.encryptByte(bytes, key);
+                        //使用机器码加密，用于失效验证
+                        byte[] encryptbytes = CipherUtil.encryptByte(outbyte, machineSerailbytes);
+                        //FileUtils.writeByteArrayToFile(new File(basePath + path), outbyte);
+                        String randomoutputPath = randomFolders.get(random1.nextInt(8));
+                        List<String> params = getRandomName(9, random);
+                        String fileName = params.get(0);
+                        dout.writeUTF(encrypt(packageName + "." + clazzName));
+                        dout.write(m_datapadding);
+                        //dout.writeUTF(encrypt(basePath + randomoutputPath + fileName));
+                        dout.write(longToBytes(Long.valueOf(params.get(1))));
+                        dout.write(m_datapadding);
+                        dout.write(getKeyByte(keystr));
+                        dout.write(m_datapadding);
+                        outputStream.putNextEntry(new JarEntry(basePath + fileName));
+                        IOUtils.copyBytes(new ByteArrayInputStream(encryptbytes), outputStream, 8094);
+                        System.out.println(packageName + "." + clazzName + "=" + keystr);
+                    } else {
+                        outputStream.putNextEntry(new JarEntry(entry.getName()));
+                        IOUtils.copyBytes(inputStream, outputStream, 1024);
+                    }
+                }
+                return outputStream;
             }
         }
-        return outputStream;
+
     }
 
     private static void writeFile(ZipOutputStream outputStream, String path, InputStream inputStream) throws Exception {
@@ -610,13 +614,13 @@ public class EncryptJarPackage {
 
     private static List<String> getRandomName(int length, Random random) {
         StringBuilder builder = new StringBuilder();
-        StringBuilder builder1=new StringBuilder();
+        StringBuilder builder1 = new StringBuilder();
         for (int i = 0; i < length; i++) {
-            int pos=random.nextInt(str.length);
+            int pos = random.nextInt(str.length);
             builder1.append(pos);
             builder.append(str[pos]);
         }
-        List<String> retList=new ArrayList<>();
+        List<String> retList = new ArrayList<>();
         retList.add(builder.toString());
         retList.add(builder1.toString());
         return retList;
@@ -637,26 +641,27 @@ public class EncryptJarPackage {
         }
         return stringBuilder.toString().toUpperCase();
     }
-    private static String processConstruction(String codeBase){
-        BufferedReader reader=new BufferedReader(new InputStreamReader(new ByteArrayInputStream(codeBase.getBytes())));
-        StringBuilder builder=new StringBuilder();
-        String line=null;
+
+    private static String processConstruction(String codeBase) {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(codeBase.getBytes())));
+        StringBuilder builder = new StringBuilder();
+        String line = null;
         try {
             while ((line = reader.readLine()) != null) {
-                if(line.contains("super(")){
+                if (line.contains("super(")) {
                     builder.append(line);
                     break;
                 }
             }
             return builder.toString();
-        }catch (Exception ex){
+        } catch (Exception ex) {
             ex.printStackTrace();
-        }finally {
+        } finally {
             try {
                 if (null != reader) {
                     reader.close();
                 }
-            }catch (Exception ex){
+            } catch (Exception ex) {
 
             }
         }

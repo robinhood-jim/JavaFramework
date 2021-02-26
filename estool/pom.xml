@@ -170,7 +170,7 @@
                             <artifactId>log4j-api</artifactId>
                         </exclusion>
                     </exclusions>
-                    <proguardVersion>5.1</proguardVersion>
+                    <proguardVersion>6.2.2</proguardVersion>
                     <injar>estools-1.0-SNAPSHOT.jar</injar>
                     <!--<attach>true</attach>-->
                     <!--<attachArtifactClassifier>pg</attachArtifactClassifier>-->
@@ -180,7 +180,7 @@
                     </libs>
                     <options> <!-- 详细配置方式参考 ProGuard 官方文档 -->
                         <!--<option>-dontobfuscate</option>-->
-                        <option>-keepattributes Signature,InnerClasses,Exceptions</option>
+                        <option>-keepattributes *Annotation*,InnerClasses,Signature,Exceptions</option>
                         <option>
                             <![CDATA[-keep public class * {public protected <fields>;public protected <methods>;}]]></option>
                         <option>-keep public class * implements java.io.Serializable{public protected private *;}
@@ -190,7 +190,7 @@
                             }
                         </option>
                         <option>-ignorewarnings</option> <!--忽略所有告警-->
-                        <option>-dontshrink</option>   <!--不做 shrink -->
+                          <!--不做 shrink -->
                         <option>-printmapping out.map</option>
                         <!--平行包结构（重构包层次），所有混淆的类放在 pg 包下-->
 
@@ -203,13 +203,15 @@
 							public static **[] values();
     						public static ** valueOf(java.lang.String);
 						}]]></option>
+                        <option>-obfuscationdictionary ${project.basedir}/../config/dictionary_rules.txt</option>
+                        <option>-classobfuscationdictionary ${project.basedir}/../config/dictionary_rules.txt</option>
                         <!--保持包注解类-->
 
 
                         <!--JAXB NEED，具体原因不明，不加会导致 JAXB 出异常，如果不使用 JAXB 根据需要修改-->
                         <!-- Jaxb requires generics to be available to perform xml parsing and without this option ProGuard was not retaining that information after obfuscation. That was causing the exception above. -->
 
-                        <option>-keepattributes SourceFile,LineNumberTable,*Annotation*</option>
+                        <option>-keepattributes *Annotation*</option>
                         <!--保持源码名与行号（异常时有明确的栈信息），注解（默认会过滤掉所有注解，会影响框架的注解）-->
 
 
@@ -230,8 +232,35 @@
 
 
                 </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>net.sf.proguard</groupId>
+                        <artifactId>proguard-base</artifactId>
+                        <version>6.2.2</version>
+                    </dependency>
+                </dependencies>
             </plugin>
-
+           <!-- <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.6.0</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>${project.basedir}\..\script\runobfuse.cmd</executable>
+                            <arguments>
+                                <argument>${project.basedir}</argument>
+                                <argument>estools-1.0-SNAPSHOT.jar</argument>
+                                <argument>estools-1.0-SNAPSHOT.jar.bak</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>-->
         </plugins>
     </build>
 </project>

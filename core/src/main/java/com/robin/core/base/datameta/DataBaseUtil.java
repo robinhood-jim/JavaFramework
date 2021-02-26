@@ -17,12 +17,18 @@ package com.robin.core.base.datameta;
 
 import com.robin.core.base.dao.JdbcDao;
 import com.robin.core.base.util.Const;
+import com.robin.core.base.util.StringUtils;
+import com.robin.core.fileaccess.meta.DataCollectionMeta;
+import com.robin.core.fileaccess.meta.DataSetColumnMeta;
+import com.robin.core.sql.util.BaseSqlGen;
+import com.robin.core.sql.util.SqlDialectFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.support.JdbcUtils;
+import org.springframework.util.Assert;
 
 import javax.sql.DataSource;
 import java.sql.*;
@@ -34,6 +40,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.Date;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class DataBaseUtil {
@@ -324,6 +331,33 @@ public class DataBaseUtil {
         }
         return tablelist;
     }
+    public static List<DataBaseForeignMeta> getForeignKeys(Connection conn, String tableName, String schema) throws SQLException{
+        Assert.notNull(conn,"connection is null");
+        ResultSet rs=null;
+        List<DataBaseForeignMeta> foreignMetas=new ArrayList<>();
+        try{
+            DatabaseMetaData meta = conn.getMetaData();
+            rs=meta.getExportedKeys(null,schema,tableName);
+            while(rs.next()){
+                String fkTableName = rs.getString("FKTABLE_NAME");
+                String fkColumnName = rs.getString("FKCOLUMN_NAME");
+                String pkName = rs.getString("PKCOLUMN_NAME");
+                int fkSequence = rs.getInt("KEY_SEQ");
+                foreignMetas.add(new DataBaseForeignMeta(fkTableName,fkColumnName,pkName,fkSequence));
+            }
+            return foreignMetas;
+        }catch (SQLException ex){
+            throw ex;
+        }finally {
+            if(rs!=null){
+                try{
+                    rs.close();
+                }catch (SQLException ex){
+                    throw  ex;
+                }
+            }
+        }
+    }
 
     public static List<DataBaseColumnMeta> getQueryMeta(DataSource source, String sql) throws Exception {
         Connection conn = null;
@@ -515,6 +549,33 @@ public class DataBaseUtil {
             }
         }
         return retObj;
+    }
+    public String generateCreateTableSql(BaseDataBaseMeta meta, List<DataBaseColumnMeta> columnMetas,String tableName,List<String> primaryKeys){
+        BaseSqlGen sqlGen= SqlDialectFactory.getSqlGeneratorByDialect(meta.getDbType());
+        Map<String,List<DataBaseColumnMeta>> map= columnMetas.stream().collect(Collectors.groupingBy(DataBaseColumnMeta::getColumnName));
+        StringBuilder builder=new StringBuilder();
+        builder.append("create table ");
+        if (!StringUtils.isEmpty(meta.getParam().getDatabaseName())) {
+            builder.append(meta.getParam().getDatabaseName()).append(".");
+        }
+        builder.append(tableName).append("(").append("\n");
+        columnMetas.forEach(f->{
+            if(primaryKeys.contains(f.getColumnName())){
+                f.setNullable(false);
+            }
+            builder.append("\t").append(sqlGen.returnTypeDef(f.getColumnType().toString(),f)).append(",\n");
+        });
+        StringBuilder builder1=new StringBuilder();
+        primaryKeys.forEach(f->{
+            if(map.containsKey(f)){
+                builder1.append(f).append(",");
+            }
+        });
+        if(builder1.length()>0){
+            builder.append("\tPRIMARY KEY(").append(builder1.substring(0,builder1.length()-1)).append("\n");
+        }
+        builder.append(")");
+        return builder.toString();
     }
 
     private static List<DataBaseTableMeta> scanAllTable(Connection connection, String schema, DataBaseInterface datameta) throws SQLException {

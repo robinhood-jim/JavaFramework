@@ -22,10 +22,11 @@ public class SimplePrepareStatement implements PreparedStatementCreator {
 
     @Override
     public PreparedStatement createPreparedStatement(Connection conn) throws SQLException {
-        PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-        for(int i=0;i<objects.length;i++){
-            ps.setObject(i+1,objects[i]);
+        try(PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            for (int i = 0; i < objects.length; i++) {
+                ps.setObject(i + 1, objects[i]);
+            }
+            return ps;
         }
-        return ps;
     }
 }

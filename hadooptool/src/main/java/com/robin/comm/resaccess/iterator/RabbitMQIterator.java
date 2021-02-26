@@ -5,6 +5,7 @@ import com.robin.core.fileaccess.util.AvroUtils;
 import com.robin.core.resaccess.iterator.AbstractQueueIterator;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.hbase.exceptions.TimeoutIOException;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.Connection;
 import org.springframework.util.Assert;
@@ -14,6 +15,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeoutException;
 
 public class RabbitMQIterator extends AbstractQueueIterator {
     private CachingConnectionFactory connectionFactory;
@@ -53,19 +55,22 @@ public class RabbitMQIterator extends AbstractQueueIterator {
 
     @Override
     public List<Map<String, Object>> pollMessage() throws IOException {
-        Channel channel=connection.createChannel(true);
-        channel.basicQos(64);
-        List<Map<String,Object>> retList=new ArrayList<>();
-        Consumer consumer=new DefaultConsumer(channel){
-            @Override
-            public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
-                retList.add(AvroUtils.byteArrayBijectionToMap(schema,recordInjection,body));
-                channel.basicAck(envelope.getDeliveryTag(),false);
-            }
+        try(Channel channel=connection.createChannel(true)) {
+            channel.basicQos(64);
+            List<Map<String, Object>> retList = new ArrayList<>();
+            Consumer consumer = new DefaultConsumer(channel) {
+                @Override
+                public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
+                    retList.add(AvroUtils.byteArrayBijectionToMap(schema, recordInjection, body));
+                    channel.basicAck(envelope.getDeliveryTag(), false);
+                }
 
-        };
-        channel.basicConsume(queueName,consumer);
+            };
+            String value=channel.basicConsume(queueName, consumer);
 
+        }catch (TimeoutException ex){
+            throw new IOException(ex);
+        }
         return null;
     }
 

@@ -4,6 +4,7 @@ import io.github.classgraph.*;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
@@ -32,6 +33,14 @@ public class ClassGraphReflector implements InitializingBean {
         mList.forEach(methodInfo -> {
             String fieldName= StringUtils.uncapitalize(methodInfo.getName().substring(3));
             map.put(fieldName,methodInfo.loadClassAndGetMethod());
+        });
+        return map;
+    }
+    public Map<String, Field> returnAllField(Class clazz){
+        ClassInfo classInfo=scanResult.getClassInfo(clazz.getCanonicalName());
+        final Map<java.lang.String, java.lang.reflect.Field> map=new HashMap<>();
+        classInfo.getFieldInfo().forEach(f->{
+            map.put(f.getName(),f.loadClassAndGetField());
         });
         return map;
     }

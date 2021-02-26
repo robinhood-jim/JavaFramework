@@ -70,7 +70,7 @@ public class HDFSCallUtil {
             fs.copyFromLocalFile(new Path(filePath), new Path(toUrl));
             url = hdfsUrl;
         } catch (Exception e) {
-            log.error("{}",e);
+            log.error("{}", e);
             throw new HdfsException(e);
         }
         return url;
@@ -101,17 +101,13 @@ public class HDFSCallUtil {
     }
 
     public static String uploadByInputStream(final Configuration config, InputStream in, String toUrl, int bufferSize, String fromCharset, String toCharset) throws HdfsException, IOException {
-        FSDataOutputStream fsdo = null;
-        InputStreamReader isr = null;
-        try {
-
-            FileSystem fs = FileSystem.get(config);
-            Path dfs = new Path(toUrl);
-            fsdo = fs.create(dfs);
-
+        Path dfs = new Path(toUrl);
+        try (
+                FileSystem fs = FileSystem.get(config);
+                FSDataOutputStream fsdo = fs.create(dfs);
+                InputStreamReader isr = new InputStreamReader(in, Charset.forName(fromCharset))) {
             char[] buf = new char[bufferSize];
             StringBuilder strb = new StringBuilder();
-            isr = new InputStreamReader(in, Charset.forName(fromCharset));
             int readCount = 0, point = 0;
             while (-1 != (readCount = isr.read(buf, 0, bufferSize))) {
                 strb.append(buf, 0, readCount);
@@ -127,14 +123,6 @@ public class HDFSCallUtil {
         } catch (Exception e) {
             e.printStackTrace();
             throw new HdfsException(e);
-        } finally {
-            if (isr != null) {
-                isr.close();
-            }
-            if (fsdo != null) {
-                fsdo.flush();
-                fsdo.close();
-            }
         }
         return toUrl;
     }
@@ -358,16 +346,16 @@ public class HDFSCallUtil {
                     retList.add(builder.toString());
                 }
             }
-            if(!retList.isEmpty()) {
-                log.debug(" path list {} {}",retList,fs);
-                for(String path:retList) {
-                    log.debug(" path {} exists {}",path,fs.exists(new Path(path)));
+            if (!retList.isEmpty()) {
+                log.debug(" path list {} {}", retList, fs);
+                for (String path : retList) {
+                    log.debug(" path {} exists {}", path, fs.exists(new Path(path)));
                     if (!fs.exists(new Path(path))) {
-                        log.debug("mkdir path {}",path);
+                        log.debug("mkdir path {}", path);
                         fs.mkdirs(new Path(path));
                     }
                 }
-            }else{
+            } else {
                 fs.mkdirs(new Path(relativeName));
             }
         } catch (Exception e) {
@@ -444,13 +432,14 @@ public class HDFSCallUtil {
             //InputStream in=null;
             Path path = new Path(hdfsUrl);
             if (fs.exists(path)) {
-                FSDataInputStream is = fs.open(path);
-                // get the file info to create the buffer
-                FileStatus stat = fs.getFileStatus(path);
-                byte[] buffer = new byte[Integer.parseInt(String.valueOf(stat.getLen()))];
-                is.readFully(0, buffer);
-                retStr = new String(buffer, encode);
-                is.close();
+                try(FSDataInputStream is = fs.open(path)){
+                    // get the file info to create the buffer
+                    FileStatus stat = fs.getFileStatus(path);
+                    byte[] buffer = new byte[Integer.parseInt(String.valueOf(stat.getLen()))];
+                    is.readFully(0, buffer);
+                    retStr = new String(buffer, encode);
+                    is.close();
+                }
             }
 
         } catch (Exception e) {
@@ -461,24 +450,21 @@ public class HDFSCallUtil {
     }
 
     public static byte[] readByte(final Configuration config, String hdfsUrl) throws HdfsException {
-        String retStr = "";
         try {
             FileSystem fs = FileSystem.get(URI.create(hdfsUrl), config);
-            InputStream in = null;
             Path path = new Path(hdfsUrl);
             if (fs.exists(path)) {
-                FSDataInputStream is = fs.open(path);
-                // get the file info to create the buffer
-                FileStatus stat = fs.getFileStatus(path);
-                byte[] buffer = new byte[Integer.parseInt(String.valueOf(stat.getLen()))];
-                is.readFully(0, buffer);
-                retStr = new String(buffer, "UTF-8");
-                is.close();
-                return buffer;
+                try(FSDataInputStream is = fs.open(path)) {
+                    // get the file info to create the buffer
+                    FileStatus stat = fs.getFileStatus(path);
+                    byte[] buffer = new byte[Integer.parseInt(String.valueOf(stat.getLen()))];
+                    is.readFully(0, buffer);
+                    is.close();
+                    return buffer;
+                }
             } else {
                 return null;
             }
-
         } catch (Exception e) {
             log.error("", e);
             throw new HdfsException(e);
@@ -511,17 +497,13 @@ public class HDFSCallUtil {
     }
 
     public static BufferedReader readStream(final Configuration config, String hdfsUrl, String encode) throws HdfsException {
-        FileSystem fs = null;
-
-        try {
-            fs = FileSystem.get(URI.create(hdfsUrl), config);
+        try(FileSystem fs = FileSystem.get(URI.create(hdfsUrl), config)){
             DataInputStream dis = new DataInputStream(fs.open(new Path(hdfsUrl)));
             BufferedReader br = new BufferedReader(new InputStreamReader(dis, encode));
             return br;
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new HdfsException(e);
         }
-        return null;
     }
 
     public static void copyToLocal(final Configuration config, String fromPath, String toPath) throws HdfsException {

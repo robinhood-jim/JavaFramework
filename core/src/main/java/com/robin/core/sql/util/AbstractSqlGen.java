@@ -16,8 +16,10 @@
 package com.robin.core.sql.util;
 
 import com.robin.core.base.dao.util.AnnotationRetrevior;
+import com.robin.core.base.datameta.DataBaseColumnMeta;
 import com.robin.core.base.util.Const;
 import com.robin.core.base.util.StringUtils;
+import com.robin.core.fileaccess.meta.DataSetColumnMeta;
 import com.robin.core.query.util.PageQuery;
 import com.robin.core.query.util.QueryParam;
 import com.robin.core.query.util.QueryString;
@@ -286,6 +288,14 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
 
         return builder.toString();
     }
+    @Override
+    public String getFieldDefineSqlByMeta(DataBaseColumnMeta columnMeta){
+        String datatype = columnMeta.getColumnType().toString();
+        StringBuilder builder = new StringBuilder();
+        String name = columnMeta.getColumnName();
+        builder.append(name).append(" ").append(returnTypeDef(datatype, columnMeta));
+        return builder.toString();
+    }
 
 
     protected String getQueryFromPart(QueryString qs, PageQuery query) {
@@ -460,6 +470,51 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
             builder.append(getAutoIncrementDef());
         }
         if(field.isRequired()){
+            builder.append(" NOT NULL");
+        }
+
+        return builder.toString();
+    }
+    @Override
+    public String returnTypeDef(String dataType, DataBaseColumnMeta field) {
+        StringBuilder builder=new StringBuilder();
+        if(dataType.equals(Const.META_TYPE_BIGINT)){
+            builder.append(getLongFormat());
+        }else if(dataType.equals(Const.META_TYPE_INTEGER)){
+            builder.append(getIntegerFormat());
+        }else if(dataType.equals(Const.META_TYPE_DOUBLE) || dataType.equals(Const.META_TYPE_NUMERIC)){
+            int precise= org.apache.commons.lang3.StringUtils.isEmpty(field.getDataPrecise())?0:Integer.parseInt(field.getDataPrecise()) ;
+            int scale= org.apache.commons.lang3.StringUtils.isEmpty(field.getDataScale())?0:Integer.parseInt(field.getDataScale());
+            if(precise==0) {
+                precise=2;
+            }
+            if(scale==0) {
+                scale=8;
+            }
+            builder.append(getDecimalFormat(precise,scale));
+        }else if(dataType.equals(Const.META_TYPE_DATE)){
+            builder.append("DATE");
+        }else if(dataType.equals(Const.META_TYPE_TIMESTAMP)){
+            builder.append(getTimestampFormat());
+        }else if(dataType.equals(Const.META_TYPE_STRING)){
+            int length= org.apache.commons.lang3.StringUtils.isEmpty(field.getColumnLength())?0:Integer.parseInt(field.getColumnLength());
+            if(length==0){
+                length=32;
+            }
+            if(length==1) {
+                builder.append(getCharFormat(1));
+            } else {
+                builder.append(getVarcharFormat(length));
+            }
+        }else if(dataType.equals(Const.META_TYPE_CLOB)){
+            builder.append(getClobFormat());
+        }else if(dataType.equals(Const.META_TYPE_BLOB)){
+            builder.append(getBlobFormat());
+        }
+        if(field.isIncrement() && supportIncrement()){
+            builder.append(getAutoIncrementDef());
+        }
+        if(!field.isNullable()){
             builder.append(" NOT NULL");
         }
 

@@ -13,7 +13,13 @@ public abstract class AbstractComponent {
     protected StatefulJobContext jobContext;
     protected StepContext stepContext;
     protected String fsTemplate;
+    protected Long stepId;
+    protected String stepName;
     protected Pattern pattern=Pattern.compile("\\$\\{w+\\}");
+
+    public AbstractComponent(Long stepId){
+        this.stepId=stepId;
+    }
     protected void init(StatefulJobContext jobContext,StepContext stepContext){
         this.jobContext=jobContext;
         this.stepContext=stepContext;
@@ -21,9 +27,7 @@ public abstract class AbstractComponent {
         Assert.notNull(fsTemplate,"");
 
     }
-    protected abstract boolean prepare(String cycle);
-    protected abstract boolean doOperation(String cycle);
-    protected abstract boolean finish(String cycle);
+
     protected String parseProcessFsPath(String cycle){
         Assert.notNull(jobContext,"");
         Assert.notNull(stepContext,"");

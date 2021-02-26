@@ -1,12 +1,17 @@
-package com.robin.etl.step;
+package com.robin.etl.step.inbound;
 
 import com.robin.etl.context.StatefulJobContext;
 import com.robin.etl.context.StepContext;
 import com.robin.core.fileaccess.iterator.AbstractFileIterator;
 import com.robin.core.fileaccess.iterator.TextFileIteratorFactory;
+import com.robin.etl.step.AbstractComponent;
 
 public class FsInboundComponent extends AbstractComponent {
     protected AbstractFileIterator iterator;
+
+    public FsInboundComponent(Long stepId) {
+        super(stepId);
+    }
 
 
     @Override
@@ -15,7 +20,7 @@ public class FsInboundComponent extends AbstractComponent {
 
     }
 
-    @Override
+
     protected boolean prepare(String cycle) {
         try {
             jobContext.getInputMeta().setPath(parseProcessFsPath(cycle));
@@ -26,15 +31,19 @@ public class FsInboundComponent extends AbstractComponent {
         return false;
     }
 
-    @Override
-    protected boolean finish(String cycle) {
-        return false;
-    }
 
-    @Override
-    protected boolean doOperation(String cycle) {
+    protected boolean finish(String cycle) {
+        try {
+            if (null != iterator) {
+                iterator.close();
+            }
+        }catch (Exception ex){
+
+            return false;
+        }
         return true;
     }
+
     public AbstractFileIterator getResourceIterator(){
         return iterator;
     }
