@@ -26,12 +26,13 @@ public class ReflectUtils {
 
     private static final Cache<String, Map<String, Method>> cachedGetMethod = CacheBuilder.newBuilder().maximumSize(1000).expireAfterAccess(30, TimeUnit.MINUTES).build();
     private static final Cache<String, Map<String, Method>> cachedSetMethod = CacheBuilder.newBuilder().maximumSize(1000).expireAfterAccess(30, TimeUnit.MINUTES).build();
-    private static final Cache<String, Map<String, List<Field>>> cacheField= CacheBuilder.newBuilder().maximumSize(1000).expireAfterAccess(30,TimeUnit.MINUTES).build();;
+    private static final Cache<String, Map<String, List<Field>>> cacheField= CacheBuilder.newBuilder().maximumSize(1000).expireAfterAccess(30,TimeUnit.MINUTES).build();
+    private static final Cache<String, Map<String, Field>> fieldCache= CacheBuilder.newBuilder().maximumSize(1000).expireAfterAccess(30,TimeUnit.MINUTES).build();
 
-    public static final List<String> getAllPropety(Object obj) {
+    public static final List<String> getAllPropety(Class clazz) {
         List<String> nameList = new ArrayList<String>();
-        if (obj != null && !obj.getClass().isPrimitive()) {
-            Field[] fields = obj.getClass().getDeclaredFields();
+        if (clazz != null && !clazz.isPrimitive()) {
+            Field[] fields = clazz.getDeclaredFields();
             for (int i = 0; i < fields.length; i++) {
                 nameList.add(fields[i].getName());
             }
@@ -39,10 +40,11 @@ public class ReflectUtils {
         return nameList;
     }
 
-    public static final Map<String, Method> getAllSetMethod(Object obj) {
+    public static final Map<String, Method> getAllSetMethod(Class clazz) {
         Map<String, Method> methodMap = new HashMap<String, Method>();
-        if (obj != null && !obj.getClass().isPrimitive()) {
-            Method[] method = obj.getClass().getDeclaredMethods();
+        Assert.notNull(clazz,"");
+        if (!clazz.isPrimitive()) {
+            Method[] method = clazz.getDeclaredMethods();
             for (int i = 0; i < method.length; i++) {
                 String name = method[i].getName();
                 if (name.startsWith("set")) {
@@ -53,10 +55,26 @@ public class ReflectUtils {
         }
         return methodMap;
     }
+    public static final Map<String,Field> getAllField(Class clazz){
+        Map<String,Field> map=null;
+        if(fieldCache.getIfPresent(clazz.getCanonicalName())==null){
+            if(isUseClassGraphForReflect()){
+                map= SpringContextHolder.getBean(ClassGraphReflector.class).returnAllField(clazz);
+            }else{
+                Field[] fields=clazz.getDeclaredFields();
+                map=new HashMap<>();
+                for(Field field:fields){
+                    map.put(field.getName(),field);
+                }
+            }
+            fieldCache.put(clazz.getCanonicalName(),map);
+        }
+        return fieldCache.getIfPresent(clazz.getCanonicalName());
+    }
 
     public static final void wrapObjWithMap(Map<String, String> map, Object obj) throws Exception {
         if (obj != null && !obj.getClass().isPrimitive()) {
-            List<String> nameList = getAllPropety(obj);
+            List<String> nameList = getAllPropety(obj.getClass());
             for (int i = 0; i < nameList.size(); i++) {
                 Object vobj = PropertyUtils.getProperty(map, nameList.get(i));
                 if (vobj != null) {

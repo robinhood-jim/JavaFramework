@@ -57,7 +57,7 @@ public class SimpleJdbcDao {
 	private static  Logger logger=LoggerFactory.getLogger(SimpleJdbcDao.class);
 	private static final String fullDateformat="yyyy-MM-dd HH:mm:ss";
 	private static final String shortDateformat="yyyy-MM-dd";
-	public SimpleJdbcDao(BaseDataBaseMeta meta,DataBaseParam param) throws Exception{
+	public SimpleJdbcDao(BaseDataBaseMeta meta,DataBaseParam param) {
 		this.driverName=meta.getParam().getDriverClassName();
 		this.userName=param.getUserName();
 		this.passwd=param.getPasswd();
@@ -69,7 +69,7 @@ public class SimpleJdbcDao {
 		this.meta=meta;
 		this.param=param;
 	}
-	public SimpleJdbcDao(BaseDataBaseMeta meta,DataBaseParam param,long retryNums,int waitSecond,boolean getConnectionLoop) throws Exception{
+	public SimpleJdbcDao(BaseDataBaseMeta meta,DataBaseParam param,long retryNums,int waitSecond,boolean getConnectionLoop){
 		this.driverName=meta.getParam().getDriverClassName();
 		this.userName=param.getUserName();
 		this.passwd=param.getPasswd();

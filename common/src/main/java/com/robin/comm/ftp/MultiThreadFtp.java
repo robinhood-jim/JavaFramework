@@ -1,9 +1,6 @@
 package com.robin.comm.ftp;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.RandomAccessFile;
+import java.io.*;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -56,24 +53,29 @@ public class MultiThreadFtp extends SimpleFtp {
         logger.info("totalsize=" + totalsize);
         long partsize = totalsize / threads + 1;
         Map<Integer, Boolean> executeMap = new HashMap<Integer, Boolean>();
-        RandomAccessFile file = new RandomAccessFile(new File(local), "rw");
-        file.setLength(totalsize);
-        file.close();
-        disconnect();
-        for (int i = 0; i < threads; i++) {
-            pool.execute(new DownThread(remote, local, retrys, i, threads, partsize, totalsize, executeMap, boolTag));
-        }
-        try {
-            while (boolTag.isEmpty()) {
-                Thread.sleep(10000);
+
+        try (RandomAccessFile file = new RandomAccessFile(new File(local), "rw")) {
+            file.setLength(totalsize);
+            file.close();
+            disconnect();
+            for (int i = 0; i < threads; i++) {
+                pool.execute(new DownThread(remote, local, retrys, i, threads, partsize, totalsize, executeMap, boolTag));
             }
-        } catch (Exception ex) {
-            logger.error("",ex);
+            try {
+                while (boolTag.isEmpty()) {
+                    Thread.sleep(10000);
+                }
+            } catch (Exception ex) {
+                logger.error("", ex);
+            }
+            pool.shutdown();
+            logger.info("job finished with status {}", boolTag.get(0));
+            return boolTag.get(0);
+        } catch (FileNotFoundException ex) {
+            throw ex;
         }
-        pool.shutdown();
-        logger.info("job finished with status {}", boolTag.get(0));
-        return boolTag.get(0);
     }
+
     //TODO wait to code
     public void uploadFile(String localFile, String remoteFile, int threads, int retrys) {
 
@@ -128,7 +130,7 @@ public class MultiThreadFtp extends SimpleFtp {
                         retflag = true;
                     }
                 } catch (Exception ex) {
-                    logger.error("",ex);
+                    logger.error("", ex);
                 } finally {
 
                 }
@@ -137,19 +139,20 @@ public class MultiThreadFtp extends SimpleFtp {
         }
 
         private int doDownloadSect(long formsize, long tosize, String local, String remote) throws IOException {
-            RandomAccessFile file = new RandomAccessFile(new File(local), "rw");
-            file.seek(formsize);
-            FTPClient client = getClient();
-            client.enterLocalPassiveMode();
-            client.setFileType(FTP.BINARY_FILE_TYPE);
-            if (formsize != 0) {
-                client.setRestartOffset(formsize);
-            }
-            InputStream in = client.retrieveFileStream(remote);
-
             int processsize = 0;
-            boolean retflag = true;
-            try {
+            try (RandomAccessFile file = new RandomAccessFile(new File(local), "rw")) {
+                file.seek(formsize);
+                FTPClient client = getClient();
+                client.enterLocalPassiveMode();
+                client.setFileType(FTP.BINARY_FILE_TYPE);
+                if (formsize != 0) {
+                    client.setRestartOffset(formsize);
+                }
+                InputStream in = client.retrieveFileStream(remote);
+
+
+                boolean retflag = true;
+
                 byte[] bytes = new byte[81920];
                 int c;
                 while ((c = in.read(bytes)) != -1) {
@@ -168,17 +171,6 @@ public class MultiThreadFtp extends SimpleFtp {
                     }
                 }
                 logger.info("finish download section {} stratfrom {} to pos {}", part, formsize, formsize + processsize);
-            } catch (IOException ex) {
-                log.error("",ex);
-                retflag = false;
-            } finally {
-                if (in != null) {
-                    in.close();
-                }
-                if (file != null) {
-                    file.close();
-                }
-                client.disconnect();
             }
             return processsize;
         }
@@ -229,7 +221,7 @@ public class MultiThreadFtp extends SimpleFtp {
             client.connect(hostname, port);
             client.setDataTimeout(20000);
         } catch (IOException e) {
-            logger.error("",e);
+            logger.error("", e);
         }
     }
 

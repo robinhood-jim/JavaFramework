@@ -5,6 +5,8 @@ import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.util.AbstractResourceAccessUtil;
 import com.robin.hadoop.hdfs.HDFSProperty;
 import com.robin.hadoop.hdfs.HDFSUtil;
+import org.apache.hadoop.fs.FSDataOutputStream;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,12 +31,13 @@ public class HdfsResourceAccessUtil extends AbstractResourceAccessUtil {
 	public BufferedWriter getOutResourceByWriter(DataCollectionMeta meta, String resourcePath)
 			throws IOException {
 		HDFSUtil util=getHdfsUtil(meta);
-		try {
+
+		try(FSDataOutputStream outputStream=util.getFileSystem().create(new Path(resourcePath))) {
 			if (util.exists(resourcePath)) {
 				logger.error("output file " + resourcePath + " exist!,remove it");
 				util.delete(meta.getPath());
 			}
-			return getWriterByPath(meta.getPath(), util.getFileSystem().create(new Path(resourcePath)), meta.getEncode());
+			return getWriterByPath(meta.getPath(), outputStream, meta.getEncode());
 		}catch (Exception ex){
 			throw new IOException(ex);
 		}

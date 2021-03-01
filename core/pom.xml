@@ -88,6 +88,7 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>com.google.code.gson</groupId>
@@ -332,7 +333,7 @@
 
                     <options> <!-- Detail see ProGuard Config -->
 
-                        <option>-keepattributes Signature,InnerClasses,Exceptions,SourceFile,LineNumberTable,*Annotation*</option>
+                        <option>-keepattributes *Annotation*,InnerClasses,Signature,Exceptions</option>
                         <option>
                             <![CDATA[-keep public class * {public protected <fields>;public protected <methods>;}]]></option>
                         <option>-keep public class * implements java.io.Serializable{public protected private *;}
@@ -369,8 +370,11 @@
                         <option><![CDATA[-keepclassmembers class * implements org.springframework.jdbc.core.PreparedStatementSetter {
 							<methods>;
 							}]]></option>
+                        <option>-obfuscationdictionary ${project.basedir}/../config/dictionary_rules.txt</option>
+                        <option>-classobfuscationdictionary ${project.basedir}/../config/dictionary_rules.txt</option>
+
                         <option>-ignorewarnings</option>
-                        <option>-dontshrink</option>
+                        <!--<option>-dontshrink</option>-->
                         <option>-printmapping out.map</option>
                         <option>-optimizations !code/allocation/variable</option>
                         <option>-keep class **.package-info</option>
@@ -382,6 +386,13 @@
                         </option>
                     </options>
                 </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>net.sf.proguard</groupId>
+                        <artifactId>proguard-base</artifactId>
+                        <version>6.2.2</version>
+                    </dependency>
+                </dependencies>
             </plugin>
         </plugins>
     </build>

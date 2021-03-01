@@ -1,5 +1,7 @@
 package com.robin.core.fileaccess.meta;
 
+import lombok.Data;
+
 import java.io.Serializable;
 
 /**
@@ -14,6 +16,7 @@ import java.io.Serializable;
  * @author robinjim
  * @version 1.0
  */
+@Data
 public class DataSetColumnMeta implements Serializable {
     private String columnName;
     private String columnType;
@@ -21,7 +24,12 @@ public class DataSetColumnMeta implements Serializable {
     private String dateFormat;
     private boolean required;
     private boolean algrithColumn;
+    private boolean primary;
     private String algrithOper;
+    private Integer precise;
+    private Integer scale;
+    private boolean increment;
+    private Integer length;
 
     public DataSetColumnMeta(String columnName,String columnType,Object defaultNullValue){
         this.columnName=columnName;
@@ -53,54 +61,5 @@ public class DataSetColumnMeta implements Serializable {
         }
         this.required=required;
     }
-    public String getColumnName() {
-        return columnName;
-    }
-    public void setColumnName(String columnName) {
-        this.columnName = columnName;
-    }
-    public String getColumnType() {
-        return columnType;
-    }
-    public void setColumnType(String columnType) {
-        this.columnType = columnType;
-    }
-    public Object getDefaultNullValue() {
-        return defaultNullValue;
-    }
-    public void setDefaultNullValue(Object defaultNullValue) {
-        this.defaultNullValue = defaultNullValue;
-    }
 
-    public boolean isRequired() {
-        return required;
-    }
-
-    public String getDateFormat() {
-        return dateFormat;
-    }
-
-    public void setDateFormat(String dateFormat) {
-        this.dateFormat = dateFormat;
-    }
-
-    public void setRequired(boolean required) {
-        this.required = required;
-    }
-
-    public boolean isAlgrithColumn() {
-        return algrithColumn;
-    }
-
-    public void setAlgrithColumn(boolean algrithColumn) {
-        this.algrithColumn = algrithColumn;
-    }
-
-    public String getAlgrithOper() {
-        return algrithOper;
-    }
-
-    public void setAlgrithOper(String algrithOper) {
-        this.algrithOper = algrithOper;
-    }
 }
