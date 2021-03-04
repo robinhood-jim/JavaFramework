@@ -16,6 +16,7 @@
 package com.robin.core.base.util;
 
 import com.robin.core.base.annotation.MappingEntity;
+import com.robin.core.base.datameta.BaseDataBaseMeta;
 import com.robin.core.base.model.BaseObject;
 import com.robin.core.base.reflect.ClassGraphReflector;
 import com.robin.core.base.spring.SpringContextHolder;
@@ -38,12 +39,12 @@ public class ModelScriptGenerator {
         String configFile = args[0];
         String outputFile = args[1];
         if(args.length==2) {
-            generateScript(configFile,outputFile);
+            //generateScript(configFile,outputFile);
         } else {
-            generateScript(configFile,outputFile,args[2]);
+            //generateScript(configFile,outputFile,args[2]);
         }
     }
-    public static void generateScript(String dbType,String outputFile,String... packageNames){
+    public static void generateScript(String dbType, BaseDataBaseMeta meta,String outputFile, String... packageNames){
         BufferedWriter writer = null;
         try {
 
@@ -59,8 +60,8 @@ public class ModelScriptGenerator {
             writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputFile),"UTF-8"));
             StringBuilder builder = new StringBuilder();
             for(ClassInfo classInfo:classes){
-                if(classInfo.getSuperclass().loadClass().equals(BaseObject.class)) {
-                    builder.append(ModelSqlGenerator.generateCreateSql((Class<? extends BaseObject>) classInfo.loadClass(), sqlgen));
+                if(classInfo.getSuperclass().loadClass().isAssignableFrom(BaseObject.class) || classInfo.getSuperclass().loadClass().getSuperclass().isAssignableFrom(BaseObject.class)) {
+                    builder.append(ModelSqlGenerator.generateCreateSql((Class<? extends BaseObject>) classInfo.loadClass(),meta, sqlgen));
                 }
             }
             writer.write(builder.toString());

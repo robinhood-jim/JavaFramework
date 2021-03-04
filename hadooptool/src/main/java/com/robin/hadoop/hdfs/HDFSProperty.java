@@ -37,21 +37,19 @@ public class HDFSProperty {
 
     public void setHaConfig(Map<String, String> haConfig) {
         this.haConfig = haConfig;
-        if (defaultName == null) {
-            if (haConfig.containsKey(Const.HDFS_NAME_HADOOP1)) {
-                defaultName = haConfig.get(Const.HDFS_NAME_HADOOP1);
-            } else if (haConfig.containsKey(Const.HDFS_NAME_HADOOP2)) {
-                defaultName = haConfig.get(Const.HDFS_NAME_HADOOP2);
-            }
-        }
+        getDefaultName(haConfig);
     }
 
     public void setHaConfigByObj(Map<String, Object> config) {
-        Iterator<String> keyIterator = config.keySet().iterator();
-        while (keyIterator.hasNext()) {
-            String key = keyIterator.next();
-            haConfig.put(key, config.get(key).toString());
+        Iterator<Map.Entry<String,Object>> iter = config.entrySet().iterator();
+        while (iter.hasNext()) {
+            Map.Entry<String,Object> entry = iter.next();
+            haConfig.put(entry.getKey(), entry.getValue().toString());
         }
+        getDefaultName(haConfig);
+    }
+
+    private void getDefaultName(Map<String, String> haConfig) {
         if (defaultName == null) {
             if (haConfig.containsKey(Const.HDFS_NAME_HADOOP1)) {
                 defaultName = haConfig.get(Const.HDFS_NAME_HADOOP1);

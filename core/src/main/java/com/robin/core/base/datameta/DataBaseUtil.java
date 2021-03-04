@@ -47,6 +47,10 @@ public class DataBaseUtil {
     private Connection connection;
     private static Logger logger = LoggerFactory.getLogger(DataBaseUtil.class);
     private BaseDataBaseMeta dataBaseMeta;
+    private static final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+    private static final SimpleDateFormat format1 = new SimpleDateFormat("yyyyMMddhhmmss");
+    private static final SimpleDateFormat format2 = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.SSS");
+    private static final SimpleDateFormat format3 = new SimpleDateFormat("yyyy-MM-dd");
 
     public void connect(BaseDataBaseMeta meta) {
         try {
@@ -169,13 +173,7 @@ public class DataBaseUtil {
                         datameta.setIncrement(true);
                     }
                 }
-                datameta.setColumnName(columnname);
-                datameta.setColumnType(datatype);
-                datameta.setNullable(nullable);
-                datameta.setComment(comment);
-                datameta.setDataPrecise(precise);
-                datameta.setDataScale(scale);
-                datameta.setColumnLength(datalength);
+                setType(columnname, datatype, datalength, nullable, comment, precise, scale, datameta);
                 if (pklist.contains(columnname)) {
                     datameta.setPrimaryKey(true);
                 } else {
@@ -197,6 +195,16 @@ public class DataBaseUtil {
 
         }
         return columnlist;
+    }
+
+    private static void setType(String columnname, Integer datatype, String datalength, boolean nullable, String comment, String precise, String scale, DataBaseColumnMeta datameta) {
+        datameta.setColumnName(columnname);
+        datameta.setColumnType(datatype);
+        datameta.setNullable(nullable);
+        datameta.setComment(comment);
+        datameta.setDataPrecise(precise);
+        datameta.setDataScale(scale);
+        datameta.setColumnLength(datalength);
     }
 
     public static List<DataBaseColumnMeta> getTableMetaByTableName(DataSource source, String tablename, String DbOrtablespacename, String dbType) throws RuntimeException {
@@ -266,13 +274,7 @@ public class DataBaseUtil {
                         datameta.setIncrement(true);
                     }
                 }
-                datameta.setColumnName(columnname);
-                datameta.setColumnType(datatype);
-                datameta.setNullable(nullable);
-                datameta.setComment(comment);
-                datameta.setDataPrecise(precise);
-                datameta.setDataScale(scale);
-                datameta.setColumnLength(datalength);
+                setType(columnname, datatype, datalength, nullable, comment, precise, scale, datameta);
                 if (pklist != null && pklist.contains(columnname)) {
                     datameta.setPrimaryKey(true);
                 } else {
@@ -440,10 +442,7 @@ public class DataBaseUtil {
     public static Map<String, Object> transformDbTypeByObj(Object obj) {
         Map<String, Object> retMap = new HashMap<String, Object>();
         String type = null;
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-        SimpleDateFormat format1 = new SimpleDateFormat("yyyyMMddhhmmss");
-        SimpleDateFormat format2 = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.SSS");
-        SimpleDateFormat format3 = new SimpleDateFormat("yyyy-MM-dd");
+
         SimpleDateFormat targetFormat = null;
         if (obj instanceof Long) {
             type = Const.META_TYPE_BIGINT;

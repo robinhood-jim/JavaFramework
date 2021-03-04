@@ -68,7 +68,7 @@ public class SqlServerDataBaseMeta extends BaseDataBaseMeta {
 	}
 	@Override
     public BaseSqlGen getSqlGen() {
-		return new SqlServer2005Gen();
+		return SqlServer2005Gen.getInstance();
 	}
 	@Override
 	public String getCatalog(String schema) {

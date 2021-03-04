@@ -72,6 +72,7 @@ public interface BaseSqlGen {
     String getTimestampFormat();
     String getCharFormat(int length);
     String getIntegerFormat();
+    String getShortFormat();
     String getLongFormat();
     String getBlobFormat();
     String getClobFormat();

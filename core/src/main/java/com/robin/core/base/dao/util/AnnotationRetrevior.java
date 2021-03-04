@@ -65,13 +65,30 @@ public class AnnotationRetrevior {
 
     private static List<FieldContent> getMappingFields(Class<? extends BaseObject> clazz) throws DAOException {
         boolean flag = clazz.isAnnotationPresent(MappingEntity.class);
+
         List<FieldContent> list = new ArrayList<>();
         if (flag) {
-            Field[] fields = clazz.getDeclaredFields();
-            for (Field field : fields) {
+            MappingEntity entity = clazz.getAnnotation(MappingEntity.class);
+
+            Field[] fieldArr = clazz.getDeclaredFields();
+            List<Field> fields=new ArrayList<>();
+            List<Class> fieldClasses=new ArrayList<>();
+            for(int i=0;i<fieldArr.length;i++){
+                fields.add(fieldArr[i]);
+                fieldClasses.add(clazz);
+            }
+            if(clazz.getSuperclass().getSuperclass().equals(BaseObject.class)){
+                Field[] parentFields = clazz.getSuperclass().getDeclaredFields();
+                for(Field field:parentFields){
+                    fields.add(field);
+                    fieldClasses.add(clazz.getSuperclass());
+                }
+            }
+            for (int i=0;i<fields.size();i++) {
+                Field field = fields.get(i);
                 MappingField mapfield = field.getAnnotation(MappingField.class);
-                if (mapfield != null) {
-                    list.add(retrieveField(field, clazz));
+                if (mapfield != null || !entity.explicit()) {
+                    list.add(retrieveField(field, fieldClasses.get(i)));
                 }
             }
         } else {
@@ -95,9 +112,10 @@ public class AnnotationRetrevior {
         Map<String, FieldContent> map = new HashMap<>();
         if (flag) {
             Field[] fields = clazz.getDeclaredFields();
+            MappingEntity entity = clazz.getAnnotation(MappingEntity.class);
             for (Field field : fields) {
                 MappingField mapfield = field.getAnnotation(MappingField.class);
-                if (mapfield != null) {
+                if (mapfield != null || !entity.explicit()) {
                     map.put(field.getName(), retrieveField(field, clazz));
                 }
             }
@@ -185,8 +203,8 @@ public class AnnotationRetrevior {
 
     public static void validateEntity(BaseObject object) throws DAOException {
         //check model must using Annotation MappingEntity or Jpa Entity
-        if(!ReflectUtils.isAnnotationClassWithAnnotationFields(object.getClass(),MappingEntity.class,MappingField.class) && !ReflectUtils.isAnnotationClassWithAnnotationFields(object.getClass(),Entity.class,Column.class)){
-            throw new DAOException("Model object "+ object.getClass().getSimpleName() +" must using Annotation MappingEntity or Jpa Entity");
+        if (!ReflectUtils.isAnnotationClassWithAnnotationFields(object.getClass(), MappingEntity.class, MappingField.class) && !ReflectUtils.isAnnotationClassWithAnnotationFields(object.getClass(), Entity.class, Column.class)) {
+            throw new DAOException("Model object " + object.getClass().getSimpleName() + " must using Annotation MappingEntity or Jpa Entity");
         }
         Map<String, FieldContent> fieldsMap = getMappingFieldsMapCache(object.getClass());
         Iterator<Map.Entry<String, FieldContent>> iterator = fieldsMap.entrySet().iterator();
@@ -215,9 +233,10 @@ public class AnnotationRetrevior {
             throw new DAOException(ex);
         }
     }
-    public static boolean isBaseObjectClassValid(Class<? extends BaseObject> clazz) throws DAOException{
-        if(!ReflectUtils.isAnnotationClassWithAnnotationFields(clazz,MappingEntity.class,MappingField.class) && !ReflectUtils.isAnnotationClassWithAnnotationFields(clazz,Entity.class,Column.class)){
-            throw new DAOException("Model object "+clazz.getSimpleName() +" must using Annotation MappingEntity or Jpa Entity");
+
+    public static boolean isBaseObjectClassValid(Class<? extends BaseObject> clazz) throws DAOException {
+        if (!ReflectUtils.isAnnotationClassWithAnnotationFields(clazz, MappingEntity.class, MappingField.class) && !ReflectUtils.isAnnotationClassWithAnnotationFields(clazz, Entity.class, Column.class)) {
+            throw new DAOException("Model object " + clazz.getSimpleName() + " must using Annotation MappingEntity or Jpa Entity");
         }
         return true;
     }
@@ -286,6 +305,7 @@ public class AnnotationRetrevior {
     private static FieldContent retrieveField(Field field, Class<? extends BaseObject> clazz) throws DAOException {
         FieldContent content = null;
         try {
+            MappingEntity entity=clazz.getAnnotation(MappingEntity.class);
             MappingField mapfield = field.getAnnotation(MappingField.class);
             String name = field.getName();
             String colname = name.substring(0, 1).toUpperCase() + name.substring(1);
@@ -293,16 +313,20 @@ public class AnnotationRetrevior {
             Method getMethod = clazz.getDeclaredMethod("get" + colname, null);
             Type type = getMethod.getReturnType();
             Method setMethod = clazz.getDeclaredMethod("set" + colname, field.getType());
+            String fieldName = null;
+            String datatype = null;
             if (mapfield != null) {
                 String colfield = mapfield.field();
-                String datatype = mapfield.datatype();
-                String fieldName=null;
+                datatype = mapfield.datatype();
+
                 if (colfield != null && !"".equals(colfield.trim())) {
                     fieldName = colfield;
                 } else {
                     fieldName = StringUtils.getFieldNameByCamelCase(field.getName());
                 }
-                content = new AnnotationRetrevior.FieldContent(field.getName(), fieldName, field, getMethod, setMethod);
+            }
+            content = new AnnotationRetrevior.FieldContent(field.getName(), fieldName, field, getMethod, setMethod);
+            if(mapfield!=null) {
                 if (mapfield.precise() != 0) {
                     content.setPrecise(mapfield.precise());
                 }
@@ -317,58 +341,63 @@ public class AnnotationRetrevior {
                 }
                 if (mapfield.primary()) {
                     content.setPrimary(true);
-                    parsePrimaryKey(content, type);
+                    parsePrimaryKey(content, type, entity.explicit());
                 }
-                if (mapfield.sequenceName()!=null && !mapfield.sequenceName().isEmpty()) {
+                if (mapfield.sequenceName() != null && !mapfield.sequenceName().isEmpty()) {
                     content.setSequential(true);
                     content.setSequenceName(mapfield.sequenceName());
                 }
-                if (datatype == null || "".equals(datatype)) {
-                    if (type.equals(Void.class)) {
-                    } else if (type.equals(Long.class)) {
-                        content.setDataType(Const.META_TYPE_BIGINT);
-                    } else if (type.equals(Integer.class)) {
-                        content.setDataType(Const.META_TYPE_INTEGER);
-                    } else if (type.equals(Double.class)) {
-                        content.setDataType(Const.META_TYPE_NUMERIC);
-                    } else if (type.equals(Float.class)) {
-                        content.setDataType(Const.META_TYPE_NUMERIC);
-                    } else if (type.equals(String.class)) {
-                        content.setDataType(Const.META_TYPE_STRING);
-                    } else if (type.equals(java.util.Date.class)) {
-                        content.setDataType(Const.META_TYPE_TIMESTAMP);
-                    } else if (type.equals(Date.class)) {
-                        content.setDataType(Const.META_TYPE_DATE);
-                    } else if (type.equals(byte[].class)) {
-                        content.setDataType(Const.META_TYPE_BLOB);
-                    } else if (type.equals(Timestamp.class)) {
-                        content.setDataType(Const.META_TYPE_TIMESTAMP);
-                    } else {
-                        content.setDataType(Const.META_TYPE_OBJECT);
-                    }
-                } else {
-                    if ("clob".equalsIgnoreCase(datatype)) {
-                        content.setDataType(Const.META_TYPE_CLOB);
-                    } else if ("blob".equalsIgnoreCase(datatype)) {
-                        content.setDataType(Const.META_TYPE_BLOB);
-                    }
+            }
+            if (datatype == null || "".equals(datatype)) {
+                if (type.equals(Void.class)) {
+                } else if (type.equals(Long.class)) {
+                    content.setDataType(Const.META_TYPE_BIGINT);
+                } else if (type.equals(Integer.class)) {
+                    content.setDataType(Const.META_TYPE_INTEGER);
+                } else if (type.equals(Double.class)) {
+                    content.setDataType(Const.META_TYPE_NUMERIC);
+                } else if (type.equals(Float.class)) {
+                    content.setDataType(Const.META_TYPE_NUMERIC);
+                } else if (type.equals(String.class)) {
+                    content.setDataType(Const.META_TYPE_STRING);
+                } else if (type.equals(java.util.Date.class)) {
+                    content.setDataType(Const.META_TYPE_TIMESTAMP);
+                } else if (type.equals(Date.class)) {
+                    content.setDataType(Const.META_TYPE_DATE);
+                } else if (type.equals(byte[].class)) {
+                    content.setDataType(Const.META_TYPE_BLOB);
+                } else if (type.equals(Timestamp.class)) {
+                    content.setDataType(Const.META_TYPE_TIMESTAMP);
+                }else if(type.equals(Short.class)){
+                    content.setDataType(Const.META_TYPE_SHORT);
+                }
+                else {
+                    content.setDataType(Const.META_TYPE_OBJECT);
+                }
+            } else {
+                if ("clob".equalsIgnoreCase(datatype)) {
+                    content.setDataType(Const.META_TYPE_CLOB);
+                } else if ("blob".equalsIgnoreCase(datatype)) {
+                    content.setDataType(Const.META_TYPE_BLOB);
                 }
             }
 
+
         } catch (Exception ex) {
+            ex.printStackTrace();
             throw new DAOException(ex);
         }
         return content;
     }
 
 
-    private static void parsePrimaryKey(FieldContent fieldContent, Type type) {
+    private static void parsePrimaryKey(FieldContent fieldContent, Type type,boolean declareExplicit) {
         List<FieldContent> pkList = new ArrayList<>();
         if (!type.getClass().isPrimitive() && ((Class) type).getSuperclass().getCanonicalName().endsWith("BasePrimaryObject")) {
             Field[] fields = ((Class) type).getDeclaredFields();
             for (Field field : fields) {
                 MappingField mapfield = field.getAnnotation(MappingField.class);
-                if (mapfield != null) {
+                if (mapfield != null || !declareExplicit) {
                     pkList.add(retrieveField(field, (Class<? extends BaseObject>) type));
                 }
             }
@@ -413,15 +442,16 @@ public class AnnotationRetrevior {
         }
         return null;
     }
-    public static Map<String,Object> fieldContentToMap(FieldContent fieldContent){
-        Map<String,Object> retMap=new HashMap<>();
-        retMap.put("field",fieldContent.getFieldName());
-        retMap.put("datatype",fieldContent.getDataType());
-        retMap.put("precise",String.valueOf(fieldContent.getPrecise()));
-        retMap.put("scale",String.valueOf(fieldContent.getScale()));
-        retMap.put("length",String.valueOf(fieldContent.getLength()));
-        retMap.put("nullable",!fieldContent.isRequired());
-        retMap.put("increment",fieldContent.isIncrement());
+
+    public static Map<String, Object> fieldContentToMap(FieldContent fieldContent) {
+        Map<String, Object> retMap = new HashMap<>();
+        retMap.put("field", fieldContent.getFieldName());
+        retMap.put("datatype", fieldContent.getDataType());
+        retMap.put("precise", String.valueOf(fieldContent.getPrecise()));
+        retMap.put("scale", String.valueOf(fieldContent.getScale()));
+        retMap.put("length", String.valueOf(fieldContent.getLength()));
+        retMap.put("nullable", !fieldContent.isRequired());
+        retMap.put("increment", fieldContent.isIncrement());
         return retMap;
     }
 

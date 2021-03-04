@@ -77,6 +77,6 @@ public class OracleRacDataBaseMeta  extends BaseDataBaseMeta implements DataBase
 	}
 	@Override
     public BaseSqlGen getSqlGen() {
-		return new OracleSqlGen();
+		return OracleSqlGen.getInstance();
 	}
 }

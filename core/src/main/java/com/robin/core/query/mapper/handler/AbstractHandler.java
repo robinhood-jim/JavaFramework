@@ -2,6 +2,7 @@ package com.robin.core.query.mapper.handler;
 
 import com.robin.core.query.mapper.segment.*;
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.regexp.RE;
 import org.dom4j.Element;
 import org.dom4j.Node;
 
@@ -12,11 +13,20 @@ import java.util.Map;
 
 public abstract class AbstractHandler implements IHandler {
     private StringBuilder builder=new StringBuilder();
+    static final String SELECT="select";
+    static final String RESULTMAP="resultMap";
+    static final String INSERT="insert";
+    static final String UPDATE="update";
+    static final String BATCH="batch";
+    static final String INCLUDE="include";
+    static final String SCRIPT="script";
+    static final String SQL="sql";
+
     @Override
     public void analyse(Element element,String nameSpace, List<AbstractSegment> segments) {
         List<Node> elements=element.content();
-        if(elements.size()>1 && !"resultMap".equalsIgnoreCase(element.getName())) {
-            if("select".equalsIgnoreCase(element.getName()) || "update".equalsIgnoreCase(element.getName()) || "insert".equalsIgnoreCase(element.getName()) || "batch".equalsIgnoreCase(element.getName())) {
+        if(elements.size()>1 && !RESULTMAP.equalsIgnoreCase(element.getName())) {
+            if(SELECT.equalsIgnoreCase(element.getName()) || UPDATE.equalsIgnoreCase(element.getName()) || "insert".equalsIgnoreCase(element.getName()) || "batch".equalsIgnoreCase(element.getName())) {
                 doProcessElement(element,nameSpace,segments);
             }else {
                 for (Node ele : elements) {
@@ -24,7 +34,7 @@ public abstract class AbstractHandler implements IHandler {
                 }
             }
         }else{
-            if("resultMap".equalsIgnoreCase(element.getName())){
+            if(RESULTMAP.equalsIgnoreCase(element.getName())){
                 doProcessElement(element,nameSpace,segments);
             }else {
                 doProcessNode(element,nameSpace, segments);
@@ -71,27 +81,27 @@ public abstract class AbstractHandler implements IHandler {
         } else
         {
             switch (type){
-                case "include":
+                case INCLUDE:
                     segments.add(new IncludeSegment(nameSpace, id, ele.attributeValue("refid")));
                     break;
-                case "script":
+                case SCRIPT:
                     String language = ele.attributeValue("lang");
                     ScriptSegment segment = new ScriptSegment(nameSpace, id, ele.getStringValue());
                     segment.setScriptType(language);
                     segments.add(segment);
                     break;
-                case "sql":
+                case SQL:
                     segments.add(new SqlSegment(nameSpace, id, ele.getStringValue()));
                     break;
-                case "resultMap":
+                case RESULTMAP:
                     ResultMapperSegment segment1 = new ResultMapperSegment(nameSpace, id, null);
                     segment1.parse(ele);
                     segments.add(segment1);
                     break;
-                case "select":
-                case "insert":
-                case "update":
-                case "batch":
+                case SELECT:
+                case INSERT:
+                case UPDATE:
+                case BATCH:
                     List<Node> elements=ele.content();
                     List<AbstractSegment> segments1=new ArrayList<>();
                     String resultMap=ele.attributeValue("resultMap");
@@ -100,12 +110,12 @@ public abstract class AbstractHandler implements IHandler {
                         doProcessNode(node,nameSpace,segments1);
                     }
                     CompositeSegment compSeg;
-                    if("select".equalsIgnoreCase(type)){
+                    if(SELECT.equalsIgnoreCase(type)){
                         compSeg=new SelectSegment(nameSpace,id,null,type,segments1,resultMap,paramType);
                         if(ele.attributeValue("countRef")!=null){
                             ((SelectSegment) compSeg).setCountRef(ele.attributeValue("countRef"));
                         }
-                    }else if("insert".equalsIgnoreCase(type)){
+                    }else if(INSERT.equalsIgnoreCase(type)){
                         boolean useGenerateKeys=ele.attributeValue("useGeneratedKeys")!=null? "true".equalsIgnoreCase(ele.attributeValue("useGeneratedKeys")) :false;
                         compSeg=new InsertSegment(nameSpace,id,null,type,segments1,resultMap,paramType,useGenerateKeys,ele.attributeValue("keyProperty"));
                     }else{

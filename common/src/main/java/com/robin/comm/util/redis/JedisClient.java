@@ -6,20 +6,15 @@ import com.robin.comm.util.json.GsonUtil;
 import com.robin.core.base.reflect.ReflectUtils;
 import com.robin.core.fileaccess.util.AvroUtils;
 import org.apache.avro.Schema;
-import org.apache.avro.SchemaBuilder;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericRecord;
 import org.springframework.util.Assert;
-import org.springframework.util.CollectionUtils;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 
 import java.io.*;
 import java.lang.reflect.Method;
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -63,18 +58,19 @@ public class JedisClient {
         JedisPoolConfig config = new JedisPoolConfig();
         config.setMaxTotal(100);
         config.setMaxIdle(20);
-        config.setMaxWaitMillis(100000l);
-        if (passwd == null || passwd.equals(""))
+        config.setMaxWaitMillis(100000L);
+        if (passwd == null || passwd.equals("")) {
             pool = new JedisPool(config, ip, port, 100000);
-        else {
+        } else {
             pool = new JedisPool(config, ip, port, 100000, passwd);
         }
     }
 
     public void putValue(String key, Object obj, Integer expireSecond) {
         Jedis jedis = pool.getResource();
-        if (dbindex != 0)
+        if (dbindex != 0) {
             jedis.select(dbindex);
+        }
         putValue(jedis, key, obj, expireSecond);
     }
 
@@ -82,17 +78,15 @@ public class JedisClient {
         if (obj instanceof Map) {
             Map<String, Object> map = (Map<String, Object>) obj;
             Map<String, String> map1 = new HashMap<String, String>();
-            Iterator<String> iter = map.keySet().iterator();
+            Iterator<Map.Entry<String,Object>> iter = map.entrySet().iterator();
             while (iter.hasNext()) {
-                String keycol = iter.next();
-                Object tobj = map.get(keycol);
+                Map.Entry<String,Object> entry=iter.next();
                 String valstr = "";
-                if (null != tobj) {
-                    valstr = gson.toJson(tobj);
+                if (null != entry.getValue()) {
+                    valstr = gson.toJson(entry.getValue());
                 }
-                map1.put(keycol, valstr);
+                map1.put(entry.getKey(), valstr);
             }
-
             jedis.hmset(key, map1);
         } else if (obj instanceof List) {
             List list = (List) obj;
@@ -109,8 +103,9 @@ public class JedisClient {
         } else {
             jedis.set(key, obj.toString());
         }
-        if (expireSecond != null && !expireSecond.equals(-1))
+        if (expireSecond != null && !expireSecond.equals(-1)) {
             jedis.expire(key, expireSecond);
+        }
         close(jedis);
     }
 
@@ -131,8 +126,9 @@ public class JedisClient {
             outputStream.writeObject(value);
             Jedis jedis = getJedis();
             jedis.set(key.getBytes(), arrayOutputStream.toByteArray());
-            if (expireSecond != null && !expireSecond.equals(-1))
+            if (expireSecond != null && !expireSecond.equals(-1)) {
                 jedis.expire(key, expireSecond);
+            }
             close(jedis);
         } catch (Exception e) {
             e.printStackTrace();
@@ -168,14 +164,10 @@ public class JedisClient {
         jedis.sadd(key, value);
         close(jedis);
     }
-    public void putSetWithSchema(String key, List<? extends Serializable> valueObject){
+    public byte[] putSetWithSchema(Schema schema,Schema nestedSchema, List<? extends Serializable> valueObject) throws Exception{
         Assert.notEmpty(valueObject,"array is null");
         Map<String,Method> getMethods= ReflectUtils.returnGetMethods(valueObject.get(0).getClass());
-        Schema schema=AvroUtils.getSchemaFromModel(valueObject.get(0).getClass());
 
-        SchemaBuilder.FieldAssembler<Schema> assembler= SchemaBuilder.record("Nested").fields();
-        assembler.name("list").type().nullable().array().items(schema).noDefault();
-        Schema nestedSchema=assembler.endRecord();
         try {
             GenericRecord rd=new GenericData.Record(nestedSchema);
             List<GenericRecord> retList=new ArrayList<>();
@@ -184,7 +176,7 @@ public class JedisClient {
                 Iterator<Map.Entry<String, Method>> iter = getMethods.entrySet().iterator();
                 while (iter.hasNext()) {
                     Map.Entry<String, Method> entry = iter.next();
-                    genericRecord.put(entry.getKey(), retriveModelData(entry.getKey(),entry.getValue().invoke(obj, null),schema));
+                    genericRecord.put(entry.getKey(),AvroUtils.acquireGenericRecord(entry.getKey(),entry.getValue().invoke(obj, null),schema));
                 }
                 retList.add(genericRecord);
             }
@@ -195,72 +187,26 @@ public class JedisClient {
             System.out.println(bytes1.length);
             GenericRecord record=AvroUtils.parse(nestedSchema,bytes);
             System.out.println(record);
+            return bytes;
             //getJedis().sadd(key.getBytes(),AvroUtils.dataToByteWithBijection(nestedSchema,))
         }catch (Exception ex){
-            ex.printStackTrace();
+            throw ex;
         }
     }
-    private Object retriveModelData(String key,Object value,Schema schema){
-        try {
-            if(value!=null) {
-                if (value.getClass().isAssignableFrom(Serializable.class)) {
-                    GenericRecord record = new GenericData.Record(schema.getField(key).schema());
-                    Schema modelschema = schema.getField(key).schema();
-                    Map<String, Method> getMethods = ReflectUtils.returnGetMethods(value.getClass());
-                    Iterator<Map.Entry<String, Method>> iter = getMethods.entrySet().iterator();
-                    while (iter.hasNext()) {
-                        Map.Entry<String, Method> entry = iter.next();
-                        if (modelschema.getField(entry.getKey()) != null) {
-                            record.put(entry.getKey(), entry.getValue().invoke(value, null));
-                        }
-                    }
-                    return record;
-                }else if(value instanceof List){
-                    List<GenericRecord> records=new ArrayList<>();
-                    List<?> list=(List<?>) value;
-                    if(CollectionUtils.isEmpty(list)){
-                        return null;
-                    }
-                    Map<String, Method> getMethods = ReflectUtils.returnGetMethods(list.get(0).getClass());
-                    Schema eleType=schema.getField(key).schema().getTypes().get(0).getElementType();
-                    for(Object t:list){
-                        GenericRecord record=new GenericData.Record(eleType);
-                        Iterator<Map.Entry<String, Method>> iter = getMethods.entrySet().iterator();
-                        while(iter.hasNext()){
-                            Map.Entry<String, Method> entry = iter.next();
-                            record.put(entry.getKey(), retriveModelData(entry.getKey(),entry.getValue().invoke(t, null),eleType));
-                        }
-                        records.add(record);
-                    }
-                    return records;
-                }
-                else if(value.getClass().isAssignableFrom(Date.class)){
-                    return ((Date) value).getTime();
-                }else if(value.getClass().isAssignableFrom(Timestamp.class)){
-                    return ((Timestamp) value).getTime();
-                }else if(value.getClass().isAssignableFrom(LocalDateTime.class)){
-                    return ((LocalDateTime) value).toInstant(ZoneOffset.of("+8")).toEpochMilli();
-                }
-                else {
-                    return value;
-                }
-            }
-        }catch (Exception ex){
-            ex.printStackTrace();
-        }
-        return null;
-    }
+
     private Jedis getJedis(){
         Jedis jedis = pool.getResource();
-        if (dbindex != 0)
+        if (dbindex != 0) {
             jedis.select(dbindex);
+        }
         return jedis;
     }
 
     public void putPlainSet(String key, List<?> valueList) {
         Jedis jedis = pool.getResource();
-        if (dbindex != 0)
+        if (dbindex != 0) {
             jedis.select(dbindex);
+        }
         byte[][] byteArr = new byte[valueList.size()][];
         for (int i = 0; i < valueList.size(); i++) {
             try {
@@ -279,16 +225,18 @@ public class JedisClient {
 
     public void rmPlainSet(String key, String value) {
         Jedis jedis = pool.getResource();
-        if (dbindex != 0)
+        if (dbindex != 0) {
             jedis.select(dbindex);
+        }
         jedis.srem(key, value);
         close(jedis);
     }
 
     public Set<String> getPlainSet(String key) {
         Jedis jedis = pool.getResource();
-        if (dbindex != 0)
+        if (dbindex != 0) {
             jedis.select(dbindex);
+        }
         Set<String> retSet = jedis.smembers(key);
         close(jedis);
         return retSet;
@@ -297,8 +245,9 @@ public class JedisClient {
     public List getPlainSetWithObj(String key, Class<?> clazz) {
         List list = new ArrayList();
         Jedis jedis = pool.getResource();
-        if (dbindex != 0)
+        if (dbindex != 0) {
             jedis.select(dbindex);
+        }
         Set<byte[]> retSet = jedis.smembers(key.getBytes());
         Iterator<byte[]> it = retSet.iterator();
         while (it.hasNext()) {
@@ -317,28 +266,32 @@ public class JedisClient {
 
     public boolean isKeyExists(String key) {
         Jedis jedis = pool.getResource();
-        if (dbindex != 0)
+        if (dbindex != 0) {
             jedis.select(dbindex);
+        }
         boolean isExists = jedis.exists(key);
         String val = jedis.get(key);
-        if (val == null || "".equals(val))
+        if (val == null || "".equals(val)) {
             isExists = false;
+        }
         close(jedis);
         return isExists;
     }
 
     public void clearValue(String key) {
         Jedis jedis = pool.getResource();
-        if (dbindex != 0)
+        if (dbindex != 0) {
             jedis.select(dbindex);
+        }
         jedis.del(key);
         close(jedis);
     }
 
     public String getPlainValue(String key) {
         Jedis jedis = pool.getResource();
-        if (dbindex != 0)
+        if (dbindex != 0) {
             jedis.select(dbindex);
+        }
         String str = jedis.get(key);
         close(jedis);
         return str;
@@ -477,9 +430,9 @@ public class JedisClient {
     public void rpush(String key, List<?> valueList) {
         Jedis jedis = pool.getResource();
         for (Object value : valueList) {
-            if (value instanceof String)
+            if (value instanceof String) {
                 jedis.lpush(key, value.toString());
-            else if (isWrapClass(value.getClass())) {
+            } else if (isWrapClass(value.getClass())) {
                 jedis.lpush(key, value.toString());
             } else {
                 try {
@@ -498,8 +451,9 @@ public class JedisClient {
 
     public List<String> lrange(String key, int start, int end) {
         Jedis jedis = pool.getResource();
-        if (end == 0)
+        if (end == 0) {
             end = -1;
+        }
         List<String> retList = jedis.lrange(key, start, end);
         close(jedis);
         return retList;
@@ -508,8 +462,9 @@ public class JedisClient {
     public List<Object> lrangeEntity(String key, int start, int end) {
         Jedis jedis = pool.getResource();
         List<Object> list = new ArrayList<Object>();
-        if (end == 0)
+        if (end == 0) {
             end = -1;
+        }
         List<byte[]> retList = jedis.lrange(key.getBytes(), start, end);
         for (byte[] str : retList) {
             try {
@@ -605,9 +560,9 @@ public class JedisClient {
                         }
                     }
                 }
-            } else if (clazz.isAssignableFrom(String.class))
+            } else if (clazz.isAssignableFrom(String.class)) {
                 retObj = jedis.get(key);
-            else {
+            } else {
                 String val = jedis.get(key);
                 retObj=gson.fromJson(val,TypeToken.get(clazz).getType());
             }

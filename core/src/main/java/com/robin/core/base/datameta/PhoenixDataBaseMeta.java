@@ -70,7 +70,7 @@ public class PhoenixDataBaseMeta extends BaseDataBaseMeta {
 	}
 	@Override
     public BaseSqlGen getSqlGen() {
-		return new MysqlSqlGen();
+		return MysqlSqlGen.getInstance();
 	}
 
 }

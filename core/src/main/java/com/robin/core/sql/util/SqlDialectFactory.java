@@ -8,17 +8,17 @@ public class SqlDialectFactory {
     public static final BaseSqlGen getSqlGeneratorByDialect(String dbType) throws MissingConfigException {
         BaseSqlGen sqlGen=null;
         if(BaseDataBaseMeta.TYPE_MYSQL.equalsIgnoreCase(dbType)){
-            sqlGen=new MysqlSqlGen();
+            sqlGen=MysqlSqlGen.getInstance();
         }else if(BaseDataBaseMeta.TYPE_ORACLE.equalsIgnoreCase(dbType) || BaseDataBaseMeta.TYPE_ORACLERAC.equalsIgnoreCase(dbType)){
-            sqlGen=new OracleSqlGen();
+            sqlGen=OracleSqlGen.getInstance();
         }else if(BaseDataBaseMeta.TYPE_DB2.equalsIgnoreCase(dbType)){
-            sqlGen=new DB2SqlGen();
+            sqlGen=DB2SqlGen.getInstance();
         }else if(BaseDataBaseMeta.TYPE_SQLSERVER.equalsIgnoreCase(dbType)){
-            sqlGen=new SqlServer2005Gen();
+            sqlGen=SqlServer2005Gen.getInstance();
         }else if(BaseDataBaseMeta.TYPE_SYBASE.equalsIgnoreCase(dbType)){
-            sqlGen=new SybaseSqlGen();
+            sqlGen=SybaseSqlGen.getInstance();
         }else if(BaseDataBaseMeta.TYPE_PGSQL.equalsIgnoreCase(dbType)){
-            sqlGen=new PostgreSqlSqlGen();
+            sqlGen=PostgreSqlSqlGen.getInstance();
         }else {
             throw new MissingConfigException("unknow db dialect Type "+dbType);
         }

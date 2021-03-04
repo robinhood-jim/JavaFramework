@@ -17,17 +17,23 @@ package com.robin.core.sql.util;
 
 import com.robin.core.base.datameta.BaseDataBaseMeta;
 import com.robin.core.base.exception.DAOException;
-import com.robin.core.base.util.Const;
 import com.robin.core.query.util.PageQuery;
 import com.robin.core.query.util.QueryParam;
-import com.robin.core.query.util.QueryString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
-import java.util.Map;
 
 public class MysqlSqlGen extends AbstractSqlGen implements BaseSqlGen{
+
+	private static MysqlSqlGen sqlGen=new MysqlSqlGen();
+	private MysqlSqlGen(){
+
+	}
+	public static MysqlSqlGen getInstance(){
+		return sqlGen;
+	}
+
 	private Logger log=LoggerFactory.getLogger(this.getClass());
 	@Override
     public String generateCountSql(String strSQL) {

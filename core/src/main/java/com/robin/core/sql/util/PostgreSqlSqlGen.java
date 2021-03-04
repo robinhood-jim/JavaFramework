@@ -29,6 +29,13 @@ import com.robin.core.query.util.QueryParam;
 import com.robin.core.query.util.QueryString;
 
 public class PostgreSqlSqlGen extends AbstractSqlGen implements BaseSqlGen {
+	private static PostgreSqlSqlGen sqlGen=new PostgreSqlSqlGen();
+	private PostgreSqlSqlGen(){
+
+	}
+	public static PostgreSqlSqlGen getInstance(){
+		return sqlGen;
+	}
 	private Logger log=LoggerFactory.getLogger(this.getClass());
 	@Override
     public String generateCountSql(String strSQL) {

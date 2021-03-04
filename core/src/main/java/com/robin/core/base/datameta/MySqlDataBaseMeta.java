@@ -90,10 +90,12 @@ public class MySqlDataBaseMeta extends BaseDataBaseMeta implements DataBaseInter
 	}
 	@Override
     public BaseSqlGen getSqlGen() {
-		return new MysqlSqlGen();
+		return MysqlSqlGen.getInstance();
 	}
 	@Override
 	public String getCatalog(String schema) {
 		return schema;
 	}
+
+
 }

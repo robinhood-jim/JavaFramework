@@ -20,7 +20,7 @@ public class EtlStepCfg extends BaseObject {
     @MappingField
     private String name;
     @MappingField
-    private int priority;
+    private Integer priority;
 
 
 }

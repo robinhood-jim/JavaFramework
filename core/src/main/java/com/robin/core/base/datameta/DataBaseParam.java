@@ -190,6 +190,6 @@ public class DataBaseParam implements Serializable {
 	}
 	@Override
 	public int hashCode() {
-		return new String(this.getType()+"|"+this.getDatabaseName()+"|"+this.getHostName()+"|"+String.valueOf(this.getPort())).hashCode();
+		return new StringBuilder(this.getType()).append("|").append(this.getDatabaseName()).append("|").append(this.getHostName()).append("|").append(String.valueOf(this.getPort())).toString().hashCode();
 	}
 }

@@ -29,6 +29,13 @@ import com.robin.core.query.util.QueryParam;
 import com.robin.core.query.util.QueryString;
 
 public class SqlServer2005Gen extends AbstractSqlGen implements BaseSqlGen{
+	private static SqlServer2005Gen sqlGen=new SqlServer2005Gen();
+	private SqlServer2005Gen(){
+
+	}
+	public static SqlServer2005Gen getInstance(){
+		return sqlGen;
+	}
 	private Logger log=LoggerFactory.getLogger(this.getClass());
 	@Override
     public String generateCountSql(String strSQL) {
