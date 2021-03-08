@@ -116,4 +116,7 @@ public abstract class BaseDataBaseMeta implements DataBaseInterface, Serializabl
 	public void setDbType(String dbType){
 		this.dbType=dbType;
 	}
+	public String getCreateExtension(){
+		return "";
+	}
 }

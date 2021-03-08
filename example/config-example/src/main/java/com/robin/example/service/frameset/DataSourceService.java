@@ -8,8 +8,8 @@ import com.robin.core.base.service.BaseAnnotationJdbcService;
 import com.robin.core.base.service.IBaseAnnotationJdbcService;
 
 
-@Component(value = "dataSourceService")
-@Scope(value = "singleton")
-public class DataSourceService extends BaseAnnotationJdbcService<DataSource, Long> implements IBaseAnnotationJdbcService<DataSource, Long> {
-
+@Component(value="dataSourceService")
+@Scope(value="singleton")
+public class DataSourceService extends BaseAnnotationJdbcService<DataSource, Long>implements IBaseAnnotationJdbcService<DataSource, Long> {
+	
 }

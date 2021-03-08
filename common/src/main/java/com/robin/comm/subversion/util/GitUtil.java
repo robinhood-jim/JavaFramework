@@ -16,9 +16,14 @@
 package com.robin.comm.subversion.util;
 
 
+import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.dircache.DirCache;
 import org.eclipse.jgit.lib.Ref;
+import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
+import org.eclipse.jgit.transport.PushResult;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 
 import java.io.File;
@@ -64,17 +69,28 @@ public class GitUtil {
         }
     }
 
-    public static void commit(String localDir, String message) throws GitAPIException, IOException {
-        try (Git git = Git.open(new File(localDir))) {
-            git.commit().setMessage(message).call();
-            git.push().call();
-        }
+    public static Iterable<PushResult> commit(Git git, String message) throws GitAPIException, IOException {
+        git.commit().setMessage(message).call();
+        return git.push().call();
     }
 
-    public static void commit(String localDir, String message, String userName, String password) throws GitAPIException, IOException {
-        try(Git git=Git.open(new File(localDir))) {
+    public static boolean add(Git git, String filePath) throws Exception {
+        boolean runningOk = false;
+        try (Repository repository = git.getRepository()) {
+            File myFile = new File(repository.getDirectory().getParent(), filePath);
+            if (!myFile.exists()) {
+                myFile.createNewFile();
+            }
+            git.add().addFilepattern(filePath).call();
+            runningOk = true;
+        }
+        return runningOk;
+    }
+
+    public static Iterable<PushResult> commit(String localDir, String message, String userName, String password) throws GitAPIException, IOException {
+        try (Git git = Git.open(new File(localDir))) {
             git.commit().setMessage(message).call();
-            git.push().setCredentialsProvider(new UsernamePasswordCredentialsProvider(userName, password)).call();
+            return git.push().setCredentialsProvider(new UsernamePasswordCredentialsProvider(userName, password)).call();
         }
     }
 
@@ -95,5 +111,36 @@ public class GitUtil {
             git = gitMap.get(repName);
         }
         return git;
+    }
+    public static File initRepoistory(String baseDir) throws Exception{
+        File file=new File(baseDir);
+        if(file.exists()){
+            FileUtils.deleteDirectory(file);
+        }
+        try(Git git=Git.init().setDirectory(file).call()){
+            return git.getRepository().getDirectory();
+        }
+    }
+
+    public static Repository openJGitRepository() throws IOException {
+        FileRepositoryBuilder builder = new FileRepositoryBuilder();
+        return builder
+                .readEnvironment() // scan environment GIT_* variables
+                .findGitDir() // scan up the file system tree
+                .build();
+    }
+
+    public static Repository createNewRepository() throws IOException {
+        // prepare a new folder
+        File localPath = File.createTempFile("TestGitRepository", "");
+        if (!localPath.delete()) {
+            throw new IOException("Could not delete temporary file " + localPath);
+        }
+
+        // create the directory
+        Repository repository = FileRepositoryBuilder.create(new File(localPath, ".git"));
+        repository.create();
+
+        return repository;
     }
 }

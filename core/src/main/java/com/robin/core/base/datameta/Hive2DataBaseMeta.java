@@ -72,6 +72,6 @@ public class  Hive2DataBaseMeta extends BaseDataBaseMeta{
 	}
 	@Override
     public BaseSqlGen getSqlGen() {
-		return new MysqlSqlGen();
+		return MysqlSqlGen.getInstance();
 	}
 }

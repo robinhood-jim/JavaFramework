@@ -17,6 +17,7 @@ package com.robin.core.base.datameta;
 
 import com.robin.core.sql.util.BaseSqlGen;
 import com.robin.core.sql.util.MysqlSqlGen;
+import com.robin.core.sql.util.PostgreSqlSqlGen;
 
 public class PostgreSqlDataBaseMeta extends BaseDataBaseMeta{
 
@@ -67,7 +68,7 @@ public class PostgreSqlDataBaseMeta extends BaseDataBaseMeta{
 	}
 	@Override
     public BaseSqlGen getSqlGen() {
-		return new MysqlSqlGen();
+		return PostgreSqlSqlGen.getInstance();
 	}
 
 }

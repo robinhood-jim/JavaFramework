@@ -51,53 +51,38 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
 
     @Override
     public String getQueryStringPart(List<QueryParam> paramList, String linkOper) {
-        StringBuffer buffer = new StringBuffer();
-
-        for (QueryParam param : paramList) {
-            String prevoper = param.getPrevoper();
-            String nextoper = param.getNextoper();
-            if (prevoper == null || prevoper.length() == 0) {
-                prevoper = "";
-            }
-            if (nextoper == null || nextoper.length() == 0) {
-                nextoper = "";
-            }
-
-            if (param.getQueryValue() == null || "".equals(param.getQueryValue())) {
-                break;
-            }
-            fillSqlPart(linkOper, buffer, param, prevoper, nextoper);
-        }
-        String retstr = "";
-        if (buffer.length() > 0) {
-            retstr = buffer.substring(0, buffer.length() - linkOper.length());
-        }
-        return retstr;
+        return doFilterSql(paramList,linkOper);
     }
 
 
     @Override
     public String getQueryStringPart(List<QueryParam> paramList) {
+        return doFilterSql(paramList,null);
+    }
+    private String doFilterSql(List<QueryParam> paramList,String linkOper){
         StringBuffer buffer = new StringBuffer();
-        String lastoper = "";
+        String replaceStr=linkOper;
         for (QueryParam param : paramList) {
+            if (param.getQueryValue() == null || "".equals(param.getQueryValue())) {
+                continue;
+            }
             String prevoper = param.getPrevoper();
             String nextoper = param.getNextoper();
+
             if (prevoper == null || prevoper.length() == 0) {
                 prevoper = "";
             }
             if (nextoper == null || nextoper.length() == 0) {
                 nextoper = "";
             }
-            lastoper = param.getCombineOper();
-            if (param.getQueryValue() == null || "".equals(param.getQueryValue())) {
-                break;
+            if(org.apache.commons.lang3.StringUtils.isEmpty(linkOper)) {
+                replaceStr = param.getCombineOper();
             }
-            fillSqlPart(lastoper, buffer, param, prevoper, nextoper);
+            fillSqlPart(replaceStr, buffer, param, prevoper, nextoper);
         }
         String retstr = "";
         if (buffer.length() > 0) {
-            retstr = buffer.substring(0, buffer.length() - lastoper.length());
+            retstr = buffer.substring(0, buffer.length() - replaceStr.length());
         }
         return retstr;
     }
@@ -437,7 +422,10 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
             builder.append(getLongFormat());
         }else if(dataType.equals(Const.META_TYPE_INTEGER)){
             builder.append(getIntegerFormat());
-        }else if(dataType.equals(Const.META_TYPE_DOUBLE) || dataType.equals(Const.META_TYPE_NUMERIC)){
+        }else if(dataType.equals(Const.META_TYPE_SHORT)){
+            builder.append(getShortFormat());
+        }
+        else if(dataType.equals(Const.META_TYPE_DOUBLE) || dataType.equals(Const.META_TYPE_NUMERIC)){
             int precise= field.getPrecise();
             int scale=field.getScale();
             if(precise==0) {
@@ -539,6 +527,11 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
     @Override
     public String getIntegerFormat() {
         return "INT";
+    }
+
+    @Override
+    public String getShortFormat() {
+        return "SMALLINT";
     }
 
     @Override

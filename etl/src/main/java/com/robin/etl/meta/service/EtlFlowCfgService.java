@@ -28,7 +28,6 @@ public class EtlFlowCfgService extends BaseAnnotationJdbcService<EtlFlowCfg,Long
     public Map<String,Object> getCfgConfig(Long flowId){
         Map<String,Object> retMap=new HashMap<>();
         try {
-            EtlFlowCfg cfg = getEntity(flowId);
             List<EtlFlowParam> flowParamList = etlFlowParamService.queryByField("flowId", BaseObject.OPER_EQ, flowId);
             List<EtlStepCondition> conditions = etlStepConditionService.queryByField("flowId", BaseObject.OPER_EQ, flowId);
             Map<String, EtlStepCondition> parentMap = CollectionMapConvert.convertListToMap(conditions, "id");
@@ -58,7 +57,7 @@ public class EtlFlowCfgService extends BaseAnnotationJdbcService<EtlFlowCfg,Long
                     }
                 }
             });
-
+            //adjust rootNode
             EtlStepCondition rootNode = parentMap.get("NULL");
             if(null!=rootNode){
                 retMap.put("rootNode",rootNode);

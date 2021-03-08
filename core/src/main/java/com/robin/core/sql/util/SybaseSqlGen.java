@@ -26,6 +26,13 @@ import com.robin.core.query.util.QueryParam;
 import com.robin.core.query.util.QueryString;
 
 public class SybaseSqlGen extends AbstractSqlGen implements BaseSqlGen{
+	private static SybaseSqlGen sqlGen=new SybaseSqlGen();
+	private SybaseSqlGen(){
+
+	}
+	public static SybaseSqlGen getInstance(){
+		return sqlGen;
+	}
 	@Override
     public String generateCountSql(String strSQL) {
 

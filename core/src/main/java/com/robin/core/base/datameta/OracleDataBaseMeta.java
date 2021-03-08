@@ -15,15 +15,23 @@
  */
 package com.robin.core.base.datameta;
 
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import com.robin.core.sql.util.BaseSqlGen;
 import com.robin.core.sql.util.OracleSqlGen;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.util.CollectionUtils;
 
 public class OracleDataBaseMeta extends BaseDataBaseMeta implements DataBaseInterface{
 	public static final String ORA_TYPE_NORMAL="0";
 	public static final String ORA_TYPE_DATABASE="1";
 	public static final String ORA_TYPE_CLUSTER="2";
+	private String tablespace;
+	private Map<String,String> storage;
+	private LinkedHashMap<String,String> partitionMap;
+
 	public OracleDataBaseMeta(DataBaseParam param) {
 		super(param);
 		setDbType(BaseDataBaseMeta.TYPE_ORACLE);
@@ -89,6 +97,24 @@ public class OracleDataBaseMeta extends BaseDataBaseMeta implements DataBaseInte
 	}
 	@Override
     public BaseSqlGen getSqlGen() {
-		return new OracleSqlGen();
+		return OracleSqlGen.getInstance();
+	}
+
+	@Override
+	public String getCreateExtension() {
+		StringBuilder builder=new StringBuilder();
+		if(!StringUtils.isEmpty(tablespace)){
+			builder.append(" TABLESPACE ").append(tablespace);
+		}
+		if(!CollectionUtils.isEmpty(storage)){
+			builder.append(" storage (");
+			Iterator<Map.Entry<String,String>> iterator=storage.entrySet().iterator();
+			while(iterator.hasNext()){
+				Map.Entry<String,String> entry=iterator.next();
+				builder.append(entry.getKey()).append(" ").append(entry.getValue()).append("\n");
+			}
+			builder.append(")");
+		}
+		return builder.toString();
 	}
 }

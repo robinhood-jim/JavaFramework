@@ -20,8 +20,8 @@ public class FsInboundComponent extends AbstractComponent {
 
     }
 
-
-    protected boolean prepare(String cycle) {
+    @Override
+    public boolean prepare(String cycle) {
         try {
             jobContext.getInputMeta().setPath(parseProcessFsPath(cycle));
             iterator = TextFileIteratorFactory.getProcessIteratorByType(jobContext.getInputMeta());
@@ -31,8 +31,8 @@ public class FsInboundComponent extends AbstractComponent {
         return false;
     }
 
-
-    protected boolean finish(String cycle) {
+    @Override
+    public boolean finish(String cycle) {
         try {
             if (null != iterator) {
                 iterator.close();
@@ -46,5 +46,10 @@ public class FsInboundComponent extends AbstractComponent {
 
     public AbstractFileIterator getResourceIterator(){
         return iterator;
+    }
+
+    @Override
+    public Integer doExecute() {
+        return null;
     }
 }

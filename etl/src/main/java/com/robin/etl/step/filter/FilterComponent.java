@@ -37,6 +37,21 @@ public class FilterComponent extends AbstractComponent {
         }
     }
 
+    @Override
+    public boolean prepare(String cycle) {
+        return false;
+    }
+
+    @Override
+    public boolean finish(String cycle) {
+        return false;
+    }
+
+    @Override
+    public Integer doExecute() {
+        return null;
+    }
+
     public boolean adjustByRecord(Map<String,Object> recordMap) throws Exception{
         try {
             Bindings bindings = executor.createBindings();

@@ -666,13 +666,13 @@ public class HbaseBaseDao {
 		if(valueMap==null || valueMap.isEmpty()) {
             return filterlist;
         }
-		Iterator<String> iter=valueMap.keySet().iterator();
+		Iterator<Map.Entry<String,String>> iter=valueMap.entrySet().iterator();
 		while(iter.hasNext()){
 			Filter filter=null;
-			String familyName=iter.next();
-			String oper=valueMap.get(familyName);
+			Map.Entry<String,String> entry=iter.next();
+			String oper=entry.getValue();
 			String[] arr=oper.split(",");
-			filter=new SingleColumnValueFilter(Bytes.toBytes(familyName),Bytes.toBytes(arr[0]),CompareOp.EQUAL, Bytes.toBytes(arr[1]));
+			filter=new SingleColumnValueFilter(Bytes.toBytes(entry.getKey()),Bytes.toBytes(arr[0]),CompareOp.EQUAL, Bytes.toBytes(arr[1]));
 			filterlist.addFilter(filter);
 		}
 		return filterlist;

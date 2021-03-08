@@ -3,12 +3,14 @@ package com.robin.etl.meta.model;
 import com.robin.core.base.annotation.MappingEntity;
 import com.robin.core.base.annotation.MappingField;
 import com.robin.core.base.model.BaseObject;
+import lombok.Data;
 
 /**
  * @author robinjim
  * @version 1.0
  */
 @MappingEntity(table = "t_step_param")
+@Data
 public class EtlStepParam extends BaseObject {
     @MappingField(primary = true,increment = true)
     private Long id;
@@ -20,46 +22,8 @@ public class EtlStepParam extends BaseObject {
     private String paramName;
     @MappingField(field = "param_value")
     private String paramValue;
-    @MappingField(field = "is_valid")
-    private String isvalid;
 
-    public Long getId() {
-        return id;
-    }
+    private String status;
 
-    public void setId(Long id) {
-        this.id = id;
-    }
 
-    public Long getStepId() {
-        return stepId;
-    }
-
-    public void setStepId(Long stepId) {
-        this.stepId = stepId;
-    }
-
-    public String getParamName() {
-        return paramName;
-    }
-
-    public void setParamName(String paramName) {
-        this.paramName = paramName;
-    }
-
-    public String getParamValue() {
-        return paramValue;
-    }
-
-    public void setParamValue(String paramValue) {
-        this.paramValue = paramValue;
-    }
-
-    public String getIsvalid() {
-        return isvalid;
-    }
-
-    public void setIsvalid(String isvalid) {
-        this.isvalid = isvalid;
-    }
 }

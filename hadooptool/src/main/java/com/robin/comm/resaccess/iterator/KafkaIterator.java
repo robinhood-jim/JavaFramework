@@ -42,8 +42,9 @@ public class KafkaIterator extends AbstractQueueIterator {
                 "org.apache.kafka.common.serialization.StringDeserializer");
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
                 "org.apache.kafka.common.serialization.ByteArraySerializer");
-        if(null!=colmeta.getResourceCfgMap().get("resetType"))
-        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+        if(null!=colmeta.getResourceCfgMap().get("resetType")) {
+            props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+        }
         if(null!=colmeta.getResourceCfgMap().get("pollSeconds") &&
                 !StringUtils.isEmpty(colmeta.getResourceCfgMap().get("pollSeconds").toString()) && NumberUtils.isDigits(colmeta.getResourceCfgMap().get("pollSeconds").toString())){
             pollSeconds=Integer.parseInt(colmeta.getResourceCfgMap().get("pollSeconds").toString());

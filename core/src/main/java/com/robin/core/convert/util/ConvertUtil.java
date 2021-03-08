@@ -280,57 +280,57 @@ public class ConvertUtil {
         }
         DateTimeFormatter formatter=null;
         Object ret = null;
-        if (type.isAssignableFrom(Integer.class)) {
-            ret = Integer.parseInt(strValue.toString());
-        } else if (type.isAssignableFrom(Long.class)) {
-            ret = Long.parseLong(strValue.toString());
-        } else if (type.isAssignableFrom(Float.class)) {
-            ret = Float.parseFloat(strValue.toString());
-        } else if (type.isAssignableFrom(Double.class)) {
-            ret = Double.parseDouble(strValue.toString());
-        }else if(type.isAssignableFrom(Short.class)){
-            ret=Short.valueOf(strValue.toString());
-        }else if(type.isAssignableFrom(BigDecimal.class)){
-            ret=BigDecimal.valueOf(Double.valueOf(strValue.toString()));
-        }
-        else if (type.isAssignableFrom(java.util.Date.class) || type.isAssignableFrom(LocalDateTime.class) || type.isAssignableFrom(Timestamp.class)) {
-            String value = strValue.toString().trim();
-            if(defaultDateTimeFormatter.length==0) {
-                formatter = getFormatter(value);
-            }else{
-                if(formatter==null) {
-                    formatter = DateTimeFormatter.ofPattern(defaultDateTimeFormatter[0]);
-                }
-            }
-            if(null!=formatter) {
-                LocalDateTime localDateTime = LocalDateTime.parse(value, formatter);
-                if(type.isAssignableFrom(java.util.Date.class)){
-                    ret=new java.util.Date(localDateTime.toInstant(ZoneOffset.ofHours(8)).toEpochMilli());
-                }else if(type.isAssignableFrom(Timestamp.class)){
-                    ret=new Timestamp(localDateTime.toInstant(ZoneOffset.ofHours(8)).toEpochMilli());
-                }else if(type.isAssignableFrom(LocalDateTime.class)) {
-                    ret = localDateTime;
-                }
-            }
-
-        } else if (type.isAssignableFrom(String.class)) {
-            ret = strValue.toString();
-        } else {
-
-            if (type.isAssignableFrom(byte.class)) {
-                if (!strValue.toString().isEmpty()) {
-                    Method method = type.getMethod("valueOf", new Class[]{"java.lang.String" .getClass()});
-                    if (method != null) {
-                        ret = method.invoke(Class.forName("java.lang.Byte"), new Object[]{strValue.toString()});
-                    }
+        if(!StringUtils.isEmpty(strValue.toString())) {
+            if (type.isAssignableFrom(Integer.class)) {
+                ret = Integer.parseInt(strValue.toString());
+            } else if (type.isAssignableFrom(Long.class)) {
+                ret = Long.parseLong(strValue.toString());
+            } else if (type.isAssignableFrom(Float.class)) {
+                ret = Float.parseFloat(strValue.toString());
+            } else if (type.isAssignableFrom(Double.class)) {
+                ret = Double.parseDouble(strValue.toString());
+            } else if (type.isAssignableFrom(Short.class)) {
+                ret = Short.valueOf(strValue.toString());
+            } else if (type.isAssignableFrom(BigDecimal.class)) {
+                ret = BigDecimal.valueOf(Double.valueOf(strValue.toString()));
+            } else if (type.isAssignableFrom(java.util.Date.class) || type.isAssignableFrom(LocalDateTime.class) || type.isAssignableFrom(Timestamp.class)) {
+                String value = strValue.toString().trim();
+                if (defaultDateTimeFormatter.length == 0) {
+                    formatter = getFormatter(value);
                 } else {
-                    ret = null;
+                    if (formatter == null) {
+                        formatter = DateTimeFormatter.ofPattern(defaultDateTimeFormatter[0]);
+                    }
                 }
-            }else if(type.isAssignableFrom(byte[].class)){
-                ret=strValue.toString().getBytes();
-            }
-            else {
-                ret = strValue;
+                if (null != formatter) {
+                    LocalDateTime localDateTime = LocalDateTime.parse(value, formatter);
+                    if (type.isAssignableFrom(java.util.Date.class)) {
+                        ret = new java.util.Date(localDateTime.toInstant(ZoneOffset.ofHours(8)).toEpochMilli());
+                    } else if (type.isAssignableFrom(Timestamp.class)) {
+                        ret = new Timestamp(localDateTime.toInstant(ZoneOffset.ofHours(8)).toEpochMilli());
+                    } else if (type.isAssignableFrom(LocalDateTime.class)) {
+                        ret = localDateTime;
+                    }
+                }
+
+            } else if (type.isAssignableFrom(String.class)) {
+                ret = strValue.toString();
+            } else {
+
+                if (type.isAssignableFrom(byte.class)) {
+                    if (!strValue.toString().isEmpty()) {
+                        Method method = type.getMethod("valueOf", new Class[]{"java.lang.String".getClass()});
+                        if (method != null) {
+                            ret = method.invoke(Class.forName("java.lang.Byte"), new Object[]{strValue.toString()});
+                        }
+                    } else {
+                        ret = null;
+                    }
+                } else if (type.isAssignableFrom(byte[].class)) {
+                    ret = strValue.toString().getBytes();
+                } else {
+                    ret = strValue;
+                }
             }
         }
         return ret;

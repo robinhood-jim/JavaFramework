@@ -197,9 +197,10 @@ public abstract class BaseCrudController<O extends BaseObject, P extends Seriali
         return retMap;
     }
 
-    protected Map<String, Object> doQuery(Map<String,String> params, PageQuery query) {
+    protected Map<String, Object> doQuery(HttpServletRequest request,Map<String,String> params, PageQuery query) {
         Map<String, Object> retMap = new HashMap<>();
         try {
+            wrapQuery(request,query);
             if (query.getParameters().isEmpty() && params!=null) {
                 query.setParameters(params);
             }

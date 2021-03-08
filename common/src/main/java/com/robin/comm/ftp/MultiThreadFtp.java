@@ -97,7 +97,6 @@ public class MultiThreadFtp extends SimpleFtp {
                           long partsize, long totalsize, Map<Integer, Boolean> executeMap, List<Boolean> boolTag) {
             this.remote = remote;
             this.local = local;
-            this.remote = remote;
             this.retryNums = retryNums;
             this.totalsize = totalsize;
             this.part = part;

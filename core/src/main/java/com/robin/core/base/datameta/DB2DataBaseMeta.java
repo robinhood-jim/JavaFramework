@@ -19,6 +19,8 @@ import com.robin.core.sql.util.BaseSqlGen;
 import com.robin.core.sql.util.DB2SqlGen;
 
 public class DB2DataBaseMeta extends BaseDataBaseMeta implements DataBaseInterface {
+	private boolean logged;
+	private String tablespace;
 
 	public DB2DataBaseMeta(DataBaseParam param) {
 		super(param);
@@ -65,7 +67,7 @@ public class DB2DataBaseMeta extends BaseDataBaseMeta implements DataBaseInterfa
 	}
 	@Override
     public BaseSqlGen getSqlGen() {
-		return new DB2SqlGen();
+		return DB2SqlGen.getInstance();
 	}
 
 }

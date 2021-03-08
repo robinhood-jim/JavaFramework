@@ -49,8 +49,8 @@ public class SysResourceService extends BaseAnnotationJdbcService<SysResource, L
 		if(delList!=null && !delList.isEmpty()){
 			for (String delId:delList) {
 				SysResourceUser vo=new SysResourceUser();
-				vo.setUserId(new Integer(userId));
-				vo.setResId(new Integer(delId));
+				vo.setUserId(Integer.valueOf(userId));
+				vo.setResId(Integer.valueOf(delId));
 				vo.setAssignType(SysResourceUser.ASSIGN_DEL);
 				vo.setStatus("1");
 				this.getJdbcDao().createVO(vo);

@@ -47,20 +47,20 @@ public class DataBaseUtil {
     private Connection connection;
     private static Logger logger = LoggerFactory.getLogger(DataBaseUtil.class);
     private BaseDataBaseMeta dataBaseMeta;
+    private static final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+    private static final SimpleDateFormat format1 = new SimpleDateFormat("yyyyMMddhhmmss");
+    private static final SimpleDateFormat format2 = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.SSS");
+    private static final SimpleDateFormat format3 = new SimpleDateFormat("yyyy-MM-dd");
 
-    public void connect(BaseDataBaseMeta meta) {
-        try {
-            dataBaseMeta = meta;
-            if (connection == null) {
-                Class.forName(meta.getParam().getDriverClassName());
-                String url = meta.getUrl();
-                if (url == null || "".equals(url)) {
-                    url = meta.getUrl();
-                }
-                connection = DriverManager.getConnection(url, meta.getParam().getUserName(), meta.getParam().getPasswd());
+    public void connect(BaseDataBaseMeta meta) throws ClassNotFoundException, SQLException {
+        dataBaseMeta = meta;
+        if (connection == null) {
+            Class.forName(meta.getParam().getDriverClassName());
+            String url = meta.getUrl();
+            if (url == null || "".equals(url)) {
+                url = meta.getUrl();
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+            connection = DriverManager.getConnection(url, meta.getParam().getUserName(), meta.getParam().getPasswd());
         }
     }
 
@@ -75,64 +75,39 @@ public class DataBaseUtil {
     }
 
 
-    public List<String> getAllShcema() throws Exception {
+    public List<String> getAllShcema() throws SQLException {
         List<String> schemalist = new ArrayList<String>();
-        Statement stmt = null;
-        try {
-            stmt = connection.createStatement();
-            DatabaseMetaData meta = connection.getMetaData();
-            ResultSet rs1 = meta.getSchemas();
-
+        DatabaseMetaData meta = connection.getMetaData();
+        try (ResultSet rs1 = meta.getSchemas()) {
             while (rs1.next()) {
                 String schemaname = rs1.getString("TABLE_SCHEM");
                 schemalist.add(schemaname);
             }
             if (schemalist.isEmpty()) {
-                rs1 = meta.getCatalogs();
+                try (ResultSet rs2 = meta.getCatalogs()) {
+                    while (rs2.next()) {
+                        String schemaname = rs2.getString("TABLE_CAT");
+                        schemalist.add(schemaname);
+                    }
+                }
+            }
+            return schemalist;
+        }
+    }
+
+    public static List<String> getAllShcema(DataSource source) throws SQLException {
+        List<String> schemalist = new ArrayList<String>();
+        try (Connection conn = source.getConnection()) {
+            DatabaseMetaData meta = conn.getMetaData();
+            try (ResultSet rs1 = meta.getSchemas()) {
                 while (rs1.next()) {
-                    String schemaname = rs1.getString("TABLE_CAT");
+                    String schemaname = rs1.getString("TABLE_SCHEM");
                     schemalist.add(schemaname);
                 }
             }
-
-        } catch (Exception e) {
-            throw e;
-
-        } finally {
-            try {
-                if (stmt != null) {
-                    stmt.close();
-                    stmt = null;
-                }
-
-            } catch (Exception ex) {
-
-            }
+            return schemalist;
         }
-        return schemalist;
-    }
 
-    public static List<String> getAllShcema(DataSource source) throws Exception {
-        List<String> schemalist = new ArrayList<String>();
-        Connection conn = null;
-        try {
-            conn = source.getConnection();
-            DatabaseMetaData meta = conn.getMetaData();
-            ResultSet rs1 = meta.getSchemas();
-            while (rs1.next()) {
-                String schemaname = rs1.getString("TABLE_SCHEM");
-                schemalist.add(schemaname);
-            }
-        } catch (Exception e) {
-            throw e;
-        } finally {
-            try {
-                conn.close();
-            } catch (Exception ex) {
-
-            }
-        }
-        return schemalist;
     }
 
 
@@ -144,13 +119,10 @@ public class DataBaseUtil {
         return scanAllTable(source.getConnection(), schema, datameta);
     }
 
-    public List<DataBaseColumnMeta> getTableMetaByTableName(String tablename, String DbOrtablespacename, BaseDataBaseMeta basemeta) throws Exception {
+    public List<DataBaseColumnMeta> getTableMetaByTableName(String tablename, String DbOrtablespacename, BaseDataBaseMeta basemeta) throws SQLException {
         List<DataBaseColumnMeta> columnlist = new ArrayList<DataBaseColumnMeta>();
-        Statement stmt = null;
-        try {
-            stmt = connection.createStatement();
-            DatabaseMetaData meta = connection.getMetaData();
-            ResultSet rs = meta.getColumns(dataBaseMeta.getCatalog(DbOrtablespacename), DbOrtablespacename, tablename, null);
+        DatabaseMetaData meta = connection.getMetaData();
+        try (Statement stmt = connection.createStatement(); ResultSet rs = meta.getColumns(dataBaseMeta.getCatalog(DbOrtablespacename), DbOrtablespacename, tablename, null)) {
             // all pk column
             List<String> pklist = this.getAllPrimaryKeyByTableName(tablename, DbOrtablespacename);
             while (rs.next()) {
@@ -169,13 +141,7 @@ public class DataBaseUtil {
                         datameta.setIncrement(true);
                     }
                 }
-                datameta.setColumnName(columnname);
-                datameta.setColumnType(datatype);
-                datameta.setNullable(nullable);
-                datameta.setComment(comment);
-                datameta.setDataPrecise(precise);
-                datameta.setDataScale(scale);
-                datameta.setColumnLength(datalength);
+                setType(columnname, datatype, datalength, nullable, comment, precise, scale, datameta);
                 if (pklist.contains(columnname)) {
                     datameta.setPrimaryKey(true);
                 } else {
@@ -183,57 +149,34 @@ public class DataBaseUtil {
                 }
                 columnlist.add(datameta);
             }
-            stmt.close();
-            stmt = null;
-
-        } catch (Exception e) {
-            logger.error("", e);
-            throw e;
-        } finally {
-            if (stmt != null) {
-                stmt.close();
-                stmt = null;
-            }
-
+            return columnlist;
         }
-        return columnlist;
     }
 
-    public static List<DataBaseColumnMeta> getTableMetaByTableName(DataSource source, String tablename, String DbOrtablespacename, String dbType) throws RuntimeException {
-        Connection conn;
-        try {
-            try {
-                conn = source.getConnection();
-            } catch (Exception ex) {
-                throw new RuntimeException("failed to get Connection from " + ex.getMessage());
-            }
+    private static void setType(String columnname, Integer datatype, String datalength, boolean nullable, String comment, String precise, String scale, DataBaseColumnMeta datameta) {
+        datameta.setColumnName(columnname);
+        datameta.setColumnType(datatype);
+        datameta.setNullable(nullable);
+        datameta.setComment(comment);
+        datameta.setDataPrecise(precise);
+        datameta.setDataScale(scale);
+        datameta.setColumnLength(datalength);
+    }
+
+    public static List<DataBaseColumnMeta> getTableMetaByTableName(DataSource source, String tablename, String DbOrtablespacename, String dbType) throws SQLException {
+        try (Connection conn = source.getConnection()) {
             return getTableMetaByTableName(conn, tablename, DbOrtablespacename, dbType);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        } finally {
-
         }
-        return null;
     }
 
-    public static List<DataBaseColumnMeta> getTableMetaByTableName(JdbcDao dao, String tablename, String DbOrtablespacename, String dbType) throws RuntimeException {
-
-        try {
-            return getTableMetaByTableName(dao.getDataSource(), tablename, DbOrtablespacename, dbType);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        } finally {
-
-        }
-        return null;
+    public static List<DataBaseColumnMeta> getTableMetaByTableName(JdbcDao dao, String tablename, String DbOrtablespacename, String dbType) throws SQLException {
+        return getTableMetaByTableName(dao.getDataSource(), tablename, DbOrtablespacename, dbType);
     }
 
-    public static List<DataBaseColumnMeta> getTableMetaByTableName(Connection conn, String tablename, String DbOrtablespacename, String dbType) throws Exception {
+    public static List<DataBaseColumnMeta> getTableMetaByTableName(Connection conn, String tablename, String DbOrtablespacename, String dbType) throws SQLException {
         List<DataBaseColumnMeta> columnlist = new ArrayList<DataBaseColumnMeta>();
-
-        try {
-            DatabaseMetaData meta = conn.getMetaData();
-            ResultSet rs = meta.getColumns(null, DbOrtablespacename, tablename, null);
+        DatabaseMetaData meta = conn.getMetaData();
+        try(ResultSet rs = meta.getColumns(null, DbOrtablespacename, tablename, null);) {
             List<String> pklist = null;
             try {
                 pklist = DataBaseUtil.getAllPrimaryKeyByTableName(conn, tablename, DbOrtablespacename);
@@ -259,20 +202,14 @@ public class DataBaseUtil {
 
                 DataBaseColumnMeta datameta = new DataBaseColumnMeta();
                 //SqlServer2005 may failed for not support  get AUTOINCREMENT  attribute
-                if (dbType!=BaseDataBaseMeta.TYPE_ORACLE && dbType!=BaseDataBaseMeta.TYPE_ORACLERAC && dbType!=BaseDataBaseMeta.TYPE_HIVE
-                        && dbType!=BaseDataBaseMeta.TYPE_HIVE2 && dbType!=BaseDataBaseMeta.TYPE_PHONEIX) {
+                if (dbType != BaseDataBaseMeta.TYPE_ORACLE && dbType != BaseDataBaseMeta.TYPE_ORACLERAC && dbType != BaseDataBaseMeta.TYPE_HIVE
+                        && dbType != BaseDataBaseMeta.TYPE_HIVE2 && dbType != BaseDataBaseMeta.TYPE_PHONEIX) {
                     String autoInc = rs.getString("IS_AUTOINCREMENT");
                     if (autoInc != null && "YES".equals(autoInc)) {
                         datameta.setIncrement(true);
                     }
                 }
-                datameta.setColumnName(columnname);
-                datameta.setColumnType(datatype);
-                datameta.setNullable(nullable);
-                datameta.setComment(comment);
-                datameta.setDataPrecise(precise);
-                datameta.setDataScale(scale);
-                datameta.setColumnLength(datalength);
+                setType(columnname, datatype, datalength, nullable, comment, precise, scale, datameta);
                 if (pklist != null && pklist.contains(columnname)) {
                     datameta.setPrimaryKey(true);
                 } else {
@@ -280,102 +217,55 @@ public class DataBaseUtil {
                 }
                 columnlist.add(datameta);
             }
-        } catch (Exception e) {
-            logger.error("", e);
-            throw e;
-        } finally {
+            return columnlist;
         }
-        return columnlist;
     }
 
-    public List<String> getAllPrimaryKeyByTableName(String tableName, String schema) throws Exception {
+    public List<String> getAllPrimaryKeyByTableName(String tableName, String schema) throws SQLException {
+        return getAllPrimaryKeyByTableName(this.connection, tableName, schema);
+    }
+
+    public static List<String> getAllPrimaryKeyByTableName(Connection conn, String tableName, String schema) throws SQLException {
         List<String> tablelist = new ArrayList<String>();
-        ResultSet rs1 = null;
-        try {
-            DatabaseMetaData meta = connection.getMetaData();
-            rs1 = meta.getPrimaryKeys(dataBaseMeta.getCatalog(schema), schema, tableName);
+        DatabaseMetaData meta = conn.getMetaData();
+        try(ResultSet rs1= meta.getPrimaryKeys(null, schema, tableName)) {
             while (rs1.next()) {
                 String columnName = rs1.getString("COLUMN_NAME");
                 tablelist.add(columnName);
             }
-        } catch (Exception e) {
-            throw e;
-        } finally {
-            try {
-                rs1.close();
-            } catch (Exception ex) {
-
-            }
+            return tablelist;
         }
-        return tablelist;
+
     }
 
-    public static List<String> getAllPrimaryKeyByTableName(Connection conn, String tableName, String schema) throws Exception {
-        List<String> tablelist = new ArrayList<String>();
-        ResultSet rs1 = null;
-        try {
-            DatabaseMetaData meta = conn.getMetaData();
-            rs1 = meta.getPrimaryKeys(null, schema, tableName);
-            while (rs1.next()) {
-                String columnName = rs1.getString("COLUMN_NAME");
-                tablelist.add(columnName);
-            }
-        } catch (Exception e) {
-            throw e;
-        } finally {
-            try {
-                rs1.close();
-            } catch (Exception ex) {
-
-            }
-        }
-        return tablelist;
-    }
-    public static List<DataBaseForeignMeta> getForeignKeys(Connection conn, String tableName, String schema) throws SQLException{
-        Assert.notNull(conn,"connection is null");
-        ResultSet rs=null;
-        List<DataBaseForeignMeta> foreignMetas=new ArrayList<>();
-        try{
-            DatabaseMetaData meta = conn.getMetaData();
-            rs=meta.getExportedKeys(null,schema,tableName);
-            while(rs.next()){
+    public static List<DataBaseForeignMeta> getForeignKeys(Connection conn, String tableName, String schema) throws SQLException {
+        Assert.notNull(conn, "connection is null");
+        List<DataBaseForeignMeta> foreignMetas = new ArrayList<>();
+        DatabaseMetaData meta = conn.getMetaData();
+        try(ResultSet rs=meta.getExportedKeys(null, schema, tableName)) {
+            while (rs.next()) {
                 String fkTableName = rs.getString("FKTABLE_NAME");
                 String fkColumnName = rs.getString("FKCOLUMN_NAME");
                 String pkName = rs.getString("PKCOLUMN_NAME");
                 int fkSequence = rs.getInt("KEY_SEQ");
-                foreignMetas.add(new DataBaseForeignMeta(fkTableName,fkColumnName,pkName,fkSequence));
+                foreignMetas.add(new DataBaseForeignMeta(fkTableName, fkColumnName, pkName, fkSequence));
             }
             return foreignMetas;
-        }catch (SQLException ex){
-            throw ex;
-        }finally {
-            if(rs!=null){
-                try{
-                    rs.close();
-                }catch (SQLException ex){
-                    throw  ex;
-                }
-            }
         }
     }
 
-    public static List<DataBaseColumnMeta> getQueryMeta(DataSource source, String sql) throws Exception {
-        Connection conn = null;
-        conn = source.getConnection();
-        return getQueryMeta(conn, sql);
+    public static List<DataBaseColumnMeta> getQueryMeta(DataSource source, String sql) throws SQLException {
+        try(Connection conn = source.getConnection()) {
+            return getQueryMeta(conn, sql);
+        }
     }
 
-    public static List<DataBaseColumnMeta> getQueryMeta(Connection conn, String sql) throws Exception {
+    public static List<DataBaseColumnMeta> getQueryMeta(Connection conn, String sql) throws SQLException {
         List<DataBaseColumnMeta> columnlist = new ArrayList<DataBaseColumnMeta>();
-        Statement stmt = null;
-        ResultSet rs = null;
+
         ResultSetMetaData rsmeta = null;
-        try {
-            String querySql = "select * from (" + sql + ") a where 1=0";
-            stmt = conn.createStatement();
-            // Hive and Phoneix now do not support this feature
-            //stmt.setEscapeProcessing(true);
-            rs = stmt.executeQuery(querySql);
+        String querySql = "select * from (" + sql + ") a where 1=0";
+        try(Statement stmt=conn.createStatement();ResultSet rs=stmt.executeQuery(querySql)) {
             rsmeta = rs.getMetaData();
             int columnnum = rsmeta.getColumnCount();
             for (int i = 0; i < columnnum; i++) {
@@ -392,24 +282,8 @@ public class DataBaseUtil {
                 datameta.setDataPrecise(String.valueOf(rsmeta.getPrecision(i + 1)));
                 columnlist.add(datameta);
             }
-        } catch (Exception ex) {
-            throw ex;
-        } finally {
-            if (rsmeta != null) {
-                rsmeta = null;
-            }
-            if (rs != null) {
-                DbUtils.closeQuietly(rs);
-            }
-            if (stmt != null) {
-                DbUtils.closeQuietly(stmt);
-            }
-            if (conn != null) {
-                DbUtils.closeQuietly(conn);
-            }
-
+            return columnlist;
         }
-        return columnlist;
     }
 
     public static String translateDbType(Integer dbType) {
@@ -440,10 +314,7 @@ public class DataBaseUtil {
     public static Map<String, Object> transformDbTypeByObj(Object obj) {
         Map<String, Object> retMap = new HashMap<String, Object>();
         String type = null;
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-        SimpleDateFormat format1 = new SimpleDateFormat("yyyyMMddhhmmss");
-        SimpleDateFormat format2 = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.SSS");
-        SimpleDateFormat format3 = new SimpleDateFormat("yyyy-MM-dd");
+
         SimpleDateFormat targetFormat = null;
         if (obj instanceof Long) {
             type = Const.META_TYPE_BIGINT;
@@ -550,29 +421,30 @@ public class DataBaseUtil {
         }
         return retObj;
     }
-    public String generateCreateTableSql(BaseDataBaseMeta meta, List<DataBaseColumnMeta> columnMetas,String tableName,List<String> primaryKeys){
-        BaseSqlGen sqlGen= SqlDialectFactory.getSqlGeneratorByDialect(meta.getDbType());
-        Map<String,List<DataBaseColumnMeta>> map= columnMetas.stream().collect(Collectors.groupingBy(DataBaseColumnMeta::getColumnName));
-        StringBuilder builder=new StringBuilder();
+
+    public String generateCreateTableSql(BaseDataBaseMeta meta, List<DataBaseColumnMeta> columnMetas, String tableName, List<String> primaryKeys) {
+        BaseSqlGen sqlGen = SqlDialectFactory.getSqlGeneratorByDialect(meta.getDbType());
+        Map<String, List<DataBaseColumnMeta>> map = columnMetas.stream().collect(Collectors.groupingBy(DataBaseColumnMeta::getColumnName));
+        StringBuilder builder = new StringBuilder();
         builder.append("create table ");
         if (!StringUtils.isEmpty(meta.getParam().getDatabaseName())) {
             builder.append(meta.getParam().getDatabaseName()).append(".");
         }
         builder.append(tableName).append("(").append("\n");
-        columnMetas.forEach(f->{
-            if(primaryKeys.contains(f.getColumnName())){
+        columnMetas.forEach(f -> {
+            if (primaryKeys.contains(f.getColumnName())) {
                 f.setNullable(false);
             }
-            builder.append("\t").append(sqlGen.returnTypeDef(f.getColumnType().toString(),f)).append(",\n");
+            builder.append("\t").append(sqlGen.returnTypeDef(f.getColumnType().toString(), f)).append(",\n");
         });
-        StringBuilder builder1=new StringBuilder();
-        primaryKeys.forEach(f->{
-            if(map.containsKey(f)){
+        StringBuilder builder1 = new StringBuilder();
+        primaryKeys.forEach(f -> {
+            if (map.containsKey(f)) {
                 builder1.append(f).append(",");
             }
         });
-        if(builder1.length()>0){
-            builder.append("\tPRIMARY KEY(").append(builder1.substring(0,builder1.length()-1)).append("\n");
+        if (builder1.length() > 0) {
+            builder.append("\tPRIMARY KEY(").append(builder1.substring(0, builder1.length() - 1)).append("\n");
         }
         builder.append(")");
         return builder.toString();
@@ -580,10 +452,9 @@ public class DataBaseUtil {
 
     private static List<DataBaseTableMeta> scanAllTable(Connection connection, String schema, DataBaseInterface datameta) throws SQLException {
         List<DataBaseTableMeta> tablelist = new ArrayList<DataBaseTableMeta>();
-        ResultSet rs1 = null;
-        try {
-            DatabaseMetaData meta = connection.getMetaData();
-            rs1 = meta.getTables(datameta.getCatalog(schema), schema, null, new String[]{"TABLE", "VIEW"});
+
+        DatabaseMetaData meta = connection.getMetaData();
+        try (ResultSet rs1 = meta.getTables(datameta.getCatalog(schema), schema, null, new String[]{"TABLE", "VIEW"});) {
             int pos = 1;
             while (rs1.next()) {
                 String tablename = rs1.getString("TABLE_NAME") == null ? "" : rs1.getString("TABLE_NAME");
@@ -608,16 +479,6 @@ public class DataBaseUtil {
                     tablelist.add(tablemeta);
                     pos++;
                 }
-            }
-        } catch (Exception e) {
-            throw e;
-        } finally {
-            try {
-                if (rs1 != null) {
-                    rs1.close();
-                }
-            } catch (Exception e) {
-
             }
         }
         return tablelist;

@@ -11,7 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Component(value="javaProjectRelayService")
 @Scope(value="singleton")
 public class JavaProjectRelayService extends BaseAnnotationJdbcService<JavaProjectRelay, Long> {
-	@Transactional(propagation=Propagation.REQUIRED,rollbackFor = RuntimeException.class)
+	@Transactional(propagation=Propagation.REQUIRED)
 	public void addProjectRelation(String projId,String[] libraryIds){
 		deleteByField("projId", Long.valueOf(projId));
 		for (int i = 0; i < libraryIds.length; i++) {

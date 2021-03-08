@@ -27,12 +27,12 @@ public class ModelSqlGenerator {
             List<Map<String, Object>> changeColumns = new ArrayList<>();
             if (tableExists(conn, content.getSchema(), content.getTableName())) {
                 List<DataBaseColumnMeta> metas = DataBaseUtil.getTableMetaByTableName(conn, content.getTableName(), content.getSchema(), meta.getDbType());
-                List<String> alertSqls= adjustDiffSqls(content,fields,metas,sqlGen);
-                if(log.isDebugEnabled()){
-                    log.debug("execute alert sql {}",alertSqls);
+                List<String> alertSqls = adjustDiffSqls(content, fields, metas, sqlGen);
+                if (log.isDebugEnabled()) {
+                    log.debug("execute alert sql {}", alertSqls);
                 }
             } else {
-                String createSql =generateCreateSql(clazz, sqlGen);
+                String createSql = generateCreateSql(clazz,meta, sqlGen);
                 SimpleJdbcDao.executeUpdate(conn, createSql);
             }
 
@@ -46,18 +46,18 @@ public class ModelSqlGenerator {
         }
     }
 
-    public static final void syncTable(JdbcDao jdbcDao, BaseSqlGen sqlGen, Class<? extends BaseObject> clazz) {
+    public static final void syncTable(JdbcDao jdbcDao,BaseDataBaseMeta meta, BaseSqlGen sqlGen, Class<? extends BaseObject> clazz) {
         try {
             AnnotationRetrevior.EntityContent content = AnnotationRetrevior.getMappingTableByCache(clazz);
             List<AnnotationRetrevior.FieldContent> fields = AnnotationRetrevior.getMappingFieldsCache(clazz);
             if (tableExists(jdbcDao, content.getSchema(), content.getTableName())) {
                 List<DataBaseColumnMeta> metas = DataBaseUtil.getTableMetaByTableName(jdbcDao, content.getTableName(), content.getSchema(), sqlGen.getDbType());
-                List<String> alertSqls= adjustDiffSqls(content,fields,metas,sqlGen);
-                if(log.isDebugEnabled()){
-                    log.debug("execute alert sql {}",alertSqls);
+                List<String> alertSqls = adjustDiffSqls(content, fields, metas, sqlGen);
+                if (log.isDebugEnabled()) {
+                    log.debug("execute alert sql {}", alertSqls);
                 }
             } else {
-                String createSql = generateCreateSql(clazz, sqlGen);
+                String createSql = generateCreateSql(clazz,meta, sqlGen);
                 jdbcDao.executeUpdate(createSql);
             }
         } catch (DAOException ex) {
@@ -82,8 +82,6 @@ public class ModelSqlGenerator {
     private static List<String> adjustDiffSqls(AnnotationRetrevior.EntityContent entityContent, List<AnnotationRetrevior.FieldContent> fields, List<DataBaseColumnMeta> columnMetas, BaseSqlGen sqlGen) {
         List<String> alertSqls = new ArrayList<>();
         try {
-
-
             Map<String, DataBaseColumnMeta> columMap = (Map<String, DataBaseColumnMeta>) CollectionBaseConvert.listToMap(columnMetas, "columnName");
             for (AnnotationRetrevior.FieldContent field : fields) {
                 if (columMap.containsKey(field.getFieldName())) {
@@ -130,50 +128,54 @@ public class ModelSqlGenerator {
 
         }
     }
-    public static String generateCreateSql(String clazzName,BaseSqlGen sqlGen) throws Exception{
-        Class<? extends BaseObject> clazz= (Class<? extends BaseObject>) Class.forName(clazzName);
-        return generateCreateSql(clazz,sqlGen);
+
+    public static String generateCreateSql(String clazzName,BaseDataBaseMeta meta, BaseSqlGen sqlGen) throws Exception {
+        Class<? extends BaseObject> clazz = (Class<? extends BaseObject>) Class.forName(clazzName);
+        return generateCreateSql(clazz,meta, sqlGen);
     }
-    public static String generateCreateSql(Class<? extends BaseObject> clazz,BaseSqlGen sqlGen) throws Exception{
-        StringBuilder builder=new StringBuilder();
-        AnnotationRetrevior.EntityContent entityContent=AnnotationRetrevior.getMappingTableByCache(clazz);
+
+    public static String generateCreateSql(Class<? extends BaseObject> clazz,BaseDataBaseMeta meta, BaseSqlGen sqlGen) throws Exception {
+        StringBuilder builder = new StringBuilder();
+        AnnotationRetrevior.EntityContent entityContent = AnnotationRetrevior.getMappingTableByCache(clazz);
         List<AnnotationRetrevior.FieldContent> fields = AnnotationRetrevior.getMappingFieldsCache(clazz);
-        AnnotationRetrevior.FieldContent primarycol=AnnotationRetrevior.getPrimaryField(fields);
+        AnnotationRetrevior.FieldContent primarycol = AnnotationRetrevior.getPrimaryField(fields);
         builder.append("create table ");
         if (!StringUtils.isEmpty(entityContent.getSchema())) {
             builder.append(entityContent.getSchema()).append(".");
         }
         builder.append(entityContent.getTableName()).append("(").append("\n");
         for (AnnotationRetrevior.FieldContent field : fields) {
-            if(field.isPrimary()){
-                if(field.getPrimaryKeys()!=null && !field.getPrimaryKeys().isEmpty()){
-                    for(AnnotationRetrevior.FieldContent content:field.getPrimaryKeys()){
+            if (field.isPrimary()) {
+                if (field.getPrimaryKeys() != null && !field.getPrimaryKeys().isEmpty()) {
+                    for (AnnotationRetrevior.FieldContent content : field.getPrimaryKeys()) {
                         content.setRequired(true);
                         builder.append("\t").append(sqlGen.getFieldDefineSqlPart(content).toLowerCase()).append(",\n");
                     }
-                }else {
+                } else {
                     field.setRequired(true);
                     builder.append("\t").append(sqlGen.getFieldDefineSqlPart(field).toLowerCase()).append(",\n");
                 }
-            }else if (field.getDataType() != null) {
+            } else if (field.getDataType() != null) {
                 builder.append("\t").append(sqlGen.getFieldDefineSqlPart(field).toLowerCase()).append(",\n");
             }
         }
-        if(primarycol!=null){
-            List<String> pkColumns=new ArrayList<>();
-            if(primarycol.getPrimaryKeys()!=null){
-                for(AnnotationRetrevior.FieldContent fieldContent:primarycol.getPrimaryKeys()){
+        if (primarycol != null) {
+            List<String> pkColumns = new ArrayList<>();
+            if (primarycol.getPrimaryKeys() != null) {
+                for (AnnotationRetrevior.FieldContent fieldContent : primarycol.getPrimaryKeys()) {
                     pkColumns.add(fieldContent.getFieldName());
                 }
-            }else{
+            } else {
                 pkColumns.add(primarycol.getFieldName());
             }
 
-            builder.append("\tPRIMARY KEY(").append(StringUtils.join(pkColumns.toArray(),",")).append(")");
-        }else {
+            builder.append("\tPRIMARY KEY(").append(StringUtils.join(pkColumns.toArray(), ",")).append(")\n");
+        } else {
             builder.deleteCharAt(builder.length() - 2);
         }
-        builder.append(");\n");
+        builder.append(")");
+        builder.append(meta.getCreateExtension());
+        builder.append(";\n");
         return builder.toString();
     }
 

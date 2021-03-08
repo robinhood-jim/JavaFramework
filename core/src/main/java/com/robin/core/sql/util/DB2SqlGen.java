@@ -29,6 +29,14 @@ import com.robin.core.query.util.QueryParam;
 import com.robin.core.query.util.QueryString;
 
 public class DB2SqlGen extends AbstractSqlGen implements BaseSqlGen{
+	private static DB2SqlGen sqlGen=new DB2SqlGen();
+	private DB2SqlGen(){
+
+	}
+	public static DB2SqlGen getInstance(){
+		return sqlGen;
+	}
+
 	private Logger log=LoggerFactory.getLogger(this.getClass());
 	@Override
     public String generateCountSql(String strSQL) {

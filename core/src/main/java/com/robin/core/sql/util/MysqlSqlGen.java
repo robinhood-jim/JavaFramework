@@ -17,17 +17,23 @@ package com.robin.core.sql.util;
 
 import com.robin.core.base.datameta.BaseDataBaseMeta;
 import com.robin.core.base.exception.DAOException;
-import com.robin.core.base.util.Const;
 import com.robin.core.query.util.PageQuery;
 import com.robin.core.query.util.QueryParam;
-import com.robin.core.query.util.QueryString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
-import java.util.Map;
 
 public class MysqlSqlGen extends AbstractSqlGen implements BaseSqlGen{
+
+	private static MysqlSqlGen sqlGen=new MysqlSqlGen();
+	private MysqlSqlGen(){
+
+	}
+	public static MysqlSqlGen getInstance(){
+		return sqlGen;
+	}
+
 	private Logger log=LoggerFactory.getLogger(this.getClass());
 	@Override
     public String generateCountSql(String strSQL) {
@@ -46,7 +52,7 @@ public class MysqlSqlGen extends AbstractSqlGen implements BaseSqlGen{
 		if (nOrderPos == -1) {
             nOrderPos = str.length();
         }
-		StringBuffer strBuf = new StringBuffer();
+		StringBuilder strBuf = new StringBuilder();
 		if(nGroupByPos==-1) {
             strBuf.append("select count(*) as total ").append(str, nFromPos, nOrderPos);
         } else {
@@ -64,7 +70,7 @@ public class MysqlSqlGen extends AbstractSqlGen implements BaseSqlGen{
 		int tonums=startEnd[1];
 		strSQL = strSQL.trim();
 
-		StringBuffer pagingSelect = new StringBuffer(strSQL.length() + 100);
+		StringBuilder pagingSelect = new StringBuilder(strSQL.length() + 100);
 		pagingSelect.append(strSQL);
 		int nums=tonums-nBegin;
 		pagingSelect.append(" limit "+nBegin+","+nums);
@@ -90,7 +96,7 @@ public class MysqlSqlGen extends AbstractSqlGen implements BaseSqlGen{
 		if (nOrderPos == -1) {
             nOrderPos = str.length();
         }
-		StringBuffer strBuf = new StringBuffer();
+		StringBuilder strBuf = new StringBuilder();
 		strBuf.append(str, 0, nOrderPos).append(" limit 1,1");
 		return strBuf.toString();
 	}

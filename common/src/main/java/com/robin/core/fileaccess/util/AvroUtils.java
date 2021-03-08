@@ -13,7 +13,10 @@ import org.apache.avro.LogicalTypes;
 import org.apache.avro.Protocol;
 import org.apache.avro.Schema;
 import org.apache.avro.SchemaBuilder;
-import org.apache.avro.generic.*;
+import org.apache.avro.generic.GenericData;
+import org.apache.avro.generic.GenericDatumReader;
+import org.apache.avro.generic.GenericDatumWriter;
+import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.io.Decoder;
 import org.apache.avro.io.DecoderFactory;
 import org.apache.avro.io.Encoder;
@@ -21,13 +24,16 @@ import org.apache.avro.io.EncoderFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
+import org.springframework.util.CollectionUtils;
 
 import java.io.*;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.*;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.*;
 
 /**
@@ -152,21 +158,173 @@ public class AvroUtils {
      * @param schema
      * @param bytes
      * @param valueObj
+     * @param additionalClazz
      */
-    public static void byteToObject(Schema schema,byte[] bytes,Object valueObj){
+    public static void byteToObject(Schema schema,byte[] bytes,Object valueObj,Class... additionalClazz){
         Assert.notNull(valueObj,"object should not be null");
         GenericRecord record=parse(schema,bytes);
-        if(valueObj.getClass().isAssignableFrom(List.class)){
-            List<?> list=(List<?>) valueObj;
+        try {
+            if (valueObj.getClass().isAssignableFrom(List.class)) {
+                List list = (List) valueObj;
+                if (!CollectionUtils.isEmpty(list)) {
+                    Class targetClazz = list.get(0).getClass();
+                    Map<String, Method> setMap = ReflectUtils.returnSetMethods(targetClazz);
+                    if(record.getSchema().getType().equals(Schema.Type.ARRAY)){
+                        List<GenericRecord> flist= (List<GenericRecord>)record.get(0);
+                        for(GenericRecord g:flist){
+                            Object t = targetClazz.newInstance();
+                            Iterator<Map.Entry<String,Method>> iter=setMap.entrySet().iterator();
+                            while(iter.hasNext()){
+                                Map.Entry<String,Method> entry=iter.next();
+                                if(g.get(entry.getKey())!=null){
+                                    Schema eleType=schema.getField(entry.getKey()).schema().getTypes().get(0).getElementType();
+                                    entry.getValue().invoke(t, acquireGenericRecord(entry.getKey(),g.get(entry.getKey()),eleType));
+                                }
+                            }
+                            list.add(t);
+                        }
+                    }
+                }
+            } else if (valueObj.getClass().isAssignableFrom(Map.class)) {
+                Assert.isTrue(additionalClazz.length>0,"");
+                Map<String,Object> map=(Map<String, Object>)valueObj;
+                List<Schema.Field> fields=schema.getFields();
+                for(Schema.Field field:fields){
+                    if(record.get(field.name())!=null){
+                        Object vobj=additionalClazz[0].newInstance();
+                        acquireModel(record,vobj);
+                        map.put(field.name(),vobj);
+                    }
+                }
 
-
-        }else if(valueObj.getClass().isAssignableFrom(Map.class)){
-
-        }
-        else if(valueObj.getClass().isAssignableFrom(Serializable.class)){
+            } else if (valueObj.getClass().isAssignableFrom(Serializable.class)) {
+                acquireModel(record,valueObj);
+            }
+        }catch (Exception ex){
 
         }
     }
+    public static Object acquireGenericRecord(String key, Object value, Schema schema){
+        try {
+            if(value!=null) {
+                if(value instanceof List){
+                    List<GenericRecord> records=new ArrayList<>();
+                    List<?> list=(List<?>) value;
+                    if(CollectionUtils.isEmpty(list)){
+                        return null;
+                    }
+                    Map<String, Method> getMethods = ReflectUtils.returnGetMethods(list.get(0).getClass());
+                    Schema eleType=schema.getField(key).schema().getTypes().get(0).getElementType();
+                    for(Object t:list){
+                        GenericRecord record=new GenericData.Record(eleType);
+                        Iterator<Map.Entry<String, Method>> iter = getMethods.entrySet().iterator();
+                        while(iter.hasNext()){
+                            Map.Entry<String, Method> entry = iter.next();
+                            record.put(entry.getKey(), acquireGenericRecord(entry.getKey(),entry.getValue().invoke(t, null),eleType));
+                        }
+                        records.add(record);
+                    }
+                    return records;
+                }else if (value.getClass().getInterfaces()!=null && value.getClass().getInterfaces().length>0 && value.getClass().getInterfaces()[0].isAssignableFrom(Map.class)){
+                    Map<String,Object> map1=(Map<String,Object>) value;
+                    Class clazz=map1.values().iterator().next().getClass();
+                    if(ClassUtils.isPrimitiveOrWrapper(clazz) || clazz.isAssignableFrom(String.class)){
+                        return value;
+                    }else{
+                        Schema mapschema=schema.getField(key).schema().getTypes().get(0).getValueType();
+                        Iterator<Map.Entry<String,Object>> iterator=map1.entrySet().iterator();
+                        Map<String,GenericRecord> retMap=new HashMap<>();
+
+                        while(iterator.hasNext()){
+                            GenericRecord genericRecord;
+                            Map.Entry<String,Object> entry=iterator.next();
+                            genericRecord=(GenericRecord) acquireGenericRecord(entry.getKey(),entry.getValue(),mapschema);
+                            retMap.put(entry.getKey(),genericRecord);
+                        }
+                        return retMap;
+                    }
+                }
+                else if(value.getClass().isAssignableFrom(Date.class)){
+                    return ((Date) value).getTime();
+                }else if(value.getClass().isAssignableFrom(Timestamp.class)){
+                    return ((Timestamp) value).getTime();
+                }else if(value.getClass().isAssignableFrom(LocalDateTime.class)){
+                    return ((LocalDateTime) value).toInstant(ZoneOffset.of("+8")).toEpochMilli();
+                }else if(value.getClass().isAssignableFrom(String.class)){
+                    return value;
+                }else if(ClassUtils.isPrimitiveOrWrapper(value.getClass())){
+                    return value;
+                }
+                else {
+                    GenericRecord record = new GenericData.Record(schema);
+                    Map<String, Method> getMethods = ReflectUtils.returnGetMethods(value.getClass());
+                    Iterator<Map.Entry<String, Method>> iter = getMethods.entrySet().iterator();
+                    while (iter.hasNext()) {
+                        Map.Entry<String, Method> entry = iter.next();
+                        if (schema.getField(entry.getKey()) != null) {
+                            record.put(entry.getKey(), acquireGenericRecord(entry.getKey(),entry.getValue().invoke(value, null),schema.getField(entry.getKey()).schema()));
+                        }
+                    }
+                    return record;
+                }
+            }
+        }catch (Exception ex){
+            ex.printStackTrace();
+        }
+        return null;
+    }
+    public static void acquireModel(GenericRecord record,Object targetObj) throws Exception{
+        List<Schema.Field> fields=record.getSchema().getFields();
+        Map<String,Method> setMap=ReflectUtils.returnSetMethods(targetObj.getClass());
+        for(Schema.Field field:fields){
+
+            if((field.schema().getType().equals(Schema.Type.UNION) && field.schema().getTypes().get(0).getType().equals(Schema.Type.LONG)) || field.schema().getType().equals(Schema.Type.LONG)){
+                Long val=(Long)record.get(field.name());
+                if(setMap.get(field.name()).getParameterTypes()[0].isAssignableFrom(Date.class)){
+                    setMap.get(field.name()).invoke(targetObj,new Date(val));
+                }else if(setMap.get(field.name()).getParameterTypes()[0].isAssignableFrom(Timestamp.class)){
+                    setMap.get(field.name()).invoke(targetObj,new Timestamp(val));
+                }else if(setMap.get(field.name()).getParameterTypes()[0].isAssignableFrom(LocalDateTime.class)){
+                    setMap.get(field.name()).invoke(targetObj,LocalDateTime.ofInstant(Instant.ofEpochMilli(val), ZoneId.systemDefault()));
+                }else if(setMap.get(field.name()).getParameterTypes()[0].isAssignableFrom(Long.class)){
+                    setMap.get(field.name()).invoke(targetObj,val);
+                }
+            }
+            else if(field.schema().getType().equals(Schema.Type.RECORD)){
+                Object vobj=setMap.get(field.name()).getParameterTypes()[0].newInstance();
+                acquireModel((GenericRecord)record.get(field.name()),vobj);
+                setMap.get(field.name()).invoke(targetObj,vobj);
+            }else if(field.schema().getTypes().get(0).getType().equals(Schema.Type.MAP)){
+                Type[] genericClazzs=((ParameterizedType)setMap.get(field.name()).getGenericParameterTypes()[0]).getActualTypeArguments();
+                if(!genericClazzs[1].getTypeName().endsWith(".Object")){
+
+                }else{
+
+                }
+            }
+            else if(field.schema().getTypes().size()>0 && field.schema().getTypes().get(0).getType().equals(Schema.Type.ARRAY)){
+                Type genericClazz=((ParameterizedType)setMap.get(field.name()).getGenericParameterTypes()[0]).getActualTypeArguments()[0];
+                List list=new ArrayList();
+                List<GenericRecord> records=(List<GenericRecord>) record.get(field.name());
+                if(!CollectionUtils.isEmpty(records)){
+                    for(GenericRecord rec:records) {
+                        Object vobj = Class.forName(genericClazz.getTypeName()).newInstance();
+                        acquireModel(rec,vobj);
+                        list.add(vobj);
+                    }
+                }
+                setMap.get(field.name()).invoke(targetObj,list);
+            }
+            else{
+                if(field.schema().getTypes().get(0).getType().equals(Schema.Type.STRING)){
+                    setMap.get(field.name()).invoke(targetObj, record.get(field.name()).toString());
+                }else {
+                    setMap.get(field.name()).invoke(targetObj, record.get(field.name()));
+                }
+            }
+        }
+    }
+
 
     public static byte[] dataToByteArray(Schema schema, GenericRecord datum) throws IOException {
         GenericDatumWriter<GenericRecord> writer = new GenericDatumWriter<GenericRecord>(schema);
@@ -221,7 +379,12 @@ public class AvroUtils {
             } else if (parameterType.isAssignableFrom(Boolean.class)) {
                 fields = fields.name(key).type().nullable().booleanType().noDefault();
             } else if (parameterType.isAssignableFrom(Map.class)) {
-                fields = fields.name(key).type().nullable().map().values().nullable().stringType().noDefault();
+                Type acutalType=((ParameterizedType) field.getGenericType()).getActualTypeArguments()[1];
+                if(((Class) acutalType).isAssignableFrom(Object.class)){
+                    fields = fields.name(key).type().nullable().map().values().nullable().stringType().noDefault();
+                }else{
+                    fields = fields.name(key).type().nullable().map().values(getSchemaFromModel((Class) acutalType)).noDefault();
+                }
             } else if (parameterType.isAssignableFrom(List.class)) {
                 fields = fields.name(key).type().nullable().array().items(getSchemaFromModel((Class<?>) ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[0])).noDefault();
             } else if (parameterType.isAssignableFrom(String.class)) {

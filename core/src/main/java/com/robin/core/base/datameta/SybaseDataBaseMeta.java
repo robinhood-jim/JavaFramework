@@ -67,7 +67,7 @@ public class SybaseDataBaseMeta extends BaseDataBaseMeta{
 	}
 	@Override
     public BaseSqlGen getSqlGen() {
-		return new SybaseSqlGen();
+		return SybaseSqlGen.getInstance();
 	}
 
 	@Override

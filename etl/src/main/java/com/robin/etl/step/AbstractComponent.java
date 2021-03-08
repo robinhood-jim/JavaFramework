@@ -37,4 +37,7 @@ public abstract class AbstractComponent {
         paramMap.put("cycle",cycle);
         return PatternMatcherUtils.parseRegexParams(fsTemplate,paramMap);
     }
+    public abstract boolean prepare(String cycle);
+    public abstract boolean finish(String cycle);
+    public abstract Integer doExecute();
 }

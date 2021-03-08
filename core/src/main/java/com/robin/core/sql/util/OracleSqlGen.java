@@ -28,6 +28,13 @@ import com.robin.core.query.util.QueryString;
 
 public class OracleSqlGen extends AbstractSqlGen implements BaseSqlGen {
 
+	private static OracleSqlGen sqlGen=new OracleSqlGen();
+	private OracleSqlGen(){
+
+	}
+	public static OracleSqlGen getInstance(){
+		return sqlGen;
+	}
 	@Override
     public String generateCountSql(String strSQL) {
 

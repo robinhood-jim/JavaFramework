@@ -76,7 +76,7 @@ public class DbConfig {
     @Bean(name = "sqlGen")
     @Qualifier("sqlGen")
     public BaseSqlGen getSqlGen(){
-        return new MysqlSqlGen();
+        return MysqlSqlGen.getInstance();
     }
 
     @Bean(name="springContextHolder")
