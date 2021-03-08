@@ -5,7 +5,6 @@ import com.robin.core.hardware.MachineIdUtils;
 import com.thoughtworks.qdox.JavaProjectBuilder;
 import com.thoughtworks.qdox.model.*;
 import com.thoughtworks.qdox.model.impl.DefaultJavaParameterizedType;
-import com.thoughtworks.qdox.tools.QDoxTester;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
@@ -438,7 +437,7 @@ public class EncryptJarPackage {
         StringBuilder builder = new StringBuilder();
         for (int i = 0; i < inputStr.length(); i++) {
             int keypos = i % 8;
-            int xorbyte = inputStr.charAt(i) ^ EncryptWebClassLoader.XorKey[keypos];
+            int xorbyte = inputStr.charAt(i) ^ EncryptWebClassLoaderHolder.EncryptWebClassLoader.XorKey[keypos];
             builder.append(bytesToHexString(new byte[]{(byte) xorbyte}));
         }
         return builder.toString();
@@ -448,7 +447,7 @@ public class EncryptJarPackage {
         StringBuilder builder = new StringBuilder();
         for (int i = 0; i < inputBytes.length; i++) {
             int keypos = i % 8;
-            int xorbyte = inputBytes[i] ^ EncryptWebClassLoader.XorKey[keypos];
+            int xorbyte = inputBytes[i] ^ EncryptWebClassLoaderHolder.EncryptWebClassLoader.XorKey[keypos];
             builder.append(bytesToHexString(new byte[]{(byte) xorbyte}));
         }
         return builder.toString();
@@ -458,7 +457,7 @@ public class EncryptJarPackage {
         StringBuilder builder = new StringBuilder();
         for (int i = 0; i < inputStr.length() / 2; i++) {
             int keypos = i % 8;
-            int xorbyte = Integer.parseInt(inputStr.substring(i * 2, (i + 1) * 2), 16) ^ EncryptWebClassLoader.XorKey[keypos];
+            int xorbyte = Integer.parseInt(inputStr.substring(i * 2, (i + 1) * 2), 16) ^ EncryptWebClassLoaderHolder.EncryptWebClassLoader.XorKey[keypos];
             builder.append((char) xorbyte);
         }
         return builder.toString();

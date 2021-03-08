@@ -52,7 +52,7 @@ public class MysqlSqlGen extends AbstractSqlGen implements BaseSqlGen{
 		if (nOrderPos == -1) {
             nOrderPos = str.length();
         }
-		StringBuffer strBuf = new StringBuffer();
+		StringBuilder strBuf = new StringBuilder();
 		if(nGroupByPos==-1) {
             strBuf.append("select count(*) as total ").append(str, nFromPos, nOrderPos);
         } else {
@@ -70,7 +70,7 @@ public class MysqlSqlGen extends AbstractSqlGen implements BaseSqlGen{
 		int tonums=startEnd[1];
 		strSQL = strSQL.trim();
 
-		StringBuffer pagingSelect = new StringBuffer(strSQL.length() + 100);
+		StringBuilder pagingSelect = new StringBuilder(strSQL.length() + 100);
 		pagingSelect.append(strSQL);
 		int nums=tonums-nBegin;
 		pagingSelect.append(" limit "+nBegin+","+nums);
@@ -96,7 +96,7 @@ public class MysqlSqlGen extends AbstractSqlGen implements BaseSqlGen{
 		if (nOrderPos == -1) {
             nOrderPos = str.length();
         }
-		StringBuffer strBuf = new StringBuffer();
+		StringBuilder strBuf = new StringBuilder();
 		strBuf.append(str, 0, nOrderPos).append(" limit 1,1");
 		return strBuf.toString();
 	}

@@ -1,20 +1,14 @@
 package com.robin.core.encrypt;
 
+import org.apache.commons.codec.binary.Base64;
+
+import javax.crypto.*;
+import javax.crypto.spec.DESKeySpec;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.security.Key;
 import java.security.MessageDigest;
-
-import javax.crypto.Cipher;
-import javax.crypto.CipherInputStream;
-import javax.crypto.CipherOutputStream;
-import javax.crypto.KeyGenerator;
-import javax.crypto.SecretKey;
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.DESKeySpec;
-
-import org.apache.commons.codec.binary.Base64;
 
 
 public class CipherUtil{  
@@ -48,8 +42,7 @@ public class CipherUtil{
     public static byte[] encryptByteWithKey(SecretKey key,byte[] bytes){
     	try{
     	Cipher cipher = Cipher.getInstance(DEFAULT_CIPHER_ALGORITHM);
-        cipher.init(Cipher.ENCRYPT_MODE, key);  
-        //ִ�в���  
+        cipher.init(Cipher.ENCRYPT_MODE, key);
         return cipher.doFinal(bytes);  
     	}catch(Exception ex){
     		ex.printStackTrace();
@@ -60,8 +53,7 @@ public class CipherUtil{
     	try{
     	Cipher cipher = Cipher.getInstance(DEFAULT_CIPHER_ALGORITHM);  
 
-        cipher.init(Cipher.ENCRYPT_MODE, toKey(key));  
-        //ִ�в���  
+        cipher.init(Cipher.ENCRYPT_MODE, toKey(key));
         return cipher.doFinal(bytes);  
     	}catch(Exception ex){
     		ex.printStackTrace();

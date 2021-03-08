@@ -1,12 +1,27 @@
 package com.robin.comm.test;
 
+import com.google.gson.Gson;
+
+
+import com.robin.comm.util.redis.JedisClientFactory;
 import com.robin.core.base.util.Const;
 import com.robin.core.fileaccess.iterator.AbstractFileIterator;
 import com.robin.core.fileaccess.iterator.TextFileIteratorFactory;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
+import com.robin.core.fileaccess.util.AvroUtils;
 import com.robin.core.fileaccess.util.LocalResourceAccessUtils;
+import org.apache.avro.Schema;
+import org.apache.avro.SchemaBuilder;
+import org.apache.avro.generic.GenericRecord;
+import org.junit.Test;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectOutputStream;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 
 public class TestXMLReader {
@@ -39,5 +54,43 @@ public class TestXMLReader {
                 ex.printStackTrace();
             }
         }
+    }
+    @Test
+    public void test1() throws Exception{
+        //Schema schema= AvroUtils.getSchemaFromModel(TestCompondObj.class);
+        List<TestCompondObj> compondObjs=new ArrayList<>();
+        Gson gson=new Gson();
+        TestCompondObj t1=new TestCompondObj();
+        t1.setId(1L);
+        t1.setSqlDate(new Date());
+        t1.setTname("t1");
+        InnerClass in1=new InnerClass();
+        in1.setId(1111L);
+        in1.setName("inner1");
+        in1.setDate(new Timestamp(System.currentTimeMillis()));
+        List<InnerClass> innerClasses=new ArrayList<>();
+        innerClasses.add(in1);
+        t1.setInner(innerClasses);
+        compondObjs.add(t1);
+        JedisClientFactory.JedisClient client=JedisClientFactory.getInstance();
+        ByteArrayOutputStream arrayOutputStream = new ByteArrayOutputStream();
+        ObjectOutputStream outputStream = new ObjectOutputStream(arrayOutputStream);
+        outputStream.writeObject(compondObjs);
+        System.out.println(arrayOutputStream.toByteArray().length);
+        System.out.println(gson.toJson(compondObjs).length());
+        Schema schema= AvroUtils.getSchemaFromModel(TestCompondObj.class);
+
+        SchemaBuilder.FieldAssembler<Schema> assembler= SchemaBuilder.record("nested").fields();
+        assembler.name("list").type().nullable().array().items(schema).noDefault();
+        Schema nestedSchema=assembler.endRecord();
+        byte[] bytes= client.putSetWithSchema(schema,nestedSchema,compondObjs);
+
+        GenericRecord record=AvroUtils.parse(nestedSchema,bytes);
+        List<GenericRecord> list=(List<GenericRecord>)record.get(0);
+        for(GenericRecord rec:list) {
+            TestCompondObj v=new TestCompondObj();
+            AvroUtils.acquireModel(rec, v);
+        }
+        System.out.println(list);
     }
 }

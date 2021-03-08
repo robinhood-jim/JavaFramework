@@ -324,6 +324,8 @@ public class AnnotationRetrevior {
                 } else {
                     fieldName = StringUtils.getFieldNameByCamelCase(field.getName());
                 }
+            }else{
+                fieldName = StringUtils.getFieldNameByCamelCase(field.getName());
             }
             content = new AnnotationRetrevior.FieldContent(field.getName(), fieldName, field, getMethod, setMethod);
             if(mapfield!=null) {

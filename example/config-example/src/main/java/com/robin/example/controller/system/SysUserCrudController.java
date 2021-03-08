@@ -72,7 +72,7 @@ public class SysUserCrudController extends BaseCrudDhtmlxController<SysUser, Lon
         query.setSelectParamId("GET_SYSUSERINFO");
         wrapQuery(request,query);
 
-        doQuery(null, query);
+        doQuery(request,null, query);
 
         List<SysOrg> orgList = sysOrgService.queryByField("orgStatus", BaseObject.OPER_EQ, Const.VALID);
         setCode("ORG", orgList, "orgName", "id");

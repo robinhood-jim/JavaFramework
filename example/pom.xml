@@ -26,14 +26,11 @@
 		<version>1.0-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>examples</artifactId>
+	<artifactId>example</artifactId>
 	<packaging>pom</packaging>
 
-	<name>Examples</name>
-	<description>Examples</description>
-
-
-
+	<name>example</name>
+	<description>example</description>
 
 	<modules>
 		<module>base-example</module>
