@@ -555,11 +555,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
             }
 
         } catch (Exception ex) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Encounter error", ex);
-            } else if (logger.isInfoEnabled()) {
-                logger.info("Encounter error", ex);
-            }
+            logError(ex);
             throw new DAOException(ex);
         }
         return retObj;
@@ -567,9 +563,9 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
 
     @Override
     public int updateVO(Class<? extends BaseObject> clazz, BaseObject obj) throws DAOException {
-        EntityMappingUtil.UpdateSegment updateSegment = EntityMappingUtil.getUpdateSegment(obj, sqlGen);
         int ret = 0;
         try {
+            EntityMappingUtil.UpdateSegment updateSegment = EntityMappingUtil.getUpdateSegment(obj, sqlGen);
             StringBuilder builder = new StringBuilder();
             if (updateSegment.getFieldStr().length() != 0) {
                 builder.append(updateSegment.getFieldStr()).append(" where ").append(updateSegment.getWhereStr());
@@ -581,14 +577,18 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
                 ret = executeUpdate(updateSql, objs);
             }
         } catch (Exception ex) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Encounter error", ex);
-            } else if (logger.isInfoEnabled()) {
-                logger.info("Encounter error", ex);
-            }
+            logError(ex);
             throw new DAOException(ex);
         }
         return ret;
+    }
+
+    private void logError(Exception ex) {
+        if (logger.isDebugEnabled()) {
+            logger.debug("Encounter error", ex);
+        } else if (logger.isInfoEnabled()) {
+            logger.info("Encounter error", ex);
+        }
     }
 
 
@@ -620,11 +620,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
             }
             return getNamedJdbcTemplate().update(deleteSql, params);
         } catch (Exception ex) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Encounter error", ex);
-            } else if (logger.isInfoEnabled()) {
-                logger.info("Encounter error", ex);
-            }
+            logError(ex);
             throw new DAOException(ex);
         }
     }
@@ -656,11 +652,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
                 return 0;
             }
         } catch (Exception ex) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Encounter error", ex);
-            } else if (logger.isInfoEnabled()) {
-                logger.info("Encounter error", ex);
-            }
+            logError(ex);
             throw new DAOException(ex);
         }
     }

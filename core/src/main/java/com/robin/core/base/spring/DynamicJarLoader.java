@@ -195,7 +195,6 @@ public class DynamicJarLoader {
 			
 		}catch(Exception ex){
 			ex.printStackTrace();
-		}finally{
 		}
 		return ctx;
 	}

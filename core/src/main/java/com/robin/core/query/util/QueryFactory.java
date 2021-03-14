@@ -49,8 +49,6 @@ public class QueryFactory implements InitializingBean {
             log.error("", e);
             e.printStackTrace();
             System.out.println(e.getMessage());
-        } finally {
-
         }
     }
 

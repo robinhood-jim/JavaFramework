@@ -18,6 +18,8 @@ package com.robin.core.base.datameta;
 import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.sql.util.BaseSqlGen;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.util.Assert;
 
 import java.io.Serializable;
 import java.util.List;
@@ -118,5 +120,38 @@ public abstract class BaseDataBaseMeta implements DataBaseInterface, Serializabl
 	}
 	public String getCreateExtension(){
 		return "";
+	}
+
+	@Override
+	public String getAddColumnStatement(String tableName, String schema,
+										DataBaseColumnMeta v) {
+		StringBuilder builder=new StringBuilder();
+		builder.append("ALTER TABLE ").append(getTableSpec(tableName,schema)).append(" ADD COLUMN ");
+		builder.append(v.getColumnName()).append(" ").append(getSqlGen().returnTypeDef(v.getColumnType().toString(),v));
+		if(v.isIncrement() && supportAutoInc()){
+			builder.append(" ").append(getSqlGen().getAutoIncrementDef());
+		}
+		if(v.isPrimaryKey()){
+			builder.append(" PRIMARY KEY");
+		}
+		return builder.toString();
+	}
+	private String getTableSpec(String tableName,String schema){
+		Assert.notNull(tableName,"");
+		StringBuilder builder=new StringBuilder();
+		if(!StringUtils.isEmpty(schema)){
+			builder.append(schema).append(".");
+		}
+		builder.append(tableName);
+		return builder.toString();
+	}
+
+	@Override
+	public String getDropColumnStatement(String tableName, String schema,
+										 DataBaseColumnMeta v) {
+		StringBuilder builder=new StringBuilder();
+		builder.append("ALTER TABLE ").append(getTableSpec(tableName,schema)).append(" DROP COLUMN ");
+		builder.append(v.getColumnName());
+		return builder.toString();
 	}
 }

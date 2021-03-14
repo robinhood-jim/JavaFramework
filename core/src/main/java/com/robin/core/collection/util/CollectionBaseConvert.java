@@ -117,6 +117,11 @@ public class CollectionBaseConvert {
 			if(method==null){
 				throw new MissingConfigException("identify column not exists in object!");
 			}
+		}else{
+			method= ReflectUtils.returnGetMethods(list.get(0).getClass()).get(identifyColumn);
+			if(method==null){
+				throw new MissingConfigException("identify column not exists in object!");
+			}
 		}
 		Map<String,Serializable> map=new HashMap<>();
 		for(Serializable s:list){

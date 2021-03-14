@@ -130,8 +130,6 @@ public class MultiThreadFtp extends SimpleFtp {
                     }
                 } catch (Exception ex) {
                     logger.error("", ex);
-                } finally {
-
                 }
             }
             return retflag;

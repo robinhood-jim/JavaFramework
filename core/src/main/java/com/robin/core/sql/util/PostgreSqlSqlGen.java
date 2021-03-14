@@ -126,7 +126,7 @@ public class PostgreSqlSqlGen extends AbstractSqlGen implements BaseSqlGen {
 		return true;
 	}
 	@Override
-	protected String getAutoIncrementDef() {
+	public String getAutoIncrementDef() {
 		return " AUTO_INCREMENT";
 	}
 }

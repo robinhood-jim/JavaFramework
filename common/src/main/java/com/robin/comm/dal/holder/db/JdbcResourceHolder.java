@@ -71,7 +71,6 @@ public class JdbcResourceHolder extends AbstractResourceHolder implements IHolde
             connection= SpringContextHolder.getBean(ResourceAccessHolder.class).getConnectionHolder(sourceId,collectionMeta.getDbMeta()).getConnection();
         }catch (Exception ex){
             log.error("",ex);
-        }finally {
         }
         return connection;
     }

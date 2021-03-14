@@ -109,7 +109,7 @@ public class SybaseSqlGen extends AbstractSqlGen implements BaseSqlGen{
 		return true;
 	}
 	@Override
-	protected String getAutoIncrementDef() {
+	public String getAutoIncrementDef() {
 		return " IDENTITY";
 	}
 }

@@ -127,7 +127,7 @@ public class SqlServer2005Gen extends AbstractSqlGen implements BaseSqlGen{
 		return true;
 	}
 	@Override
-	protected String getAutoIncrementDef() {
+	public String getAutoIncrementDef() {
 		return " IDENTITY";
 	}
 }

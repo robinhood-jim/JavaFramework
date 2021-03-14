@@ -27,6 +27,7 @@ import org.springframework.jdbc.support.lob.LobHandler;
 
 import javax.persistence.*;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.sql.Date;
@@ -412,13 +413,13 @@ public class AnnotationRetrevior {
 
     public static int replacementPrepared(PreparedStatement ps, LobHandler lobHandler, AnnotationRetrevior.FieldContent field, BaseObject object, int pos) throws SQLException {
         int tmppos = pos;
-        Object value = getvalueFromVO(field, object);
+        Object value = getValueFromVO(field, object);
         if (!field.isIncrement() && !field.isSequential() && value != null) {
             if (!field.isPrimary()) {
                 wrapValue(ps, lobHandler, field, object, pos);
                 tmppos++;
             } else {
-                BasePrimaryObject compositeObj = (BasePrimaryObject) getvalueFromVO(field, object);
+                BasePrimaryObject compositeObj = (BasePrimaryObject) getValueFromVO(field, object);
                 List<AnnotationRetrevior.FieldContent> pkList = field.getPrimaryKeys();
                 if (pkList != null) {
                     for (AnnotationRetrevior.FieldContent pks : pkList) {
@@ -436,13 +437,12 @@ public class AnnotationRetrevior {
         return tmppos;
     }
 
-    public static Object getvalueFromVO(AnnotationRetrevior.FieldContent content, BaseObject object) {
+    public static Object getValueFromVO(AnnotationRetrevior.FieldContent content, BaseObject object) throws SQLException {
         try {
             return content.getGetMethod().invoke(object, null);
-        } catch (Exception ex) {
-
+        }catch (Exception ex){
+            throw new SQLException(ex);
         }
-        return null;
     }
 
     public static Map<String, Object> fieldContentToMap(FieldContent fieldContent) {
@@ -458,7 +458,11 @@ public class AnnotationRetrevior {
     }
 
     private static void wrapValue(PreparedStatement ps, LobHandler lobHandler, AnnotationRetrevior.FieldContent field, BaseObject object, int pos) throws SQLException {
-        Object value = getvalueFromVO(field, object);
+        Object value = getValueFromVO(field, object);
+        if(value==null){
+            setParameter(ps, pos, value);
+            return;
+        }
         String datatype = field.getDataType();
         if (datatype.equalsIgnoreCase(Const.META_TYPE_CLOB)) {
             lobHandler.getLobCreator().setClobAsString(ps, pos, value.toString());

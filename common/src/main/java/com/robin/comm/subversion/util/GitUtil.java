@@ -136,11 +136,10 @@ public class GitUtil {
         if (!localPath.delete()) {
             throw new IOException("Could not delete temporary file " + localPath);
         }
-
-        // create the directory
-        Repository repository = FileRepositoryBuilder.create(new File(localPath, ".git"));
-        repository.create();
-
-        return repository;
+        try(Repository repository = FileRepositoryBuilder.create(new File(localPath, ".git"))) {
+            // create the directory
+            repository.create();
+            return repository;
+        }
     }
 }

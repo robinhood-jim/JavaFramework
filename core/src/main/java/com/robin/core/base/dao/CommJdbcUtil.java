@@ -777,7 +777,7 @@ public class CommJdbcUtil {
 
         @Override
         public Object next() {
-            return null;
+            return iterator.next();
         }
     }
 

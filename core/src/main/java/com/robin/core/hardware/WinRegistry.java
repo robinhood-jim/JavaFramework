@@ -158,10 +158,10 @@ public class WinRegistry {
         int[] ret;
         if (hkey == HKEY_LOCAL_MACHINE) {
             ret = createKey(systemRoot, hkey, key);
-            regCloseKey.invoke(systemRoot, new Object[]{new Integer(ret[0])});
+            regCloseKey.invoke(systemRoot, new Object[]{Integer.valueOf(ret[0])});
         } else if (hkey == HKEY_CURRENT_USER) {
             ret = createKey(userRoot, hkey, key);
-            regCloseKey.invoke(userRoot, new Object[]{new Integer(ret[0])});
+            regCloseKey.invoke(userRoot, new Object[]{Integer.valueOf(ret[0])});
         } else {
             throw new IllegalArgumentException("hkey=" + hkey);
         }
@@ -288,7 +288,7 @@ public class WinRegistry {
             InvocationTargetException {
         HashMap<String, String> results = new HashMap<String, String>();
         int[] handles = (int[]) regOpenKey.invoke(root, new Object[]{
-                new Integer(hkey), toCstr(key), new Integer(KEY_READ)});
+                new Integer(hkey), toCstr(key), Integer.valueOf(KEY_READ)});
         if (handles[1] != REG_SUCCESS) {
             return null;
         }
@@ -314,7 +314,7 @@ public class WinRegistry {
             InvocationTargetException {
         List<String> results = new ArrayList<String>();
         int[] handles = (int[]) regOpenKey.invoke(root, new Object[]{
-                new Integer(hkey), toCstr(key), new Integer(KEY_READ)
+                Integer.valueOf(hkey), toCstr(key), new Integer(KEY_READ)
         });
         if (handles[1] != REG_SUCCESS) {
             return null;
@@ -339,7 +339,7 @@ public class WinRegistry {
             throws IllegalArgumentException, IllegalAccessException,
             InvocationTargetException {
         return (int[]) regCreateKeyEx.invoke(root,
-                new Object[]{new Integer(hkey), toCstr(key)});
+                new Object[]{Integer.valueOf(hkey), toCstr(key)});
     }
 
     private static void writeStringValue

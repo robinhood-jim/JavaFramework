@@ -28,24 +28,8 @@ public class PhoenixDataBaseMeta extends BaseDataBaseMeta {
 
 
 	@Override
-    public String getAddColumnStatement(String arg0, String arg1,
-                                        DataBaseColumnMeta arg2, String arg3, boolean arg4, String arg5,
-                                        boolean arg6) {
-		
-		return null;
-	}
-
-	@Override
     public int getDefaultDatabasePort() {
 		return 2181;
-	}
-	
-
-	@Override
-    public String getDropColumnStatement(String arg0, String arg1,
-                                         DataBaseColumnMeta arg2, String arg3, boolean arg4, String arg5,
-                                         boolean arg6) {
-		return null;
 	}
 
 	@Override

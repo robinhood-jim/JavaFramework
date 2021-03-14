@@ -119,7 +119,6 @@ public class GlobalResourceService extends BaseAnnotationJdbcService<GlobalResou
                 if(schemaMap.containsKey(selectSource.toLowerCase())){
                     Map<String,Object> indexDefineMap=(Map<String,Object>)schemaMap.get(selectSource.toLowerCase());
                     Map<String,Object> propMap=(Map<String,Object>)indexDefineMap.get("props");
-                    String docType=indexDefineMap.get("doctype").toString();
                     Iterator<Map.Entry<String,Object>> iterator=propMap.entrySet().iterator();
                     while(iterator.hasNext()){
                         Map.Entry<String,Object> entry=iterator.next();

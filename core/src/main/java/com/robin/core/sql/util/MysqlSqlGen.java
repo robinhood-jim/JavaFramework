@@ -132,7 +132,7 @@ public class MysqlSqlGen extends AbstractSqlGen implements BaseSqlGen{
 	}
 
 	@Override
-	protected String getAutoIncrementDef() {
+	public String getAutoIncrementDef() {
 		return " AUTO_INCREMENT";
 	}
 

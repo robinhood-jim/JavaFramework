@@ -556,7 +556,6 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
 
     protected String toSQLForDate(QueryParam param) {
         StringBuilder builder = new StringBuilder();
-        String nQueryModel = param.getQueryMode();
         if (param.getQueryValue() == null || "".equals(param.getQueryValue().trim())) {
             return "";
         }
@@ -660,7 +659,7 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
         }
         return is_illeagl;
     }
-    protected String getAutoIncrementDef(){
+    public String getAutoIncrementDef(){
         return " AUTO INCREMENT";
     }
 }

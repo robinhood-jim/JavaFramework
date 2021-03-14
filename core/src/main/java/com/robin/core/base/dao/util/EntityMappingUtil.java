@@ -8,6 +8,7 @@ import com.robin.core.sql.util.BaseSqlGen;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -94,7 +95,7 @@ public class EntityMappingUtil {
         return insertSegment;
     }
 
-    public static UpdateSegment getUpdateSegment(BaseObject obj, BaseSqlGen sqlGen) {
+    public static UpdateSegment getUpdateSegment(BaseObject obj, BaseSqlGen sqlGen) throws SQLException {
         AnnotationRetrevior.EntityContent tableDef = AnnotationRetrevior.getMappingTableByCache(obj.getClass());
         List<AnnotationRetrevior.FieldContent> fields = AnnotationRetrevior.getMappingFieldsCache(obj.getClass());
         AnnotationRetrevior.validateEntity(obj);
@@ -113,7 +114,7 @@ public class EntityMappingUtil {
         List<Object> whereObjects = new ArrayList<>();
         UpdateSegment updateSegment = new UpdateSegment();
         for (AnnotationRetrevior.FieldContent field : fields) {
-            Object object = AnnotationRetrevior.getvalueFromVO(field, obj);
+            Object object = AnnotationRetrevior.getValueFromVO(field, obj);
             if (!field.isIncrement() && !field.isSequential()) {
                 if (object == null) {
                     if (dirtyColumns.contains(field.getPropertyName())) {
@@ -126,7 +127,7 @@ public class EntityMappingUtil {
                         objList.add(object);
                     } else {
                         for (AnnotationRetrevior.FieldContent pks : field.getPrimaryKeys()) {
-                            Object tval = AnnotationRetrevior.getvalueFromVO(pks, (BasePrimaryObject) object);
+                            Object tval = AnnotationRetrevior.getValueFromVO(pks, (BasePrimaryObject) object);
                             if (tval == null) {
                                 throw new DAOException(" update MappingEntity Primary key must not be null");
                             }
@@ -161,7 +162,7 @@ public class EntityMappingUtil {
             if (field.isPrimary()) {
                 if (field.getPrimaryKeys() != null) {
                     for (AnnotationRetrevior.FieldContent fieldContent : field.getPrimaryKeys()) {
-                        Object tval = AnnotationRetrevior.getvalueFromVO(fieldContent, (BasePrimaryObject) id);
+                        Object tval = AnnotationRetrevior.getValueFromVO(fieldContent, (BasePrimaryObject) id);
                         wherebuffer.append(fieldContent.getFieldName()).append("=? and ");
                         selectObjs.add(tval);
                         sqlbuffer.append(fieldContent.getFieldName()).append(" as ").append(fieldContent.getPropertyName()).append(",");

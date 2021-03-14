@@ -198,9 +198,9 @@ public class ExcelProcessor {
                                     strCell = String.valueOf(cell.getNumericCellValue());
                                 } else if (type.equals(Const.META_TYPE_STRING)) {
                                     double d = cell.getNumericCellValue();
-                                    String str1 = String.valueOf(Double.valueOf(d).intValue());
+                                    String str1 = String.valueOf(new Double(d).intValue());
                                     if (str1 != null && !"".equals(str1.trim())) {
-                                        strCell = String.valueOf(Double.valueOf(d).intValue());
+                                        strCell = String.valueOf(new Double(d).intValue());
                                     }
                                 }
                                 break;
