@@ -129,7 +129,7 @@
         <xz.version>1.6</xz.version>
         <cassandradriver.version>3.6.0</cassandradriver.version>
         <graal.version>1.0.0-rc7</graal.version>
-        <calcite.version>1.21.0</calcite.version>
+        <calcite.version>1.26.0</calcite.version>
     </properties>
 
 
