@@ -8,6 +8,7 @@ import com.robin.core.fileaccess.util.AvroUtils;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericRecord;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.Assert;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
@@ -47,7 +48,7 @@ public class JedisClientFactory {
             config.setMaxTotal(100);
             config.setMaxIdle(20);
             config.setMaxWaitMillis(100000L);
-            if (passwd == null || passwd.equals("")) {
+            if (StringUtils.isEmpty(passwd)) {
                 pool = new JedisPool(config, ip, port, 100000);
             } else {
                 pool = new JedisPool(config, ip, port, 100000, passwd);

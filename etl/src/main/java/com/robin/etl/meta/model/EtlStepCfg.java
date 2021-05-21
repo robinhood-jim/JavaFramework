@@ -10,17 +10,16 @@ import lombok.Data;
 public class EtlStepCfg extends BaseObject {
     @MappingField(primary = true, increment = true)
     private Long id;
-    @MappingField(field = "flow_id")
+    @MappingField
     private Long flowId;
-    @MappingField(field = "func_id")
+    @MappingField
     private Long funcId;
-    @MappingField(field = "trans_id")
+    @MappingField
     private Long transId;
     private Long subFlowId;
     @MappingField
     private String name;
-    @MappingField
-    private Integer priority;
+
 
 
 }

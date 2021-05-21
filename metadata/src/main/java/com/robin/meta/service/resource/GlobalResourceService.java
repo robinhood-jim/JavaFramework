@@ -102,6 +102,7 @@ public class GlobalResourceService extends BaseAnnotationJdbcService<GlobalResou
                 colmeta.setPkColumns(pkList);
             }else if (resource.getResType().equals(Long.valueOf(ResourceConst.ResourceType.TYPE_HDFSFILE.toString()))) {
                 colmeta.setResourceCfgMap(service.getResourceCfg(sourceId));
+
             }else if (resource.getResType().equals(ResourceConst.ResourceType.TYPE_FTPFILE.getValue()) || resource.getResType().equals(ResourceConst.ResourceType.TYPE_SFTPFILE.getValue())) {
                 Map<String, Object> ftpparam = colmeta.getResourceCfgMap();
                 ftpparam.put("hostName", resource.getHostName());

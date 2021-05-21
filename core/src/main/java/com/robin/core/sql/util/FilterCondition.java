@@ -1,6 +1,7 @@
 package com.robin.core.sql.util;
 
 import com.robin.core.base.dao.util.AnnotationRetrevior;
+import org.springframework.util.Assert;
 
 import java.util.Map;
 
@@ -117,8 +118,7 @@ public class FilterCondition {
 			sbSQLStr.append(" is null) ");
 		} else 
 		if (IN.equals(operator)){
-			if (values.length < 1 || values[0] == null){
-			}
+			Assert.notEmpty(values,"");
 			sbSQLStr.append(" (");
 			sbSQLStr.append(realColumn);
 			sbSQLStr.append(" in (");

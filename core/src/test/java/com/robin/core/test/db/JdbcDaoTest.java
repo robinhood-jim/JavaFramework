@@ -207,7 +207,7 @@ public class JdbcDaoTest extends TestCase {
         filterConditions.withCondition(new FilterCondition("userAccount", Condition.EQUALS,"admin"))
                 .withCondition(new FilterCondition("userPassword", Condition.EQUALS, StringUtils.getMd5Encry("123456")))
                 .withCondition(new FilterCondition("accountType", Condition.EQUALS,"1"));
-        List<SysUser> list=sysUserService.queryByCondition(filterConditions,"");
+        List<SysUser> list=sysUserService.queryByCondition(filterConditions,new PageQuery());
     }
     @Test
     public void testQueryAndInsertMapper(){

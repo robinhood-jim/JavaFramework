@@ -53,32 +53,36 @@ public class OracleSqlGen extends AbstractSqlGen implements BaseSqlGen {
 
 	@Override
     public String generatePageSql(String strSQL, PageQuery pageQuery) {
-		Integer[] startEnd=getStartEndRecord(pageQuery);
-		int nBegin = startEnd[0];
-		boolean hasOffset = nBegin > 0;
-		strSQL = strSQL.trim();
-		boolean isForUpdate = false;
-		if (strSQL.toLowerCase().endsWith(" for update")) {
-			strSQL = strSQL.substring(0, strSQL.length() - 11);
-			isForUpdate = true;
+		if(pageQuery.getPageSize()!=0) {
+			Integer[] startEnd = getStartEndRecord(pageQuery);
+			int nBegin = startEnd[0];
+			boolean hasOffset = nBegin > 0;
+			strSQL = strSQL.trim();
+			boolean isForUpdate = false;
+			if (strSQL.toLowerCase().endsWith(" for update")) {
+				strSQL = strSQL.substring(0, strSQL.length() - 11);
+				isForUpdate = true;
+			}
+			StringBuffer pagingSelect = new StringBuffer(strSQL.length() + 100);
+			if (hasOffset) {
+				pagingSelect.append("select * from ( select row_.*, rownum rownum_ from ( ");
+			} else {
+				pagingSelect.append("select * from ( ");
+			}
+			pagingSelect.append(strSQL);
+			int tonums = startEnd[1];
+			if (hasOffset) {
+				pagingSelect.append(" ) row_ ) where rownum_ <= ").append(tonums).append(" and rownum_ > ").append(nBegin);
+			} else {
+				pagingSelect.append(" ) where rownum <= ").append(pageQuery.getPageSize());
+			}
+			if (isForUpdate) {
+				pagingSelect.append(" for update");
+			}
+			return pagingSelect.toString();
+		}else{
+			return getNoPageSql(strSQL,pageQuery);
 		}
-		StringBuffer pagingSelect = new StringBuffer(strSQL.length() + 100);
-		if (hasOffset) {
-            pagingSelect.append("select * from ( select row_.*, rownum rownum_ from ( ");
-        } else {
-            pagingSelect.append("select * from ( ");
-        }
-		pagingSelect.append(strSQL);
-		int tonums=startEnd[1];
-		if (hasOffset) {
-            pagingSelect.append(" ) row_ ) where rownum_ <= ").append(tonums).append(" and rownum_ > ").append(nBegin);
-        } else {
-            pagingSelect.append(" ) where rownum <= ").append(pageQuery.getPageSize());
-        }
-		if (isForUpdate) {
-            pagingSelect.append(" for update");
-        }
-		return pagingSelect.toString();
 	}
 
 	private String getClassSql(List<QueryParam> queryList) {
@@ -158,14 +162,7 @@ public class OracleSqlGen extends AbstractSqlGen implements BaseSqlGen {
     public String getSequnceScript(String sequnceName) {
 		return sequnceName+".nextval";
 	}
-	@Override
-    public String getSelectPart(String columnName, String aliasName) {
-		String selectPart=columnName;
-		if(aliasName!=null && !"".equals(aliasName)){
-			selectPart+=" as \""+aliasName+"\"";
-		}
-		return selectPart;
-	}
+
 
 	@Override
 	public String getClobFormat() {

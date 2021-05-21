@@ -293,7 +293,14 @@ public class ConvertUtil {
                 ret = Short.valueOf(strValue.toString());
             } else if (type.isAssignableFrom(BigDecimal.class)) {
                 ret = BigDecimal.valueOf(Double.valueOf(strValue.toString()));
-            } else if (type.isAssignableFrom(java.util.Date.class) || type.isAssignableFrom(LocalDateTime.class) || type.isAssignableFrom(Timestamp.class)) {
+            }else if(type.isAssignableFrom(Boolean.class)){
+                if(NumberUtils.isNumber(strValue.toString())){
+                    ret=strValue.toString().equals(Const.VALID);
+                }else{
+                    ret=Boolean.valueOf(strValue.toString());
+                }
+            }
+            else if (type.isAssignableFrom(java.util.Date.class) || type.isAssignableFrom(LocalDateTime.class) || type.isAssignableFrom(Timestamp.class)) {
                 String value = strValue.toString().trim();
                 if (defaultDateTimeFormatter.length == 0) {
                     formatter = getFormatter(value);

@@ -13,8 +13,13 @@ import java.security.MessageDigest;
 
 public class CipherUtil{  
     private static  String algorithm = "DES";
-    private static final String DEFAULT_CIPHER_ALGORITHM = "DES/ECB/PKCS5Padding";  
-    public static byte[] initSecretKey() throws Exception{  
+    private static final String DEFAULT_CIPHER_ALGORITHM = "DES/ECB/PKCS5Padding";
+	public static final char[] avaiablechar = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '-', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '/'};
+	public static final byte[] m_datapadding = {0x7F};
+	//EXE header,pretent as a exe file
+	public static final byte[] mzHeader = {0x4D, 0x5A, 0x50, 0x00, 0x02, 0x00, 0x00, 0x00, 0x04, 0x00, 0x0f, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+
+	public static byte[] initSecretKey() throws Exception{
 
         KeyGenerator kg = KeyGenerator.getInstance(algorithm);  
 

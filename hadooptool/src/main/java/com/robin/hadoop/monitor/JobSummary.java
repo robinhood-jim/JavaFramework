@@ -145,6 +145,14 @@ public class JobSummary implements Comparable<JobSummary>{
 		}
 		return retName;
 	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(obj!=null && obj instanceof JobSummary){
+			return this.jobId.equals(((JobSummary) obj).getJobId());
+		}
+		return false;
+	}
 	@Override
 	public int compareTo(JobSummary cmpobj) {
 		String orgJobId=this.jobId;

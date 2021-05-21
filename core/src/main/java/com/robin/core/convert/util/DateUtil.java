@@ -158,6 +158,6 @@ public class DateUtil {
    }
    public static Long getTsByBaseAndOffset(LocalDate baseTime,Integer offsetDay){
       Long baseTs=getTsByBase(baseTime);
-      return baseTs+offsetDay*24*60*60*1000;
+      return baseTs+offsetDay*24*60*60*1000L;
    }
 }

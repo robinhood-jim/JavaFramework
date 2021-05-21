@@ -387,7 +387,7 @@ public class CommJdbcUtil {
             }
             if (pageQuery.getPageSize() > 0) {
                 String sumSQL = "";
-                if (qs.getCountSql() == null || "".equals(qs.getCountSql().trim())) {
+                if (qs.getCountSql() == null || StringUtils.isEmpty(qs.getCountSql().trim())) {
                     sumSQL = sqlGen.generateCountSql(querySQL);
                 } else {
                     sumSQL = sqlGen.getCountSqlByConfig(qs, pageQuery);

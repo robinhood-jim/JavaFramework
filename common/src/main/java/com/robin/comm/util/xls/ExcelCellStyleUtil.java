@@ -15,7 +15,6 @@
  */
 package com.robin.comm.util.xls;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.poi.hssf.usermodel.HSSFDataFormat;
@@ -26,11 +25,9 @@ import org.apache.poi.ss.usermodel.Workbook;
 
 import com.robin.core.base.util.Const;
 
-import javax.swing.*;
-
 public class ExcelCellStyleUtil {
 
-	private static final String defaultFontName= java.awt.Font.SANS_SERIF;
+	private static final String DEFAULT_FONT_NAME = java.awt.Font.SANS_SERIF;
 	private ExcelCellStyleUtil(){
 
 	}
@@ -56,7 +53,7 @@ public class ExcelCellStyleUtil {
 	        //cs.setFillForegroundColor(IndexedColors.WHITE.getIndex());
 	        	 if(header!=null){
 	             	Font font=wb.createFont();
-					 font.setFontName((header.getContentFontName()==null || header.getContentFontName().isEmpty())?defaultFontName:header.getContentFontName());
+					 font.setFontName((header.getContentFontName()==null || header.getContentFontName().isEmpty())? DEFAULT_FONT_NAME :header.getContentFontName());
 	             	if(header.isBold())
 	             	{
 	             		font.setBoldweight((short)2);

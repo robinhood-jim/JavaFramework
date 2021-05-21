@@ -78,16 +78,20 @@ public class DB2SqlGen extends AbstractSqlGen implements BaseSqlGen{
 
 	@Override
     public String generatePageSql(String strSQL, PageQuery pageQuery) {
-		Integer[] startEnd=getStartEndRecord(pageQuery);
+		if(pageQuery.getPageSize()!=0) {
+			Integer[] startEnd = getStartEndRecord(pageQuery);
 
-		strSQL = strSQL.trim();
-		StringBuilder pagingSelect = new StringBuilder(strSQL.length() + 100);
-		pagingSelect.append("select * from ( select row.*,rownumber() over() as rownum");
-		pagingSelect.append(" from ( ");
-		pagingSelect.append(strSQL);
-		pagingSelect.append(" )row) row_ where rownum <= ").append(startEnd[1]).append(" and rownum > ").append(startEnd[0]).append(" with ur");
-		log.info("pageSql="+pagingSelect.toString());
-		return pagingSelect.toString();
+			strSQL = strSQL.trim();
+			StringBuilder pagingSelect = new StringBuilder(strSQL.length() + 100);
+			pagingSelect.append("select * from ( select row.*,rownumber() over() as rownum");
+			pagingSelect.append(" from ( ");
+			pagingSelect.append(strSQL);
+			pagingSelect.append(" )row) row_ where rownum <= ").append(startEnd[1]).append(" and rownum > ").append(startEnd[0]).append(" with ur");
+			log.info("pageSql=" + pagingSelect.toString());
+			return pagingSelect.toString();
+		}else {
+			return getNoPageSql(strSQL,pageQuery);
+		}
 	}
 	
 
@@ -122,15 +126,6 @@ public class DB2SqlGen extends AbstractSqlGen implements BaseSqlGen{
 		return sequnceName+".nextval";
 	}
 
-
-	@Override
-    public String getSelectPart(String columnName, String aliasName) {
-		String selectPart=columnName;
-		if(aliasName!=null && !"".equals(aliasName)){
-			selectPart+=" as \""+aliasName+"\"";
-		}
-		return selectPart;
-	}
 
 	@Override
 	public String getClobFormat() {

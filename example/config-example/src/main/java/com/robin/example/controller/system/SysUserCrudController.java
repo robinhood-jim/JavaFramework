@@ -66,9 +66,7 @@ public class SysUserCrudController extends BaseCrudDhtmlxController<SysUser, Lon
     @ResponseBody
     public Map<String, Object> listUser(HttpServletRequest request, HttpServletResponse response) {
         PageQuery query = wrapPageQuery(request);
-        if (query == null) {
-            query = new PageQuery();
-        }
+
         query.setSelectParamId("GET_SYSUSERINFO");
         wrapQuery(request,query);
 

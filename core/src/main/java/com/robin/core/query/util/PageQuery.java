@@ -74,7 +74,16 @@ public class PageQuery implements Serializable {
 		pageNumber = 1;
 		pageSize = 10;
 	}
-
+	public PageQuery(String order,String orderDirection){
+		this.order=order;
+		this.orderDirection=orderDirection;
+	}
+	public PageQuery(Integer pageSize,Integer pageNumber,String order,String orderDirection){
+		this.order=order;
+		this.orderDirection=orderDirection;
+		this.pageSize=pageSize;
+		this.pageNumber=pageNumber;
+	}
 
 	public void setParameterWithKey(String key,String value){
 		this.parameters.put(key,value);
