@@ -185,7 +185,6 @@ public class SimpleJdbcDao {
 			return qRunner.query(conn, sql, handler);
 		}catch(Exception ex){
 			throw new DAOException(ex);
-		}finally{
 		}
 	}
 	public static int callProcedure(final Connection conn,final String sql,Object... param) throws DAOException{
@@ -233,7 +232,6 @@ public class SimpleJdbcDao {
 			return qRunner.query(conn, sql, handler);
 		}catch(Exception ex){
 			throw new DAOException(ex);
-		}finally{
 		}
 	}
 	@SuppressWarnings("unchecked")
@@ -256,7 +254,6 @@ public class SimpleJdbcDao {
 			return qRunner.query(conn, sql, handler);
 		}catch(Exception ex){
 			throw new DAOException(ex);
-		}finally{
 		}
 	}
 	public List<Map<String, String>> queryBySql(final String sql) throws DAOException{
@@ -312,9 +309,7 @@ public class SimpleJdbcDao {
 			return queryHandler(qRunner,conn,sql);
 		}catch (Exception e) {
 			throw new DAOException(e);
-		}finally{
 		}
-		
 	}
 
 	public static List<Map<String, String>> queryBySql(final Connection conn,final String sql,Object[] obj) throws DAOException{
@@ -323,9 +318,7 @@ public class SimpleJdbcDao {
 			return queryHandler(qRunner,conn,sql,obj);
 		}catch (Exception e) {
 			throw new DAOException(e);
-		}finally{
 		}
-
 	}
 	private static List<Map<String,String>> queryHandler(final QueryRunner runner,Connection conn,String sql) throws Exception{
 		return runner.query(conn, sql, new ResultSetHandler<List<Map<String,String>>>(){
@@ -361,7 +354,6 @@ public class SimpleJdbcDao {
 			return queryHandler(qRunner,conn,sql,obj);
 		}catch (Exception e) {
 			throw new DAOException(e);
-		}finally{
 		}
 	}
 	public static final Map<String, String> wrapResultSet(ResultSet rs,ResultSetMetaData meta) throws SQLException{
@@ -505,8 +497,6 @@ public class SimpleJdbcDao {
 			//logger.error("",ex);
 			throw new DAOException(ex);
 		}
-		finally{
-		}
 	}
 	/**
 	 * 支持Hive调用和无ResultSet返回的情况
@@ -539,8 +529,6 @@ public class SimpleJdbcDao {
 			//logger.error("",ex);
 			throw new DAOException(ex);
 		}
-		finally{
-		}
 	}
 	public static int executeUpdateNoMeta(final Connection conn,final String sql,final Object[] param) throws DAOException{
 		try{
@@ -550,8 +538,6 @@ public class SimpleJdbcDao {
 			//logger.error("",ex);
 			throw new DAOException(ex);
 		}
-		finally{
-		}
 	}
 	public static int executeUpdateNoMeta(final Connection conn,final String sql) throws DAOException{
 		try{
@@ -560,8 +546,6 @@ public class SimpleJdbcDao {
 		}catch(Exception ex){
 			//logger.error("",ex);
 			throw new DAOException(ex);
-		}
-		finally{
 		}
 	}
 	public static int executeUpdateWithTransaction(final Connection conn,final String sql,final Object[] param) throws DAOException{

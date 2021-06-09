@@ -102,6 +102,7 @@ public class GlobalResourceService extends BaseAnnotationJdbcService<GlobalResou
                 colmeta.setPkColumns(pkList);
             }else if (resource.getResType().equals(Long.valueOf(ResourceConst.ResourceType.TYPE_HDFSFILE.toString()))) {
                 colmeta.setResourceCfgMap(service.getResourceCfg(sourceId));
+
             }else if (resource.getResType().equals(ResourceConst.ResourceType.TYPE_FTPFILE.getValue()) || resource.getResType().equals(ResourceConst.ResourceType.TYPE_SFTPFILE.getValue())) {
                 Map<String, Object> ftpparam = colmeta.getResourceCfgMap();
                 ftpparam.put("hostName", resource.getHostName());
@@ -119,7 +120,6 @@ public class GlobalResourceService extends BaseAnnotationJdbcService<GlobalResou
                 if(schemaMap.containsKey(selectSource.toLowerCase())){
                     Map<String,Object> indexDefineMap=(Map<String,Object>)schemaMap.get(selectSource.toLowerCase());
                     Map<String,Object> propMap=(Map<String,Object>)indexDefineMap.get("props");
-                    String docType=indexDefineMap.get("doctype").toString();
                     Iterator<Map.Entry<String,Object>> iterator=propMap.entrySet().iterator();
                     while(iterator.hasNext()){
                         Map.Entry<String,Object> entry=iterator.next();

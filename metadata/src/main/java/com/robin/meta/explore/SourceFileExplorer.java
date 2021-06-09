@@ -100,7 +100,6 @@ public class SourceFileExplorer {
         }catch (Exception ex){
             ex.printStackTrace();
             log.error("",ex);
-        }finally {
         }
     }
     private static void adjustColumnTypeAndFormat(String[] columnNames,Map<String,Map<String,Long>> typeMap,Map<String,Map<String,Long>> dateFormatMap,DataCollectionMeta meta){

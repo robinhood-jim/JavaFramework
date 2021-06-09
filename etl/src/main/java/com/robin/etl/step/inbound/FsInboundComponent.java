@@ -48,8 +48,5 @@ public class FsInboundComponent extends AbstractComponent {
         return iterator;
     }
 
-    @Override
-    public Integer doExecute() {
-        return null;
-    }
+
 }

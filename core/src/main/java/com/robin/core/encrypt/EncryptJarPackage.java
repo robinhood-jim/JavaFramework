@@ -25,10 +25,6 @@ import java.util.zip.ZipOutputStream;
 
 @Slf4j
 public class EncryptJarPackage {
-    private static char[] avaiablechar = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '-', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '/'};
-    private static byte[] m_datapadding = {0x7F};
-    //EXE header,pretent as a exe file
-    private static byte[] mzHeader = {0x4D, 0x5A, 0x50, 0x00, 0x02, 0x00, 0x00, 0x00, 0x04, 0x00, 0x0f, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
     private static String[] str = {"i", "I", "l", "O", "0", "1"};
     private static final String parameterPrefix = "$";
     private static String metholdName;
@@ -37,7 +33,7 @@ public class EncryptJarPackage {
     private static ByteBuffer buffer = ByteBuffer.allocate(8);
 
     public static void main(String[] args) {
-        String sourcePath = "D:/dev/workspaceframe/JavaFramework/core/src/main/java";
+        String sourcePath = "D:/dev/workspaceframe/JavaFramework/core/src/";
         String compileclassPath = ".;D:/dev/workspaceframe/JavaFramework/core/target/lib/*;d:/servlet-api-2.5.jar;D:/dev/workspaceframe/JavaFramework/core/target/core-1.0-SNAPSHOT_proguard_base.jar;d:/jdk1.8/lib/tools.jar";
         String srcPath = "d:/tmp/corencrypt/src/";
         JavaProjectBuilder builder = new JavaProjectBuilder();
@@ -149,7 +145,7 @@ public class EncryptJarPackage {
                                         if (!tmpStr.contains("static")) {
                                             tmpStr = tmpStr.substring(0, pos - 1) + ";\n";
                                         } else {
-                                            if (tmpStr.substring(pos + 1).replaceAll("\r", "").replaceAll("\n", "").trim().equals(";")) {
+                                            if (";".equals(tmpStr.substring(pos + 1).replaceAll("\r", "").replaceAll("\n", "").trim())) {
                                                 if (!prop.getType().isPrimitive()) {
                                                     tmpStr = tmpStr.substring(0, pos - 1) + "=null;\n";
                                                 } else {
@@ -214,6 +210,7 @@ public class EncryptJarPackage {
                         getParameters(parameters, tmpbuffer, method);
                         tmpbuffer.append(")");
                         if (!isinterface) {
+                            String code = method.getCodeBlock();
                             tmpbuffer.append("{");
                             if (!"void".equals(rettype)) {
                                 if (rettype.contains("[") && rettype.contains("]")) {
@@ -345,7 +342,7 @@ public class EncryptJarPackage {
         }
     }
 
-    private static void getClassDef(JavaClass clazz, StringBuilder buffer) {
+    public static void getClassDef(JavaClass clazz, StringBuilder buffer) {
         if (clazz.isInterface()) {
             buffer.append("public ");
             if (clazz.isAbstract()) {
@@ -415,7 +412,7 @@ public class EncryptJarPackage {
         StringBuilder builder = new StringBuilder();
         for (int i = 0; i < num; i++) {
             int randint = random.nextInt(range);
-            builder.append(avaiablechar[randint]);
+            builder.append(CipherUtil.avaiablechar[randint]);
             //builder.append((char)(beginchar+randint));
         }
         return builder.toString();
@@ -466,65 +463,63 @@ public class EncryptJarPackage {
     private static ZipOutputStream getJarClasses(String jarFile, String basePath, DataOutputStream dout, String machineSerial) throws Exception {
         try (ZipInputStream inputStream = new ZipInputStream(new FileInputStream(new File(jarFile)))) {
             ZipEntry entry = null;
-            int range = avaiablechar.length;
+            int range = CipherUtil.avaiablechar.length;
             Random random = new Random(range);
-            try (ZipOutputStream outputStream = new ZipOutputStream(new FileOutputStream(new File("E:/output.jar")))) {
-                List<String> randomFolders = new ArrayList<>();
-                for (int i = 0; i < 8; i++) {
-                    generateRandomFolder(9, 3, randomFolders);
-                }
+            ZipOutputStream outputStream = new ZipOutputStream(new FileOutputStream(new File("E:/output.jar")));
 
-                Random random1 = new Random();
-                //List<String> insertFloder = new ArrayList<>();
-                String[] caculateStr = caculateMachineSerail(machineSerial, System.currentTimeMillis() + 365 * 3600 * 24 * 1000);
-                byte[] machineSerailbytes = Base64.decodeBase64(caculateStr[1].getBytes());
-                //core key ,contains machineId and expireTs
-                dout.write(mzHeader);
-                dout.writeUTF(
-
-                        encrypt(caculateStr[0]));
-                dout.write(m_datapadding);
-                while ((entry = inputStream.getNextEntry()) != null) {
-                    String path = entry.getName();
-                    int pos = path.lastIndexOf("/");
-                    if (pos == -1) {
-                        continue;
-                    }
-                    String packageName = path.substring(0, pos).replaceAll("/", ".");
-                    if (entry.isDirectory()) {
-
-                    } else if (entry.getName().endsWith("class")) {
-                        String className = path.substring(pos + 1);
-                        pos = className.indexOf(".");
-                        String clazzName = className.substring(0, pos);
-                        String keystr = generateEncrytKey(range, 12, random);
-                        byte[] key = Base64.decodeBase64(keystr.getBytes());
-                        byte[] bytes = getZipByte(inputStream);
-                        //使用随机密码加密
-                        byte[] outbyte = CipherUtil.encryptByte(bytes, key);
-                        //使用机器码加密，用于失效验证
-                        byte[] encryptbytes = CipherUtil.encryptByte(outbyte, machineSerailbytes);
-                        //FileUtils.writeByteArrayToFile(new File(basePath + path), outbyte);
-                        String randomoutputPath = randomFolders.get(random1.nextInt(8));
-                        List<String> params = getRandomName(9, random);
-                        String fileName = params.get(0);
-                        dout.writeUTF(encrypt(packageName + "." + clazzName));
-                        dout.write(m_datapadding);
-                        //dout.writeUTF(encrypt(basePath + randomoutputPath + fileName));
-                        dout.write(longToBytes(Long.valueOf(params.get(1))));
-                        dout.write(m_datapadding);
-                        dout.write(getKeyByte(keystr));
-                        dout.write(m_datapadding);
-                        outputStream.putNextEntry(new JarEntry(basePath + fileName));
-                        IOUtils.copyBytes(new ByteArrayInputStream(encryptbytes), outputStream, 8094);
-                        System.out.println(packageName + "." + clazzName + "=" + keystr);
-                    } else {
-                        outputStream.putNextEntry(new JarEntry(entry.getName()));
-                        IOUtils.copyBytes(inputStream, outputStream, 1024);
-                    }
-                }
-                return outputStream;
+            List<String> randomFolders = new ArrayList<>();
+            for (int i = 0; i < 8; i++) {
+                generateRandomFolder(9, 3, randomFolders);
             }
+
+            Random random1 = new Random();
+            //List<String> insertFloder = new ArrayList<>();
+            String[] caculateStr = caculateMachineSerail(machineSerial, System.currentTimeMillis() + 365 * 3600 * 24 * 1000);
+            byte[] machineSerailbytes = Base64.decodeBase64(caculateStr[1].getBytes());
+            //core key ,contains machineId and expireTs
+            dout.write(CipherUtil.mzHeader);
+            dout.writeUTF(encrypt(caculateStr[0]));
+            dout.write(CipherUtil.m_datapadding);
+            while ((entry = inputStream.getNextEntry()) != null) {
+                String path = entry.getName();
+                int pos = path.lastIndexOf("/");
+                if (pos == -1) {
+                    continue;
+                }
+                String packageName = path.substring(0, pos).replaceAll("/", ".");
+                if (entry.isDirectory()) {
+
+                } else if (entry.getName().endsWith("class")) {
+                    String className = path.substring(pos + 1);
+                    pos = className.indexOf(".");
+                    String clazzName = className.substring(0, pos);
+                    String keystr = generateEncrytKey(range, 12, random);
+                    byte[] key = Base64.decodeBase64(keystr.getBytes());
+                    byte[] bytes = getZipByte(inputStream);
+                    //使用随机密码加密
+                    byte[] outbyte = CipherUtil.encryptByte(bytes, key);
+                    //使用机器码加密，用于失效验证
+                    byte[] encryptbytes = CipherUtil.encryptByte(outbyte, machineSerailbytes);
+                    //FileUtils.writeByteArrayToFile(new File(basePath + path), outbyte);
+                    String randomoutputPath = randomFolders.get(random1.nextInt(8));
+                    List<String> params = getRandomName(9, random);
+                    String fileName = params.get(0);
+                    dout.writeUTF(encrypt(packageName + "." + clazzName));
+                    dout.write(CipherUtil.m_datapadding);
+                    //dout.writeUTF(encrypt(basePath + randomoutputPath + fileName));
+                    dout.write(longToBytes(Long.valueOf(params.get(1))));
+                    dout.write(CipherUtil.m_datapadding);
+                    dout.write(getKeyByte(keystr));
+                    dout.write(CipherUtil.m_datapadding);
+                    outputStream.putNextEntry(new JarEntry(basePath + fileName));
+                    IOUtils.copyBytes(new ByteArrayInputStream(encryptbytes), outputStream, 8094);
+                    System.out.println(packageName + "." + clazzName + "=" + keystr);
+                } else {
+                    outputStream.putNextEntry(new JarEntry(entry.getName()));
+                    IOUtils.copyBytes(inputStream, outputStream, 1024);
+                }
+            }
+            return outputStream;
         }
 
     }

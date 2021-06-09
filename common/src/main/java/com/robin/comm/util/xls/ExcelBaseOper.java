@@ -18,12 +18,14 @@ package com.robin.comm.util.xls;
 import com.robin.core.base.util.Const;
 import net.sf.json.JSONArray;
 import net.sf.json.JsonConfig;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.CellUtil;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
+import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFColor;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.slf4j.Logger;
@@ -293,18 +295,23 @@ public class ExcelBaseOper {
         if (colType.equals(Const.META_TYPE_STRING)) {
             cell = createCell(row1, j, cellStyle, helper, value);
         } else if (colType.equals(Const.META_TYPE_NUMERIC) || colType.equals(Const.META_TYPE_DOUBLE)) {
-            if (!"".equals(value)) {
+            if (!StringUtils.isEmpty(value)) {
                 cell = createCell(row1, j, cellStyle, helper, Double.parseDouble(value));
             }
         } else if (colType.equals(Const.META_TYPE_INTEGER)) {
-            if (!"".equals(value)) {
+            if (!StringUtils.isEmpty(value)) {
                 cell = createCell(row1, j, cellStyle, helper, Integer.parseInt(value));
             }
         } else if (colType.equals(Const.META_TYPE_DATE) || colType.equals(Const.META_TYPE_TIMESTAMP)) {
-            if (!"".equals(value)) {
+            if (!StringUtils.isEmpty(value)) {
                 cell = createCellDate(row1, j, cellStyle, helper, value);
             }
-        } else {
+        }else if(colType.equalsIgnoreCase(Const.META_TYPE_FORMULA)){
+            if(!StringUtils.isEmpty(value)){
+                cell=createFormulaCell(row1,j,cellStyle,helper,value);
+            }
+        }
+        else {
             cell = createCell(row1, j, cellStyle, helper, value);
         }
         return cell;
@@ -328,6 +335,13 @@ public class ExcelBaseOper {
         cellStyle.setDataFormat(helper.createDataFormat().getFormat("#,##0.000"));
 
         cell.setCellValue(value);
+        cell.setCellStyle(cellStyle);
+        return cell;
+    }
+    private static Cell createFormulaCell(Row row,int column,CellStyle cellStyle,CreationHelper helper,String formula){
+        Cell cell = row.createCell(column);
+        cell.setCellType(XSSFCell.CELL_TYPE_FORMULA);
+        cell.setCellFormula(formula);
         cell.setCellStyle(cellStyle);
         return cell;
     }

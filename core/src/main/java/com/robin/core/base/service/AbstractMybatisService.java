@@ -9,9 +9,9 @@ import com.baomidou.mybatisplus.core.enums.SqlMethod;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
-import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.google.common.collect.ObjectArrays;
 import com.robin.core.base.dto.PageDTO;
 import com.robin.core.base.exception.ServiceException;
 import com.robin.core.base.exception.WebException;
@@ -19,6 +19,7 @@ import com.robin.core.base.reflect.ReflectUtils;
 import com.robin.core.base.util.Const;
 import com.robin.core.convert.util.ConvertUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,16 +33,15 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Slf4j
 public abstract class AbstractMybatisService<M extends BaseMapper<T>,T extends Serializable,P extends Serializable> extends ServiceImpl<M,T> implements IMybatisBaseService<M,T,P> {
     @Autowired
     protected M baseDao;
-    private Class<M> mapperType;
-    private Class<T> voType;
-    private Class<P> pkType;
+    protected Class<M> mapperType;
+    protected Class<T> voType;
+    protected Class<P> pkType;
     protected Method valueOfMethod;
     protected String pkColumn="id";
     protected Map<String, String> fieldMappingMap=new HashMap<>();
@@ -51,6 +51,10 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>,T extends S
     protected Map<String,Method> setMethods;
     public final List<String> compareOperations=Arrays.asList(new String[]{">",">=","!=","<","<="});
     public final List<Integer> compareOperationLens=Arrays.asList(new Integer[]{1,2,2,1,2});
+    protected Map<String,Method> setMap=new HashMap<>();
+    protected String defaultOrderField="create_time";
+    protected Boolean defaultOrder=false;
+
     public AbstractMybatisService(){
         Type genericSuperClass = getClass().getGenericSuperclass();
         ParameterizedType parametrizedType;
@@ -77,6 +81,7 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>,T extends S
             getMethods= ReflectUtils.returnGetMethods(voType);
             setMethods= ReflectUtils.returnSetMethods(voType);
             Map<String, Field> fieldMap= ReflectUtils.getFieldsMapByAnnotation(voType, TableField.class);
+            setMap=ReflectUtils.returnSetMethods(voType);
             if(null!=fieldMap && !fieldMap.isEmpty()) {
                 Iterator<Map.Entry<String, Field>> iterator = fieldMap.entrySet().iterator();
                 while (iterator.hasNext()) {
@@ -87,6 +92,17 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>,T extends S
         } catch (Exception ex) {
             log.error("{}", ex);
         }
+    }
+    @Override
+    @Transactional(rollbackFor = RuntimeException.class)
+    public boolean saveEntity(T entity) {
+        return save(entity);
+    }
+
+    @Override
+    @Transactional(rollbackFor = RuntimeException.class)
+    public boolean updateModelById(T entity) {
+        return updateById(entity);
     }
     @Override
     @Transactional(rollbackFor = RuntimeException.class)
@@ -152,12 +168,12 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>,T extends S
 
     @Override
     public  P[] parseId(String ids) throws ServiceException {
-        P[] array=null;
+        P[] array;
         try {
             Assert.notNull(ids,"input id is null");
             Assert.isTrue(ids.length()>0,"input ids is empty");
             String[] idsArr = ids.split(",");
-            array=(P[])java.lang.reflect.Array.newInstance(pkType,idsArr.length);
+            array= ObjectArrays.newArray(pkType,idsArr.length);
             for (int i = 0; i < idsArr.length; i++) {
                 P p = pkType.newInstance();
                 valueOfMethod.invoke(p, idsArr[i]);
@@ -353,11 +369,13 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>,T extends S
             throw new ServiceException(ex);
         }
     }
+
+
     @Transactional(rollbackFor = RuntimeException.class)
     public boolean createWithRequest(Object requsetObj) throws ServiceException {
         try {
             T obj=voType.newInstance();
-            if (requsetObj.getClass().isAssignableFrom(HashMap.class)) {
+            if (requsetObj.getClass().getInterfaces().length>0 && requsetObj.getClass().getInterfaces()[0].isAssignableFrom(Map.class)) {
                 ConvertUtil.mapToObject(obj,(HashMap) requsetObj);
             } else {
                 Map<String,Method> modelGetMetholds= ReflectUtils.returnGetMethods(requsetObj.getClass());
@@ -379,14 +397,13 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>,T extends S
     public IPage<T> queryPageWithRequest(Object queryObject, String orderField, boolean isAsc) throws ServiceException {
         try {
             QueryWrapper wrapper = wrapWithEntity(queryObject);
-
             if(queryObject.getClass().getSuperclass().isAssignableFrom(PageDTO.class)){
                 PageDTO pageDTO=(PageDTO) queryObject;
                 return queryPage(pageDTO,wrapper,orderField,isAsc);
-            }else if(queryObject.getClass().isAssignableFrom(HashMap.class)){
+            }else if (queryObject.getClass().getInterfaces().length>0 && queryObject.getClass().getInterfaces()[0].isAssignableFrom(Map.class)) {
                 return queryPage((Map<String,Object>)queryObject,wrapper,orderField,isAsc);
             }else{
-                throw new WebException("unsupport Type");
+                throw new WebException("unsupported Type");
             }
         }catch (Exception ex){
             log.error("{}",ex);
@@ -398,47 +415,61 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>,T extends S
     public QueryWrapper wrapWithEntity(Object queryObject) throws Exception {
         Map<String, Method> getMethod = ReflectUtils.returnGetMethods(voType);
         QueryWrapper queryWrapper = new QueryWrapper();
-        Map<String, Field> fieldMap= ReflectUtils.getFieldsMapByAnnotation(voType, TableField.class);
+        Map<String, Field> fieldMap = ReflectUtils.getFieldsMapByAnnotation(voType, TableField.class);
         //hashMap
-        if (queryObject.getClass().isAssignableFrom(HashMap.class)) {
+        if (queryObject.getClass().getInterfaces().length>0 &&  queryObject.getClass().getInterfaces()[0].isAssignableFrom(Map.class)) {
             Map<String, Object> tmpMap = (Map<String, Object>) queryObject;
             Iterator<Map.Entry<String, Object>> iter = tmpMap.entrySet().iterator();
             while (iter.hasNext()) {
                 Map.Entry<String, Object> entry = iter.next();
                 if (getMethod.containsKey(entry.getKey())) {
-                    String filterColumn=null;
-                    if(fieldMap.containsKey(entry.getKey())){
-                        filterColumn=fieldMap.get(entry.getKey()).getAnnotation(TableField.class).value();
-                    }else {
-                        filterColumn=com.robin.core.base.util.StringUtils.getFieldNameByCamelCase(entry.getKey());
+                    String filterColumn;
+                    if (fieldMap!=null && fieldMap.containsKey(entry.getKey())) {
+                        filterColumn = fieldMap.get(entry.getKey()).getAnnotation(TableField.class).value();
+                    } else {
+                        filterColumn = com.robin.core.base.util.StringUtils.getFieldNameByCamelCase(entry.getKey());
                     }
-
-                    wrapQueryWithTypeAndValue(getMethod.get(entry.getKey()).getReturnType(),filterColumn,entry.getValue().toString(),queryWrapper);
+                    wrapQueryWithTypeAndValue(getMethod.get(entry.getKey()).getReturnType(), filterColumn, entry.getValue().toString(), queryWrapper);
                 }
             }
+            if(tmpMap.get(Const.ORDER)!=null && !StringUtils.isEmpty(tmpMap.get(Const.ORDER).toString())
+                    &&tmpMap.get(Const.ORDER_FIELD)!=null  && !StringUtils.isEmpty(tmpMap.get(Const.ORDER_FIELD).toString())){
+                queryWrapper.orderBy(true,tmpMap.get(Const.ORDER).equals(Const.ASC),tmpMap.get(Const.ORDER_FIELD).toString());
+            }else{
+                queryWrapper.orderBy(true,defaultOrder,defaultOrderField);
+            }
         } else {
-            Map<String,Method> qtoMethod= ReflectUtils.returnGetMethods(queryObject.getClass());
-            Iterator<Map.Entry<String,Method>> entryIterator=qtoMethod.entrySet().iterator();
-            while(entryIterator.hasNext()){
-                Map.Entry<String,Method> entry=entryIterator.next();
-                if(getMethod.containsKey(entry.getKey())){
-                    String filterColumn=null;
-                    if(fieldMap.containsKey(entry.getKey())){
-                        filterColumn=fieldMap.get(entry.getKey()).getAnnotation(TableField.class).value();
-                    }else {
-                        filterColumn=com.robin.core.base.util.StringUtils.getFieldNameByCamelCase(entry.getKey());
+            Map<String, Method> qtoMethod = ReflectUtils.returnGetMethods(queryObject.getClass());
+            Iterator<Map.Entry<String, Method>> entryIterator = qtoMethod.entrySet().iterator();
+            while (entryIterator.hasNext()) {
+                Map.Entry<String, Method> entry = entryIterator.next();
+                if (getMethod.containsKey(entry.getKey())) {
+                    String filterColumn;
+                    if (fieldMap!=null && fieldMap.containsKey(entry.getKey())) {
+                        filterColumn = fieldMap.get(entry.getKey()).getAnnotation(TableField.class).value();
+                    } else {
+                        filterColumn = com.robin.core.base.util.StringUtils.getFieldNameByCamelCase(entry.getKey());
                     }
-                    Object tmpObj=entry.getValue().invoke(queryObject);
-                    if(null!=tmpObj) {
+                    Object tmpObj = entry.getValue().invoke(queryObject);
+                    if (null != tmpObj) {
                         wrapQueryWithTypeAndValue(getMethod.get(entry.getKey()).getReturnType(), filterColumn, tmpObj.toString(), queryWrapper);
                     }
+                }
+            }
+            if (queryObject.getClass().getSuperclass().isAssignableFrom(PageDTO.class)){
+                PageDTO pageDTO = (PageDTO) queryObject;
+                Assert.notNull(pageDTO,"");
+                if(!StringUtils.isEmpty(pageDTO.getOrderField()) &&!StringUtils.isEmpty(pageDTO.getOrder())){
+                    queryWrapper.orderBy(true,pageDTO.getOrder().equalsIgnoreCase(Const.ASC),pageDTO.getOrderField());
+                }else{
+                    queryWrapper.orderBy(true,defaultOrder,defaultOrderField);
                 }
             }
         }
         return queryWrapper;
     }
 
-    private void wrapQueryWithTypeAndValue(Class valueType, String fiterColumn, String value, QueryWrapper queryWrapper) throws Exception {
+    protected void wrapQueryWithTypeAndValue(Class valueType, String fiterColumn, String value, QueryWrapper queryWrapper) throws Exception {
         if(null==value || org.apache.commons.lang3.StringUtils.isEmpty(value)){
             return;
         }
@@ -514,6 +545,9 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>,T extends S
                         break;
                     case 4:
                         queryWrapper.le(filterColumn,ConvertUtil.parseParameter(valueType,value.substring(startPos)));
+                        break;
+                    default:
+                        queryWrapper.eq(filterColumn,ConvertUtil.parseParameter(valueType,value));
                         break;
                 }
             }else{

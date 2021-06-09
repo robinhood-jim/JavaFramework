@@ -376,7 +376,7 @@
                         <option>-ignorewarnings</option>
                         <!--<option>-dontshrink</option>-->
                         <option>-printmapping out.map</option>
-                        <option>-optimizations !code/allocation/variable</option>
+                        <option>-optimizations code/allocation/variable,code/simplification/string</option>
                         <option>-keep class **.package-info</option>
                         <!--<option>-keep public class com.robin.core.base.**</option>-->
                         <option>

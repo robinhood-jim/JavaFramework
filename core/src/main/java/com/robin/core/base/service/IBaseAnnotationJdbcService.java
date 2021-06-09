@@ -57,7 +57,7 @@ public interface IBaseAnnotationJdbcService<V extends BaseObject, P extends Seri
     List<V> queryAll() throws ServiceException;
 
     List<V> queryByVO(V vo, Map<String, Object> additonMap, String orderByStr)throws ServiceException;
-    List<V> queryByCondition(List<FilterCondition> filterConditions, String orderByStr);
-    List<V> queryByCondition(FilterConditions filterConditions, String orderByStr);
+    List<V> queryByCondition(List<FilterCondition> filterConditions, PageQuery pageQuery);
+    List<V> queryByCondition(FilterConditions filterConditions, PageQuery pageQuery);
 
 }

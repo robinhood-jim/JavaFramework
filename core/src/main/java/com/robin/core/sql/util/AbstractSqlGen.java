@@ -24,6 +24,7 @@ import com.robin.core.query.util.PageQuery;
 import com.robin.core.query.util.QueryParam;
 import com.robin.core.query.util.QueryString;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.Assert;
 
 import java.util.Iterator;
 import java.util.List;
@@ -556,7 +557,6 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
 
     protected String toSQLForDate(QueryParam param) {
         StringBuilder builder = new StringBuilder();
-        String nQueryModel = param.getQueryMode();
         if (param.getQueryValue() == null || "".equals(param.getQueryValue().trim())) {
             return "";
         }
@@ -625,6 +625,14 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
             return "\"" + schema + "\"";
         }
     }
+    protected String getNoPageSql(String sql,PageQuery pageQuery){
+        Assert.isTrue(pageQuery.getPageSize()==0,"");
+        StringBuilder builder=new StringBuilder(sql);
+        if(!StringUtils.isEmpty(pageQuery.getOrder()) && !StringUtils.isEmpty(pageQuery.getOrderDirection())){
+            builder.append(" order by ").append(pageQuery.getOrder()).append(Const.ASC.equalsIgnoreCase(pageQuery.getOrderDirection())?"asc":"desc");
+        }
+        return builder.toString();
+    }
 
     protected Integer[] getStartEndRecord(PageQuery pageQuery) {
         int nBegin = (pageQuery.getPageNumber() - 1) * pageQuery.getPageSize();
@@ -660,7 +668,17 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
         }
         return is_illeagl;
     }
-    protected String getAutoIncrementDef(){
+    @Override
+    public String getAutoIncrementDef(){
         return " AUTO INCREMENT";
+    }
+
+    @Override
+    public String getSelectPart(String columnName, String aliasName) {
+        String selectPart=columnName;
+        if(aliasName!=null && !"".equals(aliasName)){
+            selectPart+=" as '"+aliasName+"'";
+        }
+        return selectPart;
     }
 }

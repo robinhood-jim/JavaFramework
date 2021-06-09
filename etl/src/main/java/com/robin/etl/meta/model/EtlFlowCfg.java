@@ -34,5 +34,13 @@ public class EtlFlowCfg extends BaseObject {
 	private String defineXml;
 	@MappingField(length=1)
 	private String state;
+	private Integer cycleType;
+	private String triggerType;
+	private String triggerTime;
+	private String runInterval;
+	private String cronTrigger;
+	@MappingField
+	private Integer priority;
+
 
 }

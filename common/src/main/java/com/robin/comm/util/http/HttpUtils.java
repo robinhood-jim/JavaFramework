@@ -230,8 +230,6 @@ public class HttpUtils {
         }catch (Exception ex){
             throw ex;
         }
-        finally {
-        }
         String responseData = null; //response string
         if (response.getStatusLine().getStatusCode()==200){//response ok
             HttpEntity respEntity = response.getEntity();

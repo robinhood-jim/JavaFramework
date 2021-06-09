@@ -76,6 +76,7 @@ public interface BaseSqlGen {
     String getLongFormat();
     String getBlobFormat();
     String getClobFormat();
+    String getAutoIncrementDef();
     enum AlertType{
         ADD("ADD"),
         ALERT("ALERT"),

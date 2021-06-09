@@ -250,11 +250,11 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 	}
 	@Override
     @Transactional(readOnly=true)
-	public List<V> queryByCondition(List<FilterCondition> conditions,String orderByStr)
+	public List<V> queryByCondition(List<FilterCondition> conditions,PageQuery pageQuery)
 			throws ServiceException {
 		List<V> retlist ;
 		try{
-			retlist=(List<V>) jdbcDao.queryByCondition(type, conditions, orderByStr);
+			retlist=(List<V>) jdbcDao.queryByCondition(type, conditions, pageQuery);
 		}catch (DAOException e) {
 			throw new ServiceException(e);
 		}
@@ -262,10 +262,10 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 	}
 	@Override
     @Transactional(readOnly = true)
-	public List<V> queryByCondition(FilterConditions filterConditions,String orderByStr){
+	public List<V> queryByCondition(FilterConditions filterConditions,PageQuery pageQuery){
 		List<V> retlist ;
 		try{
-			retlist=(List<V>) jdbcDao.queryByCondition(type, filterConditions.getConditions(), orderByStr);
+			retlist=(List<V>) jdbcDao.queryByCondition(type, filterConditions.getConditions(), pageQuery);
 		}catch (DAOException e) {
 			throw new ServiceException(e);
 		}

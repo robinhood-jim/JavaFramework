@@ -74,8 +74,6 @@ public class ModelSqlGenerator {
             return list.size() > 0;
         } catch (Exception ex) {
             throw ex;
-        } finally {
-
         }
     }
 
@@ -124,8 +122,6 @@ public class ModelSqlGenerator {
             return list.size() > 0;
         } catch (Exception ex) {
             throw ex;
-        } finally {
-
         }
     }
 

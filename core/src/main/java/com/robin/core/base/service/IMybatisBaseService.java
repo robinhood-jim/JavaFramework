@@ -47,5 +47,7 @@ public interface IMybatisBaseService<M extends BaseMapper<T>,T extends Serializa
     P[] parseId(String ids) throws ServiceException;
     boolean deleteByIds(List<P> ids);
     boolean deleteByField(String fieldName, Object value);
+    boolean saveEntity(T entity);
+    boolean updateModelById(T entity);
 
 }

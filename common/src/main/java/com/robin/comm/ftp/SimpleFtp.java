@@ -23,7 +23,7 @@ public class SimpleFtp {
     protected String userName;
     protected String password;
     protected int port;
-    protected long waitForReconnect = 60000;
+    protected long waitForReconnect = 60000L;
 
     public SimpleFtp() {
         ftpClient = new FTPClient();
@@ -176,6 +176,7 @@ public class SimpleFtp {
         ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
         int retrynum = 0;
         boolean retflag = false;
+        IOException iex=null;
         if (!exists(remote)) {
             log.info("remote path not exists " + remote);
             return false;
@@ -190,12 +191,21 @@ public class SimpleFtp {
                 if (!retflag) {
                     Thread.sleep(waitForReconnect);
                 }
-            } catch (InterruptedException ex) {
-                log.error("", ex);
+            } catch (IOException ex) {
+                iex=ex;
+                retrynum++;
+            }catch (InterruptedException e1){
                 retrynum++;
             }
         }
-        return retflag;
+        if(!retflag){
+            if(iex!=null) {
+                throw iex;
+            }else{
+                throw new IOException("sleep Interrupt");
+            }
+        }
+        return true;
     }
 
     private boolean doDownload(String remote, String local) throws IOException {
@@ -485,7 +495,7 @@ public class SimpleFtp {
     }
 
     public void setWaitForReconnectDelay(int second) {
-        this.waitForReconnect = second * 1000;
+        this.waitForReconnect = second * 1000L;
     }
 
 }

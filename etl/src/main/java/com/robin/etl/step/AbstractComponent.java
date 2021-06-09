@@ -39,5 +39,5 @@ public abstract class AbstractComponent {
     }
     public abstract boolean prepare(String cycle);
     public abstract boolean finish(String cycle);
-    public abstract Integer doExecute();
+
 }

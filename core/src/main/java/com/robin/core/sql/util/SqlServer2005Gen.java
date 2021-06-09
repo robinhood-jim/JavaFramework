@@ -39,7 +39,6 @@ public class SqlServer2005Gen extends AbstractSqlGen implements BaseSqlGen{
 	private Logger log=LoggerFactory.getLogger(this.getClass());
 	@Override
     public String generateCountSql(String strSQL) {
-
 		String str= strSQL.trim();
 		str=str.replaceAll("\\n", "").replaceAll("\\r", "").replaceAll("\\t", " ");
 		
@@ -56,26 +55,29 @@ public class SqlServer2005Gen extends AbstractSqlGen implements BaseSqlGen{
 
 	@Override
     public String generatePageSql(String strSQL, PageQuery pageQuery) {
-
-		strSQL = strSQL.trim();
-		String order=pageQuery.getOrder();
-		String orderdesc=pageQuery.getOrderDirection();
-		String norder="";
-		if(orderdesc.equalsIgnoreCase(PageQuery.ASC)) {
-            norder=PageQuery.DESC;
-        } else {
-            norder=PageQuery.ASC;
-        }
-		StringBuffer pagingSelect = new StringBuffer(strSQL.length() + 100);
-		int pagefrom=pageQuery.getPageSize()*pageQuery.getPageNumber();
-		int pos=strSQL.indexOf("select");
-		int pos1=strSQL.indexOf("order");
-		String sqlpart=strSQL.substring(pos+6,pos1);
-		pagingSelect.append("select * from (select top "+pageQuery.getPageSize()+" * from (select top ").append(pagefrom+" ").append(sqlpart);
-		pagingSelect.append(" order by "+order+" "+orderdesc+") _row");
-		pagingSelect.append(" order by "+pageQuery.getOrder()+" "+norder).append(") _row1 order by "+pageQuery.getOrder()+" "+orderdesc);
-		log.info("pageSql="+pagingSelect.toString());
-		return pagingSelect.toString();
+		if(pageQuery.getPageSize()!=0) {
+			strSQL = strSQL.trim();
+			String order = pageQuery.getOrder();
+			String orderdesc = pageQuery.getOrderDirection();
+			String norder = "";
+			if (orderdesc.equalsIgnoreCase(PageQuery.ASC)) {
+				norder = PageQuery.DESC;
+			} else {
+				norder = PageQuery.ASC;
+			}
+			StringBuffer pagingSelect = new StringBuffer(strSQL.length() + 100);
+			int pagefrom = pageQuery.getPageSize() * pageQuery.getPageNumber();
+			int pos = strSQL.indexOf("select");
+			int pos1 = strSQL.indexOf("order");
+			String sqlpart = strSQL.substring(pos + 6, pos1);
+			pagingSelect.append("select * from (select top " + pageQuery.getPageSize() + " * from (select top ").append(pagefrom + " ").append(sqlpart);
+			pagingSelect.append(" order by " + order + " " + orderdesc + ") _row");
+			pagingSelect.append(" order by " + pageQuery.getOrder() + " " + norder).append(") _row1 order by " + pageQuery.getOrder() + " " + orderdesc);
+			log.info("pageSql=" + pagingSelect.toString());
+			return pagingSelect.toString();
+		}else{
+			return getNoPageSql(strSQL,pageQuery);
+		}
 	}
 
 
@@ -104,14 +106,7 @@ public class SqlServer2005Gen extends AbstractSqlGen implements BaseSqlGen{
     public String getSequnceScript(String sequnceName) throws DAOException {
 		throw new DAOException("sequnce not support in SqlServer2005");
 	}
-	@Override
-    public String getSelectPart(String columnName, String aliasName) {
-		String selectPart=columnName;
-		if(aliasName!=null && !"".equals(aliasName)){
-			selectPart+=" as "+aliasName;
-		}
-		return selectPart;
-	}
+
 
 	@Override
 	public String getBlobFormat() {
@@ -127,7 +122,7 @@ public class SqlServer2005Gen extends AbstractSqlGen implements BaseSqlGen{
 		return true;
 	}
 	@Override
-	protected String getAutoIncrementDef() {
+	public String getAutoIncrementDef() {
 		return " IDENTITY";
 	}
 }

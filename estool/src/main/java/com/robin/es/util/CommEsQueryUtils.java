@@ -97,7 +97,7 @@ public class CommEsQueryUtils {
         Map<String, Object> indexDefineMap = ESSchemaCache.getIndexDefine(clusterName, indexName);
         String includeFields = queryParam.containsKey("_includefields") && !StringUtils.isEmpty(queryParam.get("_includefields").toString()) ? queryParam.get("_includefields").toString() : null;
         String orderField = queryParam.containsKey("_orderField") && !StringUtils.isEmpty(queryParam.get("_orderField").toString()) ? queryParam.get("_includefields").toString() : null;
-        boolean orderDir = queryParam.containsKey("_orderDir") && !StringUtils.isEmpty(queryParam.get("_orderDir").toString()) ? queryParam.get("_orderField").toString().equalsIgnoreCase("asc") : false;
+        boolean orderDir = queryParam.containsKey("_orderDir") && !StringUtils.isEmpty(queryParam.get("_orderDir").toString()) ? "asc".equalsIgnoreCase(queryParam.get("_orderField").toString()) : false;
         return executeQuery(esClientMap.get(clusterName), indexDefineMap, queryParam, indexName, pageable, includeFields, orderField, orderDir, serializableClass, wrapper);
     }
 

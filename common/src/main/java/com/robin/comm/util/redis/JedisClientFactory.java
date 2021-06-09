@@ -8,6 +8,7 @@ import com.robin.core.fileaccess.util.AvroUtils;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericRecord;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.Assert;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
@@ -47,7 +48,7 @@ public class JedisClientFactory {
             config.setMaxTotal(100);
             config.setMaxIdle(20);
             config.setMaxWaitMillis(100000L);
-            if (passwd == null || passwd.equals("")) {
+            if (StringUtils.isEmpty(passwd)) {
                 pool = new JedisPool(config, ip, port, 100000);
             } else {
                 pool = new JedisPool(config, ip, port, 100000, passwd);
@@ -309,11 +310,16 @@ public class JedisClientFactory {
                 if (tmpobj instanceof String) {
                     jedis.hmset(key, (Map<String, String>) map);
                 } else if (tmpobj != null && isWrapClass(tmpobj.getClass())) {
-                    Iterator<String> it = map.keySet().iterator();
+                    Iterator<? extends Map.Entry<String, ?>> it = map.entrySet().iterator();
                     Map<String, String> map1 = new HashMap<String, String>();
                     while (it.hasNext()) {
-                        String key1 = it.next();
-                        map1.put(key1, map.get(key1).toString());
+                        Map.Entry entry=it.next();
+                        String key1 = entry.getKey().toString();
+                        if(entry.getValue().getClass().isAssignableFrom(String.class)) {
+                            map1.put(key1, entry.getValue().toString());
+                        }else{
+                            map1.put(key1,gson.toJson(entry.getValue()));
+                        }
                     }
                     jedis.hmset(key, map1);
                 } else {
@@ -475,10 +481,11 @@ public class JedisClientFactory {
                     Map<String, String> map = jedis.hgetAll(key);
                     retObj = map;
                     Map<String, Object> map1 = new HashMap<String, Object>();
-                    Iterator<String> iter = map.keySet().iterator();
+                    Iterator<Map.Entry<String,String>> iter = map.entrySet().iterator();
                     while (iter.hasNext()) {
-                        String keycol = iter.next();
-                        String valStr = map.get(keycol);
+                        Map.Entry<String,String> entry=iter.next();
+                        String keycol = entry.getKey();
+                        String valStr = entry.getValue();
                         if (valStr.startsWith("[")) {
                             // list
                             List<Map<String, Object>> tlist = gson.fromJson(valStr, new TypeToken<List<Map<String, Object>>>() {

@@ -6,6 +6,8 @@ import java.time.LocalDateTime;
 import java.util.Map;
 
 public interface IprocessCycleGen {
-    Pair<Boolean,String> genRunCycleByTypeAndStartTime(Integer runCycle, Map<String,Object> configMap, LocalDateTime dateTime);
+    Pair<Boolean,String> genRunCycleByTypeAndStartTime(Integer runCycle, LocalDateTime dateTime);
+    Pair<String,LocalDateTime> getNextRunningCycle(Integer cycleType,LocalDateTime dateTime);
     void finishCycle(String runCycle);
+    LocalDateTime parseTimeByType(String cycle,Integer cycleType);
 }

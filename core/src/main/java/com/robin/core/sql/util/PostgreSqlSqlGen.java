@@ -66,18 +66,22 @@ public class PostgreSqlSqlGen extends AbstractSqlGen implements BaseSqlGen {
 
 	@Override
     public String generatePageSql(String strSQL, PageQuery pageQuery) {
-		Integer[] startEnd=getStartEndRecord(pageQuery);
-		int nBegin = startEnd[0];
+		if(pageQuery.getPageSize()!=0) {
+			Integer[] startEnd = getStartEndRecord(pageQuery);
+			int nBegin = startEnd[0];
 
-		strSQL = strSQL.trim();
+			strSQL = strSQL.trim();
 
-		StringBuffer pagingSelect = new StringBuffer(strSQL.length() + 100);
-		pagingSelect.append(strSQL);
-		int tonums=startEnd[1];
-		int nums=tonums-nBegin;
-		pagingSelect.append(" limit "+nums+" offset "+nBegin);
-		log.info("pageSql="+pagingSelect.toString());
-		return pagingSelect.toString();
+			StringBuffer pagingSelect = new StringBuffer(strSQL.length() + 100);
+			pagingSelect.append(strSQL);
+			int tonums = startEnd[1];
+			int nums = tonums - nBegin;
+			pagingSelect.append(" limit " + nums + " offset " + nBegin);
+			log.info("pageSql=" + pagingSelect.toString());
+			return pagingSelect.toString();
+		}else{
+			return getNoPageSql(strSQL,pageQuery);
+		}
 	}
 
 	
@@ -126,7 +130,7 @@ public class PostgreSqlSqlGen extends AbstractSqlGen implements BaseSqlGen {
 		return true;
 	}
 	@Override
-	protected String getAutoIncrementDef() {
+	public String getAutoIncrementDef() {
 		return " AUTO_INCREMENT";
 	}
 }

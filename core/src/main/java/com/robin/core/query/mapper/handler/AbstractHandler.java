@@ -13,14 +13,14 @@ import java.util.Map;
 
 public abstract class AbstractHandler implements IHandler {
     private StringBuilder builder=new StringBuilder();
-    static final String SELECT="select";
-    static final String RESULTMAP="resultMap";
-    static final String INSERT="insert";
-    static final String UPDATE="update";
-    static final String BATCH="batch";
-    static final String INCLUDE="include";
-    static final String SCRIPT="script";
-    static final String SQL="sql";
+    protected static final String SELECT="select";
+    protected static final String RESULTMAP="resultMap";
+    protected static final String INSERT="insert";
+    protected static final String UPDATE="update";
+    protected static final String BATCH="batch";
+    protected static final String INCLUDE="include";
+    protected static final String SCRIPT="script";
+    protected static final String SQL="sql";
 
     @Override
     public void analyse(Element element,String nameSpace, List<AbstractSegment> segments) {

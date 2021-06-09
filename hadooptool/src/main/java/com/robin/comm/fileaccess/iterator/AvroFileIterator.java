@@ -4,6 +4,7 @@ import com.robin.core.base.util.IOUtils;
 import com.robin.core.base.util.ResourceConst;
 import com.robin.core.fileaccess.iterator.AbstractFileIterator;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
+import com.robin.core.fileaccess.util.AvroUtils;
 import com.robin.hadoop.hdfs.HDFSUtil;
 import org.apache.avro.Schema;
 import org.apache.avro.Schema.Field;
@@ -48,6 +49,7 @@ public class AvroFileIterator extends AbstractFileIterator {
 	public void beforeProcess(String resourcePath) {
 		SeekableInput input=null;
 		try {
+			schema= AvroUtils.getSchemaFromMeta(colmeta);
 			if(colmeta.getSourceType().equals(ResourceConst.InputSourceType.TYPE_HDFS.getValue())){
 				HDFSUtil util=new HDFSUtil(colmeta);
 				instream=util.getHDFSDataByInputStream(resourcePath);
@@ -59,9 +61,8 @@ public class AvroFileIterator extends AbstractFileIterator {
 				input = new SeekableByteArrayInput(byteout.toByteArray());
 			}
 			Assert.notNull(input,"Seekable input is null");
-			fileReader=new DataFileReader<GenericRecord>(input,dreader);
-			schema=fileReader.getSchema();
 			dreader=new GenericDatumReader<GenericRecord>(schema);
+			fileReader=new DataFileReader<GenericRecord>(input,dreader);
 		}catch (Exception ex){
 
 		}

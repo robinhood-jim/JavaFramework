@@ -105,11 +105,11 @@ public class HDFSUtil {
         }
 	}
 
-	public String uploadByInputStream(final InputStream in,String toUrl, int bufferSize) throws HdfsException, IOException{
+	public boolean uploadByInputStream(final InputStream in,String toUrl, int bufferSize) throws HdfsException, IOException{
 		if(!useSecurity) {
             return HDFSCallUtil.uploadByInputStream(config, in, toUrl, bufferSize);
         } else {
-            return (String) HDFSSecurityUtil.executeHdfsMethodWithSecurity(config, "uploadByInputStream", new Object[]{config,in,toUrl, bufferSize});
+            return (Boolean) HDFSSecurityUtil.executeHdfsMethodWithSecurity(config, "uploadByInputStream", new Object[]{config,in,toUrl, bufferSize});
         }
 	}
 

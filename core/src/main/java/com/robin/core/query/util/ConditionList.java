@@ -61,7 +61,6 @@ public class ConditionList extends ArrayList {
 			if (condition.getState() == Condition.EQUALS) {
 				if (condition.getValue() == null) {
 					continue;
-					// throw new Exception("锟斤拷锟斤拷锟斤拷示:锟斤拷询锟斤拷锟斤拷锟斤拷锟斤拷为锟秸ｏ拷(between "+values+")");
 				}
 				sql.append(AND);
 				sql.append(condition.getName());
@@ -72,7 +71,6 @@ public class ConditionList extends ArrayList {
 			if (condition.getState() == Condition.LIKE) {
 				if (condition.getValue() == null) {
 					continue;
-					// throw new Exception("锟斤拷锟斤拷锟斤拷示:锟斤拷询锟斤拷锟斤拷锟斤拷锟斤拷为锟秸ｏ拷(between "+values+")");
 				}
 				sql.append(AND);
 				sql.append(condition.getName());
@@ -85,7 +83,6 @@ public class ConditionList extends ArrayList {
 			if (condition.getState() == Condition.IS_NOT_NULL) {
 				if (condition.getValue() == null) {
 					continue;
-					// throw new Exception("锟斤拷锟斤拷锟斤拷示:锟斤拷询锟斤拷锟斤拷锟斤拷锟斤拷为锟秸ｏ拷(between "+values+")");
 				}
 				sql.append(AND);
 				sql.append(condition.getName());
@@ -95,13 +92,11 @@ public class ConditionList extends ArrayList {
 			if (condition.getState() == Condition.IS_NULL) {
 				if (condition.getValue() == null) {
 					continue;
-					// throw new Exception("锟斤拷锟斤拷锟斤拷示:锟斤拷询锟斤拷锟斤拷锟斤拷锟斤拷为锟秸ｏ拷(between "+values+")");
 				}
 				sql.append(AND);
 				sql.append(condition.getName());
 				sql.append(IS_NULL);
 			}
-			// ...............
 
 		}
 		return sql.toString();

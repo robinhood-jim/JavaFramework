@@ -85,8 +85,6 @@ public class ConfigResourceScanner {
             }
         } catch (Exception e) {
             log.error("{}", e);
-        } finally {
-
         }
         return resList;
     }

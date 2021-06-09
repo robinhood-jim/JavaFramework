@@ -93,6 +93,7 @@ public class GsonFileIterator extends AbstractFileIterator{
 			if(jreader.hasNext()){
 				jreader.beginObject();
 				while(jreader.hasNext()){
+					jreader.nextString();
 				}
 				jreader.endObject();
 			}

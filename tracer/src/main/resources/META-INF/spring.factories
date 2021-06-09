@@ -1,0 +1,3 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+com.robin.tracer.spring.config.TracingConfig,\
+com.robin.tracer.spring.config.TracerDataSourceConfig

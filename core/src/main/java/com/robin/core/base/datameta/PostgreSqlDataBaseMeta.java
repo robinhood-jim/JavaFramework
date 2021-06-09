@@ -54,19 +54,6 @@ public class PostgreSqlDataBaseMeta extends BaseDataBaseMeta{
 	}
 
 	@Override
-    public String getAddColumnStatement(String tablename, String schema,
-                                        DataBaseColumnMeta v, String tk, boolean use_autoinc, String pk,
-                                        boolean semicolon) {
-		return null;
-	}
-
-	@Override
-    public String getDropColumnStatement(String tablename, String schema,
-                                         DataBaseColumnMeta v, String tk, boolean use_autoinc, String pk,
-                                         boolean semicolon) {
-		return null;
-	}
-	@Override
     public BaseSqlGen getSqlGen() {
 		return PostgreSqlSqlGen.getInstance();
 	}

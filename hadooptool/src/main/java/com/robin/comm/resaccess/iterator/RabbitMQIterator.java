@@ -31,7 +31,7 @@ public class RabbitMQIterator extends AbstractQueueIterator {
     public void init() {
         connectionFactory=new CachingConnectionFactory();
         int port=5672;
-
+        Assert.notNull(cfgMap,"");
         if(CollectionUtils.isEmpty(cfgMap)) {
             Assert.notNull(cfgMap.get("queue"), "queue name must exists!");
             queueName = cfgMap.get("queue").toString();

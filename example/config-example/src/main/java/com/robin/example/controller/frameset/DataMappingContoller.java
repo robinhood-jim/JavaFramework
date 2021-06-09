@@ -71,7 +71,7 @@ public class DataMappingContoller extends BaseCrudDhtmlxController<ProjectInfo, 
         conditions.withCondition(new FilterCondition("proj_id", Condition.EQUALS, info.getId())).withCondition(new FilterCondition("source_id", Condition.EQUALS, source.getId()))
                 .withCondition(new FilterCondition("db_schema", Condition.EQUALS, schema)).withCondition(new FilterCondition("entity_code", Condition.EQUALS, table));
         request.setAttribute("sourceId", source.getId());
-        List<EntityMapping> mappinglist = entityMappingService.queryByCondition(conditions, "");
+        List<EntityMapping> mappinglist = entityMappingService.queryByCondition(conditions, new PageQuery());
         if (mappinglist != null && !mappinglist.isEmpty()) {
             mapping = mappinglist.get(0);
             request.setAttribute("mappingId", mapping.getId());
@@ -177,7 +177,7 @@ public class DataMappingContoller extends BaseCrudDhtmlxController<ProjectInfo, 
             filterConditions.withCondition(new FilterCondition("proj_id", Condition.EQUALS, info.getId())).withCondition(new FilterCondition("source_id", Condition.EQUALS, source.getId()))
                     .withCondition(new FilterCondition("db_schema", Condition.EQUALS, schema)).withCondition(new FilterCondition("entity_code", Condition.EQUALS, table));
 
-            List<EntityMapping> mappinglist = entityMappingService.queryByCondition(filterConditions, "");
+            List<EntityMapping> mappinglist = entityMappingService.queryByCondition(filterConditions, new PageQuery());
             if (mappinglist != null && !mappinglist.isEmpty()) {
                 mapping = mappinglist.get(0);
 

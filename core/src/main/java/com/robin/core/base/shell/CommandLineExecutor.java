@@ -155,7 +155,7 @@ public class CommandLineExecutor {
 				stopCmd(processMap.get(env.getKeyId()));
 			}
 			if(env.getRetryNums()>1) {
-                Thread.sleep(1000*env.getWaitSecond());
+                Thread.sleep(1000L*env.getWaitSecond());
             }
 		}
 		if(runCode!=0){
@@ -192,7 +192,7 @@ public class CommandLineExecutor {
 				if(runCode==0){
 					break;
 				}else{
-					Thread.sleep(1000*waitSecond);
+					Thread.sleep(1000L*waitSecond);
 				}
 			}catch(Exception ex){
 				logger.error("",ex);
@@ -392,7 +392,7 @@ public class CommandLineExecutor {
 		}
 		public void waitFor() throws Exception{
 			if(!finished) {
-                Thread.sleep(100);
+                Thread.sleep(100L);
             }
 		}
 		public boolean isExecuteOk() {

@@ -67,6 +67,11 @@
             <groupId>commons-dbutils</groupId>
             <artifactId>commons-dbutils</artifactId>
         </dependency>
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <optional>true</optional>
+        </dependency>
 
 
         <dependency>
@@ -340,6 +345,9 @@
                             public protected private *;
                             }
                         </option>
+                        <option>-obfuscationdictionary ${project.basedir}/../config/dictionary_rules.txt</option>
+                        <option>-classobfuscationdictionary ${project.basedir}/../config/dictionary_rules.txt</option>
+
                         <option>-ignorewarnings</option> <!--忽略所有告警-->
                         <option>-dontshrink</option>   <!--不做 shrink -->
                         <option>-printmapping out.map</option>

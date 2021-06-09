@@ -18,11 +18,15 @@ package com.robin.core.resource.util;
  * OF USING, MODIFYING OR DISTRIBUTING THIS SOFTWARE OR ITS DERIVATIVES.
  */
 
+import lombok.extern.slf4j.Slf4j;
+
+import java.io.IOException;
 import java.util.Hashtable;
 
 import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 
+@Slf4j
 public class SimpleClassLoader extends ClassLoader {
     private Hashtable classes = new Hashtable();
 
@@ -34,22 +38,18 @@ public class SimpleClassLoader extends ClassLoader {
      * them from the local file system
      */
     private byte[] getClassImplFromDataBase(String className) {
-    	System.out.println("        >>>>>> Fetching the implementation of "+className);
+        if(log.isDebugEnabled()) {
+            log.debug("        >>>>>> Fetching the implementation of " + className);
+        }
     	byte[] result;
-    	try {
-    	    FileInputStream fi = new FileInputStream("store\\"+className+".impl");
+    	try(FileInputStream fi = new FileInputStream("store\\"+className+".impl")) {
     	    result = new byte[fi.available()];
     	    fi.read(result);
     	    fi.close();
     	    return result;
-    	} catch (Exception e) {
-
-    	    /*
-    	     * If we caught an exception, either the class wasnt found or it
-    	     * was unreadable by our process.
-    	     */
+    	}catch (IOException ex){
     	    return null;
-    	}
+        }
     }
 
     /**

@@ -38,11 +38,7 @@ public class ModelScriptGenerator {
         }
         String configFile = args[0];
         String outputFile = args[1];
-        if(args.length==2) {
-            //generateScript(configFile,outputFile);
-        } else {
-            //generateScript(configFile,outputFile,args[2]);
-        }
+
     }
     public static void generateScript(String dbType, BaseDataBaseMeta meta,String outputFile, String... packageNames){
         BufferedWriter writer = null;

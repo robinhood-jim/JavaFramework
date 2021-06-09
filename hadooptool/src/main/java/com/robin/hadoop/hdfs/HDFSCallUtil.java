@@ -76,28 +76,19 @@ public class HDFSCallUtil {
         return url;
     }
 
-    public static String uploadByInputStream(final Configuration config, InputStream in, String toUrl, int bufferSize) throws HdfsException, IOException {
-        //String url="";
-        FSDataOutputStream fsdo = null;
-        try {
-            FileSystem fs = FileSystem.get(config);
-            Path dfs = new Path(toUrl);
-            fsdo = fs.create(dfs);
+    public static boolean uploadByInputStream(final Configuration config, InputStream in, String toUrl, int bufferSize) throws HdfsException, IOException {
+        Path dfs = new Path(toUrl);
+        try(FileSystem fs = FileSystem.get(config);
+            FSDataOutputStream fsdo= fs.create(dfs);) {
             int len = 0;
             byte[] buffer = new byte[bufferSize <= 0 ? BUFFER_SIZE : bufferSize];
             while ((len = in.read(buffer)) > 0) {
                 fsdo.write(buffer, 0, len);
             }
+            return true;
         } catch (Exception e) {
-            e.printStackTrace();
             throw new HdfsException(e);
-        } finally {
-            if (fsdo != null) {
-                fsdo.flush();
-                fsdo.close();
-            }
         }
-        return toUrl;
     }
 
     public static String uploadByInputStream(final Configuration config, InputStream in, String toUrl, int bufferSize, String fromCharset, String toCharset) throws HdfsException, IOException {
@@ -497,9 +488,9 @@ public class HDFSCallUtil {
     }
 
     public static BufferedReader readStream(final Configuration config, String hdfsUrl, String encode) throws HdfsException {
-        try(FileSystem fs = FileSystem.get(URI.create(hdfsUrl), config)){
+        try(FileSystem fs = FileSystem.get(URI.create(hdfsUrl), config);
             DataInputStream dis = new DataInputStream(fs.open(new Path(hdfsUrl)));
-            BufferedReader br = new BufferedReader(new InputStreamReader(dis, encode));
+            BufferedReader br = new BufferedReader(new InputStreamReader(dis, encode))){
             return br;
         } catch (Exception e) {
             throw new HdfsException(e);

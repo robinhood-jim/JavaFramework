@@ -65,17 +65,21 @@ public class MysqlSqlGen extends AbstractSqlGen implements BaseSqlGen{
 
 	@Override
     public String generatePageSql(String strSQL, PageQuery pageQuery) {
-		Integer[] startEnd=getStartEndRecord(pageQuery);
-		int nBegin=startEnd[0];
-		int tonums=startEnd[1];
-		strSQL = strSQL.trim();
+		if(pageQuery.getPageSize()!=0) {
+			Integer[] startEnd = getStartEndRecord(pageQuery);
+			int nBegin = startEnd[0];
+			int tonums = startEnd[1];
+			strSQL = strSQL.trim();
 
-		StringBuilder pagingSelect = new StringBuilder(strSQL.length() + 100);
-		pagingSelect.append(strSQL);
-		int nums=tonums-nBegin;
-		pagingSelect.append(" limit "+nBegin+","+nums);
-		log.info("pageSql="+pagingSelect.toString());
-		return pagingSelect.toString();
+			StringBuilder pagingSelect = new StringBuilder(strSQL.length() + 100);
+			pagingSelect.append(strSQL);
+			int nums = tonums - nBegin;
+			pagingSelect.append(" limit " + nBegin + "," + nums);
+			log.info("pageSql=" + pagingSelect.toString());
+			return pagingSelect.toString();
+		}else{
+			return getNoPageSql(strSQL,pageQuery);
+		}
 	}
 
 	
@@ -132,7 +136,7 @@ public class MysqlSqlGen extends AbstractSqlGen implements BaseSqlGen{
 	}
 
 	@Override
-	protected String getAutoIncrementDef() {
+	public String getAutoIncrementDef() {
 		return " AUTO_INCREMENT";
 	}
 

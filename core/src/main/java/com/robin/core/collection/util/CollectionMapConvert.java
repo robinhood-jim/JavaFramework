@@ -26,6 +26,7 @@ import javax.script.Bindings;
 import javax.script.CompiledScript;
 import java.lang.reflect.Method;
 import java.util.*;
+
 @Slf4j
 public class CollectionMapConvert<T> {
 
@@ -35,7 +36,8 @@ public class CollectionMapConvert<T> {
 
     /**
      * Convert ArrayList to Map by identify Column
-     * @param listobj ArrayList must not Primitive and not HashMap
+     *
+     * @param listobj     ArrayList must not Primitive and not HashMap
      * @param identityCol
      * @return
      * @throws Exception
@@ -74,7 +76,8 @@ public class CollectionMapConvert<T> {
         }
         return retList;
     }
-    private static <T> void checkType(List<T> listobj) throws MissingConfigException{
+
+    private static <T> void checkType(List<T> listobj) throws MissingConfigException {
         if (listobj == null || listobj.size() == 0) {
             log.warn("ArrayList is Empty");
             //throw new MissingConfigException("ArrayList is Empty!");
@@ -86,9 +89,10 @@ public class CollectionMapConvert<T> {
 
     /**
      * Convert ArrayList to Map by identify Column
-     * @param listobj ArrayList must not Primitive,can input HashMap
+     *
+     * @param listobj   ArrayList must not Primitive,can input HashMap
      * @param parentCol
-     * @return  Map<Key,List<T>>
+     * @return Map<Key   ,   List   <   T>>
      * @throws Exception
      */
 
@@ -132,7 +136,8 @@ public class CollectionMapConvert<T> {
 
     /**
      * extract Key and List Value Map
-     * @param listobj  ArrayList must not Primitive and not HashMap
+     *
+     * @param listobj   ArrayList must not Primitive and not HashMap
      * @param parentCol
      * @param valueCol
      * @return
@@ -170,9 +175,10 @@ public class CollectionMapConvert<T> {
 
     /**
      * same function like select from where
-     * @param listobj ArrayList must not Primitive and not HashMap
-     * @param colName select column
-     * @param colvalue  select value
+     *
+     * @param listobj  ArrayList must not Primitive and not HashMap
+     * @param colName  select column
+     * @param colvalue select value
      * @return
      * @throws Exception
      */
@@ -195,31 +201,32 @@ public class CollectionMapConvert<T> {
 
     /**
      * select from using complex condition with script engine
+     *
      * @param listobj
-     * @param scriptType script type (js/groovy/jython)
+     * @param scriptType      script type (js/groovy/jython)
      * @param queryConditions script content return boolean
      * @return
      * @throws Exception
      */
-    public static <T> List<T> filterListByColumnCondition(List<T> listobj,String scriptType, String queryConditions) throws Exception {
+    public static <T> List<T> filterListByColumnCondition(List<T> listobj, String scriptType, String queryConditions) throws Exception {
         List<T> retList = new ArrayList<T>();
         checkType(listobj);
         Map<String, Method> getMetholds = ReflectUtils.returnGetMethods(listobj.get(0).getClass());
         if (getMetholds == null) {
             throw new MissingConfigException("object does not have get method");
         }
-        if(SpringContextHolder.getBean(ScriptExecutor.class)==null){
+        if (SpringContextHolder.getBean(ScriptExecutor.class) == null) {
             throw new MissingConfigException("must use in spring context!");
         }
-        CompiledScript script=SpringContextHolder.getBean(ScriptExecutor.class).returnScriptNoCache(scriptType,queryConditions);
-        Bindings bindings=SpringContextHolder.getBean(ScriptExecutor.class).createBindings(scriptType);
+        CompiledScript script = SpringContextHolder.getBean(ScriptExecutor.class).returnScriptNoCache(scriptType, queryConditions);
+        Bindings bindings = SpringContextHolder.getBean(ScriptExecutor.class).createBindings(scriptType);
 
         for (T t : listobj) {
-            Map<String,Object> valueMap=new HashMap<>();
-            ConvertUtil.objectToMapObj(valueMap,t);
+            Map<String, Object> valueMap = new HashMap<>();
+            ConvertUtil.objectToMapObj(valueMap, t);
             bindings.putAll(valueMap);
-            boolean tag=(Boolean) script.eval(bindings);
-            if(tag){
+            boolean tag = (Boolean) script.eval(bindings);
+            if (tag) {
                 retList.add(t);
             }
         }
@@ -237,13 +244,11 @@ public class CollectionMapConvert<T> {
 
         for (int i = 0; i < listobj.size(); i++) {
             Object targerobj = listobj.get(i);
-            if (method != null) {
-                Object obj = method.invoke(targerobj, null);
-                String value = obj != null ? obj.toString() : "";
-                buffer.append(value);
-                if (i != listobj.size() - 1) {
-                    buffer.append(separate);
-                }
+            Object obj = method.invoke(targerobj, null);
+            String value = obj != null ? obj.toString() : "";
+            buffer.append(value);
+            if (i != listobj.size() - 1) {
+                buffer.append(separate);
             }
         }
 
@@ -268,18 +273,18 @@ public class CollectionMapConvert<T> {
     public static <T> List<Map<String, Object>> getListMap(List<T> listobj) throws Exception {
         checkType(listobj);
         Map<String, Method> getMetholds = ReflectUtils.returnGetMethods(listobj.get(0).getClass());
-        if(getMetholds.isEmpty()){
+        if (getMetholds.isEmpty()) {
             throw new MissingConfigException("target object contain no get methold!");
         }
         List<Map<String, Object>> retList = new ArrayList<>();
         for (T t : listobj) {
             Map<String, Object> retmap = new HashMap<>();
-            Iterator<Map.Entry<String,Method>> iter=getMetholds.entrySet().iterator();
-            while(iter.hasNext()){
-                Map.Entry<String,Method> entry=iter.next();
-                Object obj=entry.getValue().invoke(t,null);
-                if(obj!=null){
-                    retmap.put(entry.getKey(),obj);
+            Iterator<Map.Entry<String, Method>> iter = getMetholds.entrySet().iterator();
+            while (iter.hasNext()) {
+                Map.Entry<String, Method> entry = iter.next();
+                Object obj = entry.getValue().invoke(t, null);
+                if (obj != null) {
+                    retmap.put(entry.getKey(), obj);
                 }
             }
             retList.add(retmap);
@@ -288,12 +293,12 @@ public class CollectionMapConvert<T> {
     }
 
     public static <T> List<T> mergeListFromNew(List<T> orgList, List<T> newList, String identifyCol) throws Exception {
-        if(orgList==null || newList==null || orgList.size()==0 || newList.size()==0){
+        if (orgList == null || newList == null || orgList.size() == 0 || newList.size() == 0) {
             throw new MissingConfigException("Input ArrayList is Empty!");
         }
         Map<String, T> map = convertListToMap(newList, identifyCol);
         List<T> retList = new ArrayList<>();
-        Method method=ReflectUtils.returnGetMethods(orgList.get(0).getClass()).get(identifyCol);
+        Method method = ReflectUtils.returnGetMethods(orgList.get(0).getClass()).get(identifyCol);
         if (method == null) {
             throw new MissingConfigException("identify column not exist in object");
         }

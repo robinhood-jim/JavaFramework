@@ -35,7 +35,6 @@ public class SybaseSqlGen extends AbstractSqlGen implements BaseSqlGen{
 	}
 	@Override
     public String generateCountSql(String strSQL) {
-
 		String str = strSQL.trim().toLowerCase();
 		int nFromPos = str.lastIndexOf(" from ");
 		int nOrderPos = str.lastIndexOf(" order by ");
@@ -50,26 +49,30 @@ public class SybaseSqlGen extends AbstractSqlGen implements BaseSqlGen{
 
 	@Override
     public String generatePageSql(String strSQL, PageQuery pageQuery) {
-		Integer[] startEnd=getStartEndRecord(pageQuery);
-		int nBegin = startEnd[0];
-		boolean hasOffset = nBegin > 0;
-		strSQL = strSQL.trim();
+		if(pageQuery.getPageSize()!=0) {
+			Integer[] startEnd = getStartEndRecord(pageQuery);
+			int nBegin = startEnd[0];
+			boolean hasOffset = nBegin > 0;
+			strSQL = strSQL.trim();
 
-		StringBuffer pagingSelect = new StringBuffer(strSQL.length() + 100);
-		if (hasOffset) {
-            pagingSelect.append("select * from ( select row_.*, rownum rownum_ from ( ");
-        } else {
-            pagingSelect.append("select * from ( ");
-        }
-		pagingSelect.append(strSQL);
-		int tonums=startEnd[1];
-		if (hasOffset) {
-            pagingSelect.append(" ) row_ ) where rownum_ <= ").append(tonums).append(" and rownum_ > ").append(nBegin);
-        } else {
-            pagingSelect.append(" ) where rownum <= ").append(pageQuery.getPageSize());
-        }
+			StringBuffer pagingSelect = new StringBuffer(strSQL.length() + 100);
+			if (hasOffset) {
+				pagingSelect.append("select * from ( select row_.*, rownum rownum_ from ( ");
+			} else {
+				pagingSelect.append("select * from ( ");
+			}
+			pagingSelect.append(strSQL);
+			int tonums = startEnd[1];
+			if (hasOffset) {
+				pagingSelect.append(" ) row_ ) where rownum_ <= ").append(tonums).append(" and rownum_ > ").append(nBegin);
+			} else {
+				pagingSelect.append(" ) where rownum <= ").append(pageQuery.getPageSize());
+			}
 
-		return pagingSelect.toString();
+			return pagingSelect.toString();
+		}else{
+			return getNoPageSql(strSQL,pageQuery);
+		}
 	}
 
 	
@@ -86,14 +89,7 @@ public class SybaseSqlGen extends AbstractSqlGen implements BaseSqlGen{
     public String getSequnceScript(String sequnceName) throws DAOException {
 		throw new DAOException("sequnce not support in Sybase");
 	}
-	@Override
-    public String getSelectPart(String columnName, String aliasName) {
-		String selectPart=columnName;
-		if(aliasName!=null && !"".equals(aliasName)){
-			selectPart+=" as "+aliasName;
-		}
-		return selectPart;
-	}
+
 
 	@Override
 	public String getClobFormat() {
@@ -109,7 +105,7 @@ public class SybaseSqlGen extends AbstractSqlGen implements BaseSqlGen{
 		return true;
 	}
 	@Override
-	protected String getAutoIncrementDef() {
+	public String getAutoIncrementDef() {
 		return " IDENTITY";
 	}
 }

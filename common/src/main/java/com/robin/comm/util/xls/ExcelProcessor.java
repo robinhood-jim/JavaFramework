@@ -15,6 +15,7 @@
  */
 package com.robin.comm.util.xls;
 
+import com.microsoft.schemas.office.visio.x2012.main.CellType;
 import com.robin.core.base.dao.SimpleJdbcDao;
 import com.robin.core.base.util.Const;
 import com.robin.core.convert.util.DataTypeEnum;
@@ -62,6 +63,7 @@ public class ExcelProcessor {
 
         Sheet sheet = wb.getSheetAt(prop.getSheetNum());
         List<Map<String, String>> columnValueList = new ArrayList<Map<String, String>>();
+        FormulaEvaluator evaluator=wb.getCreationHelper().createFormulaEvaluator();
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");//hh24:mi:ss
         int pos = 0;
         for (Iterator<Row> rit = sheet.rowIterator(); rit.hasNext(); ) {
@@ -112,6 +114,14 @@ public class ExcelProcessor {
                         case Cell.CELL_TYPE_BOOLEAN:
                             strCell = String.valueOf(cell.getBooleanCellValue());
                             break;
+                        case Cell.CELL_TYPE_FORMULA:
+                            CellValue value=evaluator.evaluate(cell);
+                            if(value.getCellType()== Cell.CELL_TYPE_NUMERIC){
+                                strCell=String.valueOf(value.getNumberValue());
+                            }else {
+                                strCell=value.getStringValue();
+                            }
+                            break;
                         default:
                             strCell = "";
                             break;
@@ -144,9 +154,9 @@ public class ExcelProcessor {
             }
 
             Sheet sheet = wb.getSheetAt(sheetIndex);
-
+            FormulaEvaluator evaluator=wb.getCreationHelper().createFormulaEvaluator();
             SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");//hh24:mi:ss
-            List<DataTypeEnum> columnList = new ArrayList<DataTypeEnum>();
+            List<DataTypeEnum> columnList = new ArrayList<>();
             List<Integer> collist = new ArrayList<Integer>();
             int[] excelPos = getExcelPosition(startPos, endPos);
             System.out.println(excelPos[2] + "  " + excelPos[3]);
@@ -198,9 +208,9 @@ public class ExcelProcessor {
                                     strCell = String.valueOf(cell.getNumericCellValue());
                                 } else if (type.equals(Const.META_TYPE_STRING)) {
                                     double d = cell.getNumericCellValue();
-                                    String str1 = String.valueOf(Double.valueOf(d).intValue());
+                                    String str1 = String.valueOf(new Double(d).intValue());
                                     if (str1 != null && !"".equals(str1.trim())) {
-                                        strCell = String.valueOf(Double.valueOf(d).intValue());
+                                        strCell = String.valueOf(new Double(d).intValue());
                                     }
                                 }
                                 break;
@@ -217,6 +227,9 @@ public class ExcelProcessor {
                                 break;
                             case HSSFCell.CELL_TYPE_BOOLEAN:
                                 strCell = String.valueOf(cell.getBooleanCellValue());
+                                break;
+                            case HSSFCell.CELL_TYPE_FORMULA:
+                                strCell=evaluator.evaluate(cell).getStringValue();
                                 break;
                             default:
                                 strCell = "";
@@ -555,10 +568,10 @@ public class ExcelProcessor {
                 String columnType = excelprop.getColumnType();
                 boolean needMerge = excelprop.isNeedMerge();
                 String valueobj = map.get(columnCode).toString();
-                if (valueobj == null) {
+                if (valueobj == null && map.get(columnCode.toUpperCase())!=null) {
                     valueobj = map.get(columnCode.toUpperCase()).toString();
                 }
-                if (valueobj == null) {
+                if (valueobj == null && map.get(columnCode.toLowerCase())!=null) {
                     valueobj = map.get(columnCode.toLowerCase()).toString();
                 }
                 CellStyle stylesingle = ExcelCellStyleUtil.getCellStyle(wb, 1, 1, columnType, header, cellMap);

@@ -28,8 +28,8 @@ public interface DataBaseInterface {
 	String getSQLSequenceExists(String sequenceName);
 	boolean supportsSchemas();
 	List<DataBaseTableMeta> listAllTable(String schema) throws Exception;
-	String getAddColumnStatement(String tablename, String schema,DataBaseColumnMeta v, String tk, boolean use_autoinc, String pk, boolean semicolon);
-	String getDropColumnStatement(String tablename,String schema, DataBaseColumnMeta v, String tk, boolean use_autoinc, String pk, boolean semicolon);
+	String getAddColumnStatement(String tablename, String schema,DataBaseColumnMeta v);
+	String getDropColumnStatement(String tablename,String schema, DataBaseColumnMeta v);
 	DataBaseParam getParam();
 	String getUrlTemplate();
 	String getCatalog(String schema);
