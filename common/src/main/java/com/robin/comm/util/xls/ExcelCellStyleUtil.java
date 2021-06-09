@@ -18,10 +18,7 @@ package com.robin.comm.util.xls;
 import java.util.Map;
 
 import org.apache.poi.hssf.usermodel.HSSFDataFormat;
-import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.Font;
-import org.apache.poi.ss.usermodel.IndexedColors;
-import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.*;
 
 import com.robin.core.base.util.Const;
 
@@ -39,16 +36,16 @@ public class ExcelCellStyleUtil {
 		}else{
 			cs=wb.createCellStyle();
 			if (rowspan > 1) {
-                cs.setVerticalAlignment(CellStyle.VERTICAL_CENTER);
+                cs.setVerticalAlignment(VerticalAlignment.CENTER);
             }
-	        cs.setAlignment(CellStyle.ALIGN_CENTER);
-			cs.setBorderBottom(CellStyle.BORDER_THIN);
+	        cs.setAlignment(HorizontalAlignment.CENTER);
+			cs.setBorderBottom(BorderStyle.THIN);
 	        cs.setBottomBorderColor(IndexedColors.BLACK.getIndex());
-	        cs.setBorderLeft(CellStyle.BORDER_THIN); 
+	        cs.setBorderLeft(BorderStyle.THIN);
 	        cs.setLeftBorderColor(IndexedColors.BLACK.getIndex());
-	        cs.setBorderRight(CellStyle.BORDER_THIN);
+	        cs.setBorderRight(BorderStyle.THIN);
 	        cs.setRightBorderColor(IndexedColors.BLACK.getIndex());
-	        cs.setBorderTop(CellStyle.BORDER_THIN);  
+	        cs.setBorderTop(BorderStyle.THIN);
 	        cs.setTopBorderColor(IndexedColors.BLACK.getIndex());
 	        //cs.setFillForegroundColor(IndexedColors.WHITE.getIndex());
 	        	 if(header!=null){
@@ -56,14 +53,14 @@ public class ExcelCellStyleUtil {
 					 font.setFontName((header.getContentFontName()==null || header.getContentFontName().isEmpty())? DEFAULT_FONT_NAME :header.getContentFontName());
 	             	if(header.isBold())
 	             	{
-	             		font.setBoldweight((short)2);
+	             		font.setBold(true);
 	             	}
 	             	if(header.isItalic()){
 	             		font.setItalic(true);
 	             	}
 	             	cs.setFont(font);
 	             }
-	        cs.setFillPattern(CellStyle.SOLID_FOREGROUND);  
+	        cs.setFillPattern(FillPatternType.SOLID_FOREGROUND);
 	        cs.setWrapText(true);
 	        if(metaType.equals(Const.META_TYPE_NUMERIC)){
 				cs.setDataFormat(HSSFDataFormat.getBuiltinFormat("#,##0.0"));

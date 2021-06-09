@@ -15,7 +15,6 @@
  */
 package com.robin.comm.util.xls;
 
-import com.microsoft.schemas.office.visio.x2012.main.CellType;
 import com.robin.core.base.dao.SimpleJdbcDao;
 import com.robin.core.base.util.Const;
 import com.robin.core.convert.util.DataTypeEnum;
@@ -63,7 +62,7 @@ public class ExcelProcessor {
 
         Sheet sheet = wb.getSheetAt(prop.getSheetNum());
         List<Map<String, String>> columnValueList = new ArrayList<Map<String, String>>();
-        FormulaEvaluator evaluator=wb.getCreationHelper().createFormulaEvaluator();
+        FormulaEvaluator evaluator = wb.getCreationHelper().createFormulaEvaluator();
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");//hh24:mi:ss
         int pos = 0;
         for (Iterator<Row> rit = sheet.rowIterator(); rit.hasNext(); ) {
@@ -89,7 +88,7 @@ public class ExcelProcessor {
 
                 if (cell != null) {
                     switch (cell.getCellType()) {
-                        case Cell.CELL_TYPE_NUMERIC:
+                        case NUMERIC:
                             if (HSSFDateUtil.isCellDateFormatted(cell) || type.equals(Const.META_TYPE_DATE)) {
                                 Date date = cell.getDateCellValue();
                                 strCell = format.format(date);
@@ -103,20 +102,17 @@ public class ExcelProcessor {
                                 double d = cell.getNumericCellValue();
                                 DecimalFormat df = new DecimalFormat("#.#");
                                 strCell = df.format(d);
-//                			String str1=String.valueOf(Double.valueOf(df.format(d)).intValue());
-//							if(str1!=null && !"".equals(str1.trim()))
-//                			strCell=String.valueOf(Double.valueOf(d).intValue());
                             }
                             break;
-                        case Cell.CELL_TYPE_STRING:
+                        case STRING:
                             strCell = cell.getStringCellValue();
                             break;
-                        case Cell.CELL_TYPE_BOOLEAN:
+                        case BOOLEAN:
                             strCell = String.valueOf(cell.getBooleanCellValue());
                             break;
-                        case Cell.CELL_TYPE_FORMULA:
+                        case FORMULA:
                             CellValue value=evaluator.evaluate(cell);
-                            if(value.getCellType()== Cell.CELL_TYPE_NUMERIC){
+                            if(value.getCellType()== CellType.NUMERIC){
                                 strCell=String.valueOf(value.getNumberValue());
                             }else {
                                 strCell=value.getStringValue();
@@ -126,7 +122,6 @@ public class ExcelProcessor {
                             strCell = "";
                             break;
                     }
-                    //listMap.put(prop.getColumnName()[j], strCell);
                 }
                 if (strCell != null && !"".equals(strCell.trim())) {
                     ishasrecord = true;
@@ -154,7 +149,7 @@ public class ExcelProcessor {
             }
 
             Sheet sheet = wb.getSheetAt(sheetIndex);
-            FormulaEvaluator evaluator=wb.getCreationHelper().createFormulaEvaluator();
+            FormulaEvaluator evaluator = wb.getCreationHelper().createFormulaEvaluator();
             SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");//hh24:mi:ss
             List<DataTypeEnum> columnList = new ArrayList<>();
             List<Integer> collist = new ArrayList<Integer>();
@@ -198,8 +193,9 @@ public class ExcelProcessor {
                     HSSFCell cell = (HSSFCell) row.getCell(colpos);
                     String strCell = "";
                     if (cell != null) {
+
                         switch (cell.getCellType()) {
-                            case HSSFCell.CELL_TYPE_NUMERIC:
+                            case NUMERIC:
                                 if (HSSFDateUtil.isCellDateFormatted(cell) || type.equals(String.valueOf(Const.FIELD_TYPE_DATE))) {
                                     double d = cell.getNumericCellValue();
                                     Date date = HSSFDateUtil.getJavaDate(d);
@@ -214,7 +210,7 @@ public class ExcelProcessor {
                                     }
                                 }
                                 break;
-                            case HSSFCell.CELL_TYPE_STRING:
+                            case STRING:
                                 if (type.equals(Const.META_TYPE_NUMERIC)) {
                                     strCell = cell.getStringCellValue();
                                     double d = Double.valueOf(strCell);
@@ -225,11 +221,11 @@ public class ExcelProcessor {
                                     strCell = cell.getStringCellValue();
                                 }
                                 break;
-                            case HSSFCell.CELL_TYPE_BOOLEAN:
+                            case BOOLEAN:
                                 strCell = String.valueOf(cell.getBooleanCellValue());
                                 break;
-                            case HSSFCell.CELL_TYPE_FORMULA:
-                                strCell=evaluator.evaluate(cell).getStringValue();
+                            case FORMULA:
+                                strCell = evaluator.evaluate(cell).getStringValue();
                                 break;
                             default:
                                 strCell = "";
@@ -399,8 +395,8 @@ public class ExcelProcessor {
             if (values != null && !"".equals(values)) {
                 Cell cel = row.createCell(i);
 
-                CellStyle cellStyle = ExcelBaseOper.getHeaderStyle(wb, 1, CellStyle.ALIGN_CENTER, null);
-                cellStyle.setAlignment(HSSFCellStyle.ALIGN_CENTER);
+                CellStyle cellStyle = ExcelBaseOper.getHeaderStyle(wb, 1, HorizontalAlignment.CENTER, null);
+                cellStyle.setAlignment(HorizontalAlignment.CENTER);
                 cel.setCellValue(values);
                 cel.setCellStyle(cellStyle);
             }
@@ -415,7 +411,7 @@ public class ExcelProcessor {
             if (values != null && !"".equals(values)) {
                 Cell cel = row.createCell(i);
 
-                CellStyle cellStyle = ExcelBaseOper.getHeaderStyle(wb, 1, CellStyle.ALIGN_CENTER, header);
+                CellStyle cellStyle = ExcelBaseOper.getHeaderStyle(wb, 1, HorizontalAlignment.CENTER, header);
                 cel.setCellStyle(cellStyle);
                 cel.setCellValue(values);
 
@@ -474,15 +470,15 @@ public class ExcelProcessor {
         if (name != null && !"".equals(name)) {
             if (region.getSubRegions().size() == 0) {
                 if (region.getColheigth() == 1 && region.getCollength() == 1) {
-                    CellStyle style = ExcelBaseOper.getHeaderStyle(wb, 1, CellStyle.ALIGN_CENTER, region, header);
+                    CellStyle style = ExcelBaseOper.getHeaderStyle(wb, 1, HorizontalAlignment.CENTER, region, header);
                     Cell cell = ExcelBaseOper.createCell(baserow, startcol, value, Const.META_TYPE_STRING, style, helper);
                     cell.setCellValue(name);
                 } else {
-                    CellStyle style = ExcelBaseOper.getHeaderStyle(wb, 3, CellStyle.ALIGN_CENTER, region, header);
+                    CellStyle style = ExcelBaseOper.getHeaderStyle(wb, 3, HorizontalAlignment.CENTER, region, header);
                     ExcelBaseOper.merged(targetsheet, baserow, Const.META_TYPE_STRING, baseRow, startcol, baseRow + region.getColheigth() - 1, startcol + region.getCollength() - 1, style, value, helper);
                 }
             } else {
-                CellStyle style = ExcelBaseOper.getHeaderStyle(wb, 3, HSSFCellStyle.ALIGN_CENTER, region, header);
+                CellStyle style = ExcelBaseOper.getHeaderStyle(wb, 3, HorizontalAlignment.CENTER, region, header);
                 ExcelBaseOper.merged(targetsheet, baserow, Const.META_TYPE_STRING, baseRow, startcol, baseRow + region.getColheigth() - 1, startcol + region.getCollength() - 1, style, value, helper);
             }
         }
@@ -501,10 +497,10 @@ public class ExcelProcessor {
         CellStyle style = null;
         Row baseRow = headerRows[column.getStartrow()];
         if (column.getRowspan() > 1 || column.getColspan() > 1) {
-            style = ExcelBaseOper.getHeaderStyle(wb, 3, CellStyle.ALIGN_CENTER, prop);
+            style = ExcelBaseOper.getHeaderStyle(wb, 3, HorizontalAlignment.CENTER, prop);
             ExcelBaseOper.merged(targetsheet, baseRow, Const.META_TYPE_STRING, column.getStartrow(), column.getStartcol(), column.getStartrow() + column.getRowspan() - 1, column.getStartcol() + column.getColspan() - 1, style, column.getColumnName(), helper);
         } else {
-            style = ExcelBaseOper.getHeaderStyle(wb, 1, CellStyle.ALIGN_CENTER, prop);
+            style = ExcelBaseOper.getHeaderStyle(wb, 1, HorizontalAlignment.CENTER, prop);
             ExcelBaseOper.createCell(baseRow, column.getStartcol(), column.getColumnName(), Const.META_TYPE_STRING, style, helper);
         }
     }
@@ -513,10 +509,10 @@ public class ExcelProcessor {
         CellStyle style = null;
         Row baseRow = headerRows[region.getStartrow()];
         if (region.getColheigth() > 1 || region.getCollength() > 1) {
-            style = ExcelBaseOper.getHeaderStyle(wb, 3, CellStyle.ALIGN_CENTER, prop);
+            style = ExcelBaseOper.getHeaderStyle(wb, 3, HorizontalAlignment.CENTER, prop);
             ExcelBaseOper.merged(targetsheet, baseRow, Const.META_TYPE_STRING, region.getStartrow(), region.getStartcol(), region.getStartrow() + region.getColheigth() - 1, region.getStartcol() + region.getCollength() - 1, style, region.getName(), helper);
         } else {
-            style = ExcelBaseOper.getHeaderStyle(wb, 1, CellStyle.ALIGN_CENTER, prop);
+            style = ExcelBaseOper.getHeaderStyle(wb, 1, HorizontalAlignment.CENTER, prop);
             ExcelBaseOper.createCell(baseRow, region.getStartcol(), region.getName(), Const.META_TYPE_STRING, style, helper);
         }
     }
@@ -568,10 +564,10 @@ public class ExcelProcessor {
                 String columnType = excelprop.getColumnType();
                 boolean needMerge = excelprop.isNeedMerge();
                 String valueobj = map.get(columnCode).toString();
-                if (valueobj == null && map.get(columnCode.toUpperCase())!=null) {
+                if (valueobj == null && map.get(columnCode.toUpperCase()) != null) {
                     valueobj = map.get(columnCode.toUpperCase()).toString();
                 }
-                if (valueobj == null && map.get(columnCode.toLowerCase())!=null) {
+                if (valueobj == null && map.get(columnCode.toLowerCase()) != null) {
                     valueobj = map.get(columnCode.toLowerCase()).toString();
                 }
                 CellStyle stylesingle = ExcelCellStyleUtil.getCellStyle(wb, 1, 1, columnType, header, cellMap);
@@ -703,21 +699,21 @@ public class ExcelProcessor {
                     if (columname != null && !"".equals(columname)) {
                         HSSFCellStyle cellStyle = (HSSFCellStyle) ExcelCellStyleUtil.getCellStyle(wb, 1, 1, colType, null, cellMap);
                         if (colType.equals(Const.META_TYPE_STRING)) {
-                            createCell(cellStyle, row1, (short) j, HSSFCellStyle.ALIGN_CENTER, value);
+                            createCell(cellStyle, row1, (short) j, value);
                         } else if (colType.equals(Const.META_TYPE_NUMERIC) || colType.equals(Const.META_TYPE_DOUBLE)) {
                             if (!"".equals(value)) {
-                                createCell(cellStyle, row1, (short) j, HSSFCellStyle.ALIGN_CENTER, Double.parseDouble(value));
+                                createCell(cellStyle, row1, (short) j, Double.parseDouble(value));
                             }
                         } else if (colType.equals(Const.META_TYPE_BIGINT)) {
-                            createCell(cellStyle, row1, (short) j, HSSFCellStyle.ALIGN_CENTER, Long.parseLong(value));
+                            createCell(cellStyle, row1, (short) j, Long.parseLong(value));
                         } else if (colType.equalsIgnoreCase(Const.META_TYPE_INTEGER)) {
-                            createCell(cellStyle, row1, (short) j, HSSFCellStyle.ALIGN_CENTER, Integer.parseInt(value));
+                            createCell(cellStyle, row1, (short) j, Integer.parseInt(value));
                         } else if (colType.equals(Const.META_TYPE_DATE)) {
                             if (!"".equals(value)) {
-                                createCellDate(cellStyle, row1, (short) j, HSSFCellStyle.ALIGN_CENTER, value);
+                                createCellDate(cellStyle, row1, (short) j, value);
                             }
                         } else {
-                            createCell(cellStyle, row1, (short) j, HSSFCellStyle.ALIGN_CENTER, value);
+                            createCell(cellStyle, row1, (short) j, value);
                         }
                     }
                 }
@@ -729,9 +725,8 @@ public class ExcelProcessor {
     }
 
 
-    private static void createCell(CellStyle cellStyle, Row row, int column, short align, String objvalue) {
+    private static void createCell(CellStyle cellStyle, Row row, int column, String objvalue) {
         Cell cell = row.createCell(column);
-        //cellStyle.setAlignment(align);
         cell.setCellStyle(cellStyle);
         //cell.setEncoding(HSSFCell.ENCODING_UTF_16);
         String value = "";
@@ -741,15 +736,14 @@ public class ExcelProcessor {
         cell.setCellValue(value);
     }
 
-    private static void createCell(CellStyle cellStyle, Row row, int column, short align, double value) {
+    private static void createCell(CellStyle cellStyle, Row row, int column, double value) {
         Cell cell = row.createCell(column);
         cell.setCellStyle(cellStyle);
         cell.setCellValue(value);
     }
 
-    private static void createCellDate(CellStyle cellStyle, Row row, int column, short align, String value) {
+    private static void createCellDate(CellStyle cellStyle, Row row, int column, String value) {
         Cell cell = row.createCell(column);
-        //cellStyle.setAlignment(align);
         cellStyle.setDataFormat(HSSFDataFormat.getBuiltinFormat("yyyy-MM-dd hh:mm:ss"));
         cell.setCellStyle(cellStyle);
         cell.setCellValue(value);

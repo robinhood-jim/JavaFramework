@@ -81,23 +81,23 @@ public class ExcelBaseOper {
         return wb;
     }
 
-    public static CellStyle getHeaderStyle(Workbook wb, int rowspan, int align, TableMergeRegion region, TableConfigProp header) {
+    public static CellStyle getHeaderStyle(Workbook wb, int rowspan, HorizontalAlignment align, TableMergeRegion region, TableConfigProp header) {
         CellStyle cs = wb.createCellStyle();
 
         if (rowspan > 1) {
-            cs.setVerticalAlignment(CellStyle.VERTICAL_CENTER);
+            cs.setVerticalAlignment(VerticalAlignment.CENTER);
         }
-        cs.setAlignment(getAlignment(align));
-        cs.setBorderLeft(CellStyle.BORDER_THIN);
+        cs.setAlignment(align);
+        cs.setBorderLeft(BorderStyle.THIN);
 
         cs.setLeftBorderColor(IndexedColors.BLACK.getIndex());
-        cs.setBorderRight(CellStyle.BORDER_THIN);
+        cs.setBorderRight(BorderStyle.THIN);
 
         cs.setRightBorderColor(IndexedColors.BLACK.getIndex());
-        cs.setBorderTop(CellStyle.BORDER_THIN);
+        cs.setBorderTop(BorderStyle.THIN);
 
         cs.setTopBorderColor(IndexedColors.BLACK.getIndex());
-        cs.setBorderBottom(CellStyle.BORDER_THIN);
+        cs.setBorderBottom(BorderStyle.THIN);
         cs.setBottomBorderColor(IndexedColors.BLACK.getIndex());
         setHeaderFont(wb, header, cs);
 
@@ -109,7 +109,7 @@ public class ExcelBaseOper {
             cs.setFillForegroundColor(IndexedColors.WHITE.getIndex());
         }
 
-        cs.setFillPattern(CellStyle.SOLID_FOREGROUND);
+        cs.setFillPattern(FillPatternType.SOLID_FOREGROUND);
         return cs;
     }
 
@@ -118,7 +118,7 @@ public class ExcelBaseOper {
             Font font = wb.createFont();
             font.setFontName((header.getHeaderFontName() == null || header.getHeaderFontName().isEmpty()) ? defaultFontName : header.getHeaderFontName());
             if (header.isBold()) {
-                font.setBoldweight((short) 2);
+                font.setBold(true);
             }
             if (header.isItalic()) {
                 font.setItalic(true);
@@ -127,30 +127,30 @@ public class ExcelBaseOper {
         }
     }
 
-    public static CellStyle getHeaderStyle(Workbook wb, int rowspan, int align, TableConfigProp header) {
+    public static CellStyle getHeaderStyle(Workbook wb, int rowspan, HorizontalAlignment align, TableConfigProp header) {
         CellStyle cs = wb.createCellStyle();
 
         if (rowspan > 1) {
-            cs.setVerticalAlignment(CellStyle.VERTICAL_CENTER);
+            cs.setVerticalAlignment(VerticalAlignment.CENTER);
         }
-        cs.setAlignment(getAlignment(align));
+        cs.setAlignment(align);
 
         cs.setBottomBorderColor(IndexedColors.BLACK.getIndex());
-        cs.setBorderLeft(CellStyle.BORDER_THIN);
+        cs.setBorderLeft(BorderStyle.THIN);
 
         cs.setLeftBorderColor(IndexedColors.BLACK.getIndex());
-        cs.setBorderRight(CellStyle.BORDER_THIN);
-        cs.setBorderBottom(CellStyle.BORDER_THIN);
-        cs.setBorderTop(CellStyle.BORDER_THIN);
+        cs.setBorderRight(BorderStyle.THIN);
+        cs.setBorderBottom(BorderStyle.THIN);
+        cs.setBorderTop(BorderStyle.THIN);
 
         cs.setRightBorderColor(IndexedColors.BLACK.getIndex());
-        cs.setBorderTop(CellStyle.BORDER_THIN);
+        cs.setBorderTop(BorderStyle.THIN);
 
         cs.setTopBorderColor(IndexedColors.BLACK.getIndex());
 
         cs.setFillForegroundColor(IndexedColors.WHITE.getIndex());
         setHeaderFont(wb, header, cs);
-        cs.setFillPattern(CellStyle.SOLID_FOREGROUND);
+        cs.setFillPattern(FillPatternType.SOLID_FOREGROUND);
         cs.setWrapText(true);
         return cs;
     }
@@ -340,7 +340,7 @@ public class ExcelBaseOper {
     }
     private static Cell createFormulaCell(Row row,int column,CellStyle cellStyle,CreationHelper helper,String formula){
         Cell cell = row.createCell(column);
-        cell.setCellType(XSSFCell.CELL_TYPE_FORMULA);
+        cell.setCellType(CellType.FORMULA);
         cell.setCellFormula(formula);
         cell.setCellStyle(cellStyle);
         return cell;
