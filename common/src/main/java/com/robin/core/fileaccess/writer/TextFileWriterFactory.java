@@ -42,6 +42,7 @@ public class TextFileWriterFactory {
         fileWriter.setOutputStream(writer);
         return fileWriter;
     }
+
     public static AbstractFileWriter getFileWriterByPath(DataCollectionMeta colmeta, OutputStream writer) throws IOException{
         List<String> suffixList=new ArrayList<String>();
         FileUtils.parseFileFormat(colmeta.getPath(),suffixList);

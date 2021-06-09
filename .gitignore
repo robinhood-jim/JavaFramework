@@ -30,7 +30,6 @@ Thumbs.db
 *.class
 
 # Package Files #
-*.jar
 out.map
 */backup
 */.backup

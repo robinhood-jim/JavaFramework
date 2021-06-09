@@ -51,6 +51,7 @@
         <module>webui</module>
         <module>spring-starter</module>
         <module>estool</module>
+        <module>tracer</module>
     </modules>
     <!-- properties -->
     <properties>

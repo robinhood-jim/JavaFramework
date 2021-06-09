@@ -9,12 +9,27 @@ Slightly Framework design to  support Spring based java or Bigdata program.
 1.Introduction
 
 	I.This project is base on Spring Framework and has four modules:
-		Core: the core class include data access layer basic class(model,dao,service) and  etc.
-		comm: FileSystem Access tool(local/vfs),support FileFormat(csv/xml/json/avro/parquet/protobuf),
-		      support Compress Format(gzip/bzip2/snappy/lzo/zip/lzma/lz4)
-		      ,read and write excel,read word or PowerPoint
-		hadooptool:FileSystem Access tool(hdfs), comm tool to access to HDFS,Hbase,Hive,Mongdb and etc
-		web: struts1,struts2 and springmvc support web component and required class.
+		|----------------------------------------------------------------------------------------------------|
+		| Module   | Description                                                                             |
+		|----------------------------------------------------------------------------------------------------|
+		| Core     | the core class include data access layer basic class(model,dao,service) and  etc.       |
+		|----------------------------------------------------------------------------------------------------|
+		| Comm     | FileSystem Access tool(local/vfs),support FileFormat(csv/xml/json/avro/parquet/protobuf)|
+		|          | ,support Compress Format(gzip/bzip2/snappy/lzo/zip/lzma/lz4)                            |
+		|          | ,read and write excel,read word or PowerPoint                                           |
+		|----------------------------------------------------------------------------------------------------|
+		|Hadooptool|FileSystem Access tool(hdfs), comm tool to access to HDFS,Hbase,Hive,Mongdb and etc      |
+		|----------------------------------------------------------------------------------------------------|
+		|Example   |springmvc config based and spring boot based Example;                                    |
+		|----------------------------------------------------------------------------------------------------|
+		|Web       |struts1,struts2 and springmvc support web component and required class.                  |
+		|----------------------------------------------------------------------------------------------------|
+		|Webui     |Spring Boot with Oauth2 Thymeleaf Example;                                               |
+		|----------------------------------------------------------------------------------------------------|
+		|Estool    | ElasticSearch Comm Query tool                                                           |
+		|----------------------------------------------------------------------------------------------------|
+		|Tracer    | Zipkin Brave tracing，Can trace All Database and Record parameters                      |
+		|----------------------------------------------------------------------------------------------------|
    
     II. Special feature
         a.A user defined xml Query config system,similar to mybatis,but easy config.
