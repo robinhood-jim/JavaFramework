@@ -207,9 +207,6 @@
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
-                <excludes>
-                    <exclude>**/*</exclude>
-                </excludes>
             </resource>
         </resources>
         <plugins>
@@ -237,90 +234,7 @@
                     <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>
-            <plugin>
-                <groupId>com.github.wvengen</groupId>
-                <artifactId>proguard-maven-plugin</artifactId>
-                <version>2.0.10</version>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>proguard</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <exclusions>
-                        <exclusion>
-                            <groupId>io.github.classgraph</groupId>
-                            <artifactId>classgraph</artifactId>
-                        </exclusion>
-                        <exclusion>
-                            <groupId>org.apache.logging.log4j</groupId>
-                            <artifactId>log4j-api</artifactId>
-                        </exclusion>
-                    </exclusions>
-                    <proguardVersion>5.1</proguardVersion>
-                    <injar>tracer-1.0-SNAPSHOT.jar</injar>
-                    <!--<attach>true</attach>-->
-                    <!--<attachArtifactClassifier>pg</attachArtifactClassifier>-->
-                    <!-- attach 的作用是在 install 与 deploy 时将生成的 pg 文件也安装与部署 -->
-                    <libs>
-                        <lib>${java.home}/lib/rt.jar</lib>
-                    </libs>
-                    <options> <!-- 详细配置方式参考 ProGuard 官方文档 -->
-                        <!--<option>-dontobfuscate</option>-->
-                        <option>-keepattributes Signature,InnerClasses,Exceptions</option>
-                        <option>
-                            <![CDATA[-keep public class * {public protected <fields>;public protected <methods>;}]]></option>
-                        <option>-keep public class * implements java.io.Serializable{public protected private *;}
-                        </option>
-                        <option>-keep public class * extends com.robin.core.base.model.BaseObject{
-                            public protected private *;
-                            }
-                        </option>
-                        <option>-ignorewarnings</option> <!--忽略所有告警-->
-                        <option>-dontshrink</option>   <!--不做 shrink -->
-                        <option>-printmapping out.map</option>
-                        <!--平行包结构（重构包层次），所有混淆的类放在 pg 包下-->
 
-                        <!-- 以下为 Keep，哪些内容保持不变，因为有一些内容混淆后（a,b,c）导致反射或按类名字符串相关的操作失效 -->
-                        <option>-optimizations !code/allocation/variable</option>
-                        <option>-keep class **.package-info</option>
-                        <option>-keep enum * { *; }</option>
-                        <option><![CDATA[-keepclassmembers enum * {
-							<fields>;
-							public static **[] values();
-    						public static ** valueOf(java.lang.String);
-						}]]></option>
-                        <!--保持包注解类-->
-
-
-                        <!--JAXB NEED，具体原因不明，不加会导致 JAXB 出异常，如果不使用 JAXB 根据需要修改-->
-                        <!-- Jaxb requires generics to be available to perform xml parsing and without this option ProGuard was not retaining that information after obfuscation. That was causing the exception above. -->
-
-                        <option>-keepattributes SourceFile,LineNumberTable,*Annotation*</option>
-                        <!--保持源码名与行号（异常时有明确的栈信息），注解（默认会过滤掉所有注解，会影响框架的注解）-->
-
-
-                        <!--保持枚举中的名子，确保枚举 valueOf 可以使用-->
-
-                        <option>-keep public class com.robin.core.base.**</option>
-                        <!--保持 Bean 类，（由于很多框架会对 Bean 中的内容做反射处理，请根据自己的业务调整） -->
-
-
-                        <option>
-                            -keepclasseswithmembers public class * {
-                            public static void main(java.lang.String[]);
-                            }
-                        </option>
-                        <!-- 保持对外的接口性质类对外的类名与方法名不变 -->
-
-                    </options>
-
-
-                </configuration>
-            </plugin>
         </plugins>
     </build>
 </project>

@@ -35,7 +35,7 @@ public class DB2DataBaseMeta extends BaseDataBaseMeta implements DataBaseInterfa
 	}
 	@Override
     public boolean suppportSequnce() {
-		return true;
+		return false;
 	}
 
 	@Override

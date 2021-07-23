@@ -111,15 +111,15 @@ public class DataBaseUtil {
     }
 
 
-    public List<DataBaseTableMeta> getAllTable(String schema, DataBaseInterface datameta) throws Exception {
-        return scanAllTable(connection, schema, datameta);
+    public List<DataBaseTableMeta> getAllTable(String schema) throws Exception {
+        return scanAllTable(connection, schema, dataBaseMeta);
     }
 
     public static List<DataBaseTableMeta> getAllTable(DataSource source, String schema, DataBaseInterface datameta) throws Exception {
         return scanAllTable(source.getConnection(), schema, datameta);
     }
 
-    public List<DataBaseColumnMeta> getTableMetaByTableName(String tablename, String DbOrtablespacename, BaseDataBaseMeta basemeta) throws SQLException {
+    public List<DataBaseColumnMeta> getTableMetaByTableName(String tablename, String DbOrtablespacename) throws SQLException {
         List<DataBaseColumnMeta> columnlist = new ArrayList<DataBaseColumnMeta>();
         DatabaseMetaData meta = connection.getMetaData();
         try (Statement stmt = connection.createStatement(); ResultSet rs = meta.getColumns(dataBaseMeta.getCatalog(DbOrtablespacename), DbOrtablespacename, tablename, null)) {
@@ -135,7 +135,7 @@ public class DataBaseUtil {
                 String scale = rs.getString("TABLE_SCHEM");
 
                 DataBaseColumnMeta datameta = new DataBaseColumnMeta();
-                if (!(basemeta instanceof OracleDataBaseMeta)) {
+                if (!(dataBaseMeta instanceof OracleDataBaseMeta)) {
                     String autoInc = rs.getString("IS_AUTOINCREMENT");
                     if (autoInc != null && "YES".equals(autoInc)) {
                         datameta.setIncrement(true);

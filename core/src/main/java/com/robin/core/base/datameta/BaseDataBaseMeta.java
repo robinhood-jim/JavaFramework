@@ -51,7 +51,7 @@ public abstract class BaseDataBaseMeta implements DataBaseInterface, Serializabl
 	public List<DataBaseTableMeta> listAllTable(String schema) throws Exception {
 		DataBaseUtil util=new DataBaseUtil();
 		util.connect(this);
-		List<DataBaseTableMeta> list=util.getAllTable(schema, this);
+		List<DataBaseTableMeta> list=util.getAllTable(schema);
 		util.closeConnection();
 		return list;
 	}

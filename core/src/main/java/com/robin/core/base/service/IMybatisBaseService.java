@@ -43,7 +43,7 @@ public interface IMybatisBaseService<M extends BaseMapper<T>,T extends Serializa
      * @param valueObj  set 实体
      * @return
      */
-    boolean deleteByLogic(List<P> ids, T valueObj);
+    boolean deleteByLogic(List<P> ids);
     P[] parseId(String ids) throws ServiceException;
     boolean deleteByIds(List<P> ids);
     boolean deleteByField(String fieldName, Object value);

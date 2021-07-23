@@ -2,7 +2,7 @@ package com.robin.webui.contorller.system;
 
 import com.robin.core.base.util.Const;
 import com.robin.core.base.util.StringUtils;
-import com.robin.core.web.controller.BaseController;
+import com.robin.core.web.controller.AbstractController;
 import com.robin.core.web.util.RestTemplateUtils;
 import com.robin.core.web.util.Session;
 
@@ -50,13 +50,13 @@ public class SysUserContorller {
     @ResponseBody
     public Map<String, Object> saveUser(HttpServletRequest request,
                                         HttpServletResponse response) {
-        return RestTemplateUtils.postFromRestUrl("system/user/save", BaseController.wrapRequest(request),AuthUtils.getRequestParam(null,request));
+        return RestTemplateUtils.postFromRestUrl("system/user/save", AbstractController.wrapRequest(request),AuthUtils.getRequestParam(null,request));
     }
     @RequestMapping("/update")
     @ResponseBody
     public Map<String, Object> updateUser(HttpServletRequest request,
                                         HttpServletResponse response) {
-        return RestTemplateUtils.postFromRestUrl("system/user/update",BaseController.wrapRequest(request),AuthUtils.getRequestParam(null,request));
+        return RestTemplateUtils.postFromRestUrl("system/user/update", AbstractController.wrapRequest(request),AuthUtils.getRequestParam(null,request));
     }
     @RequestMapping("/delete")
     @ResponseBody

@@ -1,7 +1,7 @@
 package com.robin.example.controller.system;
 
 import com.robin.core.web.codeset.CodeSetService;
-import com.robin.core.web.controller.BaseController;
+import com.robin.core.web.controller.AbstractController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,7 +17,7 @@ import java.util.Map;
 
 @RequestMapping("/system/codeset")
 @Controller
-public class CodeSetController extends BaseController {
+public class CodeSetController extends AbstractController {
     @Autowired
     private CodeSetService codeSetService;
 

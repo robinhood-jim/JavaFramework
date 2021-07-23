@@ -47,7 +47,7 @@ public class ExcelCellStyleUtil {
 	        cs.setRightBorderColor(IndexedColors.BLACK.getIndex());
 	        cs.setBorderTop(BorderStyle.THIN);
 	        cs.setTopBorderColor(IndexedColors.BLACK.getIndex());
-	        //cs.setFillForegroundColor(IndexedColors.WHITE.getIndex());
+	        cs.setFillForegroundColor(IndexedColors.WHITE.getIndex());
 	        	 if(header!=null){
 	             	Font font=wb.createFont();
 					 font.setFontName((header.getContentFontName()==null || header.getContentFontName().isEmpty())? DEFAULT_FONT_NAME :header.getContentFontName());

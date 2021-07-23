@@ -15,7 +15,7 @@
  */
 package com.robin.example.controller.system;
 
-import com.robin.core.web.controller.BaseController;
+import com.robin.core.web.controller.AbstractController;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -26,7 +26,7 @@ import java.util.Map;
 
 @Controller
 @RequestMapping("/system")
-public class SysCodeContorller extends BaseController {
+public class SysCodeContorller extends AbstractController {
     @RequestMapping("/codecombo")
     @ResponseBody
     public Map<String,Object> getCodeSetCombo(@RequestParam String codeSetNo){

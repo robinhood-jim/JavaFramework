@@ -3,7 +3,7 @@ package com.robin.example.controller.system;
 import com.google.gson.Gson;
 import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.query.util.PageQuery;
-import com.robin.core.web.controller.BaseCrudDhtmlxController;
+import com.robin.core.web.controller.AbstractCrudDhtmlxController;
 import com.robin.example.model.user.SysRole;
 import com.robin.example.service.system.SysRoleService;
 import org.springframework.stereotype.Controller;
@@ -17,7 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 @Controller
 @RequestMapping("/system/role")
-public class SysRoleContorller extends BaseCrudDhtmlxController<SysRole,Long, SysRoleService> {
+public class SysRoleContorller extends AbstractCrudDhtmlxController<SysRole,Long, SysRoleService> {
 
 	@RequestMapping("/list")
 	@ResponseBody

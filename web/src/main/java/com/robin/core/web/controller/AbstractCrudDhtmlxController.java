@@ -36,7 +36,7 @@ import java.util.Map;
 /**
  * use Chinese Alter msg.Later will change to i18n
  */
-public abstract class BaseCrudDhtmlxController<O extends BaseObject, P extends Serializable, S extends IBaseAnnotationJdbcService<O,P>> extends BaseCrudController<O, P, S> {
+public abstract class AbstractCrudDhtmlxController<O extends BaseObject, P extends Serializable, S extends IBaseAnnotationJdbcService<O,P>> extends AbstractCrudController<O, P, S> {
 
 
     protected Map<String, Object> wrapComobo(List<Map<String, Object>> rsList, String keyColumn, String valueColumn, boolean insertNullVal) {

@@ -21,6 +21,7 @@ import com.robin.core.convert.util.ConvertUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
@@ -54,6 +55,11 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>,T extends S
     protected Map<String,Method> setMap=new HashMap<>();
     protected String defaultOrderField="create_time";
     protected Boolean defaultOrder=false;
+    protected Map<String, Field> fieldMap;
+    protected String deleteColumn="delete_flag";
+    protected Method setDeleteMethod=null;
+    protected Method getDeleteMethod=null;
+    protected Integer invalidValue=Integer.valueOf(Const.INVALID);
 
     public AbstractMybatisService(){
         Type genericSuperClass = getClass().getGenericSuperclass();
@@ -80,7 +86,7 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>,T extends S
             }
             getMethods= ReflectUtils.returnGetMethods(voType);
             setMethods= ReflectUtils.returnSetMethods(voType);
-            Map<String, Field> fieldMap= ReflectUtils.getFieldsMapByAnnotation(voType, TableField.class);
+            fieldMap= ReflectUtils.getFieldsMapByAnnotation(voType, TableField.class);
             setMap=ReflectUtils.returnSetMethods(voType);
             if(null!=fieldMap && !fieldMap.isEmpty()) {
                 Iterator<Map.Entry<String, Field>> iterator = fieldMap.entrySet().iterator();
@@ -88,6 +94,10 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>,T extends S
                     Map.Entry<String,Field> entry=iterator.next();
                     fieldMappingMap.put(entry.getKey(),entry.getValue().getAnnotation(TableField.class).value());
                 }
+            }
+            if(getMethods.containsKey(com.robin.core.base.util.StringUtils.returnCamelCaseByFieldName(deleteColumn))){
+                getDeleteMethod=getMethods.get(com.robin.core.base.util.StringUtils.returnCamelCaseByFieldName(deleteColumn));
+                setDeleteMethod=setMethods.get(com.robin.core.base.util.StringUtils.returnCamelCaseByFieldName(deleteColumn));
             }
         } catch (Exception ex) {
             log.error("{}", ex);
@@ -286,9 +296,17 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>,T extends S
     }
     @Override
     @Transactional(rollbackFor = RuntimeException.class)
-    public boolean deleteByLogic(List<P> ids, T valueObj){
+    public boolean deleteByLogic(List<P> ids){
         UpdateWrapper<T> wrapper=new UpdateWrapper<>();
         wrapper.in(pkColumn,ids);
+        T valueObj= BeanUtils.instantiateClass(voType);
+        try {
+            if (setDeleteMethod != null) {
+                setDeleteMethod.invoke(valueObj, invalidValue);
+            }
+        }catch (Exception ex){
+            throw new ServiceException(ex);
+        }
         return retBool(baseDao.update(valueObj,wrapper));
     }
 
@@ -415,58 +433,76 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>,T extends S
     public QueryWrapper wrapWithEntity(Object queryObject) throws Exception {
         Map<String, Method> getMethod = ReflectUtils.returnGetMethods(voType);
         QueryWrapper queryWrapper = new QueryWrapper();
-        Map<String, Field> fieldMap = ReflectUtils.getFieldsMapByAnnotation(voType, TableField.class);
         //hashMap
         if (queryObject.getClass().getInterfaces().length>0 &&  queryObject.getClass().getInterfaces()[0].isAssignableFrom(Map.class)) {
             Map<String, Object> tmpMap = (Map<String, Object>) queryObject;
             Iterator<Map.Entry<String, Object>> iter = tmpMap.entrySet().iterator();
-            while (iter.hasNext()) {
-                Map.Entry<String, Object> entry = iter.next();
-                if (getMethod.containsKey(entry.getKey())) {
-                    String filterColumn;
-                    if (fieldMap!=null && fieldMap.containsKey(entry.getKey())) {
-                        filterColumn = fieldMap.get(entry.getKey()).getAnnotation(TableField.class).value();
-                    } else {
-                        filterColumn = com.robin.core.base.util.StringUtils.getFieldNameByCamelCase(entry.getKey());
-                    }
-                    wrapQueryWithTypeAndValue(getMethod.get(entry.getKey()).getReturnType(), filterColumn, entry.getValue().toString(), queryWrapper);
-                }
-            }
+            wrapWithValue(getMethod, queryWrapper, iter);
             if(tmpMap.get(Const.ORDER)!=null && !StringUtils.isEmpty(tmpMap.get(Const.ORDER).toString())
                     &&tmpMap.get(Const.ORDER_FIELD)!=null  && !StringUtils.isEmpty(tmpMap.get(Const.ORDER_FIELD).toString())){
                 queryWrapper.orderBy(true,tmpMap.get(Const.ORDER).equals(Const.ASC),tmpMap.get(Const.ORDER_FIELD).toString());
             }else{
                 queryWrapper.orderBy(true,defaultOrder,defaultOrderField);
             }
-        } else {
+        }
+        //PageDTO paramMap
+        else if (queryObject.getClass().getSuperclass().isAssignableFrom(PageDTO.class)){
+            PageDTO pageDTO = (PageDTO) queryObject;
+            if(!CollectionUtils.isEmpty(pageDTO.getParam())){
+                Iterator<Map.Entry<String, Object>> iter = pageDTO.getParam().entrySet().iterator();
+                wrapWithValue(getMethod, queryWrapper, iter);
+            }
+            if(!StringUtils.isEmpty(pageDTO.getOrderField()) &&!StringUtils.isEmpty(pageDTO.getOrder())){
+                queryWrapper.orderBy(true,pageDTO.getOrder().equalsIgnoreCase(Const.ASC),pageDTO.getOrderField());
+            }else{
+                queryWrapper.orderBy(true,defaultOrder,defaultOrderField);
+            }
+        }
+        else {
             Map<String, Method> qtoMethod = ReflectUtils.returnGetMethods(queryObject.getClass());
             Iterator<Map.Entry<String, Method>> entryIterator = qtoMethod.entrySet().iterator();
             while (entryIterator.hasNext()) {
                 Map.Entry<String, Method> entry = entryIterator.next();
                 if (getMethod.containsKey(entry.getKey())) {
-                    String filterColumn;
-                    if (fieldMap!=null && fieldMap.containsKey(entry.getKey())) {
-                        filterColumn = fieldMap.get(entry.getKey()).getAnnotation(TableField.class).value();
-                    } else {
-                        filterColumn = com.robin.core.base.util.StringUtils.getFieldNameByCamelCase(entry.getKey());
-                    }
+                    String filterColumn = getFilterColumn(entry.getKey());
                     Object tmpObj = entry.getValue().invoke(queryObject);
                     if (null != tmpObj) {
                         wrapQueryWithTypeAndValue(getMethod.get(entry.getKey()).getReturnType(), filterColumn, tmpObj.toString(), queryWrapper);
                     }
                 }
             }
-            if (queryObject.getClass().getSuperclass().isAssignableFrom(PageDTO.class)){
-                PageDTO pageDTO = (PageDTO) queryObject;
-                Assert.notNull(pageDTO,"");
-                if(!StringUtils.isEmpty(pageDTO.getOrderField()) &&!StringUtils.isEmpty(pageDTO.getOrder())){
-                    queryWrapper.orderBy(true,pageDTO.getOrder().equalsIgnoreCase(Const.ASC),pageDTO.getOrderField());
+            if(qtoMethod.containsKey("getOrderField") && qtoMethod.containsKey("getOrder")){
+                String orderField=(String)qtoMethod.get("getOrderField").invoke(queryObject,null);
+                String order=(String)qtoMethod.get("getOrder").invoke(queryObject,null);
+                if(!StringUtils.isEmpty(orderField) && !StringUtils.isEmpty(order)){
+                    queryWrapper.orderBy(true,order.equalsIgnoreCase(Const.ASC),orderField);
                 }else{
                     queryWrapper.orderBy(true,defaultOrder,defaultOrderField);
                 }
             }
+
         }
         return queryWrapper;
+    }
+
+    private void wrapWithValue(Map<String, Method> getMethod, QueryWrapper queryWrapper, Iterator<Map.Entry<String, Object>> iter) throws Exception {
+        while (iter.hasNext()) {
+            Map.Entry<String, Object> entry = iter.next();
+            if (getMethod.containsKey(entry.getKey())) {
+                String filterColumn = getFilterColumn(entry.getKey());
+                wrapQueryWithTypeAndValue(getMethod.get(entry.getKey()).getReturnType(), filterColumn, entry.getValue().toString(), queryWrapper);
+            }
+        }
+    }
+
+    private String getFilterColumn(String key) {
+        String filterColumn;
+        if (fieldMap != null && fieldMap.containsKey(key)) {
+            filterColumn = fieldMap.get(key).getAnnotation(TableField.class).value();
+        } else {
+            filterColumn = com.robin.core.base.util.StringUtils.getFieldNameByCamelCase(key);
+        }
+        return filterColumn;
     }
 
     protected void wrapQueryWithTypeAndValue(Class valueType, String fiterColumn, String value, QueryWrapper queryWrapper) throws Exception {

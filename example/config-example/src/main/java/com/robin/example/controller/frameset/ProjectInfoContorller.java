@@ -11,7 +11,7 @@ import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.query.util.PageQuery;
 import com.robin.core.template.util.FreeMarkerUtil;
 import com.robin.core.web.codeset.Code;
-import com.robin.core.web.controller.BaseCrudDhtmlxController;
+import com.robin.core.web.controller.AbstractCrudDhtmlxController;
 import com.robin.core.web.codeset.CodeSetService;
 import com.robin.example.model.frameset.DataSource;
 import com.robin.example.model.frameset.DbDriver;
@@ -36,7 +36,7 @@ import java.util.Map;
 @Controller
 @RequestMapping("/system/project")
 
-public class ProjectInfoContorller extends BaseCrudDhtmlxController<ProjectInfo, Long, ProjectInfoService> {
+public class ProjectInfoContorller extends AbstractCrudDhtmlxController<ProjectInfo, Long, ProjectInfoService> {
 
 
     @Autowired

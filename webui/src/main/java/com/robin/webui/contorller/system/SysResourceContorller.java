@@ -1,7 +1,7 @@
 package com.robin.webui.contorller.system;
 
 
-import com.robin.core.web.controller.BaseController;
+import com.robin.core.web.controller.AbstractController;
 import com.robin.core.web.util.RestTemplateUtils;
 import com.robin.webui.util.AuthUtils;
 import org.springframework.stereotype.Controller;
@@ -35,7 +35,7 @@ public class SysResourceContorller  {
 	@ResponseBody
 	public Map<String, Object> saveMenu(HttpServletRequest request,
 			HttpServletResponse response){
-		return RestTemplateUtils.postFromRestUrl("system/menu/save", BaseController.wrapRequest(request),AuthUtils.getRequestParam(null,request));
+		return RestTemplateUtils.postFromRestUrl("system/menu/save", AbstractController.wrapRequest(request),AuthUtils.getRequestParam(null,request));
 	}
 	
 	@RequestMapping("/showrole")
@@ -58,12 +58,12 @@ public class SysResourceContorller  {
 	@ResponseBody
 	public Map<String, Object> updateSysResource(HttpServletRequest request,
 			HttpServletResponse response){
-		return RestTemplateUtils.postFromRestUrl("system/menu/update",BaseController.wrapRequest(request),AuthUtils.getRequestParam(null,request));
+		return RestTemplateUtils.postFromRestUrl("system/menu/update", AbstractController.wrapRequest(request),AuthUtils.getRequestParam(null,request));
 	}
 	@RequestMapping("/assignrole")
 	@ResponseBody
 	public Map<String, Object> assignRole(HttpServletRequest request,HttpServletResponse response){
 
-		return RestTemplateUtils.postFromRestUrl("system/menu/assignrole",BaseController.wrapRequest(request),AuthUtils.getRequestParam(null,request));
+		return RestTemplateUtils.postFromRestUrl("system/menu/assignrole", AbstractController.wrapRequest(request),AuthUtils.getRequestParam(null,request));
 	}
 }

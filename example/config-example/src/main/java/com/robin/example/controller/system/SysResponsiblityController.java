@@ -5,7 +5,7 @@ import com.robin.core.base.model.BaseObject;
 import com.robin.core.base.util.Const;
 import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.query.util.PageQuery;
-import com.robin.core.web.controller.BaseCrudDhtmlxController;
+import com.robin.core.web.controller.AbstractCrudDhtmlxController;
 import com.robin.core.web.util.Session;
 import com.robin.example.model.system.SysOrg;
 import com.robin.example.model.system.SysResponsibility;
@@ -27,7 +27,7 @@ import java.util.Map;
 
 @Controller
 @RequestMapping("/system/responsiblity")
-public class SysResponsiblityController extends BaseCrudDhtmlxController<SysResponsibility,Long, SysResponsibilityService> {
+public class SysResponsiblityController extends AbstractCrudDhtmlxController<SysResponsibility,Long, SysResponsibilityService> {
     @Autowired
     private SysOrgService sysOrgService;
     @Autowired

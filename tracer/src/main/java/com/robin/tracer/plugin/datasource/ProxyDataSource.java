@@ -9,6 +9,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.util.logging.Logger;
+import com.robin.tracer.utils.TracerConstant;
 
 public class ProxyDataSource implements DataSource {
     private String appName;
@@ -16,13 +17,12 @@ public class ProxyDataSource implements DataSource {
     private Tracing tracing;
     private DataSource delegate;
     private boolean traceEnable;
-    public static final String APPNAME_KEY="spring.application.name";
-    public static final String ENABLE_DATASOURCETRACE="tracer.datasource.tracing";
+
     private TraceParam traceParam;
     public ProxyDataSource(DataSource dataSource, Environment environment,Tracing tracing){
         this.delegate=dataSource;
-        this.appName=environment.getProperty(APPNAME_KEY);
-        this.traceEnable=environment.containsProperty(ENABLE_DATASOURCETRACE+".enable") && "true".equalsIgnoreCase(environment.getProperty(ENABLE_DATASOURCETRACE+".enable"));
+        this.appName=environment.getProperty(TracerConstant.APPNAME_KEY);
+        this.traceEnable=environment.containsProperty(TracerConstant.ENABLE_DATASOURCETRACE+".enabled") && "true".equalsIgnoreCase(environment.getProperty(TracerConstant.ENABLE_DATASOURCETRACE+".enabled"));
         this.tracing=tracing;
         traceParam=new TraceParam(appName,traceEnable);
     }

@@ -12,7 +12,7 @@ import com.robin.core.query.util.PageQuery;
 import com.robin.core.sql.util.FilterCondition;
 import com.robin.core.sql.util.FilterConditions;
 import com.robin.core.template.util.FreeMarkerUtil;
-import com.robin.core.web.controller.BaseCrudDhtmlxController;
+import com.robin.core.web.controller.AbstractCrudDhtmlxController;
 import com.robin.core.web.util.DhtmxTreeWrapper;
 import com.robin.example.model.frameset.DataSource;
 import com.robin.example.model.frameset.EntityMapping;
@@ -38,7 +38,7 @@ import java.util.*;
 
 @Controller
 @RequestMapping("/system/datamapping")
-public class DataMappingContoller extends BaseCrudDhtmlxController<ProjectInfo, Long, ProjectInfoService> {
+public class DataMappingContoller extends AbstractCrudDhtmlxController<ProjectInfo, Long, ProjectInfoService> {
     @Autowired
     private ProjectInfoService projectInfoService;
     @Autowired
@@ -124,7 +124,7 @@ public class DataMappingContoller extends BaseCrudDhtmlxController<ProjectInfo, 
             BaseDataBaseMeta meta = DataBaseMetaFactory.getDataBaseMetaByType(type, param);
             util = new DataBaseUtil();
             util.connect(meta);
-            List<DataBaseTableMeta> list = util.getAllTable(schema, meta);
+            List<DataBaseTableMeta> list = util.getAllTable(schema);
             ret = DhtmxTreeWrapper.WrappObjectTreeRetXml(list, schema, "tableName", "remark", null, false);
         } catch (Exception ex) {
             if (util != null) {
@@ -151,7 +151,7 @@ public class DataMappingContoller extends BaseCrudDhtmlxController<ProjectInfo, 
             BaseDataBaseMeta meta = DataBaseMetaFactory.getDataBaseMetaByType(type, param);
             util = new DataBaseUtil();
             util.connect(meta);
-            List<DataBaseColumnMeta> collist = util.getTableMetaByTableName(table, schema, meta);
+            List<DataBaseColumnMeta> collist = util.getTableMetaByTableName(table, schema);
             for (int i = 0; i < collist.size(); i++) {
                 DataBaseColumnMeta meta1 = collist.get(i);
                 Map<String, String> map = new HashMap<String, String>();
@@ -225,7 +225,7 @@ public class DataMappingContoller extends BaseCrudDhtmlxController<ProjectInfo, 
             BaseDataBaseMeta meta = DataBaseMetaFactory.getDataBaseMetaByType(type, param);
             util = new DataBaseUtil();
             util.connect(meta);
-            List<DataBaseColumnMeta> collist = util.getTableMetaByTableName(table, schema, meta);
+            List<DataBaseColumnMeta> collist = util.getTableMetaByTableName(table, schema);
             String mappingId = request.getParameter("mappingId");
             if (mappingId != null && !mappingId.isEmpty()) {
                 mapping = entityMappingService.getEntity(Long.valueOf(mappingId));
@@ -264,7 +264,7 @@ public class DataMappingContoller extends BaseCrudDhtmlxController<ProjectInfo, 
             BaseDataBaseMeta meta = DataBaseMetaFactory.getDataBaseMetaByType(type, param);
             util = new DataBaseUtil();
             util.connect(meta);
-            List<DataBaseColumnMeta> collist = util.getTableMetaByTableName(table, schema, meta);
+            List<DataBaseColumnMeta> collist = util.getTableMetaByTableName(table, schema);
 
             String columnName = request.getParameter("columnName");
             EntityMapping enmap = entityMappingService.getEntity(Long.valueOf(mapping.getId()));

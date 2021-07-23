@@ -25,6 +25,7 @@ import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.streaming.SXSSFSheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.util.Assert;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -332,20 +333,15 @@ public class ExcelProcessor {
     }
 
     public static Workbook generateExcelFile(ExcelSheetProp prop, TableConfigProp header, Connection conn, String querySql, Object[] queryParam, ExcelRsExtractor extractor) throws Exception {
-        Workbook wb = ExcelBaseOper.createWorkBook(prop);
-        String sheetname = prop.getSheetName();
-        Sheet sheet = wb.createSheet(sheetname);
-        CreationHelper helper = wb.getCreationHelper();
+        Object[] objects=generateHeaderWithProp(prop,header);
+        Workbook wb = (Workbook)objects[0];
+        Sheet sheet=(Sheet)objects[1];
+        CreationHelper helper=(CreationHelper)objects[2];
+        int count=(Integer)objects[3];
         extractor.setWorkbook(wb);
         extractor.setTargetSheet(sheet);
         extractor.setHelper(helper);
-        int count = 0;
-        if (!header.getHeaderList().isEmpty()) {
-            generateHeader(sheet, wb, prop, header);
-            count = prop.getColumnList().size();
-        } else {
-            generateHeader(sheet, wb, prop, header);
-        }
+
         try {
             SimpleJdbcDao.executeOperationWithQuery(conn, querySql, queryParam, extractor);
         } catch (Exception ex) {
@@ -353,6 +349,46 @@ public class ExcelProcessor {
         }
         autoSizeSheet(prop, sheet, count + 1);
         return wb;
+    }
+
+    public static Workbook generateExcelFile(ExcelSheetProp prop,TableConfigProp header,Iterator<Map<String,Object>> iterator){
+        Assert.notNull(iterator,"iterator is null");
+        Object[] objects=generateHeaderWithProp(prop,header);
+        Workbook wb = (Workbook)objects[0];
+        Sheet sheet=(Sheet)objects[1];
+        CreationHelper helper=(CreationHelper)objects[2];
+        int column=(Integer)objects[3];
+        int row=0;
+        Map<String, CellStyle> cellMap = new HashMap<String, CellStyle>();
+        try {
+            while (iterator.hasNext()) {
+                Map<String, Object> map = iterator.next();
+                processSingleLine(map, wb, sheet, row + 1, prop, header, helper, cellMap);
+                if (prop.isStreamInsert() && (row + 1) % prop.getStreamRows() == 0) {
+                    ((SXSSFSheet) sheet).flushRows(prop.getStreamRows());
+                }
+                row++;
+            }
+        }catch (Exception ex){
+
+        }
+        autoSizeSheet(prop, sheet,  column+ 1);
+        return wb;
+
+    }
+    private static Object[] generateHeaderWithProp(ExcelSheetProp prop,TableConfigProp header){
+        Workbook wb = ExcelBaseOper.createWorkBook(prop);
+        String sheetname = prop.getSheetName();
+        Sheet sheet = wb.createSheet(sheetname);
+        CreationHelper helper = wb.getCreationHelper();
+        int count = 0;
+        if (!header.getHeaderList().isEmpty()) {
+            generateHeader(sheet, wb, prop, header);
+            count = prop.getColumnList().size();
+        } else {
+            generateHeader(sheet, wb, prop, header);
+        }
+        return new Object[]{wb,sheet,helper,count};
     }
 
     private static void generateExcelFile(Workbook wb, ExcelSheetProp prop, TableConfigProp header) throws Exception {
@@ -519,12 +555,7 @@ public class ExcelProcessor {
 
     private static void fillColumns(Workbook wb, Sheet targetsheet, ExcelSheetProp prop, TableConfigProp header, CreationHelper helper) throws Exception {
         try {
-            int headerrow = 1;
-            if (header != null) {
-                headerrow = header.getContainrow();
-            } else {
-                throw new Exception("Excel Header is null");
-            }
+
             if (prop.getColumnPropList().size() != 0) {
                 List<Map<String, String>> list = prop.getColumnList();
                 //cell style Map

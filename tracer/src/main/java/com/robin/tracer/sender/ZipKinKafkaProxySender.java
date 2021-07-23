@@ -13,8 +13,7 @@ import java.util.List;
  * <p>Description:将tracing信息同时发送到zipkin和kafka</p>
  * <p>
  * <p>Copyright: Copyright (c) 2019 create at 2019年08月18日</p>
- * <p>
- * <p>Company: zhcx_DEV</p>
+ * <p></p>
  *
  * @author robinjim
  * @version 1.0
