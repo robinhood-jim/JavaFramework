@@ -122,12 +122,12 @@ public class DataBaseUtil {
     public List<DataBaseColumnMeta> getTableMetaByTableName(String tablename, String DbOrtablespacename) throws SQLException {
         List<DataBaseColumnMeta> columnlist = new ArrayList<DataBaseColumnMeta>();
         DatabaseMetaData meta = connection.getMetaData();
-        try (Statement stmt = connection.createStatement(); ResultSet rs = meta.getColumns(dataBaseMeta.getCatalog(DbOrtablespacename), DbOrtablespacename, tablename, null)) {
+        try (ResultSet rs = meta.getColumns(dataBaseMeta.getCatalog(DbOrtablespacename), DbOrtablespacename, tablename, null)) {
             // all pk column
             List<String> pklist = this.getAllPrimaryKeyByTableName(tablename, DbOrtablespacename);
             while (rs.next()) {
                 String columnname = rs.getString("COLUMN_NAME");
-                Integer datatype = Integer.valueOf(translateDbType(Integer.valueOf(rs.getInt("DATA_TYPE"))));
+                Integer columnType = Integer.valueOf(translateDbType(Integer.valueOf(rs.getInt("DATA_TYPE"))));
                 String datalength = rs.getString("COLUMN_SIZE");
                 boolean nullable = rs.getInt("NULLABLE") != DatabaseMetaData.columnNoNulls;
                 String comment = rs.getString("REMARKS");
@@ -135,13 +135,13 @@ public class DataBaseUtil {
                 String scale = rs.getString("TABLE_SCHEM");
 
                 DataBaseColumnMeta datameta = new DataBaseColumnMeta();
-                if (!(dataBaseMeta instanceof OracleDataBaseMeta)) {
+                if (dataBaseMeta.supportAutoInc()) {
                     String autoInc = rs.getString("IS_AUTOINCREMENT");
                     if (autoInc != null && "YES".equals(autoInc)) {
                         datameta.setIncrement(true);
                     }
                 }
-                setType(columnname, datatype, datalength, nullable, comment, precise, scale, datameta);
+                setType(columnname,columnType, rs.getInt("DATA_TYPE"),rs.getString("TYPE_NAME"), datalength, nullable, comment, precise, scale, datameta);
                 if (pklist.contains(columnname)) {
                     datameta.setPrimaryKey(true);
                 } else {
@@ -153,14 +153,16 @@ public class DataBaseUtil {
         }
     }
 
-    private static void setType(String columnname, Integer datatype, String datalength, boolean nullable, String comment, String precise, String scale, DataBaseColumnMeta datameta) {
+    private static void setType(String columnname,Integer columnType, Integer datatype,String typeName, String datalength, boolean nullable, String comment, String precise, String scale, DataBaseColumnMeta datameta) {
         datameta.setColumnName(columnname);
-        datameta.setColumnType(datatype);
+        datameta.setColumnType(columnType);
+        datameta.setDataType(datatype);
         datameta.setNullable(nullable);
         datameta.setComment(comment);
         datameta.setDataPrecise(precise);
         datameta.setDataScale(scale);
         datameta.setColumnLength(datalength);
+        datameta.setTypeName(typeName);
     }
 
     public static List<DataBaseColumnMeta> getTableMetaByTableName(DataSource source, String tablename, String DbOrtablespacename, String dbType) throws SQLException {
@@ -176,7 +178,7 @@ public class DataBaseUtil {
     public static List<DataBaseColumnMeta> getTableMetaByTableName(Connection conn, String tablename, String DbOrtablespacename, String dbType) throws SQLException {
         List<DataBaseColumnMeta> columnlist = new ArrayList<DataBaseColumnMeta>();
         DatabaseMetaData meta = conn.getMetaData();
-        try(ResultSet rs = meta.getColumns(null, DbOrtablespacename, tablename, null);) {
+        try (ResultSet rs = meta.getColumns(null, DbOrtablespacename, tablename, null);) {
             List<String> pklist = null;
             try {
                 pklist = DataBaseUtil.getAllPrimaryKeyByTableName(conn, tablename, DbOrtablespacename);
@@ -185,7 +187,7 @@ public class DataBaseUtil {
             }
             while (rs.next()) {
                 String columnname = rs.getString("COLUMN_NAME");
-                Integer datatype = Integer.valueOf(translateDbType(Integer.valueOf(rs.getInt("DATA_TYPE"))));
+                Integer columnType = Integer.valueOf(translateDbType(Integer.valueOf(rs.getInt("DATA_TYPE"))));
                 String datalength = rs.getString("COLUMN_SIZE");
                 boolean nullable = rs.getInt("NULLABLE") != DatabaseMetaData.columnNoNulls;
                 String comment = "";
@@ -202,14 +204,14 @@ public class DataBaseUtil {
 
                 DataBaseColumnMeta datameta = new DataBaseColumnMeta();
                 //SqlServer2005 may failed for not support  get AUTOINCREMENT  attribute
-                if (dbType != BaseDataBaseMeta.TYPE_ORACLE && dbType != BaseDataBaseMeta.TYPE_ORACLERAC && dbType != BaseDataBaseMeta.TYPE_HIVE
-                        && dbType != BaseDataBaseMeta.TYPE_HIVE2 && dbType != BaseDataBaseMeta.TYPE_PHONEIX) {
+                if (!dbType.equals(BaseDataBaseMeta.TYPE_ORACLE) && !dbType.equals(BaseDataBaseMeta.TYPE_ORACLERAC) && !dbType.equals(BaseDataBaseMeta.TYPE_HIVE)
+                        && !dbType.equals(BaseDataBaseMeta.TYPE_HIVE2) && !dbType.equals(BaseDataBaseMeta.TYPE_PHONEIX)) {
                     String autoInc = rs.getString("IS_AUTOINCREMENT");
                     if (autoInc != null && "YES".equals(autoInc)) {
                         datameta.setIncrement(true);
                     }
                 }
-                setType(columnname, datatype, datalength, nullable, comment, precise, scale, datameta);
+                setType(columnname,columnType,rs.getInt("DATA_TYPE"),rs.getString("TYPE_NAME"), datalength, nullable, comment, precise, scale, datameta);
                 if (pklist != null && pklist.contains(columnname)) {
                     datameta.setPrimaryKey(true);
                 } else {
@@ -228,7 +230,7 @@ public class DataBaseUtil {
     public static List<String> getAllPrimaryKeyByTableName(Connection conn, String tableName, String schema) throws SQLException {
         List<String> tablelist = new ArrayList<String>();
         DatabaseMetaData meta = conn.getMetaData();
-        try(ResultSet rs1= meta.getPrimaryKeys(null, schema, tableName)) {
+        try (ResultSet rs1 = meta.getPrimaryKeys(null, schema, tableName)) {
             while (rs1.next()) {
                 String columnName = rs1.getString("COLUMN_NAME");
                 tablelist.add(columnName);
@@ -242,7 +244,7 @@ public class DataBaseUtil {
         Assert.notNull(conn, "connection is null");
         List<DataBaseForeignMeta> foreignMetas = new ArrayList<>();
         DatabaseMetaData meta = conn.getMetaData();
-        try(ResultSet rs=meta.getExportedKeys(null, schema, tableName)) {
+        try (ResultSet rs = meta.getExportedKeys(null, schema, tableName)) {
             while (rs.next()) {
                 String fkTableName = rs.getString("FKTABLE_NAME");
                 String fkColumnName = rs.getString("FKCOLUMN_NAME");
@@ -255,7 +257,7 @@ public class DataBaseUtil {
     }
 
     public static List<DataBaseColumnMeta> getQueryMeta(DataSource source, String sql) throws SQLException {
-        try(Connection conn = source.getConnection()) {
+        try (Connection conn = source.getConnection()) {
             return getQueryMeta(conn, sql);
         }
     }
@@ -265,7 +267,7 @@ public class DataBaseUtil {
 
         ResultSetMetaData rsmeta = null;
         String querySql = "select * from (" + sql + ") a where 1=0";
-        try(Statement stmt=conn.createStatement();ResultSet rs=stmt.executeQuery(querySql)) {
+        try (Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery(querySql)) {
             rsmeta = rs.getMetaData();
             int columnnum = rsmeta.getColumnCount();
             for (int i = 0; i < columnnum; i++) {

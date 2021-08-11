@@ -40,7 +40,6 @@ public interface IMybatisBaseService<M extends BaseMapper<T>,T extends Serializa
     /**
      * 逻辑删除记录
      * @param ids  主键字段
-     * @param valueObj  set 实体
      * @return
      */
     boolean deleteByLogic(List<P> ids);

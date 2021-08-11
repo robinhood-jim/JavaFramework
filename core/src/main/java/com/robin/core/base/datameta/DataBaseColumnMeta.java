@@ -23,8 +23,8 @@ import java.io.Serializable;
 public class DataBaseColumnMeta implements Serializable {
 	private String columnName;
 	private Integer columnType;
-	private String propertyType;
-	private String propertyName;
+	private Integer dataType;
+	private String typeName;
 	private String columnLength;
 	private String dataPrecise;
 	private String dataScale;

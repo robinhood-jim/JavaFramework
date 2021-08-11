@@ -36,7 +36,7 @@ public class TestJsonGen {
 			colmeta.addColumnMeta("line_name",Const.META_TYPE_STRING,null);
 			colmeta.addColumnMeta("tdate",Const.META_TYPE_TIMESTAMP,null);
 
-			conn=SimpleJdbcDao.getConnection(meta, param);
+			conn=SimpleJdbcDao.getConnection(meta);
 			
 
 

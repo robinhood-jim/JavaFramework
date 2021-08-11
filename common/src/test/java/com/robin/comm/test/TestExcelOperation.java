@@ -117,7 +117,7 @@ public class TestExcelOperation {
             Long ts1 = System.currentTimeMillis();
             DataBaseParam param = new DataBaseParam("172.16.200.218", 3388, "awardsys2", "awardsys", "MiCUWcYcJI2EcM1k");
             BaseDataBaseMeta meta = DataBaseMetaFactory.getDataBaseMetaByType(BaseDataBaseMeta.TYPE_MYSQL, param);
-            conn = SimpleJdbcDao.getConnection(meta, param);
+            conn = SimpleJdbcDao.getConnection(meta);
             Workbook wb = ExcelProcessor.generateExcelFile(prop, header, conn, sql, null, new ExcelRsExtractor(prop, header));
             FileOutputStream out = new FileOutputStream("d:/test.xlsx");
             wb.write(out);

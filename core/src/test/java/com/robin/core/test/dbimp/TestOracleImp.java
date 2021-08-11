@@ -18,7 +18,7 @@ public class TestOracleImp {
 			DataBaseParam param=new DataBaseParam("192.168.143.189", 0, "twdb", "etl", "Etl987");
 			BaseDataBaseMeta meta=DataBaseMetaFactory.getDataBaseMetaByType("Oracle", param);
 			DataBaseImportParam inparam=new DataBaseImportParam();
-			List<DataBaseColumnMeta> list=DataBaseUtil.getTableMetaByTableName(SimpleJdbcDao.getConnection(meta, param), args[0], "ETL", meta.getDbType());
+			List<DataBaseColumnMeta> list=DataBaseUtil.getTableMetaByTableName(SimpleJdbcDao.getConnection(meta), args[0], "ETL", meta.getDbType());
 			StringBuilder builder=new StringBuilder();
 			for (DataBaseColumnMeta colmeta:list) {
 				builder.append(colmeta.getColumnName()).append(",");

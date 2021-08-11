@@ -42,9 +42,9 @@ public class TestResourceGen {
 			colmeta.addColumnMeta("url",Const.META_TYPE_STRING,null);
 			colmeta.addColumnMeta("title",Const.META_TYPE_STRING,null);
 			colmeta.addColumnMeta("content",Const.META_TYPE_STRING,null);
-			conn=SimpleJdbcDao.getConnection(meta, param);
+			conn=SimpleJdbcDao.getConnection(meta);
 			List<Map<String, String>> list=SimpleJdbcDao.queryString(conn, "select config_name as name,config_value as value from t_hadoop_cluster_config where cluster_id=4");
-			conn=SimpleJdbcDao.getConnection(meta1, param1);
+			conn=SimpleJdbcDao.getConnection(meta1);
 			List<Map<String, String>> resultlist=SimpleJdbcDao.queryString(conn, "select info_id,url,title,content from shw_internet_info_dtl");
 			HdfsResourceAccessUtil util=new HdfsResourceAccessUtil();
 			Map<String, Object> hdfsparam=new HashMap<String, Object>();
