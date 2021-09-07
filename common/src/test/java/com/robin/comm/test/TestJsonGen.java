@@ -73,7 +73,7 @@ public class TestJsonGen {
 					return true;
 				}
 			};
-			SimpleJdbcDao.executeOperationWithQuery(conn, "select uuid as id,line_code,line_name,eff_start_time,up_line_mile from comm_line", extractor);
+			SimpleJdbcDao.executeOperationWithQuery(conn, "select uuid as id,line_code,line_name,eff_start_time,up_line_mile from comm_line",false, extractor);
 
 			jwriter.flush();
 			jwriter.finishWrite();

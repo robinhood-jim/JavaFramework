@@ -78,8 +78,8 @@ public class HDFSCallUtil {
 
     public static boolean uploadByInputStream(final Configuration config, InputStream in, String toUrl, int bufferSize) throws HdfsException, IOException {
         Path dfs = new Path(toUrl);
-        try(FileSystem fs = FileSystem.get(config);
-            FSDataOutputStream fsdo= fs.create(dfs);) {
+        try (FileSystem fs = FileSystem.get(config);
+             FSDataOutputStream fsdo = fs.create(dfs);) {
             int len = 0;
             byte[] buffer = new byte[bufferSize <= 0 ? BUFFER_SIZE : bufferSize];
             while ((len = in.read(buffer)) > 0) {
@@ -423,7 +423,7 @@ public class HDFSCallUtil {
             //InputStream in=null;
             Path path = new Path(hdfsUrl);
             if (fs.exists(path)) {
-                try(FSDataInputStream is = fs.open(path)){
+                try (FSDataInputStream is = fs.open(path)) {
                     // get the file info to create the buffer
                     FileStatus stat = fs.getFileStatus(path);
                     byte[] buffer = new byte[Integer.parseInt(String.valueOf(stat.getLen()))];
@@ -445,7 +445,7 @@ public class HDFSCallUtil {
             FileSystem fs = FileSystem.get(URI.create(hdfsUrl), config);
             Path path = new Path(hdfsUrl);
             if (fs.exists(path)) {
-                try(FSDataInputStream is = fs.open(path)) {
+                try (FSDataInputStream is = fs.open(path)) {
                     // get the file info to create the buffer
                     FileStatus stat = fs.getFileStatus(path);
                     byte[] buffer = new byte[Integer.parseInt(String.valueOf(stat.getLen()))];
@@ -488,9 +488,9 @@ public class HDFSCallUtil {
     }
 
     public static BufferedReader readStream(final Configuration config, String hdfsUrl, String encode) throws HdfsException {
-        try(FileSystem fs = FileSystem.get(URI.create(hdfsUrl), config);
-            DataInputStream dis = new DataInputStream(fs.open(new Path(hdfsUrl)));
-            BufferedReader br = new BufferedReader(new InputStreamReader(dis, encode))){
+        try (FileSystem fs = FileSystem.get(URI.create(hdfsUrl), config);
+             DataInputStream dis = new DataInputStream(fs.open(new Path(hdfsUrl)));
+             BufferedReader br = new BufferedReader(new InputStreamReader(dis, encode))) {
             return br;
         } catch (Exception e) {
             throw new HdfsException(e);

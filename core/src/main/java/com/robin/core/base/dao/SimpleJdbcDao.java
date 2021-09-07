@@ -425,8 +425,13 @@ public class SimpleJdbcDao {
 		}
 		return null;
 	}
-	public static int executeOperationWithQuery(final Connection conn,String sql,final ResultSetOperationExtractor extractor) throws SQLException{
-		QueryRunner qRunner=new QueryRunner();
+	public static int executeOperationWithQuery(final Connection conn,String sql,boolean pmdKnownBroken,final ResultSetOperationExtractor extractor) throws SQLException{
+		QueryRunner qRunner=null;
+		if(pmdKnownBroken){
+			qRunner=new QueryRunner(pmdKnownBroken);
+		}else{
+			qRunner=new QueryRunner();
+		}
 		return qRunner.query(conn, sql, new ResultSetHandler<Integer>(){
 			@Override
 			public Integer handle(ResultSet rs) throws SQLException {
@@ -434,8 +439,13 @@ public class SimpleJdbcDao {
 			}
 		});
 	}
-	public static int executeOperationWithQuery(final Connection conn,String sql,Object[] param,final ResultSetOperationExtractor extractor) throws SQLException{
-		QueryRunner qRunner=new QueryRunner();
+	public static int executeOperationWithQuery(final Connection conn,String sql,Object[] param,boolean pmdKnownBroken,final ResultSetOperationExtractor extractor) throws SQLException{
+		QueryRunner qRunner=null;
+		if(pmdKnownBroken){
+			qRunner=new QueryRunner(pmdKnownBroken);
+		}else{
+			qRunner=new QueryRunner();
+		}
 		return qRunner.query(conn,sql, new ResultSetHandler<Integer>(){
 			@Override
 			public Integer handle(ResultSet rs) throws SQLException {

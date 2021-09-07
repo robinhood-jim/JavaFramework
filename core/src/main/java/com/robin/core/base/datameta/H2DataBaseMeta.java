@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2015,robinjim(robinjim@126.com)
- * 
+ * Copyright (c) 2021,robinhoodjim(robinhoodjim7704@goole.com)
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -18,46 +18,39 @@ package com.robin.core.base.datameta;
 import com.robin.core.sql.util.BaseSqlGen;
 import com.robin.core.sql.util.MysqlSqlGen;
 
-public class HiveDataBaseMeta extends BaseDataBaseMeta{
-
-	public HiveDataBaseMeta(DataBaseParam param) {
-		super(param);
-		setDbType(BaseDataBaseMeta.TYPE_HIVE2);
-		if(param.getDatabaseName()==null || "".equals(param.getDatabaseName())){
-			param.setDatabaseName("default");
-		}
-		param.setDriverClassName("org.apache.hive.jdbc.HiveDriver");
-	}
-
-	@Override
-    public String getUrlTemplate() {
-		return "jdbc:hive2://[hostName]:[port]/[databaseName]";
-	}
-
-
-	@Override
-    public boolean suppportSequnce() {
-		return false;
-	}
-
-	@Override
-    public boolean supportAutoInc() {
-		return false;
-	}
-
-	@Override
-    public int getDefaultDatabasePort() {
-		return 10000;
-	}
-
-	@Override
-    public boolean supportsSchemas() {
-		return false;
-	}
-
-
-	@Override
+public class H2DataBaseMeta  extends BaseDataBaseMeta{
+    public H2DataBaseMeta(DataBaseParam param) {
+        super(param);
+        setDbType(BaseDataBaseMeta.TYPE_H2);
+        param.setDriverClassName("org.h2.Driver ");
+    }
+    @Override
     public BaseSqlGen getSqlGen() {
-		return MysqlSqlGen.getInstance();
-	}
+        return MysqlSqlGen.getInstance();
+    }
+
+    @Override
+    public boolean suppportSequnce() {
+        return false;
+    }
+
+    @Override
+    public boolean supportAutoInc() {
+        return false;
+    }
+
+    @Override
+    public int getDefaultDatabasePort() {
+        return 0;
+    }
+
+    @Override
+    public boolean supportsSchemas() {
+        return true;
+    }
+
+    @Override
+    public String getUrlTemplate() {
+        return "jdbc:h2:tcp://[hostName]/~/[databaseName]";
+    }
 }

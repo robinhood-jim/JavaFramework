@@ -5,7 +5,7 @@ import lombok.Data;
 import java.util.Map;
 
 @Data
-public abstract class PageDTO {
+public class PageDTO {
     private Long page;
     private Long limit;
     private String orderField;

@@ -18,22 +18,21 @@ package com.robin.core.base.datameta;
 import com.robin.core.sql.util.BaseSqlGen;
 import com.robin.core.sql.util.MysqlSqlGen;
 
-public class HiveDataBaseMeta extends BaseDataBaseMeta{
+public class Hive1DataBaseMeta extends BaseDataBaseMeta{
 
-	public HiveDataBaseMeta(DataBaseParam param) {
+	public Hive1DataBaseMeta(DataBaseParam param) {
 		super(param);
-		setDbType(BaseDataBaseMeta.TYPE_HIVE2);
+		setDbType(BaseDataBaseMeta.TYPE_HIVE);
 		if(param.getDatabaseName()==null || "".equals(param.getDatabaseName())){
 			param.setDatabaseName("default");
 		}
-		param.setDriverClassName("org.apache.hive.jdbc.HiveDriver");
+		param.setDriverClassName("org.apache.hadoop.hive.jdbc.HiveDriver");
 	}
 
 	@Override
     public String getUrlTemplate() {
-		return "jdbc:hive2://[hostName]:[port]/[databaseName]";
+		return "jdbc:hive://[hostName]:[port]/[databaseName]";
 	}
-
 
 	@Override
     public boolean suppportSequnce() {
@@ -54,7 +53,6 @@ public class HiveDataBaseMeta extends BaseDataBaseMeta{
     public boolean supportsSchemas() {
 		return false;
 	}
-
 
 	@Override
     public BaseSqlGen getSqlGen() {

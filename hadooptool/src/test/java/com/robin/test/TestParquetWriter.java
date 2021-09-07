@@ -72,7 +72,7 @@ public class TestParquetWriter {
                     return true;
                 }
             };
-            SimpleJdbcDao.executeOperationWithQuery(conn, "select id,device_id,route_no,from_station,to_station,predict_value,predict_time from t_vehicle_arrive_new", extractor);
+            SimpleJdbcDao.executeOperationWithQuery(conn, "select id,device_id,route_no,from_station,to_station,predict_value,predict_time from t_vehicle_arrive_new",false, extractor);
 			/*for (Map<String, String> map:list) {
 				jwriter.writeRecord(map);
 			}*/

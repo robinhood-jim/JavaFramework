@@ -343,7 +343,7 @@ public class ExcelProcessor {
         extractor.setHelper(helper);
 
         try {
-            SimpleJdbcDao.executeOperationWithQuery(conn, querySql, queryParam, extractor);
+            SimpleJdbcDao.executeOperationWithQuery(conn, querySql, queryParam,false, extractor);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
