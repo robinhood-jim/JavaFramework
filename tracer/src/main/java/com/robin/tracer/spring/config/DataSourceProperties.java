@@ -5,13 +5,13 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(DataSourceProperties.DATASOURCE_TRACE)
 public class DataSourceProperties {
     public static final String DATASOURCE_TRACE="tracer.datasource";
-    private boolean enable;
+    private boolean enabled;
 
-    public boolean isEnable() {
-        return enable;
+    public boolean isEnabled() {
+        return enabled;
     }
 
-    public void setEnable(boolean enable) {
-        this.enable = enable;
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 }

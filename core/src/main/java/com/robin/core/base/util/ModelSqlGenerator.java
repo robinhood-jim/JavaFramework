@@ -21,7 +21,7 @@ public class ModelSqlGenerator {
     public static void syncTable(BaseSqlGen sqlGen, BaseDataBaseMeta meta, Class<? extends BaseObject> clazz) throws DAOException {
         Connection conn = null;
         try {
-            conn = SimpleJdbcDao.getConnection(meta, meta.getParam());
+            conn = SimpleJdbcDao.getConnection(meta);
             AnnotationRetrevior.EntityContent content = AnnotationRetrevior.getMappingTableByCache(clazz);
             List<AnnotationRetrevior.FieldContent> fields = AnnotationRetrevior.getMappingFieldsCache(clazz);
             List<Map<String, Object>> changeColumns = new ArrayList<>();

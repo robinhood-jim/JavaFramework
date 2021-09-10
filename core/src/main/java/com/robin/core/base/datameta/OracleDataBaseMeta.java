@@ -70,7 +70,7 @@ public class OracleDataBaseMeta extends BaseDataBaseMeta implements DataBaseInte
 
 	@Override
     public boolean supportAutoInc() {
-		return true;
+		return false;
 	}
 
 	@Override

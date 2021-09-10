@@ -100,9 +100,9 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
             if (param.getQueryValue() == null || "".equals(param.getQueryValue())) {
                 break;
             }
-            if (param.getColumnType().equals(QueryParam.COLUMN_TYPE_INT)) {
+            if (param.getColumnType().equals(QueryParam.COLUMN_TYPE_INT) || param.getColumnType().equalsIgnoreCase(Const.META_TYPE_BIGINT)) {
                 buffer.append(toSQLForInt(param) + linkOper + " ");
-            } else if (param.getColumnType().equals(QueryParam.COLUMN_TYPE_DOUBLE)) {
+            } else if (param.getColumnType().equals(QueryParam.COLUMN_TYPE_DOUBLE)|| param.getColumnType().equalsIgnoreCase(Const.META_TYPE_NUMERIC)) {
                 buffer.append(toSQLForDecimal(param) + linkOper + " ");
             } else if (param.getColumnType().equals(QueryParam.COLUMN_TYPE_STRING)) {
                 buffer.append(toSQLForString(param) + linkOper + " ");
@@ -125,9 +125,9 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
             if (param.getQueryValue() == null || "".equals(param.getQueryValue())) {
                 break;
             }
-            if (param.getColumnType().equals(Const.META_TYPE_INTEGER)) {
+            if (param.getColumnType().equals(Const.META_TYPE_INTEGER) || param.getColumnType().equalsIgnoreCase(Const.META_TYPE_BIGINT)) {
                 buffer.append(toSQLForInt(param) + linkOper);
-            } else if (param.getColumnType().equals(Const.META_TYPE_DOUBLE)) {
+            } else if (param.getColumnType().equals(Const.META_TYPE_DOUBLE)|| param.getColumnType().equalsIgnoreCase(Const.META_TYPE_NUMERIC)) {
                 buffer.append(toSQLForDecimal(param) + linkOper);
             } else if (param.getColumnType().equals(Const.META_TYPE_STRING)) {
                 buffer.append(toSQLForString(param) + linkOper);
@@ -145,9 +145,10 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
         if (param.getQueryValue() == null || "".equals(param.getQueryValue())) {
             return sqlstr;
         }
-        if (param.getColumnType().equals(Const.META_TYPE_INTEGER)) {
+        if (param.getColumnType().equals(Const.META_TYPE_INTEGER) || param.getColumnType().equalsIgnoreCase(Const.META_TYPE_BIGINT)) {
             sqlstr = toSQLForInt(param);
-        } else if (param.getColumnType().equals(Const.META_TYPE_DOUBLE)) {
+        }
+        else if (param.getColumnType().equals(Const.META_TYPE_DOUBLE) || param.getColumnType().equals(Const.META_TYPE_NUMERIC)) {
             sqlstr = toSQLForDecimal(param);
         } else if (param.getColumnType().equals(Const.META_TYPE_STRING)) {
             sqlstr = toSQLForString(param);

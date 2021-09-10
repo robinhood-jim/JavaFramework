@@ -93,7 +93,7 @@ public class GlobalResourceService extends BaseAnnotationJdbcService<GlobalResou
                 String schema=tableNames.length==1?resource.getDbSchema():tableNames[0];
                 DataBaseParam param = new DataBaseParam(resource.getHostName(), 0, schema, resource.getUserName(), resource.getPassword());
                 BaseDataBaseMeta meta = DataBaseMetaFactory.getDataBaseMetaByType(resource.getDbType(), param);
-                connection=SimpleJdbcDao.getConnection(meta, param);
+                connection=SimpleJdbcDao.getConnection(meta);
                 List<DataBaseColumnMeta> columnList= DataBaseUtil.getTableMetaByTableName(connection, tableName, schema, meta.getDbType());
                 for(DataBaseColumnMeta columnmeta:columnList) {
                     colmeta.addColumnMeta(columnmeta.getColumnName(),columnmeta.getColumnType().toString(),null);

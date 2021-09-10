@@ -2,7 +2,7 @@ package com.robin.webui.contorller.system;
 
 import com.google.gson.Gson;
 import com.robin.core.base.util.Const;
-import com.robin.core.web.controller.BaseController;
+import com.robin.core.web.controller.AbstractController;
 import com.robin.core.web.util.RestTemplateUtils;
 import com.robin.core.web.util.Session;
 
@@ -46,13 +46,13 @@ public class SysOrgController {
     @ResponseBody
     public Map<String, Object> updateOrg(HttpServletRequest request,
                                          HttpServletResponse response) {
-        return RestTemplateUtils.postFromRestUrl("system/org/update/",BaseController.wrapRequest(request),AuthUtils.getRequestParam(null,request));
+        return RestTemplateUtils.postFromRestUrl("system/org/update/", AbstractController.wrapRequest(request),AuthUtils.getRequestParam(null,request));
     }
 
     @RequestMapping("/save")
     @ResponseBody
     public Map<String, Object> saveOrg(HttpServletRequest request, HttpServletResponse response) {
-        Map<String,String> map= BaseController.wrapRequest(request);
+        Map<String,String> map= AbstractController.wrapRequest(request);
         return RestTemplateUtils.postFromRestUrl("system/org/save/",map,AuthUtils.getRequestParam(null,request));
     }
 

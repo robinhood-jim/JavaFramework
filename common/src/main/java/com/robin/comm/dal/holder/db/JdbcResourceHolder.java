@@ -48,7 +48,7 @@ public class JdbcResourceHolder extends AbstractResourceHolder implements IHolde
         Connection connection=null;
         try{
             connection= SpringContextHolder.getBean(ResourceAccessHolder.class).getConnectionHolder(sourceId,meta).getConnection();
-            SimpleJdbcDao.executeOperationWithQuery(connection, sql, objects, new ResultSetOperationExtractor() {
+            SimpleJdbcDao.executeOperationWithQuery(connection, sql, objects,false, new ResultSetOperationExtractor() {
                 @Override
                 public boolean executeAdditionalOperation(Map<String, Object> map, ResultSetMetaData rsmd) throws SQLException {
                     try {

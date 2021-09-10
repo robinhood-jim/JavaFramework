@@ -50,7 +50,7 @@ public class OracleRacDataBaseMeta  extends BaseDataBaseMeta implements DataBase
 
 	@Override
     public boolean supportAutoInc() {
-		return true;
+		return false;
 	}
 
 	@Override

@@ -21,9 +21,8 @@ import com.robin.core.base.model.BaseObject;
 import com.robin.core.base.util.Const;
 import com.robin.core.base.util.StringUtils;
 import com.robin.core.collection.util.CollectionBaseConvert;
-import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.query.util.PageQuery;
-import com.robin.core.web.controller.BaseCrudDhtmlxController;
+import com.robin.core.web.controller.AbstractCrudDhtmlxController;
 import com.robin.core.web.util.Session;
 import com.robin.example.model.system.SysOrg;
 import com.robin.example.model.system.SysResource;
@@ -43,7 +42,7 @@ import java.util.*;
 
 @Controller
 @RequestMapping("/system/user")
-public class SysUserCrudController extends BaseCrudDhtmlxController<SysUser, Long, SysUserService> {
+public class SysUserCrudController extends AbstractCrudDhtmlxController<SysUser, Long, SysUserService> {
     @Autowired
     private SysOrgService sysOrgService;
     @Autowired

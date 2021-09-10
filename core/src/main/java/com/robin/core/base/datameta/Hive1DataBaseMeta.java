@@ -16,23 +16,24 @@
 package com.robin.core.base.datameta;
 
 import com.robin.core.sql.util.BaseSqlGen;
-import com.robin.core.sql.util.DB2SqlGen;
+import com.robin.core.sql.util.MysqlSqlGen;
 
-public class DB2DataBaseMeta extends BaseDataBaseMeta implements DataBaseInterface {
-	private boolean logged;
-	private String tablespace;
+public class Hive1DataBaseMeta extends BaseDataBaseMeta{
 
-	public DB2DataBaseMeta(DataBaseParam param) {
+	public Hive1DataBaseMeta(DataBaseParam param) {
 		super(param);
-		setDbType(BaseDataBaseMeta.TYPE_DB2);
-		param.setDriverClassName("com.ibm.db2.jcc.DB2Driver");
+		setDbType(BaseDataBaseMeta.TYPE_HIVE);
+		if(param.getDatabaseName()==null || "".equals(param.getDatabaseName())){
+			param.setDatabaseName("default");
+		}
+		param.setDriverClassName("org.apache.hadoop.hive.jdbc.HiveDriver");
 	}
-
 
 	@Override
     public String getUrlTemplate() {
-		return "jdbc:db2://[hostName]:[port]/[dataBaseName]";
+		return "jdbc:hive://[hostName]:[port]/[databaseName]";
 	}
+
 	@Override
     public boolean suppportSequnce() {
 		return false;
@@ -40,22 +41,21 @@ public class DB2DataBaseMeta extends BaseDataBaseMeta implements DataBaseInterfa
 
 	@Override
     public boolean supportAutoInc() {
-		return true;
+		return false;
 	}
 
 	@Override
     public int getDefaultDatabasePort() {
-		return 50000;
+		return 10000;
 	}
 
 	@Override
     public boolean supportsSchemas() {
-		return true;
+		return false;
 	}
 
 	@Override
     public BaseSqlGen getSqlGen() {
-		return DB2SqlGen.getInstance();
+		return MysqlSqlGen.getInstance();
 	}
-
 }

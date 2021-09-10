@@ -36,7 +36,7 @@ public class TestJsonGen {
 			colmeta.addColumnMeta("line_name",Const.META_TYPE_STRING,null);
 			colmeta.addColumnMeta("tdate",Const.META_TYPE_TIMESTAMP,null);
 
-			conn=SimpleJdbcDao.getConnection(meta, param);
+			conn=SimpleJdbcDao.getConnection(meta);
 			
 
 
@@ -73,7 +73,7 @@ public class TestJsonGen {
 					return true;
 				}
 			};
-			SimpleJdbcDao.executeOperationWithQuery(conn, "select uuid as id,line_code,line_name,eff_start_time,up_line_mile from comm_line", extractor);
+			SimpleJdbcDao.executeOperationWithQuery(conn, "select uuid as id,line_code,line_name,eff_start_time,up_line_mile from comm_line",false, extractor);
 
 			jwriter.flush();
 			jwriter.finishWrite();

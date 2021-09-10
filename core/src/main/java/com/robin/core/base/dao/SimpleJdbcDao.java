@@ -57,7 +57,7 @@ public class SimpleJdbcDao {
 	private static  Logger logger=LoggerFactory.getLogger(SimpleJdbcDao.class);
 	private static final String fullDateformat="yyyy-MM-dd HH:mm:ss";
 	private static final String shortDateformat="yyyy-MM-dd";
-	public SimpleJdbcDao(BaseDataBaseMeta meta,DataBaseParam param) {
+	public SimpleJdbcDao(BaseDataBaseMeta meta) {
 		this.driverName=meta.getParam().getDriverClassName();
 		this.userName=param.getUserName();
 		this.passwd=param.getPasswd();
@@ -67,9 +67,9 @@ public class SimpleJdbcDao {
             this.jdbcUrl=meta.getUrl();
         }
 		this.meta=meta;
-		this.param=param;
+		this.param=meta.getParam();
 	}
-	public SimpleJdbcDao(BaseDataBaseMeta meta,DataBaseParam param,long retryNums,int waitSecond,boolean getConnectionLoop){
+	public SimpleJdbcDao(BaseDataBaseMeta meta,long retryNums,int waitSecond,boolean getConnectionLoop){
 		this.driverName=meta.getParam().getDriverClassName();
 		this.userName=param.getUserName();
 		this.passwd=param.getPasswd();
@@ -79,7 +79,7 @@ public class SimpleJdbcDao {
             this.jdbcUrl=meta.getUrl();
         }
 		this.meta=meta;
-		this.param=param;
+		this.param=meta.getParam();
 		this.retryNums=retryNums;
 		this.waitSecond=waitSecond;
 		this.getConnectLoop=getConnectionLoop;
@@ -113,9 +113,10 @@ public class SimpleJdbcDao {
         }
 		return conn;
 	}
-	public static Connection getConnection(BaseDataBaseMeta meta,DataBaseParam param) throws DAOException{
-		Connection conn=null;
+	public static Connection getConnection(BaseDataBaseMeta meta) throws DAOException{
+		Connection conn;
 		try {
+			DataBaseParam param=meta.getParam();
 			if(param.getUrl()==null || param.getUrl().trim().isEmpty()){
 				param.setUrl(meta.getUrl());
 			}
@@ -129,20 +130,20 @@ public class SimpleJdbcDao {
 	/**
 	 * 支持出错重连的获取连接方法
 	 * @param meta
-	 * @param param
 	 * @param retryNums 重连次数
 	 * @param sleepSecond 休眠时间(秒)
 	 * @param getConnectLoop 连到死标记
 	 * @return
 	 * @throws DAOException
 	 */
-	public static Connection getConnection(BaseDataBaseMeta meta,DataBaseParam param,long retryNums,int sleepSecond,boolean getConnectLoop) throws DAOException{
+	public static Connection getConnection(BaseDataBaseMeta meta,long retryNums,int sleepSecond,boolean getConnectLoop) throws DAOException{
 		Connection conn=null;
 		long curtryNum=0;
 		Exception ex=null;
 		while(getConnectLoop || curtryNum<retryNums){
 			curtryNum++;
 			try {
+				DataBaseParam param=meta.getParam();
 				if(param.getUrl()==null || param.getUrl().trim().isEmpty()){
 					param.setUrl(meta.getUrl());
 				}
@@ -369,7 +370,7 @@ public class SimpleJdbcDao {
 		Statement stmt=null;
 		Serializable i;
 		try{
-			conn=getConnection(meta, param,retryNums,waitSecond,getConnectLoop);
+			conn=getConnection(meta,retryNums,waitSecond,getConnectLoop);
 			stmt=conn.createStatement();
 			ResultSet rs=stmt.executeQuery(sql);
 			i=handler.handle(rs);
@@ -389,7 +390,7 @@ public class SimpleJdbcDao {
 		PreparedStatement stmt=null;
 		Serializable obj;
 		try{
-			conn=getConnection(meta, param,retryNums,waitSecond,getConnectLoop);
+			conn=getConnection(meta,retryNums,waitSecond,getConnectLoop);
 			stmt=conn.prepareStatement(sql);
 			for (int i = 0; i < params.length; ++i){
 				if (params[i] != null) {
@@ -424,8 +425,13 @@ public class SimpleJdbcDao {
 		}
 		return null;
 	}
-	public static int executeOperationWithQuery(final Connection conn,String sql,final ResultSetOperationExtractor extractor) throws SQLException{
-		QueryRunner qRunner=new QueryRunner();
+	public static int executeOperationWithQuery(final Connection conn,String sql,boolean pmdKnownBroken,final ResultSetOperationExtractor extractor) throws SQLException{
+		QueryRunner qRunner=null;
+		if(pmdKnownBroken){
+			qRunner=new QueryRunner(pmdKnownBroken);
+		}else{
+			qRunner=new QueryRunner();
+		}
 		return qRunner.query(conn, sql, new ResultSetHandler<Integer>(){
 			@Override
 			public Integer handle(ResultSet rs) throws SQLException {
@@ -433,8 +439,13 @@ public class SimpleJdbcDao {
 			}
 		});
 	}
-	public static int executeOperationWithQuery(final Connection conn,String sql,Object[] param,final ResultSetOperationExtractor extractor) throws SQLException{
-		QueryRunner qRunner=new QueryRunner();
+	public static int executeOperationWithQuery(final Connection conn,String sql,Object[] param,boolean pmdKnownBroken,final ResultSetOperationExtractor extractor) throws SQLException{
+		QueryRunner qRunner=null;
+		if(pmdKnownBroken){
+			qRunner=new QueryRunner(pmdKnownBroken);
+		}else{
+			qRunner=new QueryRunner();
+		}
 		return qRunner.query(conn,sql, new ResultSetHandler<Integer>(){
 			@Override
 			public Integer handle(ResultSet rs) throws SQLException {

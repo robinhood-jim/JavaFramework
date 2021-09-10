@@ -2,7 +2,8 @@ package com.robin.tracer.plugin.datasource;
 
 import brave.Tracing;
 import com.robin.tracer.plugin.datasource.util.DataSourceUtils;
-
+import com.robin.tracer.utils.TracerConstant;
+import org.springframework.core.env.Environment;
 
 import java.sql.*;
 import java.util.Map;
@@ -14,14 +15,25 @@ public class ProxyConnection implements Connection {
     private Tracing tracing;
     protected TraceParam param;
     private Connection delegate;
+    public ProxyConnection(Connection connection, Environment environment, Tracing tracing){
+        this.tracing=tracing;
+        this.delegate=connection;
+        String appName=environment.getProperty(TracerConstant.APPNAME_KEY);
+        boolean traceEnable=environment.containsProperty(TracerConstant.ENABLE_DATASOURCETRACE+".enabled") && "true".equalsIgnoreCase(environment.getProperty(TracerConstant.ENABLE_DATASOURCETRACE+".enabled"));
+        this.tracing=tracing;
+        this.param=new TraceParam(appName,traceEnable);
+    }
     public ProxyConnection(Connection connection,Tracing tracing,TraceParam param){
         this.tracing=tracing;
         this.delegate=connection;
         this.param=param;
+        setParam();
+    }
+    private void setParam(){
         try {
-            String database=DataSourceUtils.resolveDatabaseFromUrl(connection.getMetaData().getURL());
-            String dbType= DataSourceUtils.resolveDbTypeFromUrl(connection.getMetaData().getURL());
-            DataSourceUtils.JdbcParam param1=DataSourceUtils.parseUrl(connection.getMetaData().getURL());
+            String database=DataSourceUtils.resolveDatabaseFromUrl(delegate.getMetaData().getURL());
+            String dbType= DataSourceUtils.resolveDbTypeFromUrl(delegate.getMetaData().getURL());
+            DataSourceUtils.JdbcParam param1=DataSourceUtils.parseUrl(delegate.getMetaData().getURL());
             this.param.setDatabase(database);
             this.param.setDbType(dbType);
             this.param.setHost(param1.getHost());
@@ -29,7 +41,6 @@ public class ProxyConnection implements Connection {
         }catch (Exception ex){
             ex.printStackTrace();
         }
-
     }
 
     @Override

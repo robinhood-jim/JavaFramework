@@ -22,17 +22,18 @@ public class HiveDataBaseMeta extends BaseDataBaseMeta{
 
 	public HiveDataBaseMeta(DataBaseParam param) {
 		super(param);
-		setDbType(BaseDataBaseMeta.TYPE_HIVE);
+		setDbType(BaseDataBaseMeta.TYPE_HIVE2);
 		if(param.getDatabaseName()==null || "".equals(param.getDatabaseName())){
 			param.setDatabaseName("default");
 		}
-		param.setDriverClassName("org.apache.hadoop.hive.jdbc.HiveDriver");
+		param.setDriverClassName("org.apache.hive.jdbc.HiveDriver");
 	}
 
 	@Override
     public String getUrlTemplate() {
-		return "jdbc:hive://[hostName]:[port]/[databaseName]";
+		return "jdbc:hive2://[hostName]:[port]/[databaseName]";
 	}
+
 
 	@Override
     public boolean suppportSequnce() {
@@ -53,6 +54,7 @@ public class HiveDataBaseMeta extends BaseDataBaseMeta{
     public boolean supportsSchemas() {
 		return false;
 	}
+
 
 	@Override
     public BaseSqlGen getSqlGen() {

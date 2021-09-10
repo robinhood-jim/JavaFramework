@@ -25,6 +25,7 @@ import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.CellUtil;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
+import org.apache.poi.xssf.usermodel.DefaultIndexedColorMap;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFColor;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -104,7 +105,7 @@ public class ExcelBaseOper {
         String color = region.getForegroundcolor();
         if (color != null && !"".equals(color.trim())) {
             int[] rgb = hex2rgb(color);
-            cs.setFillForegroundColor(new XSSFColor(new Color(rgb[0], rgb[1], rgb[2])).getIndexed());
+            cs.setFillForegroundColor(new XSSFColor(new Color(rgb[0], rgb[1], rgb[2]),new DefaultIndexedColorMap()).getIndexed());
         } else {
             cs.setFillForegroundColor(IndexedColors.WHITE.getIndex());
         }

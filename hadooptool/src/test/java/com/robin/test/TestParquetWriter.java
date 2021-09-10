@@ -47,7 +47,7 @@ public class TestParquetWriter {
             colmeta.addColumnMeta("predict_value", Const.META_TYPE_INTEGER, null);
             colmeta.addColumnMeta("predict_time", Const.META_TYPE_TIMESTAMP, null);
             colmeta.setPath("/tmp/luoming/out.parquet.snappy");
-            conn= SimpleJdbcDao.getConnection(meta, param);
+            conn= SimpleJdbcDao.getConnection(meta);
            // LocalResourceAccessUtils util=new LocalResourceAccessUtils();
             //OutputStream stream=util.getOutResourceByStream(colmeta);
             final AbstractFileWriter jwriter= TextFileWriterFactory.getFileWriterByType(Const.FILETYPE_PARQUET, colmeta,new FileOutputStream("/tmp/luoming/1.txt"));
@@ -72,7 +72,7 @@ public class TestParquetWriter {
                     return true;
                 }
             };
-            SimpleJdbcDao.executeOperationWithQuery(conn, "select id,device_id,route_no,from_station,to_station,predict_value,predict_time from t_vehicle_arrive_new", extractor);
+            SimpleJdbcDao.executeOperationWithQuery(conn, "select id,device_id,route_no,from_station,to_station,predict_value,predict_time from t_vehicle_arrive_new",false, extractor);
 			/*for (Map<String, String> map:list) {
 				jwriter.writeRecord(map);
 			}*/

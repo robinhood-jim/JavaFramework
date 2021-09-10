@@ -5,7 +5,7 @@ import com.robin.core.base.model.BaseObject;
 import com.robin.core.base.util.Const;
 import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.query.util.PageQuery;
-import com.robin.core.web.controller.BaseCrudDhtmlxController;
+import com.robin.core.web.controller.AbstractCrudDhtmlxController;
 import com.robin.core.web.util.Session;
 import com.robin.example.model.system.SysOrg;
 import com.robin.example.service.system.SysOrgService;
@@ -23,7 +23,7 @@ import java.util.*;
 
 @Controller
 @RequestMapping("/system/org")
-public class SysOrgController extends BaseCrudDhtmlxController<SysOrg, Long, SysOrgService> {
+public class SysOrgController extends AbstractCrudDhtmlxController<SysOrg, Long, SysOrgService> {
     @Autowired
     private ResourceBundleMessageSource messageSource;
     private Gson gson=new Gson();

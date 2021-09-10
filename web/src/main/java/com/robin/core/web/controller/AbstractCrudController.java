@@ -35,7 +35,7 @@ import java.util.Map;
 /**
  * Single Table Mapping Background Controller
  */
-public abstract class BaseCrudController<O extends BaseObject, P extends Serializable, S extends IBaseAnnotationJdbcService<O,P>> extends BaseController implements InitializingBean {
+public abstract class AbstractCrudController<O extends BaseObject, P extends Serializable, S extends IBaseAnnotationJdbcService<O,P>> extends AbstractController implements InitializingBean {
     private Class<O> objectType;
     private Class<P> pkType;
     private Class<S> serviceType;
@@ -43,7 +43,7 @@ public abstract class BaseCrudController<O extends BaseObject, P extends Seriali
     protected Method valueOfMethod;
 
 
-    public BaseCrudController() {
+    public AbstractCrudController() {
         Type genericSuperClass = getClass().getGenericSuperclass();
         ParameterizedType parametrizedType;
         if ((genericSuperClass instanceof ParameterizedType)) {

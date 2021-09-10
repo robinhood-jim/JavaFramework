@@ -35,7 +35,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 
 
-public abstract class BaseController
+public abstract class AbstractController
 {
 
     protected Logger log = LoggerFactory.getLogger(getClass());
