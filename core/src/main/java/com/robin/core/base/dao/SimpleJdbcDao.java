@@ -257,7 +257,7 @@ public class SimpleJdbcDao {
 			throw new DAOException(ex);
 		}
 	}
-	public List<Map<String, String>> queryBySql(final String sql) throws DAOException{
+	public List<Map<String, Object>> queryBySql(final String sql) throws DAOException{
 		Connection conn=getConnection();
 		try{
 			QueryRunner qRunner=new QueryRunner();
@@ -268,7 +268,7 @@ public class SimpleJdbcDao {
 			DbUtils.closeQuietly(conn);
 		}
 	}
-	public List<Map<String, String>> queryBySqlNoMeta(final String sql) throws DAOException{
+	public List<Map<String, Object>> queryBySqlNoMeta(final String sql) throws DAOException{
 		Connection conn=getConnection();
 		try{
 			QueryRunner runner=new QueryRunner(true);
@@ -280,7 +280,7 @@ public class SimpleJdbcDao {
 		}
 	}
 	@SuppressWarnings("deprecation")
-	public List<Map<String, String>> queryBySql(final String sql,Object[] obj) throws DAOException{
+	public List<Map<String, Object>> queryBySql(final String sql,Object[] obj) throws DAOException{
 		Connection conn=getConnection();
 		try{
 			QueryRunner qRunner=new QueryRunner();
@@ -293,7 +293,7 @@ public class SimpleJdbcDao {
 		
 	}
 	@SuppressWarnings("deprecation")
-	public List<Map<String, String>> queryBySql(final QueryRunner runner,final String sql,Object[] obj) throws DAOException{
+	public List<Map<String, Object>> queryBySql(final QueryRunner runner,final String sql,Object[] obj) throws DAOException{
 		Connection conn=getConnection();
 		try{
 			return queryHandler(runner,conn,sql,obj);
@@ -304,7 +304,7 @@ public class SimpleJdbcDao {
 		}
 
 	}
-	public static List<Map<String, String>> queryString(final Connection conn, final String sql) throws DAOException{
+	public static List<Map<String, Object>> queryString(final Connection conn, final String sql) throws DAOException{
 		try{
 			QueryRunner qRunner=new QueryRunner();
 			return queryHandler(qRunner,conn,sql);
@@ -313,7 +313,7 @@ public class SimpleJdbcDao {
 		}
 	}
 
-	public static List<Map<String, String>> queryBySql(final Connection conn,final String sql,Object[] obj) throws DAOException{
+	public static List<Map<String, Object>> queryBySql(final Connection conn,final String sql,Object[] obj) throws DAOException{
 		try{
 			QueryRunner qRunner=new QueryRunner();
 			return queryHandler(qRunner,conn,sql,obj);
@@ -321,12 +321,12 @@ public class SimpleJdbcDao {
 			throw new DAOException(e);
 		}
 	}
-	private static List<Map<String,String>> queryHandler(final QueryRunner runner,Connection conn,String sql) throws Exception{
-		return runner.query(conn, sql, new ResultSetHandler<List<Map<String,String>>>(){
+	private static List<Map<String,Object>> queryHandler(final QueryRunner runner,Connection conn,String sql) throws Exception{
+		return runner.query(conn, sql, new ResultSetHandler<List<Map<String,Object>>>(){
 			@Override
-			public List<Map<String, String>> handle(ResultSet rs) throws SQLException {
+			public List<Map<String, Object>> handle(ResultSet rs) throws SQLException {
 				ResultSetMetaData meta=rs.getMetaData();
-				List<Map<String, String>> list=new ArrayList<Map<String,String>>();
+				List<Map<String, Object>> list=new ArrayList<>();
 				while(rs.next()){
 					list.add(SimpleJdbcDao.wrapResultSet(rs, meta));
 				}
@@ -335,21 +335,18 @@ public class SimpleJdbcDao {
 		});
 	}
 
-	private static List<Map<String,String>> queryHandler(final QueryRunner qRunner,Connection conn,String sql,Object[] obj) throws Exception{
-		return qRunner.query(conn, sql, new ResultSetHandler<List<Map<String,String>>>(){
-			@Override
-			public List<Map<String, String>> handle(ResultSet rs) throws SQLException {
-				ResultSetMetaData meta=rs.getMetaData();
-				//int columncount=meta.getColumnCount();
-				List<Map<String, String>> list=new ArrayList<Map<String,String>>();
-				while(rs.next()){
-					list.add(SimpleJdbcDao.wrapResultSet(rs, meta));
-				}
-				return list;
+	private static List<Map<String,Object>> queryHandler(final QueryRunner qRunner,Connection conn,String sql,Object[] obj) throws Exception{
+		return qRunner.query(conn, sql, rs -> {
+			ResultSetMetaData meta=rs.getMetaData();
+			//int columncount=meta.getColumnCount();
+			List<Map<String, Object>> list=new ArrayList<>();
+			while(rs.next()){
+				list.add(SimpleJdbcDao.wrapResultSet(rs, meta));
 			}
+			return list;
 		},obj);
 	}
-	public static List<Map<String, String>> queryBySqlNoMeta(final Connection conn,final String sql,Object[] obj) throws DAOException{
+	public static List<Map<String, Object>> queryBySqlNoMeta(final Connection conn,final String sql,Object[] obj) throws DAOException{
 		try{
 			QueryRunner qRunner=new QueryRunner(true);
 			return queryHandler(qRunner,conn,sql,obj);
@@ -357,10 +354,10 @@ public class SimpleJdbcDao {
 			throw new DAOException(e);
 		}
 	}
-	public static final Map<String, String> wrapResultSet(ResultSet rs,ResultSetMetaData meta) throws SQLException{
-		Map<String, String> map = new HashMap<String, String>();
+	public static final Map<String, Object> wrapResultSet(ResultSet rs,ResultSetMetaData meta) throws SQLException{
+		Map<String, Object> map = new HashMap<>();
 		for (int i = 0; i < meta.getColumnCount(); i++) {
-			map.put(meta.getColumnLabel(i + 1), rs.getString(i + 1));
+			map.put(meta.getColumnLabel(i + 1), rs.getObject(i + 1));
 		}
 		return map;
 	}

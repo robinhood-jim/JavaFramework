@@ -370,9 +370,9 @@ public class YarnJobInfoUtil extends AbstractJobInfoUtil{
 		HDFSProperty property=new HDFSProperty();
 		try{
 			conn=SimpleJdbcDao.getConnection(meta);
-			List<Map<String, String>> list=SimpleJdbcDao.queryString(conn, "select config_name as name,config_value as value from etlcloud_test.t_hadoop_cluster_config where cluster_id=4");
-			for (Map<String, String> map:list)  {
-				property.getHaConfig().put(map.get("name"), map.get("value"));
+			List<Map<String, Object>> list=SimpleJdbcDao.queryString(conn, "select config_name as name,config_value as value from etlcloud_test.t_hadoop_cluster_config where cluster_id=4");
+			for (Map<String, Object> map:list)  {
+				property.getHaConfig().put(map.get("name").toString(), map.get("value").toString());
 			}
 			YarnJobInfoUtil util=new YarnJobInfoUtil();
 			YarnJobDetail detail=util.getJobDetailByRunner("1447208692103_312");

@@ -4,10 +4,12 @@ import com.robin.core.base.datameta.BaseDataBaseMeta;
 import com.robin.core.base.exception.ConfigurationIncorrectException;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import com.zaxxer.hikari.pool.HikariPool;
 import lombok.Data;
 import org.springframework.beans.BeanUtils;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -16,7 +18,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class HikariCPPoolUtils {
     private final ReadWriteLock locker;
-    private Map<String,HikariDataSource> sourceMap=new HashMap<>();
+    private Map<String,HikariPool> sourceMap=new HashMap<>();
 
     private HikariCPPoolUtils(){
         locker=new ReentrantReadWriteLock();
@@ -25,7 +27,11 @@ public class HikariCPPoolUtils {
             public void run() {
                 if(!sourceMap.isEmpty()){
                     sourceMap.forEach((k,v)->{
-                        v.close();
+                        try {
+                            v.shutdown();
+                        }catch (InterruptedException ex){
+
+                        }
                     });
                 }
             }
@@ -34,7 +40,10 @@ public class HikariCPPoolUtils {
     public static HikariCPPoolUtils getInstance(){
         return  SingletonHolder.INSTANCE;
     }
-    public Connection getConnection(String dbSourceName) throws Exception{
+    public HikariPool getPool(String dbSourceName){
+        return sourceMap.get(dbSourceName);
+    }
+    public Connection getConnection(String dbSourceName) throws SQLException {
         locker.readLock().lock();
         try{
             //锁降级
@@ -46,7 +55,7 @@ public class HikariCPPoolUtils {
             }
             Connection connection=sourceMap.get(dbSourceName).getConnection();
             return connection;
-        }catch (Exception ex){
+        }catch (SQLException ex){
             throw ex;
         }finally {
             locker.writeLock().unlock();
@@ -56,38 +65,22 @@ public class HikariCPPoolUtils {
     public void evictConnection(String dbSourceName,Connection connection){
         sourceMap.get(dbSourceName).evictConnection(connection);
     }
+
     public void closeDataSource(String dbSourceName){
 
     }
-    public void initDataSource(String dbSourceName, BaseDataBaseMeta meta,ConnectionPoolConfig connectionPoolConfig){
+    public void initDataSource(String dbSourceName, BaseDataBaseMeta meta,HikariConfig connectionPoolConfig){
         if(!sourceMap.containsKey(dbSourceName)){
-            HikariDataSource source=createDataSource(dbSourceName,meta,connectionPoolConfig);
+            HikariPool source= createPool(dbSourceName,meta,connectionPoolConfig);
             sourceMap.put(dbSourceName,source);
         }
     }
 
-    public  HikariDataSource createDataSource(String dbSourceName, BaseDataBaseMeta meta,ConnectionPoolConfig connectionPoolConfig) {
-        HikariConfig config=new HikariConfig();
-        BeanUtils.copyProperties(connectionPoolConfig,config);
-        config.setJdbcUrl(meta.getUrl());
-        config.setUsername(meta.getParam().getUserName());
-        config.setPassword(meta.getParam().getPasswd());
-        config.setDriverClassName(meta.getParam().getDriverClassName());
-        HikariDataSource dataSource=new HikariDataSource(config);
-        return dataSource;
+    public  HikariPool createPool(String dbSourceName, BaseDataBaseMeta meta, HikariConfig config) {
+        HikariPool pool=new HikariPool(config);
+        return pool;
     }
-    @Data
-    public static class ConnectionPoolConfig {
-        private int initialSize;
-        private int minIdle;
-        private int maxPoolSize;
-        private int maxWait;
-        private long connectionTimeout;
-        private long validationTimeout;
-        private String connectionTestQuery;
-        private long idleTimeout;
 
-    }
     private static class SingletonHolder {
         private static final HikariCPPoolUtils INSTANCE = new HikariCPPoolUtils();
 

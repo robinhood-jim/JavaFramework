@@ -9,7 +9,9 @@ import com.robin.comm.dal.holder.fs.InputStreamHolder;
 import com.robin.comm.dal.holder.fs.OutputStreamHolder;
 import com.robin.core.base.datameta.BaseDataBaseMeta;
 import com.robin.core.base.spring.SpringContextHolder;
+import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.util.AbstractResourceAccessUtil;
+import com.zaxxer.hikari.HikariConfig;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.springframework.beans.factory.InitializingBean;
@@ -31,6 +33,7 @@ public class ResourceAccessHolder implements InitializingBean {
 	private int jdbcHolderNum=10;
 	private static final Map<String, AbstractResourceAccessUtil> resouceAccessUtilMap=new LinkedHashMap<>();
 	private Map<Long, DbConnectionHolder> connectionHolderCache= new LinkedHashMap<>();
+	private Map<Long,JdbcResourceHolder> jdbcResourceHolderMap=new LinkedHashMap<>();
 	private GenericObjectPool<InputStreamHolder> inputStreamPool=null;
 	private GenericObjectPool<OutputStreamHolder> outputStreamPool=null;
 	private GenericObjectPool<FsRecordIteratorHolder> bufferedReaderPool=null;
@@ -149,12 +152,12 @@ public class ResourceAccessHolder implements InitializingBean {
 			throw new RuntimeException("output strem config not found!");
 		}
 	}
-	public DbConnectionHolder getConnectionHolder(Long sourceId, BaseDataBaseMeta meta){
+	public DbConnectionHolder getConnectionHolder(Long sourceId, BaseDataBaseMeta meta, HikariConfig config){
 		if(!connectionHolderCache.containsKey(sourceId)){
 			if(monitorService==null){
-				startMonitor();
+				//startMonitor();
 			}
-			DbConnectionHolder holder=new DbConnectionHolder(sourceId,meta);
+			DbConnectionHolder holder=new DbConnectionHolder(sourceId.toString(),meta,config);
 			connectionHolderCache.put(sourceId,holder);
 		}
 		return connectionHolderCache.get(sourceId);
@@ -167,21 +170,14 @@ public class ResourceAccessHolder implements InitializingBean {
 			throw new RuntimeException("output strem config not found!");
 		}
 	}
-	public JdbcResourceHolder getPoolJdbcHolder() throws Exception{
-		if(jdbcHolderPool!=null){
-			return jdbcHolderPool.borrowObject();
-		}else{
-			throw new RuntimeException("can not get jdbc!");
+	public JdbcResourceHolder getPoolJdbcHolder(Long sourceId, DataCollectionMeta meta, HikariConfig config) throws Exception{
+		if(jdbcResourceHolderMap.get(sourceId)==null){
+			JdbcResourceHolder holder=new JdbcResourceHolder(meta,config);
+			jdbcResourceHolderMap.put(sourceId,holder);
 		}
+		return jdbcResourceHolderMap.get(sourceId);
 	}
-	public void returnJdbcPool(JdbcResourceHolder holder) throws Exception{
-		if(jdbcHolderPool!=null){
-			holder.close();
-			jdbcHolderPool.returnObject(holder);
-		}else{
-			throw new RuntimeException("output strem config not found!");
-		}
-	}
+
 	public class DbPoolMonitorService extends AbstractScheduledService{
 
 		@Override

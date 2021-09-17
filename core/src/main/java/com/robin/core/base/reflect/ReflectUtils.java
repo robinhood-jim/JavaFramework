@@ -192,7 +192,6 @@ public class ReflectUtils {
     public static <T extends Annotation> T getAnnotationByFieldName(Class baseClazz, String fieldName, Class<T> annotationClazz){
         Assert.isTrue(annotationClazz.isAnnotation(),"field class must be annotation!");
         List<Field> fields= getFieldsByAnnotation(baseClazz,annotationClazz);
-        String clazzName=annotationClazz.getCanonicalName();
         for(Field field:fields){
             if(field.getName().equals(fieldName)){
                 if(field.isAnnotationPresent(annotationClazz)){
