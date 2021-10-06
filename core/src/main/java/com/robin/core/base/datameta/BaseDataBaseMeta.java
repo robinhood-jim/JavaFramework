@@ -28,15 +28,15 @@ import java.util.regex.Pattern;
 @Slf4j
 public abstract class BaseDataBaseMeta implements DataBaseInterface, Serializable {
 	//static fields
-	public static final String TYPE_MYSQL="MySql";
+	public static final String TYPE_MYSQL="Mysql";
 	public static final String TYPE_ORACLE="Oracle";
-	public static final String TYPE_ORACLERAC="OracleRac";
+	public static final String TYPE_ORACLERAC="Oraclerac";
 	public static final String TYPE_DB2="DB2";
 	public static final String TYPE_SYBASE="Sybase";
-	public static final String TYPE_SQLSERVER="SqlServer";
+	public static final String TYPE_SQLSERVER="Sqlserver";
 	public static final String TYPE_H2="H2";
 	public static final String TYPE_DEBRY="Debry";
-	public static final String TYPE_PGSQL="PostgreSql";
+	public static final String TYPE_PGSQL="Postgresql";
 	public static final String TYPE_PHONEIX="Phoenix4";
 	public static final String TYPE_HIVE="Hive1";
 	public static final String TYPE_HIVE2="Hive";
@@ -44,7 +44,7 @@ public abstract class BaseDataBaseMeta implements DataBaseInterface, Serializabl
 	protected DataBaseParam param;
 	protected String dbType;
 	//Enum type of all support DB
-	public static final String[] DB_TYPE_ENMU ={"Oracle","MySql","DB2","SqlServer","Sybase","PostgreSql","Phoenix4","Hive","Hive2","OracleRac","H2","Impala"};
+	public static final String[] DB_TYPE_ENMU ={"Oracle","Mysql","DB2","Sqlserver","Sybase","Postgresql","Phoenix4","Hive1","Hive","Oraclerac","H2","Impala"};
 	//jdbc Url Template like jdbc:mysql://[hostName]:[port]/[databaseName]?useUnicode=true&characterEncoding=[encode]
 	public static final Pattern PATTERN_TEMPLATE_PARAM = Pattern.compile("\\[.*?\\]");
 	@Override

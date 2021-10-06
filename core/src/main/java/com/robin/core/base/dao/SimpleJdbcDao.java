@@ -15,18 +15,12 @@
  */
 package com.robin.core.base.dao;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.Serializable;
-import java.math.BigInteger;
-import java.sql.*;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import com.robin.core.base.datameta.BaseDataBaseMeta;
+import com.robin.core.base.datameta.DataBaseParam;
+import com.robin.core.base.datameta.DataBaseUtil;
+import com.robin.core.base.exception.DAOException;
+import com.robin.core.base.util.Const;
+import com.robin.core.query.extractor.ResultSetOperationExtractor;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -36,12 +30,16 @@ import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.robin.core.base.datameta.BaseDataBaseMeta;
-import com.robin.core.base.datameta.DataBaseParam;
-import com.robin.core.base.datameta.DataBaseUtil;
-import com.robin.core.base.exception.DAOException;
-import com.robin.core.base.util.Const;
-import com.robin.core.query.extractor.ResultSetOperationExtractor;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.Serializable;
+import java.sql.*;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 public class SimpleJdbcDao {
@@ -322,23 +320,19 @@ public class SimpleJdbcDao {
 		}
 	}
 	private static List<Map<String,Object>> queryHandler(final QueryRunner runner,Connection conn,String sql) throws Exception{
-		return runner.query(conn, sql, new ResultSetHandler<List<Map<String,Object>>>(){
-			@Override
-			public List<Map<String, Object>> handle(ResultSet rs) throws SQLException {
-				ResultSetMetaData meta=rs.getMetaData();
-				List<Map<String, Object>> list=new ArrayList<>();
-				while(rs.next()){
-					list.add(SimpleJdbcDao.wrapResultSet(rs, meta));
-				}
-				return list;
+		return runner.query(conn, sql, rs -> {
+			ResultSetMetaData meta=rs.getMetaData();
+			List<Map<String, Object>> list=new ArrayList<>();
+			while(rs.next()){
+				list.add(SimpleJdbcDao.wrapResultSet(rs, meta));
 			}
+			return list;
 		});
 	}
 
 	private static List<Map<String,Object>> queryHandler(final QueryRunner qRunner,Connection conn,String sql,Object[] obj) throws Exception{
 		return qRunner.query(conn, sql, rs -> {
 			ResultSetMetaData meta=rs.getMetaData();
-			//int columncount=meta.getColumnCount();
 			List<Map<String, Object>> list=new ArrayList<>();
 			while(rs.next()){
 				list.add(SimpleJdbcDao.wrapResultSet(rs, meta));
@@ -408,19 +402,18 @@ public class SimpleJdbcDao {
 			DbUtils.closeQuietly(conn);
 		}
 	}
-	public static Serializable queryByHandler(final Connection conn, final String sql,final BaseDataBaseMeta meta,DataBaseParam param,ResultSetHandler<? extends Serializable> handler) throws DAOException{
+	public static Serializable queryByHandler(final Connection conn, final String sql,ResultSetHandler<? extends Serializable> handler) throws DAOException{
 		Statement stmt=null;
 		try{
 			stmt=conn.createStatement();
 			ResultSet rs=stmt.executeQuery(sql);
-			handler.handle(rs);
+			return handler.handle(rs);
 		}
 		catch (Exception e) {
 			throw new DAOException(e);
 		}finally{
 			DbUtils.closeQuietly(stmt);
 		}
-		return null;
 	}
 	public static int executeOperationWithQuery(final Connection conn,String sql,boolean pmdKnownBroken,final ResultSetOperationExtractor extractor) throws SQLException{
 		QueryRunner qRunner=null;
@@ -429,12 +422,7 @@ public class SimpleJdbcDao {
 		}else{
 			qRunner=new QueryRunner();
 		}
-		return qRunner.query(conn, sql, new ResultSetHandler<Integer>(){
-			@Override
-			public Integer handle(ResultSet rs) throws SQLException {
-				return extractor.extractData(rs);
-			}
-		});
+		return qRunner.query(conn, sql, rs -> extractor.extractData(rs));
 	}
 	public static int executeOperationWithQuery(final Connection conn,String sql,Object[] param,boolean pmdKnownBroken,final ResultSetOperationExtractor extractor) throws SQLException{
 		QueryRunner qRunner=null;
@@ -443,12 +431,7 @@ public class SimpleJdbcDao {
 		}else{
 			qRunner=new QueryRunner();
 		}
-		return qRunner.query(conn,sql, new ResultSetHandler<Integer>(){
-			@Override
-			public Integer handle(ResultSet rs) throws SQLException {
-				return extractor.extractData(rs);
-			}
-		},param);
+		return qRunner.query(conn,sql, rs -> extractor.extractData(rs),param);
 	}
 					
 	public int executeUpdate(final String sql) throws DAOException{

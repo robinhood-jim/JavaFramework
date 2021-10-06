@@ -88,12 +88,7 @@ public class CommJdbcUtil {
                 }
                 return ps;
             }
-        }, new ResultSetExtractor() {
-            @Override
-            public Object extractData(ResultSet rs) throws SQLException, DataAccessException {
-                return rs;
-            }
-        });
+        }, (ResultSetExtractor) rs -> rs);
         return (List) ret;
     }
 
@@ -412,14 +407,12 @@ public class CommJdbcUtil {
                     }
                     pageQuery.setPageCount(pages);
                     list = getResultItemsByPreparedSimple(jdbcTemplate, namedParameterJdbcTemplate, lobHandler, sqlGen, qs, pageQuery, pageSQL);
-                    //getResultItemsByPrepared(jdbcTemplate,pageQuery, pageSQL);
                 } else {
                     list = new ArrayList();
                     pageQuery.setPageCount(0);
                 }
             } else {
                 list = getResultItemsByPreparedSimple(jdbcTemplate, namedParameterJdbcTemplate, lobHandler, sqlGen, qs, pageQuery, querySQL);
-                //getResultItemsByPrepared(jdbcTemplate,pageQuery, querySQL);
                 int len1 = list.size();
                 pageQuery.setRecordCount(len1);
                 pageQuery.setPageCount(1);

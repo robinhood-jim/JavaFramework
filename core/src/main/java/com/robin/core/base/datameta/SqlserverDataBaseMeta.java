@@ -16,46 +16,35 @@
 package com.robin.core.base.datameta;
 
 import com.robin.core.sql.util.BaseSqlGen;
-import com.robin.core.sql.util.OracleSqlGen;
-/**
- *Oracle rac mode jdbc databaseMeta
- */
-public class OracleRacDataBaseMeta  extends BaseDataBaseMeta implements DataBaseInterface{
+import com.robin.core.sql.util.SqlServer2005Gen;
 
-	public OracleRacDataBaseMeta(DataBaseParam param) {
+public class SqlserverDataBaseMeta extends BaseDataBaseMeta {
+
+	public SqlserverDataBaseMeta(DataBaseParam param) {
 		super(param);
-		setDbType(BaseDataBaseMeta.TYPE_ORACLERAC);
-		param.setDriverClassName("oracle.jdbc.driver.OracleDriver");
+		setDbType(BaseDataBaseMeta.TYPE_SQLSERVER);
+		param.setDriverClassName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
 	}
+
 
 	@Override
     public String getUrlTemplate() {
-		return "jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=TCP)(HOST=[ip1])(PORT=[port]))(ADDRESS=(PROTOCOL=TCP)(HOST=[ip2])(PORT=[port])))(LOAD_BALANCE=yes)(CONNECT_DATA=(SERVER=DEDICATED)(SERVICE_NAME=[databaseName])))";
-	}
-	public String getUrl(DataBaseParam param) {
-		if(param.getUrl()==null){
-			if(param.getPort()==0) {
-                param.setPort(getDefaultDatabasePort());
-            }
-			return "jdbc:oracle:thin:@"+param.getHostName();
-		}else {
-            return param.getUrl();
-        }
+		return "jdbc:sqlserver://[hostName]:[port];DatabaseName=[databaseName]";
 	}
 
 	@Override
     public boolean suppportSequnce() {
-		return true;
-	}
-
-	@Override
-    public boolean supportAutoInc() {
 		return false;
 	}
 
 	@Override
+    public boolean supportAutoInc() {
+		return true;
+	}
+
+	@Override
     public int getDefaultDatabasePort() {
-		return 1521;
+		return 1433;
 	}
 
 	@Override
@@ -65,6 +54,10 @@ public class OracleRacDataBaseMeta  extends BaseDataBaseMeta implements DataBase
 
 	@Override
     public BaseSqlGen getSqlGen() {
-		return OracleSqlGen.getInstance();
+		return SqlServer2005Gen.getInstance();
+	}
+	@Override
+	public String getCatalog(String schema) {
+		return schema;
 	}
 }

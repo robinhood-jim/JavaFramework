@@ -15,11 +15,14 @@
  */
 package com.robin.core.base.dao;
 
+import com.robin.core.base.dao.handler.MetaObjectHandler;
 import com.robin.core.base.dao.util.*;
 import com.robin.core.base.exception.DAOException;
 import com.robin.core.base.exception.QueryConfgNotFoundException;
 import com.robin.core.base.model.BaseObject;
+import com.robin.core.base.reflect.MetaObject;
 import com.robin.core.base.reflect.ReflectUtils;
+import com.robin.core.base.spring.SpringContextHolder;
 import com.robin.core.base.util.Const;
 import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
@@ -470,6 +473,11 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
         Long retval = null;
         Serializable retObj=null;
         try {
+            //function as mybatis-plus MetaObjectHandler
+            if(SpringContextHolder.getBean(MetaObjectHandler.class)!=null){
+                Map<String,AnnotationRetrevior.FieldContent> fieldContentMap=AnnotationRetrevior.getMappingFieldsMapCache(obj.getClass());
+                SpringContextHolder.getBean(MetaObjectHandler.class).insertFill(new MetaObject(obj,fieldContentMap));
+            }
             List<AnnotationRetrevior.FieldContent> fields = AnnotationRetrevior.getMappingFieldsCache(obj.getClass());
             EntityMappingUtil.InsertSegment insertSegment = EntityMappingUtil.getInsertSegment(obj, sqlGen);
             String insertSql = insertSegment.getInsertSql();
@@ -524,6 +532,11 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
     public int updateVO(Class<? extends BaseObject> clazz, BaseObject obj) throws DAOException {
         int ret = 0;
         try {
+            //function as mybatis-plus MetaObjectHandler
+            if(SpringContextHolder.getBean(MetaObjectHandler.class)!=null){
+                Map<String,AnnotationRetrevior.FieldContent> fieldContentMap=AnnotationRetrevior.getMappingFieldsMapCache(obj.getClass());
+                SpringContextHolder.getBean(MetaObjectHandler.class).updateFill(new MetaObject(obj,fieldContentMap));
+            }
             EntityMappingUtil.UpdateSegment updateSegment = EntityMappingUtil.getUpdateSegment(obj, sqlGen);
             StringBuilder builder = new StringBuilder();
             if (updateSegment.getFieldStr().length() != 0) {

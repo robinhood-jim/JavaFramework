@@ -16,21 +16,22 @@
 package com.robin.core.base.datameta;
 
 import com.robin.core.sql.util.BaseSqlGen;
-import com.robin.core.sql.util.SqlServer2005Gen;
+import com.robin.core.sql.util.MysqlSqlGen;
+import com.robin.core.sql.util.PostgreSqlSqlGen;
 
-public class SqlServerDataBaseMeta extends BaseDataBaseMeta {
+public class PostgresqlDataBaseMeta extends BaseDataBaseMeta{
 
-	public SqlServerDataBaseMeta(DataBaseParam param) {
+	public PostgresqlDataBaseMeta(DataBaseParam param) {
 		super(param);
-		setDbType(BaseDataBaseMeta.TYPE_SQLSERVER);
-		param.setDriverClassName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+		setDbType(BaseDataBaseMeta.TYPE_PGSQL);
+		param.setDriverClassName("org.postgresql.Driver");
 	}
-
 
 	@Override
     public String getUrlTemplate() {
-		return "jdbc:sqlserver://[hostName]:[port];DatabaseName=[databaseName]";
+		return "jdbc:postgresql://[hostName]:[port]/[databaseName]";
 	}
+
 
 	@Override
     public boolean suppportSequnce() {
@@ -39,12 +40,12 @@ public class SqlServerDataBaseMeta extends BaseDataBaseMeta {
 
 	@Override
     public boolean supportAutoInc() {
-		return true;
+		return false;
 	}
 
 	@Override
     public int getDefaultDatabasePort() {
-		return 1433;
+		return 5432;
 	}
 
 	@Override
@@ -54,10 +55,7 @@ public class SqlServerDataBaseMeta extends BaseDataBaseMeta {
 
 	@Override
     public BaseSqlGen getSqlGen() {
-		return SqlServer2005Gen.getInstance();
+		return PostgreSqlSqlGen.getInstance();
 	}
-	@Override
-	public String getCatalog(String schema) {
-		return schema;
-	}
+
 }
