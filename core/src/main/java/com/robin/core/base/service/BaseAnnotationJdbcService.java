@@ -68,9 +68,9 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 	public void afterPropertiesSet() {
 		//if use JPA,can not use dynamic DataSource Property,then use Default JdbcDao
 		if(entityContent!=null && entityContent.getJdbcDao()!=null && !entityContent.getJdbcDao().isEmpty()){
-			jdbcDao= (JdbcDao) SpringContextHolder.getBean(entityContent.getJdbcDao());
+			jdbcDao= SpringContextHolder.getBean(entityContent.getJdbcDao(),JdbcDao.class);
 		}else{
-			jdbcDao= (JdbcDao) SpringContextHolder.getBean("jdbcDao");
+			jdbcDao= SpringContextHolder.getBean("jdbcDao",JdbcDao.class);
 		}
 	}
 

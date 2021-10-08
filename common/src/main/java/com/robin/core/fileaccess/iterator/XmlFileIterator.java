@@ -20,6 +20,7 @@ import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.meta.DataSetColumnMeta;
 
 import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamReader;
 import java.io.IOException;
 import java.util.HashMap;
@@ -50,7 +51,7 @@ public class XmlFileIterator extends AbstractFileIterator {
             }
 			while(streamReader.hasNext()){
 				streamReader.next();
-				if(streamReader.getEventType()==XMLStreamReader.START_ELEMENT){
+				if(streamReader.getEventType()== XMLStreamConstants.START_ELEMENT){
 					if(rooteleName==null){
 						rooteleName=streamReader.getLocalName();
 					}else if(entityName==null){
@@ -74,7 +75,7 @@ public class XmlFileIterator extends AbstractFileIterator {
 	
 	@Override
 	public boolean hasNext() {
-		return streamReader.getEventType()!=XMLStreamReader.END_DOCUMENT;
+		return streamReader.getEventType()!=XMLStreamConstants.END_DOCUMENT;
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -88,7 +89,7 @@ public class XmlFileIterator extends AbstractFileIterator {
 		StringBuilder builder=new StringBuilder();
 		try{
 			while (streamReader.hasNext()) {
-				if(streamReader.getEventType()==XMLStreamReader.START_ELEMENT){
+				if(streamReader.getEventType()==XMLStreamConstants.START_ELEMENT){
 					String curName=streamReader.getLocalName();
 					if(!secondContainEntity){
 						if(!curName.equals(entityName)){
@@ -123,7 +124,7 @@ public class XmlFileIterator extends AbstractFileIterator {
 							}
 						}
 					}
-				}else if(streamReader.getEventType()==XMLStreamReader.END_ELEMENT){
+				}else if(streamReader.getEventType()==XMLStreamConstants.END_ELEMENT){
 					String curName=streamReader.getLocalName();
 					if(curName.equals(entityName)){
 						finishget=true;
@@ -155,7 +156,7 @@ public class XmlFileIterator extends AbstractFileIterator {
 		if(builder.length()>0){
 			builder.delete(0,builder.length());
 		}
-		while(streamReader.getEventType()==XMLStreamReader.CHARACTERS){
+		while(streamReader.getEventType()==XMLStreamConstants.CHARACTERS){
 			builder.append(streamReader.getText());
 			streamReader.next();
 		}

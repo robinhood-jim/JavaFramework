@@ -17,8 +17,6 @@ package com.robin.core.fileaccess.iterator;
 
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.util.AbstractResourceAccessUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
 import java.io.BufferedReader;
@@ -29,12 +27,11 @@ public abstract class AbstractFileIterator extends AbstractResIterator{
 	protected BufferedReader reader;
 	protected InputStream instream;
 	protected AbstractResourceAccessUtil accessUtil;
-	protected Logger logger= LoggerFactory.getLogger(getClass());
 
-	public AbstractFileIterator(DataCollectionMeta colmeta){
+	protected AbstractFileIterator(DataCollectionMeta colmeta){
 		super(colmeta);
 	}
-	public AbstractFileIterator(DataCollectionMeta colmeta,AbstractResourceAccessUtil accessUtil){
+	protected AbstractFileIterator(DataCollectionMeta colmeta,AbstractResourceAccessUtil accessUtil){
 		super(colmeta);
 		this.accessUtil=accessUtil;
 	}

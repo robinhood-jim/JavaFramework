@@ -18,10 +18,16 @@ package com.robin.core.collection.util;
 import com.robin.core.base.exception.MissingConfigException;
 import com.robin.core.base.reflect.ReflectUtils;
 import com.robin.core.base.util.StringUtils;
+import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 public class CollectionBaseConvert {
 	
@@ -102,42 +108,23 @@ public class CollectionBaseConvert {
 		}
 		return retList;
 	}
-	public static Map<String,? extends Serializable> listToMap(List<? extends Serializable> list,String identifyColumn) throws Exception{
-		if(list==null || list.isEmpty()){
-			throw new MissingConfigException("ArrayList is Empty!");
-		}
+	public static <T> Map<String,List<T>> groupBy(List<T> list, Function<T,String> function){
+		Assert.isTrue(!CollectionUtils.isEmpty(list),"Collection is Empty");
+		Assert.isTrue(!list.get(0).getClass().isPrimitive(),"Primitive type can not using this function!");
+		return  list.stream().collect(Collectors.groupingBy(function));
+	}
+	public static <T extends Serializable> Map<String,T> groupByUniqueKey(List<T> list, String identifyColumn, Function<T,String> function) throws Exception{
+		Assert.isTrue(!CollectionUtils.isEmpty(list),"Collection is Empty");
 		Class<? extends Serializable> clazz=list.get(0).getClass();
 		if(clazz.isPrimitive()){
 			throw new MissingConfigException("Primitive type can not using this function!");
 		}
-		Method method= null;
-
 		if(!(list.get(0) instanceof HashMap)){
-			method= ReflectUtils.returnGetMethods(clazz).get(identifyColumn);
-			if(method==null){
-				throw new MissingConfigException("identify column not exists in object!");
-			}
+			return list.stream().collect(Collectors.toMap(f->function.apply(f),Function.identity()));
 		}else{
-			method= ReflectUtils.returnGetMethods(list.get(0).getClass()).get(identifyColumn);
-			if(method==null){
-				throw new MissingConfigException("identify column not exists in object!");
-			}
+			return list.stream().collect(Collectors.toMap(f->((Map)f).get(identifyColumn).toString(),Function.identity()));
 		}
-		Map<String,Serializable> map=new HashMap<>();
-		for(Serializable s:list){
-			if(s instanceof HashMap){
-				Object key=((HashMap)s).get(identifyColumn);
-				if(!StringUtils.isEmpty(key)){
-					map.put(key.toString(),s);
-				}
-			}else{
-				Object key=method.invoke(s,null);
-				if(!StringUtils.isEmpty(key)){
-					map.put(key.toString(),s);
-				}
-			}
-		}
-		return map;
+
 	}
 	private void addMapToList(Map<String, List<Serializable>> retMap, String key, Serializable t) {
 		if (!retMap.containsKey(key)) {

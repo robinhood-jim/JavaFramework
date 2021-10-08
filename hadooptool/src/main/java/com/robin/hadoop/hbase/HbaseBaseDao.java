@@ -320,9 +320,8 @@ public class HbaseBaseDao {
         scan.setFilter(filterlist);
         try (Connection conn = getConnection(); Table table = conn.getTable(TableName.valueOf(tableName));
              ResultScanner scanner = table.getScanner(scan)) {
-            //Map<String, List<String>> valueMap=new HashMap<String, List<String>>();
             Map<String, Map<String, List<String>>> tmpmap1 = new HashMap<String, Map<String, List<String>>>();
-            List<String> keyList = new ArrayList<String>();
+            List<String> keyList = new ArrayList<>();
             List<String> fnameList = new ArrayList<String>();
             for (Result rs : scanner) {
                 Cell[] kv1 = rs.rawCells();

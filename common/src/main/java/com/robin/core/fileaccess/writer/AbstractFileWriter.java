@@ -41,7 +41,7 @@ public abstract class AbstractFileWriter implements IResourceWriter {
 	protected Logger logger= LoggerFactory.getLogger(getClass());
 	protected DateTimeFormatter formatter;
 
-	public AbstractFileWriter(DataCollectionMeta colmeta){
+	protected AbstractFileWriter(DataCollectionMeta colmeta){
 		this.colmeta=colmeta;
 		formatter=DateTimeFormatter.ofPattern(colmeta.getDefaultTimestampFormat());
 		for (DataSetColumnMeta meta:colmeta.getColumnList()) {

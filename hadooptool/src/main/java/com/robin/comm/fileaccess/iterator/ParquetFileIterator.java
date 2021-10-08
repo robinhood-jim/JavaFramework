@@ -25,7 +25,7 @@ import java.util.Map;
 
 
 public class ParquetFileIterator extends AbstractFileIterator {
-    private ParquetReader<GenericData.Record> reader;
+    private ParquetReader<GenericData.Record> preader;
     private Schema schema;
     private MessageType msgtype;
     private Configuration conf;
@@ -46,7 +46,7 @@ public class ParquetFileIterator extends AbstractFileIterator {
             } else {
                 schema = AvroUtils.getSchemaFromMeta(colmeta);
             }
-            reader = AvroParquetReader
+            preader = AvroParquetReader
                     .<GenericData.Record>builder(HadoopInputFile.fromPath(new Path(colmeta.getPath()),conf)).withConf(conf).build();
             fields = schema.getFields();
         }catch (Exception ex){
@@ -57,7 +57,7 @@ public class ParquetFileIterator extends AbstractFileIterator {
     @Override
     public boolean hasNext() {
         try {
-            record =reader.read();
+            record =preader.read();
         }catch (Exception ex){
             ex.printStackTrace();
         }

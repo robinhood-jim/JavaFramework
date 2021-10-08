@@ -92,7 +92,7 @@ public class SimpleJdbcDao {
 				DbUtils.loadDriver(driverName);
 				conn = DriverManager.getConnection(jdbcUrl, userName, passwd);
 			} catch (Exception e) {
-				logger.error("--get connection Error and retry "+curtryNum+"times.");
+				logger.error("--get connection Error and retry {} times.",curtryNum);
 				ex=e;
 			}
 			if(conn!=null){
@@ -100,9 +100,9 @@ public class SimpleJdbcDao {
 			}
 			if(waitSecond>0){
 				try{
-						Thread.sleep(1000*waitSecond);
+					Thread.sleep(1000*waitSecond);
 				}catch(InterruptedException ex1){
-					logger.error("",ex1);
+					throw new DAOException(ex1);
 				}
 			}
 		}
@@ -148,7 +148,7 @@ public class SimpleJdbcDao {
 				DbUtils.loadDriver(meta.getParam().getDriverClassName());
 				conn = DriverManager.getConnection(param.getUrl(), param.getUserName(), param.getPasswd());
 			} catch (Exception e) {
-				logger.error("--get connection Error and retry "+curtryNum+"times.");
+				logger.error("--get connection Error and retry {} times.",curtryNum);
 				ex=e;
 			}
 			if(conn!=null){
@@ -240,7 +240,6 @@ public class SimpleJdbcDao {
 			QueryRunner qRunner=new QueryRunner();
 			return qRunner.query(conn, sql, handler);
 		}catch(Exception ex){
-			logger.error("",ex);
 			throw new DAOException(ex);
 		}finally{
 			DbUtils.closeQuietly(conn);
@@ -319,7 +318,7 @@ public class SimpleJdbcDao {
 			throw new DAOException(e);
 		}
 	}
-	private static List<Map<String,Object>> queryHandler(final QueryRunner runner,Connection conn,String sql) throws Exception{
+	private static List<Map<String,Object>> queryHandler(final QueryRunner runner,Connection conn,String sql) throws SQLException{
 		return runner.query(conn, sql, rs -> {
 			ResultSetMetaData meta=rs.getMetaData();
 			List<Map<String, Object>> list=new ArrayList<>();
@@ -330,7 +329,7 @@ public class SimpleJdbcDao {
 		});
 	}
 
-	private static List<Map<String,Object>> queryHandler(final QueryRunner qRunner,Connection conn,String sql,Object[] obj) throws Exception{
+	private static List<Map<String,Object>> queryHandler(final QueryRunner qRunner,Connection conn,String sql,Object[] obj) throws SQLException{
 		return qRunner.query(conn, sql, rs -> {
 			ResultSetMetaData meta=rs.getMetaData();
 			List<Map<String, Object>> list=new ArrayList<>();
@@ -365,7 +364,7 @@ public class SimpleJdbcDao {
 			stmt=conn.createStatement();
 			ResultSet rs=stmt.executeQuery(sql);
 			i=handler.handle(rs);
-			logger.info("ret count="+i);
+			logger.info("ret count={}",i);
 			return i;
 		}
 		catch (Exception e) {
@@ -470,7 +469,6 @@ public class SimpleJdbcDao {
 			QueryRunner qRunner=new QueryRunner();
 			return qRunner.update(conn,sql, param);
 		}catch(Exception ex){
-			//logger.error("",ex);
 			throw new DAOException(ex);
 		}
 		finally{
@@ -482,7 +480,7 @@ public class SimpleJdbcDao {
 		try{
 			QueryRunner qRunner=new QueryRunner();
 			qRunner.update(connection,sql, params);
-			Long num= (Long) qRunner.query(connection,sql2,new ScalarHandler(1));
+			Long num=  qRunner.query(connection,sql2, new ScalarHandler<>(1));
 			return num.longValue();
 		}catch(Exception ex){
 			//logger.error("",ex);
@@ -526,7 +524,6 @@ public class SimpleJdbcDao {
 			QueryRunner qRunner=new QueryRunner(true);
 			return qRunner.update(conn,sql, param);
 		}catch(Exception ex){
-			//logger.error("",ex);
 			throw new DAOException(ex);
 		}
 	}
@@ -535,7 +532,6 @@ public class SimpleJdbcDao {
 			QueryRunner qRunner=new QueryRunner(true);
 			return qRunner.update(conn,sql);
 		}catch(Exception ex){
-			//logger.error("",ex);
 			throw new DAOException(ex);
 		}
 	}
@@ -551,10 +547,8 @@ public class SimpleJdbcDao {
 			try{
 				conn.rollback();
 			}catch(Exception e){
-				logger.error("",ex);
 				throw new DAOException(e);
 			}
-			logger.error("",ex);
 			throw new DAOException(ex);
 		}finally{
 			if(stmt!=null){
@@ -693,7 +687,6 @@ public class SimpleJdbcDao {
 			ResultSet rs=stmt.executeQuery(sql);
 			return handler.handle(rs);
 		}catch (Exception e) {
-			//logger.error("",e);
 			throw new DAOException(e);
 		}finally{
 			DbUtils.closeQuietly(stmt);
@@ -749,7 +742,7 @@ public class SimpleJdbcDao {
 				while((line=reader.readLine())!=null){
 					String[] arr=line.split(split,-1);
 					if(arr.length<columnCount){
-						logger.error("import file at pos="+linepos+" column not fit,ignore!");
+						logger.error("import file at pos={} column not fit,ignore!",linepos);
 					}else{
 						Object[] obj1=new Object[arr.length];
 						for (int i = 0; i < columnCount; i++) {

@@ -17,6 +17,8 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -48,7 +50,7 @@ public class JdbcResourceHolder extends AbstractResourceHolder implements IHolde
         }finally {
             SpringContextHolder.getBean(ResourceAccessHolder.class).getConnectionHolder(sourceId,collectionMeta.getDbMeta(),config).closeConnection(connection);
         }
-        return null;
+        return Collections.emptyList();
     }
     public void flushRecordToWriter(Long sourceId, BaseDataBaseMeta meta, RecordWriterHolder holder, String sql, Object[] objects){
         Connection connection=null;

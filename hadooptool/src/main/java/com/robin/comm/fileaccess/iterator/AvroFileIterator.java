@@ -72,10 +72,10 @@ public class AvroFileIterator extends AbstractFileIterator {
 	public Map<String, Object> next() {
 		Map<String,Object> retmap=new HashMap<String, Object>();
 		try{
-			GenericRecord record=fileReader.next();
+			GenericRecord records=fileReader.next();
 			List<Field> flist=schema.getFields();
 			for (Field f:flist) {
-				retmap.put(f.name(), record.get(f.name()).toString());
+				retmap.put(f.name(), records.get(f.name()).toString());
 			}
 		}catch(Exception ex){
 			logger.error("",ex);

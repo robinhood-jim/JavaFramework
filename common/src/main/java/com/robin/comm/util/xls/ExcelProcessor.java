@@ -214,10 +214,12 @@ public class ExcelProcessor {
                             case STRING:
                                 if (type.equals(Const.META_TYPE_NUMERIC)) {
                                     strCell = cell.getStringCellValue();
-                                    double d = Double.valueOf(strCell);
+                                    Double d = Double.valueOf(strCell);
+                                    strCell=String.valueOf(d.intValue());
                                 } else if (type.equals(Const.META_TYPE_DATE)) {
                                     double d = cell.getNumericCellValue();
                                     Date date = DateUtil.getJavaDate(d);
+                                    strCell=format.format(date);
                                 } else if (type.equals(Const.META_TYPE_STRING)) {
                                     strCell = cell.getStringCellValue();
                                 }
@@ -232,7 +234,6 @@ public class ExcelProcessor {
                                 strCell = "";
                                 break;
                         }
-                        //listMap.put(prop.getColumnName()[j], strCell);
                     }
                     if (strCell != null && !"".equals(strCell.trim())) {
                         ishasrecord = true;

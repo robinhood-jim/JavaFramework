@@ -35,9 +35,6 @@ import com.robin.core.sql.util.BaseSqlGen;
 import com.robin.core.sql.util.FilterCondition;
 import com.robin.core.sql.util.OracleSqlGen;
 import com.robin.core.version.VersionInfo;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.*;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.support.JdbcDaoSupport;
@@ -50,7 +47,6 @@ import javax.sql.DataSource;
 import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -59,7 +55,6 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
     private BaseSqlGen sqlGen;
     private QueryFactory queryFactory;
     private LobHandler lobHandler;
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     public JdbcDao(){
         logger.debug(VersionInfo.getInstance().getVersion());
@@ -77,12 +72,12 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
     public PageQuery queryByPageQuery(String sqlstr, PageQuery pageQuery) throws DAOException {
         String querySQL = sqlstr;
         List<Map<String, Object>> list;
+        Assert.notNull(this.getJdbcTemplate(),"no datasource Config");
         try {
             if (logger.isDebugEnabled()) {
                 logger.debug(new StringBuilder("querySQL: ").append(querySQL).toString());
             }
             String sumSQL = sqlGen.generateCountSql(querySQL);
-            Assert.notNull(sumSQL,"generate Sql Error");
             int total = this.getJdbcTemplate().queryForObject(sumSQL,Integer.class);
             pageQuery.setRecordCount(total);
             if (pageQuery.getPageSize() > 0) {
@@ -247,7 +242,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
         }
     }
 
-    public List<? extends BaseObject> queryByVO(Class<? extends BaseObject> type, BaseObject vo, Map<String, Object> additonMap, String orderByStr)
+    public List<BaseObject> queryByVO(Class<? extends BaseObject> type, BaseObject vo, Map<String, Object> additonMap, String orderByStr)
             throws DAOException {
         List<BaseObject> retlist = new ArrayList<>();
         if (!vo.getClass().equals(type)) {
@@ -267,7 +262,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
 
 
 
-    public List<? extends BaseObject> queryByCondition(Class<? extends BaseObject> type, List<FilterCondition> conditions,PageQuery pageQuery)
+    public List<BaseObject> queryByCondition(Class<? extends BaseObject> type, List<FilterCondition> conditions,PageQuery pageQuery)
             throws DAOException {
         List<BaseObject> retlist = new ArrayList<>();
         try {
@@ -691,6 +686,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
             throws DAOException {
         KeyHolder keyHolder = new GeneratedKeyHolder();
         getJdbcTemplate().update(new DefaultPrepareStatement(field, sql, object, lobHandler), keyHolder);
+        Assert.notNull(keyHolder,"holder is null");
         return keyHolder.getKey().longValue();
     }
     @SuppressWarnings("unused")

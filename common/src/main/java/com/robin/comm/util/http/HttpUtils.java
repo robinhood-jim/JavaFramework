@@ -64,6 +64,10 @@ public class HttpUtils {
     static PoolingHttpClientConnectionManager manager;
     static HttpRequestRetryHandler handler;
 
+    private HttpUtils(){
+
+    }
+
     static {
         ConnectionSocketFactory plainSocketFactory = PlainConnectionSocketFactory.getSocketFactory();
         LayeredConnectionSocketFactory sslSocketFactory = SSLConnectionSocketFactory.getSocketFactory();
@@ -73,52 +77,49 @@ public class HttpUtils {
         manager = new PoolingHttpClientConnectionManager(registry);
         manager.setMaxTotal(50);
         manager.setDefaultMaxPerRoute(20);
-        handler = new HttpRequestRetryHandler() {
-            @Override
-            public boolean retryRequest(IOException e, int i, HttpContext httpContext) {
-                if (i > 3) {
-                    //重试超过3次,放弃请求
-                    log.error("retry has more than 3 time, give up request");
-                    return false;
-                }
-                if (e instanceof NoHttpResponseException) {
-                    //服务器没有响应,可能是服务器断开了连接,应该重试
-                    log.error("receive no response from server, retry");
-                    return true;
-                }
-                if (e instanceof SSLHandshakeException) {
-                    // SSL握手异常
-                    log.error("SSL hand shake exception");
-                    return false;
-                }
-                if (e instanceof InterruptedIOException) {
-                    //超时
-                    log.error("InterruptedIOException");
-                    return false;
-                }
-                if (e instanceof UnknownHostException) {
-                    // 服务器不可达
-                    log.error("server host unknown");
-                    return false;
-                }
-                if (e instanceof ConnectTimeoutException) {
-                    // 连接超时
-                    log.error("Connection Time out");
-                    return false;
-                }
-                if (e instanceof SSLException) {
-                    log.error("SSLException");
-                    return false;
-                }
-
-                HttpClientContext context = HttpClientContext.adapt(httpContext);
-                HttpRequest request = context.getRequest();
-                if (!(request instanceof HttpEntityEnclosingRequest)) {
-                    //如果请求不是关闭连接的请求
-                    return true;
-                }
+        handler = (e, i, httpContext) -> {
+            if (i > 3) {
+                //重试超过3次,放弃请求
+                log.error("retry has more than 3 time, give up request");
                 return false;
             }
+            if (e instanceof NoHttpResponseException) {
+                //服务器没有响应,可能是服务器断开了连接,应该重试
+                log.error("receive no response from server, retry");
+                return true;
+            }
+            if (e instanceof SSLHandshakeException) {
+                // SSL握手异常
+                log.error("SSL hand shake exception");
+                return false;
+            }
+            if (e instanceof InterruptedIOException) {
+                //超时
+                log.error("InterruptedIOException");
+                return false;
+            }
+            if (e instanceof UnknownHostException) {
+                // 服务器不可达
+                log.error("server host unknown");
+                return false;
+            }
+            if (e instanceof ConnectTimeoutException) {
+                // 连接超时
+                log.error("Connection Time out");
+                return false;
+            }
+            if (e instanceof SSLException) {
+                log.error("SSLException");
+                return false;
+            }
+
+            HttpClientContext context = HttpClientContext.adapt(httpContext);
+            HttpRequest request = context.getRequest();
+            if (!(request instanceof HttpEntityEnclosingRequest)) {
+                //如果请求不是关闭连接的请求
+                return true;
+            }
+            return false;
         };
     }
 
@@ -161,11 +162,7 @@ public class HttpUtils {
         try {
             if (data != null && !"".equals(data)) {
                 StringEntity entity = null;
-                try {
-                    entity = new StringEntity(data, charset);
-                } catch (UnsupportedCharsetException e) {
-                    throw new RuntimeException("Create entity error: UnsupportedCharsetException for " + charset);
-                }
+                entity = new StringEntity(data, charset);
                 post.setEntity(entity);
             }
             return getResponseData(httpClient, post, charset);
@@ -221,11 +218,7 @@ public class HttpUtils {
         try {
             if (data != null && !"".equals(data)) {
                 StringEntity entity = null;
-                try {
-                    entity = new StringEntity(data, charset);
-                } catch (UnsupportedCharsetException e) {
-                    throw new RuntimeException("Create entity error: UnsupportedCharsetException for " + charset);
-                }
+                entity = new StringEntity(data, charset);
                 put.setEntity(entity);
             }
             return getResponseData(httpClient, put, charset);

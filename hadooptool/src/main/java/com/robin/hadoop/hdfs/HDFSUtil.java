@@ -72,11 +72,7 @@ public class HDFSUtil {
 		this.config.set(Const.HDFS_NAME_HADOOP2,hostStr);
 		initSecurity();
 	}
-	public HDFSUtil(String hostStr,boolean useKerberos){
-		this.config=new Configuration();
-		this.config.set(Const.HDFS_NAME_HADOOP2,hostStr);
-		initSecurity();
-	}
+
 	public void initSecurity(){
 		try{
 			UserGroupInformation.setConfiguration(config);
@@ -405,7 +401,6 @@ public class HDFSUtil {
 			stream.write(txt.getBytes(encode));
 			stream.close();
 		}catch (Exception e) {
-			logger.error("",e);
 			throw new HdfsException(e);
 		}
 	}
