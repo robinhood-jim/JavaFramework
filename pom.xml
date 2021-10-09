@@ -60,7 +60,7 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <!-- jar version -->
         <mybatis-spring.version>1.2.1</mybatis-spring.version>
-        <mybatis.version>3.2.6</mybatis.version>
+        <mybatis.version>3.5.6</mybatis.version>
         <servlet.version>2.5</servlet.version>
         <slf4j.version>1.7.6</slf4j.version>
         <junit.version>4.13.1</junit.version>
@@ -75,7 +75,7 @@
         <jackson.version>2.9.10</jackson.version>
         <pool.version>2.4.3</pool.version>
         <commons-dbcp.version>1.4</commons-dbcp.version>
-        <commons-io.version>2.4</commons-io.version>
+        <commons-io.version>2.7</commons-io.version>
         <commons-net.version>1.4.1</commons-net.version>
         <commons-beanutils.version>1.9.4</commons-beanutils.version>
         <comm-codec.version>1.4</comm-codec.version>
@@ -108,9 +108,9 @@
         <jsonlib.version>2.4</jsonlib.version>
         <itext.version>2.1.4</itext.version>
         <guava.version>18.0</guava.version>
-        <jsoup.version>1.6.3</jsoup.version>
+        <jsoup.version>1.14.2</jsoup.version>
         <freemarker.version>2.3.18</freemarker.version>
-        <compress.version>1.19</compress.version>
+        <compress.version>1.21</compress.version>
         <helix.version>0.6.5</helix.version>
         <quartz.version>2.3.2</quartz.version>
         <oracle.version>11.1.0.6.0</oracle.version>
@@ -172,7 +172,7 @@
             <dependency>
                 <groupId>org.apache.httpcomponents</groupId>
                 <artifactId>httpclient</artifactId>
-                <version>4.5.2</version>
+                <version>4.5.13</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.httpcomponents</groupId>
