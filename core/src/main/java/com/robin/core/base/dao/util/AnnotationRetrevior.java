@@ -39,7 +39,9 @@ public class AnnotationRetrevior {
     private static Map<Class<? extends BaseObject>, EntityContent> entityCfgMap = new HashMap<>();
     private static Map<Class<? extends BaseObject>, Map<String, FieldContent>> fieldCfgMap = new HashMap<>();
     private static Map<Class<? extends BaseObject>, List<FieldContent>> fieldListMap = new HashMap<>();
+    private AnnotationRetrevior(){
 
+    }
 
     public static List<FieldContent> getMappingFieldsCache(Class<? extends BaseObject> clazz) throws DAOException {
         List<FieldContent> list = null;
@@ -278,6 +280,7 @@ public class AnnotationRetrevior {
                 }
             }
             if (type.equals(Void.TYPE)) {
+                content.setDataType(Const.META_TYPE_INTEGER);
             } else if (type.equals(Long.TYPE)) {
                 content.setDataType(Const.META_TYPE_BIGINT);
             } else if (type.equals(Integer.TYPE)) {
@@ -353,6 +356,7 @@ public class AnnotationRetrevior {
             }
             if (datatype == null || "".equals(datatype)) {
                 if (type.equals(Void.class)) {
+                    content.setDataType(Const.META_TYPE_INTEGER);
                 } else if (type.equals(Long.class)) {
                     content.setDataType(Const.META_TYPE_BIGINT);
                 } else if (type.equals(Integer.class)) {

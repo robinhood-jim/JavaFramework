@@ -90,7 +90,7 @@ public class ExcelProcessor {
                 if (cell != null) {
                     switch (cell.getCellType()) {
                         case NUMERIC:
-                            if (HSSFDateUtil.isCellDateFormatted(cell) || type.equals(Const.META_TYPE_DATE)) {
+                            if (DateUtil.isCellDateFormatted(cell) || type.equals(Const.META_TYPE_DATE)) {
                                 Date date = cell.getDateCellValue();
                                 strCell = format.format(date);
                             } else if (type.equals(Const.META_TYPE_INTEGER) || type.equals(Const.META_TYPE_DOUBLE)) {
@@ -112,11 +112,11 @@ public class ExcelProcessor {
                             strCell = String.valueOf(cell.getBooleanCellValue());
                             break;
                         case FORMULA:
-                            CellValue value=evaluator.evaluate(cell);
-                            if(value.getCellType()== CellType.NUMERIC){
-                                strCell=String.valueOf(value.getNumberValue());
-                            }else {
-                                strCell=value.getStringValue();
+                            CellValue value = evaluator.evaluate(cell);
+                            if (value.getCellType() == CellType.NUMERIC) {
+                                strCell = String.valueOf(value.getNumberValue());
+                            } else {
+                                strCell = value.getStringValue();
                             }
                             break;
                         default:
@@ -197,9 +197,9 @@ public class ExcelProcessor {
 
                         switch (cell.getCellType()) {
                             case NUMERIC:
-                                if (HSSFDateUtil.isCellDateFormatted(cell) || type.equals(String.valueOf(Const.FIELD_TYPE_DATE))) {
+                                if (DateUtil.isCellDateFormatted(cell) || type.equals(String.valueOf(Const.FIELD_TYPE_DATE))) {
                                     double d = cell.getNumericCellValue();
-                                    Date date = HSSFDateUtil.getJavaDate(d);
+                                    Date date = DateUtil.getJavaDate(d);
                                     strCell = format.format(date);
                                 } else if (type.equals(Const.META_TYPE_NUMERIC)) {
                                     strCell = String.valueOf(cell.getNumericCellValue());
@@ -214,10 +214,12 @@ public class ExcelProcessor {
                             case STRING:
                                 if (type.equals(Const.META_TYPE_NUMERIC)) {
                                     strCell = cell.getStringCellValue();
-                                    double d = Double.valueOf(strCell);
+                                    Double d = Double.valueOf(strCell);
+                                    strCell=String.valueOf(d.intValue());
                                 } else if (type.equals(Const.META_TYPE_DATE)) {
                                     double d = cell.getNumericCellValue();
-                                    Date date = HSSFDateUtil.getJavaDate(d);
+                                    Date date = DateUtil.getJavaDate(d);
+                                    strCell=format.format(date);
                                 } else if (type.equals(Const.META_TYPE_STRING)) {
                                     strCell = cell.getStringCellValue();
                                 }
@@ -232,7 +234,6 @@ public class ExcelProcessor {
                                 strCell = "";
                                 break;
                         }
-                        //listMap.put(prop.getColumnName()[j], strCell);
                     }
                     if (strCell != null && !"".equals(strCell.trim())) {
                         ishasrecord = true;
@@ -333,17 +334,17 @@ public class ExcelProcessor {
     }
 
     public static Workbook generateExcelFile(ExcelSheetProp prop, TableConfigProp header, Connection conn, String querySql, Object[] queryParam, ExcelRsExtractor extractor) throws Exception {
-        Object[] objects=generateHeaderWithProp(prop,header);
-        Workbook wb = (Workbook)objects[0];
-        Sheet sheet=(Sheet)objects[1];
-        CreationHelper helper=(CreationHelper)objects[2];
-        int count=(Integer)objects[3];
+        Object[] objects = generateHeaderWithProp(prop, header);
+        Workbook wb = (Workbook) objects[0];
+        Sheet sheet = (Sheet) objects[1];
+        CreationHelper helper = (CreationHelper) objects[2];
+        int count = (Integer) objects[3];
         extractor.setWorkbook(wb);
         extractor.setTargetSheet(sheet);
         extractor.setHelper(helper);
 
         try {
-            SimpleJdbcDao.executeOperationWithQuery(conn, querySql, queryParam,false, extractor);
+            SimpleJdbcDao.executeOperationWithQuery(conn, querySql, queryParam, false, extractor);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -351,14 +352,14 @@ public class ExcelProcessor {
         return wb;
     }
 
-    public static Workbook generateExcelFile(ExcelSheetProp prop,TableConfigProp header,Iterator<Map<String,Object>> iterator){
-        Assert.notNull(iterator,"iterator is null");
-        Object[] objects=generateHeaderWithProp(prop,header);
-        Workbook wb = (Workbook)objects[0];
-        Sheet sheet=(Sheet)objects[1];
-        CreationHelper helper=(CreationHelper)objects[2];
-        int column=(Integer)objects[3];
-        int row=0;
+    public static Workbook generateExcelFile(ExcelSheetProp prop, TableConfigProp header, Iterator<Map<String, Object>> iterator) {
+        Assert.notNull(iterator, "iterator is null");
+        Object[] objects = generateHeaderWithProp(prop, header);
+        Workbook wb = (Workbook) objects[0];
+        Sheet sheet = (Sheet) objects[1];
+        CreationHelper helper = (CreationHelper) objects[2];
+        int column = (Integer) objects[3];
+        int row = 0;
         Map<String, CellStyle> cellMap = new HashMap<String, CellStyle>();
         try {
             while (iterator.hasNext()) {
@@ -369,14 +370,15 @@ public class ExcelProcessor {
                 }
                 row++;
             }
-        }catch (Exception ex){
+        } catch (Exception ex) {
 
         }
-        autoSizeSheet(prop, sheet,  column+ 1);
+        autoSizeSheet(prop, sheet, column + 1);
         return wb;
 
     }
-    private static Object[] generateHeaderWithProp(ExcelSheetProp prop,TableConfigProp header){
+
+    private static Object[] generateHeaderWithProp(ExcelSheetProp prop, TableConfigProp header) {
         Workbook wb = ExcelBaseOper.createWorkBook(prop);
         String sheetname = prop.getSheetName();
         Sheet sheet = wb.createSheet(sheetname);
@@ -388,7 +390,7 @@ public class ExcelProcessor {
         } else {
             generateHeader(sheet, wb, prop, header);
         }
-        return new Object[]{wb,sheet,helper,count};
+        return new Object[]{wb, sheet, helper, count};
     }
 
     private static void generateExcelFile(Workbook wb, ExcelSheetProp prop, TableConfigProp header) throws Exception {

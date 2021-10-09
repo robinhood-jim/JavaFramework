@@ -14,6 +14,7 @@ import org.apache.parquet.format.converter.ParquetMetadataConverter;
 import org.apache.parquet.hadoop.ParquetFileReader;
 import org.apache.parquet.hadoop.ParquetReader;
 import org.apache.parquet.hadoop.metadata.ParquetMetadata;
+import org.apache.parquet.hadoop.util.HadoopInputFile;
 import org.apache.parquet.schema.MessageType;
 import org.apache.parquet.schema.PrimitiveType;
 import org.apache.parquet.schema.Type;
@@ -24,7 +25,7 @@ import java.util.Map;
 
 
 public class ParquetFileIterator extends AbstractFileIterator {
-    private ParquetReader<GenericData.Record> reader;
+    private ParquetReader<GenericData.Record> preader;
     private Schema schema;
     private MessageType msgtype;
     private Configuration conf;
@@ -45,8 +46,8 @@ public class ParquetFileIterator extends AbstractFileIterator {
             } else {
                 schema = AvroUtils.getSchemaFromMeta(colmeta);
             }
-            reader = AvroParquetReader
-                    .<GenericData.Record>builder(new Path(colmeta.getPath())).withConf(conf).build();
+            preader = AvroParquetReader
+                    .<GenericData.Record>builder(HadoopInputFile.fromPath(new Path(colmeta.getPath()),conf)).withConf(conf).build();
             fields = schema.getFields();
         }catch (Exception ex){
             logger.error("{}",ex);
@@ -56,7 +57,7 @@ public class ParquetFileIterator extends AbstractFileIterator {
     @Override
     public boolean hasNext() {
         try {
-            record =reader.read();
+            record =preader.read();
         }catch (Exception ex){
             ex.printStackTrace();
         }

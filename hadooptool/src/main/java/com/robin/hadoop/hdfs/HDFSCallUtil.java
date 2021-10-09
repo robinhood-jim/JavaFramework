@@ -28,7 +28,7 @@ public class HDFSCallUtil {
 
     public static String uploadFile(Configuration config, String filePath) throws HdfsException {
         String[] fileArr = filePath.split(",");
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder buffer = new StringBuilder();
         try {
             for (int i = 0; i < fileArr.length; i++) {
                 buffer.append(upload(config, fileArr[i], null));
@@ -169,7 +169,6 @@ public class HDFSCallUtil {
                 List<String> fileList = listFileName(config, hdfsSource);
 
                 for (String fileName : fileList) {
-                    //System.out.println("move file "+frompath+fileName+" to "+topath+fileName);
                     fs.rename(new Path(frompath + fileName), new Path(topath + fileName));
                 }
             } else {
@@ -418,9 +417,7 @@ public class HDFSCallUtil {
 
     public static String read(final Configuration config, String hdfsUrl, String encode) throws HdfsException {
         String retStr = "";
-        try {
-            FileSystem fs = FileSystem.get(URI.create(hdfsUrl), config);
-            //InputStream in=null;
+        try(FileSystem fs = FileSystem.get(URI.create(hdfsUrl), config)) {
             Path path = new Path(hdfsUrl);
             if (fs.exists(path)) {
                 try (FSDataInputStream is = fs.open(path)) {
@@ -429,12 +426,9 @@ public class HDFSCallUtil {
                     byte[] buffer = new byte[Integer.parseInt(String.valueOf(stat.getLen()))];
                     is.readFully(0, buffer);
                     retStr = new String(buffer, encode);
-                    is.close();
                 }
             }
-
         } catch (Exception e) {
-            log.error("", e);
             throw new HdfsException(e);
         }
         return retStr;
@@ -521,27 +515,12 @@ public class HDFSCallUtil {
 
     public static void copy(final Configuration config, String fromPath, String toPath) throws HdfsException {
         if (exists(config, fromPath)) {
-            FileSystem fs = null;
-            DataInputStream dis = null;
-            FSDataOutputStream out = null;
-            try {
-                fs = FileSystem.get(URI.create(fromPath), config);
-                dis = new DataInputStream(fs.open(new Path(fromPath)));
-                out = fs.create(new Path(toPath));
+            try(FileSystem fs = FileSystem.get(URI.create(fromPath), config);
+                DataInputStream dis=new DataInputStream(fs.open(new Path(fromPath)));
+                FSDataOutputStream out=fs.create(new Path(toPath))) {
                 IOUtils.copyBytes(dis, out, config);
             } catch (Exception e) {
-                e.printStackTrace();
-            } finally {
-                try {
-                    if (dis != null) {
-                        dis.close();
-                    }
-                    if (out != null) {
-                        out.close();
-                    }
-                } catch (Exception ex) {
-
-                }
+                throw new HdfsException(e);
             }
         }
     }
@@ -603,13 +582,10 @@ public class HDFSCallUtil {
     }
 
     public static void createAndinsert(final Configuration config, String hdfsUrl, String txt, boolean overwriteOrgion) throws HdfsException {
-        FSDataOutputStream stream = null;
-        try {
-            stream = createFile(config, hdfsUrl, overwriteOrgion);
+        try(FSDataOutputStream stream=createFile(config, hdfsUrl, overwriteOrgion)) {
             stream.writeUTF(txt);
             stream.close();
         } catch (Exception e) {
-            log.error("", e);
             throw new HdfsException(e);
         }
     }

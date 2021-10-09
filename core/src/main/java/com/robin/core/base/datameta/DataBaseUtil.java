@@ -165,23 +165,39 @@ public class DataBaseUtil {
         datameta.setTypeName(typeName);
     }
 
-    public static List<DataBaseColumnMeta> getTableMetaByTableName(DataSource source, String tablename, String DbOrtablespacename, String dbType) throws SQLException {
+    public static List<DataBaseColumnMeta> getTableMetaByTableName(DataSource source, String tableName, String DbOrtablespacename, String dbType) throws SQLException {
         try (Connection conn = source.getConnection()) {
-            return getTableMetaByTableName(conn, tablename, DbOrtablespacename, dbType);
+            return getTableMetaByTableName(conn, tableName, DbOrtablespacename, dbType);
         }
     }
 
-    public static List<DataBaseColumnMeta> getTableMetaByTableName(JdbcDao dao, String tablename, String DbOrtablespacename, String dbType) throws SQLException {
-        return getTableMetaByTableName(dao.getDataSource(), tablename, DbOrtablespacename, dbType);
+    public static List<DataBaseColumnMeta> getTableMetaByTableName(JdbcDao dao, String tableName, String DbOrtablespacename, String dbType) throws SQLException {
+        return getTableMetaByTableName(dao.getDataSource(), tableName, DbOrtablespacename, dbType);
+    }
+    public static List<ColumnPrivilege> getTablePrivileges(Connection conn,String tableName,String DbOrtablespacename) throws SQLException{
+        DatabaseMetaData meta = conn.getMetaData();
+        List<ColumnPrivilege> retList=new ArrayList<>();
+        try(ResultSet rs=meta.getTablePrivileges(null,DbOrtablespacename,tableName)){
+            while(rs.next()) {
+                String grants = rs.getString("GRANTOR");
+                String grantees = rs.getString("GRANTEE");
+                String privileges = rs.getString("PRIVILEGE");
+                retList.add(new ColumnPrivilege(null, grants, grantees, privileges));
+            }
+
+        }catch (SQLException ex){
+            logger.error("{}",ex);
+        }
+        return retList;
     }
 
-    public static List<DataBaseColumnMeta> getTableMetaByTableName(Connection conn, String tablename, String DbOrtablespacename, String dbType) throws SQLException {
+    public static List<DataBaseColumnMeta> getTableMetaByTableName(Connection conn, String tableName, String DbOrtablespacename, String dbType) throws SQLException {
         List<DataBaseColumnMeta> columnlist = new ArrayList<DataBaseColumnMeta>();
         DatabaseMetaData meta = conn.getMetaData();
-        try (ResultSet rs = meta.getColumns(null, DbOrtablespacename, tablename, null);) {
+        try (ResultSet rs = meta.getColumns(null, DbOrtablespacename, tableName, null);) {
             List<String> pklist = null;
             try {
-                pklist = DataBaseUtil.getAllPrimaryKeyByTableName(conn, tablename, DbOrtablespacename);
+                pklist = DataBaseUtil.getAllPrimaryKeyByTableName(conn, tableName, DbOrtablespacename);
             } catch (Exception ex) {
                 logger.warn("pk column not support");
             }
@@ -200,7 +216,7 @@ public class DataBaseUtil {
                     comment = rs.getString("REMARKS");
                 }
                 String precise = rs.getString("DECIMAL_DIGITS");
-                String scale = rs.getString("TABLE_SCHEM");
+                String scale = rs.getString("NUM_PREC_RADIX");
 
                 DataBaseColumnMeta datameta = new DataBaseColumnMeta();
                 //SqlServer2005 may failed for not support  get AUTOINCREMENT  attribute

@@ -20,6 +20,9 @@ import com.lowagie.text.Table;
 import com.lowagie.text.pdf.BaseFont;
 
 public class WordBaseUtil {
+    private WordBaseUtil(){
+
+    }
     public static Font createFont(BaseFont baseFont, int fontsize, int fontStyle) {
         return new Font(baseFont, fontsize, fontStyle);
     }

@@ -58,7 +58,7 @@ public class JdbcPresistDao {
 	public void setTestSql(String testSql){
 		this.testSql=testSql;
 	}
-	public List<Map<String, String>> queryBySql(String sql) throws DAOException{
+	public List<Map<String, Object>> queryBySql(String sql) throws DAOException{
 		try{
 			checkConnectionActive();
 			return SimpleJdbcDao.queryBySql(conn, sql, null);
@@ -66,7 +66,7 @@ public class JdbcPresistDao {
 			throw new DAOException(ex);
 		}
 	}
-	public List<Map<String, String>> queryBySql(String sql,Object[] objs) throws DAOException{
+	public List<Map<String, Object>> queryBySql(String sql,Object[] objs) throws DAOException{
 		try{
 			checkConnectionActive();
 			return SimpleJdbcDao.queryBySql(conn, sql, objs);

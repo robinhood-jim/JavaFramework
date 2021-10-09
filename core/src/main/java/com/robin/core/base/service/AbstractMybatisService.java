@@ -360,6 +360,7 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>,T extends S
     public T selectOne(Wrapper<T> wrapper) {
         return baseDao.selectOne(wrapper);
     }
+    @Transactional(rollbackFor = RuntimeException.class)
     public boolean deleteWithRequest(Object queryObject) throws ServiceException {
         try {
             QueryWrapper wrapper = wrapWithEntity(queryObject);
@@ -368,6 +369,7 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>,T extends S
             throw new ServiceException(ex);
         }
     }
+    @Transactional(rollbackFor = RuntimeException.class)
     public boolean updateWithRequest(T model,Object queryObject){
         try {
             QueryWrapper wrapper = wrapWithEntity(queryObject);
@@ -554,7 +556,7 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>,T extends S
             }
         }
     }
-    protected void wrapWithCompare(QueryWrapper queryWrapper,Class valueType, String filterColumn,String value){
+    protected void wrapWithCompare(QueryWrapper queryWrapper,Class valueType, String filterColumn,String value) throws Exception{
         int pos=-1;
         int startPos=-1;
         for(int i=0;i<compareOperations.size();i++){
@@ -590,7 +592,7 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>,T extends S
                 queryWrapper.eq(filterColumn,ConvertUtil.parseParameter(valueType,value));
             }
         }catch (Exception ex){
-
+            throw ex;
         }
     }
 }

@@ -30,7 +30,7 @@ public class DataCollectionMeta implements Serializable {
 	private String encode="UTF-8";
 	private List<DataSetColumnMeta> columnList=new ArrayList<DataSetColumnMeta>();
 	private String path;
-	private Map<String, Object> resourceCfgMap=new HashMap<String,Object>();
+	private transient Map<String, Object> resourceCfgMap=new HashMap<String,Object>();
 	private String valueClassName="ValueObject";
 	private String classNamespace ="com.robin.avro.vo";
 	private String primaryKeys="";

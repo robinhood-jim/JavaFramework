@@ -17,18 +17,13 @@ package com.robin.core.fileaccess.writer;
 
 import com.google.gson.stream.JsonWriter;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.naming.OperationNotSupportedException;
 import java.io.IOException;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 public class GsonFileWriter extends WriterBasedFileWriter{
 	private JsonWriter jwriter=null;
-	private Logger logger=LoggerFactory.getLogger(getClass());
 	public GsonFileWriter(DataCollectionMeta colmeta) {
 		super(colmeta);
 	}

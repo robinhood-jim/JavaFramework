@@ -19,7 +19,7 @@ public abstract class AbstractQueueWriter extends AbstractResourceWriter {
     protected Injection<GenericRecord,byte[]> recordInjection;
     protected boolean useCompress;
     protected String compressType;
-    public AbstractQueueWriter(DataCollectionMeta collectionMeta){
+    protected AbstractQueueWriter(DataCollectionMeta collectionMeta){
         super(collectionMeta);
         if (null != cfgMap.get("resource.useCompress") && Const.TRUE.equalsIgnoreCase(cfgMap.get("resource.useCompress").toString())) {
             useCompress=true;

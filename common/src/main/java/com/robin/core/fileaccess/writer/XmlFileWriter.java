@@ -16,25 +16,19 @@
 package com.robin.core.fileaccess.writer;
 
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.tukaani.xz.FinishableOutputStream;
 
 import javax.naming.OperationNotSupportedException;
 import javax.xml.stream.XMLEventFactory;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamWriter;
-import javax.xml.stream.events.XMLEvent;
 import java.io.IOException;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 public class XmlFileWriter extends WriterBasedFileWriter{
 	XMLOutputFactory factory;
 	XMLEventFactory ef = XMLEventFactory.newInstance();
 	XMLStreamWriter streamWriter;
-	private Logger logger=LoggerFactory.getLogger(getClass());
 	public XmlFileWriter(DataCollectionMeta colmeta) {
 		super(colmeta);
 	}

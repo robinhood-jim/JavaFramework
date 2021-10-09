@@ -43,13 +43,13 @@ public class TestResourceGen {
 			colmeta.addColumnMeta("title",Const.META_TYPE_STRING,null);
 			colmeta.addColumnMeta("content",Const.META_TYPE_STRING,null);
 			conn=SimpleJdbcDao.getConnection(meta);
-			List<Map<String, String>> list=SimpleJdbcDao.queryString(conn, "select config_name as name,config_value as value from t_hadoop_cluster_config where cluster_id=4");
+			List<Map<String, Object>> list=SimpleJdbcDao.queryString(conn, "select config_name as name,config_value as value from t_hadoop_cluster_config where cluster_id=4");
 			conn=SimpleJdbcDao.getConnection(meta1);
-			List<Map<String, String>> resultlist=SimpleJdbcDao.queryString(conn, "select info_id,url,title,content from shw_internet_info_dtl");
+			List<Map<String, Object>> resultlist=SimpleJdbcDao.queryString(conn, "select info_id,url,title,content from shw_internet_info_dtl");
 			HdfsResourceAccessUtil util=new HdfsResourceAccessUtil();
 			Map<String, Object> hdfsparam=new HashMap<String, Object>();
-			for (Map<String, String> tmap:list) {
-				hdfsparam.put(tmap.get("name"), tmap.get("value"));
+			for (Map<String, Object> tmap:list) {
+				hdfsparam.put(tmap.get("name").toString(), tmap.get("value"));
 			}
 			colmeta.setResourceCfgMap(hdfsparam);
 			colmeta.setPath("/testdata/test1.gz");
@@ -58,7 +58,7 @@ public class TestResourceGen {
 			AbstractFileWriter jwriter=TextFileWriterFactory.getFileWriterByType(Const.FILETYPE_JSON, colmeta, writer);
 			System.out.println(new Date());
 			jwriter.beginWrite();
-			for (Map<String, String> map:resultlist) {
+			for (Map<String, Object> map:resultlist) {
 				jwriter.writeRecord(map);
 			}
 			jwriter.flush();

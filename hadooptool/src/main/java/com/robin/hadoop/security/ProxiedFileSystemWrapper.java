@@ -68,11 +68,11 @@ public class ProxiedFileSystemWrapper {
 	}
 	private Optional<Token> getTokenFromSeqFile(String authPath, String proxyUserName) throws IOException {
 	    Closer closer = Closer.create();
-	    try {
-	      FileSystem localFs = FileSystem.getLocal(new Configuration());
-	      @SuppressWarnings("deprecation")
-	      SequenceFile.Reader tokenReader =
-	          closer.register(new SequenceFile.Reader(localFs, new Path(authPath), localFs.getConf()));
+	    try(FileSystem localFs = FileSystem.getLocal(new Configuration());
+			@SuppressWarnings("deprecation")
+			SequenceFile.Reader tokenReader =
+					closer.register(new SequenceFile.Reader(localFs, new Path(authPath), localFs.getConf()))) {
+
 	      Text key = new Text();
 	      Token value = new Token();
 	      while (tokenReader.next(key, value)) {

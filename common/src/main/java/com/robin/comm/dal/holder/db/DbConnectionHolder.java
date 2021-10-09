@@ -1,62 +1,50 @@
 package com.robin.comm.dal.holder.db;
 
+import com.robin.comm.dal.holder.AbstractResourceHolder;
+import com.robin.comm.dal.holder.IHolder;
+import com.robin.comm.util.pool.HikariCPPoolUtils;
 import com.robin.core.base.datameta.BaseDataBaseMeta;
+import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.pool.HikariPool;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.Closeable;
 import java.sql.Connection;
 import java.sql.SQLException;
 
 
 @Slf4j
 @Data
-public class DbConnectionHolder implements Closeable {
+public class DbConnectionHolder extends AbstractResourceHolder implements IHolder {
     private BaseDataBaseMeta meta;
-    private Long sourceId;
-    private HikariPool pool;
-    public DbConnectionHolder(Long sourceId, BaseDataBaseMeta meta){
-        this.meta=meta;
-        this.sourceId=sourceId;
-        try {
-            HikariConfig config = new HikariConfig();
-            config.setDriverClassName(meta.getParam().getDriverClassName());
-            config.setJdbcUrl(meta.getUrl());
-            config.setUsername(meta.getParam().getUserName());
-            config.setPassword(meta.getParam().getPasswd());
-            config.setMaximumPoolSize(10);
-            pool = new HikariPool(config);
-        }catch (Exception ex){
-            log.error("",ex);
-        }
+    private String sourceName;
 
+    public DbConnectionHolder(String sourceName, BaseDataBaseMeta meta, HikariConfig config){
+        this.meta=meta;
+        this.sourceName=sourceName;
+        HikariCPPoolUtils.getInstance().initDataSource(sourceName,meta,config);
     }
     public Connection getConnection() throws SQLException {
-        if(pool!=null) {
-            return pool.getConnection();
-        } else{
-            return null;
-        }
+        return HikariCPPoolUtils.getInstance().getConnection(sourceName);
     }
     public boolean canClose(){
-        return pool.getActiveConnections()==0;
+        return HikariCPPoolUtils.getInstance().getPool(sourceName) ==null || HikariCPPoolUtils.getInstance().getPool(sourceName).getActiveConnections()==0;
     }
     public void closeConnection(Connection connection){
-        if(pool!=null){
-            pool.evictConnection(connection);
-        }
+
     }
 
     @Override
     public void close() {
         try {
-            if (pool != null) {
-                pool.shutdown();
-            }
+            HikariCPPoolUtils.getInstance().getPool(sourceName).shutdown();
         }catch (Exception ex){
 
         }
+    }
+
+    @Override
+    public void init(DataCollectionMeta colmeta) throws Exception {
+
     }
 }

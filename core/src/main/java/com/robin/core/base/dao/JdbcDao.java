@@ -15,11 +15,14 @@
  */
 package com.robin.core.base.dao;
 
+import com.robin.core.base.dao.handler.MetaObjectHandler;
 import com.robin.core.base.dao.util.*;
 import com.robin.core.base.exception.DAOException;
 import com.robin.core.base.exception.QueryConfgNotFoundException;
 import com.robin.core.base.model.BaseObject;
+import com.robin.core.base.reflect.MetaObject;
 import com.robin.core.base.reflect.ReflectUtils;
+import com.robin.core.base.spring.SpringContextHolder;
 import com.robin.core.base.util.Const;
 import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
@@ -32,9 +35,6 @@ import com.robin.core.sql.util.BaseSqlGen;
 import com.robin.core.sql.util.FilterCondition;
 import com.robin.core.sql.util.OracleSqlGen;
 import com.robin.core.version.VersionInfo;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.*;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.support.JdbcDaoSupport;
@@ -47,7 +47,6 @@ import javax.sql.DataSource;
 import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -56,7 +55,6 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
     private BaseSqlGen sqlGen;
     private QueryFactory queryFactory;
     private LobHandler lobHandler;
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     public JdbcDao(){
         logger.debug(VersionInfo.getInstance().getVersion());
@@ -74,12 +72,12 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
     public PageQuery queryByPageQuery(String sqlstr, PageQuery pageQuery) throws DAOException {
         String querySQL = sqlstr;
         List<Map<String, Object>> list;
+        Assert.notNull(this.getJdbcTemplate(),"no datasource Config");
         try {
             if (logger.isDebugEnabled()) {
                 logger.debug(new StringBuilder("querySQL: ").append(querySQL).toString());
             }
             String sumSQL = sqlGen.generateCountSql(querySQL);
-            Assert.notNull(sumSQL,"generate Sql Error");
             int total = this.getJdbcTemplate().queryForObject(sumSQL,Integer.class);
             pageQuery.setRecordCount(total);
             if (pageQuery.getPageSize() > 0) {
@@ -244,7 +242,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
         }
     }
 
-    public List<? extends BaseObject> queryByVO(Class<? extends BaseObject> type, BaseObject vo, Map<String, Object> additonMap, String orderByStr)
+    public List<BaseObject> queryByVO(Class<? extends BaseObject> type, BaseObject vo, Map<String, Object> additonMap, String orderByStr)
             throws DAOException {
         List<BaseObject> retlist = new ArrayList<>();
         if (!vo.getClass().equals(type)) {
@@ -264,7 +262,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
 
 
 
-    public List<? extends BaseObject> queryByCondition(Class<? extends BaseObject> type, List<FilterCondition> conditions,PageQuery pageQuery)
+    public List<BaseObject> queryByCondition(Class<? extends BaseObject> type, List<FilterCondition> conditions,PageQuery pageQuery)
             throws DAOException {
         List<BaseObject> retlist = new ArrayList<>();
         try {
@@ -470,6 +468,11 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
         Long retval = null;
         Serializable retObj=null;
         try {
+            //function as mybatis-plus MetaObjectHandler
+            if(SpringContextHolder.getBean(MetaObjectHandler.class)!=null){
+                Map<String,AnnotationRetrevior.FieldContent> fieldContentMap=AnnotationRetrevior.getMappingFieldsMapCache(obj.getClass());
+                SpringContextHolder.getBean(MetaObjectHandler.class).insertFill(new MetaObject(obj,fieldContentMap));
+            }
             List<AnnotationRetrevior.FieldContent> fields = AnnotationRetrevior.getMappingFieldsCache(obj.getClass());
             EntityMappingUtil.InsertSegment insertSegment = EntityMappingUtil.getInsertSegment(obj, sqlGen);
             String insertSql = insertSegment.getInsertSql();
@@ -524,6 +527,11 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
     public int updateVO(Class<? extends BaseObject> clazz, BaseObject obj) throws DAOException {
         int ret = 0;
         try {
+            //function as mybatis-plus MetaObjectHandler
+            if(SpringContextHolder.getBean(MetaObjectHandler.class)!=null){
+                Map<String,AnnotationRetrevior.FieldContent> fieldContentMap=AnnotationRetrevior.getMappingFieldsMapCache(obj.getClass());
+                SpringContextHolder.getBean(MetaObjectHandler.class).updateFill(new MetaObject(obj,fieldContentMap));
+            }
             EntityMappingUtil.UpdateSegment updateSegment = EntityMappingUtil.getUpdateSegment(obj, sqlGen);
             StringBuilder builder = new StringBuilder();
             if (updateSegment.getFieldStr().length() != 0) {
@@ -678,6 +686,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
             throws DAOException {
         KeyHolder keyHolder = new GeneratedKeyHolder();
         getJdbcTemplate().update(new DefaultPrepareStatement(field, sql, object, lobHandler), keyHolder);
+        Assert.notNull(keyHolder,"holder is null");
         return keyHolder.getKey().longValue();
     }
     @SuppressWarnings("unused")

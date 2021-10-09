@@ -41,8 +41,8 @@ public class ModelScriptGenerator {
 
     }
     public static void generateScript(String dbType, BaseDataBaseMeta meta,String outputFile, String... packageNames){
-        BufferedWriter writer = null;
-        try {
+
+        try (BufferedWriter writer=new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputFile),"UTF-8"));){
 
             ClassGraphReflector reflector= new ClassGraphReflector();
             if(packageNames.length>0){
@@ -53,7 +53,7 @@ public class ModelScriptGenerator {
 
             BaseSqlGen sqlgen = SqlDialectFactory.getSqlGeneratorByDialect(dbType);
             //final Set<String> clazzNames = db.getAnnotationIndex().get(MappingEntity.class.getName());
-            writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputFile),"UTF-8"));
+
             StringBuilder builder = new StringBuilder();
             for(ClassInfo classInfo:classes){
                 if(classInfo.getSuperclass().loadClass().isAssignableFrom(BaseObject.class) || classInfo.getSuperclass().loadClass().getSuperclass().isAssignableFrom(BaseObject.class)) {
@@ -62,16 +62,10 @@ public class ModelScriptGenerator {
             }
             writer.write(builder.toString());
             writer.flush();
+            writer.close();
         } catch (Exception ex) {
             ex.printStackTrace();
         } finally {
-            if (writer != null) {
-                try {
-                    writer.close();
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
-            }
             //((ApplicationContext) context).close();
         }
     }

@@ -21,6 +21,9 @@ import java.util.List;
 
 @Slf4j
 public class MergeCellUtil {
+    private MergeCellUtil(){
+
+    }
     public static int[][] caculateHeaderRowStartcol(TableConfigProp header) {
         int rows = header.getHeaderColumnList().size();
 

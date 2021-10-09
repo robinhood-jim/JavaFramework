@@ -18,9 +18,9 @@ package com.robin.core.base.datameta;
 import com.robin.core.sql.util.BaseSqlGen;
 import com.robin.core.sql.util.MysqlSqlGen;
 
-public class MySqlDataBaseMeta extends BaseDataBaseMeta implements DataBaseInterface {
+public class MysqlDataBaseMeta extends BaseDataBaseMeta implements DataBaseInterface {
 
-	public MySqlDataBaseMeta(DataBaseParam param) {
+	public MysqlDataBaseMeta(DataBaseParam param) {
 		super(param);
 		setDbType(BaseDataBaseMeta.TYPE_MYSQL);
 		if(param.getMainVersion()!=null && param.getMainVersion()!=0){

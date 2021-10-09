@@ -33,7 +33,7 @@ public class ModelSqlGenerator {
                 }
             } else {
                 String createSql = generateCreateSql(clazz,meta, sqlGen);
-                SimpleJdbcDao.executeUpdate(conn, createSql);
+                //SimpleJdbcDao.executeUpdate(conn, createSql);
             }
 
         } catch (Exception ex) {
@@ -80,7 +80,7 @@ public class ModelSqlGenerator {
     private static List<String> adjustDiffSqls(AnnotationRetrevior.EntityContent entityContent, List<AnnotationRetrevior.FieldContent> fields, List<DataBaseColumnMeta> columnMetas, BaseSqlGen sqlGen) {
         List<String> alertSqls = new ArrayList<>();
         try {
-            Map<String, DataBaseColumnMeta> columMap = (Map<String, DataBaseColumnMeta>) CollectionBaseConvert.listToMap(columnMetas, "columnName");
+            Map<String, DataBaseColumnMeta> columMap = CollectionBaseConvert.groupByUniqueKey(columnMetas, "",DataBaseColumnMeta::getColumnName);
             for (AnnotationRetrevior.FieldContent field : fields) {
                 if (columMap.containsKey(field.getFieldName())) {
                     //length change

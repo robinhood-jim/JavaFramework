@@ -15,11 +15,11 @@ public abstract class AbstractResIterator implements Iterator<Map<String,Object>
     protected List<String> columnList=new ArrayList<String>();
     protected Map<String, DataSetColumnMeta> columnMap=new HashMap<String, DataSetColumnMeta>();
     protected Logger logger= LoggerFactory.getLogger(getClass());
-    public AbstractResIterator(){
+    protected AbstractResIterator(){
 
     }
 
-    public AbstractResIterator(DataCollectionMeta colmeta){
+    protected AbstractResIterator(DataCollectionMeta colmeta){
         this.colmeta=colmeta;
         for (DataSetColumnMeta meta:colmeta.getColumnList()) {
             columnList.add(meta.getColumnName());
