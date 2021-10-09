@@ -22,13 +22,13 @@ public class EtlFlowCfg extends BaseObject {
 	private String isValid;
 	@MappingField
 	private String status;
-	@MappingField(field="create_user")
+	@MappingField
 	private Long createUser;
-	@MappingField(field="modify_user")
+	@MappingField
 	private Long modifyUser;
-	@MappingField(field="create_time")
+	@MappingField
 	private Timestamp createTime;
-	@MappingField(field="modify_time")
+	@MappingField
 	private Timestamp modifyTime;
 	@MappingField(field="define_xml")
 	private String defineXml;

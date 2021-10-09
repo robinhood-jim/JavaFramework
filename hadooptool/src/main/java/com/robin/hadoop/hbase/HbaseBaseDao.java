@@ -17,7 +17,7 @@ import java.util.*;
 
 public class HbaseBaseDao {
     private Configuration config;
-    private final static Logger LOGGER = LoggerFactory.getLogger(HbaseBaseDao.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(HbaseBaseDao.class);
     private Configuration cfg = null;
 
     public static final int POOL_MAX_SIZE = 20;
@@ -51,7 +51,6 @@ public class HbaseBaseDao {
     public void createTable(HbaseTableParam tableParam) throws HbaseException {
         try (Admin admin = getConnection().getAdmin()) {
             if (admin.tableExists(TableName.valueOf(tableParam.getTableName()))) {
-                admin.close();
                 throw new HbaseException("table exists");
             }
             List<HbaseParam> paramList = tableParam.getParamList();
@@ -72,7 +71,6 @@ public class HbaseBaseDao {
             }
             admin.createTable(desc);
         } catch (IOException e) {
-            LOGGER.error("{}", e);
             throw new HbaseException(e.getMessage());
         }
     }
@@ -98,7 +96,6 @@ public class HbaseBaseDao {
     public void addFamily(String tableName, String familyName) throws HbaseException {
         try (Admin admin = getConnection().getAdmin()) {
             if (!admin.tableExists(TableName.valueOf(tableName))) {
-                admin.close();
                 throw new HbaseException("table not exists");
             }
             HTableDescriptor desc = new HTableDescriptor(TableName.valueOf(tableName));
@@ -107,13 +104,11 @@ public class HbaseBaseDao {
                 HColumnDescriptor columndesc = columndescArr[i];
                 String name = columndesc.getNameAsString();
                 if (name.equalsIgnoreCase(familyName)) {
-                    admin.close();
                     throw new HbaseException("familyName exists");
                 }
             }
             admin.addColumn(TableName.valueOf(tableName), new HColumnDescriptor(familyName));
         } catch (IOException e) {
-            LOGGER.error("{}", e);
             throw new HbaseException(e.getMessage());
         }
     }
@@ -124,7 +119,6 @@ public class HbaseBaseDao {
             put.addColumn(Bytes.toBytes(familyName), Bytes.toBytes(columnName), Bytes.toBytes(value));
             table.put(put);
         } catch (IOException e) {
-            LOGGER.error("", e);
             throw new HbaseException(e.getMessage());
         }
     }
@@ -132,10 +126,9 @@ public class HbaseBaseDao {
     public void deleteColumn(String tableName, String familyName, String columnName) throws HbaseException {
         try (Connection conn = getConnection(); Table table = conn.getTable(TableName.valueOf(tableName))) {
             Delete delete = new Delete(Bytes.toBytes(tableName));
-            delete.deleteColumn(Bytes.toBytes(familyName), Bytes.toBytes(columnName));
+            delete.addColumn(Bytes.toBytes(familyName), Bytes.toBytes(columnName));
             table.delete(delete);
         } catch (Exception e) {
-            LOGGER.error("", e);
             throw new HbaseException(e);
         }
     }
@@ -147,7 +140,6 @@ public class HbaseBaseDao {
                 isexist = true;
             }
         } catch (Exception e) {
-            LOGGER.error("", e);
             throw new HbaseException(e);
         }
         return isexist;
@@ -165,7 +157,6 @@ public class HbaseBaseDao {
             }
 
         } catch (Exception e) {
-            LOGGER.error("", e);
             throw new HbaseException(e);
         }
 
@@ -222,7 +213,7 @@ public class HbaseBaseDao {
             Result result = table.get(get);
             NavigableMap<byte[], byte[]> map = result.getFamilyMap(Bytes.toBytes(familyName));
             Iterator<byte[]> keyiter = map.keySet().iterator();
-            Map<String, String> tmpMap = new HashMap<String, String>();
+            Map<String, String> tmpMap = new HashMap<>();
             while (keyiter.hasNext()) {
                 String key = new String(keyiter.next());
                 String val = new String(map.get(key.getBytes()));
@@ -246,7 +237,7 @@ public class HbaseBaseDao {
                 Result rs = iter.next();
                 NavigableMap<byte[], byte[]> map = rs.getFamilyMap(Bytes.toBytes(familyName));
                 Iterator<byte[]> keyiter = map.keySet().iterator();
-                Map<String, String> tmpMap = new HashMap<String, String>();
+                Map<String, String> tmpMap = new HashMap<>();
                 while (keyiter.hasNext()) {
                     String key = new String(keyiter.next());
                     String val = new String(map.get(key.getBytes()));
@@ -270,7 +261,7 @@ public class HbaseBaseDao {
      * @return
      */
     public List<Map<String, String>> getAllRecord(String tableName, String familyName, String keyName, List<String> keyList) throws HbaseException {
-        List<Map<String, String>> retMapList = new ArrayList<Map<String, String>>();
+        List<Map<String, String>> retMapList = new ArrayList<>();
         Scan scan = new Scan();
         scan.addFamily(Bytes.toBytes(familyName));
         try (Connection conn = getConnection(); Table table = conn.getTable(TableName.valueOf(tableName));
@@ -281,7 +272,7 @@ public class HbaseBaseDao {
             keyList.add(keyName);
             keybyteList.add(keyName.getBytes());
             while (iter.hasNext()) {
-                Map<String, String> retmap = new HashMap<String, String>();
+                Map<String, String> retmap = new HashMap<>();
                 Result rs = iter.next();
                 String keyValue = new String(rs.getRow());
                 retmap.put(keyName, keyValue);
@@ -311,7 +302,7 @@ public class HbaseBaseDao {
     }
 
     public List<Map<String, String>> getRecordByKey(String tableName, String keyValue, Map<String, String> valueFilterMap) throws HbaseException {
-        List<Map<String, String>> retMapList = new ArrayList<Map<String, String>>();
+        List<Map<String, String>> retMapList = new ArrayList<>();
         Scan scan = new Scan();
         scan.setMaxVersions(10000);
         Filter filter = new RowFilter(CompareOp.EQUAL, new BinaryComparator(Bytes.toBytes(keyValue)));
@@ -320,9 +311,9 @@ public class HbaseBaseDao {
         scan.setFilter(filterlist);
         try (Connection conn = getConnection(); Table table = conn.getTable(TableName.valueOf(tableName));
              ResultScanner scanner = table.getScanner(scan)) {
-            Map<String, Map<String, List<String>>> tmpmap1 = new HashMap<String, Map<String, List<String>>>();
+            Map<String, Map<String, List<String>>> tmpmap1 = new HashMap<>();
             List<String> keyList = new ArrayList<>();
-            List<String> fnameList = new ArrayList<String>();
+            List<String> fnameList = new ArrayList<>();
             for (Result rs : scanner) {
                 Cell[] kv1 = rs.rawCells();
                 for (int i = 0; i < kv1.length; i++) {
@@ -330,8 +321,8 @@ public class HbaseBaseDao {
                     String value = new String(kv1[i].getValueArray());
                     String fname = new String(kv1[i].getFamilyArray());
                     if (!tmpmap1.containsKey(fname)) {
-                        Map<String, List<String>> map1 = new HashMap<String, List<String>>();
-                        List<String> list = new ArrayList<String>();
+                        Map<String, List<String>> map1 = new HashMap<>();
+                        List<String> list = new ArrayList<>();
                         list.add(value);
                         map1.put(key, list);
                         tmpmap1.put(fname, map1);
@@ -343,7 +334,7 @@ public class HbaseBaseDao {
                         }
                     } else {
                         if (!tmpmap1.get(fname).containsKey(key)) {
-                            List<String> list = new ArrayList<String>();
+                            List<String> list = new ArrayList<>();
                             list.add(value);
                             tmpmap1.get(fname).put(key, list);
                         } else {
@@ -362,7 +353,7 @@ public class HbaseBaseDao {
 
                     for (int j = 0; j < valueList.size(); j++) {
 
-                        Map<String, String> tmpmap = new HashMap<String, String>();
+                        Map<String, String> tmpmap = new HashMap<>();
                         tmpmap.put(fristName, valueList.get(j));
                         for (int k = 1; k < fnameList.size(); k++) {
                             List<String> list2 = tmpmap1.get(fnameList.get(k)).get(key);
@@ -370,7 +361,6 @@ public class HbaseBaseDao {
                                 tmpmap.put(fnameList.get(k), list2.get(j));
                             }
                         }
-                        ;
                         retMapList.add(tmpmap);
                     }
                 }
@@ -383,16 +373,16 @@ public class HbaseBaseDao {
     }
 
     public List<Map<String, String>> getRecordByColumn(String tableName, Map<String, String> valueFilterMap) throws HbaseException {
-        List<Map<String, String>> retMapList = new ArrayList<Map<String, String>>();
+        List<Map<String, String>> retMapList = new ArrayList<>();
         Scan scan = new Scan();
         scan.setMaxVersions(1);
         FilterList filterlist = generateFamilyFilter(valueFilterMap);
         scan.setFilter(filterlist);
         try (Connection conn = getConnection(); Table table = conn.getTable(TableName.valueOf(tableName));
              ResultScanner scanner = table.getScanner(scan)) {
-            Map<String, Map<String, List<String>>> tmpmap1 = new HashMap<String, Map<String, List<String>>>();
-            List<String> keyList = new ArrayList<String>();
-            List<String> fnameList = new ArrayList<String>();
+            Map<String, Map<String, List<String>>> tmpmap1 = new HashMap<>();
+            List<String> keyList = new ArrayList<>();
+            List<String> fnameList = new ArrayList<>();
             for (Result rs : scanner) {
                 tmpmap1.clear();
                 Cell[] kv1 = rs.rawCells();
@@ -401,8 +391,8 @@ public class HbaseBaseDao {
                     String value = new String(kv1[i].getValueArray());
                     String fname = new String(kv1[i].getFamilyArray());
                     if (!tmpmap1.containsKey(fname)) {
-                        Map<String, List<String>> map1 = new HashMap<String, List<String>>();
-                        List<String> list = new ArrayList<String>();
+                        Map<String, List<String>> map1 = new HashMap<>();
+                        List<String> list = new ArrayList<>();
                         list.add(value);
                         map1.put(key, list);
                         tmpmap1.put(fname, map1);
@@ -414,7 +404,7 @@ public class HbaseBaseDao {
                         }
                     } else {
                         if (!tmpmap1.get(fname).containsKey(key)) {
-                            List<String> list = new ArrayList<String>();
+                            List<String> list = new ArrayList<>();
                             list.add(value);
                             tmpmap1.get(fname).put(key, list);
                         } else {
@@ -433,7 +423,7 @@ public class HbaseBaseDao {
 
                     for (int j = 0; j < valueList.size(); j++) {
                         if (i == 0) {
-                            Map<String, String> tmpmap = new HashMap<String, String>();
+                            Map<String, String> tmpmap = new HashMap<>();
                             tmpmap.put(fristName, valueList.get(j));
                             retMapList.add(tmpmap);
                         } else {
@@ -484,7 +474,7 @@ public class HbaseBaseDao {
     }
 
     public Map<String, Map<String, String>> getRegionResult(String tableName, byte[] startKey, byte[] endKey, String fieldArr, List<String> keyList) throws HbaseException {
-        Map<String, Map<String, String>> retMap = new HashMap<String, Map<String, String>>();
+        Map<String, Map<String, String>> retMap = new HashMap<>();
         Scan scan = new Scan();
         scan.setMaxVersions(1);
         scan.setStartRow(startKey);
@@ -498,7 +488,7 @@ public class HbaseBaseDao {
             ResultScanner scanner = table.getScanner(scan)) {
             for (Result rs : scanner) {
                 String key = new String(rs.getRow());
-                Map<String, String> valueMap = new HashMap<String, String>();
+                Map<String, String> valueMap = new HashMap<>();
                 for (Cell val : rs.listCells()) {
                     valueMap.put(new String(val.getQualifierArray()), new String(val.getValueArray()));
                 }

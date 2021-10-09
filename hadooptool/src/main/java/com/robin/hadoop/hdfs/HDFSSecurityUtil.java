@@ -26,17 +26,14 @@ public class HDFSSecurityUtil {
 		try {
 			final Method method = HDFSCallUtil.class.getDeclaredMethod(methodName, classArr);
 			UserGroupInformation.getCurrentUser().checkTGTAndReloginFromKeytab();
-			ret = UserGroupInformation.getCurrentUser().doAs(new PrivilegedAction<Object>() {
-						@Override
-						public Object run() {
-							try {
-								return method.invoke(null, param);
-							} catch (Exception ex) {
-								ex.printStackTrace();
-							}
-							return null;
-						}
-				});
+			ret = UserGroupInformation.getCurrentUser().doAs((PrivilegedAction<Object>) () -> {
+				try {
+					return method.invoke(null, param);
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+				return null;
+			});
 		} catch (Exception ex) {
 			ex.printStackTrace();
 			logger.error(ex);
@@ -56,17 +53,14 @@ public class HDFSSecurityUtil {
 		try {
 			final Method method = obj.getClass().getMethod(methodName, classArr);
 			UserGroupInformation.getCurrentUser().checkTGTAndReloginFromKeytab();
-			ret = UserGroupInformation.getCurrentUser().doAs(new PrivilegedAction<Object>() {
-						@Override
-						public Object run() {
-							try {
-								return method.invoke(obj, param);
-							} catch (Exception ex) {
-								ex.printStackTrace();
-							}
-							return null;
-						}
-				});
+			ret = UserGroupInformation.getCurrentUser().doAs((PrivilegedAction<Object>) () -> {
+				try {
+					return method.invoke(obj, param);
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+				return null;
+			});
 		}catch(Exception ex){
 			ex.printStackTrace();
 			logger.error(ex);
@@ -77,12 +71,7 @@ public class HDFSSecurityUtil {
 		Object ret = null;
 		try {
 			UserGroupInformation.getCurrentUser().checkTGTAndReloginFromKeytab();
-			UserGroupInformation.getCurrentUser().doAs(new PrivilegedAction<Object>() {
-				@Override
-				public Object run() {
-					return proxy.run(config);
-				}
-			});
+			UserGroupInformation.getCurrentUser().doAs((PrivilegedAction<Object>) () -> proxy.run(config));
 			
 		}catch(Exception ex){
 			ex.printStackTrace();

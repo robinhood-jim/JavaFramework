@@ -25,6 +25,7 @@ import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 /**
  * <p>Project:  frame</p>
@@ -39,7 +40,7 @@ import java.util.Map;
  * @version 1.0
  */
 public class ParquetStreamIterator extends AbstractFileIterator {
-    private ParquetReader<GenericData.Record> reader;
+    private ParquetReader<GenericData.Record> preader;
     private Schema schema;
     private MessageType msgtype;
     private Configuration conf;
@@ -63,18 +64,19 @@ public class ParquetStreamIterator extends AbstractFileIterator {
             }
             //seek remote file to local tmp
 
-            reader = AvroParquetReader
+            preader = AvroParquetReader
                     .<GenericData.Record>builder(makeInputFile()).withConf(conf).build();
             fields = schema.getFields();
         }catch (Exception ex){
-            logger.error("{}",ex);
+            logger.error("{0}",ex);
         }
     }
 
     @Override
     public boolean hasNext() {
         try {
-            record =reader.read();
+            record = null;
+            record =preader.read();
         }catch (Exception ex){
             ex.printStackTrace();
         }
@@ -84,12 +86,11 @@ public class ParquetStreamIterator extends AbstractFileIterator {
     @Override
     public Map<String, Object> next() {
         Map<String,Object> retMap=new HashMap<String, Object>();
-        try{
-            for(Schema.Field field:fields){
-                retMap.put(field.name(), record.get(field.name()));
-            }
-
-        }catch (Exception ex){
+        if(record==null){
+            throw new NoSuchElementException("");
+        }
+        for(Schema.Field field:fields){
+            retMap.put(field.name(), record.get(field.name()));
         }
         return retMap;
     }

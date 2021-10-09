@@ -209,7 +209,7 @@ public class SimpleFtp {
     }
 
     private boolean doDownload(String remote, String local) throws IOException {
-        boolean retflag = true;
+        boolean retflag = false;
         File localfile = new File(local);
         //long lRemoteSize = filesize(remote);
         if (localfile.exists()) {

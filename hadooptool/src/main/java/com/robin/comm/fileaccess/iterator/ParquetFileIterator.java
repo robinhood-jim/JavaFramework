@@ -1,6 +1,5 @@
 package com.robin.comm.fileaccess.iterator;
 
-import com.robin.core.base.util.Const;
 import com.robin.core.fileaccess.iterator.AbstractFileIterator;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.util.AvroUtils;
@@ -16,12 +15,12 @@ import org.apache.parquet.hadoop.ParquetReader;
 import org.apache.parquet.hadoop.metadata.ParquetMetadata;
 import org.apache.parquet.hadoop.util.HadoopInputFile;
 import org.apache.parquet.schema.MessageType;
-import org.apache.parquet.schema.PrimitiveType;
 import org.apache.parquet.schema.Type;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 
 public class ParquetFileIterator extends AbstractFileIterator {
@@ -30,14 +29,16 @@ public class ParquetFileIterator extends AbstractFileIterator {
     private MessageType msgtype;
     private Configuration conf;
     private GenericData.Record record;
+
     public ParquetFileIterator(DataCollectionMeta colmeta) {
         super(colmeta);
     }
+
     private List<Schema.Field> fields;
 
     @Override
-    public void init(){
-        conf=new HDFSUtil(colmeta).getConfigration();
+    public void init() {
+        conf = new HDFSUtil(colmeta).getConfigration();
         try {
             if (colmeta.getColumnList().isEmpty()) {
                 ParquetMetadata meta = ParquetFileReader.readFooter(conf, new Path(colmeta.getPath()), ParquetMetadataConverter.NO_FILTER);
@@ -47,42 +48,43 @@ public class ParquetFileIterator extends AbstractFileIterator {
                 schema = AvroUtils.getSchemaFromMeta(colmeta);
             }
             preader = AvroParquetReader
-                    .<GenericData.Record>builder(HadoopInputFile.fromPath(new Path(colmeta.getPath()),conf)).withConf(conf).build();
+                    .<GenericData.Record>builder(HadoopInputFile.fromPath(new Path(colmeta.getPath()), conf)).withConf(conf).build();
             fields = schema.getFields();
-        }catch (Exception ex){
-            logger.error("{}",ex);
+        } catch (Exception ex) {
+            logger.error("{0}", ex);
         }
     }
 
     @Override
     public boolean hasNext() {
         try {
-            record =preader.read();
-        }catch (Exception ex){
+            record = null;
+            record = preader.read();
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
-        return record !=null;
+        return record != null;
     }
 
     @Override
     public Map<String, Object> next() {
-        Map<String,Object> retMap=new HashMap<String, Object>();
-        try{
-            for(Schema.Field field:fields){
-                retMap.put(field.name(), record.get(field.name()));
-            }
-
-        }catch (Exception ex){
+        Map<String, Object> retMap = new HashMap<>();
+        if(record==null){
+            throw new NoSuchElementException("");
+        }
+        for (Schema.Field field : fields) {
+            retMap.put(field.name(), record.get(field.name()));
         }
         return retMap;
     }
-    private void parseSchemaByType(){
-        List<Type> colList= msgtype.getFields();
 
-        for(Type type:colList){
-            colmeta.addColumnMeta(type.getName(),ParquetReaderUtil.parseColumnType(type.asPrimitiveType()),null);
+    private void parseSchemaByType() {
+        List<Type> colList = msgtype.getFields();
+
+        for (Type type : colList) {
+            colmeta.addColumnMeta(type.getName(), ParquetReaderUtil.parseColumnType(type.asPrimitiveType()), null);
         }
-        schema= AvroUtils.getSchemaFromMeta(colmeta);
+        schema = AvroUtils.getSchemaFromMeta(colmeta);
     }
 
 
@@ -94,11 +96,12 @@ public class ParquetFileIterator extends AbstractFileIterator {
     public void remove() {
         try {
             reader.read();
-        }catch (Exception ex){
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
     }
-    public MessageType getMessageType(){
+
+    public MessageType getMessageType() {
         return msgtype;
     }
 }

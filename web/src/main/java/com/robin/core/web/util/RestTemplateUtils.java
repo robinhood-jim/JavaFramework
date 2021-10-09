@@ -105,7 +105,7 @@ public class RestTemplateUtils {
         HttpEntity entity=new HttpEntity<MultiValueMap<String,String>>(params,headers);
         return template.postForEntity(getRequestGateWayPrefix()+requestUrl,entity,tClass.getClass()).getBody();
     }
-    public static List<?> getResultListByType(String requestUrl, Map<String,String> objectMap, Class<?> tClass,String... configs){
+    public static List<?> getResultListByType(String requestUrl, Map<String,String> objectMap, String... configs){
         Environment environment= SpringContextHolder.getBean(Environment.class);
         RestTemplate template= SpringContextHolder.getBean(RestTemplate.class);
         HttpHeaders headers = new HttpHeaders();

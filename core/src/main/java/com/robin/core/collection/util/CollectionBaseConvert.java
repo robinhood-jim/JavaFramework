@@ -109,11 +109,13 @@ public class CollectionBaseConvert {
 		return retList;
 	}
 	public static <T> Map<String,List<T>> groupBy(List<T> list, Function<T,String> function){
+		Assert.notNull(list,"");
 		Assert.isTrue(!CollectionUtils.isEmpty(list),"Collection is Empty");
 		Assert.isTrue(!list.get(0).getClass().isPrimitive(),"Primitive type can not using this function!");
 		return  list.stream().collect(Collectors.groupingBy(function));
 	}
 	public static <T extends Serializable> Map<String,T> groupByUniqueKey(List<T> list, String identifyColumn, Function<T,String> function) throws Exception{
+		Assert.notNull(list,"");
 		Assert.isTrue(!CollectionUtils.isEmpty(list),"Collection is Empty");
 		Class<? extends Serializable> clazz=list.get(0).getClass();
 		if(clazz.isPrimitive()){

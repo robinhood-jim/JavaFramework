@@ -1,17 +1,14 @@
 package com.robin.core.web.controller;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.robin.core.base.dto.PageDTO;
 import com.robin.core.base.exception.ServiceException;
 import com.robin.core.base.exception.WebException;
-import com.robin.core.base.reflect.ReflectUtils;
 import com.robin.core.base.service.AbstractMybatisService;
 import com.robin.core.base.spring.SpringContextHolder;
 import com.robin.core.convert.util.ConvertUtil;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
@@ -116,7 +113,7 @@ public abstract class AbstractMyBatisController<S extends AbstractMybatisService
                 if(!CollectionUtils.isEmpty(list)){
                     list.forEach(f->{
                         try {
-                            if (targetClazz.isAssignableFrom(HashMap.class)) {
+                            if (targetClazz.getInterfaces().length>0 && targetClazz.getInterfaces()[0].isAssignableFrom(Map.class)) {
                                 Map<String, Object> valueMap = new HashMap<>();
                                 ConvertUtil.objectToMapObj(valueMap, f);
                                 retList.add(valueMap);
@@ -126,7 +123,7 @@ public abstract class AbstractMyBatisController<S extends AbstractMybatisService
                                 retList.add(obj);
                             }
                         }catch (Exception ex){
-
+                            log.error("{0}",ex);
                         }
                     });
                     page1.setRecords(retList);

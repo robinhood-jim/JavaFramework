@@ -20,6 +20,7 @@ import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.meta.DataSetColumnMeta;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -42,8 +43,8 @@ public class PlainTextFileIterator extends AbstractFileIterator{
                     hasNext=true;
                 }
 			}
-		}catch(Exception ex){
-			hasNext=false;
+		}catch(IOException ex){
+			logger.error("{0}",ex);
 		}
 		return hasNext;
 	}

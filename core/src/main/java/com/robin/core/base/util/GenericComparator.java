@@ -32,6 +32,7 @@ import java.util.Date;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.util.Assert;
 
 /**
  * @desc Sorting - Generic Comparator
@@ -139,6 +140,7 @@ public final class GenericComparator implements Comparator, Serializable {
 	 */
 	@Override
 	public int compare(Object o1, Object o2) {
+		Assert.isTrue(o1!=null && o2!=null,"");
 		int response = LESSER;
 		try {
 			Object v1 = (null == this.targetMethod) ? o1 : getValue(o1);
@@ -278,13 +280,13 @@ public final class GenericComparator implements Comparator, Serializable {
 	private CompareMode findCompareMode(Object o1, Object o2) {
 		CompareMode cm = CompareMode.LESS_THAN;
 		
-		if(null != o1 & null != o2) {
+		if(null != o1 && null != o2) {
 			cm = CompareMode.DEFAULT;
-		} else if (null == o1 & null != o2) {
+		} else if (null == o1 && null != o2) {
 			cm = CompareMode.LESS_THAN;
-		} else if (null != o1 & null == o2) {
+		} else if (null != o1 && null == o2) {
 			cm = CompareMode.GREATER_THAN;
-		} else if (null == o1 & null == o2) {
+		} else if (null == o1 && null == o2) {
 			cm = CompareMode.EQUAL;			
 		}
 		

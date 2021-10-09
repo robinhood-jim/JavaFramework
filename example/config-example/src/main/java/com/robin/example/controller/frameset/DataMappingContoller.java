@@ -141,7 +141,7 @@ public class DataMappingContoller extends AbstractCrudDhtmlxController<ProjectIn
         String projId = request.getParameter(COL_PROJID);
         String table = request.getParameter("table");
         DataBaseUtil util = null;
-        List<Map<String, String>> list = new ArrayList<Map<String, String>>();
+        List<Map<String, String>> list = new ArrayList<>();
         Map<String, Object> retmap;
         try {
             ProjectInfo info = projectInfoService.getEntity(Long.valueOf(projId));
@@ -154,7 +154,7 @@ public class DataMappingContoller extends AbstractCrudDhtmlxController<ProjectIn
             List<DataBaseColumnMeta> collist = util.getTableMetaByTableName(table, schema);
             for (int i = 0; i < collist.size(); i++) {
                 DataBaseColumnMeta meta1 = collist.get(i);
-                Map<String, String> map = new HashMap<String, String>();
+                Map<String, String> map = new HashMap<>();
                 String columnName = meta1.getColumnName();
                 map.put("columnName", meta1.getColumnName());
                 map.put("columnType", meta1.getColumnType().toString());
@@ -216,7 +216,7 @@ public class DataMappingContoller extends AbstractCrudDhtmlxController<ProjectIn
         String projId = request.getParameter(COL_PROJID);
         String table = request.getParameter("table");
         DataBaseUtil util = null;
-        Map<String, Object> retMap = new HashMap<String, Object>();
+        Map<String, Object> retMap = new HashMap<>();
         try {
             ProjectInfo info = projectInfoService.getEntity(Long.valueOf(projId));
             DataSource source = dataSourceService.getEntity(info.getDataSourceId());
@@ -230,7 +230,6 @@ public class DataMappingContoller extends AbstractCrudDhtmlxController<ProjectIn
             if (mappingId != null && !mappingId.isEmpty()) {
                 mapping = entityMappingService.getEntity(Long.valueOf(mappingId));
                 List<FieldMapping> fieldList = entityMappingService.addMappingWithXml(info, mapping, request, collist);
-                //List<Map<String,String>> fieldmapList=convertObjToMapList(fieldList);
                 wrapSuccess(retMap, "保存配置成功");
             } else {
                 mapping = new EntityMapping();
@@ -253,12 +252,12 @@ public class DataMappingContoller extends AbstractCrudDhtmlxController<ProjectIn
         String projId = request.getParameter(COL_PROJID);
         String table = request.getParameter("table");
         DataBaseUtil util = null;
-        Map<String, Object> retMap = new HashMap<String, Object>();
+        Map<String, Object> retMap = new HashMap<>();
         try {
             ProjectInfo info = projectInfoService.getEntity(Long.valueOf(projId));
             DataSource source = dataSourceService.getEntity(info.getDataSourceId());
             String type = source.getDbType();
-            List<Map<String, Object>> driverList = jdbcDao.queryBySql("select db_type as dbType,driver_class as driverClass from t_base_dbdriver where id=?", new Object[]{source.getDriverId()});
+            List<Map<String, Object>> driverList = jdbcDao.queryBySql("select db_type as dbType,driver_class as driverClass from t_base_dbdriver where id=?", source.getDriverId());
 
             DataBaseParam param = new DataBaseParam(source.getHostIp(), Integer.parseInt(source.getPort()), source.getDatabaseName(), source.getUserName(), source.getPassword());
             BaseDataBaseMeta meta = DataBaseMetaFactory.getDataBaseMetaByType(type, param);
@@ -267,7 +266,7 @@ public class DataMappingContoller extends AbstractCrudDhtmlxController<ProjectIn
             List<DataBaseColumnMeta> collist = util.getTableMetaByTableName(table, schema);
 
             String columnName = request.getParameter("columnName");
-            EntityMapping enmap = entityMappingService.getEntity(Long.valueOf(mapping.getId()));
+            EntityMapping enmap = entityMappingService.getEntity(mapping.getId());
             String pktype = findCodeName("PKTYPE", enmap.getPkType());
             enmap.setPkType(pktype);
             List<FieldMapping> fieldList = fieldMappingService.queryByField("entityId", BaseObject.OPER_EQ, mapping.getId());
@@ -277,7 +276,7 @@ public class DataMappingContoller extends AbstractCrudDhtmlxController<ProjectIn
             String basePath = info.getProjBasePath();
             String className = enmap.getJavaClass().substring(0, 1).toUpperCase() + enmap.getJavaClass().substring(1, enmap.getJavaClass().length());
             //enmap.setJavaClass(className);
-            Map<String, String> entityMap = new HashMap<String, String>();
+            Map<String, String> entityMap = new HashMap<>();
             ConvertUtil.objectToMap(entityMap, enmap);
             entityMap.put("pkType", pktype);
             entityMap.put("upperName", className);
@@ -290,7 +289,7 @@ public class DataMappingContoller extends AbstractCrudDhtmlxController<ProjectIn
             FileUtils.forceMkdir(new File(daosrc));
             String modelfile = modelsrc + className + ".java";
             String daofile = daosrc + className + "Dao.java";
-            Map<String, Object> parammap = new HashMap<String, Object>();
+            Map<String, Object> parammap = new HashMap<>();
             parammap.put("project", info);
             parammap.put("class", entityMap);
             parammap.put("source", source);
@@ -351,9 +350,9 @@ public class DataMappingContoller extends AbstractCrudDhtmlxController<ProjectIn
                 FileUtils.forceMkdir(new File(actionsrc));
                 String actionfile = actionsrc + className + actionsuffix + ".java";
                 generateCode(freeutil, actionfile, tempmap.get(actionType + "class").get(0).get("path").toString(), parammap);
-                List<Map<String, String>> queryFieldList = new ArrayList<Map<String, String>>();
-                List<Map<String, String>> displayFieldList = new ArrayList<Map<String, String>>();
-                List<Map<String, String>> editList = new ArrayList<Map<String, String>>();
+                List<Map<String, String>> queryFieldList = new ArrayList<>();
+                List<Map<String, String>> displayFieldList = new ArrayList<>();
+                List<Map<String, String>> editList = new ArrayList<>();
                 for (int j = 0; j < fieldmapList.size(); j++) {
                     if ("1".equals(fieldmapList.get(j).get("showInquery"))) {
                         queryFieldList.add(fieldmapList.get(j));
@@ -439,7 +438,7 @@ public class DataMappingContoller extends AbstractCrudDhtmlxController<ProjectIn
     @RequestMapping("/saveConfig")
     @ResponseBody
     public Map<String, Object> saveConfig(HttpServletRequest request, HttpServletResponse response) {
-        Map<String, Object> retMap = new HashMap<String, Object>();
+        Map<String, Object> retMap = new HashMap<>();
         mapping = new EntityMapping();
         try {
             ConvertUtil.mapToObject(mapping, wrapRequest(request));

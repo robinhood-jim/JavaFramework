@@ -100,7 +100,7 @@ public class SimpleJdbcDao {
 			}
 			if(waitSecond>0){
 				try{
-					Thread.sleep(1000*waitSecond);
+					Thread.sleep(1000L*waitSecond);
 				}catch(InterruptedException ex1){
 					throw new DAOException(ex1);
 				}
@@ -155,9 +155,9 @@ public class SimpleJdbcDao {
 				break;
 			}
 			try{
-				Thread.sleep(1000*sleepSecond);
+				Thread.sleep(1000L*sleepSecond);
 			}catch(InterruptedException ex1){
-				logger.error("",ex1);
+				throw new DAOException(ex1);
 			}
 		}
 		if(conn==null) {

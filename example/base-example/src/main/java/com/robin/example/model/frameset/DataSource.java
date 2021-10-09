@@ -17,17 +17,17 @@ public class DataSource extends BaseObject {
 	private String dbType;
 	@MappingField(field="driver_id")
 	private Long driverId;
-	@MappingField(field="host_ip")
+	@MappingField
 	private String hostIp;
 	@MappingField
 	private String port;
-	@MappingField(field="database_name")
+	@MappingField
 	private String databaseName;
 	@MappingField
 	private String encode;
-	@MappingField(field="conn_url")
+	@MappingField
 	private String connUrl;
-	@MappingField(field="user_name")
+	@MappingField
 	private String userName;
 	@MappingField
 	private String password;

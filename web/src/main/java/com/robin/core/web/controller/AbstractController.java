@@ -47,7 +47,7 @@ public abstract class AbstractController
     protected List<Map<String, String>> convertObjToMapList(List<?> orglist)
             throws Exception
     {
-        List<Map<String, String>> list = new ArrayList();
+        List<Map<String, String>> list = new ArrayList<>();
         if ((orglist != null) && (!orglist.isEmpty())) {
             for (Object object : orglist)
             {
@@ -164,7 +164,7 @@ public abstract class AbstractController
     }
     protected void insertNullSelect(List<Map<String, Object>> list)
     {
-        Map<String, Object> tmap = new HashMap();
+        Map<String, Object> tmap = new HashMap<>();
         tmap.put("value", "");
         String message=Translator.toLocale("combo.NullDisplay");
         tmap.put("text", message);
@@ -175,7 +175,7 @@ public abstract class AbstractController
         Iterator<Map.Entry<String,String>> iterator=codeMap.entrySet().iterator();
         while(iterator.hasNext()){
             Map.Entry<String,String> entry=iterator.next();
-            Map<String, Object> tmap = new HashMap();
+            Map<String, Object> tmap = new HashMap<>();
             tmap.put("value", entry.getKey());
             tmap.put("text", entry.getValue());
             list.add(tmap);
@@ -186,11 +186,11 @@ public abstract class AbstractController
         if (insertNullVal) {
             insertNullSelect(list);
         }
-        Map<String, Object> tmap = new HashMap();
+        Map<String, Object> tmap = new HashMap<>();
         tmap.put("value", Const.VALID);
         tmap.put("text", Translator.toLocale("combo.yesDisplay"));
         list.add(tmap);
-        Map<String, Object> tmap1 = new HashMap();
+        Map<String, Object> tmap1 = new HashMap<>();
         tmap1.put("value", "0");
         tmap1.put("text", Translator.toLocale("combo.noDisplay"));
         list.add(tmap1);
@@ -201,7 +201,7 @@ public abstract class AbstractController
         CodeSetService util= SpringContextHolder.getBean(CodeSetService.class);
         List<Code> codeList=getCodeList(util.getCacheCode(codeSetNo));
         for(Code code:codeList){
-            Map<String, Object> tmap = new HashMap();
+            Map<String, Object> tmap = new HashMap<>();
             tmap.put("value", code.getValue());
             tmap.put("text", code.getCodeName());
             list.add(tmap);
@@ -256,7 +256,7 @@ public abstract class AbstractController
 
     protected Map<String, Object> wrapSuccess(String displayMsg)
     {
-        Map<String, Object> retmap = new HashMap();
+        Map<String, Object> retmap = new HashMap<>();
         retmap.put(COL_SUCCESS, true);
         retmap.put(COL_MESSAGE, displayMsg);
         return retmap;
@@ -274,7 +274,7 @@ public abstract class AbstractController
     }
     protected Map<String, Object> wrapObject(Object object)
     {
-        Map<String, Object> retmap = new HashMap();
+        Map<String, Object> retmap = new HashMap<>();
         retmap.put(COL_SUCCESS, true);
         retmap.put("data", object);
         return retmap;
@@ -282,7 +282,7 @@ public abstract class AbstractController
 
     protected Map<String, Object> wrapError(Exception ex)
     {
-        Map<String, Object> retmap = new HashMap();
+        Map<String, Object> retmap = new HashMap<>();
         retmap.put(COL_SUCCESS, false);
         retmap.put(COL_MESSAGE, ex.getMessage());
         return retmap;
@@ -290,7 +290,7 @@ public abstract class AbstractController
 
     public static Map<String, String> wrapRequest(HttpServletRequest request)
     {
-        Map<String, String> map = new HashMap();
+        Map<String, String> map = new HashMap<>();
         Iterator<String> iter = request.getParameterMap().keySet().iterator();
         while (iter.hasNext())
         {
@@ -318,7 +318,7 @@ public abstract class AbstractController
         PageQuery query = new PageQuery();
         Map map = request.getParameterMap();
         Iterator<String> iter = map.keySet().iterator();
-        Map<String, Object> tmpmap = new HashMap();
+        Map<String, Object> tmpmap = new HashMap<>();
         while (iter.hasNext())
         {
             String key = iter.next();
