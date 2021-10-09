@@ -31,6 +31,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.util.Assert;
 
 import java.lang.reflect.Method;
 import java.util.*;
@@ -177,7 +178,7 @@ public class CommEsQueryUtils {
                                 if (null != setMap && setMap.containsKey(columnName)) {
                                     Method method = setMap.get(columnName);
                                     Class paramType = method.getParameterTypes()[0];
-                                    method.invoke(obj, new Object[]{ConvertUtil.parseParameter(paramType, entry.getValue())});
+                                    method.invoke(obj, ConvertUtil.parseParameter(paramType, entry.getValue()));
                                 }
                             }
                             contents.add(obj);
@@ -279,6 +280,8 @@ public class CommEsQueryUtils {
     }
 
     private static boolean rangeCheck(Object fromVal, Object toVal) {
+        Assert.notNull(fromVal,"");
+        Assert.notNull(toVal,"");
         if (fromVal.getClass().isAssignableFrom(Double.class)) {
             return ((Double) fromVal) < (Double) toVal;
         } else if (fromVal.getClass().isAssignableFrom(Float.class)) {

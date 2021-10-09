@@ -62,8 +62,8 @@ public class CassandraUtils {
     }
     private static boolean insertRow(Session session,String keyspace,String tableName,Map<String,Object> valueMap){
         Iterator<Map.Entry<String,Object>> iter=valueMap.entrySet().iterator();
-        List<String> keys=new ArrayList<String>();
-        List<Object> valueList=new ArrayList<Object>();
+        List<String> keys=new ArrayList<>();
+        List<Object> valueList=new ArrayList<>();
         while(iter.hasNext()){
             Map.Entry<String,Object> entry=iter.next();
             keys.add(entry.getKey());
@@ -78,9 +78,7 @@ public class CassandraUtils {
     public static boolean deleteRow(Session session,String tableName,String condition){
         return session.execute("delete from "+tableName+ " where "+condition).wasApplied();
     }
-    public static boolean insertRow(String tableName,Map<String,Object> valueMap){
-        return false;
-    }
+
     public static boolean insertRowWithSql(Session session,String sql){
         return session.execute(sql).wasApplied();
     }
@@ -115,7 +113,7 @@ public class CassandraUtils {
         }
 
     }
-    public void close() throws IOException {
+    public void close() {
         if(cluster!=null){
             cluster.close();
         }
@@ -173,7 +171,7 @@ public class CassandraUtils {
                 if(null !=state){
                     savingPageState=rs.getExecutionInfo().getPagingState().toString();
                     if(null == cache.getIfPresent(sql)){
-                        Map<Integer,String> map=new HashMap<Integer, String>();
+                        Map<Integer,String> map=new HashMap<>();
                         map.put(j,savingPageState);
                         cache.put(sql,map);
                     }else{
@@ -182,7 +180,7 @@ public class CassandraUtils {
                 }
                 if(rs.isFullyFetched() && null== state){
                     if(isEnd){
-                        return null;
+                        return Collections.emptyList();
                     }else {
                         isEnd=true;
                     }
@@ -191,7 +189,7 @@ public class CassandraUtils {
         }else{
             rs=session.execute(bindstmt);
         }
-        List<Row> list=new ArrayList<Row>();
+        List<Row> list=new ArrayList<>();
         Iterator<Row> iter=rs.iterator();
         while(iter.hasNext() && list.size()<pageSize){
             list.add(iter.next());

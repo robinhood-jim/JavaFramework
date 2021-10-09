@@ -20,7 +20,6 @@ import org.springframework.util.Assert;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -61,16 +60,16 @@ public class AvroFileIterator extends AbstractFileIterator {
 				input = new SeekableByteArrayInput(byteout.toByteArray());
 			}
 			Assert.notNull(input,"Seekable input is null");
-			dreader=new GenericDatumReader<GenericRecord>(schema);
-			fileReader=new DataFileReader<GenericRecord>(input,dreader);
+			dreader=new GenericDatumReader<>(schema);
+			fileReader=new DataFileReader<>(input,dreader);
 		}catch (Exception ex){
-
+			logger.error("Exception {0}",ex);
 		}
 	}
 
 	@Override
 	public Map<String, Object> next() {
-		Map<String,Object> retmap=new HashMap<String, Object>();
+		Map<String,Object> retmap=new HashMap<>();
 		try{
 			GenericRecord records=fileReader.next();
 			List<Field> flist=schema.getFields();

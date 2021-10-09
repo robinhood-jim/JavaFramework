@@ -16,6 +16,9 @@ import org.apache.parquet.schema.PrimitiveType;
  * @version 1.0
  */
 public class ParquetReaderUtil {
+    private ParquetReaderUtil(){
+
+    }
     public static String parseColumnType(PrimitiveType type){
         String rettype= Const.META_TYPE_STRING;
         if(type.getPrimitiveTypeName().equals(PrimitiveType.PrimitiveTypeName.INT32)){

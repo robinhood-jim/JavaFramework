@@ -74,7 +74,7 @@ public class SysOrgController {
         if(session.getOrgId()!=null) {
             vMap.put("orgId",session.getOrgId().toString());
         }
-        return (List<Map<String,Object>>)RestTemplateUtils.getResultListByType("system/org/listAll",vMap,new HashMap<String, Object>().getClass(),AuthUtils.getRequestParam(null,request));
+        return (List<Map<String,Object>>)RestTemplateUtils.getResultListByType("system/org/listAll",vMap,AuthUtils.getRequestParam(null,request));
     }
 
     @RequestMapping("/tree")
@@ -86,7 +86,7 @@ public class SysOrgController {
     @RequestMapping("/contextmenu")
     @ResponseBody
     public List<Map<String, Object>> getMenu(HttpServletRequest request, HttpServletResponse response) {
-        return  (List<Map<String, Object>>)RestTemplateUtils.getResultListByType("system/org/contextmenu/",new HashMap<String,String>(),new HashMap<String, Object>().getClass(),AuthUtils.getRequestParam(null,request));
+        return  (List<Map<String, Object>>)RestTemplateUtils.getResultListByType("system/org/contextmenu/",new HashMap<String,String>(),AuthUtils.getRequestParam(null,request));
     }
 
     @RequestMapping("/getuporg")

@@ -5,6 +5,8 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.*;
 import org.apache.hadoop.io.IOUtils;
+import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 import java.io.*;
 import java.net.URI;
@@ -582,9 +584,11 @@ public class HDFSCallUtil {
     }
 
     public static void createAndinsert(final Configuration config, String hdfsUrl, String txt, boolean overwriteOrgion) throws HdfsException {
+        Assert.isTrue(!StringUtils.isEmpty(hdfsUrl),"");
+        Assert.notNull(config,"");
         try(FSDataOutputStream stream=createFile(config, hdfsUrl, overwriteOrgion)) {
+            Assert.notNull(stream,"");
             stream.writeUTF(txt);
-            stream.close();
         } catch (Exception e) {
             throw new HdfsException(e);
         }

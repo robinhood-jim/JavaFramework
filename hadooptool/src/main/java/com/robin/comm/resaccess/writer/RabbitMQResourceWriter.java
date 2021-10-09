@@ -18,8 +18,6 @@ import java.util.Map;
 
 public class RabbitMQResourceWriter extends AbstractQueueWriter {
     private Schema schema;
-    String key=null;
-    private StringBuilder builder=new StringBuilder();
     private CachingConnectionFactory connectionFactory;
     private RabbitTemplate rabbitTemplate;
     private String queueName;
@@ -28,7 +26,7 @@ public class RabbitMQResourceWriter extends AbstractQueueWriter {
         connectionFactory=new CachingConnectionFactory();
         int port=5672;
 
-        if(CollectionUtils.isEmpty(cfgMap)){
+        if(!CollectionUtils.isEmpty(cfgMap)){
             Assert.notNull(cfgMap.get("queue"),"queue name must exists!");
             queueName=cfgMap.get("queue").toString();
             if(null!=cfgMap.get("hostName") &&!StringUtils.isEmpty(cfgMap.get("hostName").toString())){

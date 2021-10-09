@@ -12,11 +12,12 @@ import com.robin.core.fileaccess.meta.DataSetColumnMeta;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 /**
  * <p>Project:  frame</p>
  * <p>
- * <p>Description:com.robin.comm.fileaccess.iterator</p>
+ * <p>Description:Protobuf file reader Iterator</p>
  * <p>
  * <p>Copyright: Copyright (c) 2018 create at 2018年11月28日</p>
  * <p>
@@ -96,6 +97,7 @@ public class ProtoBufFileIterator extends AbstractFileIterator {
                 message=mesgBuilder.build();
                 return true;
             }else {
+                message=null;
                 return false;
             }
         }catch (Exception ex){
@@ -106,6 +108,9 @@ public class ProtoBufFileIterator extends AbstractFileIterator {
 
     @Override
     public Map<String, Object> next() {
+        if(message==null){
+            throw new NoSuchElementException("");
+        }
         Map<String,Object> tmap=new HashMap<String, Object>();
         for(Descriptors.FieldDescriptor descriptor:schema.getMessageDescriptor(colmeta.getValueClassName()).getFields()){
             tmap.put(descriptor.getName(),message.getField(descriptor));

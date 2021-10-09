@@ -25,7 +25,7 @@ public abstract class AbstractCassandraOperation {
         }
     }
 
-    protected void doInQuery(Row row) throws RuntimeException {
+    protected void doInQuery(Row row)  {
         List<ColumnDefinitions.Definition> definitions = row.getColumnDefinitions().asList();
         map.clear();
         for (ColumnDefinitions.Definition def : definitions) {

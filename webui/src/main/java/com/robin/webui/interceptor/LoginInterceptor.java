@@ -15,9 +15,7 @@ import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 
 @Slf4j
@@ -89,14 +87,10 @@ public class LoginInterceptor extends HandlerInterceptorAdapter {
 
     public void setIgnoreUrls(String urls){
         String[] urlArr=urls.split(",");
-        for(String url:urlArr){
-            ignoreUrls.add(url);
-        }
+        ignoreUrls.addAll(Arrays.asList(urlArr));
     }
     public void setIgnoreResources(String resources){
         String[] resourceArr=resources.split(",");
-        for(String resource:resourceArr){
-            ignoreResources.add(resource);
-        }
+        ignoreUrls.addAll(Arrays.asList(resourceArr));
     }
 }

@@ -33,7 +33,7 @@ import org.supercsv.prefs.CsvPreference;
 @Slf4j
 public class CsvProcessor {
 
-    public static int ReadFile(InputStream inputStream, CsvConfig config, List<Map<String, String>> columnResultList) {
+    public static int readFile(InputStream inputStream, CsvConfig config, List<Map<String, String>> columnResultList) {
 
         int pos = 0;
         try {

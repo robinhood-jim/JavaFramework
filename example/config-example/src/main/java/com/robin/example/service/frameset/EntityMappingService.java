@@ -25,9 +25,7 @@ import java.util.*;
 @Component(value="entityMappingService")
 @Scope(value="singleton")
 public class EntityMappingService extends BaseAnnotationJdbcService<EntityMapping, Long> {
-	@Autowired
-	private JdbcDao jdbcDao;
-	private Logger logger=LoggerFactory.getLogger(getClass());
+
 	
 	@Transactional(propagation=Propagation.REQUIRED,rollbackFor=RuntimeException.class)
 	public List<FieldMapping> addMapping(ProjectInfo info, EntityMapping mapping, HttpServletRequest request, List<DataBaseColumnMeta> metalist) throws ServiceException{

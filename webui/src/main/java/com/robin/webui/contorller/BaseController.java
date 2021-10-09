@@ -32,7 +32,7 @@ public abstract class BaseController {
         String url=environment.getProperty("login.oauth2-uri")+requestUrl;
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-        MultiValueMap<String, String> params= new LinkedMultiValueMap<String, String>();
+        MultiValueMap<String, String> params= new LinkedMultiValueMap<>();
         Iterator<Map.Entry<String,String>> iter=objectMap.entrySet().iterator();
         while(iter.hasNext()){
             Map.Entry<String,String> entry=iter.next();
@@ -46,7 +46,7 @@ public abstract class BaseController {
         RestTemplate template=SpringContextHolder.getBean(RestTemplate.class);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-        MultiValueMap<String, String> params= new LinkedMultiValueMap<String, String>();
+        MultiValueMap<String, String> params= new LinkedMultiValueMap<>();
         Iterator<Map.Entry<String,String>> iter=objectMap.entrySet().iterator();
         while(iter.hasNext()){
             Map.Entry<String,String> entry=iter.next();
@@ -59,7 +59,7 @@ public abstract class BaseController {
         RestTemplate template=SpringContextHolder.getBean(RestTemplate.class);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-        MultiValueMap<String, String> params= new LinkedMultiValueMap<String, String>();
+        MultiValueMap<String, String> params= new LinkedMultiValueMap<>();
         Iterator<Map.Entry<String,String>> iter=objectMap.entrySet().iterator();
         while(iter.hasNext()){
             Map.Entry<String,String> entry=iter.next();

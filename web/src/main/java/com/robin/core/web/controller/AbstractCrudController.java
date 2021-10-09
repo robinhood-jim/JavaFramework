@@ -61,7 +61,7 @@ public abstract class AbstractCrudController<O extends BaseObject, P extends Ser
         try {
             valueOfMethod = this.pkType.getMethod("valueOf", String.class);
         } catch (Exception ex) {
-            log.error("{}", ex);
+            log.error("{0}", ex);
         }
     }
 
@@ -72,19 +72,19 @@ public abstract class AbstractCrudController<O extends BaseObject, P extends Ser
      * @return
      */
     protected Map<String, Object> doSave(O obj) {
-        Map<String, Object> retMap = new HashMap();
+        Map<String, Object> retMap = new HashMap<>();
         try {
             P pk=this.service.saveEntity(obj);
             wrapSuccess(retMap);
             doAfterAdd(obj,pk, retMap);
         } catch (ServiceException ex) {
-            this.log.error("{}", ex);
+            this.log.error("{0}", ex);
             wrapResponse(retMap, ex);
         }
         return retMap;
     }
     protected Map<String, Object> doSave(Map<String,String> paramMap) {
-        Map<String, Object> retMap = new HashMap();
+        Map<String, Object> retMap = new HashMap<>();
         try {
             O object=this.objectType.newInstance();
             ConvertUtil.convertToModel(object,paramMap);
@@ -92,7 +92,7 @@ public abstract class AbstractCrudController<O extends BaseObject, P extends Ser
             wrapSuccess(retMap);
             doAfterAdd(object,pk, retMap);
         } catch (Exception ex) {
-            this.log.error("{}", ex);
+            this.log.error("{0}", ex);
             wrapResponse(retMap, ex);
         }
         return retMap;
@@ -106,7 +106,7 @@ public abstract class AbstractCrudController<O extends BaseObject, P extends Ser
             doAfterView(object, retMap);
             wrapSuccess(retMap);
         } catch (Exception e) {
-            log.error("{}", e);
+            log.error("{0}", e);
             wrapFailed(retMap, e);
         }
         return retMap;
@@ -119,7 +119,7 @@ public abstract class AbstractCrudController<O extends BaseObject, P extends Ser
             doAfterEdit(object, retMap);
             wrapSuccess(retMap);
         } catch (Exception e) {
-            log.error("{}", e);
+            log.error("{0}", e);
             wrapFailed(retMap, e);
         }
         return retMap;
@@ -132,7 +132,7 @@ public abstract class AbstractCrudController<O extends BaseObject, P extends Ser
             ConvertUtil.convertToModel(originObj,paramMap);
             updateWithOrigin(id, retMap, originObj);
         } catch (Exception ex) {
-            log.error("{}", ex);
+            log.error("{0}", ex);
             wrapFailed(retMap, ex);
         }
         return retMap;
@@ -151,7 +151,7 @@ public abstract class AbstractCrudController<O extends BaseObject, P extends Ser
         try {
             updateWithOrigin(id, retMap, base);
         } catch (Exception ex) {
-            log.error("{}", ex);
+            log.error("{0}", ex);
             wrapFailed(retMap, ex);
         }
         return retMap;

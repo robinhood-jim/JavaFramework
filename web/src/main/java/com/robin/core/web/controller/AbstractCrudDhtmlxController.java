@@ -46,7 +46,7 @@ public abstract class AbstractCrudDhtmlxController<O extends BaseObject, P exten
             insertNullSelect(list);
         }
         for (Map<String, Object> tmap : rsList) {
-            Map<String, Object> rmap = new HashMap();
+            Map<String, Object> rmap = new HashMap<>();
             if (tmap.containsKey(keyColumn)) {
                 rmap.put("text", tmap.get(valueColumn).toString());
                 rmap.put("value", tmap.get(keyColumn).toString());
@@ -64,7 +64,7 @@ public abstract class AbstractCrudDhtmlxController<O extends BaseObject, P exten
             insertNullSelect(list);
         }
         for (Code code : rsList) {
-            Map<String, Object> rmap = new HashMap();
+            Map<String, Object> rmap = new HashMap<>();
             rmap.put("text", code.getCodeName());
             rmap.put("value", code.getValue());
             list.add(rmap);
@@ -88,8 +88,8 @@ public abstract class AbstractCrudDhtmlxController<O extends BaseObject, P exten
             tquery.setRecordCount(list.size());
             tquery.setPageSize(0);
             for (Map<String, String> map : list) {
-                Map<String, Object> tmap = new HashMap<String, Object>();
-                List<String> tmpList = new ArrayList<String>();
+                Map<String, Object> tmap = new HashMap<>();
+                List<String> tmpList = new ArrayList<>();
                 for (String key : fieldNames) {
                     if (withcheck && key.equals(idColumn)) {
                         tmpList.add("0");
@@ -125,7 +125,7 @@ public abstract class AbstractCrudDhtmlxController<O extends BaseObject, P exten
                 list.add(addNullSelection());
             }
             for (Code set : codeList) {
-                Map<String, String> map = new HashMap<String, String>();
+                Map<String, String> map = new HashMap<>();
                 map.put("value", set.getValue());
                 map.put("text", set.getCodeName());
                 list.add(map);
@@ -136,7 +136,7 @@ public abstract class AbstractCrudDhtmlxController<O extends BaseObject, P exten
     }
 
     private Map<String, String> addNullSelection() {
-        Map<String, String> map = new HashMap<String, String>();
+        Map<String, String> map = new HashMap<>();
         map.put("value", "");
         map.put("text", Translator.toLocale("message.NullDisplay"));
         return map;
@@ -144,7 +144,7 @@ public abstract class AbstractCrudDhtmlxController<O extends BaseObject, P exten
 
     protected Map<String, Object> wrapDhtmlxGridOutput(PageQuery query) {
         List<Map<String, Object>> list = query.getRecordSet();
-        Map<String, Object> retMap = new HashMap<String, Object>();
+        Map<String, Object> retMap = new HashMap<>();
         PageQuery tquery = query;
         tquery.setRecordSet(null);
         tquery.getParameters().clear();
@@ -153,7 +153,7 @@ public abstract class AbstractCrudDhtmlxController<O extends BaseObject, P exten
             QueryString queryObj = factory.getQuery(query.getSelectParamId());
             String field = queryObj.getField();
             String[] arr = field.split(",");
-            List<String> fieldName = new ArrayList<String>();
+            List<String> fieldName = new ArrayList<>();
             String idColumn = null;
             for (int i = 0; i < arr.length; i++) {
                 String colname = null;
@@ -171,10 +171,10 @@ public abstract class AbstractCrudDhtmlxController<O extends BaseObject, P exten
                 }
                 fieldName.add(colname);
             }
-            List<Map<String, Object>> retList = new ArrayList<Map<String, Object>>();
+            List<Map<String, Object>> retList = new ArrayList<>();
             for (Map<String, Object> map : list) {
-                Map<String, Object> tmap = new HashMap<String, Object>();
-                List<String> tmpList = new ArrayList<String>();
+                Map<String, Object> tmap = new HashMap<>();
+                List<String> tmpList = new ArrayList<>();
                 for (String key : fieldName) {
                     if (key.equals(idColumn)) {
                         tmpList.add("0");

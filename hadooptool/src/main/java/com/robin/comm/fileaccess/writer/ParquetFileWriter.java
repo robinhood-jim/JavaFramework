@@ -17,7 +17,6 @@ import org.apache.parquet.hadoop.metadata.CompressionCodecName;
 import javax.naming.OperationNotSupportedException;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -45,7 +44,7 @@ public class ParquetFileWriter extends AbstractFileWriter {
     public void beginWrite() throws IOException {
 
         CompressionCodecName codecName= CompressionCodecName.UNCOMPRESSED;
-        List<String> fileSuffix=new ArrayList<String>();
+        List<String> fileSuffix=new ArrayList<>();
         FileUtils.parseFileFormat(colmeta.getPath(),fileSuffix);
         Const.CompressType type= FileUtils.getFileCompressType(fileSuffix);
         if(type== Const.CompressType.COMPRESS_TYPE_GZ){
