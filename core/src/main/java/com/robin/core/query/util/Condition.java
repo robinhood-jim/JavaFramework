@@ -36,6 +36,7 @@ public class Condition implements ICondition, Serializable {
 	public static final String OR = "OR";
 	public static final String IN = "IN";
 	public static final String NOT = "NOT";
+	public static final String AND = "AND";
 
 	private String name; 
 

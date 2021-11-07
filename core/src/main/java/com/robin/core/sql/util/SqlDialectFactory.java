@@ -19,7 +19,10 @@ public class SqlDialectFactory {
             sqlGen=SybaseSqlGen.getInstance();
         }else if(BaseDataBaseMeta.TYPE_PGSQL.equalsIgnoreCase(dbType)){
             sqlGen=PostgreSqlSqlGen.getInstance();
-        }else {
+        }else if(BaseDataBaseMeta.TYPE_HIVE2.equalsIgnoreCase(dbType)){
+            sqlGen=Hive2SqlGen.getInstance();
+        }
+        else {
             throw new MissingConfigException("unknow db dialect Type "+dbType);
         }
         return sqlGen;

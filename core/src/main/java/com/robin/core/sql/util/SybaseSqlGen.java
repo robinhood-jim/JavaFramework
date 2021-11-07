@@ -86,7 +86,7 @@ public class SybaseSqlGen extends AbstractSqlGen implements BaseSqlGen{
 		return null;
 	}
 	@Override
-    public String getSequnceScript(String sequnceName) throws DAOException {
+    public String getSequenceScript(String sequnceName) throws DAOException {
 		throw new DAOException("sequnce not support in Sybase");
 	}
 

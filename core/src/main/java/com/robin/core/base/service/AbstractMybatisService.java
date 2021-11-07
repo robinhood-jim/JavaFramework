@@ -11,6 +11,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
 import com.google.common.collect.ObjectArrays;
 import com.robin.core.base.dto.PageDTO;
 import com.robin.core.base.exception.ServiceException;
@@ -18,6 +19,7 @@ import com.robin.core.base.exception.WebException;
 import com.robin.core.base.reflect.ReflectUtils;
 import com.robin.core.base.util.Const;
 import com.robin.core.convert.util.ConvertUtil;
+import com.robin.core.query.util.Condition;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
@@ -287,7 +289,7 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>,T extends S
     @Override
     @Transactional(rollbackFor = RuntimeException.class)
     public boolean update(T entity, Wrapper<T> updateWrapper) {
-        return super.retBool(baseDao.update(entity, updateWrapper));
+        return SqlHelper.retBool(baseDao.update(entity, updateWrapper));
     }
     @Override
     @Transactional(rollbackFor = RuntimeException.class)
@@ -307,7 +309,7 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>,T extends S
         }catch (Exception ex){
             throw new ServiceException(ex);
         }
-        return retBool(baseDao.update(valueObj,wrapper));
+        return SqlHelper.retBool(baseDao.update(valueObj,wrapper));
     }
 
     @Override
@@ -318,9 +320,9 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>,T extends S
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean insertBatch(Collection<T> entityList, int batchSize) {
-        SqlSession batchSqlSession = sqlSessionBatch();
+        SqlSession batchSqlSession = SqlHelper.sqlSessionBatch(this.entityClass);
         int i = 0;
-        String sqlStatement = sqlStatement(SqlMethod.INSERT_ONE);
+        String sqlStatement = getSqlStatement(SqlMethod.INSERT_ONE);
         try {
             for (T anEntityList : entityList) {
                 batchSqlSession.insert(sqlStatement, anEntityList);
@@ -363,7 +365,7 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>,T extends S
     @Transactional(rollbackFor = RuntimeException.class)
     public boolean deleteWithRequest(Object queryObject) throws ServiceException {
         try {
-            QueryWrapper wrapper = wrapWithEntity(queryObject);
+            QueryWrapper<T> wrapper = wrapWithEntity(queryObject);
             return delete(wrapper);
         }catch (Exception ex){
             throw new ServiceException(ex);
@@ -372,7 +374,7 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>,T extends S
     @Transactional(rollbackFor = RuntimeException.class)
     public boolean updateWithRequest(T model,Object queryObject){
         try {
-            QueryWrapper wrapper = wrapWithEntity(queryObject);
+            QueryWrapper<T> wrapper = wrapWithEntity(queryObject);
             return update(model,wrapper);
         }catch (Exception ex){
             throw new ServiceException(ex);
@@ -382,7 +384,7 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>,T extends S
     @Override
     public List<T> queryWithRequest(Object queryObject) throws ServiceException {
         try {
-            QueryWrapper wrapper = wrapWithEntity(queryObject);
+            QueryWrapper<T> wrapper = wrapWithEntity(queryObject);
             return list(wrapper);
         }catch (Exception ex){
             log.error("{}",ex);
@@ -416,7 +418,7 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>,T extends S
     @Override
     public IPage<T> queryPageWithRequest(Object queryObject, String orderField, boolean isAsc) throws ServiceException {
         try {
-            QueryWrapper wrapper = wrapWithEntity(queryObject);
+            QueryWrapper<T> wrapper = wrapWithEntity(queryObject);
             if(queryObject.getClass().getSuperclass().isAssignableFrom(PageDTO.class)){
                 PageDTO pageDTO=(PageDTO) queryObject;
                 return queryPage(pageDTO,wrapper,orderField,isAsc);
@@ -432,9 +434,9 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>,T extends S
     }
 
     @Override
-    public QueryWrapper wrapWithEntity(Object queryObject) throws Exception {
+    public QueryWrapper<T> wrapWithEntity(Object queryObject) throws Exception {
         Map<String, Method> getMethod = ReflectUtils.returnGetMethods(voType);
-        QueryWrapper queryWrapper = new QueryWrapper();
+        QueryWrapper<T> queryWrapper = new QueryWrapper<>();
         //hashMap
         if (queryObject.getClass().getInterfaces().length>0 &&  queryObject.getClass().getInterfaces()[0].isAssignableFrom(Map.class)) {
             Map<String, Object> tmpMap = (Map<String, Object>) queryObject;
@@ -487,15 +489,72 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>,T extends S
         return queryWrapper;
     }
 
-    private void wrapWithValue(Map<String, Method> getMethod, QueryWrapper queryWrapper, Iterator<Map.Entry<String, Object>> iter) throws Exception {
+    private void wrapWithValue(Map<String, Method> getMethod, QueryWrapper<T> queryWrapper, Iterator<Map.Entry<String, Object>> iter) throws Exception {
         while (iter.hasNext()) {
             Map.Entry<String, Object> entry = iter.next();
             if (getMethod.containsKey(entry.getKey())) {
                 String filterColumn = getFilterColumn(entry.getKey());
                 wrapQueryWithTypeAndValue(getMethod.get(entry.getKey()).getReturnType(), filterColumn, entry.getValue().toString(), queryWrapper);
+            }else if(entry.getKey().equalsIgnoreCase(Condition.OR)){
+                //or 条件组合
+                if(entry.getValue().getClass().getInterfaces()!=null){
+                    if(entry.getValue().getClass().getInterfaces()[0].isAssignableFrom(List.class)){
+                        List<Map<String,Object>> list=(List<Map<String,Object>>)entry.getValue();
+                        queryWrapper.and(f->
+                            list.forEach(map -> {
+                                wrapNested(map,getMethod,f.or());
+                            })
+                        );
+                    }else if(entry.getValue().getClass().getInterfaces()[0].isAssignableFrom(Map.class)){
+                        Map<String,Object> tmap=(Map<String,Object>) entry.getValue();
+                        if(tmap.containsKey("columns")){
+                            Assert.notNull(tmap.get("value"),"value must not be null!");
+                            String[] colArrs=tmap.get("columns").toString().split(",");
+                            for(String column:colArrs){
+                                queryWrapper.and(f -> {
+                                    if(getMethod.containsKey(column)) {
+                                        wrapQueryWithTypeAndValue(getMethod.get(column).getReturnType(), column, tmap.get("value").toString(), f.or());
+                                    }
+                                });
+                            }
+                        }else {
+
+                        }
+                    }
+
+                }
             }
         }
     }
+    private void wrapNested(Map<String,Object> tmap, Map<String, Method> getMethod, QueryWrapper<T> queryWrapper){
+        Iterator<Map.Entry<String,Object>> iter=tmap.entrySet().iterator();
+        while(iter.hasNext()){
+            Map.Entry<String,Object> entry=iter.next();
+            String key=entry.getKey();
+
+            if(null!=entry.getValue()){
+                if(key.equalsIgnoreCase(Condition.OR)){
+                    if(entry.getValue().getClass().getInterfaces().length>0 && entry.getValue().getClass().getInterfaces()[0].isAssignableFrom(List.class)){
+                        List<Map<String,Object>> tlist=(List<Map<String,Object>>)entry.getValue();
+                        if(!CollectionUtils.isEmpty(tlist)){
+                            queryWrapper.or(f->
+                                wrapNested((Map<String,Object>)entry.getValue(),getMethod,f.or())
+                            );
+                        }
+                    }else if(entry.getValue().getClass().getInterfaces().length>0 && entry.getValue().getClass().getInterfaces()[0].isAssignableFrom(Map.class)) {
+                        Map<String,Object> vMap=(Map<String,Object>) entry.getValue();
+                        queryWrapper.and(f->
+                            vMap.forEach((k,v)->{
+                                wrapQueryWithTypeAndValue(v.getClass(),k,v.toString(),f.or());
+                            })
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+
 
     private String getFilterColumn(String key) {
         String filterColumn;
@@ -507,56 +566,60 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>,T extends S
         return filterColumn;
     }
 
-    protected void wrapQueryWithTypeAndValue(Class valueType, String fiterColumn, String value, QueryWrapper queryWrapper) throws Exception {
+    protected void wrapQueryWithTypeAndValue(Class valueType, String filterColumn, String value, QueryWrapper<T> queryWrapper)  {
         if(null==value || org.apache.commons.lang3.StringUtils.isEmpty(value)){
             return;
         }
-        //数值型
-        if (valueType.isAssignableFrom(Long.TYPE) || valueType.isAssignableFrom(Integer.TYPE) || valueType.isAssignableFrom(Float.TYPE)) {
-            if (value.contains("|")) {
-                String[] arr = value.split("\\|");
-                List list = new ArrayList();
-                for (String str : arr) {
-                    list.add(ConvertUtil.parseParameter(valueType, str));
-                }
-                queryWrapper.in(queryWrapper, list);
-            } else {
-                if (value.contains(",") && value.split(",").length == 2) {
-                    String[] sepArr = value.split(",");
-                    if (!org.apache.commons.lang3.StringUtils.isEmpty(sepArr[1])) {
-                        queryWrapper.between(fiterColumn, ConvertUtil.parseParameter(valueType, sepArr[0]), ConvertUtil.parseParameter(valueType, sepArr[0]));
-                    } else {
-                        queryWrapper.gt(fiterColumn, ConvertUtil.parseParameter(valueType, sepArr[0]));
+        try {
+            //数值型
+            if (valueType.isAssignableFrom(Long.TYPE) || valueType.isAssignableFrom(Integer.TYPE) || valueType.isAssignableFrom(Float.TYPE)) {
+                if (value.contains("|")) {
+                    String[] arr = value.split("\\|");
+                    List list = new ArrayList();
+                    for (String str : arr) {
+                        list.add(ConvertUtil.parseParameter(valueType, str));
                     }
-                }else {
-                    wrapWithCompare(queryWrapper,valueType,fiterColumn,value);
-                }
-            }
-        } else if (valueType.isAssignableFrom(Date.class) || valueType.isAssignableFrom(LocalDateTime.class) || valueType.isAssignableFrom(Timestamp.class)) {
-            //时间类型
-            if (value.contains(",")) {
-                String[] arr = value.split(",");
-                if (arr.length == 2) {
-                    queryWrapper.ge(fiterColumn, ConvertUtil.parseParameter(valueType, arr[0]));
-                    queryWrapper.le(fiterColumn, ConvertUtil.parseParameter(valueType, arr[1]));
-                }
-            }else {
-                wrapWithCompare(queryWrapper,valueType,fiterColumn,value);
-            }
-        } else {
-            if (value.contains("|")) {
-                String[] arr = value.split("\\|");
-                queryWrapper.in(fiterColumn, Arrays.asList(arr));
-            } else {
-                if (value.contains("*")) {
-                    queryWrapper.like(fiterColumn, value.replaceAll("\\*", ""));
+                    queryWrapper.in(filterColumn, list);
                 } else {
-                    wrapWithCompare(queryWrapper,valueType,fiterColumn,value);
+                    if (value.contains(",") && value.split(",").length == 2) {
+                        String[] sepArr = value.split(",");
+                        if (!org.apache.commons.lang3.StringUtils.isEmpty(sepArr[1])) {
+                            queryWrapper.between(filterColumn, ConvertUtil.parseParameter(valueType, sepArr[0]), ConvertUtil.parseParameter(valueType, sepArr[0]));
+                        } else {
+                            queryWrapper.gt(filterColumn, ConvertUtil.parseParameter(valueType, sepArr[0]));
+                        }
+                    } else {
+                        wrapWithCompare(queryWrapper, valueType, filterColumn, value);
+                    }
+                }
+            } else if (valueType.isAssignableFrom(Date.class) || valueType.isAssignableFrom(LocalDateTime.class) || valueType.isAssignableFrom(Timestamp.class)) {
+                //时间类型
+                if (value.contains(",")) {
+                    String[] arr = value.split(",");
+                    if (arr.length == 2) {
+                        queryWrapper.ge(filterColumn, ConvertUtil.parseParameter(valueType, arr[0]));
+                        queryWrapper.le(filterColumn, ConvertUtil.parseParameter(valueType, arr[1]));
+                    }
+                } else {
+                    wrapWithCompare(queryWrapper, valueType, filterColumn, value);
+                }
+            } else {
+                if (value.contains("|")) {
+                    String[] arr = value.split("\\|");
+                    queryWrapper.in(filterColumn, Arrays.asList(arr));
+                } else {
+                    if (value.contains("*")) {
+                        queryWrapper.like(filterColumn, value.replaceAll("\\*", ""));
+                    } else {
+                        wrapWithCompare(queryWrapper, valueType, filterColumn, value);
+                    }
                 }
             }
+        }catch (Exception ex){
+            log.error("{0}",ex);
         }
     }
-    protected void wrapWithCompare(QueryWrapper queryWrapper,Class valueType, String filterColumn,String value) throws Exception{
+    protected void wrapWithCompare(QueryWrapper queryWrapper,Class valueType, String filterColumn,String value) {
         int pos=-1;
         int startPos=-1;
         for(int i=0;i<compareOperations.size();i++){
@@ -592,7 +655,8 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>,T extends S
                 queryWrapper.eq(filterColumn,ConvertUtil.parseParameter(valueType,value));
             }
         }catch (Exception ex){
-            throw ex;
+            log.error("{0}",ex);
+            //throw ex;
         }
     }
 }

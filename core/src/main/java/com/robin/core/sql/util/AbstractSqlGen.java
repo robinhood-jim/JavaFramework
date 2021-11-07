@@ -24,6 +24,8 @@ import com.robin.core.query.util.PageQuery;
 import com.robin.core.query.util.QueryParam;
 import com.robin.core.query.util.QueryString;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
 import java.util.Iterator;
@@ -31,11 +33,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
-@Slf4j
+
 public abstract class AbstractSqlGen implements BaseSqlGen {
     public static final String ILLEGAL_SCHEMA_CHARS = "!@#$%^&*()+.";
     protected static final String SELECT = "select ";
-
+    protected Logger log= LoggerFactory.getLogger(getClass());
 
     /**
      * @param str
@@ -642,6 +644,21 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
             tonums = pageQuery.getRecordCount();
         }
         return new Integer[]{nBegin, tonums};
+    }
+    @Override
+    public String generateCountSql(String strSQL) {
+
+        String str = strSQL.trim().toLowerCase();
+        str=str.replaceAll("\\n", "");
+        str=str.replaceAll("\\r", "");
+        int nFromPos = str.indexOf(" from ");
+        int nOrderPos = str.lastIndexOf(" order by ");
+        if (nOrderPos == -1) {
+            nOrderPos = str.length();
+        }
+        StringBuffer strBuf = new StringBuffer();
+        strBuf.append("select count(*) as total ").append(str, nFromPos, nOrderPos);
+        return strBuf.toString();
     }
 
     @Override

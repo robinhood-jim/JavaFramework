@@ -159,7 +159,7 @@ public class OracleSqlGen extends AbstractSqlGen implements BaseSqlGen {
 		return null;
 	}
 	@Override
-    public String getSequnceScript(String sequnceName) {
+    public String getSequenceScript(String sequnceName) {
 		return sequnceName+".nextval";
 	}
 

@@ -27,6 +27,7 @@ import com.robin.core.base.util.Const;
 import com.robin.core.query.util.PageQuery;
 import com.robin.core.query.util.QueryParam;
 import com.robin.core.query.util.QueryString;
+import org.springframework.util.StringUtils;
 
 public class DB2SqlGen extends AbstractSqlGen implements BaseSqlGen{
 	private static DB2SqlGen sqlGen=new DB2SqlGen();
@@ -37,7 +38,6 @@ public class DB2SqlGen extends AbstractSqlGen implements BaseSqlGen{
 		return sqlGen;
 	}
 
-	private Logger log=LoggerFactory.getLogger(this.getClass());
 	@Override
     public String generateCountSql(String strSQL) {
 
@@ -83,7 +83,15 @@ public class DB2SqlGen extends AbstractSqlGen implements BaseSqlGen{
 
 			strSQL = strSQL.trim();
 			StringBuilder pagingSelect = new StringBuilder(strSQL.length() + 100);
-			pagingSelect.append("select * from ( select row.*,rownumber() over() as rownum");
+			pagingSelect.append("select * from ( select row.*,rownumber() over(");
+			if(!StringUtils.isEmpty(pageQuery.getOrderString())){
+				pagingSelect.append(" order by ").append(pageQuery.getOrderString()).append(") as rownum");
+			}
+			else if(!StringUtils.isEmpty(pageQuery.getOrder())){
+				pagingSelect.append(" order by ").append(pageQuery.getOrder()).append(" ").append(Const.ASC.equalsIgnoreCase(pageQuery.getOrderDirection())?"asc":"desc").append(") as rownum");
+			}else{
+				pagingSelect.append(") as rownum");
+			}
 			pagingSelect.append(" from ( ");
 			pagingSelect.append(strSQL);
 			pagingSelect.append(" )row) row_ where rownum <= ").append(startEnd[1]).append(" and rownum > ").append(startEnd[0]).append(" with ur");
@@ -122,7 +130,7 @@ public class DB2SqlGen extends AbstractSqlGen implements BaseSqlGen{
 
 
 	@Override
-    public String getSequnceScript(String sequnceName) throws DAOException {
+    public String getSequenceScript(String sequnceName) throws DAOException {
 		return sequnceName+".nextval";
 	}
 

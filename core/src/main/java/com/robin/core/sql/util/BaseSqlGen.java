@@ -55,7 +55,7 @@ public interface BaseSqlGen {
 
     String[] getResultColName(String selectSql);
 
-    String getSequnceScript(String sequnceName) throws DAOException;
+    String getSequenceScript(String sequenceName) throws DAOException;
     boolean supportIncrement() throws DAOException;
 
     String getSelectPart(String columnName, String aliasName);

@@ -15,18 +15,14 @@
  */
 package com.robin.core.sql.util;
 
-import java.util.List;
-import java.util.Map;
-
 import com.robin.core.base.datameta.BaseDataBaseMeta;
+import com.robin.core.base.exception.DAOException;
+import com.robin.core.query.util.PageQuery;
+import com.robin.core.query.util.QueryParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.robin.core.base.exception.DAOException;
-import com.robin.core.base.util.Const;
-import com.robin.core.query.util.PageQuery;
-import com.robin.core.query.util.QueryParam;
-import com.robin.core.query.util.QueryString;
+import java.util.List;
 
 public class PostgreSqlSqlGen extends AbstractSqlGen implements BaseSqlGen {
 	private static PostgreSqlSqlGen sqlGen=new PostgreSqlSqlGen();
@@ -36,7 +32,6 @@ public class PostgreSqlSqlGen extends AbstractSqlGen implements BaseSqlGen {
 	public static PostgreSqlSqlGen getInstance(){
 		return sqlGen;
 	}
-	private Logger log=LoggerFactory.getLogger(this.getClass());
 	@Override
     public String generateCountSql(String strSQL) {
 
@@ -104,7 +99,7 @@ public class PostgreSqlSqlGen extends AbstractSqlGen implements BaseSqlGen {
 		return strBuf.toString();
 	}
 	@Override
-    public String getSequnceScript(String sequnceName) {
+    public String getSequenceScript(String sequnceName) {
 		return sequnceName+".nextval";
 	}
 	@Override

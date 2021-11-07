@@ -33,8 +33,6 @@ public class MysqlSqlGen extends AbstractSqlGen implements BaseSqlGen{
 	public static MysqlSqlGen getInstance(){
 		return sqlGen;
 	}
-
-	private Logger log=LoggerFactory.getLogger(this.getClass());
 	@Override
     public String generateCountSql(String strSQL) {
 
@@ -105,7 +103,7 @@ public class MysqlSqlGen extends AbstractSqlGen implements BaseSqlGen{
 		return strBuf.toString();
 	}
 	@Override
-    public String getSequnceScript(String sequnceName) throws DAOException {
+    public String getSequenceScript(String sequnceName) throws DAOException {
 		throw new DAOException("sequnce not support in MySql");
 	}
 	@Override
