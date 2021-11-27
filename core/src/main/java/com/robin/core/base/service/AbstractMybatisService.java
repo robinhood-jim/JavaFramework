@@ -147,31 +147,31 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>,T extends S
 
     @Override
     public List<T> selectByField(String columName, Object value){
-        QueryWrapper<T> queryWrapper=new QueryWrapper<T>();
+        QueryWrapper<T> queryWrapper=new QueryWrapper<>();
         queryWrapper.eq(columName,value);
         return baseDao.selectList(queryWrapper);
     }
     @Override
     public T selectOneByField(String columnName, Object value){
-        QueryWrapper<T> queryWrapper=new QueryWrapper<T>();
+        QueryWrapper<T> queryWrapper=new QueryWrapper<>();
         queryWrapper.eq(columnName,value);
         return baseDao.selectOne(queryWrapper);
     }
     @Override
     public List<T> selectInByField(String columnName, Object value){
-        QueryWrapper<T> queryWrapper=new QueryWrapper<T>();
+        QueryWrapper<T> queryWrapper=new QueryWrapper<>();
         queryWrapper.in(columnName,value);
         return baseDao.selectList(queryWrapper);
     }
     @Override
     public List<T> selectNeByField(String columnName, Object value){
-        QueryWrapper<T> queryWrapper=new QueryWrapper<T>();
+        QueryWrapper<T> queryWrapper=new QueryWrapper<>();
         queryWrapper.ne(columnName,value);
         return baseDao.selectList(queryWrapper);
     }
     @Override
     public List<T> selectBetweenByField(String columnName, Object fromValue, Object toValue){
-        QueryWrapper<T> queryWrapper=new QueryWrapper<T>();
+        QueryWrapper<T> queryWrapper=new QueryWrapper<>();
         queryWrapper.between(columnName,fromValue,toValue);
         return baseDao.selectList(queryWrapper);
     }
@@ -566,7 +566,7 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>,T extends S
         return filterColumn;
     }
 
-    protected void wrapQueryWithTypeAndValue(Class valueType, String filterColumn, String value, QueryWrapper<T> queryWrapper)  {
+    protected void wrapQueryWithTypeAndValue(Class<?> valueType, String filterColumn, String value, QueryWrapper<T> queryWrapper)  {
         if(null==value || org.apache.commons.lang3.StringUtils.isEmpty(value)){
             return;
         }

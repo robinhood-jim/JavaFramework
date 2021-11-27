@@ -24,6 +24,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 
 import java.io.Serializable;
+import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -281,19 +282,19 @@ public class ConvertUtil {
         DateTimeFormatter formatter=null;
         Object ret = null;
         if(!StringUtils.isEmpty(strValue.toString())) {
-            if (type.isAssignableFrom(Integer.class)) {
+            if (Integer.class.isAssignableFrom(type)) {
                 ret = Integer.parseInt(strValue.toString());
-            } else if (type.isAssignableFrom(Long.class)) {
+            } else if (Long.class.isAssignableFrom(type)) {
                 ret = Long.parseLong(strValue.toString());
-            } else if (type.isAssignableFrom(Float.class)) {
+            } else if (Float.class.isAssignableFrom(type)) {
                 ret = Float.parseFloat(strValue.toString());
-            } else if (type.isAssignableFrom(Double.class)) {
+            } else if (Double.class.isAssignableFrom(type)) {
                 ret = Double.parseDouble(strValue.toString());
-            } else if (type.isAssignableFrom(Short.class)) {
+            } else if (Short.class.isAssignableFrom(type)) {
                 ret = Short.valueOf(strValue.toString());
-            } else if (type.isAssignableFrom(BigDecimal.class)) {
+            } else if (BigDecimal.class.isAssignableFrom(type)) {
                 ret = BigDecimal.valueOf(Double.valueOf(strValue.toString()));
-            }else if(type.isAssignableFrom(Boolean.class)){
+            }else if(Boolean.class.isAssignableFrom(type)){
                 if(NumberUtils.isNumber(strValue.toString())){
                     ret=strValue.toString().equals(Const.VALID);
                 }else{
@@ -336,6 +337,14 @@ public class ConvertUtil {
                 } else if (type.isAssignableFrom(byte[].class)) {
                     ret = strValue.toString().getBytes();
                 } else {
+                    if(Map.class.isAssignableFrom(type) && Map.class.isAssignableFrom(strValue.getClass())){
+                        Map<String,Object> valueMap=new HashMap<>();
+                        ((Map)strValue).forEach((k,v)->{
+
+                        });
+                    }else if(List.class.isAssignableFrom(type)){
+
+                    }
                     ret = strValue;
                 }
             }

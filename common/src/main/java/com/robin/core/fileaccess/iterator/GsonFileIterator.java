@@ -23,6 +23,7 @@ import com.robin.core.fileaccess.meta.DataSetColumnMeta;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 public class GsonFileIterator extends AbstractFileIterator{
 	private JsonReader jreader=null;
@@ -56,7 +57,7 @@ public class GsonFileIterator extends AbstractFileIterator{
 	}
 
 	@Override
-	public Map<String, Object> next() {
+	public Map<String, Object> next() throws NoSuchElementException {
 		Map<String, Object> retmap=new HashMap<String, Object>();
 		DataSetColumnMeta meta=null;
 		try{

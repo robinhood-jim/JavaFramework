@@ -68,7 +68,7 @@ public class Condition implements ICondition, Serializable {
 	
 	public String toSQLString(String tablename) {
 		StringBuffer sbSQLStr = new StringBuffer();
-		if (BETWEEN == state){
+		if (BETWEEN.equals(state)){
 			if (values.length < 2){
 				throw new ConfigurationIncorrectException("between must has least two value");
 			}
@@ -78,69 +78,69 @@ public class Condition implements ICondition, Serializable {
 			sbSQLStr.append(name);
 			sbSQLStr.append(" between ? and ?) ");
 		} else 
-		if (LIKE == state){
+		if (LIKE.equals(state)){
 			sbSQLStr.append(" (");
 			sbSQLStr.append(tablename);
 			sbSQLStr.append(".");
 			sbSQLStr.append(name);
 			sbSQLStr.append(" like ?)");
 		} else 
-		if (EQUALS == state){
+		if (EQUALS.equals(state)){
 			sbSQLStr.append(" (");
 			sbSQLStr.append(tablename);
 			sbSQLStr.append(".");
 			sbSQLStr.append(name);
 			sbSQLStr.append("=?) ");
 		} else 
-        if (NOT_EQUALS == state){
+        if (NOT_EQUALS.equals(state)){
             sbSQLStr.append(" (");
             sbSQLStr.append(tablename);
             sbSQLStr.append(".");
             sbSQLStr.append(name);
             sbSQLStr.append("<>?) ");
         }else
-		if (GREATNESS == state){
+		if (GREATNESS.equals(state)){
 			sbSQLStr.append(" (");
 			sbSQLStr.append(tablename);
 			sbSQLStr.append(".");
 			sbSQLStr.append(name);
 			sbSQLStr.append(">?) ");
 		}else 
-		if (SMALLNESS == state){
+		if (SMALLNESS.equals(state)){
 			sbSQLStr.append(" (");
 			sbSQLStr.append(tablename);
 			sbSQLStr.append(".");
 			sbSQLStr.append(name);
 			sbSQLStr.append("<?) ");
-		}else if (GREATNESS_AND_EQUALS == state){
+		}else if (GREATNESS_AND_EQUALS.equals(state)){
 			sbSQLStr.append(" (");
 			sbSQLStr.append(tablename);
 			sbSQLStr.append(".");
 			sbSQLStr.append(name);
 			sbSQLStr.append(">=?) ");
 		}else 
-		if (SMALLNESS_AND_EQUALS == state){
+		if (SMALLNESS_AND_EQUALS.equals(state)){
 			sbSQLStr.append(" (");
 			sbSQLStr.append(tablename);
 			sbSQLStr.append(".");
 			sbSQLStr.append(name);
 			sbSQLStr.append("<=?) ");
 		} else 
-		if (IS_NOT_NULL == state){
+		if (IS_NOT_NULL.equals(state)){
 			sbSQLStr.append(" (");
 			sbSQLStr.append(tablename);
 			sbSQLStr.append(".");
 			sbSQLStr.append(name);
 			sbSQLStr.append(" is not null) ");
 		} else 
-		if (IS_NULL == state){
+		if (IS_NULL.equals(state)){
 			sbSQLStr.append(" (");
 			sbSQLStr.append(tablename);
 			sbSQLStr.append(".");
 			sbSQLStr.append(name);
 			sbSQLStr.append(" is null) ");
 		} else 
-		if (IN == state){
+		if (IN.equals(state)){
 			if (values.length < 1 || values[0] == null){
 				throw new ConfigurationIncorrectException("In must have at least one Value");
 			}
@@ -157,7 +157,7 @@ public class Condition implements ICondition, Serializable {
             }
 			sbSQLStr.append(")) ");
 		} else 
-		if (OR == state){
+		if (OR.equals(state)){
 			if (values.length < 2 || values[0] == null || values[1] == null){
 				throw new ConfigurationIncorrectException(" or must at least two parameter ");
 			}
@@ -167,7 +167,7 @@ public class Condition implements ICondition, Serializable {
 			sbSQLStr.append(((Condition)values[1]).toSQLString(tablename));
 			sbSQLStr.append(") ");
 		} else 
-		if (NOT == state){
+		if (NOT.equals(state)){
 			if (value == null){
 				//throw new Exception(" (in "+values+")");
 			}
@@ -179,7 +179,7 @@ public class Condition implements ICondition, Serializable {
 	}
 	public String toSQLPart() {
 		StringBuffer sbSQLStr = new StringBuffer();
-		if (BETWEEN == state){
+		if (BETWEEN.equals(state)){
 			if (values.length < 2){
 				throw new ConfigurationIncorrectException(" between do not contain two parameter");
 			}
@@ -187,51 +187,51 @@ public class Condition implements ICondition, Serializable {
 			sbSQLStr.append(name);
 			sbSQLStr.append(" between ? and ?) ");
 		} else 
-		if (LIKE == state){
+		if (LIKE.equals(state)){
 			sbSQLStr.append(" (");
 			sbSQLStr.append(name);
 			sbSQLStr.append(" like ?)");
 		} else 
-		if (EQUALS == state){
+		if (EQUALS.equals(state)){
 			sbSQLStr.append(" (");
 			sbSQLStr.append(name);
 			sbSQLStr.append("=?) ");
 		} else 
-        if (NOT_EQUALS == state){
+        if (NOT_EQUALS.equals(state)){
             sbSQLStr.append(" (");
             sbSQLStr.append(name);
             sbSQLStr.append("<>?) ");
         }else
-		if (GREATNESS == state){
+		if (GREATNESS.equals(state)){
 			sbSQLStr.append(" (");
 			sbSQLStr.append(name);
 			sbSQLStr.append(">?) ");
 		}else 
-		if (SMALLNESS == state){
+		if (SMALLNESS.equals(state)){
 			sbSQLStr.append(" (");
 			sbSQLStr.append(name);
 			sbSQLStr.append("<?) ");
-		}else if (GREATNESS_AND_EQUALS == state){
+		}else if (GREATNESS_AND_EQUALS.equals(state)){
 			sbSQLStr.append(" (");
 			sbSQLStr.append(name);
 			sbSQLStr.append(">=?) ");
 		}else 
-		if (SMALLNESS_AND_EQUALS == state){
+		if (SMALLNESS_AND_EQUALS.equals(state)){
 			sbSQLStr.append(" (");
 			sbSQLStr.append(name);
 			sbSQLStr.append("<=?) ");
 		} else 
-		if (IS_NOT_NULL == state){
+		if (IS_NOT_NULL.equals(state)){
 			sbSQLStr.append(" (");
 			sbSQLStr.append(name);
 			sbSQLStr.append(" is not null) ");
 		} else 
-		if (IS_NULL == state){
+		if (IS_NULL.equals(state)){
 			sbSQLStr.append(" (");
 			sbSQLStr.append(name);
 			sbSQLStr.append(" is null) ");
 		} else 
-		if (IN == state){
+		if (IN.equals(state)){
 			if (values.length < 1 || values[0] == null){
 				throw new ConfigurationIncorrectException("in with less than two parameter");
 			}
@@ -246,7 +246,7 @@ public class Condition implements ICondition, Serializable {
             }
 			sbSQLStr.append(")) ");
 		} else 
-		if (OR == state){
+		if (OR.equals(state)){
 			if (values.length < 2 || values[0] == null || values[1] == null){
 				throw new ConfigurationIncorrectException("(in "+ StringUtils.join(values,",")+")");
 			}
@@ -256,7 +256,7 @@ public class Condition implements ICondition, Serializable {
 			sbSQLStr.append(((Condition)values[1]).toSQLPart());
 			sbSQLStr.append(") ");
 		} else 
-		if (NOT == state){
+		if (NOT.equals(state)){
 			if (value == null){
 				//throw new Exception("(in "+values+")");
 			}

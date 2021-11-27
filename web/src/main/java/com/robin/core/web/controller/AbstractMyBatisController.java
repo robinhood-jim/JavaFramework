@@ -43,7 +43,7 @@ public abstract class AbstractMyBatisController<S extends AbstractMybatisService
     protected String deleteColumn="delete_tag";
     protected Field deleteField=null;
     protected S service;
-    public AbstractMyBatisController(){
+    protected AbstractMyBatisController(){
         Type genericSuperClass = getClass().getGenericSuperclass();
         ParameterizedType parametrizedType;
         if ((genericSuperClass instanceof ParameterizedType)) {

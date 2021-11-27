@@ -63,6 +63,7 @@ public class Hive2SqlGen extends AbstractSqlGen implements BaseSqlGen{
             }
             pagingSelect.append(" from ( ");
             pagingSelect.append(strSQL);
+
             pagingSelect.append(" )r) r where rownum between ").append(startEnd[0]+1).append(" and ").append(startEnd[1]);
             log.info("pageSql=" + pagingSelect.toString());
             return pagingSelect.toString();

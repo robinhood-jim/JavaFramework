@@ -37,13 +37,10 @@ public class CompressUtils {
         if (!zipFile.getParentFile().exists()) {
             zipFile.getParentFile().mkdirs();
         }
-
-        ZipOutputStream out = null;
-        try {
-            out = new ZipOutputStream(new FileOutputStream(zipFile));
+        try(ZipOutputStream out=new ZipOutputStream(new FileOutputStream(zipFile))) {
             pack(out, srcDir, "");
         } finally {
-            IOUtils.closeQuietly(out);
+
         }
     }
 
@@ -84,13 +81,9 @@ public class CompressUtils {
             }
         } else {
             out.putNextEntry(new JarEntry(base));
-
-            FileInputStream in = null;
-            try {
-                in = new FileInputStream(src);
+            try ( FileInputStream in =new FileInputStream(src);){
                 IOUtils.copy(in, out);
             } finally {
-                IOUtils.closeQuietly(in);
             }
         }
     }

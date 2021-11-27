@@ -32,6 +32,9 @@ import java.util.zip.*;
  * @version 1.0
  */
 public class CompressDecoder {
+    private CompressDecoder(){
+
+    }
     public static InputStream getInputStreamByCompressType(String path, InputStream rawstream) throws IOException{
         InputStream inputStream=null;
         List<String> suffixList=new ArrayList<String>();
