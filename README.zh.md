@@ -1,6 +1,6 @@
 # SimpleJavaFrame
 
-[![Build Status](https://travis-ci.org/robinhood-jim/JavaFramework.svg?branch=master)](https://travis-ci.org/robinhood-jim/JavaFramework)
+[![Build Status](https://api.travis-ci.com/robinhood-jim/JavaFramework.svg?branch=master)](https://app.travis-ci.com/github/robinhood-jim/JavaFramework)
 [![CircleCI](https://circleci.com/gh/robinhood-jim/JavaFramework.svg?style=svg)](https://circleci.com/gh/robinhood-jim/JavaFramework)
 ![license](https://img.shields.io/badge/license-Apache--2.0-green.svg)
 

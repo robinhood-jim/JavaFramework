@@ -36,7 +36,6 @@ public class SqlServer2005Gen extends AbstractSqlGen implements BaseSqlGen{
 	public static SqlServer2005Gen getInstance(){
 		return sqlGen;
 	}
-	private Logger log=LoggerFactory.getLogger(this.getClass());
 	@Override
     public String generateCountSql(String strSQL) {
 		String str= strSQL.trim();
@@ -103,7 +102,7 @@ public class SqlServer2005Gen extends AbstractSqlGen implements BaseSqlGen{
 		return pagingSelect.toString();
 	}
 	@Override
-    public String getSequnceScript(String sequnceName) throws DAOException {
+    public String getSequenceScript(String sequnceName) throws DAOException {
 		throw new DAOException("sequnce not support in SqlServer2005");
 	}
 

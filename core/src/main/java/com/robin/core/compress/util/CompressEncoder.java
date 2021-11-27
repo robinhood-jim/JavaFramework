@@ -32,6 +32,9 @@ import java.util.zip.ZipOutputStream;
  * @version 1.0
  */
 public class CompressEncoder {
+    private CompressEncoder(){
+
+    }
 
         /**
          *wrap OutputStream with specify compress Format  (Zip file can only support One file)

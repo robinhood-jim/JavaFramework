@@ -42,6 +42,7 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.jdbc.support.lob.LobHandler;
 import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 
 import javax.sql.DataSource;
 import java.io.Serializable;
@@ -270,7 +271,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
             buffer.append(getWholeSelectSql(type)).append(" where ");
             Map<String, AnnotationRetrevior.FieldContent> fieldMap = AnnotationRetrevior.getMappingFieldsMapCache(type);
             List<AnnotationRetrevior.FieldContent> fields = AnnotationRetrevior.getMappingFieldsCache(type);
-            List<Object> objList = new ArrayList<Object>();
+            List<Object> objList = new ArrayList<>();
             for (int i = 0; i < conditions.size(); i++) {
                 conditions.get(i).setFieldMap(fieldMap);
                 buffer.append(conditions.get(i).toSQLPart());
@@ -631,10 +632,10 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
             List<AnnotationRetrevior.FieldContent> fields = AnnotationRetrevior.getMappingFieldsCache(clazz);
             EntityMappingUtil.SelectSegment segment = EntityMappingUtil.getSelectPkSegment(clazz, id, sqlGen);
             List<Map<String, Object>> list1 = queryBySql(segment.getSelectSql(), fields, segment.getValues().toArray());
-            if (!list1.isEmpty()) {
+            if (!CollectionUtils.isEmpty(list1)) {
                 wrapResultToModelWithKey(obj, list1.get(0), fields, id);
             } else {
-                throw new Exception("id not exists!");
+                throw new DAOException("id not exists!");
             }
             return obj;
         } catch (Exception ex) {

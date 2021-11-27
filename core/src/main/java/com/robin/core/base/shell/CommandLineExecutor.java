@@ -72,7 +72,7 @@ public class CommandLineExecutor {
 			CommandOutputThread thread=new CommandOutputThread(process,false);
 			thread.start();
 			int runCode=process.waitFor();
-			logger.info("return code="+runCode);
+			logger.info("return code={}",runCode);
 			thread.waitFor();
 			logger.info("execute tag="+thread.isExecuteOk());
 			if(runCode!=0 || !thread.isExecuteOk()){

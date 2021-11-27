@@ -350,7 +350,12 @@ public class SimpleJdbcDao {
 	public static final Map<String, Object> wrapResultSet(ResultSet rs,ResultSetMetaData meta) throws SQLException{
 		Map<String, Object> map = new HashMap<>();
 		for (int i = 0; i < meta.getColumnCount(); i++) {
-			map.put(meta.getColumnLabel(i + 1), rs.getObject(i + 1));
+			String columnName=meta.getColumnLabel(i + 1);
+			int pos=columnName.indexOf(".");
+			if(pos!=-1){
+				columnName=columnName.substring(pos+1);
+			}
+			map.put(columnName, rs.getObject(i + 1));
 		}
 		return map;
 	}

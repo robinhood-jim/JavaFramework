@@ -55,7 +55,7 @@ public class EntityMappingUtil {
                                         if (field.isSequential()) {
                                             hasincrementPk = true;
                                             seqfield = content.getFieldName();
-                                            valuebuBuffer.append(sqlGen.getSequnceScript(field.getSequenceName())).append(",");
+                                            valuebuBuffer.append(sqlGen.getSequenceScript(field.getSequenceName())).append(",");
                                         } else {
                                             valuebuBuffer.append("?,");
                                         }
@@ -76,7 +76,7 @@ public class EntityMappingUtil {
                     }
                     //Oracle Sequence
                     if (content.isSequential()) {
-                        valuebuBuffer.append(sqlGen.getSequnceScript(content.getSequenceName())).append(",");
+                        valuebuBuffer.append(sqlGen.getSequenceScript(content.getSequenceName())).append(",");
                         seqfield = content.getFieldName();
                         fieldBuffer.append(seqfield).append(",");
                     }

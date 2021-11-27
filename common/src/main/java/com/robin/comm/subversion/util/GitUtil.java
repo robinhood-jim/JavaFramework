@@ -34,6 +34,9 @@ import java.util.Map;
 
 public class GitUtil {
     private static Map<String, Git> gitMap = new HashMap<String, Git>();
+    private GitUtil(){
+
+    }
 
     public static void cloneProject(String repName, String cloneUrl, String localPath, String userName, String password) throws GitAPIException {
         clone(repName, cloneUrl, localPath, userName, password);
