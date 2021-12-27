@@ -12,6 +12,7 @@ import com.robin.core.resaccess.CommResWriterFactory;
 import javax.naming.OperationNotSupportedException;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.URI;
 import java.util.Map;
 
 
@@ -23,9 +24,11 @@ public class RecordWriterHolder extends AbstractResourceHolder {
         if(writer!=null || busyTag){
             throw new OperationInWorkException("last Opertaion Writer already Exists.May not be shutdown Propery");
         }
-        String[] tag = AbstractResourceAccessUtil.retrieveResource(colmeta.getPath());
-        AbstractResourceAccessUtil util = ResourceAccessHolder.getAccessUtilByProtocol(tag[0].toLowerCase());
-        OutputStream outStream = util.getOutResourceByStream(colmeta, colmeta.getPath());
+        URI uri=new URI(colmeta.getPath());
+        String schema=uri.getScheme();
+        String path=uri.getPath();
+        AbstractResourceAccessUtil util = ResourceAccessHolder.getAccessUtilByProtocol(schema.toLowerCase());
+        OutputStream outStream = util.getOutResourceByStream(colmeta, path);
         if(!colmeta.isFsTag()) {
             writer = TextFileWriterFactory.getFileWriterByPath(colmeta, outStream);
         } else{

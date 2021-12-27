@@ -5,7 +5,7 @@ import org.apache.commons.io.FileUtils;
 
 import java.io.*;
 
-public class LocalResourceAccessUtils extends AbstractResourceAccessUtil {
+public class LocalResourceAccessUtil extends AbstractResourceAccessUtil {
 	@Override
     public BufferedReader getInResourceByReader(DataCollectionMeta meta, String resourcePath) throws IOException{
 		BufferedReader reader=null;

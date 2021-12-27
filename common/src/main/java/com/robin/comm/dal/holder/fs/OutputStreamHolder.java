@@ -24,6 +24,8 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.URI;
+
 @Slf4j
 public class OutputStreamHolder extends AbstractResourceHolder {
 	protected OutputStream out;
@@ -32,9 +34,11 @@ public class OutputStreamHolder extends AbstractResourceHolder {
 		if(out!=null || busyTag){
 			throw new OperationInWorkException("last Opertaion OuputStream already Exists.May not be shutdown Propery");
 		}
-		String[] tag= AbstractResourceAccessUtil.retrieveResource(colmeta.getPath());
-		AbstractResourceAccessUtil util= ResourceAccessHolder.getAccessUtilByProtocol(tag[0].toLowerCase());
-		out=util.getOutResourceByStream(colmeta,colmeta.getPath() );
+		URI uri=new URI(colmeta.getPath());
+		String schema=uri.getScheme();
+		String path=uri.getPath();
+		AbstractResourceAccessUtil util= ResourceAccessHolder.getAccessUtilByProtocol(schema.toLowerCase());
+		out=util.getOutResourceByStream(colmeta,path );
 
 	}
 

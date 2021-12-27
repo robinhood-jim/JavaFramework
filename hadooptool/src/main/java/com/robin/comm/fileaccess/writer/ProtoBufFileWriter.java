@@ -1,4 +1,5 @@
-package com.robin.comm.fileaccess.iterator;
+package com.robin.comm.fileaccess.writer;
+
 
 import com.github.os72.protobuf.dynamic.DynamicSchema;
 import com.github.os72.protobuf.dynamic.MessageDefinition;
@@ -6,34 +7,29 @@ import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.ExtensionRegistry;
 import com.robin.comm.fileaccess.util.ProtoBufUtil;
-import com.robin.core.base.util.Const;
-import com.robin.core.fileaccess.iterator.AbstractFileIterator;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.meta.DataSetColumnMeta;
 import com.robin.core.fileaccess.util.ResourceUtil;
+import com.robin.core.fileaccess.writer.AbstractFileWriter;
 import org.springframework.util.CollectionUtils;
 
-import java.util.HashMap;
+import javax.naming.OperationNotSupportedException;
+import java.io.IOException;
 import java.util.Map;
-import java.util.NoSuchElementException;
 
-import static com.robin.core.fileaccess.util.ResourceUtil.getProcessPath;
-
-public class ProtoBufFileIterator extends AbstractFileIterator {
+public class ProtoBufFileWriter extends AbstractFileWriter {
     private DynamicSchema schema;
     private DynamicMessage message;
     private ExtensionRegistry registry;
     private DynamicSchema.Builder schemaBuilder;
     private DynamicMessage.Builder mesgBuilder;
-
-    public ProtoBufFileIterator(DataCollectionMeta colmeta) {
+    protected ProtoBufFileWriter(DataCollectionMeta colmeta) {
         super(colmeta);
     }
 
 
-
     @Override
-    public void init()  {
+    public void beginWrite() throws IOException {
         try {
             if (!CollectionUtils.isEmpty(colmeta.getColumnList())) {
                 schemaBuilder = DynamicSchema.newBuilder();
@@ -46,17 +42,15 @@ public class ProtoBufFileIterator extends AbstractFileIterator {
                 MessageDefinition definition = msgBuilder.build();
                 schemaBuilder.addMessageDefinition(definition);
                 schema = schemaBuilder.build();
-                mesgBuilder=DynamicMessage.newBuilder(schema.getMessageDescriptor(colmeta.getValueClassName()));
+                mesgBuilder= DynamicMessage.newBuilder(schema.getMessageDescriptor(colmeta.getValueClassName()));
                 registry=getExtension(schema,colmeta);
             }else{
                 checkAccessUtil(null);
-                instream = accessUtil.getInResourceByStream(colmeta, ResourceUtil.getProcessPath(colmeta.getPath()));
+                out = accessUtil.getOutResourceByStream(colmeta, ResourceUtil.getProcessPath(colmeta.getPath()));
             }
         }catch (Exception ex){
             ex.printStackTrace();
         }
-
-
     }
     public static  ExtensionRegistry getExtension(DynamicSchema schema, DataCollectionMeta colmeta){
         ExtensionRegistry extensionRegistry = ExtensionRegistry.newInstance();
@@ -67,41 +61,17 @@ public class ProtoBufFileIterator extends AbstractFileIterator {
     }
 
     @Override
-    public boolean hasNext() {
-        try {
-            if (mesgBuilder.mergeDelimitedFrom(instream)) {
-                message=mesgBuilder.build();
-                return true;
-            }else {
-                message=null;
-                return false;
-            }
-        }catch (Exception ex){
+    public void finishWrite() throws IOException {
 
-        }
-        return false;
     }
 
     @Override
-    public Map<String, Object> next() {
-        if(message==null){
-            throw new NoSuchElementException("");
-        }
-        Map<String,Object> tmap=new HashMap<String, Object>();
-        for(Descriptors.FieldDescriptor descriptor:schema.getMessageDescriptor(colmeta.getValueClassName()).getFields()){
-            tmap.put(descriptor.getName(),message.getField(descriptor));
-        }
-        return tmap;
+    public void flush() throws IOException {
+
     }
 
     @Override
-    public void remove() {
-        try {
-            if (mesgBuilder.mergeDelimitedFrom(instream, registry)) {
-                mesgBuilder.build();
-            }
-        }catch (Exception ex){
+    public void writeRecord(Map<String, ?> map) throws IOException, OperationNotSupportedException {
 
-        }
     }
 }

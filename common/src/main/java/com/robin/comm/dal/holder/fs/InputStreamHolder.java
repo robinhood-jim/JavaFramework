@@ -23,6 +23,7 @@ import com.robin.core.fileaccess.util.AbstractResourceAccessUtil;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 
 public class InputStreamHolder extends AbstractResourceHolder {
 	protected InputStream in;
@@ -35,9 +36,11 @@ public class InputStreamHolder extends AbstractResourceHolder {
 		if(in!=null || busyTag){
 			throw new OperationInWorkException("last Opertaion InputStream already Exists.May not be shutdown Propery");
 		}
-		String[] tag=AbstractResourceAccessUtil.retrieveResource(colmeta.getPath());
-		AbstractResourceAccessUtil util= ResourceAccessHolder.getAccessUtilByProtocol(tag[0].toLowerCase());
-		in=util.getInResourceByStream(colmeta, colmeta.getPath());
+		URI uri=new URI(colmeta.getPath());
+		String schema=uri.getScheme();
+		String path=uri.getPath();
+		AbstractResourceAccessUtil util= ResourceAccessHolder.getAccessUtilByProtocol(schema.toLowerCase());
+		in=util.getInResourceByStream(colmeta, path);
 	}
 
 	public InputStream getInputStream(){

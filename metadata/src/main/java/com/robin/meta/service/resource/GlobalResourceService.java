@@ -225,6 +225,8 @@ public class GlobalResourceService extends BaseAnnotationJdbcService<GlobalResou
             if (iterator.hasNext()) {
                 schema = ((AvroFileIterator) iterator).getSchema();
             }
+        }else if(fileFormat.equalsIgnoreCase(Const.FILESUFFIX_ORC)){
+
         }
         return schema;
     }

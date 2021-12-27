@@ -16,14 +16,18 @@
 package com.robin.core.fileaccess.meta;
 
 import com.robin.core.base.datameta.BaseDataBaseMeta;
+import com.robin.core.base.datameta.DataBaseColumnMeta;
 import com.robin.core.base.model.BaseObject;
 import lombok.Data;
+import org.springframework.util.CollectionUtils;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
 @Data
 public class DataCollectionMeta implements Serializable {
 	private String split;
@@ -71,5 +75,11 @@ public class DataCollectionMeta implements Serializable {
 	}
 	public Map<String,Integer> getColumnNameMap(){
 		return columnNameMap;
+	}
+	public static List<DataSetColumnMeta> parseMeta(List<DataBaseColumnMeta> columnMetas){
+		if(!CollectionUtils.isEmpty(columnMetas)){
+			return columnMetas.stream().map(f->new DataSetColumnMeta(f.getColumnName(),f.getColumnType().toString(),null)).collect(Collectors.toList());
+		}
+		return null;
 	}
 }

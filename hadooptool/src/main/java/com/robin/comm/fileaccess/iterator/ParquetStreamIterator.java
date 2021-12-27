@@ -1,5 +1,6 @@
 package com.robin.comm.fileaccess.iterator;
 
+import com.robin.comm.fileaccess.util.ParquetUtil;
 import com.robin.core.fileaccess.iterator.AbstractFileIterator;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.util.AvroUtils;
@@ -27,18 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
-/**
- * <p>Project:  frame</p>
- * <p>
- * <p>Description:com.robin.comm.fileaccess.iterator</p>
- * <p>
- * <p>Copyright: Copyright (c) 2018 create at 2018年12月18日</p>
- * <p>
- * <p>Company: zhcx_DEV</p>
- *
- * @author robinjim
- * @version 1.0
- */
+
 public class ParquetStreamIterator extends AbstractFileIterator {
     private ParquetReader<GenericData.Record> preader;
     private Schema schema;
@@ -65,7 +55,7 @@ public class ParquetStreamIterator extends AbstractFileIterator {
             //seek remote file to local tmp
 
             preader = AvroParquetReader
-                    .<GenericData.Record>builder(makeInputFile()).withConf(conf).build();
+                    .<GenericData.Record>builder(ParquetUtil.makeInputFile(instream)).withConf(conf).build();
             fields = schema.getFields();
         }catch (Exception ex){
             logger.error("{0}",ex);
@@ -116,104 +106,7 @@ public class ParquetStreamIterator extends AbstractFileIterator {
             ex.printStackTrace();
         }
     }
-    public InputFile makeInputFile(){
-        return new InputFile() {
-            @Override
-            public long getLength() throws IOException {
-                return instream.available();
-            }
 
-            @Override
-            public SeekableInputStream newStream() throws IOException {
-
-                return new SeekableInputStream(){
-
-                    private final byte[] tmpBuf = new byte[COPY_BUFFER_SIZE];
-
-                    @Override
-                    public int read() throws IOException {
-                        return instream.read();
-                    }
-
-                    @SuppressWarnings("NullableProblems")
-                    @Override
-                    public int read(byte[] b) throws IOException {
-                        return instream.read(b);
-                    }
-
-                    @SuppressWarnings("NullableProblems")
-                    @Override
-                    public int read(byte[] b, int off, int len) throws IOException {
-                        return instream.read(b, off, len);
-                    }
-
-                    @Override
-                    public long skip(long n) throws IOException {
-                        return instream.skip(n);
-                    }
-
-                    @Override
-                    public int available() throws IOException {
-                        return instream.available();
-                    }
-
-                    @Override
-                    public void close() throws IOException {
-                        instream.close();
-                    }
-
-
-
-                    @Override
-                    public synchronized void mark(int readlimit) {
-                        instream.mark(readlimit);
-
-                    }
-
-                    @Override
-                    public synchronized void reset() throws IOException {
-                       instream.reset();
-                    }
-
-                    @Override
-                    public boolean markSupported() {
-                        return true;
-                    }
-
-                    @Override
-                    public long getPos() throws IOException {
-                        return instream.available();
-                    }
-
-                    @Override
-                    public void seek(long l) throws IOException {
-
-                    }
-
-                    @Override
-                    public void readFully(byte[] bytes) throws IOException {
-                        instream.read(bytes);
-                    }
-
-                    @Override
-                    public void readFully(byte[] bytes, int i, int i1) throws IOException {
-                        instream.read(bytes, i, i1);
-                    }
-
-                    @Override
-                    public int read(ByteBuffer byteBuffer) throws IOException {
-                        return readDirectBuffer(byteBuffer, tmpBuf, instream);
-                    }
-
-                    @Override
-                    public void readFully(ByteBuffer byteBuffer) throws IOException {
-                        readFullyDirectBuffer(byteBuffer, tmpBuf, instream);
-                    }
-
-                };
-            }
-        };
-    }
 
 
     public MessageType getMessageType(){
@@ -223,41 +116,7 @@ public class ParquetStreamIterator extends AbstractFileIterator {
 
 
 
-    private static int readDirectBuffer(ByteBuffer byteBufr, byte[] tmpBuf, InputStream rdr) throws IOException {
-        int nextReadLength = Math.min(byteBufr.remaining(), tmpBuf.length);
-        int totalBytesRead = 0;
-        int bytesRead;
 
-        while ((bytesRead = rdr.read(tmpBuf, 0, nextReadLength)) == tmpBuf.length) {
-            byteBufr.put(tmpBuf);
-            totalBytesRead += bytesRead;
-            nextReadLength = Math.min(byteBufr.remaining(), tmpBuf.length);
-        }
-
-        if (bytesRead < 0) {
-            // return -1 if nothing was read
-            return totalBytesRead == 0 ? -1 : totalBytesRead;
-        } else {
-            // copy the last partial buffer
-            byteBufr.put(tmpBuf, 0, bytesRead);
-            totalBytesRead += bytesRead;
-            return totalBytesRead;
-        }
-    }
-
-    private static void readFullyDirectBuffer(ByteBuffer byteBufr, byte[] tmpBuf, InputStream rdr) throws IOException {
-        int nextReadLength = Math.min(byteBufr.remaining(), tmpBuf.length);
-        int bytesRead = 0;
-
-        while (nextReadLength > 0 && (bytesRead = rdr.read(tmpBuf, 0, nextReadLength)) >= 0) {
-            byteBufr.put(tmpBuf, 0, bytesRead);
-            nextReadLength = Math.min(byteBufr.remaining(), tmpBuf.length);
-        }
-
-        if (bytesRead < 0 && byteBufr.remaining() > 0) {
-            throw new EOFException("Reached the end of stream with " + byteBufr.remaining() + " bytes left to read");
-        }
-    }
 }
 
 

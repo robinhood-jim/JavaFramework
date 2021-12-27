@@ -20,6 +20,7 @@ import com.robin.core.compress.util.CompressEncoder;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 
 import java.io.*;
+import java.net.URI;
 
 public abstract class AbstractResourceAccessUtil {
 	public static String[] retrieveResource(String path){
@@ -29,6 +30,7 @@ public abstract class AbstractResourceAccessUtil {
 		ret[0]=getFilePrefix(path);
 		return ret;
 	}
+
 	
 	public static String getFileSuffix(String path){
 		int pos=path.lastIndexOf(".");

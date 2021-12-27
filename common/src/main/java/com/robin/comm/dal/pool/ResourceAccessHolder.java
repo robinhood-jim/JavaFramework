@@ -62,7 +62,7 @@ public class ResourceAccessHolder implements InitializingBean {
 				util = (AbstractResourceAccessUtil) construct.newInstance(new Object[]{});
 			}
 		}catch(Exception ex){
-			
+			ex.printStackTrace();
 		}
 		return util;
 	}

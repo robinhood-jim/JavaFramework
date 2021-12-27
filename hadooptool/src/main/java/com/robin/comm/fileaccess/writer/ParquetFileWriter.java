@@ -1,9 +1,12 @@
 package com.robin.comm.fileaccess.writer;
 
+import com.robin.comm.fileaccess.util.ParquetUtil;
 import com.robin.core.base.util.Const;
 import com.robin.core.base.util.FileUtils;
+import com.robin.core.base.util.ResourceConst;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.util.AvroUtils;
+import com.robin.core.fileaccess.util.ResourceUtil;
 import com.robin.core.fileaccess.writer.AbstractFileWriter;
 import com.robin.hadoop.hdfs.HDFSUtil;
 import org.apache.avro.Schema;
@@ -13,6 +16,8 @@ import org.apache.hadoop.fs.Path;
 import org.apache.parquet.avro.AvroParquetWriter;
 import org.apache.parquet.hadoop.ParquetWriter;
 import org.apache.parquet.hadoop.metadata.CompressionCodecName;
+import org.apache.parquet.io.OutputFile;
+import org.apache.parquet.io.PositionOutputStream;
 
 import javax.naming.OperationNotSupportedException;
 import java.io.IOException;
@@ -20,18 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-/**
- * <p>Project:  frame</p>
- * <p>
- * <p>Description:com.robin.core.fileaccess.writer</p>
- * <p>
- * <p>Copyright: Copyright (c) 2018 create at 2018年07月25日</p>
- * <p>
- * <p>Company: zhcx_DEV</p>
- *
- * @author robinjim
- * @version 1.0
- */
+
 public class ParquetFileWriter extends AbstractFileWriter {
     private Schema schema;
     private ParquetWriter pwriter;
@@ -45,7 +39,7 @@ public class ParquetFileWriter extends AbstractFileWriter {
 
         CompressionCodecName codecName= CompressionCodecName.UNCOMPRESSED;
         List<String> fileSuffix=new ArrayList<>();
-        FileUtils.parseFileFormat(colmeta.getPath(),fileSuffix);
+        FileUtils.parseFileFormat(getOutputPath(colmeta.getPath()),fileSuffix);
         Const.CompressType type= FileUtils.getFileCompressType(fileSuffix);
         if(type== Const.CompressType.COMPRESS_TYPE_GZ){
             codecName=CompressionCodecName.GZIP;
@@ -54,7 +48,11 @@ public class ParquetFileWriter extends AbstractFileWriter {
         }else if(type==Const.CompressType.COMPRESS_TYPE_SNAPPY){
             codecName=CompressionCodecName.SNAPPY;
         }
-        pwriter= AvroParquetWriter.builder(new Path(colmeta.getPath())).withSchema(schema).withCompressionCodec(codecName).withConf(new HDFSUtil(colmeta).getConfigration()).build();
+        if(colmeta.getSourceType().equals(ResourceConst.InputSourceType.TYPE_HDFS.getValue())){
+            pwriter= AvroParquetWriter.builder(new Path(colmeta.getPath())).withSchema(schema).withCompressionCodec(codecName).withConf(new HDFSUtil(colmeta).getConfigration()).build();
+        }else{
+            pwriter=AvroParquetWriter.builder(ParquetUtil.makeOutputFile(accessUtil,colmeta, ResourceUtil.getProcessPath(colmeta.getPath()))).withSchema(schema).build();
+        }
     }
 
     @Override

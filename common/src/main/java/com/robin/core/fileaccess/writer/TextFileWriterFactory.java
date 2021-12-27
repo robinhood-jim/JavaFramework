@@ -37,7 +37,7 @@ public class TextFileWriterFactory {
         return fileWriter;
     }
 
-    public static AbstractFileWriter getFileWriterByType(String fileSuffix, DataCollectionMeta colmeta, OutputStream writer) throws IOException{
+    public static AbstractFileWriter getFileOutputStreamByType(String fileSuffix, DataCollectionMeta colmeta, OutputStream writer) throws IOException{
         AbstractFileWriter fileWriter = getFileWriterByType(fileSuffix, colmeta);
         fileWriter.setOutputStream(writer);
         return fileWriter;
@@ -67,7 +67,11 @@ public class TextFileWriterFactory {
             } else if (fileSuffix.equalsIgnoreCase(Const.FILESUFFIX_PROTOBUF)) {
                 Class<AbstractFileWriter> clazz = (Class<AbstractFileWriter>) Class.forName(Const.FILEWRITER_PROTOBUF_CLASSNAME);
                 fileWriter = clazz.getConstructor(DataCollectionMeta.class).newInstance(colmeta);
-            } else {
+            }else if(fileSuffix.equalsIgnoreCase(Const.FILESUFFIX_ORC)){
+                Class<AbstractFileWriter> clazz = (Class<AbstractFileWriter>) Class.forName(Const.FILEWRITER_ORC_CLASSNAME);
+                fileWriter = clazz.getConstructor(DataCollectionMeta.class).newInstance(colmeta);
+            }
+            else {
                 fileWriter = new PlainTextFileWriter(colmeta);
             }
 
