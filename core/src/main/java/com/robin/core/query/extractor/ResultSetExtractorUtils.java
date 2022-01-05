@@ -1,56 +1,48 @@
 package com.robin.core.query.extractor;
 
-import java.io.UnsupportedEncodingException;
 import java.sql.*;
 import java.util.Map;
 
-/**
- * <p>Project:  frame</p>
- * <p>
- * <p>Description:com.robin.core.query.extractor</p>
- * <p>
- * <p>Copyright: Copyright (c) 2019 create at 2019年07月31日</p>
- * <p>
- * <p>Company: zhcx_DEV</p>
- *
- * @author robinjim
- * @version 1.0
- */
+
 public class ResultSetExtractorUtils {
-    public static void wrappResultSetToMap(ResultSet rs, ResultSetMetaData rsmd, String encode, Map<String,Object> map) throws SQLException{
+    public static void wrappResultSetToMap(ResultSet rs, ResultSetMetaData rsmd, String encode, Map<String, Object> map) throws SQLException {
         Object obj;
         Date date;
         Timestamp stamp;
         String result;
-        String columnName ;
+        String columnName;
         String typeName;
         String className;
-        int recordCount=rsmd.getColumnCount();
+        int recordCount = rsmd.getColumnCount();
         for (int i = 0; i < recordCount; i++) {
             obj = rs.getObject(i + 1);
-            columnName=rsmd.getColumnLabel(i+1);
-            typeName=rsmd.getColumnTypeName(i+1);
-            String fullclassName = rsmd.getColumnClassName(i + 1);
-            int pos = fullclassName.lastIndexOf(".");
-            className= fullclassName.substring(pos + 1).toUpperCase();
+            columnName = rsmd.getColumnLabel(i + 1);
+            int columnType = rsmd.getColumnType(i + 1);
+
             if (rs.wasNull()) {
-                map.put(columnName, "");
-            } else if ("DATE".equalsIgnoreCase(typeName)) {
+                map.put(columnName, null);
+            } else if (Types.DATE == columnType) {
                 date = rs.getDate(i + 1);
                 map.put(columnName, date);
-            } else if ("TIMESTAMP".equalsIgnoreCase(typeName) || "datetime".equalsIgnoreCase(typeName)) {
+            } else if (Types.TIMESTAMP == columnType || Types.TIME == columnType) {
                 stamp = rs.getTimestamp(i + 1);
                 map.put(columnName, stamp);
-            } else if (className.contains("CLOB")) {
-                try {
-                    result = new String(rs.getBytes(i + 1), encode);
-                    map.put(columnName, result);
-                } catch (UnsupportedEncodingException ex) {
-                    throw new SQLException(ex);
-                }
-            } else if (className.contains("BLOB") || "OBJECT".equals(className)) {
-                obj = rs.getBytes(i + 1);
-                map.put(columnName, obj);
+            } else if (Types.INTEGER == columnType) {
+                map.put(columnName, rs.getInt(i + 1));
+            } else if (Types.SMALLINT == columnType) {
+                map.put(columnName, rs.getShort(i + 1));
+            } else if (Types.BIGINT == columnType) {
+                map.put(columnName, rs.getLong(i + 1));
+            } else if (Types.FLOAT == columnType) {
+                map.put(columnName, rs.getFloat(i + 1));
+            } else if (Types.DOUBLE == columnType) {
+                map.put(columnName, rs.getDouble(i + 1));
+            } else if (Types.VARCHAR == columnType || Types.CHAR == columnType || Types.NVARCHAR == columnType || Types.LONGVARCHAR == columnType) {
+                map.put(columnName, rs.getString(i + 1));
+            } else if (Types.DECIMAL == columnType) {
+                map.put(columnName, rs.getBigDecimal(i + 1));
+            } else if (Types.CLOB == columnType || Types.BLOB == columnType || Types.BINARY == columnType || Types.JAVA_OBJECT == columnType) {
+                map.put(columnName, rs.getBytes(i + 1));
             } else {
                 map.put(columnName, obj);
             }

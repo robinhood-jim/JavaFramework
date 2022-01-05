@@ -16,7 +16,7 @@
 package com.robin.core.base.service;
 
 import com.robin.core.base.dao.JdbcDao;
-import com.robin.core.base.dao.util.AnnotationRetrevior;
+import com.robin.core.base.dao.util.AnnotationRetriver;
 import com.robin.core.base.exception.DAOException;
 import com.robin.core.base.exception.ServiceException;
 import com.robin.core.base.model.BaseObject;
@@ -45,7 +45,7 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 	protected JdbcDao jdbcDao;
 	protected Class<V> type;
 	protected Logger logger=LoggerFactory.getLogger(getClass());
-	protected AnnotationRetrevior.EntityContent entityContent;
+	protected AnnotationRetriver.EntityContent entityContent;
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public BaseAnnotationJdbcService(){
 		Type genericSuperClass = getClass().getGenericSuperclass();
@@ -60,7 +60,7 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 		type = (Class) parametrizedType.getActualTypeArguments()[0];
 		//get JdbcDao by model annotation jdbcDao
 		if(type!=null){
-			entityContent=AnnotationRetrevior.getMappingTableByCache(type);
+			entityContent= AnnotationRetriver.getMappingTableByCache(type);
 		}
 	}
 

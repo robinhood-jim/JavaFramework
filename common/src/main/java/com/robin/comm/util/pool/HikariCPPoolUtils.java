@@ -1,6 +1,8 @@
 package com.robin.comm.util.pool;
 
 import com.robin.core.base.datameta.BaseDataBaseMeta;
+import com.robin.core.base.datameta.DataBaseParam;
+import com.robin.core.base.datameta.DataBaseTypeEnum;
 import com.robin.core.base.exception.ConfigurationIncorrectException;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
@@ -8,6 +10,7 @@ import com.zaxxer.hikari.pool.HikariPool;
 import lombok.Data;
 import org.springframework.beans.BeanUtils;
 
+import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashMap;
@@ -62,6 +65,26 @@ public class HikariCPPoolUtils {
             locker.readLock().unlock();
         }
     }
+    public DataSource getDataSource(DataBaseTypeEnum dataBaseTypeEnum, DataBaseParam param){
+        locker.readLock().lock();
+        DataSource ds=null;
+        try {
+            //锁降级
+            locker.readLock().unlock();
+            locker.writeLock().lock();
+            locker.readLock().lock();
+            HikariConfig config=new HikariConfig();
+            config.setDriverClassName(dataBaseTypeEnum.getDrivers());
+            config.setJdbcUrl(param.getUrl());
+            config.setUsername(param.getUserName());
+            config.setPassword(param.getPasswd());
+            ds=new HikariDataSource(config);
+        }catch (Exception ex){
+            locker.writeLock().unlock();
+            locker.readLock().unlock();
+        }
+        return ds;
+    }
     public void evictConnection(String dbSourceName,Connection connection){
         sourceMap.get(dbSourceName).evictConnection(connection);
     }
@@ -77,6 +100,10 @@ public class HikariCPPoolUtils {
     }
 
     public  HikariPool createPool(String dbSourceName, BaseDataBaseMeta meta, HikariConfig config) {
+        config.setJdbcUrl(meta.getUrl());
+        config.setDriverClassName(meta.getParam().getDriverClassName());
+        config.setUsername(meta.getParam().getUserName());
+        config.setPassword(meta.getParam().getPasswd());
         HikariPool pool=new HikariPool(config);
         return pool;
     }

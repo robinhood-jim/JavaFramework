@@ -20,7 +20,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import com.robin.core.base.dao.util.AnnotationRetrevior;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.query.extractor.ResultSetOperationExtractor;
 import org.springframework.jdbc.core.SqlParameter;
@@ -53,7 +52,7 @@ public interface IjdbcDao {
 	 * @return
 	 * @throws DAOException
 	 */
-	List<Map<String,Object>> queryBySql(String sqlstr) throws DAOException;
+	//List<Map<String,Object>> queryBySql(String sqlstr) throws DAOException;
 	/**
 	 * Batch update Records
 	 * @param sql               
@@ -75,13 +74,13 @@ public interface IjdbcDao {
 	void batchUpdateWithRowIterator(String sql, Iterator<Map<String,String>> rowIterator, DataCollectionMeta collectionMeta, int batchsize) throws DAOException;
 	/**
 	 * Call Procedure 
-	 * @param procedurename   
+	 * @param procedureName
 	 * @param declaredParameters     
-	 * @param inPara                 
+	 * @param inParam
 	 * @return
 	 * @throws DAOException
 	 */
-	Map<String,Object> executeCall(String procedurename, List<SqlParameter> declaredParameters, Map<String,Object> inPara) throws DAOException;
+	Map<String,Object> executeCall(String procedureName, List<SqlParameter> declaredParameters, Map<String,Object> inParam) throws DAOException;
 	/**
 	 * Call function
 	 * @param procedurename

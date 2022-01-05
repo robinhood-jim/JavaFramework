@@ -23,11 +23,11 @@
     <distributionManagement>
         <repository>
             <id>github</id>
-            <url>https://maven.pkg.github.com/robinhood-jim/JavaFrame</url>
+            <url>https://maven.pkg.github.com/robinhood-jim/JavaFramework</url>
         </repository>
         <snapshotRepository>
-            <id>githubsnap</id>
-            <url>https://maven.pkg.github.com/robinhood-jim/JavaFrame</url>
+            <id>github</id>
+            <url>https://maven.pkg.github.com/robinhood-jim/JavaFramework</url>
         </snapshotRepository>
     </distributionManagement>
 
@@ -132,6 +132,7 @@
         <graal.version>1.0.0-rc7</graal.version>
         <calcite.version>1.21.0</calcite.version>
         <mybatisplus.version>3.4.3</mybatisplus.version>
+        <orc.version>1.7.1</orc.version>
     </properties>
 
 
@@ -856,6 +857,12 @@
                 <groupId>com.google.protobuf</groupId>
                 <artifactId>protobuf-java</artifactId>
                 <version>2.5.0</version>
+                <optional>true</optional>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.orc</groupId>
+                <artifactId>orc-core</artifactId>
+                <version>1.7.1</version>
                 <optional>true</optional>
             </dependency>
             <dependency>

@@ -9,7 +9,7 @@ import com.robin.core.fileaccess.iterator.AbstractFileIterator;
 import com.robin.core.fileaccess.iterator.TextFileIteratorFactory;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.util.AvroUtils;
-import com.robin.core.fileaccess.util.LocalResourceAccessUtils;
+import com.robin.core.fileaccess.util.LocalResourceAccessUtil;
 import org.apache.avro.Schema;
 import org.apache.avro.SchemaBuilder;
 import org.apache.avro.generic.GenericRecord;
@@ -33,10 +33,10 @@ public class TestXMLReader {
         colmeta.addColumnMeta("key",Const.META_TYPE_STRING,null);
         colmeta.setEncode("UTF-8");
         colmeta.setPath("f:/test.xml");
-        colmeta.setFileFormat(Const.FILESUFFIX_XML);
+        colmeta.setFileFormat(Const.FILETYPE_XML);
         BufferedReader reader=null;
         try {
-            LocalResourceAccessUtils utils = new LocalResourceAccessUtils();
+            LocalResourceAccessUtil utils = new LocalResourceAccessUtil();
             AbstractFileIterator iter= TextFileIteratorFactory.getProcessIteratorByType(colmeta);
             iter.beforeProcess(colmeta.getPath());
             while(iter.hasNext()){

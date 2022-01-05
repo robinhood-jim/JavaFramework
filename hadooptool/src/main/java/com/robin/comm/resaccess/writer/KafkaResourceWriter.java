@@ -41,7 +41,7 @@ public class KafkaResourceWriter extends AbstractQueueWriter {
 
     @Override
     public void writeMessage(String topic, Map<String, ?> map) throws IOException {
-        byte[] output=consturctContent(map);
+        byte[] output= constructContent(map);
         producer.send(new ProducerRecord(topic, key,output));
     }
 

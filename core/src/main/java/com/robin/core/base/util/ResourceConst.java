@@ -79,7 +79,9 @@ public class ResourceConst {
         AVRO("avro"),
         JSON("json"),
         XML("xml"),
-        PROTOBUF("proto");
+        PROTOBUF("proto"),
+        ORC("orc"),
+        CSV("csv");
         private String value;
         VALUE_TYPE(String value){
             this.value=value;

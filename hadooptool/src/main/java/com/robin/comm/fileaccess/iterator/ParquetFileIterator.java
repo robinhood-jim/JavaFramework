@@ -1,8 +1,11 @@
 package com.robin.comm.fileaccess.iterator;
 
+import com.robin.comm.fileaccess.util.ParquetUtil;
+import com.robin.core.base.util.ResourceConst;
 import com.robin.core.fileaccess.iterator.AbstractFileIterator;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.util.AvroUtils;
+import com.robin.core.fileaccess.util.ResourceUtil;
 import com.robin.hadoop.hdfs.HDFSUtil;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
@@ -38,17 +41,25 @@ public class ParquetFileIterator extends AbstractFileIterator {
 
     @Override
     public void init() {
-        conf = new HDFSUtil(colmeta).getConfigration();
+
         try {
-            if (colmeta.getColumnList().isEmpty()) {
-                ParquetMetadata meta = ParquetFileReader.readFooter(conf, new Path(colmeta.getPath()), ParquetMetadataConverter.NO_FILTER);
-                msgtype = meta.getFileMetaData().getSchema();
-                parseSchemaByType();
-            } else {
-                schema = AvroUtils.getSchemaFromMeta(colmeta);
+            if(colmeta.getSourceType().equals(ResourceConst.InputSourceType.TYPE_HDFS.getValue())){
+                conf = new HDFSUtil(colmeta).getConfigration();
+                if (colmeta.getColumnList().isEmpty()) {
+                    ParquetMetadata meta = ParquetFileReader.readFooter(conf, new Path(colmeta.getPath()), ParquetMetadataConverter.NO_FILTER);
+                    msgtype = meta.getFileMetaData().getSchema();
+                    parseSchemaByType();
+                } else {
+                    schema = AvroUtils.getSchemaFromMeta(colmeta);
+                }
+                preader = AvroParquetReader
+                        .<GenericData.Record>builder(HadoopInputFile.fromPath(new Path(ResourceUtil.getProcessPath(colmeta.getPath())), conf)).withConf(conf).build();
+
+            }else{
+                checkAccessUtil(null);
+                instream = accessUtil.getInResourceByStream(colmeta, ResourceUtil.getProcessPath(colmeta.getPath()));
+                preader=AvroParquetReader.<GenericData.Record>builder(ParquetUtil.makeInputFile(instream)).build();
             }
-            preader = AvroParquetReader
-                    .<GenericData.Record>builder(HadoopInputFile.fromPath(new Path(colmeta.getPath()), conf)).withConf(conf).build();
             fields = schema.getFields();
         } catch (Exception ex) {
             logger.error("{0}", ex);

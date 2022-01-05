@@ -15,16 +15,20 @@
  */
 package com.robin.core.fileaccess.writer;
 
+import com.robin.comm.dal.pool.ResourceAccessHolder;
 import com.robin.core.base.datameta.DataBaseUtil;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.meta.DataSetColumnMeta;
+import com.robin.core.fileaccess.util.AbstractResourceAccessUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.StringUtils;
 
 import javax.naming.OperationNotSupportedException;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.URI;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -40,6 +44,7 @@ public abstract class AbstractFileWriter implements IResourceWriter {
 	protected List<String> columnList=new ArrayList<String>();
 	protected Logger logger= LoggerFactory.getLogger(getClass());
 	protected DateTimeFormatter formatter;
+	protected AbstractResourceAccessUtil accessUtil;
 
 	protected AbstractFileWriter(DataCollectionMeta colmeta){
 		this.colmeta=colmeta;
@@ -115,5 +120,25 @@ public abstract class AbstractFileWriter implements IResourceWriter {
         } else {
             return null;
         }
+	}
+	protected void checkAccessUtil(String outputPath){
+		try {
+			if (accessUtil == null) {
+				URI uri = new URI(StringUtils.isEmpty(outputPath)?colmeta.getPath():outputPath);
+				String schema = uri.getScheme();
+				accessUtil = ResourceAccessHolder.getAccessUtilByProtocol(schema.toLowerCase());
+			}
+		}catch (Exception ex){
+
+		}
+	}
+	protected String getOutputPath(String url){
+		try {
+			URI uri = new URI(colmeta.getPath());
+			return uri.getPath();
+		}catch (Exception ex){
+
+		}
+		return url;
 	}
 }

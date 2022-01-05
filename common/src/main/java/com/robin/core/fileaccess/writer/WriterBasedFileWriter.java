@@ -15,6 +15,7 @@
  */
 package com.robin.core.fileaccess.writer;
 
+import com.robin.core.base.util.StringUtils;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 
 import java.io.BufferedWriter;
@@ -31,7 +32,7 @@ public abstract class WriterBasedFileWriter extends AbstractFileWriter{
 	public void setOutputStream(OutputStream out) {
 		super.setOutputStream(out);
 		try {
-			writer = new BufferedWriter(new OutputStreamWriter(out, colmeta.getEncode()));
+			writer = new BufferedWriter(new OutputStreamWriter(out, StringUtils.isEmpty(colmeta.getEncode())?"utf8":colmeta.getEncode()));
 		}catch (Exception ex){
 
 		}

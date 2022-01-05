@@ -169,7 +169,7 @@ public class SimpleJdbcDao {
 		Connection conn=getConnection();
 		try{
 			QueryRunner qRunner=new QueryRunner();
-			ScalarHandler<Long> handler=new ScalarHandler<Long>(1);
+			ScalarHandler<Long> handler=new ScalarHandler<>(1);
 			return qRunner.query(conn, sql, handler);
 		}catch(Exception ex){
 			throw new DAOException(ex);
@@ -180,7 +180,7 @@ public class SimpleJdbcDao {
 	public static long queryByLong(final Connection conn,final String sql) throws DAOException{
 		try{
 			QueryRunner qRunner=new QueryRunner();
-			ScalarHandler<Long> handler=new ScalarHandler<Long>(1);
+			ScalarHandler<Long> handler=new ScalarHandler<>(1);
 			return qRunner.query(conn, sql, handler);
 		}catch(Exception ex){
 			throw new DAOException(ex);
@@ -216,7 +216,7 @@ public class SimpleJdbcDao {
 		Connection conn=getConnection();
 		try{
 			QueryRunner qRunner=new QueryRunner();
-			ScalarHandler<Integer> handler=new ScalarHandler<Integer>(1);
+			ScalarHandler<Integer> handler=new ScalarHandler<>(1);
 			return qRunner.query(conn, sql, handler);
 		}catch(Exception ex){
 			throw new DAOException(ex);
@@ -227,7 +227,7 @@ public class SimpleJdbcDao {
 	public static int queryByInt(final Connection conn,final String sql) throws DAOException{
 		try{
 			QueryRunner qRunner=new QueryRunner();
-			ScalarHandler<Integer> handler=new ScalarHandler<Integer>(1);
+			ScalarHandler<Integer> handler=new ScalarHandler<>(1);
 			return qRunner.query(conn, sql, handler);
 		}catch(Exception ex){
 			throw new DAOException(ex);
@@ -396,7 +396,7 @@ public class SimpleJdbcDao {
 			}
 			ResultSet rs=stmt.executeQuery();
 			obj=handler.handle(rs);
-			logger.info("ret count="+obj);
+			logger.info("ret count={}",obj);
 			return obj;
 		}
 		catch (Exception e) {
@@ -520,7 +520,6 @@ public class SimpleJdbcDao {
 			QueryRunner qRunner=new QueryRunner();
 			return qRunner.update(conn,sql, param);
 		}catch(Exception ex){
-			//logger.error("",ex);
 			throw new DAOException(ex);
 		}
 	}
@@ -660,11 +659,10 @@ public class SimpleJdbcDao {
 					ResultSetMetaData meta=rs.getMetaData();
 					int columncount=meta.getColumnCount();
 					int successCount = 0;
-					List<String> resultList=new ArrayList<String>();
+					List<String> resultList=new ArrayList<>();
 					try{
 						while(rs.next()){
 							for (int i = 0; i < columncount; i++) {
-								//String columnName=meta.getColumnLabel(i+1);
 								String type=DataBaseUtil.translateDbType(meta.getColumnType(i+1));
 								Object obj=rs.getObject(i+1);
 								if(rs.wasNull()){
@@ -716,7 +714,7 @@ public class SimpleJdbcDao {
             } else {
                 insertSqlbuilder.append(" values (");
             }
-			final List<String> columnTypes=new ArrayList<String>();
+			final List<String> columnTypes=new ArrayList<>();
 			int columnCount=qRunner.query(conn, querySql, new ResultSetHandler<Integer>(){
 				@Override
 				public Integer handle(ResultSet rs) throws SQLException {
@@ -735,7 +733,7 @@ public class SimpleJdbcDao {
 					insertSqlbuilder.append("?)");
 				}
 			}
-			List<Object[]> targetList=new ArrayList<Object[]>();
+			List<Object[]> targetList=new ArrayList<>();
 			String line=null;
 			int linepos=1;
 			String currDateFormat=dateFormat;

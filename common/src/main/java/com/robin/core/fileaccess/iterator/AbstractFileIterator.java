@@ -15,15 +15,20 @@
  */
 package com.robin.core.fileaccess.iterator;
 
+import com.robin.comm.dal.pool.ResourceAccessHolder;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.util.AbstractResourceAccessUtil;
+import com.robin.core.fileaccess.util.ResourceUtil;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 import java.io.BufferedReader;
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 
-public abstract class AbstractFileIterator extends AbstractResIterator{
+public abstract class AbstractFileIterator extends AbstractResIterator implements Closeable {
 	protected BufferedReader reader;
 	protected InputStream instream;
 	protected AbstractResourceAccessUtil accessUtil;
@@ -37,9 +42,10 @@ public abstract class AbstractFileIterator extends AbstractResIterator{
 	}
 	@Override
 	public void beforeProcess(String resourcePath){
+		checkAccessUtil(resourcePath);
 		Assert.notNull(accessUtil,"ResourceAccessUtil is required!");
 		try {
-			this.reader = accessUtil.getInResourceByReader(colmeta,resourcePath );
+			this.reader = accessUtil.getInResourceByReader(colmeta, ResourceUtil.getProcessPath(resourcePath));
 		}catch (Exception ex){
 
 		}
@@ -56,6 +62,18 @@ public abstract class AbstractFileIterator extends AbstractResIterator{
 	public void init(){
 
 	}
+	protected void checkAccessUtil(String inputPath){
+		try {
+			if (accessUtil == null) {
+				URI uri = new URI(StringUtils.isEmpty(inputPath)?colmeta.getPath():inputPath);
+				String schema = uri.getScheme();
+				accessUtil = ResourceAccessHolder.getAccessUtilByProtocol(schema.toLowerCase());
+			}
+		}catch (Exception ex){
+
+		}
+	}
+
 
 	public void setReader(BufferedReader reader){
 		this.reader=reader;

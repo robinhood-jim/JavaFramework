@@ -9,10 +9,10 @@ import java.util.List;
 
 
 public class DefaultPrepareStatementSetter implements PreparedStatementSetter {
-    private List<AnnotationRetrevior.FieldContent> fields;
+    private List<AnnotationRetriver.FieldContent> fields;
     private BaseObject object;
 
-    public DefaultPrepareStatementSetter(List<AnnotationRetrevior.FieldContent> fields,  BaseObject object) {
+    public DefaultPrepareStatementSetter(List<AnnotationRetriver.FieldContent> fields, BaseObject object) {
 
         this.fields = fields;
         this.object = object;
@@ -22,10 +22,10 @@ public class DefaultPrepareStatementSetter implements PreparedStatementSetter {
     public void setValues(PreparedStatement ps) throws SQLException {
         int pos = 1;
         try {
-            for (AnnotationRetrevior.FieldContent field : fields) {
+            for (AnnotationRetriver.FieldContent field : fields) {
                 Object value = field.getGetMethod().invoke(object, new Object[]{});
                 if (!field.isIncrement() && value != null) {
-                    AnnotationRetrevior.setParameter(ps, pos, value);
+                    AnnotationRetriver.setParameter(ps, pos, value);
                     pos++;
                 }
             }

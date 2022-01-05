@@ -13,7 +13,7 @@ public class ResourceAccessorFactory {
                 Class<AbstractResourceAccessUtil> clazz = (Class<AbstractResourceAccessUtil>) Class.forName(Const.RESOURCE_ACCESS_HDFS_CLASSNAME);
                 util =clazz.getConstructor(null).newInstance();
             } else if (resType.equals(ResourceConst.InputSourceType.TYPE_LOCAL.getValue())) {
-                util=new LocalResourceAccessUtils();
+                util=new LocalResourceAccessUtil();
             } else if (resType.equals(ResourceConst.InputSourceType.TYPE_FTP.getValue()) || resType.equals(ResourceConst.InputSourceType.TYPE_SFTP.getValue())) {
                 util=new ApacheVfsResourceAccessUtil();
             }

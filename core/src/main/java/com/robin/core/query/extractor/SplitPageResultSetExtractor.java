@@ -15,7 +15,7 @@
  */
 package com.robin.core.query.extractor;
 
-import com.robin.core.base.dao.util.AnnotationRetrevior;
+import com.robin.core.base.dao.util.AnnotationRetriver;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.support.lob.LobHandler;
@@ -32,13 +32,13 @@ public class SplitPageResultSetExtractor implements ResultSetExtractor<List<Map<
 
 	private final int len;
     private LobHandler lobHandler;
-    private List<AnnotationRetrevior.FieldContent> mappingFieldList;
+    private List<AnnotationRetriver.FieldContent> mappingFieldList;
 
 	public SplitPageResultSetExtractor(int start, int len) {
 		this.start = start;
 		this.len = len;
 	}
-	public SplitPageResultSetExtractor(int start, int len,LobHandler handler,List<AnnotationRetrevior.FieldContent> mappingFieldList) {
+	public SplitPageResultSetExtractor(int start, int len,LobHandler handler,List<AnnotationRetriver.FieldContent> mappingFieldList) {
 		
 		this.start = start;
 		this.len = len;
@@ -72,10 +72,10 @@ public class SplitPageResultSetExtractor implements ResultSetExtractor<List<Map<
 			String[] className=new String[count];
 			int colpos=0;
 			if(mappingFieldList!=null) {
-				for (AnnotationRetrevior.FieldContent fieldContent : mappingFieldList) {
+				for (AnnotationRetriver.FieldContent fieldContent : mappingFieldList) {
 					if(fieldContent.isPrimary()){
 						if(fieldContent.getPrimaryKeys()!=null){
-							for(AnnotationRetrevior.FieldContent fieldContent1:fieldContent.getPrimaryKeys()){
+							for(AnnotationRetriver.FieldContent fieldContent1:fieldContent.getPrimaryKeys()){
 								assignVal(fieldContent1,rsmd,columnName,typeName,className,colpos);
 								colpos++;
 							}
@@ -144,7 +144,7 @@ public class SplitPageResultSetExtractor implements ResultSetExtractor<List<Map<
 			}
 		return list;
 	}
-	private void assignVal(AnnotationRetrevior.FieldContent fieldContent,ResultSetMetaData rsmd,String[] columnName, String[] typeName, String[] className, int colpos) throws SQLException{
+	private void assignVal(AnnotationRetriver.FieldContent fieldContent, ResultSetMetaData rsmd, String[] columnName, String[] typeName, String[] className, int colpos) throws SQLException{
 		columnName[colpos]=fieldContent.getPropertyName();
 		typeName[colpos] = rsmd.getColumnTypeName(colpos+ 1);
 		String fullclassName = rsmd.getColumnClassName(colpos + 1);

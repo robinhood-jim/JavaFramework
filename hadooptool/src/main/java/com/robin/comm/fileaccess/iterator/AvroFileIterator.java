@@ -5,6 +5,7 @@ import com.robin.core.base.util.ResourceConst;
 import com.robin.core.fileaccess.iterator.AbstractFileIterator;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.util.AvroUtils;
+import com.robin.core.fileaccess.util.ResourceUtil;
 import com.robin.hadoop.hdfs.HDFSUtil;
 import org.apache.avro.Schema;
 import org.apache.avro.Schema.Field;
@@ -43,6 +44,28 @@ public class AvroFileIterator extends AbstractFileIterator {
 		return false;
 	}
 
+	@Override
+	public void init() {
+		SeekableInput input=null;
+		try {
+			schema= AvroUtils.getSchemaFromMeta(colmeta);
+			if(colmeta.getSourceType().equals(ResourceConst.InputSourceType.TYPE_HDFS.getValue())){
+				HDFSUtil util=new HDFSUtil(colmeta);
+				instream=util.getHDFSDataByInputStream(ResourceUtil.getProcessPath(colmeta.getPath()));
+				input=new AvroFSInput(new FSDataInputStream(instream),util.getHDFSFileSize(ResourceUtil.getProcessPath(colmeta.getPath())));
+			}else {
+				instream=accessUtil.getInResourceByStream(colmeta,ResourceUtil.getProcessPath(colmeta.getPath()));
+				ByteArrayOutputStream byteout = new ByteArrayOutputStream();
+				IOUtils.copyBytes(instream, byteout, 8064);
+				input = new SeekableByteArrayInput(byteout.toByteArray());
+			}
+			Assert.notNull(input,"Seekable input is null");
+			dreader=new GenericDatumReader<>(schema);
+			fileReader=new DataFileReader<>(input,dreader);
+		}catch (Exception ex){
+			logger.error("Exception {0}",ex);
+		}
+	}
 
 	@Override
 	public void beforeProcess(String resourcePath) {
@@ -54,7 +77,8 @@ public class AvroFileIterator extends AbstractFileIterator {
 				instream=util.getHDFSDataByInputStream(resourcePath);
 				input=new AvroFSInput(new FSDataInputStream(instream),util.getHDFSFileSize(resourcePath));
 			}else {
-				instream=accessUtil.getInResourceByStream(colmeta,resourcePath);
+				checkAccessUtil(null);
+				instream=accessUtil.getInResourceByStream(colmeta,ResourceUtil.getProcessPath(colmeta.getPath()));
 				ByteArrayOutputStream byteout = new ByteArrayOutputStream();
 				IOUtils.copyBytes(instream, byteout, 8064);
 				input = new SeekableByteArrayInput(byteout.toByteArray());

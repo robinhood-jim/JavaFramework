@@ -3,8 +3,6 @@ package com.robin.comm.resaccess.writer;
 
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.writer.AbstractQueueWriter;
-import com.robin.core.fileaccess.writer.AbstractResourceWriter;
-import org.apache.avro.generic.GenericRecord;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -13,7 +11,6 @@ import org.springframework.util.CollectionUtils;
 
 import javax.xml.validation.Schema;
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 
 public class RabbitMQResourceWriter extends AbstractQueueWriter {
@@ -52,7 +49,7 @@ public class RabbitMQResourceWriter extends AbstractQueueWriter {
 
     @Override
     public void writeMessage(String queue,Map<String, ?> map) throws IOException {
-        byte[] output=consturctContent(map);
+        byte[] output= constructContent(map);
         if(null!=rabbitTemplate){
             rabbitTemplate.convertAndSend(queueName,key,output);
         }

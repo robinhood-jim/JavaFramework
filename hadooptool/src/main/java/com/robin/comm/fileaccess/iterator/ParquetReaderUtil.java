@@ -3,18 +3,7 @@ package com.robin.comm.fileaccess.iterator;
 import com.robin.core.base.util.Const;
 import org.apache.parquet.schema.PrimitiveType;
 
-/**
- * <p>Project:  frame</p>
- * <p>
- * <p>Description:com.robin.comm.fileaccess.iterator</p>
- * <p>
- * <p>Copyright: Copyright (c) 2019 create at 2019年08月09日</p>
- * <p>
- * <p>Company: zhcx_DEV</p>
- *
- * @author robinjim
- * @version 1.0
- */
+
 public class ParquetReaderUtil {
     private ParquetReaderUtil(){
 

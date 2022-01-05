@@ -141,7 +141,7 @@ public class DataBaseUtil {
                         datameta.setIncrement(true);
                     }
                 }
-                setType(columnname,columnType, rs.getInt("DATA_TYPE"),rs.getString("TYPE_NAME"), datalength, nullable, comment, precise, scale, datameta);
+                setType(columnname, columnType, rs.getInt("DATA_TYPE"), rs.getString("TYPE_NAME"), datalength, nullable, comment, precise, scale, datameta);
                 if (pklist.contains(columnname)) {
                     datameta.setPrimaryKey(true);
                 } else {
@@ -153,7 +153,7 @@ public class DataBaseUtil {
         }
     }
 
-    private static void setType(String columnname,Integer columnType, Integer datatype,String typeName, String datalength, boolean nullable, String comment, String precise, String scale, DataBaseColumnMeta datameta) {
+    private static void setType(String columnname, Integer columnType, Integer datatype, String typeName, String datalength, boolean nullable, String comment, String precise, String scale, DataBaseColumnMeta datameta) {
         datameta.setColumnName(columnname);
         datameta.setColumnType(columnType);
         datameta.setDataType(datatype);
@@ -174,19 +174,20 @@ public class DataBaseUtil {
     public static List<DataBaseColumnMeta> getTableMetaByTableName(JdbcDao dao, String tableName, String DbOrtablespacename, String dbType) throws SQLException {
         return getTableMetaByTableName(dao.getDataSource(), tableName, DbOrtablespacename, dbType);
     }
-    public static List<ColumnPrivilege> getTablePrivileges(Connection conn,String tableName,String DbOrtablespacename) throws SQLException{
+
+    public static List<ColumnPrivilege> getTablePrivileges(Connection conn, String tableName, String DbOrtablespacename) throws SQLException {
         DatabaseMetaData meta = conn.getMetaData();
-        List<ColumnPrivilege> retList=new ArrayList<>();
-        try(ResultSet rs=meta.getTablePrivileges(null,DbOrtablespacename,tableName)){
-            while(rs.next()) {
+        List<ColumnPrivilege> retList = new ArrayList<>();
+        try (ResultSet rs = meta.getTablePrivileges(null, DbOrtablespacename, tableName)) {
+            while (rs.next()) {
                 String grants = rs.getString("GRANTOR");
                 String grantees = rs.getString("GRANTEE");
                 String privileges = rs.getString("PRIVILEGE");
                 retList.add(new ColumnPrivilege(null, grants, grantees, privileges));
             }
 
-        }catch (SQLException ex){
-            logger.error("{}",ex);
+        } catch (SQLException ex) {
+            logger.error("{}", ex);
         }
         return retList;
     }
@@ -227,7 +228,7 @@ public class DataBaseUtil {
                         datameta.setIncrement(true);
                     }
                 }
-                setType(columnname,columnType,rs.getInt("DATA_TYPE"),rs.getString("TYPE_NAME"), datalength, nullable, comment, precise, scale, datameta);
+                setType(columnname, columnType, rs.getInt("DATA_TYPE"), rs.getString("TYPE_NAME"), datalength, nullable, comment, precise, scale, datameta);
                 if (pklist != null && pklist.contains(columnname)) {
                     datameta.setPrimaryKey(true);
                 } else {
@@ -311,8 +312,12 @@ public class DataBaseUtil {
             retStr = Const.META_TYPE_INTEGER;
         } else if (type == Types.BIGINT) {
             retStr = Const.META_TYPE_BIGINT;
-        } else if (type == Types.NUMERIC || type == Types.FLOAT || type == Types.DECIMAL) {
+        } else if (type == Types.NUMERIC) {
             retStr = Const.META_TYPE_NUMERIC;
+        } else if (type == Types.FLOAT) {
+            retStr = Const.META_TYPE_FLOAT;
+        } else if (type == Types.DECIMAL) {
+            retStr = Const.META_TYPE_DECIMAL;
         } else if (type == Types.DOUBLE) {
             retStr = Const.META_TYPE_DOUBLE;
         } else if (type == Types.DATE) {

@@ -76,7 +76,11 @@ public class TextFileIteratorFactory {
 			}else if(fileType.equalsIgnoreCase(Const.FILETYPE_PROTOBUF)){
 				Class<AbstractFileIterator> clazz = (Class<AbstractFileIterator>) Class.forName(Const.FILEITERATOR_PROTOBUF_CLASSNAME);
 				iterator = clazz.getConstructor(DataCollectionMeta.class).newInstance(colmeta);
-			}else{
+			}else if(fileType.equalsIgnoreCase(Const.FILETYPE_ORC)){
+				Class<AbstractFileIterator> clazz = (Class<AbstractFileIterator>) Class.forName(Const.FILEITERATOR_ORC_CLASSNAME);
+				iterator = clazz.getConstructor(DataCollectionMeta.class).newInstance(colmeta);
+			}
+			else{
 				iterator = new PlainTextFileIterator(colmeta);
 			}
 		}catch (Exception ex){

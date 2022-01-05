@@ -15,15 +15,13 @@
  */
 package com.robin.core.sql.util;
 
-import com.robin.core.base.dao.util.AnnotationRetrevior;
+import com.robin.core.base.dao.util.AnnotationRetriver;
 import com.robin.core.base.datameta.DataBaseColumnMeta;
 import com.robin.core.base.util.Const;
 import com.robin.core.base.util.StringUtils;
-import com.robin.core.fileaccess.meta.DataSetColumnMeta;
 import com.robin.core.query.util.PageQuery;
 import com.robin.core.query.util.QueryParam;
 import com.robin.core.query.util.QueryString;
-import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
@@ -266,7 +264,7 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
     }
 
     @Override
-    public String getFieldDefineSqlPart(AnnotationRetrevior.FieldContent field) {
+    public String getFieldDefineSqlPart(AnnotationRetriver.FieldContent field) {
         String datatype = field.getDataType();
         StringBuilder builder = new StringBuilder();
         String name = field.getFieldName();
@@ -420,7 +418,7 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
         return sql.toString();
     }
     @Override
-    public String returnTypeDef(String dataType, AnnotationRetrevior.FieldContent field) {
+    public String returnTypeDef(String dataType, AnnotationRetriver.FieldContent field) {
         StringBuilder builder=new StringBuilder();
         if(dataType.equals(Const.META_TYPE_BIGINT)){
             builder.append(getLongFormat());
@@ -662,7 +660,7 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
     }
 
     @Override
-    public String getAlertColumnSqlPart(AnnotationRetrevior.EntityContent entityContent, AnnotationRetrevior.FieldContent fieldContent, AlertType type) {
+    public String getAlertColumnSqlPart(AnnotationRetriver.EntityContent entityContent, AnnotationRetriver.FieldContent fieldContent, AlertType type) {
         StringBuilder builder=new StringBuilder();
         String fullName= StringUtils.isEmpty(entityContent.getSchema())?entityContent.getTableName():entityContent.getSchema()+"."+entityContent.getTableName();
         builder.append("ALERT TABLE ").append(fullName);

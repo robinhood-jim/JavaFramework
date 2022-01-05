@@ -473,6 +473,8 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>,T extends S
                     if (null != tmpObj) {
                         wrapQueryWithTypeAndValue(getMethod.get(entry.getKey()).getReturnType(), filterColumn, tmpObj.toString(), queryWrapper);
                     }
+                }else{
+
                 }
             }
             if(qtoMethod.containsKey("getOrderField") && qtoMethod.containsKey("getOrder")){
@@ -498,14 +500,14 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>,T extends S
             }else if(entry.getKey().equalsIgnoreCase(Condition.OR)){
                 //or 条件组合
                 if(entry.getValue().getClass().getInterfaces()!=null){
-                    if(entry.getValue().getClass().getInterfaces()[0].isAssignableFrom(List.class)){
+                    if(List.class.isAssignableFrom(entry.getValue().getClass())){
                         List<Map<String,Object>> list=(List<Map<String,Object>>)entry.getValue();
                         queryWrapper.and(f->
                             list.forEach(map -> {
                                 wrapNested(map,getMethod,f.or());
                             })
                         );
-                    }else if(entry.getValue().getClass().getInterfaces()[0].isAssignableFrom(Map.class)){
+                    }else if(Map.class.isAssignableFrom(entry.getValue().getClass())){
                         Map<String,Object> tmap=(Map<String,Object>) entry.getValue();
                         if(tmap.containsKey("columns")){
                             Assert.notNull(tmap.get("value"),"value must not be null!");
@@ -544,9 +546,9 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>,T extends S
                     }else if(entry.getValue().getClass().getInterfaces().length>0 && entry.getValue().getClass().getInterfaces()[0].isAssignableFrom(Map.class)) {
                         Map<String,Object> vMap=(Map<String,Object>) entry.getValue();
                         queryWrapper.and(f->
-                            vMap.forEach((k,v)->{
-                                wrapQueryWithTypeAndValue(v.getClass(),k,v.toString(),f.or());
-                            })
+                            vMap.forEach((k,v)->
+                                wrapQueryWithTypeAndValue(v.getClass(),k,v.toString(),f.or())
+                            )
                         );
                     }
                 }

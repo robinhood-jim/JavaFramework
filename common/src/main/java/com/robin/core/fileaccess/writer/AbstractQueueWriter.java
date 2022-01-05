@@ -41,7 +41,7 @@ public abstract class AbstractQueueWriter extends AbstractResourceWriter {
     public void writeRecord(List<Object> map) throws IOException,OperationNotSupportedException {
         throw new OperationNotSupportedException("operation not Supported!");
     }
-    protected byte[] consturctContent(Map<String, ?> map) throws IOException {
+    protected byte[] constructContent(Map<String, ?> map) throws IOException {
         byte[] output=null;
         if(colmeta.getPkColumns()!=null && !colmeta.getPkColumns().isEmpty()){
             if(builder.length()>0){
@@ -68,6 +68,8 @@ public abstract class AbstractQueueWriter extends AbstractResourceWriter {
 
         }
         else if(ResourceConst.VALUE_TYPE.PROTOBUF.getValue().equalsIgnoreCase(valueType)){
+
+        }else if(ResourceConst.VALUE_TYPE.ORC.getValue().equalsIgnoreCase(valueType)){
 
         }
         return output;

@@ -39,18 +39,6 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.*;
 
-/**
- * <p>Project:  frame</p>
- * <p>
- * <p>Description:Avro schema Utils,Serialize and Unserialize</p>
- * <p>
- * <p>Copyright: Copyright (c) 2018 create at 2018年07月25日</p>
- * <p>
- * <p>Company: zhcx_DEV</p>
- *
- * @author robinjim
- * @version 1.0
- */
 public class AvroUtils {
     private static Logger logger = LoggerFactory.getLogger(AvroUtils.class);
 

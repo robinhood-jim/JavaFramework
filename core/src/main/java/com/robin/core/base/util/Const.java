@@ -60,6 +60,8 @@ public class Const {
     public static final String META_TYPE_OBJECT = "12";
     public static final String META_TYPE_SHORT = "13";
     public static final String META_TYPE_FORMULA = "14";
+    public static final String META_TYPE_FLOAT = "15";
+    public static final String META_TYPE_DECIMAL = "16";
     //filter type
     public static final String FILTER_OPER_BETWEEN = "BT";
     public static final String FILTER_OPER_LIKE = "LK";
@@ -124,6 +126,7 @@ public class Const {
     public static final String FILETYPE_AVRO = "4";
     public static final String FILETYPE_PARQUET = "5";
     public static final String FILETYPE_PROTOBUF = "6";
+    public static final String FILETYPE_ORC = "7";
 
     public static final String FILESUFFIX_CSV = "csv";
     public static final String FILESUFFIX_JSON = "json";
@@ -131,12 +134,15 @@ public class Const {
     public static final String FILESUFFIX_AVRO = "avro";
     public static final String FILESUFFIX_PARQUET = "parquet";
     public static final String FILESUFFIX_PROTOBUF = "proto";
+    public static final String FILESUFFIX_ORC = "orc";
 
 
     public static final String FILEWRITER_PARQUET_CLASSNAME = "com.robin.comm.fileaccess.writer.ParquetFileWriter";
     public static final String FILEWRITER_PROTOBUF_CLASSNAME = "com.robin.comm.fileaccess.writer.ProtoBufFileWriter";
+    public static final String FILEWRITER_ORC_CLASSNAME = "com.robin.comm.fileaccess.writer.OrcFileWriter";
     public static final String FILEITERATOR_PARQUET_CLASSNAME = "com.robin.comm.fileaccess.iterator.ParquetFileIterator";
     public static final String FILEITERATOR_PROTOBUF_CLASSNAME = "com.robin.comm.fileaccess.iterator.ProtoBufFileIterator";
+    public static final String FILEITERATOR_ORC_CLASSNAME = "com.robin.comm.fileaccess.iterator.OrcFileIterator";
 
     public static final String RESOURCE_ACCESS_HDFS_CLASSNAME = "com.robin.comm.fileaccess.util.HdfsResourceAccessUtil";
     public static final String ITERATOR_AVRO_CLASSNAME = "com.robin.comm.fileaccess.iterator.AvroFileIterator";
