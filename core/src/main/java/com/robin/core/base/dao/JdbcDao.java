@@ -174,19 +174,6 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
         return queryItemList(pageQuery, querySQL);
     }
 
-    @Override
-    public List<Map<String, Object>> queryBySql(String sqlstr) throws DAOException {
-
-        try {
-            String querySQL = sqlstr;
-            if (logger.isDebugEnabled()) {
-                logger.debug("querySQL: " + querySQL);
-            }
-            return queryAllItemList(sqlstr);
-        } catch (Exception e) {
-            throw new DAOException(e);
-        }
-    }
 
     @Override
     public PageQuery queryBySql(String querySQL, String countSql, String[] displayname, PageQuery pageQuery) throws DAOException {
@@ -250,7 +237,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
             throw new DAOException("query VO must the same type of given Class");
         }
         try {
-            List<AnnotationRetrevior.FieldContent> fields = AnnotationRetrevior.getMappingFieldsCache(type);
+            List<AnnotationRetriver.FieldContent> fields = AnnotationRetriver.getMappingFieldsCache(type);
             String wholeSelectSql = getWholeSelectSql(type);
             EntityMappingUtil.SelectSegment segment = EntityMappingUtil.getSelectByVOSegment(type, sqlGen, vo, additonMap, orderByStr, wholeSelectSql);
             List<Map<String, Object>> rsList = queryBySql(segment.getSelectSql(), segment.getValues().toArray());
@@ -269,8 +256,8 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
         try {
             StringBuilder buffer = new StringBuilder();
             buffer.append(getWholeSelectSql(type)).append(" where ");
-            Map<String, AnnotationRetrevior.FieldContent> fieldMap = AnnotationRetrevior.getMappingFieldsMapCache(type);
-            List<AnnotationRetrevior.FieldContent> fields = AnnotationRetrevior.getMappingFieldsCache(type);
+            Map<String, AnnotationRetriver.FieldContent> fieldMap = AnnotationRetriver.getMappingFieldsMapCache(type);
+            List<AnnotationRetriver.FieldContent> fields = AnnotationRetriver.getMappingFieldsCache(type);
             List<Object> objList = new ArrayList<>();
             for (int i = 0; i < conditions.size(); i++) {
                 conditions.get(i).setFieldMap(fieldMap);
@@ -317,8 +304,8 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
             StringBuilder buffer = new StringBuilder();
             buffer.append(getWholeSelectSql(type)).append(" where ");
             StringBuilder queryBuffer = new StringBuilder();
-            Map<String, AnnotationRetrevior.FieldContent> map1 = AnnotationRetrevior.getMappingFieldsMapCache(type);
-            List<AnnotationRetrevior.FieldContent> fields = AnnotationRetrevior.getMappingFieldsCache(type);
+            Map<String, AnnotationRetriver.FieldContent> map1 = AnnotationRetriver.getMappingFieldsMapCache(type);
+            List<AnnotationRetriver.FieldContent> fields = AnnotationRetriver.getMappingFieldsCache(type);
             List<Map<String, Object>> rsList;
             if (map1.containsKey(fieldName)) {
                 String namedstr = generateQuerySqlBySingleFields(map1.get(fieldName), fieldName, oper, queryBuffer);
@@ -339,10 +326,10 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
         List<BaseObject> retlist = new ArrayList<>();
         try {
             StringBuilder buffer = new StringBuilder();
-            List<AnnotationRetrevior.FieldContent> fields = AnnotationRetrevior.getMappingFieldsCache(type);
+            List<AnnotationRetriver.FieldContent> fields = AnnotationRetriver.getMappingFieldsCache(type);
             buffer.append(getWholeSelectSql(type)).append(" where ");
             StringBuilder queryBuffer = new StringBuilder();
-            Map<String, AnnotationRetrevior.FieldContent> map1 = AnnotationRetrevior.getMappingFieldsMapCache(type);
+            Map<String, AnnotationRetriver.FieldContent> map1 = AnnotationRetriver.getMappingFieldsMapCache(type);
 
 
             List<Map<String, Object>> rsList;
@@ -366,7 +353,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
     @Override
     public List<? extends BaseObject> queryAll(Class<? extends BaseObject> type) throws DAOException {
         List<BaseObject> retlist = new ArrayList<>();
-        List<AnnotationRetrevior.FieldContent> fields = AnnotationRetrevior.getMappingFieldsCache(type);
+        List<AnnotationRetriver.FieldContent> fields = AnnotationRetriver.getMappingFieldsCache(type);
         try {
             String sql = getWholeSelectSql(type);
             if (logger.isDebugEnabled()) {
@@ -471,10 +458,10 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
         try {
             //function as mybatis-plus MetaObjectHandler
             if(SpringContextHolder.getBean(MetaObjectHandler.class)!=null){
-                Map<String,AnnotationRetrevior.FieldContent> fieldContentMap=AnnotationRetrevior.getMappingFieldsMapCache(obj.getClass());
+                Map<String, AnnotationRetriver.FieldContent> fieldContentMap= AnnotationRetriver.getMappingFieldsMapCache(obj.getClass());
                 SpringContextHolder.getBean(MetaObjectHandler.class).insertFill(new MetaObject(obj,fieldContentMap));
             }
-            List<AnnotationRetrevior.FieldContent> fields = AnnotationRetrevior.getMappingFieldsCache(obj.getClass());
+            List<AnnotationRetriver.FieldContent> fields = AnnotationRetriver.getMappingFieldsCache(obj.getClass());
             EntityMappingUtil.InsertSegment insertSegment = EntityMappingUtil.getInsertSegment(obj, sqlGen);
             String insertSql = insertSegment.getInsertSql();
             if (logger.isDebugEnabled()) {
@@ -489,7 +476,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
                 }
                 //assign increment column
                 if (insertSegment.getIncrementColumn() != null) {
-                    AnnotationRetrevior.FieldContent pkColumn = AnnotationRetrevior.getPrimaryField(fields);
+                    AnnotationRetriver.FieldContent pkColumn = AnnotationRetriver.getPrimaryField(fields);
                     if(pkColumn==null){
                         throw new DAOException("model "+obj.getClass().getSimpleName()+" does not have primary key");
                     }
@@ -498,7 +485,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
                         insertSegment.getIncrementColumn().getSetMethod().invoke(obj, targetVal);
                         retObj=(Serializable) targetVal;
                     } else {
-                        for (AnnotationRetrevior.FieldContent field : pkColumn.getPrimaryKeys()) {
+                        for (AnnotationRetriver.FieldContent field : pkColumn.getPrimaryKeys()) {
                             if (field.isIncrement() || field.isSequential()) {
                                 field.getSetMethod().invoke(insertSegment.getIncrementColumn().getGetMethod().invoke(obj, new Object[]{}), retval);
                             }
@@ -513,7 +500,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
                     LobCreatingPreparedStatementCallBack back = new LobCreatingPreparedStatementCallBack(lobHandler, fields, obj);
                     this.getJdbcTemplate().execute(insertSql, back);
                 }
-                AnnotationRetrevior.FieldContent pkColumn = AnnotationRetrevior.getPrimaryField(fields);
+                AnnotationRetriver.FieldContent pkColumn = AnnotationRetriver.getPrimaryField(fields);
                 retObj=(Serializable) pkColumn.getGetMethod().invoke(obj,null);
             }
 
@@ -530,7 +517,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
         try {
             //function as mybatis-plus MetaObjectHandler
             if(SpringContextHolder.getBean(MetaObjectHandler.class)!=null){
-                Map<String,AnnotationRetrevior.FieldContent> fieldContentMap=AnnotationRetrevior.getMappingFieldsMapCache(obj.getClass());
+                Map<String, AnnotationRetriver.FieldContent> fieldContentMap= AnnotationRetriver.getMappingFieldsMapCache(obj.getClass());
                 SpringContextHolder.getBean(MetaObjectHandler.class).updateFill(new MetaObject(obj,fieldContentMap));
             }
             EntityMappingUtil.UpdateSegment updateSegment = EntityMappingUtil.getUpdateSegment(obj, sqlGen);
@@ -563,8 +550,8 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
     @Override
     public int deleteVO(Class<? extends BaseObject> clazz, Serializable[] value) throws DAOException {
         try {
-            AnnotationRetrevior.EntityContent tableDef = AnnotationRetrevior.getMappingTableByCache(clazz);
-            List<AnnotationRetrevior.FieldContent> fields = AnnotationRetrevior.getMappingFieldsCache(clazz);
+            AnnotationRetriver.EntityContent tableDef = AnnotationRetriver.getMappingTableByCache(clazz);
+            List<AnnotationRetriver.FieldContent> fields = AnnotationRetriver.getMappingFieldsCache(clazz);
 
             StringBuilder buffer = new StringBuilder();
             buffer.append("delete from ");
@@ -573,7 +560,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
             }
             buffer.append(tableDef.getTableName()).append(" where ");
             StringBuilder fieldBuffer = new StringBuilder();
-            for (AnnotationRetrevior.FieldContent field : fields) {
+            for (AnnotationRetriver.FieldContent field : fields) {
                 if (field.isPrimary()) {
                     fieldBuffer.append(field.getFieldName()).append(" in (:ids) ");
                     break;
@@ -596,14 +583,14 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
     @Override
     public int deleteByField(Class<? extends BaseObject> clazz, String field, Object value) throws DAOException {
         try {
-            AnnotationRetrevior.EntityContent tableDef = AnnotationRetrevior.getMappingTableByCache(clazz);
-            List<AnnotationRetrevior.FieldContent> fields = AnnotationRetrevior.getMappingFieldsCache(clazz);
+            AnnotationRetriver.EntityContent tableDef = AnnotationRetriver.getMappingTableByCache(clazz);
+            List<AnnotationRetriver.FieldContent> fields = AnnotationRetriver.getMappingFieldsCache(clazz);
             StringBuilder buffer = new StringBuilder();
             buffer.append("delete from ");
             appendSchemaAndTable(tableDef, buffer);
             buffer.append(" where ");
             StringBuilder fieldBuffer = new StringBuilder();
-            for (AnnotationRetrevior.FieldContent fieldContent : fields) {
+            for (AnnotationRetriver.FieldContent fieldContent : fields) {
                 if (fieldContent.getFieldName().equals(field)) {
                     fieldBuffer.append(fieldContent.getFieldName()).append("=?");
                     break;
@@ -629,7 +616,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
     public BaseObject getEntity(Class<? extends BaseObject> clazz, Serializable id) throws DAOException {
         try {
             BaseObject obj = clazz.newInstance();
-            List<AnnotationRetrevior.FieldContent> fields = AnnotationRetrevior.getMappingFieldsCache(clazz);
+            List<AnnotationRetriver.FieldContent> fields = AnnotationRetriver.getMappingFieldsCache(clazz);
             EntityMappingUtil.SelectSegment segment = EntityMappingUtil.getSelectPkSegment(clazz, id, sqlGen);
             List<Map<String, Object>> list1 = queryBySql(segment.getSelectSql(), fields, segment.getValues().toArray());
             if (!CollectionUtils.isEmpty(list1)) {
@@ -659,8 +646,8 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
 
     private String getWholeSelectSql(Class<? extends BaseObject> clazz) throws DAOException {
         try {
-            AnnotationRetrevior.EntityContent tableDef = AnnotationRetrevior.getMappingTableByCache(clazz);
-            List<AnnotationRetrevior.FieldContent> fields = AnnotationRetrevior.getMappingFieldsCache(clazz);
+            AnnotationRetriver.EntityContent tableDef = AnnotationRetriver.getMappingTableByCache(clazz);
+            List<AnnotationRetriver.FieldContent> fields = AnnotationRetriver.getMappingFieldsCache(clazz);
             StringBuilder builder = getAllSelectColumns(fields);
             builder.deleteCharAt(builder.length() - 1).append(" from ");
             appendSchemaAndTable(tableDef, builder);
@@ -683,7 +670,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
 
     }
 
-    private long executeSqlWithReturn(List<AnnotationRetrevior.FieldContent> field, final String sql, BaseObject object)
+    private long executeSqlWithReturn(List<AnnotationRetriver.FieldContent> field, final String sql, BaseObject object)
             throws DAOException {
         KeyHolder keyHolder = new GeneratedKeyHolder();
         getJdbcTemplate().update(new DefaultPrepareStatement(field, sql, object, lobHandler), keyHolder);
@@ -720,17 +707,17 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
         });
     }
 
-    private List<Map<String, Object>> queryAllItemList(final String querySQL, Object[] obj) {
+    private List<Map<String, Object>> queryAllItemList(final String querySQL, Object... obj) {
         return this.getJdbcTemplate().query(querySQL, obj, new SplitPageResultSetExtractor(0, 0, lobHandler) {
         });
     }
 
-    private List<Map<String, Object>> queryAllItemList(final String querySQL, final List<AnnotationRetrevior.FieldContent> mappingFieldList, Object[] obj) {
+    private List<Map<String, Object>> queryAllItemList(final String querySQL, final List<AnnotationRetriver.FieldContent> mappingFieldList, Object[] obj) {
         return this.getJdbcTemplate().query(querySQL, obj, new SplitPageResultSetExtractor(0, 0, lobHandler, mappingFieldList) {
         });
     }
 
-    private String generateQuerySqlBySingleFields(AnnotationRetrevior.FieldContent columncfg, String fieldName, String oper, StringBuilder queryBuffer) {
+    private String generateQuerySqlBySingleFields(AnnotationRetriver.FieldContent columncfg, String fieldName, String oper, StringBuilder queryBuffer) {
         String namedstr = "";
         if (oper.equals(BaseObject.OPER_EQ) || oper.equals(BaseObject.OPER_NOT_EQ) || oper.equals(BaseObject.OPER_GT_EQ)
                 || oper.equals(BaseObject.OPER_LT_EQ) || oper.equals(BaseObject.OPER_GT) || oper.equals(BaseObject.OPER_LT)) {
@@ -746,8 +733,8 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
         return namedstr;
     }
 
-    private void wrapResultToModelWithKey(BaseObject obj, Map<String, Object> map, List<AnnotationRetrevior.FieldContent> fields, Serializable pkObj) throws Exception {
-        for (AnnotationRetrevior.FieldContent field : fields) {
+    private void wrapResultToModelWithKey(BaseObject obj, Map<String, Object> map, List<AnnotationRetriver.FieldContent> fields, Serializable pkObj) throws Exception {
+        for (AnnotationRetriver.FieldContent field : fields) {
             if (field.isPrimary()) {
                 field.getSetMethod().invoke(obj, pkObj);
             } else {
@@ -758,15 +745,15 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
         }
     }
 
-    private void wrapResultToModel(BaseObject obj, Map<String, Object> map, List<AnnotationRetrevior.FieldContent> fields) throws Exception {
-        for (AnnotationRetrevior.FieldContent field : fields) {
+    private void wrapResultToModel(BaseObject obj, Map<String, Object> map, List<AnnotationRetriver.FieldContent> fields) throws Exception {
+        for (AnnotationRetriver.FieldContent field : fields) {
             if (field.isPrimary()) {
                 if (field.getPrimaryKeys() == null) {
                     field.getSetMethod().invoke(obj, ConvertUtil.parseParameter(field.getGetMethod().getReturnType(), map.get(field.getPropertyName())));
                 } else {
                     Object pkObj = field.getGetMethod().getReturnType().newInstance();
                     field.getSetMethod().invoke(obj, pkObj);
-                    for (AnnotationRetrevior.FieldContent pkField : field.getPrimaryKeys()) {
+                    for (AnnotationRetriver.FieldContent pkField : field.getPrimaryKeys()) {
                         pkField.getSetMethod().invoke(pkObj, ConvertUtil.parseParameter(pkField.getGetMethod().getReturnType(), map.get(pkField.getPropertyName())));
                     }
                 }
@@ -778,12 +765,12 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
         }
     }
 
-    private StringBuilder getAllSelectColumns(List<AnnotationRetrevior.FieldContent> fields) {
+    private StringBuilder getAllSelectColumns(List<AnnotationRetriver.FieldContent> fields) {
         StringBuilder builder = new StringBuilder(Const.SQL_SELECT);
-        for (AnnotationRetrevior.FieldContent field : fields) {
+        for (AnnotationRetriver.FieldContent field : fields) {
             if (field.isPrimary()) {
                 if (field.getPrimaryKeys() != null) {
-                    for (AnnotationRetrevior.FieldContent fieldContent : field.getPrimaryKeys()) {
+                    for (AnnotationRetriver.FieldContent fieldContent : field.getPrimaryKeys()) {
                         builder.append(fieldContent.getFieldName()).append(" as ")
                                 .append(fieldContent.getPropertyName()).append(",");
 
@@ -798,7 +785,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
         return builder;
     }
 
-    private void appendSchemaAndTable(AnnotationRetrevior.EntityContent entityContent, StringBuilder builder) {
+    private void appendSchemaAndTable(AnnotationRetriver.EntityContent entityContent, StringBuilder builder) {
         if (entityContent.getSchema() != null && !entityContent.getSchema().isEmpty()) {
             builder.append(sqlGen.getSchemaName(entityContent.getSchema())).append(".");
         }
@@ -827,7 +814,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
         }
     }
 
-    private int executeUpdate(String sql, List<AnnotationRetrevior.FieldContent> fields, BaseObject obj) throws DAOException {
+    private int executeUpdate(String sql, List<AnnotationRetriver.FieldContent> fields, BaseObject obj) throws DAOException {
         try {
             return this.getJdbcTemplate().update(sql, new DefaultPrepareStatementSetter(fields, obj));
         } catch (Exception e) {
@@ -835,7 +822,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
         }
     }
 
-    private List<Map<String, Object>> queryBySql(String sqlstr, List<AnnotationRetrevior.FieldContent> mappingFieldList, Object[] obj) throws DAOException {
+    private List<Map<String, Object>> queryBySql(String sqlstr, List<AnnotationRetriver.FieldContent> mappingFieldList, Object[] obj) throws DAOException {
         List<Map<String, Object>> list;
         try {
             String querySQL = sqlstr;
@@ -862,7 +849,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
         return rsList;
     }
 
-    private long executeOracleSqlWithReturn(final List<AnnotationRetrevior.FieldContent> fields, final String sql, final String seqfield, BaseObject object)
+    private long executeOracleSqlWithReturn(final List<AnnotationRetriver.FieldContent> fields, final String sql, final String seqfield, BaseObject object)
             throws DAOException {
         KeyHolder keyHolder = new GeneratedKeyHolder();
         getJdbcTemplate().update(new PreparedStatementCreator() {
@@ -871,8 +858,8 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
                     throws SQLException {
                 PreparedStatement ps = conn.prepareStatement(sql, new String[]{seqfield});
                 int pos = 1;
-                for (AnnotationRetrevior.FieldContent field : fields) {
-                    pos = AnnotationRetrevior.replacementPrepared(ps, lobHandler, field, object, pos);
+                for (AnnotationRetriver.FieldContent field : fields) {
+                    pos = AnnotationRetriver.replacementPrepared(ps, lobHandler, field, object, pos);
                 }
                 return ps;
             }
@@ -914,7 +901,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
         }
         return selectId;
     }
-    private void wrapList(Class<? extends BaseObject> type, List<BaseObject> retlist, List<AnnotationRetrevior.FieldContent> fields, List<Map<String, Object>> rsList) throws Exception {
+    private void wrapList(Class<? extends BaseObject> type, List<BaseObject> retlist, List<AnnotationRetriver.FieldContent> fields, List<Map<String, Object>> rsList) throws Exception {
         for (Map<String,Object> map:rsList) {
             BaseObject obj = type.newInstance();
             wrapResultToModel(obj, map, fields);

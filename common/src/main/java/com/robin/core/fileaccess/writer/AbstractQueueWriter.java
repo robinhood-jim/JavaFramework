@@ -69,6 +69,8 @@ public abstract class AbstractQueueWriter extends AbstractResourceWriter {
         }
         else if(ResourceConst.VALUE_TYPE.PROTOBUF.getValue().equalsIgnoreCase(valueType)){
 
+        }else if(ResourceConst.VALUE_TYPE.ORC.getValue().equalsIgnoreCase(valueType)){
+
         }
         return output;
     }

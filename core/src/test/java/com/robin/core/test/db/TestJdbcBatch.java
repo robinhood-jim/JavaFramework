@@ -58,7 +58,7 @@ public class TestJdbcBatch extends TestCase {
                 rowMap.put("creator",String.valueOf(random.nextInt(100)));
             }
         };
-        JdbcDao dao=SpringContextHolder.getBean("jdbcDao",JdbcDao.class);
+        JdbcDao dao=SpringContextHolder.getBean(JdbcDao.class);
 
         dao.batchUpdateWithRowIterator("insert into t_batch_test (name,code,amount,creator,time) values (?,?,?,?,?)",iterator,collectionMeta,10000);
 

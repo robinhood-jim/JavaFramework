@@ -16,4 +16,9 @@ public class MockInputStream extends FSDataInputStream {
     public MockInputStream(InputStream in) {
         super(in);
     }
+
+    @Override
+    public void close() throws IOException {
+        fs.removeStream(this);
+    }
 }

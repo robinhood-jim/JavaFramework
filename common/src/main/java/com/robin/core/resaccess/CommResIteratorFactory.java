@@ -9,7 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class CommResIteratorFactory {
-    private static final String KAFKA_ITER_CLASS = "com.robin.comm.resaccess.writer.KafkaResourceWriter";
+    private static final String KAFKA_ITER_CLASS = "com.robin.comm.resaccess.writer.KafkaResourceIterator";
     private static final String CASSANDRA_ITER_CLASS = "com.robin.comm.resaccess.writer.CassandraResourceWriter";
     private static final String MONGO_ITER_CLASS = "com.robin.comm.resaccess.writer.MongoResourceWriter";
     private static final String REDIS_ITER_CLASS = "com.robin.comm.resaccess.writer.RedisResourceWriter";

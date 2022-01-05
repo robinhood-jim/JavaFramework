@@ -1,6 +1,6 @@
 package com.robin.core.sql.util;
 
-import com.robin.core.base.dao.util.AnnotationRetrevior;
+import com.robin.core.base.dao.util.AnnotationRetriver;
 import org.springframework.util.Assert;
 
 import java.util.Map;
@@ -30,12 +30,12 @@ public class FilterCondition {
 	public static final String IN = "IN";
 	public static final String NOT = "NOT";
 	public static final String NOTIN = "NOTIN";
-	private Map<String, AnnotationRetrevior.FieldContent> fieldMap;
-	public Map<String, AnnotationRetrevior.FieldContent> getFieldMap() {
+	private Map<String, AnnotationRetriver.FieldContent> fieldMap;
+	public Map<String, AnnotationRetriver.FieldContent> getFieldMap() {
 		return fieldMap;
 	}
 
-	public void setFieldMap(Map<String, AnnotationRetrevior.FieldContent> fieldMap) {
+	public void setFieldMap(Map<String, AnnotationRetriver.FieldContent> fieldMap) {
 		this.fieldMap = fieldMap;
 	}
 

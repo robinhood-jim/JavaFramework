@@ -16,6 +16,7 @@ import org.springframework.jdbc.core.support.JdbcDaoSupport;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.jdbc.support.lob.LobHandler;
+import org.springframework.util.Assert;
 
 import javax.sql.DataSource;
 import java.lang.reflect.Method;
@@ -41,6 +42,7 @@ public class SqlMapperDao extends JdbcDaoSupport {
         setDataSource(dataSource);
         sqlMapperConfigure = mapper;
         this.sqlGen = sqlGen;
+        Assert.notNull(getJdbcTemplate(),"");
         namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(getJdbcTemplate());
     }
 
@@ -49,6 +51,7 @@ public class SqlMapperDao extends JdbcDaoSupport {
         sqlMapperConfigure = mapper;
         this.lobHandler = lobHandler;
         this.sqlGen = sqlGen;
+        Assert.notNull(getJdbcTemplate(),"");
         namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(getJdbcTemplate());
     }
 
@@ -132,7 +135,7 @@ public class SqlMapperDao extends JdbcDaoSupport {
                         InsertSegment segment = (InsertSegment) pair.right.get(0);
                         if (segment.isUseGenerateKeys()) {
                             useGenerateKeys = true;
-                            keyProperty = ((InsertSegment) segment).getKeyProperty();
+                            keyProperty =  segment.getKeyProperty();
                         }
                     }
                     Map<String, Object> paramMap = wrapSqlAndParamter(nameSpace, id, builder, null, targetObject);

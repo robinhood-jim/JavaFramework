@@ -23,23 +23,23 @@ import com.robin.core.base.model.BasePrimaryObject;
 import com.robin.core.base.reflect.ReflectUtils;
 import com.robin.core.base.util.Const;
 import com.robin.core.base.util.StringUtils;
+import lombok.Data;
 import org.springframework.jdbc.support.lob.LobHandler;
 
 import javax.persistence.*;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.sql.Date;
 import java.sql.*;
 import java.util.*;
 
-public class AnnotationRetrevior {
+public class AnnotationRetriver {
     private static Map<Class<? extends BaseObject>, Map<String, String>> tableCfgMap = new HashMap<>();
     private static Map<Class<? extends BaseObject>, EntityContent> entityCfgMap = new HashMap<>();
     private static Map<Class<? extends BaseObject>, Map<String, FieldContent>> fieldCfgMap = new HashMap<>();
     private static Map<Class<? extends BaseObject>, List<FieldContent>> fieldListMap = new HashMap<>();
-    private AnnotationRetrevior(){
+    private AnnotationRetriver(){
 
     }
 
@@ -331,7 +331,7 @@ public class AnnotationRetrevior {
             }else{
                 fieldName = StringUtils.getFieldNameByCamelCase(field.getName());
             }
-            content = new AnnotationRetrevior.FieldContent(field.getName(), fieldName, field, getMethod, setMethod);
+            content = new AnnotationRetriver.FieldContent(field.getName(), fieldName, field, getMethod, setMethod);
             if(mapfield!=null) {
                 if (mapfield.precise() != 0) {
                     content.setPrecise(mapfield.precise());
@@ -415,7 +415,7 @@ public class AnnotationRetrevior {
         }
     }
 
-    public static int replacementPrepared(PreparedStatement ps, LobHandler lobHandler, AnnotationRetrevior.FieldContent field, BaseObject object, int pos) throws SQLException {
+    public static int replacementPrepared(PreparedStatement ps, LobHandler lobHandler, AnnotationRetriver.FieldContent field, BaseObject object, int pos) throws SQLException {
         int tmppos = pos;
         Object value = getValueFromVO(field, object);
         if (!field.isIncrement() && !field.isSequential() && value != null) {
@@ -424,9 +424,9 @@ public class AnnotationRetrevior {
                 tmppos++;
             } else {
                 BasePrimaryObject compositeObj = (BasePrimaryObject) getValueFromVO(field, object);
-                List<AnnotationRetrevior.FieldContent> pkList = field.getPrimaryKeys();
+                List<AnnotationRetriver.FieldContent> pkList = field.getPrimaryKeys();
                 if (pkList != null) {
-                    for (AnnotationRetrevior.FieldContent pks : pkList) {
+                    for (AnnotationRetriver.FieldContent pks : pkList) {
                         if (!pks.isIncrement() && !pks.isSequential()) {
                             wrapValue(ps, lobHandler, pks, compositeObj, tmppos);
                             tmppos++;
@@ -441,7 +441,7 @@ public class AnnotationRetrevior {
         return tmppos;
     }
 
-    public static Object getValueFromVO(AnnotationRetrevior.FieldContent content, BaseObject object) throws SQLException {
+    public static Object getValueFromVO(AnnotationRetriver.FieldContent content, BaseObject object) throws SQLException {
         try {
             return content.getGetMethod().invoke(object, null);
         }catch (Exception ex){
@@ -461,7 +461,7 @@ public class AnnotationRetrevior {
         return retMap;
     }
 
-    private static void wrapValue(PreparedStatement ps, LobHandler lobHandler, AnnotationRetrevior.FieldContent field, BaseObject object, int pos) throws SQLException {
+    private static void wrapValue(PreparedStatement ps, LobHandler lobHandler, AnnotationRetriver.FieldContent field, BaseObject object, int pos) throws SQLException {
         Object value = getValueFromVO(field, object);
         if(value==null){
             setParameter(ps, pos, value);
@@ -504,7 +504,7 @@ public class AnnotationRetrevior {
         }
     }
 
-
+    @Data
     public static class EntityContent {
         boolean jpaAnnotation;
         private String tableName;
@@ -531,39 +531,8 @@ public class AnnotationRetrevior {
             this.jpaAnnotation = jpaAnnotation;
         }
 
-        public boolean isJpaAnnotation() {
-            return jpaAnnotation;
-        }
-
-        public void setJpaAnnotation(boolean jpaAnnotation) {
-            this.jpaAnnotation = jpaAnnotation;
-        }
-
-        public String getTableName() {
-            return tableName;
-        }
-
-        public void setTableName(String tableName) {
-            this.tableName = tableName;
-        }
-
-        public String getSchema() {
-            return schema;
-        }
-
-        public void setSchema(String schema) {
-            this.schema = schema;
-        }
-
-        public String getJdbcDao() {
-            return jdbcDao;
-        }
-
-        public void setJdbcDao(String jdbcDao) {
-            this.jdbcDao = jdbcDao;
-        }
     }
-
+    @Data
     public static class FieldContent {
         private String propertyName;
         private String fieldName;
@@ -589,124 +558,5 @@ public class AnnotationRetrevior {
             this.setMethod = setMethod;
         }
 
-        public String getPropertyName() {
-            return propertyName;
-        }
-
-        public void setPropertyName(String propertyName) {
-            this.propertyName = propertyName;
-        }
-
-        public String getFieldName() {
-            return fieldName;
-        }
-
-        public void setFieldName(String fieldName) {
-            this.fieldName = fieldName;
-        }
-
-        public String getDataType() {
-            return dataType;
-        }
-
-        public void setDataType(String dataType) {
-            this.dataType = dataType;
-        }
-
-        public String getSequenceName() {
-            return sequenceName;
-        }
-
-        public void setSequenceName(String sequenceName) {
-            this.sequenceName = sequenceName;
-        }
-
-        public boolean isRequired() {
-            return required;
-        }
-
-        public void setRequired(boolean required) {
-            this.required = required;
-        }
-
-        public boolean isIncrement() {
-            return increment;
-        }
-
-        public void setIncrement(boolean increment) {
-            this.increment = increment;
-        }
-
-        public boolean isSequential() {
-            return sequential;
-        }
-
-        public void setSequential(boolean sequential) {
-            this.sequential = sequential;
-        }
-
-        public boolean isPrimary() {
-            return primary;
-        }
-
-        public void setPrimary(boolean primary) {
-            this.primary = primary;
-        }
-
-        public Field getField() {
-            return field;
-        }
-
-        public void setField(Field field) {
-            this.field = field;
-        }
-
-        public Method getGetMethod() {
-            return getMethod;
-        }
-
-        public void setGetMethod(Method getMethod) {
-            this.getMethod = getMethod;
-        }
-
-        public Method getSetMethod() {
-            return setMethod;
-        }
-
-        public void setSetMethod(Method setMethod) {
-            this.setMethod = setMethod;
-        }
-
-        public int getScale() {
-            return scale;
-        }
-
-        public void setScale(int scale) {
-            this.scale = scale;
-        }
-
-        public int getPrecise() {
-            return precise;
-        }
-
-        public void setPrecise(int precise) {
-            this.precise = precise;
-        }
-
-        public int getLength() {
-            return length;
-        }
-
-        public void setLength(int length) {
-            this.length = length;
-        }
-
-        public List<FieldContent> getPrimaryKeys() {
-            return primaryKeys;
-        }
-
-        public void setPrimaryKeys(List<FieldContent> primaryKeys) {
-            this.primaryKeys = primaryKeys;
-        }
     }
 }

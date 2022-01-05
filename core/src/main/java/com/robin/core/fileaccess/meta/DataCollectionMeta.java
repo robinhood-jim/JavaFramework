@@ -32,7 +32,7 @@ import java.util.stream.Collectors;
 public class DataCollectionMeta implements Serializable {
 	private String split;
 	private String encode="UTF-8";
-	private List<DataSetColumnMeta> columnList=new ArrayList<DataSetColumnMeta>();
+	private List<DataSetColumnMeta> columnList=new ArrayList<>();
 	private String path;
 	private transient Map<String, Object> resourceCfgMap=new HashMap<String,Object>();
 	private String valueClassName="ValueObject";

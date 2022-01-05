@@ -22,9 +22,8 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
-import com.robin.core.base.dao.util.AnnotationRetrevior;
+import com.robin.core.base.dao.util.AnnotationRetriver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
@@ -37,7 +36,7 @@ import com.robin.core.base.model.BaseObject;
 public class LobCreatingPreparedStatementCallBack extends
         AbstractLobCreatingPreparedStatementCallback {
     private BaseObject obj;
-    private List<AnnotationRetrevior.FieldContent> fields;
+    private List<AnnotationRetriver.FieldContent> fields;
     private Logger logger= LoggerFactory.getLogger(getClass());
 
     public LobCreatingPreparedStatementCallBack(LobHandler lobHandler) {
@@ -45,7 +44,7 @@ public class LobCreatingPreparedStatementCallBack extends
 
     }
 
-    public LobCreatingPreparedStatementCallBack(LobHandler lobHandler, List<AnnotationRetrevior.FieldContent> fields, BaseObject object) {
+    public LobCreatingPreparedStatementCallBack(LobHandler lobHandler, List<AnnotationRetriver.FieldContent> fields, BaseObject object) {
         super(lobHandler);
         this.obj = object;
         this.fields = fields;
@@ -62,13 +61,13 @@ public class LobCreatingPreparedStatementCallBack extends
             throws SQLException, DataAccessException {
         int pos = 1;
         try {
-            for (AnnotationRetrevior.FieldContent field : fields) {
+            for (AnnotationRetriver.FieldContent field : fields) {
                 Object value = field.getGetMethod().invoke(obj, null);
                 if (!field.isIncrement() && !field.isSequential() && value != null) {
                     boolean needDo = true;
                     if (field.isPrimary() && field.getPrimaryKeys() != null) {
                         needDo = false;
-                        for (AnnotationRetrevior.FieldContent fieldContent : field.getPrimaryKeys()) {
+                        for (AnnotationRetriver.FieldContent fieldContent : field.getPrimaryKeys()) {
                             setValueByDataType(ps, value, lobCreator, field.getDataType(), pos);
                             pos++;
                         }

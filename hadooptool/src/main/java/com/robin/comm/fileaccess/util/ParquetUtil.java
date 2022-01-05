@@ -161,7 +161,7 @@ public class ParquetUtil {
 
             @Override
             public PositionOutputStream createOrOverwrite(long l) throws IOException {
-                return null;
+                return makePositionOutputStream(accessUtil,colmeta,filePath,IO_BUF_SIZE);
             }
 
             @Override

@@ -19,7 +19,7 @@ import com.robin.core.base.util.Const;
  * @author robinjim
  * @version 1.0
  */
-public class HDFSProperty {
+public class HDFSProperty implements Comparable {
     private String defaultName;
     private Map<String, String> haConfig = new HashMap<String, String>();
 
@@ -57,6 +57,14 @@ public class HDFSProperty {
                 defaultName = haConfig.get(Const.HDFS_NAME_HADOOP2);
             }
         }
+    }
+
+    @Override
+    public int compareTo(Object o) {
+        if(equals(o)){
+            return 1;
+        }
+        return 0;
     }
 
     @Override
