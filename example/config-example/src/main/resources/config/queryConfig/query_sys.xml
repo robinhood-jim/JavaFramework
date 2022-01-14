@@ -69,14 +69,14 @@
 		<FROMSQL>from t_sys_resource_info a,t_sys_resource_resp_r b,t_sys_user_resp_r c
 			where a.id=b.res_id and b.resp_id=c.resp_id and c.user_id=? ORDER BY a.RES_CODE</FROMSQL>
 		<FIELD>
-			distinct(a.id) as id,a.res_name as name
+			distinct(a.id) as id,a.res_name as name,a.res_code
 		</FIELD>
 	</SQLSCRIPT>
 	<SQLSCRIPT ID="GET_ORGRESOURCEBYRESP">
 		<FROMSQL>from t_sys_resource_info a,t_org_resource_resp_r b,t_org_user_resp_r c
 			where a.id=b.res_id and b.resp_id=c.resp_id and c.user_id=? ORDER BY a.RES_CODE</FROMSQL>
 		<FIELD>
-			distinct(a.id) as id,a.res_name as name
+			distinct(a.id) as id,a.res_name as name,a.res_code
 		</FIELD>
 	</SQLSCRIPT>
 	<SQLSCRIPT ID="GET_RESOURCEINFO">

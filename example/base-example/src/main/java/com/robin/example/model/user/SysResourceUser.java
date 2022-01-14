@@ -18,12 +18,9 @@ package com.robin.example.model.user;
 import com.robin.core.base.annotation.MappingEntity;
 import com.robin.core.base.annotation.MappingField;
 import com.robin.core.base.model.BaseObject;
-import lombok.Data;
 
 @MappingEntity(table = "t_sys_resource_user_r", schema = "frameset")
-@Data
 public class SysResourceUser extends BaseObject {
-	private static final long serialVersionUID = 1L;
 
 	// primary key
 	@MappingField(primary = true, increment = true)
@@ -106,5 +103,45 @@ public class SysResourceUser extends BaseObject {
         } else {
             return str.toString();
         }
+	}
+
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
+	public Integer getResId() {
+		return resId;
+	}
+
+	public void setResId(Integer resId) {
+		this.resId = resId;
+	}
+
+	public Integer getUserId() {
+		return userId;
+	}
+
+	public void setUserId(Integer userId) {
+		this.userId = userId;
+	}
+
+	public Integer getAssignType() {
+		return assignType;
+	}
+
+	public void setAssignType(Integer assignType) {
+		this.assignType = assignType;
 	}
 }

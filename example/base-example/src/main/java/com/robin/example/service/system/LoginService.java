@@ -42,6 +42,9 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 @Component
 @Scope("singleton")
@@ -227,11 +230,11 @@ public class LoginService {
         }
         //common resources
         List<SysResource> commresources = getResourcesByOrg(WebConstant.DEFAULT_ORG);
-        Map<String, SysResource> resmap = null;
+        Map<Long, SysResource> resmap = null;
         try {
-            resmap = CollectionMapConvert.convertListToMap(commresources, "id");
+            resmap = commresources.stream().collect(Collectors.toMap(SysResource::getId, Function.identity()));
         } catch (Exception ex) {
-
+            ex.printStackTrace();
         }
         //get comm menu from SysResponsiblity
         SysUserResponsiblity queryVO=new SysUserResponsiblity();
@@ -264,7 +267,7 @@ public class LoginService {
         Map<String, List<Map<String, Object>>> privMap = new HashMap();
         Map<String, Integer> idMap = new HashMap<>();
         for (Map<String, Object> map : list) {
-            fillRights(map.get("id").toString(), resmap, privMap, map, idMap);
+            fillRights(Long.valueOf(map.get("id").toString()), resmap, privMap, map, idMap);
         }
         session.setPrivileges(privMap);
         if(orgId!=0L){
@@ -274,7 +277,7 @@ public class LoginService {
         }
     }
 
-    private void fillRights(String id, Map<String, SysResource> resMap, Map<String, List<Map<String, Object>>> privMap, Map<String, Object> vmap, Map<String, Integer> idMap) {
+    private void fillRights(Long id, Map<Long, SysResource> resMap, Map<String, List<Map<String, Object>>> privMap, Map<String, Object> vmap, Map<String, Integer> idMap) {
         try {
             if (resMap.containsKey(id)) {
                 Long pid = resMap.get(id).getPid();
@@ -291,11 +294,11 @@ public class LoginService {
                 }
                 Map<String, Object> tmap = new HashMap<>();
                 if (!idMap.containsKey(pid.toString())) {
-                    ConvertUtil.objectToMapObj(tmap, resMap.get(pid.toString()));
+                    ConvertUtil.objectToMapObj(tmap, resMap.get(pid));
                     tmap.put("assignType","0");
-                    fillRights(pid.toString(), resMap, privMap, tmap, idMap);
+                    fillRights(pid, resMap, privMap, tmap, idMap);
                 }
-                idMap.put(id,1);
+                idMap.put(id.toString(),1);
                 idMap.put(pid.toString(), 1);
             }
         } catch (Exception ex) {

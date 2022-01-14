@@ -25,6 +25,7 @@ import com.robin.core.query.util.QueryString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 
 import java.util.Iterator;
 import java.util.List;
@@ -638,7 +639,7 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
     protected Integer[] getStartEndRecord(PageQuery pageQuery) {
         int nBegin = (pageQuery.getPageNumber() - 1) * pageQuery.getPageSize();
         int tonums = nBegin + pageQuery.getPageSize();
-        if (pageQuery.getRecordCount() < tonums) {
+        if (!ObjectUtils.isEmpty(pageQuery.getRecordCount()) && pageQuery.getRecordCount() < tonums) {
             tonums = pageQuery.getRecordCount();
         }
         return new Integer[]{nBegin, tonums};

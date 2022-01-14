@@ -18,14 +18,11 @@ package com.robin.example.model.system;
 import com.robin.core.base.annotation.MappingEntity;
 import com.robin.core.base.annotation.MappingField;
 import com.robin.core.base.model.BaseObject;
-import lombok.Data;
 
 
 @MappingEntity(table="t_sys_org_info", schema="frameset")
-@Data
 public class SysOrg extends BaseObject
 {
-    private static final long serialVersionUID = 1L;
     @MappingField(increment=true, primary=true)
     private Long id;
     @MappingField(field="tree_level")
@@ -50,4 +47,92 @@ public class SysOrg extends BaseObject
     private String orgType;
     public static String STATUS_ACTIVE = "1";
     public static String STATUS_INACTIVE = "0";
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Integer getTreeLevel() {
+        return treeLevel;
+    }
+
+    public void setTreeLevel(Integer treeLevel) {
+        this.treeLevel = treeLevel;
+    }
+
+    public String getOrgStatus() {
+        return orgStatus;
+    }
+
+    public void setOrgStatus(String orgStatus) {
+        this.orgStatus = orgStatus;
+    }
+
+    public Integer getUpOrgId() {
+        return upOrgId;
+    }
+
+    public void setUpOrgId(Integer upOrgId) {
+        this.upOrgId = upOrgId;
+    }
+
+    public String getOrgCode() {
+        return orgCode;
+    }
+
+    public void setOrgCode(String orgCode) {
+        this.orgCode = orgCode;
+    }
+
+    public String getOrgName() {
+        return orgName;
+    }
+
+    public void setOrgName(String orgName) {
+        this.orgName = orgName;
+    }
+
+    public String getTreeCode() {
+        return treeCode;
+    }
+
+    public void setTreeCode(String treeCode) {
+        this.treeCode = treeCode;
+    }
+
+    public String getOrgAbbr() {
+        return orgAbbr;
+    }
+
+    public void setOrgAbbr(String orgAbbr) {
+        this.orgAbbr = orgAbbr;
+    }
+
+    public String getRemark() {
+        return remark;
+    }
+
+    public void setRemark(String remark) {
+        this.remark = remark;
+    }
+
+    public String getOrderNo() {
+        return orderNo;
+    }
+
+    public void setOrderNo(String orderNo) {
+        this.orderNo = orderNo;
+    }
+
+    public String getOrgType() {
+        return orgType;
+    }
+
+    public void setOrgType(String orgType) {
+        this.orgType = orgType;
+    }
 }

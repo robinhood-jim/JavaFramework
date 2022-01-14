@@ -247,7 +247,7 @@ public class DataBaseUtil {
     public static List<String> getAllPrimaryKeyByTableName(Connection conn, String tableName, String schema) throws SQLException {
         List<String> tablelist = new ArrayList<String>();
         DatabaseMetaData meta = conn.getMetaData();
-        try (ResultSet rs1 = meta.getPrimaryKeys(null, schema, tableName)) {
+        try (ResultSet rs1 = meta.getPrimaryKeys(schema, schema, tableName)) {
             while (rs1.next()) {
                 String columnName = rs1.getString("COLUMN_NAME");
                 tablelist.add(columnName);
