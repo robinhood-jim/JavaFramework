@@ -3,15 +3,15 @@ package com.robin.webui.contorller.user;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.robin.core.base.util.Const;
-import com.robin.core.web.util.CookieUtils;
-import com.robin.core.web.util.RestTemplateUtils;
 import com.robin.core.web.util.Session;
+import com.robin.core.web.util.WebConstant;
+import com.robin.webui.contorller.BaseController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.client.RestTemplate;
 
@@ -19,11 +19,14 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.net.URLEncoder;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
 
 
 @Controller
-public class LoginController {
+@RequestMapping("/user")
+public class LoginController extends BaseController {
     @Autowired
     private ResourceBundleMessageSource messageSource;
 
@@ -33,62 +36,79 @@ public class LoginController {
     private Environment environment;
     private Gson gson = new Gson();
 
-    @GetMapping("/ssologin")
-    public String oauthLogin(HttpServletRequest request,HttpServletResponse response){
-        String code=request.getParameter("code");
-
-        String orgId=request.getParameter("orgId");
-
+    @RequestMapping("/login")
+    @ResponseBody
+    public Map<String, Object> ssoLogin(HttpServletRequest request, HttpServletResponse response, @RequestParam String accountName, @RequestParam String password) {
+        Map<String, Object> retMap = new HashMap<>();
         try {
-            Map<String,String> paramMap=new HashMap<>();
-            paramMap.put("code",code);
-            if(orgId!=null){
-                paramMap.put("orgId",orgId);
-            }
-            Map<String, Object> rightMap = RestTemplateUtils.postFromRestUrl("getSession", paramMap, "login.gateway-uri", code);
-            if (rightMap != null) {
-                Session session = gson.fromJson(gson.toJson(rightMap.get("session")), new TypeToken<Session>() {
-                }.getType());
-                //session.setAccessToken(rightMap.get("accessToken").toString());
-                //session.setRefreshToken(rightMap.get("refreshToken").toString());
-                session.setAuthCode(code);
+            Map<String,String> vMap=new HashMap<>();
+            vMap.put("username",accountName);
+            vMap.put("password",password);
+            vMap.put("grant_type","password");
+            vMap.put("client_id",environment.getProperty("login.clientId"));
+            vMap.put("client_secret",environment.getProperty("login.clientSecret"));
+            Map<String, Object> map = postFromSsoRest("oauth/token", vMap);
+            int expireTs=environment.containsProperty("cookie.expireTs")?Integer.parseInt(environment.getProperty("cookie.expireTs")):30*60;
+            if (map.containsKey("access_token")) {
+                Cookie atoken=new Cookie("access_token",map.get("access_token").toString());
+                atoken.setPath("/");
+                atoken.setMaxAge(expireTs);
+                response.addCookie(atoken);
+                Cookie rtoken=new Cookie("refresh_token",map.get("access_token").toString());
+                rtoken.setPath("/");
+                rtoken.setMaxAge(expireTs+10*60);
+                response.addCookie(rtoken);
+                Map<String, Object> rightMap = getResultFromSsoRest(request,"sso/getuserright", map.get("access_token").toString());
+                Session session = gson.fromJson(gson.toJson(rightMap.get("session")), new TypeToken<Session>() {}.getType());
                 request.getSession().setAttribute(Const.SESSION, session);
-                //addCookie(request, response, "userName", URLEncoder.encode(session.getUserName(), "UTF-8"), 0);
-                addCookie(request, response, "accountType", session.getAccountType(), 0);
-                addCookie(request, response, "userId", String.valueOf(session.getUserId()), 0);
-                addCookie(request,response,"authCode",code,0);
-                addCookie(request,response,"lastAccessTs",String.valueOf(System.currentTimeMillis()),0);
-
+                retMap.put("success", true);
+                if (session.getAccountType().equals(WebConstant.ACCOUNT_TYPE.ORGUSER.toString()) && session.getOrgId() == null) {
+                    //User has more than one Org,Select from page
+                    retMap.put("selectOrg", true);
+                    retMap.put("userId", session.getUserId());
+                }
+                response.addCookie(new Cookie("userName", URLEncoder.encode(session.getUserName(), "UTF-8")));
+                response.addCookie(new Cookie("accountType", session.getAccountType()));
+                response.addCookie(new Cookie("userId", String.valueOf(session.getUserId())));
+                if (session.getOrgName() != null)
+                    response.addCookie(new Cookie("orgName", URLEncoder.encode(session.getOrgName(), "UTF-8")));
+                else {
+                    response.addCookie(new Cookie("orgName", URLEncoder.encode(messageSource.getMessage("title.defaultOrg", null, Locale.getDefault()), "UTF-8")));
+                }
             }
-            return "redirect:/main";
-        }catch (Exception ex){
-            return "redirect:/error/401";
+        } catch (Exception ex) {
+            retMap = BaseController.wrapFailedMsg(ex);
         }
-
-    }
-    @GetMapping("/logout")
-    public String logOut(HttpServletRequest request){
-        request.getSession().removeAttribute(Const.SESSION);
-        String code=CookieUtils.getCookie(request,"authCode");
-        CookieUtils.delCookie(request, Arrays.asList("accountType","userId","authCode"));
-        Map<String, Object> retMap = RestTemplateUtils.getResultFromGateWayRest("logout?code={1}",new Object[]{code});
-        if(retMap.get("success").equals(true)){
-            return "logout";
-        }else{
-            return "error/401";
-        }
-
+        return retMap;
     }
 
-
-    private void addCookie(HttpServletRequest request,HttpServletResponse response,String name,String value,int ageTs){
-        Cookie cookie=new Cookie(name,value);
-        cookie.setPath(request.getContextPath()+"/");
-        if(ageTs>0){
-            cookie.setMaxAge(ageTs);
+    @RequestMapping("/loginold")
+    @ResponseBody
+    public Map<String, Object> login(HttpServletRequest request, HttpServletResponse response, @RequestParam String accountName, @RequestParam String password) {
+        Map<String, Object> retMap = new HashMap<>();
+        try {
+            Map<String, Object> map = getResultFromRest(request,"login?accountName={1}&password={2}", new Object[]{accountName, password});
+            //loginService.login(accountName, password);
+            Session session = gson.fromJson(gson.toJson(map.get("session")), new TypeToken<Session>() {
+            }.getType());
+            request.getSession().setAttribute(Const.SESSION, session);
+            retMap.put("success", true);
+            if (session.getAccountType().equals(WebConstant.ACCOUNT_TYPE.ORGUSER.toString()) && session.getOrgId() == null) {
+                //User has more than one Org,Select from page
+                retMap.put("selectOrg", true);
+                retMap.put("userId", session.getUserId());
+            }
+            response.addCookie(new Cookie("userName", URLEncoder.encode(session.getUserName(), "UTF-8")));
+            response.addCookie(new Cookie("accountType", session.getAccountType()));
+            response.addCookie(new Cookie("userId", String.valueOf(session.getUserId())));
+            if (session.getOrgName() != null)
+                response.addCookie(new Cookie("orgName", URLEncoder.encode(session.getOrgName(), "UTF-8")));
+            else {
+                response.addCookie(new Cookie("orgName", URLEncoder.encode(messageSource.getMessage("title.defaultOrg", null, Locale.getDefault()), "UTF-8")));
+            }
+        } catch (Exception ex) {
+            retMap = wrapFailedMsg(ex);
         }
-        response.addCookie(cookie);
+        return retMap;
     }
-
-
 }

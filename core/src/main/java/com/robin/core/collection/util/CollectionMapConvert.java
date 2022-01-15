@@ -79,7 +79,7 @@ public class CollectionMapConvert {
     }
 
     private static <T> void checkType(List<T> listobj) throws MissingConfigException {
-        if (!CollectionUtils.isEmpty(listobj)) {
+        if (CollectionUtils.isEmpty(listobj)) {
             log.warn("ArrayList is Empty");
             throw new MissingConfigException("ArrayList is Empty!");
         }

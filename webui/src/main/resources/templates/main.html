@@ -128,12 +128,12 @@
     </style>
 
 </head>
-<body onload="">
+<body>
 <div id="topBanner">
     <h1 id="sysName" th:text="#{title.appName}"></h1>
     <div id="header">
-        <div id="logSate" ><b th:text="#{title.currentUser}"></b>&nbsp;&nbsp;<span id="userName">[[${userName}]]</span> &nbsp;
-            <b th:text="#{title.currentOrg}"></b>&nbsp;&nbsp;<span id="orgName">[[${orgName}]]</span>
+        <div id="logSate" ><b th:text="#{title.currentUser}"></b>&nbsp;&nbsp;<span id="userName"></span> &nbsp;
+            <b th:text="#{title.currentOrg}"></b>&nbsp;&nbsp;<span id="orgName"></span>
         </div>
         <div id="hInput">
             <button name="topPage" id="topHome" type="button" onClick="switchOrg()" class="headerBtn">[[#{title.switchOrg}]]</button>
@@ -200,6 +200,11 @@
         }
     }
 
+    function showUser() {
+
+        $("#userName").text(decodeURI($.cookie('userName')));
+        $("#orgName").text(decodeURI($.cookie('orgName')));
+    }
 
     var formStructure = [
         {

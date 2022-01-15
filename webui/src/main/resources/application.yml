@@ -5,7 +5,7 @@ spring:
     active: dev
   cloud:
     consul:
-      host: localhost
+      host: 127.0.0.1
       port: 8500
       discovery:
         register: true
@@ -44,15 +44,11 @@ log:
   home: ./logs
 
 login:
-  ignoreUrls: /login,/logout,/health,/error,/ssologin
+  ignoreUrls: /login,/logout,/health,/error,/user/login
   ignoreResources: gif,bmp,png,jpg,js,flash,css,swf,flv,metaget
-  oauth2-uri: http://gatewayserver:9092/oauth2/
-  product-uri: http://gatewayserver:9092/product/
-  gateway-uri: http://gatewayserver:9092/
+  oauth2-uri: http://gateway-service/oauth2/
   clientId: webui-client
   clientSecret: 123456
-  loginUrl: http://gatewayserver:9092/login
-  checkLoginUrl: http://gatewayserver:9092/session
 
 static:
   uriPrefix: http://localhost:80
@@ -68,8 +64,7 @@ feign:
   hystrix:
     enabled: false
 backgroud:
-  serverUrl: http://gatewayserver:9092/
-  gatewayUrl: http://gatewayserver:9092/
+  serverUrl: http://gateway-service/product/
 
 
 

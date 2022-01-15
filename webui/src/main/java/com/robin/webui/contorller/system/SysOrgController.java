@@ -2,11 +2,8 @@ package com.robin.webui.contorller.system;
 
 import com.google.gson.Gson;
 import com.robin.core.base.util.Const;
-import com.robin.core.web.controller.AbstractController;
-import com.robin.core.web.util.RestTemplateUtils;
 import com.robin.core.web.util.Session;
-
-import com.robin.webui.util.AuthUtils;
+import com.robin.webui.contorller.BaseController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.stereotype.Controller;
@@ -23,7 +20,7 @@ import java.util.Map;
 
 @Controller
 @RequestMapping("/system/org")
-public class SysOrgController {
+public class SysOrgController extends BaseController {
     @Autowired
     private ResourceBundleMessageSource messageSource;
     @Autowired
@@ -39,27 +36,28 @@ public class SysOrgController {
     @ResponseBody
     public Map<String, Object> editOrg(HttpServletRequest request,
                                        HttpServletResponse response, @PathVariable Long id) {
-        return RestTemplateUtils.getResultFromRestUrl("system/org/edit/{1}",new Object[]{id}, AuthUtils.getRequestParam(null,request));
+        return getResultFromRest(request,"system/org/edit/{1}",new Object[]{id});
     }
 
     @RequestMapping("/update")
     @ResponseBody
     public Map<String, Object> updateOrg(HttpServletRequest request,
                                          HttpServletResponse response) {
-        return RestTemplateUtils.postFromRestUrl("system/org/update/", AbstractController.wrapRequest(request),AuthUtils.getRequestParam(null,request));
+        return getResultFromRest(request,"system/org/update/",new Object[]{});
     }
 
     @RequestMapping("/save")
     @ResponseBody
     public Map<String, Object> saveOrg(HttpServletRequest request, HttpServletResponse response) {
-        Map<String,String> map= AbstractController.wrapRequest(request);
-        return RestTemplateUtils.postFromRestUrl("system/org/save/",map,AuthUtils.getRequestParam(null,request));
+
+        return getResultFromRest(request,"system/org/save/",new Object[]{});
     }
 
     @RequestMapping("/listjson")
     @ResponseBody
     public Map<String, Object> getdeptJson(HttpServletRequest request, HttpServletResponse response) {
-        return RestTemplateUtils.getResultFromRestUrl("system/org/listjson/",new Object[]{},AuthUtils.getRequestParam(null,request));
+
+        return getResultFromRest(request,"system/org/listjson/",new Object[]{});
     }
 
 
@@ -71,28 +69,27 @@ public class SysOrgController {
         Map<String,String> vMap=new HashMap<>();
         vMap.put("id",request.getParameter("id"));
         vMap.put("userType",session.getAccountType());
-        if(session.getOrgId()!=null) {
+        if(session.getOrgId()!=null)
             vMap.put("orgId",session.getOrgId().toString());
-        }
-        return (List<Map<String,Object>>)RestTemplateUtils.getResultListByType("system/org/listAll",vMap,AuthUtils.getRequestParam(null,request));
+        return (List<Map<String,Object>>)getResultListByType(request,"system/org/listAll",vMap,new HashMap<String, Object>().getClass());
     }
 
     @RequestMapping("/tree")
     @ResponseBody
     public Map<String, Object> getOrgTree(HttpServletRequest request, HttpServletResponse response) {
-        return RestTemplateUtils.getResultFromRestUrl("system/org/tree/",new Object[]{},AuthUtils.getRequestParam(null,request));
+        return getResultFromRest(request,"system/org/tree/",new Object[]{});
     }
 
     @RequestMapping("/contextmenu")
     @ResponseBody
     public List<Map<String, Object>> getMenu(HttpServletRequest request, HttpServletResponse response) {
-        return  (List<Map<String, Object>>)RestTemplateUtils.getResultListByType("system/org/contextmenu/",new HashMap<String,String>(),AuthUtils.getRequestParam(null,request));
+        return  (List<Map<String, Object>>)getResultListByType(request,"system/org/contextmenu/",new HashMap<String,String>(),new HashMap<String, Object>().getClass());
     }
 
     @RequestMapping("/getuporg")
     @ResponseBody
     public Map<String, Object> getUporg(HttpServletRequest request, HttpServletResponse response) {
-        return RestTemplateUtils.getResultFromRestUrl("system/org/getuporg/",new Object[]{},AuthUtils.getRequestParam(null,request));
+        return getResultFromRest(request,"system/org/getuporg/",new Object[]{});
     }
 
 }
