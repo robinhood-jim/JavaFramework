@@ -129,6 +129,7 @@ public class CommEsQueryUtils {
                 wrapper.wrapBuilder(queryBuilder);
             }
             sourceBuilder.query(queryBuilder);
+
             searchRequest.source(sourceBuilder);
             if (null != orderField) {
                 sourceBuilder.sort(new FieldSortBuilder(orderField).order(orderDir ? SortOrder.ASC : SortOrder.DESC));

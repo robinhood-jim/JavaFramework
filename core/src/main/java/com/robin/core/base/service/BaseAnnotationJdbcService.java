@@ -44,6 +44,7 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 	// autowire by construct, getBean from BaseObject annotation field MappingEntity jdbcDao
 	protected JdbcDao jdbcDao;
 	protected Class<V> type;
+	protected Class<P> pkType;
 	protected Logger logger=LoggerFactory.getLogger(getClass());
 	protected AnnotationRetriver.EntityContent entityContent;
 	@SuppressWarnings({ "unchecked", "rawtypes" })
@@ -58,6 +59,7 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 			throw new IllegalStateException("class " + getClass() + " is not subtype of ParametrizedType.");
 		}
 		type = (Class) parametrizedType.getActualTypeArguments()[0];
+		pkType=(Class) parametrizedType.getActualTypeArguments()[1];
 		//get JdbcDao by model annotation jdbcDao
 		if(type!=null){
 			entityContent= AnnotationRetriver.getMappingTableByCache(type);
@@ -78,7 +80,7 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
     @Transactional(propagation=Propagation.REQUIRED,rollbackFor=RuntimeException.class)
 	public P saveEntity(V vo) throws ServiceException{
 		try{
-			return (P)jdbcDao.createVO(vo);
+			return jdbcDao.createVO(vo,pkType);
 		}catch (DAOException e) {
 			throw new ServiceException(e);
 		}
@@ -115,7 +117,7 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 	@Transactional(readOnly=true)
 	public V getEntity(P id) throws ServiceException{
 		try{
-			return (V)jdbcDao.getEntity(type, id);
+			return jdbcDao.getEntity(type, id);
 		}catch (DAOException e) {
 			throw new ServiceException(e);
 		}
@@ -149,9 +151,9 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 	}
 	@Override
     @Transactional(readOnly=true)
-	public List<Map<String,Object>> queryBySql(String sqlstr) throws ServiceException{
+	public List<Map<String,Object>> queryBySql(String sqlstr,Object... objects) throws ServiceException{
 		try{
-			return jdbcDao.queryBySql(sqlstr);
+			return jdbcDao.queryBySql(sqlstr,objects);
 		}catch(DAOException ex){
 			throw new ServiceException(ex);
 		}
@@ -165,20 +167,12 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 			throw new ServiceException(ex);
 		}
 	}
+
 	@Override
     @Transactional(readOnly=true)
-	public List<Map<String,Object>> queryBySql(String sqlstr,Object[] obj) throws ServiceException{
+	public int queryByInt(String querySQL,Object... objects) throws ServiceException{
 		try{
-			return jdbcDao.queryBySql(sqlstr, obj);
-		}catch(DAOException ex){
-			throw new ServiceException(ex);
-		}
-	}
-	@Override
-    @Transactional(readOnly=true)
-	public int queryByInt(String querySQL) throws ServiceException{
-		try{
-			return jdbcDao.queryByInt(querySQL);
+			return jdbcDao.queryByInt(querySQL,objects);
 		}catch(DAOException ex){
 			throw new ServiceException(ex);
 		}
@@ -189,7 +183,7 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 	public List<V> queryByField(String fieldName,String oper,Object... fieldValues) throws ServiceException{
 		List<V> retlist;
 		try{	
-			retlist=(List<V>) jdbcDao.queryByField(type, fieldName, oper, fieldValues);
+			retlist= jdbcDao.queryByField(type, fieldName, oper, fieldValues);
 		}
 		catch(DAOException ex){
 			throw new ServiceException(ex);
@@ -213,7 +207,7 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 	public List<V> queryByFieldOrderBy(String orderByStr,String fieldName,String oper,Object... fieldValues) throws ServiceException{
 		List<V> retlist;
 		try{	
-			retlist=(List<V>) jdbcDao.queryByFieldOrderBy(type, orderByStr, fieldName, oper, fieldValues);
+			retlist= jdbcDao.queryByFieldOrderBy(type, orderByStr, fieldName, oper, fieldValues);
 		}
 		catch(DAOException ex){
 			throw new ServiceException(ex);
@@ -228,7 +222,7 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 	public List<V> queryAll() throws ServiceException{
 		List<V> retlist;
 		try{
-			retlist=(List<V>)jdbcDao.queryAll(type);
+			retlist=jdbcDao.queryAll(type);
 		}catch (Exception e) {
 			throw new ServiceException(e);
 		}
@@ -242,7 +236,7 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 			throws ServiceException {
 		List<V> retlist;
 		try {
-			retlist=(List<V>) jdbcDao.queryByVO(type, vo, additonMap, orderByStr);
+			retlist= jdbcDao.queryByVO(type, vo, additonMap, orderByStr);
 		} catch (DAOException ex) {
 			throw new ServiceException(ex);
 		}
@@ -254,7 +248,7 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 			throws ServiceException {
 		List<V> retlist ;
 		try{
-			retlist=(List<V>) jdbcDao.queryByCondition(type, conditions, pageQuery);
+			retlist= jdbcDao.queryByCondition(type, conditions, pageQuery);
 		}catch (DAOException e) {
 			throw new ServiceException(e);
 		}
@@ -265,7 +259,20 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 	public List<V> queryByCondition(FilterConditions filterConditions,PageQuery pageQuery){
 		List<V> retlist ;
 		try{
-			retlist=(List<V>) jdbcDao.queryByCondition(type, filterConditions.getConditions(), pageQuery);
+			retlist= jdbcDao.queryByCondition(type, filterConditions.getConditions(), pageQuery);
+		}catch (DAOException e) {
+			throw new ServiceException(e);
+		}
+		return retlist;
+	}
+	@Override
+	@Transactional(readOnly = true)
+	public List<V> queryByCondition(List<FilterCondition> filterConditions){
+		List<V> retlist ;
+		try{
+			PageQuery pageQuery=new PageQuery();
+			pageQuery.setPageSize(0);
+			retlist=jdbcDao.queryByCondition(type, filterConditions, pageQuery);
 		}catch (DAOException e) {
 			throw new ServiceException(e);
 		}

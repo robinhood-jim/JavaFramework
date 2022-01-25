@@ -23,7 +23,6 @@ import lombok.Data;
 @MappingEntity(table = "t_sys_user_info",schema = "frameset",jdbcDao = "jdbcDao1")
 @Data
 public class SysUser extends BaseObject {
-    private static final long serialVersionUID = 1L;
     @MappingField(primary=true, increment=true)
     private Long id;
 

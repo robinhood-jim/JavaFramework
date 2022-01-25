@@ -8,7 +8,12 @@ import org.springframework.web.servlet.i18n.SessionLocaleResolver;
 
 import java.util.Locale;
 
-
+/**
+ * <p>Created at: 2019-09-05 15:07:46</p>
+ *
+ * @author robinjim
+ * @version 1.0
+ */
 
 public class I18nConfig {
     @Bean

@@ -16,9 +16,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 
 @ComponentScan("com.robin")
-@EnableRedisHttpSession
-public class WebUIApplication extends SpringBootServletInitializer {
-    public static  void main(String[] args) {
+//@EnableRedisHttpSession
+public class WebUIApplication {
+    public static  void main(String[] args) throws Exception{
         try {
             SpringApplication.run(WebUIApplication.class, args);
         }catch (Exception ex){

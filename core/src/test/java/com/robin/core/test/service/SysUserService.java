@@ -34,7 +34,7 @@ public class SysUserService extends BaseAnnotationJdbcService<SysUser,Long> {
     @Override
     public Long saveEntity(SysUser user){
         try{
-            return (Long)getJdbcDao().createVO(user);
+            return getJdbcDao().createVO(user,Long.class);
         }catch (DAOException e) {
             throw new ServiceException(e);
         }

@@ -1,52 +1,79 @@
 package com.robin.core.query.extractor;
 
+import com.robin.core.fileaccess.meta.DataMappingMeta;
+import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
+
+import java.io.UnsupportedEncodingException;
 import java.sql.*;
 import java.util.Map;
 
 
 public class ResultSetExtractorUtils {
-    public static void wrappResultSetToMap(ResultSet rs, ResultSetMetaData rsmd, String encode, Map<String, Object> map) throws SQLException {
-        Object obj;
-        Date date;
-        Timestamp stamp;
-        String result;
+    public static void wrapResultSetToMap(ResultSet rs, String encode, Map<String, Object> map) throws SQLException {
         String columnName;
-        String typeName;
-        String className;
+        Assert.notNull(rs,"");
+        ResultSetMetaData rsmd=rs.getMetaData();
         int recordCount = rsmd.getColumnCount();
         for (int i = 0; i < recordCount; i++) {
-            obj = rs.getObject(i + 1);
             columnName = rsmd.getColumnLabel(i + 1);
             int columnType = rsmd.getColumnType(i + 1);
-
-            if (rs.wasNull()) {
-                map.put(columnName, null);
-            } else if (Types.DATE == columnType) {
-                date = rs.getDate(i + 1);
-                map.put(columnName, date);
-            } else if (Types.TIMESTAMP == columnType || Types.TIME == columnType) {
-                stamp = rs.getTimestamp(i + 1);
-                map.put(columnName, stamp);
-            } else if (Types.INTEGER == columnType) {
-                map.put(columnName, rs.getInt(i + 1));
-            } else if (Types.SMALLINT == columnType) {
-                map.put(columnName, rs.getShort(i + 1));
-            } else if (Types.BIGINT == columnType) {
-                map.put(columnName, rs.getLong(i + 1));
-            } else if (Types.FLOAT == columnType) {
-                map.put(columnName, rs.getFloat(i + 1));
-            } else if (Types.DOUBLE == columnType) {
-                map.put(columnName, rs.getDouble(i + 1));
-            } else if (Types.VARCHAR == columnType || Types.CHAR == columnType || Types.NVARCHAR == columnType || Types.LONGVARCHAR == columnType) {
-                map.put(columnName, rs.getString(i + 1));
-            } else if (Types.DECIMAL == columnType) {
-                map.put(columnName, rs.getBigDecimal(i + 1));
-            } else if (Types.CLOB == columnType || Types.BLOB == columnType || Types.BINARY == columnType || Types.JAVA_OBJECT == columnType) {
-                map.put(columnName, rs.getBytes(i + 1));
-            } else {
-                map.put(columnName, obj);
-            }
+            map.put(columnName,getValueByMeta(rs,i,columnType,encode));
         }
 
+    }
+    public static void wrapResultSetByMapping(ResultSet rs, String encode, DataMappingMeta mappingMeta, Map<String, Object> valueMap) throws SQLException{
+        Assert.notNull(rs,"");
+        ResultSetMetaData rsmd=rs.getMetaData();
+        int recordCount = rsmd.getColumnCount();
+        String columnName;
+        String displayName;
+        for (int i = 0; i < recordCount; i++) {
+            columnName=rsmd.getColumnLabel(i+1);
+            displayName=columnName;
+            if(mappingMeta.getMappingMap().containsKey(columnName)){
+                displayName=mappingMeta.getMappingMap().get(columnName);
+            }
+            int columnType = rsmd.getColumnType(i + 1);
+            valueMap.put(displayName,getValueByMeta(rs,i,columnType,encode));
+        }
+    }
+    private static Object getValueByMeta(ResultSet rs,int i,int columnType,String encode) throws SQLException{
+        Object retObj=null;
+        if (rs.wasNull()) {
+
+        } else if (Types.DATE == columnType) {
+            retObj=rs.getDate(i + 1);
+
+        } else if (Types.TIMESTAMP == columnType || Types.TIME == columnType) {
+            retObj=rs.getTimestamp(i + 1);
+        } else if (Types.INTEGER == columnType) {
+            retObj=rs.getInt(i + 1);
+        } else if (Types.SMALLINT == columnType) {
+            retObj=rs.getShort(i + 1);
+        } else if (Types.BIGINT == columnType) {
+            retObj=rs.getLong(i + 1);
+        } else if (Types.FLOAT == columnType) {
+            retObj=rs.getFloat(i + 1);
+        } else if (Types.DOUBLE == columnType) {
+            retObj=rs.getDouble(i + 1);
+        } else if (Types.VARCHAR == columnType || Types.CHAR == columnType || Types.NVARCHAR == columnType || Types.LONGVARCHAR == columnType) {
+            String msg=rs.getString(i+1);
+            if(!StringUtils.isEmpty(encode)){
+                try {
+                    msg = new String(msg.getBytes(), encode);
+                }catch (UnsupportedEncodingException ex){
+
+                }
+            }
+            return msg;
+        } else if (Types.DECIMAL == columnType) {
+            return rs.getBigDecimal(i + 1);
+        } else if (Types.CLOB == columnType || Types.BLOB == columnType || Types.BINARY == columnType || Types.JAVA_OBJECT == columnType) {
+            return rs.getBytes(i + 1);
+        } else {
+            retObj=rs.getObject(i + 1);
+        }
+        return retObj;
     }
 }

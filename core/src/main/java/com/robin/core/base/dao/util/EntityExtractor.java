@@ -13,21 +13,21 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class EntityExtractor implements
-        RowMapper<List<? extends BaseObject>> {
-    private Class<? extends BaseObject> targetclazz;
+public class EntityExtractor<T extends BaseObject> implements
+        RowMapper<List<T>> {
+    private Class<T> targetclazz;
     private LobHandler lobHandler;
 
-    public EntityExtractor(Class<? extends BaseObject> targetclazz,LobHandler lobHandler) {
+    public EntityExtractor(Class<T> targetclazz,LobHandler lobHandler) {
         this.targetclazz = targetclazz;
         this.lobHandler=lobHandler;
     }
 
     @Override
-    public List<? extends BaseObject> mapRow(ResultSet rs, int colpos)
+    public List<T> mapRow(ResultSet rs, int colpos)
             throws SQLException, DataAccessException {
         ResultSetMetaData rsmd = rs.getMetaData();
-        List<BaseObject> retList = new ArrayList<BaseObject>();
+        List<T> retList = new ArrayList<>();
         int count = rsmd.getColumnCount();
         List<String> columnNameList = new ArrayList<String>();
         String[] typeName = new String[count];
@@ -42,7 +42,7 @@ public class EntityExtractor implements
         try {
             Field[] fields = targetclazz.getDeclaredFields();
             while (rs.next()) {
-                BaseObject tmpobj = targetclazz.newInstance();
+                T tmpobj = targetclazz.newInstance();
                 for (int i = 0; i < fields.length; i++) {
                     String columnName = fields[i].getName();
                     if (columnNameList.contains(columnName)) {

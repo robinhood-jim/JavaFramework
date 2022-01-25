@@ -3,7 +3,9 @@ package com.robin.webui.config;
 
 import com.robin.core.base.spring.SpringContextHolder;
 import com.robin.webui.interceptor.LoginInterceptor;
+import com.robin.webui.interceptor.SsoInterceptor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
@@ -20,8 +22,6 @@ public class MvcConfig implements WebMvcConfigurer {
     private String ignoreResources;
     @Value("${login.oauth2-uri}")
     private String oauthUrl;
-    @Value("${login.loginUrl}")
-    private String loginUrl;
 
     @Bean
     public LocaleChangeInterceptor localeChangeInterceptor() {
@@ -30,20 +30,22 @@ public class MvcConfig implements WebMvcConfigurer {
         return lci;
     }
     public LoginInterceptor getLoginInterceptor(){
-        LoginInterceptor interceptor = new LoginInterceptor(ignoreUrls,ignoreResources,oauthUrl,loginUrl);
+        LoginInterceptor interceptor = new LoginInterceptor();
+        interceptor.setIgnoreUrls(ignoreUrls);
+        interceptor.setIgnoreResources(ignoreResources);
         return interceptor;
     }
     @Bean
+    @LoadBalanced
     RestTemplate restTemplate() {
         return new RestTemplate();
     }
 
 
-
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(getLoginInterceptor()).addPathPatterns("/**");
-        //registry.addInterceptor(new SsoInterceptor(ignoreUrls,ignoreResources,oauthUrl,loginUrl)).addPathPatterns("/**");
+        //registry.addInterceptor(getLoginInterceptor()).addPathPatterns("/**");
+        registry.addInterceptor(new SsoInterceptor(ignoreUrls,ignoreResources,oauthUrl)).addPathPatterns("/**");
         registry.addInterceptor(localeChangeInterceptor());
 
     }

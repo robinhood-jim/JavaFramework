@@ -16,12 +16,7 @@
 package com.robin.webui.contorller.system;
 
 
-
-
-import com.robin.core.base.util.Const;
-import com.robin.core.web.util.RestTemplateUtils;
-import com.robin.core.web.util.Session;
-import com.robin.webui.util.AuthUtils;
+import com.robin.webui.contorller.BaseController;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -33,15 +28,15 @@ import java.util.Map;
 
 @Controller
 @RequestMapping("/system")
-public class SysCodeContorller {
+public class SysCodeContorller extends BaseController {
     @RequestMapping("/codecombo")
     @ResponseBody
-    public Map<String,Object> getCodeSetCombo(HttpServletRequest request,@RequestParam String codeSetNo){
-        return RestTemplateUtils.getResultFromRestUrl("system/codecombo?codeSetNo={1}",new Object[]{codeSetNo}, AuthUtils.getRequestParam(null,request));
+    public Map<String,Object> getCodeSetCombo(HttpServletRequest request, @RequestParam String codeSetNo){
+        return getResultFromRest(request,"system/codecombo?codeSetNo={1}",codeSetNo);
     }
     @RequestMapping("/codeset/select")
     @ResponseBody
     public Map<String,Object> showCodeSetSelection(HttpServletRequest request, HttpServletResponse response, @RequestParam String codeSetNo){
-        return RestTemplateUtils.getResultFromRestUrl("system/codeset/select?codeSetNo={1}",new Object[]{codeSetNo},AuthUtils.getRequestParam(null,request));
+        return getResultFromRest(request,"system/codeset/select?codeSetNo={1}",codeSetNo);
     }
 }

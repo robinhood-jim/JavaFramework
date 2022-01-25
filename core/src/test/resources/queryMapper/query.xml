@@ -1,11 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mapper namespace="com.robin.test.query1">
     <resultMap id="rsMap1" type="com.robin.core.test.model.TestModel">
-        <result column="id" property="id" jdbcType="BIGINT" />
-        <result column="name" property="name" jdbcType="VARCHAR" />
-        <result column="code_desc" property="description" jdbcType="VARCHAR" />
-        <result column="cs_id" property="csId" jdbcType="BIGINT" />
-        <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+        t
     </resultMap>
     <sql id="sqlpart1">
         id,name,code_desc,cs_id,create_time

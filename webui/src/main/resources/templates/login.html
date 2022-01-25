@@ -161,7 +161,7 @@
                             type: "select",
                             label: "[[#{sysUser.Org}]]",
                             name: "orgId",
-                            connector: ctx + "system/user/listorg",
+                            connector: requestctx + "system/user/listorg",
                             NotNull: true
                         }
                     ]
@@ -222,7 +222,7 @@
             <div class="dhxwin_text"
                  style="padding-left: 19px; padding-right: 42px;">
                 <div class="dhxwin_text_inside">
-                    [[#{login.LoginSys}]]
+                    <spring:message code="login.LoginSys"/>
                 </div>
             </div>
             <div class="dhxwin_btns"></div>

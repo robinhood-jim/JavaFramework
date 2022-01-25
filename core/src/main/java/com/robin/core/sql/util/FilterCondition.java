@@ -1,17 +1,20 @@
 package com.robin.core.sql.util;
 
 import com.robin.core.base.dao.util.AnnotationRetriver;
+import com.robin.core.base.exception.ConfigurationIncorrectException;
+import com.robin.core.base.util.Const;
 import org.springframework.util.Assert;
 
+import java.util.AbstractList;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public class FilterCondition {
 	private String prefixOper;
-	private String suffixOper;
+	private String suffixOper= AND;
 	private String operator;
-	private String anOrOper;
 	private String columnCode;
-	private Object[] values;
 	private Object value;
 	public static final String BETWEEN = "BETWEEN";
 //	public static final String BETWEEN_AND_EQUALS = "BETWEEN_AND_EQUALS";
@@ -29,6 +32,7 @@ public class FilterCondition {
 	public static final String OR = "OR";
 	public static final String IN = "IN";
 	public static final String NOT = "NOT";
+	public static final String AND ="AND";
 	public static final String NOTIN = "NOTIN";
 	private Map<String, AnnotationRetriver.FieldContent> fieldMap;
 	public Map<String, AnnotationRetriver.FieldContent> getFieldMap() {
@@ -49,13 +53,22 @@ public class FilterCondition {
 		this.operator = operator;
 		this.value = value;
 	}
-	
-
-	public FilterCondition(String columnCode,String operator,Object[] values){
+	public FilterCondition(String columnCode,String operator,Object value,String suffixOper){
 		this.columnCode = columnCode;
 		this.operator = operator;
-		this.values = values;
+		this.value = value;
+		this.suffixOper=suffixOper;
 	}
+	public FilterCondition(String columnCode,String operator,Object value,String prefixOper,String suffixOper){
+		this.columnCode = columnCode;
+		this.operator = operator;
+		this.value = value;
+		this.prefixOper=prefixOper;
+		this.suffixOper=suffixOper;
+	}
+	
+
+
 	
 	public String toSQLPart()
 	{
@@ -65,10 +78,13 @@ public class FilterCondition {
             realColumn=fieldMap.get(columnCode).getFieldName();
         }
 		if (BETWEEN.equals(operator)){
-			if (values.length == 2){
-				sbSQLStr.append(" (");
-				sbSQLStr.append(realColumn);
-				sbSQLStr.append(" between ? and ?) ");
+			if(ArrayList.class.isAssignableFrom(value.getClass())) {
+				List values=(List) value;
+				if (values.size() == 2) {
+					sbSQLStr.append(" (");
+					sbSQLStr.append(realColumn);
+					sbSQLStr.append(" between ? and ?) ");
+				}
 			}
 
 		} else 
@@ -118,11 +134,12 @@ public class FilterCondition {
 			sbSQLStr.append(" is null) ");
 		} else 
 		if (IN.equals(operator)){
-			Assert.notEmpty(values,"");
+			Assert.notNull(value,"");
 			sbSQLStr.append(" (");
 			sbSQLStr.append(realColumn);
 			sbSQLStr.append(" in (");
-            for (int i=0; i<values.length; i++) {
+			List values=(List) value;
+            for (int i=0; i<values.size(); i++) {
             	if (i != 0) {
             		sbSQLStr.append(",");
             	}
@@ -130,12 +147,12 @@ public class FilterCondition {
             }
 			sbSQLStr.append(")) ");
 		}else if(NOTIN.equals(operator)){
-			if (values.length < 1 || values[0] == null){
-			}
+			Assert.notNull(value,"");
 			sbSQLStr.append(" (");
 			sbSQLStr.append(realColumn);
 			sbSQLStr.append(" not in (");
-            for (int i=0; i<values.length; i++) {
+			List values=(List) value;
+            for (int i=0; i<values.size(); i++) {
             	if (i != 0) {
             		sbSQLStr.append(",");
             	}
@@ -145,21 +162,41 @@ public class FilterCondition {
 		}
 		else 
 		if (OR == operator){
-			if(values==null){
-				//throw new Exception("must define");
-			}
-			sbSQLStr.append("(");
-			for (int i = 0; i < values.length; i++) {
-				FilterCondition cond=(FilterCondition)values[i];
-				cond.setFieldMap(fieldMap);
-				sbSQLStr.append(cond.toSQLPart());
-				if(i!=values.length-1) {
-                    sbSQLStr.append(" and ");
-                }
+			Assert.notNull(value,"");
+
+			if(ArrayList.class.isAssignableFrom(value.getClass())) {
+				List<FilterCondition> values=(List<FilterCondition>) value;
+				sbSQLStr.append("(");
+				for (int i = 0; i < values.size(); i++) {
+					values.get(i).setFieldMap(fieldMap);
+					sbSQLStr.append(values.get(i).toSQLPart());
+					if (i != values.size() - 1) {
+						sbSQLStr.append(values.get(i).getSuffixOper());
+					}
+				}
+				sbSQLStr.append("(");
+			}else{
+				throw new ConfigurationIncorrectException(" OR operator must include list elements");
 			}
 			sbSQLStr.append(") ");
-		} else 
-		if (NOT == operator){
+		}else if(AND == operator){
+			Assert.notNull(value,"");
+			if(ArrayList.class.isAssignableFrom(value.getClass())){
+				sbSQLStr.append("(");
+				List<FilterCondition> values=(List<FilterCondition>) value;
+				for (int i = 0; i < values.size(); i++) {
+					values.get(i).setFieldMap(fieldMap);
+					sbSQLStr.append(values.get(i).toSQLPart());
+					if (i != values.size() - 1) {
+						sbSQLStr.append(values.get(i).getSuffixOper());
+					}
+				}
+				sbSQLStr.append(")");
+			}else{
+				throw new ConfigurationIncorrectException(" AND operator must include list elements");
+			}
+		}
+		else if (NOT == operator){
 			if (value == null){
 			}
 			sbSQLStr.append(" (not (");
@@ -193,13 +230,6 @@ public class FilterCondition {
 		this.operator = operator;
 	}
 
-	public String getAnOrOper() {
-		return anOrOper;
-	}
-
-	public void setAnOrOper(String anOrOper) {
-		this.anOrOper = anOrOper;
-	}
 
 	public String getColumnCode() {
 		return columnCode;
@@ -209,13 +239,6 @@ public class FilterCondition {
 		this.columnCode = columnCode;
 	}
 
-	public Object[] getValues() {
-		return values;
-	}
-
-	public void setValues(Object[] values) {
-		this.values = values;
-	}
 
 	public Object getValue() {
 		return value;

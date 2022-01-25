@@ -29,6 +29,7 @@ import org.springframework.jdbc.support.lob.LobHandler;
 import javax.persistence.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.sql.Date;
 import java.sql.*;
@@ -90,7 +91,7 @@ public class AnnotationRetriver {
             for (int i=0;i<fields.size();i++) {
                 Field field = fields.get(i);
                 MappingField mapfield = field.getAnnotation(MappingField.class);
-                if (mapfield != null || !entity.explicit()) {
+                if (mapfield != null || !entity.explicit() && !Modifier.isStatic(field.getModifiers()) && !Modifier.isFinal(field.getModifiers())) {
                     list.add(retrieveField(field, fieldClasses.get(i)));
                 }
             }
@@ -101,7 +102,7 @@ public class AnnotationRetriver {
                 Field[] fields = clazz.getDeclaredFields();
                 for (Field field : fields) {
                     Column mapfield = field.getAnnotation(Column.class);
-                    if (mapfield != null) {
+                    if (mapfield != null && !Modifier.isStatic(field.getModifiers()) && !Modifier.isFinal(field.getModifiers())) {
                         list.add(retrieveFieldJpa(field, clazz));
                     }
                 }
@@ -118,7 +119,7 @@ public class AnnotationRetriver {
             MappingEntity entity = clazz.getAnnotation(MappingEntity.class);
             for (Field field : fields) {
                 MappingField mapfield = field.getAnnotation(MappingField.class);
-                if (mapfield != null || !entity.explicit()) {
+                if (mapfield != null || !entity.explicit() && !Modifier.isStatic(field.getModifiers()) && !Modifier.isFinal(field.getModifiers())) {
                     map.put(field.getName(), retrieveField(field, clazz));
                 }
             }
@@ -128,7 +129,7 @@ public class AnnotationRetriver {
                 Field[] fields = clazz.getDeclaredFields();
                 for (Field field : fields) {
                     Column mapfield = field.getAnnotation(Column.class);
-                    if (mapfield != null) {
+                    if (mapfield != null && !Modifier.isStatic(field.getModifiers()) && !Modifier.isFinal(field.getModifiers())) {
                         map.put(field.getName(), retrieveFieldJpa(field, clazz));
                     }
                 }

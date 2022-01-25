@@ -88,6 +88,8 @@ public class Const {
     public static final String PREFIX_S3 = "s3";
     public static final String TRUE = "true";
     public static final String FALSE = "false";
+    public static final String OPERATOR_AND="and";
+    public static final String OPERATOR_OR="or";
 
 
     public enum FileFormat {

@@ -61,6 +61,8 @@
             <ref bean="redisTemplate" />
         </constructor-arg>
     </bean>
+    <bean id="messageUtils" class="com.robin.core.base.util.MessageUtils">
+    </bean>
     <bean id="messageSource" class="org.springframework.context.support.ResourceBundleMessageSource"  lazy-init="false">
         <property name="basename" value="messages" />
         <property name="defaultEncoding" value="UTF-8" />

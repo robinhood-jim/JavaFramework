@@ -61,7 +61,7 @@ public class PostgreSqlSqlGen extends AbstractSqlGen implements BaseSqlGen {
 
 	@Override
     public String generatePageSql(String strSQL, PageQuery pageQuery) {
-		if(pageQuery.getPageSize()!=0) {
+		if(pageQuery!=null && pageQuery.getPageSize()!=0) {
 			Integer[] startEnd = getStartEndRecord(pageQuery);
 			int nBegin = startEnd[0];
 
