@@ -42,13 +42,12 @@ public interface IBaseAnnotationJdbcService<V extends BaseObject, P extends Seri
 
     void executeBySelectId(PageQuery query) throws ServiceException;
 
-    List<Map<String, Object>> queryBySql(String sqlstr) throws ServiceException;
 
     PageQuery queryBySql(String querySQL, String countSql, String[] displayname, PageQuery pageQuery) throws ServiceException;
 
-    List<Map<String, Object>> queryBySql(String sqlstr, Object[] obj) throws ServiceException;
+    List<Map<String, Object>> queryBySql(String sqlstr, Object... objects) throws ServiceException;
 
-    int queryByInt(String querySQL) throws ServiceException;
+    int queryByInt(String querySQL,Object... objects) throws ServiceException;
 
     List<V> queryByField(String fieldName, String oper, Object... fieldValues) throws ServiceException;
 
@@ -59,5 +58,5 @@ public interface IBaseAnnotationJdbcService<V extends BaseObject, P extends Seri
     List<V> queryByVO(V vo, Map<String, Object> additonMap, String orderByStr)throws ServiceException;
     List<V> queryByCondition(List<FilterCondition> filterConditions, PageQuery pageQuery);
     List<V> queryByCondition(FilterConditions filterConditions, PageQuery pageQuery);
-
+    List<V> queryByCondition(List<FilterCondition> filterConditions);
 }

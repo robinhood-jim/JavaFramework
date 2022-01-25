@@ -54,7 +54,7 @@ public class SqlServer2005Gen extends AbstractSqlGen implements BaseSqlGen{
 
 	@Override
     public String generatePageSql(String strSQL, PageQuery pageQuery) {
-		if(pageQuery.getPageSize()!=0) {
+		if(pageQuery!=null && pageQuery.getPageSize()!=0) {
 			strSQL = strSQL.trim();
 			String order = pageQuery.getOrder();
 			String orderdesc = pageQuery.getOrderDirection();

@@ -78,7 +78,7 @@
 	<mvc:resources mapping="/resources/**" location="/resources/" />
 	<mvc:default-servlet-handler />
 	<mvc:interceptors>
-		<bean class="com.robin.example.interceptor.LoginInterceptor">
+		<bean class="com.robin.basis.interceptor.LoginInterceptor">
 			<property name="ignoreUrls" value="/main/login,/login,/logout" />
 			<property name="ignoreResources" value="gif,bmp,png,jpg,js,flash,css,swf,flv,metaget" />
 		</bean>
