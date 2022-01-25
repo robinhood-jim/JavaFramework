@@ -17,18 +17,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * <p>Project:  frame</p>
- * <p>
- * <p>Description:com.robin.webui.service.user</p>
- * <p>
- * <p>Copyright: Copyright (c) 2019 create at 2019年08月01日</p>
- * <p>
- * <p>Company: zhcx_DEV</p>
- *
- * @author robinjim
- * @version 1.0
- */
+
 @Component
 @Scope("singleton")
 public class SysUserService extends BaseAnnotationJdbcService<SysUser, Long> implements IBaseAnnotationJdbcService<SysUser, Long> {
