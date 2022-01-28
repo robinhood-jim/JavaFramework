@@ -56,9 +56,9 @@ public class MainController {
                 insertMap.put("text", tmap.get("name"));
                 Map<String,String> userMap=new HashMap<String, String>();
                 userMap.put("name", "url");
-                if(tmap.get("url")!=null)
+                if(tmap.get("url")!=null) {
                     userMap.put("content", tmap.get("url").toString());
-                else{
+                } else{
                     userMap.put("content", "");
                 }
                 List<Map<String,String>> list1=new ArrayList<Map<String,String>>();

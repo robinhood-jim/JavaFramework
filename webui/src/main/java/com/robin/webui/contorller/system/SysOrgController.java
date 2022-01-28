@@ -69,8 +69,9 @@ public class SysOrgController extends BaseController {
         Map<String,String> vMap=new HashMap<>();
         vMap.put("id",request.getParameter("id"));
         vMap.put("userType",session.getAccountType());
-        if(session.getOrgId()!=null)
+        if(session.getOrgId()!=null) {
             vMap.put("orgId",session.getOrgId().toString());
+        }
         return (List<Map<String,Object>>)getResultListByType(request,"system/org/listAll",vMap,new HashMap<String, Object>().getClass());
     }
 

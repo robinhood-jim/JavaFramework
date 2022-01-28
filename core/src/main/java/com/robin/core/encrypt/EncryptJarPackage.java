@@ -17,6 +17,7 @@ import java.io.*;
 import java.math.BigInteger;
 import java.net.URI;
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.zip.ZipEntry;
@@ -291,7 +292,7 @@ public class EncryptJarPackage {
                 if (!parentpath.exists()) {
                     parentpath.mkdir();
                 }
-                FileUtils.writeStringToFile(srcFile, buffer.toString());
+                FileUtils.writeStringToFile(srcFile, buffer.toString(), Charset.defaultCharset(),false);
                 //compile classes
 
                 JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();

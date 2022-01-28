@@ -5,7 +5,7 @@ package com.robin.etl.step;
  */
 public abstract class AbstractBeamComponent extends AbstractComponent {
 
-    public AbstractBeamComponent(Long stepId) {
+    protected AbstractBeamComponent(Long stepId) {
         super(stepId);
     }
 }

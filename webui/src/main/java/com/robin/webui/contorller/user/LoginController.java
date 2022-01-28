@@ -70,9 +70,9 @@ public class LoginController extends BaseController {
                 response.addCookie(new Cookie("userName", URLEncoder.encode(session.getUserName(), "UTF-8")));
                 response.addCookie(new Cookie("accountType", session.getAccountType()));
                 response.addCookie(new Cookie("userId", String.valueOf(session.getUserId())));
-                if (session.getOrgName() != null)
+                if (session.getOrgName() != null) {
                     response.addCookie(new Cookie("orgName", URLEncoder.encode(session.getOrgName(), "UTF-8")));
-                else {
+                } else {
                     response.addCookie(new Cookie("orgName", URLEncoder.encode(messageSource.getMessage("title.defaultOrg", null, Locale.getDefault()), "UTF-8")));
                 }
             }
@@ -101,9 +101,9 @@ public class LoginController extends BaseController {
             response.addCookie(new Cookie("userName", URLEncoder.encode(session.getUserName(), "UTF-8")));
             response.addCookie(new Cookie("accountType", session.getAccountType()));
             response.addCookie(new Cookie("userId", String.valueOf(session.getUserId())));
-            if (session.getOrgName() != null)
+            if (session.getOrgName() != null) {
                 response.addCookie(new Cookie("orgName", URLEncoder.encode(session.getOrgName(), "UTF-8")));
-            else {
+            } else {
                 response.addCookie(new Cookie("orgName", URLEncoder.encode(messageSource.getMessage("title.defaultOrg", null, Locale.getDefault()), "UTF-8")));
             }
         } catch (Exception ex) {

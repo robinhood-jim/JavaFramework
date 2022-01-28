@@ -35,7 +35,7 @@ public class AvroFileWriter extends AbstractFileWriter{
 	private Schema schema;
 	private DatumWriter<GenericRecord> dwriter;
 	private DataFileWriter<GenericRecord> fileWriter;
-	//private Encoder encoder;
+
 	
 	public AvroFileWriter(DataCollectionMeta colmeta) {
 		super(colmeta);
@@ -55,18 +55,17 @@ public class AvroFileWriter extends AbstractFileWriter{
 	@Override
 	public void writeRecord(Map<String, ?> map) throws IOException, OperationNotSupportedException {
 
-		GenericRecord record=new GenericData.Record(schema);
+		GenericRecord grecord=new GenericData.Record(schema);
 
 		for (int i = 0; i < colmeta.getColumnList().size(); i++) {
 			String name = colmeta.getColumnList().get(i).getColumnName();
 			Object value=getMapValueByMeta(map,name);
 			if(value!=null){
-				record.put(name, value);
+				grecord.put(name, value);
 			}
 		}
 
-		fileWriter.append(record);
-		//dwriter.write(record, encoder);
+		fileWriter.append(grecord);
 	}
 
 
@@ -77,7 +76,6 @@ public class AvroFileWriter extends AbstractFileWriter{
 
 	@Override
 	public void flush() throws IOException {
-		//encoder.flush();
 		fileWriter.flush();
 	}
 	

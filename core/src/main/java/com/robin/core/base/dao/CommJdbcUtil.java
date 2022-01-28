@@ -210,20 +210,19 @@ public class CommJdbcUtil {
     private static List getResultItems(JdbcTemplate jdbcTemplate, LobHandler lobHandler, BaseSqlGen sqlGen, final PageQuery query, final QueryString qs, final String pageSQL) {
         //getResultColumn from QueryString
         final String[] fields = sqlGen.getResultColName(qs);
-        Object ret = jdbcTemplate.query(pageSQL, getDefaultExtract(fields, lobHandler, query));
-        return (List) ret;
+        return jdbcTemplate.query(pageSQL, getDefaultExtract(fields, lobHandler, query));
     }
 
 
     @SuppressWarnings("rawtypes")
     private static ResultSetExtractor<List<Map>> getDefaultExtract(final String[] fields, final LobHandler lobHandler, PageQuery query) {
         return rs -> {
-            List<Map> list = new ArrayList<Map>();
+            List<Map> list = new ArrayList<>();
             if (rs.next()) {
                 ResultSetMetaData rsmd = rs.getMetaData();
                 int count = rsmd.getColumnCount();
                 do {
-                    Map<String, Object> map = new HashMap<String, Object>();
+                    Map<String, Object> map = new HashMap<>();
                     for (int i = 0; i < count; i++) {
                         String columnName = rsmd.getColumnName(i + 1);
                         String typeName = rsmd.getColumnTypeName(i + 1);
@@ -631,7 +630,6 @@ public class CommJdbcUtil {
             if (value == null) {
                 value = resultMap.get(typeMap.get("name").toLowerCase());
             }
-            //if(value!=null){
             if (Const.META_TYPE_STRING.equals(typeMap.get("dataType"))) {
                 if (value != null) {
                     ps.setString(pos + 1, value);

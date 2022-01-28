@@ -9,6 +9,7 @@ import com.robin.core.query.util.PageQuery;
 import com.robin.core.sql.util.BaseSqlGen;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -16,6 +17,7 @@ import org.springframework.jdbc.core.support.JdbcDaoSupport;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.jdbc.support.lob.LobHandler;
+import org.springframework.lang.NonNull;
 import org.springframework.util.Assert;
 
 import javax.sql.DataSource;
@@ -34,8 +36,13 @@ public class SqlMapperDao extends JdbcDaoSupport {
     private BaseSqlGen sqlGen;
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
-    public SqlMapperDao() {
+    private SqlMapperDao() {
 
+    }
+    @NonNull
+    private JdbcTemplate returnTemplate(){
+        Assert.notNull(getJdbcTemplate(), "jdbc Connection is null");
+        return getJdbcTemplate();
     }
 
     public SqlMapperDao(SqlMapperConfigure mapper, DataSource dataSource, BaseSqlGen sqlGen) {
@@ -43,7 +50,7 @@ public class SqlMapperDao extends JdbcDaoSupport {
         sqlMapperConfigure = mapper;
         this.sqlGen = sqlGen;
         Assert.notNull(getJdbcTemplate(),"");
-        namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(getJdbcTemplate());
+        namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(returnTemplate());
     }
 
     public SqlMapperDao(SqlMapperConfigure mapper, DataSource dataSource, BaseSqlGen sqlGen, LobHandler lobHandler) {
@@ -52,7 +59,7 @@ public class SqlMapperDao extends JdbcDaoSupport {
         this.lobHandler = lobHandler;
         this.sqlGen = sqlGen;
         Assert.notNull(getJdbcTemplate(),"");
-        namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(getJdbcTemplate());
+        namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(returnTemplate());
     }
 
     public List queryByMapper(String nameSpace, String id, PageQuery query, Object... params) throws DAOException {
@@ -64,7 +71,7 @@ public class SqlMapperDao extends JdbcDaoSupport {
                 SelectSegment segment = (SelectSegment) pair.right.get(0);
                 Map<String, Object> paramMap = wrapSqlAndParamter(nameSpace, id, builder, query, params);
                 String selectSql = builder.toString();
-                NamedParameterJdbcTemplate template = new NamedParameterJdbcTemplate(getJdbcTemplate());
+                NamedParameterJdbcTemplate template = new NamedParameterJdbcTemplate(returnTemplate());
                 if (query.getPageSize() > 0) {
                     String countSql = "";
                     if (segment.getCountRef() != null) {
@@ -236,7 +243,7 @@ public class SqlMapperDao extends JdbcDaoSupport {
     private NamedParameterJdbcTemplate getNamedJdbcTemplate() {
 
         if (namedParameterJdbcTemplate == null) {
-            namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(getJdbcTemplate());
+            namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(returnTemplate());
         }
 
         return namedParameterJdbcTemplate;

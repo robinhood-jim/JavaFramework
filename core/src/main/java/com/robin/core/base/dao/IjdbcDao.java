@@ -49,14 +49,8 @@ public interface IjdbcDao {
      * @return
      * @throws DAOException
      */
-    List queryByPageSql(String sqlstr, PageQuery pageQuery) throws DAOException;
-    /**
-     * query by sql
-     * @param sqlstr
-     * @return
-     * @throws DAOException
-     */
-    //List<Map<String,Object>> queryBySql(String sqlstr) throws DAOException;
+    List<Map<String,Object>> queryByPageSql(String sqlstr, PageQuery pageQuery) throws DAOException;
+
 
     /**
      * Batch update Records
@@ -122,6 +116,8 @@ public interface IjdbcDao {
      * @throws DAOException
      */
     int executeUpdate(String sql, Object[] objs) throws DAOException;
+
+    int executeByNamedParam(String executeSql, Map<String, Object> parmaMap) throws DAOException;
 
     /**
      * Query by page
@@ -191,7 +187,7 @@ public interface IjdbcDao {
      * @return
      * @throws DAOException
      */
-    int deleteVO(Class<? extends BaseObject> clazz, Serializable[] value) throws DAOException;
+    <T extends BaseObject,P extends Serializable>int deleteVO(Class<T> clazz, P[] value) throws DAOException;
 
     /**
      * Get Record by Primary Keys
@@ -232,5 +228,6 @@ public interface IjdbcDao {
      * @return
      * @throws DAOException
      */
-    int deleteByField(Class<? extends BaseObject> clazz, String field, Object value) throws DAOException;
+    <T extends BaseObject> int deleteByField(Class<T> clazz, String field, Object value) throws DAOException;
+    <T extends BaseObject,P extends Serializable> int deleteByLogic(Class<T> clazz,List<P> pkObjs,String statusColumn,String statusValue) throws DAOException;
 }
