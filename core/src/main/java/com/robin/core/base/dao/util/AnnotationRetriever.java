@@ -238,8 +238,8 @@ public class AnnotationRetriever {
 
     public static void validateEntity(BaseObject object) throws DAOException {
         //check model must using Annotation MappingEntity or Jpa Entity
-        if (!ReflectUtils.isAnnotationClassWithAnnotationFields(object.getClass(), MappingEntity.class, MappingField.class) && !ReflectUtils.isAnnotationClassWithAnnotationFields(object.getClass(), Entity.class, Column.class)) {
-            throw new DAOException("Model object " + object.getClass().getSimpleName() + " must using Annotation MappingEntity or Jpa Entity");
+        if (!ReflectUtils.isAnnotationClassWithAnnotationFields(object.getClass(), MappingEntity.class, MappingField.class) && !ReflectUtils.isAnnotationClassWithAnnotationFields(object.getClass(), Entity.class, Column.class) && !ReflectUtils.isAnnotationClassWithAnnotationFields(object.getClass(),TableName.class,TableId.class)) {
+            throw new DAOException("Model object " + object.getClass().getSimpleName() + " must using Annotation MappingEntity or Jpa or MybatisPlus Entity");
         }
         Map<String, FieldContent> fieldsMap = getMappingFieldsMapCache(object.getClass());
         Iterator<Map.Entry<String, FieldContent>> iterator = fieldsMap.entrySet().iterator();
@@ -281,7 +281,7 @@ public class AnnotationRetriever {
             String tmpName= org.springframework.util.StringUtils.capitalize(field.getName());
             Method getMethod = clazz.getMethod("get" + tmpName);
             Type type = getMethod.getReturnType();
-            Method setMethod = clazz.getMethod("set" + tmpName);
+            Method setMethod = clazz.getMethod("set" + tmpName,field.getType());
             TableField mapfield=field.getAnnotation(TableField.class);
             TableId idfield=field.getAnnotation(TableId.class);
             String fieldName;
@@ -315,9 +315,8 @@ public class AnnotationRetriever {
                         }
                     }
                 }
-                adjustByType(content,type);
             }
-
+            adjustByType(content,type);
         }catch (Exception ex){
             throw new DAOException(ex);
         }
@@ -331,7 +330,7 @@ public class AnnotationRetriever {
             String tmpName = org.springframework.util.StringUtils.capitalize(field.getName());
             Method getMethod = clazz.getMethod("get" + tmpName, null);
             Type type = getMethod.getReturnType();
-            Method setMethod = clazz.getMethod("set" + tmpName, null);
+            Method setMethod = clazz.getMethod("set" + tmpName, field.getType());
 
             Column mapfield = field.getAnnotation(Column.class);
             String fieldName;

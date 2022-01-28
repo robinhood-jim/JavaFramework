@@ -128,12 +128,12 @@ public class ReflectUtils {
         return cachedSetMethod.getIfPresent(clazz.getCanonicalName());
     }
 
-    public static boolean isAnnotationClassWithAnnotationFields(Class clazz, Class annotationClazz, Class annotationFields) {
+    public static boolean isAnnotationClassWithAnnotationFields(Class clazz, Class<? extends Annotation> annotationClazz, Class<? extends Annotation> annotationFields) {
         if (!isUseClassGraphForReflect()) {
             if (clazz.getAnnotation(annotationClazz) != null) {
                 Field[] fields = clazz.getDeclaredFields();
                 for (Field field : fields) {
-                    MappingField mapfield = field.getAnnotation(MappingField.class);
+                    Object mapfield = field.getAnnotation(annotationFields);
                     if (mapfield != null) {
                         return true;
                     }
