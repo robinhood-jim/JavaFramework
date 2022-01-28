@@ -15,6 +15,7 @@
  */
 package com.robin.core.base.dao.util;
 
+import com.baomidou.mybatisplus.annotation.*;
 import com.robin.core.base.annotation.MappingEntity;
 import com.robin.core.base.annotation.MappingField;
 import com.robin.core.base.exception.DAOException;
@@ -35,12 +36,12 @@ import java.sql.Date;
 import java.sql.*;
 import java.util.*;
 
-public class AnnotationRetriver {
+public class AnnotationRetriever {
     private static Map<Class<? extends BaseObject>, Map<String, String>> tableCfgMap = new HashMap<>();
     private static Map<Class<? extends BaseObject>, EntityContent> entityCfgMap = new HashMap<>();
     private static Map<Class<? extends BaseObject>, Map<String, FieldContent>> fieldCfgMap = new HashMap<>();
     private static Map<Class<? extends BaseObject>, List<FieldContent>> fieldListMap = new HashMap<>();
-    private AnnotationRetriver(){
+    private AnnotationRetriever(){
 
     }
 
@@ -102,8 +103,26 @@ public class AnnotationRetriver {
                 Field[] fields = clazz.getDeclaredFields();
                 for (Field field : fields) {
                     Column mapfield = field.getAnnotation(Column.class);
-                    if (mapfield != null && !Modifier.isStatic(field.getModifiers()) && !Modifier.isFinal(field.getModifiers())) {
-                        list.add(retrieveFieldJpa(field, clazz));
+                    if (mapfield != null ||(!Modifier.isStatic(field.getModifiers()) && !Modifier.isFinal(field.getModifiers()))) {
+                        FieldContent content=retrieveFieldJpa(field, clazz);
+                        if(!Objects.isNull(content)) {
+                            list.add(content);
+                        }
+                    }
+                }
+            }else{
+                //annotation with MyBatisPlus
+                flag=clazz.isAnnotationPresent(TableName.class);
+                if(flag){
+                    Field[] fields = clazz.getDeclaredFields();
+                    for (Field field : fields) {
+                        TableField mapfield = field.getAnnotation(TableField.class);
+                        if (!Objects.isNull(mapfield) ||(!Modifier.isStatic(field.getModifiers()) && !Modifier.isFinal(field.getModifiers()))) {
+                            FieldContent content=retrieveFieldByMyBatis(field, clazz);
+                            if(!Objects.isNull(content)) {
+                                list.add(content);
+                            }
+                        }
                     }
                 }
             }
@@ -119,7 +138,7 @@ public class AnnotationRetriver {
             MappingEntity entity = clazz.getAnnotation(MappingEntity.class);
             for (Field field : fields) {
                 MappingField mapfield = field.getAnnotation(MappingField.class);
-                if (mapfield != null || !entity.explicit() && !Modifier.isStatic(field.getModifiers()) && !Modifier.isFinal(field.getModifiers())) {
+                if (!Objects.isNull(mapfield) || !entity.explicit() && !Modifier.isStatic(field.getModifiers()) && !Modifier.isFinal(field.getModifiers())) {
                     map.put(field.getName(), retrieveField(field, clazz));
                 }
             }
@@ -129,8 +148,22 @@ public class AnnotationRetriver {
                 Field[] fields = clazz.getDeclaredFields();
                 for (Field field : fields) {
                     Column mapfield = field.getAnnotation(Column.class);
-                    if (mapfield != null && !Modifier.isStatic(field.getModifiers()) && !Modifier.isFinal(field.getModifiers())) {
+                    if (!Objects.isNull(mapfield) ||(!Modifier.isStatic(field.getModifiers()) && !Modifier.isFinal(field.getModifiers()))) {
                         map.put(field.getName(), retrieveFieldJpa(field, clazz));
+                    }
+                }
+            }else{
+                flag=clazz.isAnnotationPresent(TableName.class);
+                if(flag){
+                    Field[] fields=clazz.getDeclaredFields();
+                    for(Field field:fields){
+                        TableId tableIdField=field.getAnnotation(TableId.class);
+                        if(tableIdField!=null && !Modifier.isStatic(field.getModifiers()) && !Modifier.isFinal(field.getModifiers())) {
+                            FieldContent content=retrieveFieldByMyBatis(field,clazz);
+                            if(!Objects.isNull(content)) {
+                                map.put(field.getName(),content);
+                            }
+                        }
                     }
                 }
             }
@@ -159,7 +192,7 @@ public class AnnotationRetriver {
             String tableName = entity.table();
             String schema = entity.schema();
             String jdbcDao = entity.jdbcDao();
-            content = getEntityContent(tableName, schema, false);
+            content = getEntityContent(tableName, schema,false, false);
             if (!jdbcDao.isEmpty()) {
                 content.setJdbcDao(jdbcDao);
             }
@@ -169,28 +202,26 @@ public class AnnotationRetriver {
                 Table table = clazz.getAnnotation(Table.class);
                 String tableName = table.name();
                 String schema = table.schema();
-                content = getEntityContent(tableName, schema, false);
+                content = getEntityContent(tableName, schema, true,false);
             } else {
-                throw new DAOException("must using MappingEnity or JPA annotation");
+                flag=clazz.isAnnotationPresent(TableName.class);
+                if(flag){
+                    TableName table=clazz.getAnnotation(TableName.class);
+                    String tableName=table.value();
+                    if(Objects.isNull(tableName)){
+                        tableName=StringUtils.returnCamelCaseByFieldName(clazz.getName());
+                    }
+                    content =getEntityContent(tableName, table.schema(), false,true);
+                }else {
+                    throw new DAOException("must using MappingEntity or JPA or MybatisPlus annotation");
+                }
             }
         }
         return content;
     }
 
-    private static EntityContent getEntityContent(String tableName, String schema, boolean jpaAnnotation) {
-        if (!schema.isEmpty()) {
-            if (jpaAnnotation) {
-                return new EntityContent(tableName, schema, jpaAnnotation);
-            } else {
-                return new EntityContent(tableName, schema);
-            }
-        } else {
-            if (jpaAnnotation) {
-                return new EntityContent(tableName, jpaAnnotation);
-            } else {
-                return new EntityContent(tableName);
-            }
-        }
+    private static EntityContent getEntityContent(String tableName, String schema, boolean jpaAnnotation,boolean mybatisAnnotaion) {
+        return new EntityContent(tableName,schema,jpaAnnotation,mybatisAnnotaion);
     }
 
 
@@ -207,8 +238,8 @@ public class AnnotationRetriver {
 
     public static void validateEntity(BaseObject object) throws DAOException {
         //check model must using Annotation MappingEntity or Jpa Entity
-        if (!ReflectUtils.isAnnotationClassWithAnnotationFields(object.getClass(), MappingEntity.class, MappingField.class) && !ReflectUtils.isAnnotationClassWithAnnotationFields(object.getClass(), Entity.class, Column.class)) {
-            throw new DAOException("Model object " + object.getClass().getSimpleName() + " must using Annotation MappingEntity or Jpa Entity");
+        if (!ReflectUtils.isAnnotationClassWithAnnotationFields(object.getClass(), MappingEntity.class, MappingField.class) && !ReflectUtils.isAnnotationClassWithAnnotationFields(object.getClass(), Entity.class, Column.class) && !ReflectUtils.isAnnotationClassWithAnnotationFields(object.getClass(),TableName.class,TableId.class)) {
+            throw new DAOException("Model object " + object.getClass().getSimpleName() + " must using Annotation MappingEntity or Jpa or MybatisPlus Entity");
         }
         Map<String, FieldContent> fieldsMap = getMappingFieldsMapCache(object.getClass());
         Iterator<Map.Entry<String, FieldContent>> iterator = fieldsMap.entrySet().iterator();
@@ -244,15 +275,62 @@ public class AnnotationRetriver {
         }
         return true;
     }
+    private static FieldContent retrieveFieldByMyBatis(Field field,Class<? extends BaseObject> clazz) throws DAOException{
+        FieldContent content=null;
+        try {
+            String tmpName= org.springframework.util.StringUtils.capitalize(field.getName());
+            Method getMethod = clazz.getMethod("get" + tmpName);
+            Type type = getMethod.getReturnType();
+            Method setMethod = clazz.getMethod("set" + tmpName,field.getType());
+            TableField mapfield=field.getAnnotation(TableField.class);
+            TableId idfield=field.getAnnotation(TableId.class);
+            String fieldName;
+            if(!Objects.isNull(mapfield)){
+                if(!mapfield.exist()){
+                    return null;
+                }
+                fieldName=mapfield.value();
+            }else{
+                if(!Objects.isNull(idfield)){
+                    if(!StringUtils.isEmpty(idfield.value())){
+                        fieldName=idfield.value();
+                    }else{
+                        fieldName = StringUtils.getFieldNameByCamelCase(field.getName());
+                    }
+                }else {
+                    fieldName = StringUtils.getFieldNameByCamelCase(field.getName());
+                }
+            }
+            content = new FieldContent(field.getName(), fieldName, field, getMethod, setMethod);
+            if(!Objects.isNull(idfield)){
+                content.setPrimary(true);
+                if(!Objects.isNull(idfield.type())){
+                    if(IdType.AUTO.equals(idfield.type())){
+                        content.setIncrement(true);
+                    }else if(IdType.INPUT.equals(idfield.type())){
+                        KeySequence sequence= clazz.getAnnotation(KeySequence.class);
+                        if(!Objects.isNull(sequence)){
+                            content.setSequential(true);
+                            content.setSequenceName(sequence.value());
+                        }
+                    }
+                }
+            }
+            adjustByType(content,type);
+        }catch (Exception ex){
+            throw new DAOException(ex);
+        }
+        return content;
+    }
 
     private static FieldContent retrieveFieldJpa(Field field, Class<? extends BaseObject> clazz) throws DAOException {
         FieldContent content = null;
         try {
 
-            String tmname = field.getName().substring(0, 1).toUpperCase() + field.getName().substring(1);
-            Method getMethod = clazz.getMethod("get" + tmname, null);
+            String tmpName = org.springframework.util.StringUtils.capitalize(field.getName());
+            Method getMethod = clazz.getMethod("get" + tmpName, null);
             Type type = getMethod.getReturnType();
-            Method setMethod = clazz.getMethod("set" + tmname, null);
+            Method setMethod = clazz.getMethod("set" + tmpName, field.getType());
 
             Column mapfield = field.getAnnotation(Column.class);
             String fieldName;
@@ -280,27 +358,7 @@ public class AnnotationRetriver {
                     }
                 }
             }
-            if (type.equals(Void.TYPE)) {
-                content.setDataType(Const.META_TYPE_INTEGER);
-            } else if (type.equals(Long.TYPE)) {
-                content.setDataType(Const.META_TYPE_BIGINT);
-            } else if (type.equals(Integer.TYPE)) {
-                content.setDataType(Const.META_TYPE_INTEGER);
-            } else if (type.equals(Double.TYPE)) {
-                content.setDataType(Const.META_TYPE_DOUBLE);
-            } else if (type.equals(Float.TYPE)) {
-                content.setDataType(Const.META_TYPE_DOUBLE);
-            } else if (type.equals(String.class)) {
-                content.setDataType(Const.META_TYPE_STRING);
-            } else if (type.equals(java.util.Date.class)) {
-                content.setDataType(Const.META_TYPE_TIMESTAMP);
-            } else if (type.equals(Date.class)) {
-                content.setDataType(Const.META_TYPE_DATE);
-            } else if (type.equals(byte[].class)) {
-                content.setDataType(Const.META_TYPE_BLOB);
-            } else if (type.equals(Timestamp.class)) {
-                content.setDataType(Const.META_TYPE_TIMESTAMP);
-            }
+            adjustByType(content,type);
         } catch (Exception ex) {
             throw new DAOException(ex);
         }
@@ -332,7 +390,7 @@ public class AnnotationRetriver {
             }else{
                 fieldName = StringUtils.getFieldNameByCamelCase(field.getName());
             }
-            content = new AnnotationRetriver.FieldContent(field.getName(), fieldName, field, getMethod, setMethod);
+            content = new AnnotationRetriever.FieldContent(field.getName(), fieldName, field, getMethod, setMethod);
             if(mapfield!=null) {
                 if (mapfield.precise() != 0) {
                     content.setPrecise(mapfield.precise());
@@ -355,48 +413,14 @@ public class AnnotationRetriver {
                     content.setSequenceName(mapfield.sequenceName());
                 }
             }
-            if (datatype == null || "".equals(datatype)) {
-                if (type.equals(Void.class)) {
-                    content.setDataType(Const.META_TYPE_INTEGER);
-                } else if (type.equals(Long.class)) {
-                    content.setDataType(Const.META_TYPE_BIGINT);
-                } else if (type.equals(Integer.class)) {
-                    content.setDataType(Const.META_TYPE_INTEGER);
-                } else if (type.equals(Double.class)) {
-                    content.setDataType(Const.META_TYPE_NUMERIC);
-                } else if (type.equals(Float.class)) {
-                    content.setDataType(Const.META_TYPE_NUMERIC);
-                } else if (type.equals(String.class)) {
-                    content.setDataType(Const.META_TYPE_STRING);
-                } else if (type.equals(java.util.Date.class)) {
-                    content.setDataType(Const.META_TYPE_TIMESTAMP);
-                } else if (type.equals(Date.class)) {
-                    content.setDataType(Const.META_TYPE_DATE);
-                } else if (type.equals(byte[].class)) {
-                    content.setDataType(Const.META_TYPE_BLOB);
-                } else if (type.equals(Timestamp.class)) {
-                    content.setDataType(Const.META_TYPE_TIMESTAMP);
-                }else if(type.equals(Short.class)){
-                    content.setDataType(Const.META_TYPE_SHORT);
-                }
-                else {
-                    content.setDataType(Const.META_TYPE_OBJECT);
-                }
-            } else {
-                if ("clob".equalsIgnoreCase(datatype)) {
-                    content.setDataType(Const.META_TYPE_CLOB);
-                } else if ("blob".equalsIgnoreCase(datatype)) {
-                    content.setDataType(Const.META_TYPE_BLOB);
-                }
-            }
-
-
+            parseType(content,type,datatype);
         } catch (Exception ex) {
             ex.printStackTrace();
             throw new DAOException(ex);
         }
         return content;
     }
+
 
 
     private static void parsePrimaryKey(FieldContent fieldContent, Type type,boolean declareExplicit) {
@@ -416,7 +440,7 @@ public class AnnotationRetriver {
         }
     }
 
-    public static int replacementPrepared(PreparedStatement ps, LobHandler lobHandler, AnnotationRetriver.FieldContent field, BaseObject object, int pos) throws SQLException {
+    public static int replacementPrepared(PreparedStatement ps, LobHandler lobHandler, AnnotationRetriever.FieldContent field, BaseObject object, int pos) throws SQLException {
         int tmppos = pos;
         Object value = getValueFromVO(field, object);
         if (!field.isIncrement() && !field.isSequential() && value != null) {
@@ -425,9 +449,9 @@ public class AnnotationRetriver {
                 tmppos++;
             } else {
                 BasePrimaryObject compositeObj = (BasePrimaryObject) getValueFromVO(field, object);
-                List<AnnotationRetriver.FieldContent> pkList = field.getPrimaryKeys();
+                List<AnnotationRetriever.FieldContent> pkList = field.getPrimaryKeys();
                 if (pkList != null) {
-                    for (AnnotationRetriver.FieldContent pks : pkList) {
+                    for (AnnotationRetriever.FieldContent pks : pkList) {
                         if (!pks.isIncrement() && !pks.isSequential()) {
                             wrapValue(ps, lobHandler, pks, compositeObj, tmppos);
                             tmppos++;
@@ -442,7 +466,7 @@ public class AnnotationRetriver {
         return tmppos;
     }
 
-    public static Object getValueFromVO(AnnotationRetriver.FieldContent content, BaseObject object) throws SQLException {
+    public static Object getValueFromVO(AnnotationRetriever.FieldContent content, BaseObject object) throws SQLException {
         try {
             return content.getGetMethod().invoke(object, null);
         }catch (Exception ex){
@@ -462,7 +486,7 @@ public class AnnotationRetriver {
         return retMap;
     }
 
-    private static void wrapValue(PreparedStatement ps, LobHandler lobHandler, AnnotationRetriver.FieldContent field, BaseObject object, int pos) throws SQLException {
+    private static void wrapValue(PreparedStatement ps, LobHandler lobHandler, AnnotationRetriever.FieldContent field, BaseObject object, int pos) throws SQLException {
         Object value = getValueFromVO(field, object);
         if(value==null){
             setParameter(ps, pos, value);
@@ -504,10 +528,50 @@ public class AnnotationRetriver {
             ex.printStackTrace();
         }
     }
+    private static void parseType(FieldContent content, Type type,String datatype){
+        if (StringUtils.isEmpty(datatype)) {
+            adjustByType(content,type);
+        } else {
+            if ("clob".equalsIgnoreCase(datatype)) {
+                content.setDataType(Const.META_TYPE_CLOB);
+            } else if ("blob".equalsIgnoreCase(datatype)) {
+                content.setDataType(Const.META_TYPE_BLOB);
+            }
+        }
+    }
+    private static void adjustByType(FieldContent content,Type type){
+        if (type.equals(Void.class)) {
+            content.setDataType(Const.META_TYPE_INTEGER);
+        } else if (type.equals(Long.class)) {
+            content.setDataType(Const.META_TYPE_BIGINT);
+        } else if (type.equals(Integer.class)) {
+            content.setDataType(Const.META_TYPE_INTEGER);
+        } else if (type.equals(Double.class)) {
+            content.setDataType(Const.META_TYPE_NUMERIC);
+        } else if (type.equals(Float.class)) {
+            content.setDataType(Const.META_TYPE_NUMERIC);
+        } else if (type.equals(String.class)) {
+            content.setDataType(Const.META_TYPE_STRING);
+        } else if (type.equals(java.util.Date.class)) {
+            content.setDataType(Const.META_TYPE_TIMESTAMP);
+        } else if (type.equals(Date.class)) {
+            content.setDataType(Const.META_TYPE_DATE);
+        } else if (type.equals(byte[].class)) {
+            content.setDataType(Const.META_TYPE_BLOB);
+        } else if (type.equals(Timestamp.class)) {
+            content.setDataType(Const.META_TYPE_TIMESTAMP);
+        }else if(type.equals(Short.class)){
+            content.setDataType(Const.META_TYPE_SHORT);
+        }
+        else {
+            content.setDataType(Const.META_TYPE_OBJECT);
+        }
+    }
 
     @Data
     public static class EntityContent {
         boolean jpaAnnotation;
+        boolean mybatisAnnotation;
         private String tableName;
         private String schema;
         private String jdbcDao;
@@ -519,6 +583,12 @@ public class AnnotationRetriver {
         public EntityContent(String tableName, boolean jpaAnnotation) {
             this.tableName = tableName;
             this.jpaAnnotation = jpaAnnotation;
+        }
+        public EntityContent(String tableName,String schema, boolean jpaAnnotation,boolean mybatisAnnotation) {
+            this.tableName = tableName;
+            this.jpaAnnotation = jpaAnnotation;
+            this.mybatisAnnotation=mybatisAnnotation;
+            this.schema=schema;
         }
 
         public EntityContent(String tableName, String schema) {

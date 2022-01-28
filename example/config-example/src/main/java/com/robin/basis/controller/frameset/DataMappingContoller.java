@@ -200,7 +200,7 @@ public class DataMappingContoller extends AbstractCrudDhtmlxController<ProjectIn
 
         } catch (Exception ex) {
             request.setAttribute("err", ex);
-            return null;
+            return Collections.emptyMap();
         } finally {
             if (util != null) {
                 util.closeConnection();
@@ -275,7 +275,6 @@ public class DataMappingContoller extends AbstractCrudDhtmlxController<ProjectIn
 
             String basePath = info.getProjBasePath();
             String className = enmap.getJavaClass().substring(0, 1).toUpperCase() + enmap.getJavaClass().substring(1, enmap.getJavaClass().length());
-            //enmap.setJavaClass(className);
             Map<String, String> entityMap = new HashMap<>();
             ConvertUtil.objectToMap(entityMap, enmap);
             entityMap.put("pkType", pktype);
@@ -298,8 +297,6 @@ public class DataMappingContoller extends AbstractCrudDhtmlxController<ProjectIn
             filterListByCodeSet(fieldmapList, "type", "DBDISPLAY");
 
             for (int i = 0; i < fieldmapList.size(); i++) {
-                String tmptype = fieldmapList.get(i).get("type");
-                //fieldmapList.get(i).put("type", findCodeName("DBDISPLAY", tmptype));
                 String name = fieldmapList.get(i).get("code");
                 fieldmapList.get(i).put("uppername", name.substring(0, 1).toUpperCase() + name.substring(1, name.length()));
             }

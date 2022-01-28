@@ -15,7 +15,7 @@
  */
 package com.robin.core.sql.util;
 
-import com.robin.core.base.dao.util.AnnotationRetriver;
+import com.robin.core.base.dao.util.AnnotationRetriever;
 import com.robin.core.base.datameta.DataBaseColumnMeta;
 import com.robin.core.base.util.Const;
 import com.robin.core.base.util.StringUtils;
@@ -36,6 +36,8 @@ import java.util.StringTokenizer;
 public abstract class AbstractSqlGen implements BaseSqlGen {
     public static final String ILLEGAL_SCHEMA_CHARS = "!@#$%^&*()+.";
     protected static final String SELECT = "select ";
+    protected static final String LINKOPER_AND=" and ";
+    protected static final String ORDERBYSTR=" order by ";
     protected Logger log= LoggerFactory.getLogger(getClass());
 
     /**
@@ -178,11 +180,11 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
                     buffer.append(" having " + queryString.getHavingString());
                 }
             }
-            if (fromscript.toLowerCase().indexOf(" order by ") == -1) {
+            if (fromscript.toLowerCase().indexOf(ORDERBYSTR) == -1) {
                 if (queryString.getOrderString() != null && !"".equals(queryString.getOrderString().trim())) {
-                    buffer.append(" order by " + queryString.getOrderString());
+                    buffer.append(ORDERBYSTR + queryString.getOrderString());
                 } else if (queryString.getOrder() != null && !"".equals(queryString.getOrder())) {
-                    buffer.append(" order by " + queryString.getOrder()).append(queryString.getOrderDirection() == null ? "" : " " + queryString.getOrderDirection());
+                    buffer.append(ORDERBYSTR + queryString.getOrder()).append(queryString.getOrderDirection() == null ? "" : " " + queryString.getOrderDirection());
                 }
             }
             return buffer.toString();
@@ -265,7 +267,7 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
     }
 
     @Override
-    public String getFieldDefineSqlPart(AnnotationRetriver.FieldContent field) {
+    public String getFieldDefineSqlPart(AnnotationRetriever.FieldContent field) {
         String datatype = field.getDataType();
         StringBuilder builder = new StringBuilder();
         String name = field.getFieldName();
@@ -301,7 +303,6 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
 
     protected String toSQLForInt(QueryParam param) {
         StringBuilder sql = new StringBuilder();
-        String retstr = "";
         String nQueryModel = param.getQueryMode();
         if (param.getQueryValue() == null || "".equals(param.getQueryValue().trim())) {
             return "";
@@ -333,7 +334,7 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
                 String endvalue = value.substring(value.indexOf(";") + 1);
                 if (!"".equals(beginvalue)) {
                     if (!"".equals(endvalue)) {
-                        sql.append("(" + key + " between " + beginvalue + " and " + endvalue + ")");
+                        sql.append("(" + key + " between " + beginvalue + LINKOPER_AND + endvalue + ")");
                     } else {
                         sql.append("(" + key + ">=" + beginvalue + ")");
                     }
@@ -358,24 +359,24 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
         }
         if (value != null && !"".equals(value.trim())) {
             if (nQueryModel.equals(QueryParam.QUERYMODE_EQUAL)) {
-                sql.append(key + " = " + value + " and ");
+                sql.append(key + " = " + value + LINKOPER_AND);
             }
             if (nQueryModel.equals(QueryParam.QUERYMODE_GT)) {
-                sql.append(key + " > " + value + " and ");
+                sql.append(key + " > " + value + LINKOPER_AND);
             } else if (nQueryModel.equals(QueryParam.QUERYMODE_LT)) {
-                sql.append(key + " < " + value + " and ");
+                sql.append(key + " < " + value + LINKOPER_AND);
             } else if (nQueryModel.equals(QueryParam.QUERYMODE_NOTEQUAL)) {
-                sql.append(key + " != " + value + " and ");
+                sql.append(key + " != " + value + LINKOPER_AND);
             } else if (nQueryModel.equals(QueryParam.QUERYMODE_GTANDEQUAL)) {
-                sql.append(key + " >= " + value + " and ");
+                sql.append(key + " >= " + value + LINKOPER_AND);
             } else if (nQueryModel.equals(QueryParam.QUERYMODE_LTANDEQUAL)) {
-                sql.append(key + " <= " + value + " and ");
+                sql.append(key + " <= " + value + LINKOPER_AND);
             } else if (nQueryModel.equals(QueryParam.QUERYMODE_HAVING)) {
                 sql.append(" having " + key + param.getQueryMode() + param.getQueryValue());
             } else if (nQueryModel.equals(QueryParam.QUERYMODE_BETWEEN)) {
                 String beginvalue = value.substring(0, value.indexOf(";"));
                 String endvalue = value.substring(value.indexOf(";") + 1);
-                sql.append("(" + key + " between " + beginvalue + " and " + endvalue + ")");
+                sql.append("(" + key + " between " + beginvalue + LINKOPER_AND + endvalue + ")");
             }
         }
         return sql.toString();
@@ -419,7 +420,7 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
         return sql.toString();
     }
     @Override
-    public String returnTypeDef(String dataType, AnnotationRetriver.FieldContent field) {
+    public String returnTypeDef(String dataType, AnnotationRetriever.FieldContent field) {
         StringBuilder builder=new StringBuilder();
         if(dataType.equals(Const.META_TYPE_BIGINT)){
             builder.append(getLongFormat());
@@ -631,7 +632,7 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
         Assert.isTrue(pageQuery.getPageSize()==0,"");
         StringBuilder builder=new StringBuilder(sql);
         if(!StringUtils.isEmpty(pageQuery.getOrder()) && !StringUtils.isEmpty(pageQuery.getOrderDirection())){
-            builder.append(" order by ").append(pageQuery.getOrder()).append(Const.ASC.equalsIgnoreCase(pageQuery.getOrderDirection())?"asc":"desc");
+            builder.append(ORDERBYSTR).append(pageQuery.getOrder()).append(Const.ASC.equalsIgnoreCase(pageQuery.getOrderDirection())?"asc":"desc");
         }
         return builder.toString();
     }
@@ -651,7 +652,7 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
         str=str.replaceAll("\\n", "");
         str=str.replaceAll("\\r", "");
         int nFromPos = str.indexOf(" from ");
-        int nOrderPos = str.lastIndexOf(" order by ");
+        int nOrderPos = str.lastIndexOf(ORDERBYSTR);
         if (nOrderPos == -1) {
             nOrderPos = str.length();
         }
@@ -661,7 +662,7 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
     }
 
     @Override
-    public String getAlertColumnSqlPart(AnnotationRetriver.EntityContent entityContent, AnnotationRetriver.FieldContent fieldContent, AlertType type) {
+    public String getAlertColumnSqlPart(AnnotationRetriever.EntityContent entityContent, AnnotationRetriever.FieldContent fieldContent, AlertType type) {
         StringBuilder builder=new StringBuilder();
         String fullName= StringUtils.isEmpty(entityContent.getSchema())?entityContent.getTableName():entityContent.getSchema()+"."+entityContent.getTableName();
         builder.append("ALERT TABLE ").append(fullName);

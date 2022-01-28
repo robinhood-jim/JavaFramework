@@ -65,7 +65,6 @@ public class SqlMapperConfigure implements InitializingBean {
             try {
                 Document document = new SAXReader().read(stream);
                 Element root = document.getRootElement();
-                List<Element> elements = root.elements();
                 String namespace = root.attributeValue("namespace");
                 segmentsMap.put(namespace, new HashMap<>());
 

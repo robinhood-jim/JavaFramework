@@ -539,12 +539,14 @@ public class SimpleJdbcDao {
 			throw new DAOException(ex);
 		}
 	}
-	public static int executeUpdateWithTransaction(final Connection conn,final String sql,final Object[] param) throws DAOException{
+	public static int executeUpdateWithTransaction(final Connection conn,final String sql,final Object... param) throws DAOException{
 		int i=-1;
-		Statement stmt=null;
+		PreparedStatement stmt=null;
 		try{
+			QueryRunner runner=new QueryRunner();
 			conn.setAutoCommit(false);
-			stmt=conn.createStatement();
+			stmt=conn.prepareStatement(sql);
+			runner.fillStatement(stmt,param);
 			i=stmt.executeUpdate(sql);
 			conn.commit();
 		}catch(Exception ex){

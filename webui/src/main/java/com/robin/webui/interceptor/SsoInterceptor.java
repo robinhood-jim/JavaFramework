@@ -46,7 +46,7 @@ public class SsoInterceptor extends HandlerInterceptorAdapter {
             return super.preHandle(request, response, handler);
         } else {
             String contentPath = getRequestPath(request);
-            if (!request.getContextPath().equals("/")) {
+            if (!"/".equals(request.getContextPath())) {
                 int pos = contentPath.indexOf(request.getContextPath());
                 contentPath = contentPath.substring(pos + request.getContextPath().length());
             }
@@ -63,8 +63,9 @@ public class SsoInterceptor extends HandlerInterceptorAdapter {
                     }
                 }
             }
-            if (ignoreUrls.contains(contentPath) || ignoreResources.contains(resourcePath))
+            if (ignoreUrls.contains(contentPath) || ignoreResources.contains(resourcePath)) {
                 return super.preHandle(request, response, handler);
+            }
             Map<String,Object> retMap=validateToken(request);
             if(Boolean.parseBoolean(retMap.get("success").toString())){
                 response.setHeader("bearer",retMap.get("access_token").toString());

@@ -51,7 +51,7 @@ public abstract class AbstractController
         if ((orglist != null) && (!orglist.isEmpty())) {
             for (Object object : orglist)
             {
-                Map<String, String> map = new HashMap();
+                Map<String, String> map = new HashMap<>();
                 ConvertUtil.objectToMap(map, object);
                 list.add(map);
             }
@@ -222,7 +222,7 @@ public abstract class AbstractController
             wrapFailed(retmap,ex);
         }else
         {
-            wrapSuccess(retmap,"success");
+            wrapSuccess(retmap,COL_SUCCESS);
         }
     }
 

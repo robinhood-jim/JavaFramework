@@ -139,15 +139,12 @@ public class CollectionBaseConvert {
 	}
 	public static List<Map.Entry<String, ? extends Comparable>> sortMapByValue(Map<String,? extends Comparable> inputMap, final boolean order){
 		List<Map.Entry<String,? extends Comparable>> list=new LinkedList<Map.Entry<String, ? extends Comparable>>(inputMap.entrySet());
-		Collections.sort(list, new Comparator<Map.Entry<String,?>>() {
-			@Override
-			public int compare(Map.Entry<String, ?> o1, Map.Entry<String, ?> o2) {
-				if(order){
-					return ((Comparable) o1.getValue()).compareTo((Comparable) o2.getValue());
+		Collections.sort(list, (Comparator<Map.Entry<String, ?>>) (o1, o2) -> {
+			if(order){
+				return ((Comparable) o1.getValue()).compareTo((Comparable) o2.getValue());
 
-				}else{
-					return ((Comparable)o2.getValue()).compareTo((Comparable)o1.getValue());
-				}
+			}else{
+				return ((Comparable)o2.getValue()).compareTo((Comparable)o1.getValue());
 			}
 		});
 		return list;

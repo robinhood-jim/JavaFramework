@@ -102,7 +102,7 @@ public abstract class BaseController {
     protected void addToken(HttpServletRequest request,HttpHeaders headers){
         Cookie[] cookies= request.getCookies();
         for(int i=0;i<cookies.length;i++){
-            if(cookies[i].getName().equals("access_token")){
+            if("access_token".equals(cookies[i].getName())){
                 log.info("get token ---- {}",cookies[i].getValue());
                 headers.add(HttpHeaders.AUTHORIZATION,"Bearer "+cookies[i].getValue());
                 break;

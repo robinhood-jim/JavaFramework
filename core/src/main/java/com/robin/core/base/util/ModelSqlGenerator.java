@@ -2,7 +2,7 @@ package com.robin.core.base.util;
 
 import com.robin.core.base.dao.JdbcDao;
 import com.robin.core.base.dao.SimpleJdbcDao;
-import com.robin.core.base.dao.util.AnnotationRetriver;
+import com.robin.core.base.dao.util.AnnotationRetriever;
 import com.robin.core.base.datameta.BaseDataBaseMeta;
 import com.robin.core.base.datameta.DataBaseColumnMeta;
 import com.robin.core.base.datameta.DataBaseUtil;
@@ -22,8 +22,8 @@ public class ModelSqlGenerator {
         Connection conn = null;
         try {
             conn = SimpleJdbcDao.getConnection(meta);
-            AnnotationRetriver.EntityContent content = AnnotationRetriver.getMappingTableByCache(clazz);
-            List<AnnotationRetriver.FieldContent> fields = AnnotationRetriver.getMappingFieldsCache(clazz);
+            AnnotationRetriever.EntityContent content = AnnotationRetriever.getMappingTableByCache(clazz);
+            List<AnnotationRetriever.FieldContent> fields = AnnotationRetriever.getMappingFieldsCache(clazz);
             List<Map<String, Object>> changeColumns = new ArrayList<>();
             if (tableExists(conn, content.getSchema(), content.getTableName())) {
                 List<DataBaseColumnMeta> metas = DataBaseUtil.getTableMetaByTableName(conn, content.getTableName(), content.getSchema(), meta.getDbType());
@@ -48,8 +48,8 @@ public class ModelSqlGenerator {
 
     public static final void syncTable(JdbcDao jdbcDao,BaseDataBaseMeta meta, BaseSqlGen sqlGen, Class<? extends BaseObject> clazz) {
         try {
-            AnnotationRetriver.EntityContent content = AnnotationRetriver.getMappingTableByCache(clazz);
-            List<AnnotationRetriver.FieldContent> fields = AnnotationRetriver.getMappingFieldsCache(clazz);
+            AnnotationRetriever.EntityContent content = AnnotationRetriever.getMappingTableByCache(clazz);
+            List<AnnotationRetriever.FieldContent> fields = AnnotationRetriever.getMappingFieldsCache(clazz);
             if (tableExists(jdbcDao, content.getSchema(), content.getTableName())) {
                 List<DataBaseColumnMeta> metas = DataBaseUtil.getTableMetaByTableName(jdbcDao, content.getTableName(), content.getSchema(), sqlGen.getDbType());
                 List<String> alertSqls = adjustDiffSqls(content, fields, metas, sqlGen);
@@ -77,11 +77,11 @@ public class ModelSqlGenerator {
         }
     }
 
-    private static List<String> adjustDiffSqls(AnnotationRetriver.EntityContent entityContent, List<AnnotationRetriver.FieldContent> fields, List<DataBaseColumnMeta> columnMetas, BaseSqlGen sqlGen) {
+    private static List<String> adjustDiffSqls(AnnotationRetriever.EntityContent entityContent, List<AnnotationRetriever.FieldContent> fields, List<DataBaseColumnMeta> columnMetas, BaseSqlGen sqlGen) {
         List<String> alertSqls = new ArrayList<>();
         try {
             Map<String, DataBaseColumnMeta> columMap = CollectionBaseConvert.groupByUniqueKey(columnMetas, "",DataBaseColumnMeta::getColumnName);
-            for (AnnotationRetriver.FieldContent field : fields) {
+            for (AnnotationRetriever.FieldContent field : fields) {
                 if (columMap.containsKey(field.getFieldName())) {
                     //length change
                     if (field.getDataType().equals(columMap.get(field.getFieldName()).getColumnType().toString())) {
@@ -104,7 +104,7 @@ public class ModelSqlGenerator {
                 while (iter.hasNext()) {
                     Map.Entry<String, DataBaseColumnMeta> entry = iter.next();
                     alertSqls.add(sqlGen.getAlertColumnSqlPart(entityContent,
-                            new AnnotationRetriver.FieldContent(entry.getValue().getColumnName(), entry.getValue().getColumnName(), null, null, null),
+                            new AnnotationRetriever.FieldContent(entry.getValue().getColumnName(), entry.getValue().getColumnName(), null, null, null),
                             BaseSqlGen.AlertType.DEL));
                 }
             }
@@ -132,18 +132,18 @@ public class ModelSqlGenerator {
 
     public static String generateCreateSql(Class<? extends BaseObject> clazz,BaseDataBaseMeta meta, BaseSqlGen sqlGen) throws Exception {
         StringBuilder builder = new StringBuilder();
-        AnnotationRetriver.EntityContent entityContent = AnnotationRetriver.getMappingTableByCache(clazz);
-        List<AnnotationRetriver.FieldContent> fields = AnnotationRetriver.getMappingFieldsCache(clazz);
-        AnnotationRetriver.FieldContent primarycol = AnnotationRetriver.getPrimaryField(fields);
+        AnnotationRetriever.EntityContent entityContent = AnnotationRetriever.getMappingTableByCache(clazz);
+        List<AnnotationRetriever.FieldContent> fields = AnnotationRetriever.getMappingFieldsCache(clazz);
+        AnnotationRetriever.FieldContent primarycol = AnnotationRetriever.getPrimaryField(fields);
         builder.append("create table ");
         if (!StringUtils.isEmpty(entityContent.getSchema())) {
             builder.append(entityContent.getSchema()).append(".");
         }
         builder.append(entityContent.getTableName()).append("(").append("\n");
-        for (AnnotationRetriver.FieldContent field : fields) {
+        for (AnnotationRetriever.FieldContent field : fields) {
             if (field.isPrimary()) {
                 if (field.getPrimaryKeys() != null && !field.getPrimaryKeys().isEmpty()) {
-                    for (AnnotationRetriver.FieldContent content : field.getPrimaryKeys()) {
+                    for (AnnotationRetriever.FieldContent content : field.getPrimaryKeys()) {
                         content.setRequired(true);
                         builder.append("\t").append(sqlGen.getFieldDefineSqlPart(content).toLowerCase()).append(",\n");
                     }
@@ -158,7 +158,7 @@ public class ModelSqlGenerator {
         if (primarycol != null) {
             List<String> pkColumns = new ArrayList<>();
             if (primarycol.getPrimaryKeys() != null) {
-                for (AnnotationRetriver.FieldContent fieldContent : primarycol.getPrimaryKeys()) {
+                for (AnnotationRetriever.FieldContent fieldContent : primarycol.getPrimaryKeys()) {
                     pkColumns.add(fieldContent.getFieldName());
                 }
             } else {

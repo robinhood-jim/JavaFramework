@@ -72,6 +72,16 @@ public class JdbcDaoTest extends TestCase {
         List<TestJPaModel> list = service.queryByField("csId", BaseObject.OPER_EQ, 1);
         Assert.assertNotNull(list);
     }
+    @Test
+    public void testMyBatisInsert(){
+        SysUserMybatisService service=SpringContextHolder.getBean(SysUserMybatisService.class);
+        SysUserMybatis model=new SysUserMybatis();
+        model.setUserName("test1");
+        model.setUserPassword("1111");
+        model.setAccountType("1");
+        Long id=service.saveEntity(model);
+        assertNotNull(id);
+    }
 
     @Test
     public void testAnnotationInsert() {

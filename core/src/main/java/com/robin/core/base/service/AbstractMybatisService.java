@@ -294,7 +294,7 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>,T extends S
     @Override
     @Transactional(rollbackFor = RuntimeException.class)
     public boolean delete(Wrapper<T> deleteWrapper){
-        return super.retBool(baseDao.delete(deleteWrapper));
+        return SqlHelper.retBool(baseDao.delete(deleteWrapper));
     }
     @Override
     @Transactional(rollbackFor = RuntimeException.class)

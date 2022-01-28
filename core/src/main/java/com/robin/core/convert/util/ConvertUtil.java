@@ -20,8 +20,9 @@ import com.robin.core.base.reflect.ReflectUtils;
 import com.robin.core.base.util.Const;
 import com.robin.core.fileaccess.meta.DataSetColumnMeta;
 
-import org.apache.commons.lang3.StringUtils;
+
 import org.apache.commons.lang3.math.NumberUtils;
+import org.springframework.util.StringUtils;
 
 import java.io.Serializable;
 import java.lang.reflect.AnnotatedType;
@@ -41,7 +42,9 @@ public class ConvertUtil {
     public static final DateTimeFormatter ymdSecondformatter=DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
     public static final DateTimeFormatter ymdSepSecondformatter=DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     public static final DateTimeFormatter ymdEupformatter=DateTimeFormatter.ofPattern("yyyy/MM/dd");
+    private ConvertUtil(){
 
+    }
 
     public static void convertToTargetObj(Object target, Object src,String... defaultDateTimeFormatter) throws Exception {
         if (target == null || src == null) {
@@ -56,7 +59,7 @@ public class ConvertUtil {
             Map.Entry<String,Method> entry=iterator.next();
             if(targetMap.containsKey(entry.getKey())){
                 Object value= parseParameter(targetMap.get(entry.getKey()).getParameterTypes()[0],srcmap.get(entry.getKey()).invoke(src,(Object[]) null),defaultDateTimeFormatter);
-                targetMap.get(entry.getKey()).invoke(target,new Object[]{value});
+                targetMap.get(entry.getKey()).invoke(target,value);
             }
         }
     }
@@ -65,8 +68,8 @@ public class ConvertUtil {
         if (src == null || target == null) {
             return;
         }
-        Map<String,Method> getMetholds= ReflectUtils.returnGetMethods(src.getClass());
-        Iterator<Map.Entry<String,Method>> iterator=getMetholds.entrySet().iterator();
+        Map<String,Method> getMethods= ReflectUtils.returnGetMethods(src.getClass());
+        Iterator<Map.Entry<String,Method>> iterator=getMethods.entrySet().iterator();
         while(iterator.hasNext()){
             Map.Entry<String,Method> entry=iterator.next();
             if(entry.getValue().getParameterTypes().length==0) {
@@ -105,12 +108,12 @@ public class ConvertUtil {
                 target.AddDirtyColumn(key);
                 Class type = methodMap.get(key).getParameterTypes()[0];
                 Object retValue = null;
-                if (!"java.lang.String".equalsIgnoreCase(type.getName()) && "".equals(value)) {
+                if (StringUtils.isEmpty(value)) {
                     retValue = null;
                 } else {
                     retValue = parseParameter(type, value,defaultDateTimeFormatter);
                 }
-                methodMap.get(key).invoke(target, new Object[]{retValue});
+                methodMap.get(key).invoke(target,retValue);
             }
         }
 
@@ -130,12 +133,12 @@ public class ConvertUtil {
             if (targetMap.containsKey(key)) {
                 Class type = targetMap.get(key).getParameterTypes()[0];
                 Object retValue = null;
-                if (!"java.lang.String".equalsIgnoreCase(type.getName()) && "".equals(value)) {
+                if (StringUtils.isEmpty(value)) {
                     retValue = null;
                 } else {
                     retValue = parseParameter(type, value,defaultDateTimeFormatter);
                 }
-                targetMap.get(key).invoke(target, new Object[]{retValue});
+                targetMap.get(key).invoke(target, retValue);
             }
         }
     }
@@ -184,9 +187,9 @@ public class ConvertUtil {
                 Method getMethod = srcmap.get(dirtyColumnList.get(i));
                 Object value = getMethod.invoke(src, (Object[]) null);
                 if (value != null) {
-                    setMethod.invoke(target, new Object[]{value});
+                    setMethod.invoke(target, value);
                 } else {
-                    setMethod.invoke(target, new Object[]{null});
+                    setMethod.invoke(target);
                 }
             }
 
@@ -214,11 +217,11 @@ public class ConvertUtil {
         if (value != null) {
             target.AddDirtyColumn(field);
             Class type = setMethod.getParameterTypes()[0];
-            if (!"java.lang.String".equalsIgnoreCase(type.getName()) && "".equals(value)) {
-                setMethod.invoke(target, new Object[]{null});
+            if (StringUtils.isEmpty(value)) {
+                setMethod.invoke(target);
             } else {
                 Object retValue = parseParameter(type, value,defaultDateTimeFormatter);
-                setMethod.invoke(target, new Object[]{retValue});
+                setMethod.invoke(target, retValue);
             }
         }
     }
@@ -226,10 +229,10 @@ public class ConvertUtil {
         if (value != null) {
             Class type = setMethod.getParameterTypes()[0];
             if (!"java.lang.String".equalsIgnoreCase(type.getName()) && "".equals(value)) {
-                setMethod.invoke(target, new Object[]{null});
+                setMethod.invoke(target);
             } else {
                 Object retValue = parseParameter(type, value,defaultDateTimeFormatter);
-                setMethod.invoke(target, new Object[]{retValue});
+                setMethod.invoke(target, retValue);
             }
         }
     }
@@ -271,7 +274,7 @@ public class ConvertUtil {
         }
     }
     private static void setObjectValue(Method setMethod,Object target,Object value) throws Exception{
-        setMethod.invoke(target,new Object[]{value});
+        setMethod.invoke(target,value);
     }
 
 
@@ -281,7 +284,7 @@ public class ConvertUtil {
         }
         DateTimeFormatter formatter=null;
         Object ret = null;
-        if(!StringUtils.isEmpty(strValue.toString())) {
+        if(!StringUtils.isEmpty(strValue)) {
             if (Integer.class.isAssignableFrom(type)) {
                 ret = Integer.parseInt(strValue.toString());
             } else if (Long.class.isAssignableFrom(type)) {
@@ -306,9 +309,7 @@ public class ConvertUtil {
                 if (defaultDateTimeFormatter.length == 0) {
                     formatter = getFormatter(value);
                 } else {
-                    if (formatter == null) {
-                        formatter = DateTimeFormatter.ofPattern(defaultDateTimeFormatter[0]);
-                    }
+                    formatter = DateTimeFormatter.ofPattern(defaultDateTimeFormatter[0]);
                 }
                 if (null != formatter) {
                     LocalDateTime localDateTime = LocalDateTime.parse(value, formatter);
@@ -327,21 +328,16 @@ public class ConvertUtil {
 
                 if (type.isAssignableFrom(byte.class)) {
                     if (!strValue.toString().isEmpty()) {
-                        Method method = type.getMethod("valueOf", new Class[]{"java.lang.String".getClass()});
+                        Method method = type.getMethod("valueOf", String.class);
                         if (method != null) {
-                            ret = method.invoke(Class.forName("java.lang.Byte"), new Object[]{strValue.toString()});
+                            ret = method.invoke(Class.forName("java.lang.Byte"), strValue.toString());
                         }
-                    } else {
-                        ret = null;
                     }
                 } else if (type.isAssignableFrom(byte[].class)) {
                     ret = strValue.toString().getBytes();
                 } else {
                     if(Map.class.isAssignableFrom(type) && Map.class.isAssignableFrom(strValue.getClass())){
-                        Map<String,Object> valueMap=new HashMap<>();
-                        ((Map)strValue).forEach((k,v)->{
 
-                        });
                     }else if(List.class.isAssignableFrom(type)){
 
                     }

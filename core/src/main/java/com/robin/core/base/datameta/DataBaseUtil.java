@@ -18,10 +18,9 @@ package com.robin.core.base.datameta;
 import com.robin.core.base.dao.JdbcDao;
 import com.robin.core.base.util.Const;
 import com.robin.core.base.util.StringUtils;
-import com.robin.core.fileaccess.meta.DataCollectionMeta;
-import com.robin.core.fileaccess.meta.DataSetColumnMeta;
 import com.robin.core.sql.util.BaseSqlGen;
 import com.robin.core.sql.util.SqlDialectFactory;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -38,8 +37,8 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
 import java.util.Date;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -76,7 +75,7 @@ public class DataBaseUtil {
 
 
     public List<String> getAllShcema() throws SQLException {
-        List<String> schemalist = new ArrayList<String>();
+        List<String> schemalist = new ArrayList<>();
         DatabaseMetaData meta = connection.getMetaData();
         try (ResultSet rs1 = meta.getSchemas()) {
             while (rs1.next()) {
@@ -96,7 +95,7 @@ public class DataBaseUtil {
     }
 
     public static List<String> getAllShcema(DataSource source) throws SQLException {
-        List<String> schemalist = new ArrayList<String>();
+        List<String> schemalist = new ArrayList<>();
         try (Connection conn = source.getConnection()) {
             DatabaseMetaData meta = conn.getMetaData();
             try (ResultSet rs1 = meta.getSchemas()) {
@@ -120,7 +119,7 @@ public class DataBaseUtil {
     }
 
     public List<DataBaseColumnMeta> getTableMetaByTableName(String tablename, String DbOrtablespacename) throws SQLException {
-        List<DataBaseColumnMeta> columnlist = new ArrayList<DataBaseColumnMeta>();
+        List<DataBaseColumnMeta> columnlist = new ArrayList<>();
         DatabaseMetaData meta = connection.getMetaData();
         try (ResultSet rs = meta.getColumns(dataBaseMeta.getCatalog(DbOrtablespacename), DbOrtablespacename, tablename, null)) {
             // all pk column
@@ -164,7 +163,7 @@ public class DataBaseUtil {
         datameta.setColumnLength(datalength);
         datameta.setTypeName(typeName);
     }
-
+    @NonNull
     public static List<DataBaseColumnMeta> getTableMetaByTableName(DataSource source, String tableName, String DbOrtablespacename, String dbType) throws SQLException {
         try (Connection conn = source.getConnection()) {
             return getTableMetaByTableName(conn, tableName, DbOrtablespacename, dbType);
@@ -191,9 +190,9 @@ public class DataBaseUtil {
         }
         return retList;
     }
-
+    @NonNull
     public static List<DataBaseColumnMeta> getTableMetaByTableName(Connection conn, String tableName, String DbOrtablespacename, String dbType) throws SQLException {
-        List<DataBaseColumnMeta> columnlist = new ArrayList<DataBaseColumnMeta>();
+        List<DataBaseColumnMeta> columnlist = new ArrayList<>();
         DatabaseMetaData meta = conn.getMetaData();
         try (ResultSet rs = meta.getColumns(null, DbOrtablespacename, tableName, null);) {
             List<String> pklist = null;
@@ -209,7 +208,7 @@ public class DataBaseUtil {
                 boolean nullable = rs.getInt("NULLABLE") != DatabaseMetaData.columnNoNulls;
                 String comment = "";
                 ResultSetMetaData rsmeta = rs.getMetaData();
-                List<String> metaNames = new ArrayList<String>();
+                List<String> metaNames = new ArrayList<>();
                 for (int i = 1; i <= rsmeta.getColumnCount(); i++) {
                     metaNames.add(rsmeta.getColumnName(i));
                 }
@@ -245,7 +244,7 @@ public class DataBaseUtil {
     }
 
     public static List<String> getAllPrimaryKeyByTableName(Connection conn, String tableName, String schema) throws SQLException {
-        List<String> tablelist = new ArrayList<String>();
+        List<String> tablelist = new ArrayList<>();
         DatabaseMetaData meta = conn.getMetaData();
         try (ResultSet rs1 = meta.getPrimaryKeys(schema, schema, tableName)) {
             while (rs1.next()) {
@@ -280,7 +279,7 @@ public class DataBaseUtil {
     }
 
     public static List<DataBaseColumnMeta> getQueryMeta(Connection conn, String sql) throws SQLException {
-        List<DataBaseColumnMeta> columnlist = new ArrayList<DataBaseColumnMeta>();
+        List<DataBaseColumnMeta> columnlist = new ArrayList<>();
 
         ResultSetMetaData rsmeta = null;
         String querySql = "select * from (" + sql + ") a where 1=0";
@@ -335,7 +334,7 @@ public class DataBaseUtil {
     }
 
     public static Map<String, Object> transformDbTypeByObj(Object obj) {
-        Map<String, Object> retMap = new HashMap<String, Object>();
+        Map<String, Object> retMap = new HashMap<>();
         String type = null;
 
         SimpleDateFormat targetFormat = null;
@@ -405,11 +404,7 @@ public class DataBaseUtil {
                     validtag = true;
                 }
             } else if (type.equals(Const.META_TYPE_DATE) || type.equals(Const.META_TYPE_TIMESTAMP)) {
-                if (value instanceof java.util.Date) {
-                    validtag = true;
-                } else if (value instanceof java.sql.Date) {
-                    validtag = true;
-                } else if (value instanceof Timestamp) {
+                if (java.util.Date.class.isAssignableFrom(value.getClass()) || java.sql.Date.class.isAssignableFrom(value.getClass()) || Timestamp.class.isAssignableFrom(value.getClass())) {
                     validtag = true;
                 }
             } else if (type.equals(Const.META_TYPE_STRING)) {
@@ -474,7 +469,7 @@ public class DataBaseUtil {
     }
 
     private static List<DataBaseTableMeta> scanAllTable(Connection connection, String schema, DataBaseInterface datameta) throws SQLException {
-        List<DataBaseTableMeta> tablelist = new ArrayList<DataBaseTableMeta>();
+        List<DataBaseTableMeta> tablelist = new ArrayList<>();
 
         DatabaseMetaData meta = connection.getMetaData();
         try (ResultSet rs1 = meta.getTables(datameta.getCatalog(schema), schema, null, new String[]{"TABLE", "VIEW"});) {

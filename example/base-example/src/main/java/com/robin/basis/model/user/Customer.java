@@ -23,7 +23,11 @@ public class Customer extends AbstractModel {
     private Long manipulateOrgId;
     @MappingField
     private String status;
+    @MappingField
     private String email;
+    @MappingField
     private String phoneNum;
+    @MappingField
+    private Long userId;
 
 }

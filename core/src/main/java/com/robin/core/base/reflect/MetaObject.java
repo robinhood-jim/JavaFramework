@@ -1,14 +1,14 @@
 package com.robin.core.base.reflect;
 
-import com.robin.core.base.dao.util.AnnotationRetriver;
+import com.robin.core.base.dao.util.AnnotationRetriever;
 
 import java.util.Map;
 
 
 public class MetaObject {
     private final Object originalObject;
-    private final Map<String, AnnotationRetriver.FieldContent> fieldContentMap;
-    public MetaObject(Object object,Map<String, AnnotationRetriver.FieldContent> contentMap){
+    private final Map<String, AnnotationRetriever.FieldContent> fieldContentMap;
+    public MetaObject(Object object,Map<String, AnnotationRetriever.FieldContent> contentMap){
         this.originalObject=object;
         this.fieldContentMap=contentMap;
     }
@@ -17,7 +17,7 @@ public class MetaObject {
         return originalObject;
     }
 
-    public Map<String, AnnotationRetriver.FieldContent> getFieldContentMap() {
+    public Map<String, AnnotationRetriever.FieldContent> getFieldContentMap() {
         return fieldContentMap;
     }
     public Object getValue(String columnName){
