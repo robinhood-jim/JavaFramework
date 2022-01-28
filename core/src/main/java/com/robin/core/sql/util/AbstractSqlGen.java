@@ -15,7 +15,7 @@
  */
 package com.robin.core.sql.util;
 
-import com.robin.core.base.dao.util.AnnotationRetriver;
+import com.robin.core.base.dao.util.AnnotationRetriever;
 import com.robin.core.base.datameta.DataBaseColumnMeta;
 import com.robin.core.base.util.Const;
 import com.robin.core.base.util.StringUtils;
@@ -267,7 +267,7 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
     }
 
     @Override
-    public String getFieldDefineSqlPart(AnnotationRetriver.FieldContent field) {
+    public String getFieldDefineSqlPart(AnnotationRetriever.FieldContent field) {
         String datatype = field.getDataType();
         StringBuilder builder = new StringBuilder();
         String name = field.getFieldName();
@@ -420,7 +420,7 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
         return sql.toString();
     }
     @Override
-    public String returnTypeDef(String dataType, AnnotationRetriver.FieldContent field) {
+    public String returnTypeDef(String dataType, AnnotationRetriever.FieldContent field) {
         StringBuilder builder=new StringBuilder();
         if(dataType.equals(Const.META_TYPE_BIGINT)){
             builder.append(getLongFormat());
@@ -662,7 +662,7 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
     }
 
     @Override
-    public String getAlertColumnSqlPart(AnnotationRetriver.EntityContent entityContent, AnnotationRetriver.FieldContent fieldContent, AlertType type) {
+    public String getAlertColumnSqlPart(AnnotationRetriever.EntityContent entityContent, AnnotationRetriever.FieldContent fieldContent, AlertType type) {
         StringBuilder builder=new StringBuilder();
         String fullName= StringUtils.isEmpty(entityContent.getSchema())?entityContent.getTableName():entityContent.getSchema()+"."+entityContent.getTableName();
         builder.append("ALERT TABLE ").append(fullName);

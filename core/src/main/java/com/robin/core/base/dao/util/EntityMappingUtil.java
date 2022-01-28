@@ -16,9 +16,9 @@ import java.util.Map;
 
 public class EntityMappingUtil {
     public static InsertSegment getInsertSegment(BaseObject obj, BaseSqlGen sqlGen) throws DAOException {
-        AnnotationRetriver.EntityContent tableDef = AnnotationRetriver.getMappingTableByCache(obj.getClass());
-        List<AnnotationRetriver.FieldContent> fields = AnnotationRetriver.getMappingFieldsCache(obj.getClass());
-        AnnotationRetriver.validateEntity(obj);
+        AnnotationRetriever.EntityContent tableDef = AnnotationRetriever.getMappingTableByCache(obj.getClass());
+        List<AnnotationRetriever.FieldContent> fields = AnnotationRetriever.getMappingFieldsCache(obj.getClass());
+        AnnotationRetriever.validateEntity(obj);
         StringBuilder buffer = new StringBuilder();
         buffer.append("insert into ");
         if (tableDef.getSchema() != null && !tableDef.getSchema().isEmpty()) {
@@ -31,9 +31,9 @@ public class EntityMappingUtil {
         boolean containlob = false;
         String seqfield = "";
         InsertSegment insertSegment = new EntityMappingUtil.InsertSegment();
-        AnnotationRetriver.FieldContent incrementcolumn = null;
+        AnnotationRetriever.FieldContent incrementcolumn = null;
         try {
-            for (AnnotationRetriver.FieldContent content : fields) {
+            for (AnnotationRetriever.FieldContent content : fields) {
                 Object value = content.getGetMethod().invoke(obj, new Object[]{});
                 if (content.getDataType().equals(Const.META_TYPE_BLOB) || content.getDataType().equals(Const.META_TYPE_CLOB)) {
                     containlob = true;
@@ -44,11 +44,11 @@ public class EntityMappingUtil {
                             fieldBuffer.append(content.getFieldName()).append(",");
                             valuebuBuffer.append("?,");
                         } else {
-                            List<AnnotationRetriver.FieldContent> pkList = content.getPrimaryKeys();
+                            List<AnnotationRetriever.FieldContent> pkList = content.getPrimaryKeys();
                             incrementcolumn = content;
                             if (pkList != null) {
                                 //Composite Primary Key
-                                for (AnnotationRetriver.FieldContent field : pkList) {
+                                for (AnnotationRetriever.FieldContent field : pkList) {
                                     if (field.isIncrement()) {
                                         hasincrementPk = true;
                                     } else {
@@ -96,9 +96,9 @@ public class EntityMappingUtil {
     }
 
     public static UpdateSegment getUpdateSegment(BaseObject obj, BaseSqlGen sqlGen) throws SQLException {
-        AnnotationRetriver.EntityContent tableDef = AnnotationRetriver.getMappingTableByCache(obj.getClass());
-        List<AnnotationRetriver.FieldContent> fields = AnnotationRetriver.getMappingFieldsCache(obj.getClass());
-        AnnotationRetriver.validateEntity(obj);
+        AnnotationRetriever.EntityContent tableDef = AnnotationRetriever.getMappingTableByCache(obj.getClass());
+        List<AnnotationRetriever.FieldContent> fields = AnnotationRetriever.getMappingFieldsCache(obj.getClass());
+        AnnotationRetriever.validateEntity(obj);
 
         //get must change column
         List<String> dirtyColumns = obj.getDirtyColumn();
@@ -113,8 +113,8 @@ public class EntityMappingUtil {
         List<Object> objList = new ArrayList<Object>();
         List<Object> whereObjects = new ArrayList<>();
         UpdateSegment updateSegment = new UpdateSegment();
-        for (AnnotationRetriver.FieldContent field : fields) {
-            Object object = AnnotationRetriver.getValueFromVO(field, obj);
+        for (AnnotationRetriever.FieldContent field : fields) {
+            Object object = AnnotationRetriever.getValueFromVO(field, obj);
             if (!field.isIncrement() && !field.isSequential()) {
                 if (object == null) {
                     if (dirtyColumns.contains(field.getPropertyName())) {
@@ -126,8 +126,8 @@ public class EntityMappingUtil {
                         fieldBuffer.append(field.getFieldName()).append("=?,");
                         objList.add(object);
                     } else {
-                        for (AnnotationRetriver.FieldContent pks : field.getPrimaryKeys()) {
-                            Object tval = AnnotationRetriver.getValueFromVO(pks, (BasePrimaryObject) object);
+                        for (AnnotationRetriever.FieldContent pks : field.getPrimaryKeys()) {
+                            Object tval = AnnotationRetriever.getValueFromVO(pks, (BasePrimaryObject) object);
                             if (tval == null) {
                                 throw new DAOException(" update MappingEntity Primary key must not be null");
                             }
@@ -151,18 +151,18 @@ public class EntityMappingUtil {
     }
 
     public static SelectSegment getSelectPkSegment(Class<? extends BaseObject> clazz, Serializable id, BaseSqlGen sqlGen) throws Exception {
-        AnnotationRetriver.isBaseObjectClassValid(clazz);
-        AnnotationRetriver.EntityContent tableDef = AnnotationRetriver.getMappingTableByCache(clazz);
-        List<AnnotationRetriver.FieldContent> fields = AnnotationRetriver.getMappingFieldsCache(clazz);
+        AnnotationRetriever.isBaseObjectClassValid(clazz);
+        AnnotationRetriever.EntityContent tableDef = AnnotationRetriever.getMappingTableByCache(clazz);
+        List<AnnotationRetriever.FieldContent> fields = AnnotationRetriever.getMappingFieldsCache(clazz);
         StringBuilder sqlbuffer = new StringBuilder("select ");
         StringBuilder wherebuffer = new StringBuilder();
         SelectSegment segment = new SelectSegment();
         List<Object> selectObjs = new ArrayList<>();
-        for (AnnotationRetriver.FieldContent field : fields) {
+        for (AnnotationRetriever.FieldContent field : fields) {
             if (field.isPrimary()) {
                 if (field.getPrimaryKeys() != null) {
-                    for (AnnotationRetriver.FieldContent fieldContent : field.getPrimaryKeys()) {
-                        Object tval = AnnotationRetriver.getValueFromVO(fieldContent, (BasePrimaryObject) id);
+                    for (AnnotationRetriever.FieldContent fieldContent : field.getPrimaryKeys()) {
+                        Object tval = AnnotationRetriever.getValueFromVO(fieldContent, (BasePrimaryObject) id);
                         wherebuffer.append(fieldContent.getFieldName()).append("=? and ");
                         selectObjs.add(tval);
                         sqlbuffer.append(fieldContent.getFieldName()).append(" as ").append(fieldContent.getPropertyName()).append(",");
@@ -188,13 +188,13 @@ public class EntityMappingUtil {
     }
 
     public static SelectSegment getSelectByVOSegment(Class<? extends BaseObject> type, BaseSqlGen sqlGen, BaseObject vo, Map<String, Object> additonMap, String orderByStr, String wholeSelectSql) throws Exception {
-        AnnotationRetriver.isBaseObjectClassValid(type);
+        AnnotationRetriever.isBaseObjectClassValid(type);
         List<Object> params = new ArrayList<>();
         StringBuilder builder=new StringBuilder();
         builder.append(wholeSelectSql).append(" where ");
-        List<AnnotationRetriver.FieldContent> fields = AnnotationRetriver.getMappingFieldsCache(type);
+        List<AnnotationRetriever.FieldContent> fields = AnnotationRetriever.getMappingFieldsCache(type);
         SelectSegment selectSegment=new SelectSegment();
-        for (AnnotationRetriver.FieldContent field : fields) {
+        for (AnnotationRetriever.FieldContent field : fields) {
             Object obj = field.getGetMethod().invoke(vo, new Object[]{});
             if (obj != null) {
                 if (additonMap == null) {
@@ -242,7 +242,7 @@ public class EntityMappingUtil {
         return selectSegment;
     }
 
-    private static void appendSchemaAndTable(AnnotationRetriver.EntityContent entityContent, StringBuilder builder, BaseSqlGen sqlGen) {
+    private static void appendSchemaAndTable(AnnotationRetriever.EntityContent entityContent, StringBuilder builder, BaseSqlGen sqlGen) {
         if (entityContent.getSchema() != null && !entityContent.getSchema().isEmpty()) {
             builder.append(sqlGen.getSchemaName(entityContent.getSchema())).append(".");
         }
@@ -263,7 +263,7 @@ public class EntityMappingUtil {
         boolean containlob = false;
         private String insertSql;
         private String seqField;
-        private AnnotationRetriver.FieldContent incrementColumn;
+        private AnnotationRetriever.FieldContent incrementColumn;
     }
 
     @Data

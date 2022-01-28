@@ -1,11 +1,9 @@
 package com.robin.core.sql.util;
 
-import com.robin.core.base.dao.util.AnnotationRetriver;
+import com.robin.core.base.dao.util.AnnotationRetriever;
 import com.robin.core.base.exception.ConfigurationIncorrectException;
-import com.robin.core.base.util.Const;
 import org.springframework.util.Assert;
 
-import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -34,12 +32,12 @@ public class FilterCondition {
 	public static final String NOT = "NOT";
 	public static final String AND ="AND";
 	public static final String NOTIN = "NOTIN";
-	private Map<String, AnnotationRetriver.FieldContent> fieldMap;
-	public Map<String, AnnotationRetriver.FieldContent> getFieldMap() {
+	private Map<String, AnnotationRetriever.FieldContent> fieldMap;
+	public Map<String, AnnotationRetriever.FieldContent> getFieldMap() {
 		return fieldMap;
 	}
 
-	public void setFieldMap(Map<String, AnnotationRetriver.FieldContent> fieldMap) {
+	public void setFieldMap(Map<String, AnnotationRetriever.FieldContent> fieldMap) {
 		this.fieldMap = fieldMap;
 	}
 
