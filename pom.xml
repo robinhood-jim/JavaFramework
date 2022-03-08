@@ -103,7 +103,7 @@
         <jpa.version>2.2</jpa.version>
         <jcl.version>2.6</jcl.version>
         <hibernate.version>5.2.0.Final</hibernate.version>
-        <poi.version>4.1.2</poi.version>
+        <poi.version>5.2.1</poi.version>
         <frm.version>1.0-SNAPSHOT</frm.version>
         <jsonlib.version>2.4</jsonlib.version>
         <itext.version>2.1.4</itext.version>
