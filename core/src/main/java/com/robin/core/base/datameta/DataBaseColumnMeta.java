@@ -36,6 +36,7 @@ public class DataBaseColumnMeta implements Serializable {
 	private String foreignTableName;
 	private String foreignColumnName;
 	private Integer keySeq;
+	private String defaultValue;
 
 	public DataBaseColumnMeta() {
 		
@@ -43,6 +44,12 @@ public class DataBaseColumnMeta implements Serializable {
 	public DataBaseColumnMeta(String columnName,Integer columnType) {
 		this.columnName=columnName;
 		this.columnType=columnType;
+	}
+	public DataBaseColumnMeta(String columnName,Integer columnType,Integer length) {
+		this.columnName=columnName;
+		this.columnType=columnType;
+		if(length!=null)
+			this.columnLength=String.valueOf(length);
 	}
 
 }	

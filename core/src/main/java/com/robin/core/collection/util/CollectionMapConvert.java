@@ -21,6 +21,7 @@ import com.robin.core.base.spring.SpringContextHolder;
 import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.script.ScriptExecutor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
 import javax.script.Bindings;
@@ -100,7 +101,7 @@ public class CollectionMapConvert {
     public static <T> Map<String, List<T>> convertToMapByParentKey(List<T> listobj, String parentCol) throws Exception {
         checkType(listobj);
         Method method = null;
-        if (!(listobj.get(0) instanceof Map)) {
+        if (!(Map.class.isAssignableFrom(listobj.get(0).getClass()))) {
             method = ReflectUtils.returnGetMethods(listobj.get(0).getClass()).get(parentCol);
             if (method == null) {
                 throw new MissingConfigException("parent column not exists in object!");
@@ -110,7 +111,7 @@ public class CollectionMapConvert {
         for (T t : listobj) {
             Object targerobj = t;
             Object obj = null;
-            if (t instanceof Map) {
+            if (Map.class.isAssignableFrom(t.getClass())) {
                 obj = ((Map) t).get(parentCol);
             } else {
                 obj = method.invoke(targerobj, null);
@@ -121,7 +122,6 @@ public class CollectionMapConvert {
                 addMapToList(retMap, obj.toString(), t);
             }
         }
-
         return retMap;
     }
 
@@ -144,30 +144,49 @@ public class CollectionMapConvert {
      * @return
      * @throws Exception
      */
-    public static <T> Map<String, List<Object>> getValuesByParentKey(List<T> listobj, String parentCol, String valueCol) throws Exception {
+    public static <T,P> Map<String, List<P>> getValuesByParentKey(List<T> listobj, String parentCol, String valueCol,Class<P> keyClazz) throws Exception {
         checkType(listobj);
 
-        Map<String, List<Object>> retMap = new HashMap<String, List<Object>>();
+        Map<String, List<P>> retMap = new HashMap<>();
+        Assert.isTrue(!CollectionUtils.isEmpty(listobj),"");
+        P targetValue;
+        Method method =null;
+        Method method1 = null;
+        String key;
 
-        Map<String, Method> getMetholds = ReflectUtils.returnGetMethods(listobj.get(0).getClass());
-        Method method = getMetholds.get(parentCol);
-        Method method1 = getMetholds.get(valueCol);
-        if (method == null || method1 == null) {
-            throw new MissingConfigException("parent column or value column not exist in object");
+        if(!Map.class.isAssignableFrom(listobj.get(0).getClass())){
+            Map<String, Method> getMetholds = ReflectUtils.returnGetMethods(listobj.get(0).getClass());
+            method = getMetholds.get(parentCol);
+            method1 = getMetholds.get(valueCol);
         }
+
+
         for (T t : listobj) {
-            Object value = method.invoke(t, null);
-            Object targetValue = method1.invoke(t, null);
-            if (value == null) {
-                value = "NULL";
+            if(method!=null && method1!=null){
+                Object value = method.invoke(t, null);
+                if (value == null) {
+                    key = "NULL";
+                }else{
+                    key=value.toString();
+                }
+                targetValue =(P) method1.invoke(t, null);
+            }else{
+                Map<String,Object> map=(Map)t;
+                Object value=map.get(parentCol);
+                if (value == null) {
+                    key = "NULL";
+                }else{
+                    key=value.toString();
+                }
+                targetValue=(P) map.get(valueCol);
             }
             if (targetValue != null) {
-                if (retMap.get(value) == null) {
-                    List<Object> list = new ArrayList<Object>();
+                if (retMap.get(key) == null) {
+                    List<P> list = new ArrayList<>();
                     list.add(targetValue);
-                    retMap.put(value.toString(), list);
+                    retMap.put(key, list);
                 } else {
-                    retMap.get(value.toString()).add(targetValue);
+                    retMap.get(key).add(targetValue);
                 }
             }
         }

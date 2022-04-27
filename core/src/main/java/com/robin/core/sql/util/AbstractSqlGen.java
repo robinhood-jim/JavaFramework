@@ -699,4 +699,16 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
         }
         return selectPart;
     }
+
+    @Override
+    public String getCreateHeader(String schema, String tableName) {
+        StringBuilder builder= new StringBuilder("create table ");
+        if(!StringUtils.isEmpty(schema)){
+            builder.append(schema).append(".");
+        }
+        builder.append(tableName).append(" (");
+        return builder.toString();
+    }
+
+
 }

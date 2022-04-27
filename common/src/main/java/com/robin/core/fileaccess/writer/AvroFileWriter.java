@@ -53,7 +53,7 @@ public class AvroFileWriter extends AbstractFileWriter{
 
 
 	@Override
-	public void writeRecord(Map<String, ?> map) throws IOException, OperationNotSupportedException {
+	public void writeRecord(Map<String, Object> map) throws IOException, OperationNotSupportedException {
 
 		GenericRecord grecord=new GenericData.Record(schema);
 

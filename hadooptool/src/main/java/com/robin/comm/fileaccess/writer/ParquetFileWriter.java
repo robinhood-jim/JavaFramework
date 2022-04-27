@@ -56,7 +56,7 @@ public class ParquetFileWriter extends AbstractFileWriter {
     }
 
     @Override
-    public void writeRecord(Map<String, ?> map) throws IOException, OperationNotSupportedException {
+    public void writeRecord(Map<String, Object> map) throws IOException, OperationNotSupportedException {
         GenericRecord record=new GenericData.Record(schema);
 
         for (int i = 0; i < colmeta.getColumnList().size(); i++) {

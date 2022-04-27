@@ -3,6 +3,7 @@ package com.robin.comm.fileaccess.writer;
 
 import com.github.os72.protobuf.dynamic.DynamicSchema;
 import com.github.os72.protobuf.dynamic.MessageDefinition;
+
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.ExtensionRegistry;
@@ -15,6 +16,7 @@ import org.springframework.util.CollectionUtils;
 
 import javax.naming.OperationNotSupportedException;
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.Map;
 
 public class ProtoBufFileWriter extends AbstractFileWriter {
@@ -23,6 +25,7 @@ public class ProtoBufFileWriter extends AbstractFileWriter {
     private ExtensionRegistry registry;
     private DynamicSchema.Builder schemaBuilder;
     private DynamicMessage.Builder mesgBuilder;
+    private MessageDefinition definition;
     protected ProtoBufFileWriter(DataCollectionMeta colmeta) {
         super(colmeta);
     }
@@ -39,7 +42,7 @@ public class ProtoBufFileWriter extends AbstractFileWriter {
                     DataSetColumnMeta column = colmeta.getColumnList().get(i);
                     msgBuilder = msgBuilder.addField(column.isRequired() ? "required" : "optional", ProtoBufUtil.translateType(column), column.getColumnName(), i + 1);
                 }
-                MessageDefinition definition = msgBuilder.build();
+                definition = msgBuilder.build();
                 schemaBuilder.addMessageDefinition(definition);
                 schema = schemaBuilder.build();
                 mesgBuilder= DynamicMessage.newBuilder(schema.getMessageDescriptor(colmeta.getValueClassName()));
@@ -62,16 +65,27 @@ public class ProtoBufFileWriter extends AbstractFileWriter {
 
     @Override
     public void finishWrite() throws IOException {
-
+        out.close();
     }
 
     @Override
     public void flush() throws IOException {
-
+        out.flush();
     }
 
     @Override
-    public void writeRecord(Map<String, ?> map) throws IOException, OperationNotSupportedException {
-
+    public void writeRecord(Map<String, Object> map) throws IOException, OperationNotSupportedException {
+        DynamicMessage.Builder msgBuilder=schema.newMessageBuilder(colmeta.getClassNamespace());
+        Descriptors.Descriptor msgDesc=msgBuilder.getDescriptorForType();
+        Iterator<Map.Entry<String,Object>> iter=map.entrySet().iterator();
+        while(iter.hasNext()){
+            Map.Entry<String,Object> entry=iter.next();
+            Descriptors.FieldDescriptor des=msgDesc.findFieldByName(entry.getKey());
+            if(des!=null){
+                msgBuilder.setField(des,entry.getValue());
+            }
+        }
+        DynamicMessage message=msgBuilder.build();
+        message.writeDelimitedTo(out);
     }
 }

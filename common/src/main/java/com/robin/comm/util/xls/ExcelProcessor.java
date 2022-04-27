@@ -43,7 +43,7 @@ public class ExcelProcessor {
         InputStream myxls = new FileInputStream(filename);
 
         try {
-            readExcelFile(myxls, prop);
+            readExcelFile(myxls, prop,null);
         } catch (Exception e) {
             e.printStackTrace();
             log.error(e);
@@ -52,7 +52,7 @@ public class ExcelProcessor {
     }
 
 
-    public static void readExcelFile(InputStream myxls, ExcelSheetProp prop) throws Exception {
+    public static void readExcelFile(InputStream myxls, ExcelSheetProp prop,IExcelAfterProcessor processor) throws Exception {
         boolean is2007 = ExcelBaseOper.TYPE_EXCEL2007.equalsIgnoreCase(prop.getFileext());
         Workbook wb = null;
         if (is2007) {
@@ -72,7 +72,7 @@ public class ExcelProcessor {
                 rit.next();
                 continue;
             }
-            Map<String, String> listMap = new HashMap<String, String>();
+            Map<String, String> listMap = new HashMap<>();
             Row row = rit.next();
 
             int j = 0;
@@ -131,7 +131,11 @@ public class ExcelProcessor {
                 j++;
             }
             if (ishasrecord) {
-                columnValueList.add(listMap);
+                if(processor!=null){
+                    processor.processLine(listMap);
+                }else {
+                    columnValueList.add(listMap);
+                }
             }
         }
         prop.setColumnList(columnValueList);

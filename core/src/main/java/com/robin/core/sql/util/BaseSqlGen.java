@@ -77,6 +77,7 @@ public interface BaseSqlGen {
     String getBlobFormat();
     String getClobFormat();
     String getAutoIncrementDef();
+    String getCreateHeader(String schema,String tableName);
     enum AlertType{
         ADD("ADD"),
         ALERT("ALERT"),

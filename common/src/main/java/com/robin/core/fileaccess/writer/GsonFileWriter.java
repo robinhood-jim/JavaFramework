@@ -35,7 +35,7 @@ public class GsonFileWriter extends WriterBasedFileWriter{
 	}
 
 	@Override
-	public void writeRecord(Map<String, ?> map) throws IOException, OperationNotSupportedException {
+	public void writeRecord(Map<String, Object> map) throws IOException, OperationNotSupportedException {
 		try{
 			jwriter.beginObject();
 			for (int i = 0; i < colmeta.getColumnList().size(); i++) {

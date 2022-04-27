@@ -15,6 +15,7 @@
  */
 package com.robin.core.convert.util;
 
+import com.robin.core.base.datameta.DataBaseColumnMeta;
 import com.robin.core.base.model.BaseObject;
 import com.robin.core.base.reflect.ReflectUtils;
 import com.robin.core.base.util.Const;
@@ -29,6 +30,7 @@ import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.sql.Types;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
@@ -275,6 +277,47 @@ public class ConvertUtil {
     }
     private static void setObjectValue(Method setMethod,Object target,Object value) throws Exception{
         setMethod.invoke(target,value);
+    }
+    public static Object parseParameter(DataBaseColumnMeta meta, Object strValue, String... defaultDateTimeFormatter) throws Exception {
+        if (strValue == null) {
+            return null;
+        }
+        DateTimeFormatter formatter=null;
+        Object ret = null;
+        if(!StringUtils.isEmpty(strValue)) {
+            if (Types.INTEGER==meta.getDataType()) {
+                ret = Integer.parseInt(strValue.toString());
+            } else if (Types.BIGINT==meta.getDataType()) {
+                ret = Long.parseLong(strValue.toString());
+            } else if (Types.FLOAT==meta.getDataType()) {
+                ret = Float.parseFloat(strValue.toString());
+            } else if (Types.DOUBLE==meta.getDataType() ||Types.DECIMAL==meta.getDataType()) {
+                ret = Double.parseDouble(strValue.toString());
+            } else if (Types.SMALLINT==meta.getDataType()) {
+                ret = Short.valueOf(strValue.toString());
+            }
+            else if (Types.TIME==meta.getDataType() || Types.DATE==meta.getDataType() || Types.TIMESTAMP==meta.getDataType()) {
+                String value = strValue.toString().trim();
+                if (defaultDateTimeFormatter.length == 0) {
+                    formatter = getFormatter(value);
+                } else {
+                    formatter = DateTimeFormatter.ofPattern(defaultDateTimeFormatter[0]);
+                }
+                if (null != formatter) {
+                    LocalDateTime localDateTime = LocalDateTime.parse(value, formatter);
+                    if (Types.DATE==meta.getDataType()) {
+                        ret = new java.util.Date(localDateTime.toInstant(ZoneOffset.ofHours(8)).toEpochMilli());
+                    } else if (Types.TIMESTAMP==meta.getDataType()) {
+                        ret = new Timestamp(localDateTime.toInstant(ZoneOffset.ofHours(8)).toEpochMilli());
+                    }
+                }
+
+            } else if (Types.VARCHAR==meta.getDataType() || Types.CHAR==meta.getDataType()) {
+                ret = strValue.toString();
+            } else {
+            }
+        }
+        return ret;
     }
 
 

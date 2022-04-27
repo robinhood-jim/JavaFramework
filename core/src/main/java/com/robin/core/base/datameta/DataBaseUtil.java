@@ -117,6 +117,9 @@ public class DataBaseUtil {
     public static List<DataBaseTableMeta> getAllTable(DataSource source, String schema, DataBaseInterface datameta) throws Exception {
         return scanAllTable(source.getConnection(), schema, datameta);
     }
+    public static List<DataBaseTableMeta> getAllTable(Connection connection,DataBaseInterface dataBaseMeta,String schema) throws SQLException {
+        return scanAllTable(connection,schema,dataBaseMeta);
+    }
 
     public List<DataBaseColumnMeta> getTableMetaByTableName(String tablename, String DbOrtablespacename) throws SQLException {
         List<DataBaseColumnMeta> columnlist = new ArrayList<>();
@@ -132,6 +135,7 @@ public class DataBaseUtil {
                 String comment = rs.getString("REMARKS");
                 String precise = rs.getString("DECIMAL_DIGITS");
                 String scale = rs.getString("TABLE_SCHEM");
+                String defaultValue=rs.getString("COLUMN_DEF");
 
                 DataBaseColumnMeta datameta = new DataBaseColumnMeta();
                 if (dataBaseMeta.supportAutoInc()) {
@@ -141,6 +145,9 @@ public class DataBaseUtil {
                     }
                 }
                 setType(columnname, columnType, rs.getInt("DATA_TYPE"), rs.getString("TYPE_NAME"), datalength, nullable, comment, precise, scale, datameta);
+                if(!org.springframework.util.StringUtils.isEmpty(defaultValue)) {
+                    datameta.setDefaultValue(defaultValue);
+                }
                 if (pklist.contains(columnname)) {
                     datameta.setPrimaryKey(true);
                 } else {
