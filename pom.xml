@@ -445,6 +445,11 @@
                 <version>${aspectj.version}</version>
                 <optional>true</optional>
             </dependency>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-data-mongodb</artifactId>
+                <version>${spring.boot.version}</version>
+            </dependency>
             <!-- Spring jar end -->
 
             <!-- Hadoop Jar start -->
@@ -1022,7 +1027,7 @@
             <dependency>
                 <groupId>org.projectlombok</groupId>
                 <artifactId>lombok</artifactId>
-                <version>1.16.18</version>
+                <version>1.18.10</version>
                 <optional>true</optional>
             </dependency>
             <dependency>

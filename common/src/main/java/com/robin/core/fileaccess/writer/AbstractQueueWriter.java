@@ -33,7 +33,7 @@ public abstract class AbstractQueueWriter extends AbstractResourceWriter {
     }
 
     @Override
-    public void writeRecord(Map<String, ?> map) throws IOException, OperationNotSupportedException {
+    public void writeRecord(Map<String, Object> map) throws IOException, OperationNotSupportedException {
         throw new OperationNotSupportedException("operation not Supported!");
     }
 

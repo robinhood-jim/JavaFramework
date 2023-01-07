@@ -75,7 +75,7 @@ public class OrcFileWriter extends AbstractFileWriter {
     }
 
     @Override
-    public void writeRecord(Map<String, ?> map) throws IOException, OperationNotSupportedException {
+    public void writeRecord(Map<String, Object> map) throws IOException, OperationNotSupportedException {
         if(batch.size==batch.getMaxSize()){
             owriter.addRowBatch(batch);
             batch.reset();
@@ -86,8 +86,9 @@ public class OrcFileWriter extends AbstractFileWriter {
                 for(int i=0;i<colmeta.getColumnList().size();i++){
                     DataSetColumnMeta columnMeta=colmeta.getColumnList().get(i);
                     if(StringUtils.isEmpty(columnMeta.getColumnType()) || Objects.isNull(map.get(columnMeta.getColumnName()))){
-                        if(!columnMeta.getColumnType().equals(Const.META_TYPE_STRING))
+                        if(!columnMeta.getColumnType().equals(Const.META_TYPE_STRING)) {
                             continue;
+                        }
                         else{
                             ((BytesColumnVector) batch.cols[i]).setVal(row, "".getBytes());
                         }

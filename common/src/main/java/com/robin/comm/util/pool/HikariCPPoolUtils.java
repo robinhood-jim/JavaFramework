@@ -15,13 +15,14 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 
 public class HikariCPPoolUtils {
     private final ReadWriteLock locker;
-    private Map<String,HikariPool> sourceMap=new HashMap<>();
+    private Map<String,HikariPool> sourceMap=new ConcurrentHashMap<>();
 
     private HikariCPPoolUtils(){
         locker=new ReentrantReadWriteLock();

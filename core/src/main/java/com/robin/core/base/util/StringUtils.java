@@ -301,6 +301,31 @@ public class StringUtils {
         return object == null || object.toString().trim().isEmpty();
     }
 
+    /**
+     * get trim string by specify char end  (430000  trim zero  result 43)
+     * @param input
+     * @param selChar  end char
+     * @return
+     */
+    public static String trimCharRight(String input,char selChar){
+        int pos=input.length();
+        for(int i=input.length()-1;i>0;i--){
+            if(input.charAt(i)==selChar){
+                pos=i;
+            }else{
+                break;
+            }
+        }
+        return input.substring(0,pos);
+    }
+    public static String fillChar(String input,int length,char fillChar){
+        StringBuilder builder=new StringBuilder(input);
+        for(int i=0;i<length-input.length();i++){
+            builder.append(fillChar);
+        }
+        return builder.toString();
+    }
+
     public static void main(String[] args) {
         //System.out.println(genarateRandomUpperLowerChar(8));
         System.out.println(getFieldNameByCamelCase("asdsadTTsdadDDasda"));

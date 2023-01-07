@@ -32,6 +32,15 @@ public class JedisClientFactory {
     public static class JedisClient {
 
         private JedisPool pool = null;
+
+        public int getDbindex() {
+            return dbindex;
+        }
+
+        public void setDbindex(int dbindex) {
+            this.dbindex = dbindex;
+        }
+
         private int dbindex = 0;
         private Gson gson = GsonUtil.getGson();
 
@@ -43,6 +52,9 @@ public class JedisClientFactory {
             ResourceBundle bundle = ResourceBundle.getBundle(propertiesName);
             String ip = bundle.getString("IPADDRESS");
             int port = Integer.parseInt(bundle.getString("PORT"));
+            if(bundle.containsKey("DBIDX")){
+                dbindex=Integer.parseInt(bundle.getString("DBIDX"));
+            }
             String passwd = null;
             JedisPoolConfig config = new JedisPoolConfig();
             config.setMaxTotal(100);

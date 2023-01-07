@@ -137,6 +137,7 @@ public class Const {
     public static final String FILESUFFIX_PARQUET = "parquet";
     public static final String FILESUFFIX_PROTOBUF = "proto";
     public static final String FILESUFFIX_ORC = "orc";
+    public static final String FILESUFFIX_YAML = "yml";
 
 
     public static final String FILEWRITER_PARQUET_CLASSNAME = "com.robin.comm.fileaccess.writer.ParquetFileWriter";

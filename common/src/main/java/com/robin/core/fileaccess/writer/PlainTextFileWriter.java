@@ -39,7 +39,7 @@ public class PlainTextFileWriter extends WriterBasedFileWriter {
 	}
 
 	@Override
-	public void writeRecord(Map<String, ?> map) throws IOException, OperationNotSupportedException {
+	public void writeRecord(Map<String, Object> map) throws IOException, OperationNotSupportedException {
 		retList.clear();
 		for (int i = 0; i < colmeta.getColumnList().size(); i++) {
 			String name=colmeta.getColumnList().get(i).getColumnName();

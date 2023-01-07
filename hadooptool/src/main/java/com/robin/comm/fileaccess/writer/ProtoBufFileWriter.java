@@ -5,7 +5,6 @@ import com.github.os72.protobuf.dynamic.DynamicSchema;
 import com.github.os72.protobuf.dynamic.MessageDefinition;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
-import com.google.protobuf.ExtensionRegistry;
 import com.robin.comm.fileaccess.util.ProtoBufUtil;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.meta.DataSetColumnMeta;
@@ -15,15 +14,17 @@ import org.springframework.util.CollectionUtils;
 
 import javax.naming.OperationNotSupportedException;
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.Map;
 
 public class ProtoBufFileWriter extends AbstractFileWriter {
     private DynamicSchema schema;
     private DynamicMessage message;
-    private ExtensionRegistry registry;
+    //private ExtensionRegistry registry;
     private DynamicSchema.Builder schemaBuilder;
     private DynamicMessage.Builder mesgBuilder;
-    protected ProtoBufFileWriter(DataCollectionMeta colmeta) {
+    private MessageDefinition definition;
+    public ProtoBufFileWriter(DataCollectionMeta colmeta) {
         super(colmeta);
     }
 
@@ -39,11 +40,10 @@ public class ProtoBufFileWriter extends AbstractFileWriter {
                     DataSetColumnMeta column = colmeta.getColumnList().get(i);
                     msgBuilder = msgBuilder.addField(column.isRequired() ? "required" : "optional", ProtoBufUtil.translateType(column), column.getColumnName(), i + 1);
                 }
-                MessageDefinition definition = msgBuilder.build();
+                definition = msgBuilder.build();
                 schemaBuilder.addMessageDefinition(definition);
                 schema = schemaBuilder.build();
                 mesgBuilder= DynamicMessage.newBuilder(schema.getMessageDescriptor(colmeta.getValueClassName()));
-                registry=getExtension(schema,colmeta);
             }else{
                 checkAccessUtil(null);
                 out = accessUtil.getOutResourceByStream(colmeta, ResourceUtil.getProcessPath(colmeta.getPath()));
@@ -52,26 +52,31 @@ public class ProtoBufFileWriter extends AbstractFileWriter {
             ex.printStackTrace();
         }
     }
-    public static  ExtensionRegistry getExtension(DynamicSchema schema, DataCollectionMeta colmeta){
-        ExtensionRegistry extensionRegistry = ExtensionRegistry.newInstance();
-        for(Descriptors.FieldDescriptor descriptor:schema.getMessageDescriptor(colmeta.getValueClassName()).getFields()){
-            extensionRegistry.add(descriptor);
-        }
-        return extensionRegistry;
-    }
+
 
     @Override
     public void finishWrite() throws IOException {
-
+        out.close();
     }
 
     @Override
     public void flush() throws IOException {
-
+        out.flush();
     }
 
     @Override
-    public void writeRecord(Map<String, ?> map) throws IOException, OperationNotSupportedException {
-
+    public void writeRecord(Map<String, Object> map) throws IOException, OperationNotSupportedException {
+        DynamicMessage.Builder msgBuilder=schema.newMessageBuilder(colmeta.getValueClassName());
+        Descriptors.Descriptor msgDesc=schema.getMessageDescriptor(colmeta.getValueClassName());
+        Iterator<Map.Entry<String,Object>> iter=map.entrySet().iterator();
+        while(iter.hasNext()){
+            Map.Entry<String,Object> entry=iter.next();
+            Descriptors.FieldDescriptor des=msgDesc.findFieldByName(entry.getKey());
+            if(des!=null){
+                msgBuilder.setField(des,entry.getValue());
+            }
+        }
+        DynamicMessage message=msgBuilder.build();
+        message.writeDelimitedTo(out);
     }
 }

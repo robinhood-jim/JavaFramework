@@ -8,6 +8,9 @@ import com.robin.core.base.util.StringUtils;
 import com.robin.nosql.cassandra.network.SslContextFactory;
 import lombok.extern.slf4j.Slf4j;
 import io.netty.handler.ssl.SslContext;
+import org.jetbrains.annotations.NotNull;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 
 
 import java.io.IOException;
@@ -60,7 +63,7 @@ public class CassandraUtils {
     public boolean insertRowWithMap(String keyspace,String tableName, Map<String,Object> valueMap){
         return insertRow(session,keyspace,tableName,valueMap);
     }
-    private static boolean insertRow(Session session,String keyspace,String tableName,Map<String,Object> valueMap){
+    private static boolean insertRow(Session session, String keyspace, String tableName, @NotNull Map<String,Object> valueMap){
         Iterator<Map.Entry<String,Object>> iter=valueMap.entrySet().iterator();
         List<String> keys=new ArrayList<>();
         List<Object> valueList=new ArrayList<>();
@@ -72,15 +75,18 @@ public class CassandraUtils {
         return session.execute(QueryBuilder.insertInto(keyspace,tableName).values(keys,valueList)).wasApplied();
     }
 
-    public static PreparedStatement getPrepareStatement(Session session, String sql){
+    public static PreparedStatement getPrepareStatement(@NotNull Session session, String sql){
         return session.prepare(sql);
     }
-    public static boolean deleteRow(Session session,String tableName,String condition){
-        return session.execute("delete from "+tableName+ " where "+condition).wasApplied();
+    public static boolean deleteRow(@NotNull Session session, String tableName, String condition, Object... params){
+        return session.execute("delete from "+tableName+ " where "+condition,params).wasApplied();
     }
 
-    public static boolean insertRowWithSql(Session session,String sql){
-        return session.execute(sql).wasApplied();
+    public static boolean insertRowWithSql(Session session,String sql,Object... param){
+        return session.execute(sql,param).wasApplied();
+    }
+    public boolean insertRowWithSql(String sql,Object... param){
+        return session.execute(sql,param).wasApplied();
     }
     public static boolean batchInsert(Session session,String sql,List<Object[]> resultObj){
         PreparedStatement statement=session.prepare(sql);
@@ -119,6 +125,15 @@ public class CassandraUtils {
         }
         if(session!=null){
             session.close();
+        }
+    }
+    public ResultSet executeQuery(String sql,Object... params){
+        if(!ObjectUtils.isEmpty(params)){
+            PreparedStatement statement=session.prepare(sql);
+            Statement bindStmt=statement.bind(params);
+            return session.execute(bindStmt);
+        }else{
+            return session.execute(sql);
         }
     }
 

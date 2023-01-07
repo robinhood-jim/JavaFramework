@@ -17,6 +17,7 @@ package com.robin.core.fileaccess.iterator;
 
 import com.robin.core.base.util.Const;
 import com.robin.core.base.util.FileUtils;
+import com.robin.core.base.util.StringUtils;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import lombok.extern.slf4j.Slf4j;
 
@@ -54,6 +55,9 @@ public class TextFileIteratorFactory {
 		List<String> suffixList=new ArrayList<String>();
 		FileUtils.parseFileFormat(colmeta.getPath(),suffixList);
 		String fileFormat=suffixList.get(0);
+		if(StringUtils.isEmpty(colmeta.getFileFormat())){
+			colmeta.setFileFormat(fileFormat);
+		}
 		AbstractFileIterator iterator=getIter(colmeta);
 		iterator.setInputStream(in);
 		iterator.init();
@@ -73,7 +77,11 @@ public class TextFileIteratorFactory {
 			} else if (fileType.equalsIgnoreCase(Const.FILESUFFIX_PARQUET)) {
 				Class<AbstractFileIterator> clazz = (Class<AbstractFileIterator>) Class.forName(Const.FILEITERATOR_PARQUET_CLASSNAME);
 				iterator = clazz.getConstructor(DataCollectionMeta.class).newInstance(colmeta);
-			}else if(fileType.equalsIgnoreCase(Const.FILETYPE_PROTOBUF)){
+			}else if(fileType.equalsIgnoreCase(Const.FILESUFFIX_PROTOBUF)){
+				Class<AbstractFileIterator> clazz = (Class<AbstractFileIterator>) Class.forName(Const.FILEITERATOR_PROTOBUF_CLASSNAME);
+				iterator = clazz.getConstructor(DataCollectionMeta.class).newInstance(colmeta);
+			}
+			else if(fileType.equalsIgnoreCase(Const.FILETYPE_PROTOBUF)){
 				Class<AbstractFileIterator> clazz = (Class<AbstractFileIterator>) Class.forName(Const.FILEITERATOR_PROTOBUF_CLASSNAME);
 				iterator = clazz.getConstructor(DataCollectionMeta.class).newInstance(colmeta);
 			}else if(fileType.equalsIgnoreCase(Const.FILETYPE_ORC)){

@@ -271,6 +271,17 @@
             <version>3.4.14</version>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk15on</artifactId>
+            <version>1.67</version>
+        </dependency>
+        <dependency>
+            <groupId>cn.hutool</groupId>
+            <artifactId>hutool-all</artifactId>
+            <version>5.7.22</version>
+        </dependency>
+
 
 
     </dependencies>
@@ -328,6 +339,14 @@
                         <exclusion>
                             <groupId>io.github.classgraph</groupId>
                             <artifactId>classgraph</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>org.bouncycastle</groupId>
+                            <artifactId>bcprov-jdk15on</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
                         </exclusion>
                     </exclusions>
                     <proguardVersion>5.1</proguardVersion>

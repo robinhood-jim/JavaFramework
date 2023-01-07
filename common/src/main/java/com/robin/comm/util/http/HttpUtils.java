@@ -30,7 +30,9 @@ import org.apache.http.conn.ConnectTimeoutException;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.socket.LayeredConnectionSocketFactory;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.entity.mime.HttpMultipartMode;
@@ -40,6 +42,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.HttpContext;
+import org.apache.http.ssl.SSLContexts;
 import org.apache.http.util.EntityUtils;
 import org.springframework.util.CollectionUtils;
 
@@ -282,7 +285,7 @@ public class HttpUtils {
     }
 
     private static void fillHeader(HttpRequestBase requestBase, Map<String, String> headerMap) {
-        if (headerMap != null && !headerMap.isEmpty()) {
+        if (!CollectionUtils.isEmpty(headerMap)) {
             for (Map.Entry<String, String> headerKey : headerMap.entrySet()) {
                 requestBase.addHeader(headerKey.getKey(), headerKey.getValue());
             }
@@ -323,6 +326,18 @@ public class HttpUtils {
 
 
         return new Response(response.getStatusLine().getStatusCode(), responseData,headerMap);
+    }
+    private static CloseableHttpClient accessWithNoSsl(){
+        try{
+            SSLConnectionSocketFactory scsf = new SSLConnectionSocketFactory(
+                    SSLContexts.custom().loadTrustMaterial(null, new TrustSelfSignedStrategy()).build(),
+                    NoopHostnameVerifier.INSTANCE);
+            return HttpClients.custom().setSSLSocketFactory(scsf).setRetryHandler(handler).build();
+        }catch (Exception ex){
+            log.error("{}",ex);
+        }
+        return null;
+
     }
 
 }

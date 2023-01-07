@@ -11,6 +11,7 @@ import com.robin.core.fileaccess.iterator.AbstractFileIterator;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.meta.DataSetColumnMeta;
 import com.robin.core.fileaccess.util.ResourceUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.CollectionUtils;
 
 import java.util.HashMap;
@@ -19,10 +20,11 @@ import java.util.NoSuchElementException;
 
 import static com.robin.core.fileaccess.util.ResourceUtil.getProcessPath;
 
+@Slf4j
 public class ProtoBufFileIterator extends AbstractFileIterator {
     private DynamicSchema schema;
     private DynamicMessage message;
-    private ExtensionRegistry registry;
+    //private ExtensionRegistry registry;
     private DynamicSchema.Builder schemaBuilder;
     private DynamicMessage.Builder mesgBuilder;
 
@@ -47,7 +49,7 @@ public class ProtoBufFileIterator extends AbstractFileIterator {
                 schemaBuilder.addMessageDefinition(definition);
                 schema = schemaBuilder.build();
                 mesgBuilder=DynamicMessage.newBuilder(schema.getMessageDescriptor(colmeta.getValueClassName()));
-                registry=getExtension(schema,colmeta);
+                //registry=getExtension(schema,colmeta);
             }else{
                 checkAccessUtil(null);
                 instream = accessUtil.getInResourceByStream(colmeta, ResourceUtil.getProcessPath(colmeta.getPath()));
@@ -58,13 +60,14 @@ public class ProtoBufFileIterator extends AbstractFileIterator {
 
 
     }
-    public static  ExtensionRegistry getExtension(DynamicSchema schema, DataCollectionMeta colmeta){
+    /*public static  ExtensionRegistry getExtension(DynamicSchema schema, DataCollectionMeta colmeta){
         ExtensionRegistry extensionRegistry = ExtensionRegistry.newInstance();
         for(Descriptors.FieldDescriptor descriptor:schema.getMessageDescriptor(colmeta.getValueClassName()).getFields()){
+            log.info("extension {}",descriptor.isExtension());
             extensionRegistry.add(descriptor);
         }
         return extensionRegistry;
-    }
+    }*/
 
     @Override
     public boolean hasNext() {
@@ -77,7 +80,7 @@ public class ProtoBufFileIterator extends AbstractFileIterator {
                 return false;
             }
         }catch (Exception ex){
-
+            logger.error("{}",ex);
         }
         return false;
     }
@@ -97,7 +100,7 @@ public class ProtoBufFileIterator extends AbstractFileIterator {
     @Override
     public void remove() {
         try {
-            if (mesgBuilder.mergeDelimitedFrom(instream, registry)) {
+            if (mesgBuilder.mergeDelimitedFrom(instream, null)) {
                 mesgBuilder.build();
             }
         }catch (Exception ex){
