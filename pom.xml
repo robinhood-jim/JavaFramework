@@ -49,9 +49,15 @@
         <module>example</module>
         <module>metadata</module>
         <module>webui</module>
+        <!--<module>license-core</module>
+        <module>license-server</module>-->
         <module>spring-starter</module>
         <module>estool</module>
+        <module>etl</module>
+        <module>obfuscator</module>
+        <module>probe</module>
         <module>tracer</module>
+        <!--<module>scalacore</module>-->
     </modules>
     <!-- properties -->
     <properties>
@@ -444,6 +450,11 @@
                 <artifactId>aspectjlib</artifactId>
                 <version>${aspectj.version}</version>
                 <optional>true</optional>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-data-mongodb</artifactId>
+                <version>${spring.boot.version}</version>
             </dependency>
             <!-- Spring jar end -->
 
@@ -1022,7 +1033,7 @@
             <dependency>
                 <groupId>org.projectlombok</groupId>
                 <artifactId>lombok</artifactId>
-                <version>1.16.18</version>
+                <version>1.18.10</version>
                 <optional>true</optional>
             </dependency>
             <dependency>
