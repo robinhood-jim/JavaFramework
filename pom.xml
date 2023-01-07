@@ -49,15 +49,9 @@
         <module>example</module>
         <module>metadata</module>
         <module>webui</module>
-        <!--<module>license-core</module>
-        <module>license-server</module>-->
         <module>spring-starter</module>
         <module>estool</module>
-        <module>etl</module>
-        <module>obfuscator</module>
-        <module>probe</module>
         <module>tracer</module>
-        <!--<module>scalacore</module>-->
     </modules>
     <!-- properties -->
     <properties>
