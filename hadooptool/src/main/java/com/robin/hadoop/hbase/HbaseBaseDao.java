@@ -1,8 +1,5 @@
 package com.robin.hadoop.hbase;
 
-import com.robin.comm.sql.ConditionCollection;
-import com.robin.comm.sql.ConditionNode;
-import com.robin.comm.sql.SelectPart;
 import com.robin.core.base.datameta.DataBaseColumnMeta;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -14,8 +11,6 @@ import org.apache.hadoop.hbase.regionserver.BloomType;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.Assert;
-import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -478,24 +473,7 @@ public class HbaseBaseDao {
         }
         return filterlist;
     }
-    
-    public List<Map<String,Object>> queryBySql(SelectPart part, Map<String, DataBaseColumnMeta> metaMap){
-        try(Connection connection=getConnection();Table table=connection.getTable(TableName.valueOf(part.getTableName()))){
-            FilterList filterList=new FilterList();
-            Assert.notNull(part.getConditions(),"");
-            for(ConditionCollection collection:part.getConditions()){
-                if(!CollectionUtils.isEmpty(collection.getConditions())){
-                    for(ConditionNode node:collection.getConditions()){
-                        Filter filter=null;
 
-                    }
-                }
-            }
-        }catch (Exception ex){
-
-        }
-        return null;
-    }
 
 
     public Map<String, Map<String, String>> getRegionResult(String tableName, byte[] startKey, byte[] endKey, String fieldArr, List<String> keyList) throws HbaseException {
