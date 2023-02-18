@@ -108,7 +108,7 @@
         <jsonlib.version>2.4</jsonlib.version>
         <itext.version>2.1.4</itext.version>
         <guava.version>18.0</guava.version>
-        <jsoup.version>1.14.2</jsoup.version>
+        <jsoup.version>1.15.3</jsoup.version>
         <freemarker.version>2.3.18</freemarker.version>
         <compress.version>1.21</compress.version>
         <helix.version>0.6.5</helix.version>
