@@ -43,7 +43,7 @@ public class KafkaIterator extends AbstractQueueIterator {
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
                 "org.apache.kafka.common.serialization.ByteArraySerializer");
         if(null!=colmeta.getResourceCfgMap().get("resetType")) {
-            props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+            props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, resetType);
         }
         if(null!=colmeta.getResourceCfgMap().get("pollSeconds") &&
                 !StringUtils.isEmpty(colmeta.getResourceCfgMap().get("pollSeconds").toString()) && NumberUtils.isDigits(colmeta.getResourceCfgMap().get("pollSeconds").toString())){
@@ -64,6 +64,7 @@ public class KafkaIterator extends AbstractQueueIterator {
         }
         return retList;
     }
+
 
     @Override
     public void close() throws IOException {

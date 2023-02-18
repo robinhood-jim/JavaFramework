@@ -1,13 +1,22 @@
 package com.robin.comm.fileaccess.util;
 
+import com.robin.core.base.util.Const;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
+import com.robin.core.fileaccess.meta.DataSetColumnMeta;
 import com.robin.core.fileaccess.util.AbstractResourceAccessUtil;
 import com.robin.core.fileaccess.util.ResourceUtil;
 import com.sun.istack.NotNull;
+import org.apache.avro.file.SeekableByteArrayInput;
 import org.apache.parquet.io.InputFile;
 import org.apache.parquet.io.OutputFile;
 import org.apache.parquet.io.PositionOutputStream;
 import org.apache.parquet.io.SeekableInputStream;
+import org.apache.parquet.schema.MessageType;
+import org.apache.parquet.schema.OriginalType;
+import org.apache.parquet.schema.PrimitiveType;
+import org.apache.parquet.schema.Types;
+import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Nonnull;
 import java.io.EOFException;
@@ -15,12 +24,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
+import java.util.InputMismatchException;
 
 
 public class ParquetUtil {
     private static final int COPY_BUFFER_SIZE = 8192;
     private static final int IO_BUF_SIZE = 16 * 1024;
-    public static InputFile makeInputFile(InputStream instream){
+
+    public static InputFile makeInputFile(com.robin.comm.fileaccess.util.SeekableInputStream instream) {
         return new InputFile() {
             @Override
             public long getLength() throws IOException {
@@ -30,7 +41,7 @@ public class ParquetUtil {
             @Override
             public org.apache.parquet.io.SeekableInputStream newStream() throws IOException {
 
-                return new SeekableInputStream(){
+                return new SeekableInputStream() {
 
                     private final byte[] tmpBuf = new byte[COPY_BUFFER_SIZE];
 
@@ -67,7 +78,6 @@ public class ParquetUtil {
                     }
 
 
-
                     @Override
                     public synchronized void mark(int readlimit) {
                         instream.mark(readlimit);
@@ -91,7 +101,7 @@ public class ParquetUtil {
 
                     @Override
                     public void seek(long l) throws IOException {
-
+                        instream.seek(l);
                     }
 
                     @Override
@@ -118,6 +128,7 @@ public class ParquetUtil {
             }
         };
     }
+
     private static int readDirectBuffer(ByteBuffer byteBufr, byte[] tmpBuf, InputStream rdr) throws IOException {
         int nextReadLength = Math.min(byteBufr.remaining(), tmpBuf.length);
         int totalBytesRead = 0;
@@ -139,6 +150,7 @@ public class ParquetUtil {
             return totalBytesRead;
         }
     }
+
     private static void readFullyDirectBuffer(ByteBuffer byteBufr, byte[] tmpBuf, InputStream rdr) throws IOException {
         int nextReadLength = Math.min(byteBufr.remaining(), tmpBuf.length);
         int bytesRead = 0;
@@ -152,16 +164,17 @@ public class ParquetUtil {
             throw new EOFException("Reached the end of stream with " + byteBufr.remaining() + " bytes left to read");
         }
     }
-    public static OutputFile makeOutputFile(@NotNull AbstractResourceAccessUtil accessUtil,@NotNull DataCollectionMeta colmeta,@NotNull String filePath){
+
+    public static OutputFile makeOutputFile(@NotNull AbstractResourceAccessUtil accessUtil, @NotNull DataCollectionMeta colmeta, @NotNull String filePath) {
         return new OutputFile() {
             @Override
             public PositionOutputStream create(long l) throws IOException {
-                return makePositionOutputStream(accessUtil,colmeta,filePath,IO_BUF_SIZE);
+                return makePositionOutputStream(accessUtil, colmeta, filePath, IO_BUF_SIZE);
             }
 
             @Override
             public PositionOutputStream createOrOverwrite(long l) throws IOException {
-                return makePositionOutputStream(accessUtil,colmeta,filePath,IO_BUF_SIZE);
+                return makePositionOutputStream(accessUtil, colmeta, filePath, IO_BUF_SIZE);
             }
 
             @Override
@@ -175,10 +188,10 @@ public class ParquetUtil {
             }
         };
     }
+
     private static PositionOutputStream makePositionOutputStream(@NotNull AbstractResourceAccessUtil accessUtil, DataCollectionMeta colmeta, @Nonnull String filePath, int ioBufSize)
-            throws IOException
-    {
-        final OutputStream output = accessUtil.getOutResourceByStream(colmeta, ResourceUtil.getProcessPath(colmeta.getPath()));
+            throws IOException {
+        final OutputStream output = accessUtil.getRawOutputStream(colmeta, ResourceUtil.getProcessPath(colmeta.getPath()));
         return new PositionOutputStream() {
             private long position = 0;
 
@@ -215,5 +228,47 @@ public class ParquetUtil {
                 return position;
             }
         };
+    }
+
+    public static MessageType genSchema(DataCollectionMeta colmeta) {
+        Assert.notNull(colmeta, "datacollectionMeta is null");
+        Assert.isTrue(!CollectionUtils.isEmpty(colmeta.getColumnList()), "columns is null");
+        Types.MessageTypeBuilder builder = Types.buildMessage();
+        for (DataSetColumnMeta columnMeta : colmeta.getColumnList()) {
+            switch (columnMeta.getColumnType()) {
+                case Const.META_TYPE_SHORT:
+                    builder.optional(PrimitiveType.PrimitiveTypeName.INT32).as(OriginalType.INT_16).named(columnMeta.getColumnName());
+                    break;
+                case Const.META_TYPE_INTEGER:
+                    builder.optional(PrimitiveType.PrimitiveTypeName.INT32).as(OriginalType.INT_32).named(columnMeta.getColumnName());
+                    break;
+                case Const.META_TYPE_FLOAT:
+                    builder.optional(PrimitiveType.PrimitiveTypeName.FLOAT).as(OriginalType.DECIMAL).named(columnMeta.getColumnName());
+                    break;
+                case Const.META_TYPE_DOUBLE:
+                case Const.META_TYPE_DECIMAL:
+                    builder.optional(PrimitiveType.PrimitiveTypeName.DOUBLE).as(OriginalType.DECIMAL).named(columnMeta.getColumnName());
+                    break;
+                case Const.META_TYPE_BIGINT:
+                    builder.optional(PrimitiveType.PrimitiveTypeName.INT64).as(OriginalType.INT_64).named(columnMeta.getColumnName());
+                    break;
+                case Const.META_TYPE_DATE:
+                    break;
+                case Const.META_TYPE_TIMESTAMP:
+                    builder.optional(PrimitiveType.PrimitiveTypeName.INT64).as(OriginalType.TIMESTAMP_MILLIS).named(columnMeta.getColumnName());
+                    break;
+                case Const.META_TYPE_STRING:
+                    builder.optional(PrimitiveType.PrimitiveTypeName.BINARY).as(OriginalType.UTF8).named(columnMeta.getColumnName());
+                    break;
+                case Const.META_TYPE_BINARY:
+                case Const.META_TYPE_BLOB:
+                    builder.optional(PrimitiveType.PrimitiveTypeName.BINARY).named(columnMeta.getColumnName());
+                    break;
+                default:
+                    throw new InputMismatchException("input type not support!");
+            }
+        }
+        MessageType type=builder.named(colmeta.getValueClassName());
+        return type;
     }
 }

@@ -5,7 +5,9 @@ import com.robin.core.script.BaseScriptExecutor;
 import com.robin.etl.context.StatefulJobContext;
 import com.robin.etl.context.StepContext;
 import com.robin.etl.step.AbstractComponent;
+import com.robin.etl.step.inbound.FsInboundComponent;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.Assert;
 
 import javax.script.Bindings;
 import javax.script.CompiledScript;
@@ -16,9 +18,11 @@ public class FilterComponent extends AbstractComponent {
     protected BaseScriptExecutor executor;
     protected String scriptName="js";
     protected CompiledScript script;
+    protected FsInboundComponent inboundComponent;
 
-    public FilterComponent(Long stepId) {
+    public FilterComponent(Long stepId, FsInboundComponent inboundComponent) {
         super(stepId);
+        this.inboundComponent=inboundComponent;
     }
 
     @Override
@@ -49,6 +53,8 @@ public class FilterComponent extends AbstractComponent {
 
     //@Override
     public Integer doExecute() {
+        Assert.notNull(inboundComponent,"inbound component should not be null!");
+
         return null;
     }
 

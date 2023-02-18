@@ -189,6 +189,9 @@ public class Const {
         COMPRESS_TYPE_ZIP("zip"),
         COMPRESS_TYPE_BZ2("bz2"),
         COMPRESS_TYPE_LZMA("lzma"),
+        COMPRESS_TYPE_LZ4("lz4"),
+        COMPRESS_TYPE_ZSTD("zstd"),
+        COMPRESS_TYPE_BROTLI("br"),
         COMPRESS_TYPE_NONE("none");
         private String value;
 
@@ -289,6 +292,30 @@ public class Const {
 
         public String getValue() {
             return value;
+        }
+    }
+    public enum OPERATOR {
+        EQ("="),
+        NE("!="),
+        GE(">="),
+        LE("<="),
+        GT(">"),
+        LT("<="),
+        IN("IN"),
+        NOTIN("NOTIN"),
+        NVL("NVL"),
+        NULL("NULL"),
+        BETWEEN("BT"),
+        NOTEXIST("NOTEXIST");
+        private String value;
+
+        OPERATOR(String value) {
+            this.value = value;
+        }
+
+        @Override
+        public String toString() {
+            return String.valueOf(this.value);
         }
     }
 

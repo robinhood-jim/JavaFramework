@@ -20,6 +20,7 @@ import com.robin.core.base.datameta.DataBaseUtil;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.meta.DataSetColumnMeta;
 import com.robin.core.fileaccess.util.AbstractResourceAccessUtil;
+import com.robin.core.fileaccess.util.ResourceUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
@@ -81,7 +82,12 @@ public abstract class AbstractFileWriter implements IResourceWriter {
 	public void initalize() throws IOException{
 		beginWrite();
 	}
-	public abstract void beginWrite() throws IOException;
+	public void beginWrite() throws IOException{
+		if(out==null){
+			checkAccessUtil(colmeta.getPath());
+			out = accessUtil.getOutResourceByStream(colmeta, ResourceUtil.getProcessPath(colmeta.getPath()));
+		}
+	}
 
 
 	public abstract void finishWrite() throws IOException;

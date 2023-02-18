@@ -68,7 +68,7 @@ public abstract class AbstractResourceAccessUtil {
 		return new BufferedWriter(new OutputStreamWriter(getOutputStreamByPath(path,out),encode));
 	}
 
-	private static OutputStream wrapOutputStream(OutputStream outputStream){
+	protected static OutputStream wrapOutputStream(OutputStream outputStream){
 		OutputStream out=null;
 		if(outputStream instanceof  BufferedOutputStream){
 			out=outputStream;
@@ -77,7 +77,7 @@ public abstract class AbstractResourceAccessUtil {
 		}
 		return out;
 	}
-	private static InputStream wrapInputStream(InputStream instream){
+	protected static InputStream wrapInputStream(InputStream instream){
 		InputStream in=null;
 		if(instream instanceof  BufferedInputStream){
 			in=instream;
@@ -95,5 +95,6 @@ public abstract class AbstractResourceAccessUtil {
 	public abstract OutputStream getOutResourceByStream(DataCollectionMeta meta, String resourcePath) throws IOException;
 	public abstract OutputStream getRawOutputStream(DataCollectionMeta meta, String resourcePath) throws IOException;
 	public abstract InputStream getInResourceByStream(DataCollectionMeta meta, String resourcePath) throws IOException;
+	public abstract InputStream getRawInputStream(DataCollectionMeta meta, String resourcePath) throws IOException;
 	public abstract boolean exists(DataCollectionMeta meta, String resourcePath) throws IOException;
 }

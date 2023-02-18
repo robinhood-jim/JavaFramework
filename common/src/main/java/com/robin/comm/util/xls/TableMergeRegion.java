@@ -15,7 +15,6 @@
  */
 package com.robin.comm.util.xls;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 

@@ -31,15 +31,17 @@ import java.util.List;
 public class TextFileWriterFactory {
     private static Logger logger = LoggerFactory.getLogger(TextFileWriterFactory.class);
 
-    public static AbstractFileWriter getFileWriterByType(String fileType, DataCollectionMeta colmeta, BufferedWriter writer) throws IOException {
-        AbstractFileWriter fileWriter = getFileWriterByType(fileType, colmeta);
+    public static AbstractFileWriter getFileWriterByType(DataCollectionMeta colmeta, BufferedWriter writer) throws IOException {
+        AbstractFileWriter fileWriter = getFileWriterByType(colmeta);
         fileWriter.setWriter(writer);
         return fileWriter;
     }
 
-    public static AbstractFileWriter getFileOutputStreamByType(String fileSuffix, DataCollectionMeta colmeta, OutputStream writer) throws IOException{
-        AbstractFileWriter fileWriter = getFileWriterByType(fileSuffix, colmeta);
-        fileWriter.setOutputStream(writer);
+    public static AbstractFileWriter getFileOutputStreamByType(DataCollectionMeta colmeta, OutputStream writer) throws IOException{
+        AbstractFileWriter fileWriter = getFileWriterByType(colmeta);
+        if(writer!=null) {
+            fileWriter.setOutputStream(writer);
+        }
         return fileWriter;
     }
 
@@ -47,14 +49,15 @@ public class TextFileWriterFactory {
         List<String> suffixList=new ArrayList<String>();
         FileUtils.parseFileFormat(colmeta.getPath(),suffixList);
         String fileFormat=suffixList.get(0);
-        AbstractFileWriter fileWriter = getFileWriterByType(fileFormat, colmeta);
+        AbstractFileWriter fileWriter = getFileWriterByType(colmeta);
         fileWriter.setOutputStream(writer);
         return fileWriter;
     }
 
-    private static AbstractFileWriter getFileWriterByType(String fileSuffix, DataCollectionMeta colmeta) throws IOException {
+    private static AbstractFileWriter getFileWriterByType(DataCollectionMeta colmeta) throws IOException {
         AbstractFileWriter fileWriter = null;
         try {
+            String fileSuffix=colmeta.getFileFormat();
             if (fileSuffix.equalsIgnoreCase(Const.FILESUFFIX_JSON)) {
                 fileWriter = new GsonFileWriter(colmeta);
             } else if (fileSuffix.equalsIgnoreCase(Const.FILESUFFIX_XML)) {
@@ -71,6 +74,7 @@ public class TextFileWriterFactory {
                 Class<AbstractFileWriter> clazz = (Class<AbstractFileWriter>) Class.forName(Const.FILEWRITER_ORC_CLASSNAME);
                 fileWriter = clazz.getConstructor(DataCollectionMeta.class).newInstance(colmeta);
             }
+
             else {
                 fileWriter = new PlainTextFileWriter(colmeta);
             }

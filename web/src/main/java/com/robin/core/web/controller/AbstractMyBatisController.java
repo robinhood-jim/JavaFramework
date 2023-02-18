@@ -99,26 +99,26 @@ public abstract class AbstractMyBatisController<S extends AbstractMybatisService
             throw new WebException(ex);
         }
     }
-    protected IPage queryPage(PageDTO dto,  Class<?> targetClazz) throws WebException{
+    protected <D> IPage<D> queryPage(PageDTO dto,  Class<D> targetClazz) throws WebException{
         Assert.notNull(service,"");
         Assert.notNull(dto,"");
         try{
             IPage<T> page=service.queryPageWithRequest(dto,defaultOrderByField,false);
             if(targetClazz==null){
-                return page;
+                return (IPage<D>) page;
             }else{
-                IPage page1=new Page(page.getCurrent(),page.getSize(),page.getTotal());
+                IPage<D> page1=new Page(page.getCurrent(),page.getSize(),page.getTotal());
                 List<T> list=page.getRecords();
-                List retList=new ArrayList();
+                List<D> retList=new ArrayList();
                 if(!CollectionUtils.isEmpty(list)){
                     list.forEach(f->{
                         try {
                             if (targetClazz.getInterfaces().length>0 && targetClazz.getInterfaces()[0].isAssignableFrom(Map.class)) {
                                 Map<String, Object> valueMap = new HashMap<>();
                                 ConvertUtil.objectToMapObj(valueMap, f);
-                                retList.add(valueMap);
+                                retList.add((D)valueMap);
                             } else {
-                                Object obj = BeanUtils.instantiateClass(targetClazz);
+                                D obj = BeanUtils.instantiateClass(targetClazz);
                                 ConvertUtil.convertToTarget(obj, f);
                                 retList.add(obj);
                             }

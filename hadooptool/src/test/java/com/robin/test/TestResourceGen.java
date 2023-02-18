@@ -55,7 +55,8 @@ public class TestResourceGen {
 			colmeta.setPath("/testdata/test1.gz");
 			colmeta.setEncode("UTF-8");
 			BufferedWriter writer=util.getOutResourceByWriter(colmeta, colmeta.getPath());
-			AbstractFileWriter jwriter=TextFileWriterFactory.getFileWriterByType(Const.FILETYPE_JSON, colmeta, writer);
+			colmeta.setFileFormat(Const.FILETYPE_JSON);
+			AbstractFileWriter jwriter=TextFileWriterFactory.getFileWriterByType(colmeta, writer);
 			System.out.println(new Date());
 			jwriter.beginWrite();
 			for (Map<String, Object> map:resultlist) {

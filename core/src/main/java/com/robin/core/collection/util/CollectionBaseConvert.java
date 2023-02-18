@@ -141,10 +141,10 @@ public class CollectionBaseConvert {
 		List<Map.Entry<String,? extends Comparable>> list=new LinkedList<Map.Entry<String, ? extends Comparable>>(inputMap.entrySet());
 		Collections.sort(list, (Comparator<Map.Entry<String, ?>>) (o1, o2) -> {
 			if(order){
-				return ((Comparable) o1.getValue()).compareTo((Comparable) o2.getValue());
+				return ((Comparable) o1.getValue()).compareTo(o2.getValue());
 
 			}else{
-				return ((Comparable)o2.getValue()).compareTo((Comparable)o1.getValue());
+				return ((Comparable)o2.getValue()).compareTo(o1.getValue());
 			}
 		});
 		return list;

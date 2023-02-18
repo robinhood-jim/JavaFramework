@@ -1,6 +1,8 @@
 package com.robin.comm.fileaccess.iterator;
 
 import com.robin.comm.fileaccess.util.ParquetUtil;
+import com.robin.comm.fileaccess.util.SeekableInputStream;
+import com.robin.core.base.util.IOUtils;
 import com.robin.core.base.util.ResourceConst;
 import com.robin.core.fileaccess.iterator.AbstractFileIterator;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
@@ -20,6 +22,7 @@ import org.apache.parquet.hadoop.util.HadoopInputFile;
 import org.apache.parquet.schema.MessageType;
 import org.apache.parquet.schema.Type;
 
+import java.io.ByteArrayOutputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,17 +35,23 @@ public class ParquetFileIterator extends AbstractFileIterator {
     private MessageType msgtype;
     private Configuration conf;
     private GenericData.Record record;
+    private ParquetReader<Map> ireader;
+    private boolean useAvroEncode=false;
 
     public ParquetFileIterator(DataCollectionMeta colmeta) {
         super(colmeta);
     }
 
     private List<Schema.Field> fields;
-
+    Map<String, Object> rsMap;
     @Override
     public void init() {
 
         try {
+            checkAccessUtil(null);
+            if(colmeta.getResourceCfgMap().containsKey("file.useAvroEncode") && "true".equalsIgnoreCase(colmeta.getResourceCfgMap().get("file.useAvroEncode").toString())){
+                useAvroEncode=true;
+            }
             if(colmeta.getSourceType().equals(ResourceConst.InputSourceType.TYPE_HDFS.getValue())){
                 conf = new HDFSUtil(colmeta).getConfigration();
                 if (colmeta.getColumnList().isEmpty()) {
@@ -52,15 +61,34 @@ public class ParquetFileIterator extends AbstractFileIterator {
                 } else {
                     schema = AvroUtils.getSchemaFromMeta(colmeta);
                 }
-                preader = AvroParquetReader
-                        .<GenericData.Record>builder(HadoopInputFile.fromPath(new Path(ResourceUtil.getProcessPath(colmeta.getPath())), conf)).withConf(conf).build();
-
+                if(!useAvroEncode) {
+                    ireader = new ParquetReader<Map>(conf, new Path(ResourceUtil.getProcessPath(colmeta.getPath())), new CustomReadSupport(colmeta));
+                }else {
+                    preader = AvroParquetReader
+                            .<GenericData.Record>builder(HadoopInputFile.fromPath(new Path(ResourceUtil.getProcessPath(colmeta.getPath())), conf)).withConf(conf).build();
+                }
             }else{
-                checkAccessUtil(null);
-                instream = accessUtil.getInResourceByStream(colmeta, ResourceUtil.getProcessPath(colmeta.getPath()));
-                preader=AvroParquetReader.<GenericData.Record>builder(ParquetUtil.makeInputFile(instream)).build();
+                instream = accessUtil.getRawInputStream(colmeta, ResourceUtil.getProcessPath(colmeta.getPath()));
+                ByteArrayOutputStream byteout=new ByteArrayOutputStream(instream.available());
+                IOUtils.copyBytes(instream,byteout,8000);
+                SeekableInputStream seekableInputStream=new SeekableInputStream(byteout.toByteArray());
+                if (colmeta.getColumnList().isEmpty()) {
+                    ParquetMetadata meta = ParquetFileReader.readFooter(ParquetUtil.makeInputFile(seekableInputStream), ParquetMetadataConverter.NO_FILTER);
+                    msgtype = meta.getFileMetaData().getSchema();
+                    //read footer and schema,must return header
+                    seekableInputStream.seek(0L);
+                } else {
+                    schema = AvroUtils.getSchemaFromMeta(colmeta);
+                }
+                if(!useAvroEncode) {
+                    parseSchemaByType();
+                    fields = schema.getFields();
+                    ireader = CustomParquetReader.builder(ParquetUtil.makeInputFile(seekableInputStream), colmeta).build();
+                }else {
+                    preader = AvroParquetReader.<GenericData.Record>builder(ParquetUtil.makeInputFile(seekableInputStream)).build();
+                }
             }
-            fields = schema.getFields();
+
         } catch (Exception ex) {
             logger.error("{0}", ex);
         }
@@ -69,24 +97,34 @@ public class ParquetFileIterator extends AbstractFileIterator {
     @Override
     public boolean hasNext() {
         try {
-            record = null;
-            record = preader.read();
+            if(useAvroEncode) {
+                record = null;
+                record = preader.read();
+                return record != null;
+            }else{
+                rsMap=ireader.read();
+                return rsMap!=null;
+            }
         } catch (Exception ex) {
             ex.printStackTrace();
+            return false;
         }
-        return record != null;
     }
 
     @Override
     public Map<String, Object> next() {
-        Map<String, Object> retMap = new HashMap<>();
-        if(record==null){
-            throw new NoSuchElementException("");
+        if(useAvroEncode) {
+            Map<String, Object> retMap = new HashMap<>();
+            if (record == null) {
+                throw new NoSuchElementException("");
+            }
+            for (Schema.Field field : fields) {
+                retMap.put(field.name(), record.get(field.name()));
+            }
+            return retMap;
+        }else{
+            return rsMap;
         }
-        for (Schema.Field field : fields) {
-            retMap.put(field.name(), record.get(field.name()));
-        }
-        return retMap;
     }
 
     private void parseSchemaByType() {

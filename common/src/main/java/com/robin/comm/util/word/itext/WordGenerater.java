@@ -13,12 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.robin.comm.util.word;
+package com.robin.comm.util.word.itext;
 
 import java.util.List;
 
 import com.lowagie.text.Document;
-import com.lowagie.text.PageSize;
 import com.lowagie.text.pdf.BaseFont;
 import lombok.extern.slf4j.Slf4j;
 

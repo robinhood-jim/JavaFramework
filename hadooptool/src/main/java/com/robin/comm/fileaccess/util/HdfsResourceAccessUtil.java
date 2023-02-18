@@ -72,6 +72,20 @@ public class HdfsResourceAccessUtil extends AbstractResourceAccessUtil {
 	}
 
 	@Override
+	public InputStream getRawInputStream(DataCollectionMeta meta, String resourcePath) throws IOException {
+		HDFSUtil util=getHdfsUtil(meta);
+		try {
+			if (util.exists(resourcePath)) {
+				logger.error("output file " + resourcePath + " exist!,remove it");
+				util.delete(resourcePath);
+			}
+			return util.getFileSystem().open(new Path(resourcePath));
+		}catch (Exception ex){
+			throw new IOException(ex);
+		}
+	}
+
+	@Override
 	public InputStream getInResourceByStream(DataCollectionMeta meta, String resourcePath)
 			throws IOException {
 		HDFSUtil util=getHdfsUtil(meta);

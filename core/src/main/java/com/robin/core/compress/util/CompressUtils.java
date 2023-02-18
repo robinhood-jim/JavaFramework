@@ -17,18 +17,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
-/**
- * <p>Project:  frame</p>
- * <p>
- * <p>Description:com.robin.core.compress.util</p>
- * <p>
- * <p>Copyright: Copyright (c) 2019 create at 2019年02月14日</p>
- * <p>
- * <p>Company: zhcx_DEV</p>
- *
- * @author robinjim
- * @version 1.0
- */
+
 public class CompressUtils {
     public static void zip(File srcDir, File zipFile) throws IOException {
         if (!srcDir.exists()) {

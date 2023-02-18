@@ -6,5 +6,5 @@ import java.util.Map;
 @FunctionalInterface
 public interface IExcelAfterProcessor {
     @Nullable
-    void processLine(Map<String,String> rowMap);
+    void processLine(Map<String,Object> rowMap);
 }

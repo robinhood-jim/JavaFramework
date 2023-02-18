@@ -30,6 +30,7 @@ public class GsonFileWriter extends WriterBasedFileWriter{
 
 	@Override
 	public void beginWrite() throws IOException{
+		super.beginWrite();
 		jwriter=new JsonWriter(writer);
 		jwriter.beginArray();
 	}

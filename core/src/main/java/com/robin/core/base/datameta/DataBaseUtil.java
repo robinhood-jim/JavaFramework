@@ -201,7 +201,7 @@ public class DataBaseUtil {
     public static List<DataBaseColumnMeta> getTableMetaByTableName(Connection conn, String tableName, String DbOrtablespacename, String dbType) throws SQLException {
         List<DataBaseColumnMeta> columnlist = new ArrayList<>();
         DatabaseMetaData meta = conn.getMetaData();
-        try (ResultSet rs = meta.getColumns(null, DbOrtablespacename, tableName, null);) {
+        try (ResultSet rs = meta.getColumns(DbOrtablespacename, DbOrtablespacename, tableName, null);) {
             List<String> pklist = null;
             try {
                 pklist = DataBaseUtil.getAllPrimaryKeyByTableName(conn, tableName, DbOrtablespacename);

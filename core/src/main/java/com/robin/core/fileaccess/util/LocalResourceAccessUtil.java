@@ -48,10 +48,19 @@ public class LocalResourceAccessUtil extends AbstractResourceAccessUtil {
 	@Override
 	public OutputStream getRawOutputStream(DataCollectionMeta meta, String resourcePath) throws IOException {
 		File file=new File(resourcePath);
-		if(!file.exists()){
+		if(file.exists()){
 			FileUtils.forceDelete(file);
 		}
 		return FileUtils.openOutputStream(file);
+	}
+
+	@Override
+	public InputStream getRawInputStream(DataCollectionMeta meta, String resourcePath) throws IOException {
+		File file=new File(resourcePath);
+		if(!file.exists()){
+			throw new IOException("file "+resourcePath+" not exist!");
+		}
+		return FileUtils.openInputStream(file);
 	}
 
 	@Override

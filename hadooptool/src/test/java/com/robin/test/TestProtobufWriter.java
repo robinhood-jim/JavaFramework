@@ -21,7 +21,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.sql.Connection;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -43,11 +42,12 @@ public class TestProtobufWriter extends TestCase {
             colmeta.addColumnMeta("item_name",Const.META_TYPE_STRING,null);
             colmeta.addColumnMeta("item_value",Const.META_TYPE_STRING,null);
             colmeta.setEncode("UTF-8");
+            colmeta.setFileFormat(Const.FILESUFFIX_PROTOBUF);
             colmeta.setResType(ResourceConst.InputSourceType.TYPE_LOCAL.getValue());
             colmeta.setPath("d:/tmp/luoming/1.proto.gz");
             AbstractResourceAccessUtil util= ResourceAccessorFactory.getResourceAccessorByType(colmeta);
 
-            final AbstractFileWriter jwriter= TextFileWriterFactory.getFileOutputStreamByType(Const.FILESUFFIX_PROTOBUF, colmeta,util.getOutResourceByStream(colmeta,colmeta.getPath()));
+            final AbstractFileWriter jwriter= TextFileWriterFactory.getFileOutputStreamByType(colmeta,util.getOutResourceByStream(colmeta,colmeta.getPath()));
             jwriter.beginWrite();
             SimpleJdbcDao.executeOperationWithQuery(connection, "select id,cs_id,item_name,item_value from t_sys_code", null, false, new ResultSetOperationExtractor() {
                 @Override

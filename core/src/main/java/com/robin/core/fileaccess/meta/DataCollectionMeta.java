@@ -17,7 +17,7 @@ package com.robin.core.fileaccess.meta;
 
 import com.robin.core.base.datameta.BaseDataBaseMeta;
 import com.robin.core.base.datameta.DataBaseColumnMeta;
-import com.robin.core.base.model.BaseObject;
+import com.robin.core.base.util.ResourceConst;
 import lombok.Data;
 import org.springframework.util.CollectionUtils;
 
@@ -34,7 +34,7 @@ public class DataCollectionMeta implements Serializable {
 	private String encode="UTF-8";
 	private List<DataSetColumnMeta> columnList=new ArrayList<>();
 	private String path;
-	private transient Map<String, Object> resourceCfgMap=new HashMap<String,Object>();
+	private Map<String, Object> resourceCfgMap=new HashMap<>();
 	private String valueClassName="ValueObject";
 	private String classNamespace ="com.robin.avro.vo";
 	private String primaryKeys="";
@@ -78,8 +78,20 @@ public class DataCollectionMeta implements Serializable {
 	}
 	public static List<DataSetColumnMeta> parseMeta(List<DataBaseColumnMeta> columnMetas){
 		if(!CollectionUtils.isEmpty(columnMetas)){
-			return columnMetas.stream().map(f->new DataSetColumnMeta(f.getColumnName(),f.getColumnType().toString(),null)).collect(Collectors.toList());
+			return columnMetas.stream().map(f->new DataSetColumnMeta(f.getColumnName(),f.getColumnType().toString(),f.getDefaultValue(),!f.isNullable(),null)).collect(Collectors.toList());
 		}
 		return null;
+	}
+	public boolean isFileType(){
+		if(resType== ResourceConst.ResourceType.TYPE_FTPFILE.getValue() || resType==ResourceConst.ResourceType.TYPE_HDFSFILE.getValue() || resType==ResourceConst.ResourceType.TYPE_LOCALFILE.getValue()){
+			return true;
+		}
+		return false;
+	}
+	public boolean isQueueType(){
+		if(resType==ResourceConst.ResourceType.TYPE_KAFKA.getValue() || resType==ResourceConst.ResourceType.TYPE_RABBIT.getValue()){
+			return true;
+		}
+		return false;
 	}
 }

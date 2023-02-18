@@ -45,6 +45,7 @@ public class AvroFileWriter extends AbstractFileWriter{
 	
 	@Override
 	public void beginWrite() throws IOException {
+		super.beginWrite();
 		dwriter=new GenericDatumWriter<GenericRecord>(schema);
 		fileWriter=new DataFileWriter<GenericRecord>(dwriter);
 		fileWriter.create(schema,out);

@@ -114,6 +114,17 @@ public class SimpleJdbcDao {
         }
         return conn;
     }
+    public static Connection getConnection(String driverName,String jdbcUrl,String userName,String passwd) throws DAOException{
+        Connection conn;
+        try{
+            DbUtils.loadDriver(driverName);
+            conn = DriverManager.getConnection(jdbcUrl, userName, passwd);
+        } catch (Exception e) {
+            throw new DAOException(e);
+        }
+        return conn;
+
+    }
 
     public static Connection getConnection(BaseDataBaseMeta meta) throws DAOException {
         Connection conn;

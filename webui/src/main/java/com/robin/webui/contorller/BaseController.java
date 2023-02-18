@@ -38,7 +38,6 @@ public abstract class BaseController {
         addToken(request,headers);
         HttpEntity<String> entity=new HttpEntity<>(null,headers);
         return SpringContextHolder.getBean(RestTemplate.class).exchange(url,HttpMethod.GET,entity,Map.class,objects).getBody();
-        //return SpringContextHolder.getBean(RestTemplate.class).getForEntity(url,Map.class,objects).getBody();
     }
     protected Map<String,Object> getResultFromSsoRest(HttpServletRequest request,String requestUrl,String token,Object... objects){
         Environment environment= SpringContextHolder.getBean(Environment.class);

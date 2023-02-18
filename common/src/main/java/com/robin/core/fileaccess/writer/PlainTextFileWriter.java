@@ -35,6 +35,7 @@ public class PlainTextFileWriter extends WriterBasedFileWriter {
 
 	@Override
 	public void beginWrite() throws IOException {
+		super.beginWrite();
 		retList=new ArrayList<>();
 	}
 

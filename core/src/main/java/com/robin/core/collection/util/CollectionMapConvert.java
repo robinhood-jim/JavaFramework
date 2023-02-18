@@ -15,6 +15,7 @@
  */
 package com.robin.core.collection.util;
 
+import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.robin.core.base.exception.MissingConfigException;
 import com.robin.core.base.reflect.ReflectUtils;
 import com.robin.core.base.spring.SpringContextHolder;
@@ -28,6 +29,8 @@ import javax.script.Bindings;
 import javax.script.CompiledScript;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class CollectionMapConvert {
@@ -94,7 +97,7 @@ public class CollectionMapConvert {
      *
      * @param listobj   ArrayList must not Primitive,can input HashMap
      * @param parentCol
-     * @return Map<Key   ,   List   <   T>>
+     * @return Map<Key, List < T>>
      * @throws Exception
      */
 
@@ -144,17 +147,17 @@ public class CollectionMapConvert {
      * @return
      * @throws Exception
      */
-    public static <T,P> Map<String, List<P>> getValuesByParentKey(List<T> listobj, String parentCol, String valueCol,Class<P> keyClazz) throws Exception {
+    public static <T, P> Map<String, List<P>> getValuesByParentKey(List<T> listobj, String parentCol, String valueCol, Class<P> keyClazz) throws Exception {
         checkType(listobj);
 
         Map<String, List<P>> retMap = new HashMap<>();
-        Assert.isTrue(!CollectionUtils.isEmpty(listobj),"");
+        Assert.isTrue(!CollectionUtils.isEmpty(listobj), "");
         P targetValue;
-        Method method =null;
+        Method method = null;
         Method method1 = null;
         String key;
 
-        if(!Map.class.isAssignableFrom(listobj.get(0).getClass())){
+        if (!Map.class.isAssignableFrom(listobj.get(0).getClass())) {
             Map<String, Method> getMetholds = ReflectUtils.returnGetMethods(listobj.get(0).getClass());
             method = getMetholds.get(parentCol);
             method1 = getMetholds.get(valueCol);
@@ -162,24 +165,53 @@ public class CollectionMapConvert {
 
 
         for (T t : listobj) {
-            if(method!=null && method1!=null){
+            if (method != null && method1 != null) {
                 Object value = method.invoke(t, null);
                 if (value == null) {
                     key = "NULL";
-                }else{
-                    key=value.toString();
+                } else {
+                    key = value.toString();
                 }
-                targetValue =(P) method1.invoke(t, null);
-            }else{
-                Map<String,Object> map=(Map)t;
-                Object value=map.get(parentCol);
+                targetValue = (P) method1.invoke(t, null);
+            } else {
+                Map<String, Object> map = (Map) t;
+                Object value = map.get(parentCol);
                 if (value == null) {
                     key = "NULL";
-                }else{
-                    key=value.toString();
+                } else {
+                    key = value.toString();
                 }
-                targetValue=(P) map.get(valueCol);
+                targetValue = (P) map.get(valueCol);
             }
+            if (targetValue != null) {
+                if (retMap.get(key) == null) {
+                    List<P> list = new ArrayList<>();
+                    list.add(targetValue);
+                    retMap.put(key, list);
+                } else {
+                    retMap.get(key).add(targetValue);
+                }
+            }
+        }
+        return retMap;
+    }
+
+    public static <T, P> Map<String, List<P>> getValuesByParentKey(List<T> listobj, Function<T, ?> keyColumn, Function<T, ?> valueColumn, Class<P> clazz) throws Exception {
+        checkType(listobj);
+
+        Map<String, List<P>> retMap = new HashMap<>();
+        Assert.isTrue(!CollectionUtils.isEmpty(listobj), "");
+        P targetValue;
+        String key;
+        for (T t : listobj) {
+            Object value = keyColumn.apply(t);
+            if (value == null) {
+                key = "NULL";
+            } else {
+                key = value.toString();
+            }
+            targetValue = (P) valueColumn.apply(t);
+
             if (targetValue != null) {
                 if (retMap.get(key) == null) {
                     List<P> list = new ArrayList<>();
@@ -197,26 +229,14 @@ public class CollectionMapConvert {
      * same function like select from where
      *
      * @param listobj  ArrayList must not Primitive and not HashMap
-     * @param colName  select column
+     * @param filterColumn  select column function
      * @param colvalue select value
      * @return
      * @throws Exception
      */
-    public static <T> List<T> filterListByColumnValue(List<T> listobj, String colName, Object colvalue) throws Exception {
-        List<T> retList = new ArrayList<T>();
+    public static <T> List<T> filterListByColumnValue(List<T> listobj, Function<T,?> filterColumn, Object colvalue) throws Exception {
         checkType(listobj);
-        Method method = ReflectUtils.returnGetMethods(listobj.get(0).getClass()).get(colName);
-        if (method == null) {
-            throw new MissingConfigException("parent column or value column not exist in object");
-        }
-
-        for (T t : listobj) {
-            Object value = method.invoke(t, null);
-            if (value != null && value.equals(colvalue)) {
-                retList.add(t);
-            }
-        }
-        return retList;
+        return listobj.stream().filter(f->filterColumn.apply(f)!=null && colvalue.equals(filterColumn.apply(f))).collect(Collectors.toList());
     }
 
     /**
@@ -231,26 +251,24 @@ public class CollectionMapConvert {
     public static <T> List<T> filterListByColumnCondition(List<T> listobj, String scriptType, String queryConditions) throws Exception {
         List<T> retList = new ArrayList<T>();
         checkType(listobj);
-        Map<String, Method> getMetholds = ReflectUtils.returnGetMethods(listobj.get(0).getClass());
-        if (getMetholds == null) {
-            throw new MissingConfigException("object does not have get method");
-        }
+
         if (SpringContextHolder.getBean(ScriptExecutor.class) == null) {
             throw new MissingConfigException("must use in spring context!");
         }
         CompiledScript script = SpringContextHolder.getBean(ScriptExecutor.class).returnScriptNoCache(scriptType, queryConditions);
         Bindings bindings = SpringContextHolder.getBean(ScriptExecutor.class).createBindings(scriptType);
-
-        for (T t : listobj) {
+        return listobj.stream().filter(f->{
             Map<String, Object> valueMap = new HashMap<>();
-            ConvertUtil.objectToMapObj(valueMap, t);
-            bindings.putAll(valueMap);
-            boolean tag = (Boolean) script.eval(bindings);
-            if (tag) {
-                retList.add(t);
+            try {
+                bindings.clear();
+                ConvertUtil.objectToMapObj(valueMap, f);
+                bindings.putAll(valueMap);
+                return (Boolean) script.eval(bindings);
+            }catch (Exception ex){
+                return false;
             }
-        }
-        return retList;
+        }).collect(Collectors.toList());
+
     }
 
 

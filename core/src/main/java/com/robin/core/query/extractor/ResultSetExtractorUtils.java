@@ -40,9 +40,7 @@ public class ResultSetExtractorUtils {
     }
     private static Object getValueByMeta(ResultSet rs,int i,int columnType,String encode) throws SQLException{
         Object retObj=null;
-        if (rs.wasNull()) {
-
-        } else if (Types.DATE == columnType) {
+        if (Types.DATE == columnType) {
             retObj=rs.getDate(i + 1);
 
         } else if (Types.TIMESTAMP == columnType || Types.TIME == columnType) {
@@ -59,7 +57,7 @@ public class ResultSetExtractorUtils {
             retObj=rs.getDouble(i + 1);
         } else if (Types.VARCHAR == columnType || Types.CHAR == columnType || Types.NVARCHAR == columnType || Types.LONGVARCHAR == columnType) {
             String msg=rs.getString(i+1);
-            if(!StringUtils.isEmpty(encode)){
+            if(!StringUtils.isEmpty(encode) && !StringUtils.isEmpty(msg)){
                 try {
                     msg = new String(msg.getBytes(), encode);
                 }catch (UnsupportedEncodingException ex){
