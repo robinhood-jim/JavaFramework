@@ -8,7 +8,6 @@ public class PptGenerater {
 			try {
 				PptBaseUtil.setBackground(show, config);
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		if(headerFooter!=null)

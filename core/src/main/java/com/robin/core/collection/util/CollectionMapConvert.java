@@ -27,6 +27,7 @@ import org.springframework.util.CollectionUtils;
 
 import javax.script.Bindings;
 import javax.script.CompiledScript;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.function.Function;
@@ -47,9 +48,9 @@ public class CollectionMapConvert {
      * @return
      * @throws Exception
      */
-    public static <T> Map<String, T> convertListToMap(List<T> listobj, String identityCol) throws Exception {
+    public static <T> Map<String, T> convertListToMap(List<T> listobj, String identityCol) throws MissingConfigException,InvocationTargetException,IllegalAccessException {
         checkType(listobj);
-        Map<String, T> retMap = new HashMap<String, T>();
+        Map<String, T> retMap = new HashMap<>();
         Map<String, Method> methodMap = ReflectUtils.returnGetMethods(listobj.get(0).getClass());
         Method method = methodMap.get(identityCol);
         if (method != null) {
@@ -73,8 +74,8 @@ public class CollectionMapConvert {
         return retMap;
     }
 
-    public static <T> List<T> convertToList(Map<String, T> mapobj) throws Exception {
-        List<T> retList = new ArrayList<T>();
+    public static <T> List<T> convertToList(Map<String, T> mapobj) {
+        List<T> retList = new ArrayList<>();
         Iterator<T> iter = mapobj.values().iterator();
         while (iter.hasNext()) {
             retList.add(iter.next());
@@ -101,16 +102,14 @@ public class CollectionMapConvert {
      * @throws Exception
      */
 
-    public static <T> Map<String, List<T>> convertToMapByParentKey(List<T> listobj, String parentCol) throws Exception {
+    public static <T> Map<String, List<T>> convertToMapByParentKey(List<T> listobj, String parentCol) throws InvocationTargetException,IllegalAccessException {
         checkType(listobj);
         Method method = null;
         if (!(Map.class.isAssignableFrom(listobj.get(0).getClass()))) {
             method = ReflectUtils.returnGetMethods(listobj.get(0).getClass()).get(parentCol);
-            if (method == null) {
-                throw new MissingConfigException("parent column not exists in object!");
-            }
+            Assert.notNull(method,"parent column not exists in object!");
         }
-        Map<String, List<T>> retMap = new HashMap<String, List<T>>();
+        Map<String, List<T>> retMap = new HashMap<>();
         for (T t : listobj) {
             Object targerobj = t;
             Object obj = null;
@@ -130,7 +129,7 @@ public class CollectionMapConvert {
 
     private static <T> void addMapToList(Map<String, List<T>> retMap, String key, T t) {
         if (!retMap.containsKey(key)) {
-            List<T> list = new ArrayList<T>();
+            List<T> list = new ArrayList<>();
             list.add(t);
             retMap.put(key, list);
         } else {
@@ -196,7 +195,7 @@ public class CollectionMapConvert {
         return retMap;
     }
 
-    public static <T, P> Map<String, List<P>> getValuesByParentKey(List<T> listobj, Function<T, ?> keyColumn, Function<T, ?> valueColumn, Class<P> clazz) throws Exception {
+    public static <T, P> Map<String, List<P>> getValuesByParentKey(List<T> listobj, Function<T, ?> keyColumn, Function<T, ?> valueColumn, Class<P> clazz) {
         checkType(listobj);
 
         Map<String, List<P>> retMap = new HashMap<>();
@@ -234,7 +233,7 @@ public class CollectionMapConvert {
      * @return
      * @throws Exception
      */
-    public static <T> List<T> filterListByColumnValue(List<T> listobj, Function<T,?> filterColumn, Object colvalue) throws Exception {
+    public static <T> List<T> filterListByColumnValue(List<T> listobj, Function<T,?> filterColumn, Object colvalue) {
         checkType(listobj);
         return listobj.stream().filter(f->filterColumn.apply(f)!=null && colvalue.equals(filterColumn.apply(f))).collect(Collectors.toList());
     }
@@ -249,7 +248,7 @@ public class CollectionMapConvert {
      * @throws Exception
      */
     public static <T> List<T> filterListByColumnCondition(List<T> listobj, String scriptType, String queryConditions) throws Exception {
-        List<T> retList = new ArrayList<T>();
+        List<T> retList = new ArrayList<>();
         checkType(listobj);
 
         if (SpringContextHolder.getBean(ScriptExecutor.class) == null) {
@@ -272,7 +271,7 @@ public class CollectionMapConvert {
     }
 
 
-    public static <T> String getColumnValueAppendBySeparater(List<T> listobj, String colName, String separate) throws Exception {
+    public static <T> String getColumnValueAppendBySeparater(List<T> listobj, String colName, String separate) throws MissingConfigException,InvocationTargetException,IllegalAccessException {
         checkType(listobj);
         StringBuilder buffer = new StringBuilder();
         Method method = ReflectUtils.returnGetMethods(listobj.get(0).getClass()).get(colName);
@@ -293,8 +292,8 @@ public class CollectionMapConvert {
         return buffer.toString();
     }
 
-    public static <T> List<String> getValueListBySeparater(List<T> listobj, String colName) throws Exception {
-        List<String> retList = new ArrayList<String>();
+    public static <T> List<String> getValueListBySeparater(List<T> listobj, String colName) throws MissingConfigException,InvocationTargetException,IllegalAccessException {
+        List<String> retList = new ArrayList<>();
         checkType(listobj);
         Method method = ReflectUtils.returnGetMethods(listobj.get(0).getClass()).get(colName);
         if (method == null) {
@@ -308,7 +307,7 @@ public class CollectionMapConvert {
         return retList;
     }
 
-    public static <T> List<Map<String, Object>> getListMap(List<T> listobj) throws Exception {
+    public static <T> List<Map<String, Object>> getListMap(List<T> listobj) throws MissingConfigException,InvocationTargetException,IllegalAccessException {
         checkType(listobj);
         Map<String, Method> getMetholds = ReflectUtils.returnGetMethods(listobj.get(0).getClass());
         if (getMetholds.isEmpty()) {
@@ -330,8 +329,8 @@ public class CollectionMapConvert {
         return retList;
     }
 
-    public static <T> List<T> mergeListFromNew(List<T> orgList, List<T> newList, String identifyCol) throws Exception {
-        if (orgList == null || newList == null || orgList.size() == 0 || newList.size() == 0) {
+    public static <T> List<T> mergeListFromNew(List<T> orgList, List<T> newList, String identifyCol) throws MissingConfigException,InvocationTargetException,IllegalAccessException {
+        if (CollectionUtils.isEmpty(orgList) || CollectionUtils.isEmpty(newList)) {
             throw new MissingConfigException("Input ArrayList is Empty!");
         }
         Map<String, T> map = convertListToMap(newList, identifyCol);

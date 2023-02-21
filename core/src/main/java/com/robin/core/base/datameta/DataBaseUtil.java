@@ -121,12 +121,12 @@ public class DataBaseUtil {
         return scanAllTable(connection,schema,dataBaseMeta);
     }
 
-    public List<DataBaseColumnMeta> getTableMetaByTableName(String tablename, String DbOrtablespacename) throws SQLException {
+    public List<DataBaseColumnMeta> getTableMetaByTableName(String tablename, String dbOrtablespacename) throws SQLException {
         List<DataBaseColumnMeta> columnlist = new ArrayList<>();
         DatabaseMetaData meta = connection.getMetaData();
-        try (ResultSet rs = meta.getColumns(dataBaseMeta.getCatalog(DbOrtablespacename), DbOrtablespacename, tablename, null)) {
+        try (ResultSet rs = meta.getColumns(dataBaseMeta.getCatalog(dbOrtablespacename), dbOrtablespacename, tablename, null)) {
             // all pk column
-            List<String> pklist = this.getAllPrimaryKeyByTableName(tablename, DbOrtablespacename);
+            List<String> pklist = this.getAllPrimaryKeyByTableName(tablename, dbOrtablespacename);
             while (rs.next()) {
                 String columnname = rs.getString("COLUMN_NAME");
                 Integer columnType = Integer.valueOf(translateDbType(Integer.valueOf(rs.getInt("DATA_TYPE"))));
@@ -171,20 +171,20 @@ public class DataBaseUtil {
         datameta.setTypeName(typeName);
     }
     @NonNull
-    public static List<DataBaseColumnMeta> getTableMetaByTableName(DataSource source, String tableName, String DbOrtablespacename, String dbType) throws SQLException {
+    public static List<DataBaseColumnMeta> getTableMetaByTableName(DataSource source, String tableName, String dbOrtablespacename, String dbType) throws SQLException {
         try (Connection conn = source.getConnection()) {
-            return getTableMetaByTableName(conn, tableName, DbOrtablespacename, dbType);
+            return getTableMetaByTableName(conn, tableName, dbOrtablespacename, dbType);
         }
     }
 
-    public static List<DataBaseColumnMeta> getTableMetaByTableName(JdbcDao dao, String tableName, String DbOrtablespacename, String dbType) throws SQLException {
-        return getTableMetaByTableName(dao.getDataSource(), tableName, DbOrtablespacename, dbType);
+    public static List<DataBaseColumnMeta> getTableMetaByTableName(JdbcDao dao, String tableName, String dbOrtablespacename, String dbType) throws SQLException {
+        return getTableMetaByTableName(dao.getDataSource(), tableName, dbOrtablespacename, dbType);
     }
 
-    public static List<ColumnPrivilege> getTablePrivileges(Connection conn, String tableName, String DbOrtablespacename) throws SQLException {
+    public static List<ColumnPrivilege> getTablePrivileges(Connection conn, String tableName, String dbOrtablespacename) throws SQLException {
         DatabaseMetaData meta = conn.getMetaData();
         List<ColumnPrivilege> retList = new ArrayList<>();
-        try (ResultSet rs = meta.getTablePrivileges(null, DbOrtablespacename, tableName)) {
+        try (ResultSet rs = meta.getTablePrivileges(null, dbOrtablespacename, tableName)) {
             while (rs.next()) {
                 String grants = rs.getString("GRANTOR");
                 String grantees = rs.getString("GRANTEE");
@@ -198,13 +198,13 @@ public class DataBaseUtil {
         return retList;
     }
     @NonNull
-    public static List<DataBaseColumnMeta> getTableMetaByTableName(Connection conn, String tableName, String DbOrtablespacename, String dbType) throws SQLException {
+    public static List<DataBaseColumnMeta> getTableMetaByTableName(Connection conn, String tableName, String dbOrtablespacename, String dbType) throws SQLException {
         List<DataBaseColumnMeta> columnlist = new ArrayList<>();
         DatabaseMetaData meta = conn.getMetaData();
-        try (ResultSet rs = meta.getColumns(DbOrtablespacename, DbOrtablespacename, tableName, null);) {
+        try (ResultSet rs = meta.getColumns(dbOrtablespacename, dbOrtablespacename, tableName, null);) {
             List<String> pklist = null;
             try {
-                pklist = DataBaseUtil.getAllPrimaryKeyByTableName(conn, tableName, DbOrtablespacename);
+                pklist = DataBaseUtil.getAllPrimaryKeyByTableName(conn, tableName, dbOrtablespacename);
             } catch (Exception ex) {
                 logger.warn("pk column not support");
             }
@@ -429,7 +429,7 @@ public class DataBaseUtil {
                     retObj = value.toString();
                 }
             } else if (type.equals(Const.META_TYPE_DATE) || type.equals(Const.META_TYPE_TIMESTAMP)) {
-                long millsecod = 0L;
+                long millsecod ;
                 if (value instanceof java.util.Date) {
                     millsecod = ((java.util.Date) value).getTime();
                 } else if (value instanceof java.sql.Date) {

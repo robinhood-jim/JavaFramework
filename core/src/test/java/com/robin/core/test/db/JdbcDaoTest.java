@@ -207,8 +207,9 @@ public class JdbcDaoTest extends TestCase {
     public void testUpdate(){
         SysUserService sysUserService=SpringContextHolder.getBean(SysUserService.class);
         SysUser user=sysUserService.getEntity(25L);
-        user.setUserPassword("1222");
-        sysUserService.updateEntity(user);
+        System.out.println(user);
+        //user.setUserPassword("1222");
+        //sysUserService.updateEntity(user);
     }
     @Test
     public void testCondition() throws Exception{

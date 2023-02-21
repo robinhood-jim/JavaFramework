@@ -34,6 +34,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.support.lob.DefaultLobHandler;
 import org.springframework.lang.NonNull;
 import org.springframework.orm.hibernate5.HibernateCallback;
+import org.springframework.orm.hibernate5.HibernateTemplate;
 import org.springframework.orm.hibernate5.support.HibernateDaoSupport;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -62,13 +63,18 @@ public class HibernateGenericDao extends HibernateDaoSupport implements IHiberna
         setQueryFactory(queryFactory);
         setSqlGen(sqlGen);
     }
+    private HibernateTemplate returnTemplate(){
+        HibernateTemplate template=getHibernateTemplate();
+        Assert.notNull(template,"");
+        return template;
+    }
 
     /**
      * findAll
      */
     public <T extends BaseObject> List<T> findAll(Class<T> entityClass) {
         try {
-            return getHibernateTemplate().loadAll(entityClass);
+            return returnTemplate().loadAll(entityClass);
         } catch (HibernateException e) {
             throw new DAOException(e);
         }
@@ -79,7 +85,7 @@ public class HibernateGenericDao extends HibernateDaoSupport implements IHiberna
      */
     public <T extends BaseObject> void save(T o) {
         try {
-            getHibernateTemplate().save(o);
+            returnTemplate().save(o);
         } catch (HibernateException e) {
             throw new DAOException(e);
         }
@@ -90,7 +96,7 @@ public class HibernateGenericDao extends HibernateDaoSupport implements IHiberna
      */
     public <T extends BaseObject> void update(T o) {
         try {
-            getHibernateTemplate().saveOrUpdate(o);
+            returnTemplate().saveOrUpdate(o);
         } catch (HibernateException e) {
             throw new DAOException(e);
         }
@@ -101,7 +107,7 @@ public class HibernateGenericDao extends HibernateDaoSupport implements IHiberna
      */
     public <T extends BaseObject> void remove(T o) {
         try {
-            getHibernateTemplate().delete(o);
+            returnTemplate().delete(o);
         } catch (HibernateException e) {
             throw new DAOException(e);
         }
@@ -127,7 +133,7 @@ public class HibernateGenericDao extends HibernateDaoSupport implements IHiberna
             for (int i = 0; i < fieldName.length; i++) {
                 criteria.add(Restrictions.eq(fieldName[i], fieldValue[i]));
             }
-            return (List<T>) getHibernateTemplate().findByCriteria(criteria);
+            return (List<T>) returnTemplate().findByCriteria(criteria);
         } catch (HibernateException e) {
             throw new DAOException(e);
         }
@@ -140,10 +146,10 @@ public class HibernateGenericDao extends HibernateDaoSupport implements IHiberna
             DetachedCriteria criteria = DetachedCriteria.forClass(entityClass);
             if (fieldValue == null) {
                 criteria.add(Restrictions.isNull(fieldName));
-                return (List<T>) getHibernateTemplate().findByCriteria(criteria);
+                return (List<T>) returnTemplate().findByCriteria(criteria);
             } else {
                 criteria.add(Restrictions.eq(fieldName, fieldValue));
-                return (List<T>) getHibernateTemplate().findByCriteria(criteria);
+                return (List<T>) returnTemplate().findByCriteria(criteria);
             }
         } catch (HibernateException e) {
             throw new DAOException(e);
@@ -161,7 +167,7 @@ public class HibernateGenericDao extends HibernateDaoSupport implements IHiberna
 
     public <T extends BaseObject> long count(Class<T> entityClass) throws DAOException {
         try {
-            List<?> countList = getHibernateTemplate().execute(new HibernateCallback<List<?>>() {
+            List<?> countList = returnTemplate().execute(new HibernateCallback<List<?>>() {
                 public List<?> doInHibernate(Session session) throws HibernateException {
                     String hql = "select count(*) from " + getClassName(entityClass);
                     Query query = session.createQuery(hql);
@@ -178,7 +184,7 @@ public class HibernateGenericDao extends HibernateDaoSupport implements IHiberna
     public <T extends BaseObject> long countByField(Class<T> entityClass, String fieldName, Object fieldValue) throws DAOException {
         try {
             String hql = "select count(*) from " + getClassName(entityClass) + " where " + fieldName + "=:fieldValue";
-            List<?> countList = getHibernateTemplate().findByNamedParam(hql, "fieldValue", fieldValue);
+            List<?> countList = returnTemplate().findByNamedParam(hql, "fieldValue", fieldValue);
             if (countList != null && !countList.isEmpty()) return ((Long) countList.get(0)).longValue();
             else return 0;
         } catch (HibernateException e) {
@@ -197,7 +203,7 @@ public class HibernateGenericDao extends HibernateDaoSupport implements IHiberna
             } else {
                 criteria.add(Restrictions.eq(fieldName, fieldValue));
             }
-            return (List<T>) getHibernateTemplate().findByCriteria(criteria, startpos, pageSize);
+            return (List<T>) returnTemplate().findByCriteria(criteria, startpos, pageSize);
 
         } catch (HibernateException e) {
             throw new DAOException(e);
@@ -220,7 +226,7 @@ public class HibernateGenericDao extends HibernateDaoSupport implements IHiberna
             }
         }
         try {
-            return (List<T>) getHibernateTemplate().findByCriteria(criteria, startpos, pageSize);
+            return (List<T>) returnTemplate().findByCriteria(criteria, startpos, pageSize);
         } catch (HibernateException e) {
             throw new DAOException(e);
         }
@@ -243,7 +249,7 @@ public class HibernateGenericDao extends HibernateDaoSupport implements IHiberna
 
         }
         try {
-            return (List<T>) getHibernateTemplate().findByCriteria(criteria);
+            return (List<T>) returnTemplate().findByCriteria(criteria);
         } catch (HibernateException e) {
             throw new DAOException(e);
         }
@@ -269,7 +275,7 @@ public class HibernateGenericDao extends HibernateDaoSupport implements IHiberna
         }
 
         try {
-            return (List<T>) getHibernateTemplate().findByCriteria(criteria);
+            return (List<T>) returnTemplate().findByCriteria(criteria);
         } catch (HibernateException e) {
             throw new DAOException(e);
         }
@@ -293,7 +299,7 @@ public class HibernateGenericDao extends HibernateDaoSupport implements IHiberna
             }
         }
         try {
-            return (List<T>) getHibernateTemplate().findByCriteria(criteria);
+            return (List<T>) returnTemplate().findByCriteria(criteria);
         } catch (HibernateException e) {
             throw new DAOException(e);
         }
@@ -328,7 +334,7 @@ public class HibernateGenericDao extends HibernateDaoSupport implements IHiberna
             }
         }
         try {
-            return (List<T>) getHibernateTemplate().findByCriteria(criteria);
+            return (List<T>) returnTemplate().findByCriteria(criteria);
         } catch (HibernateException e) {
             throw new DAOException(e);
         }
@@ -336,7 +342,7 @@ public class HibernateGenericDao extends HibernateDaoSupport implements IHiberna
 
     public <T extends BaseObject> List<T> findByHql(Class<T> clazz, String hql) throws DAOException {
         try {
-            return (List<T>) getHibernateTemplate().find(hql, null);
+            return (List<T>) returnTemplate().find(hql, null);
         } catch (Exception e) {
             throw new DAOException(e);
         }
@@ -344,7 +350,7 @@ public class HibernateGenericDao extends HibernateDaoSupport implements IHiberna
 
     public <T extends BaseObject> List<T> findByHqlPage(Class<T> clazz, final String hql, final int startpox, final int pageSize) throws DAOException {
         try {
-            return (List<T>) getHibernateTemplate().executeWithNativeSession((HibernateCallback<List<?>>) session -> {
+            return (List<T>) returnTemplate().executeWithNativeSession((HibernateCallback<List<?>>) session -> {
                 NativeQuery<T> query = session.createNativeQuery(hql);
                 query.setFirstResult(startpox);//record start pos
                 query.setMaxResults(pageSize);//page Size
@@ -356,7 +362,7 @@ public class HibernateGenericDao extends HibernateDaoSupport implements IHiberna
     }
 
     public <T extends BaseObject, ID extends Serializable> T get(Class<T> entityClass, ID id) throws DAOException {
-        return getHibernateTemplate().get(entityClass, id);
+        return returnTemplate().get(entityClass, id);
     }
 
     public String getTableName() {
@@ -364,7 +370,7 @@ public class HibernateGenericDao extends HibernateDaoSupport implements IHiberna
     }
 
     public <T extends BaseObject, ID extends Serializable> T load(Class<T> entityClass, ID id) throws DAOException {
-        return getHibernateTemplate().load(entityClass, id);
+        return returnTemplate().load(entityClass, id);
     }
 
     public void queryBySelectId(PageQuery pageQuery) throws DAOException {
@@ -488,7 +494,7 @@ public class HibernateGenericDao extends HibernateDaoSupport implements IHiberna
 
     public <T extends BaseObject, ID extends Serializable> int remove(Class<T> entityClass, ID id) throws DAOException {
         try {
-            getHibernateTemplate().delete(get(entityClass, id));
+            returnTemplate().delete(get(entityClass, id));
             return 0;
         } catch (HibernateException e) {
             throw new DAOException(e);
@@ -502,7 +508,7 @@ public class HibernateGenericDao extends HibernateDaoSupport implements IHiberna
 
     public <T extends BaseObject> int removeAll(Collection<T> collection) throws DAOException {
         try {
-            getHibernateTemplate().deleteAll(collection);
+            returnTemplate().deleteAll(collection);
             return 0;
         } catch (HibernateException e) {
             throw new DAOException(e);
@@ -522,7 +528,7 @@ public class HibernateGenericDao extends HibernateDaoSupport implements IHiberna
         List removeList = this.findByField(entityClass, fieldName, fieldValue);
 
         if (removeList != null && !removeList.isEmpty()) {
-            getHibernateTemplate().deleteAll(removeList);
+            returnTemplate().deleteAll(removeList);
         }
         return 0;
     }
@@ -530,7 +536,7 @@ public class HibernateGenericDao extends HibernateDaoSupport implements IHiberna
 
     public <T extends BaseObject> void saveOrUpdateAll(Collection<T> collection) throws DAOException {
         try {
-            getHibernateTemplate().save(collection);
+            returnTemplate().save(collection);
         } catch (HibernateException e) {
             throw new DAOException(e);
         }
@@ -538,7 +544,7 @@ public class HibernateGenericDao extends HibernateDaoSupport implements IHiberna
 
     public <T extends BaseObject> void saveOrUpdate(T obj) throws DAOException {
         try {
-            getHibernateTemplate().saveOrUpdate(obj);
+            returnTemplate().saveOrUpdate(obj);
         } catch (HibernateException e) {
             throw new DAOException(e);
         }
@@ -558,7 +564,7 @@ public class HibernateGenericDao extends HibernateDaoSupport implements IHiberna
         };
         Boolean ret = false;
         try {
-            ret = getHibernateTemplate().execute(callback).booleanValue();
+            ret = returnTemplate().execute(callback).booleanValue();
             return ret;
         } catch (Exception e) {
             throw new DAOException(e);
@@ -584,7 +590,7 @@ public class HibernateGenericDao extends HibernateDaoSupport implements IHiberna
     public int executeSqlUpdate(final String sql) throws DAOException {
         int ret = -1;
         try {
-            ret = this.getHibernateTemplate().execute(session -> {
+            ret = this.returnTemplate().execute(session -> {
                 Query query = session.createSQLQuery(sql);
                 return query.executeUpdate();
             });
@@ -622,7 +628,7 @@ public class HibernateGenericDao extends HibernateDaoSupport implements IHiberna
                 criteria.add(Restrictions.isNull(fieldName[i]));
             }
         }
-        return (List<T>) getHibernateTemplate().findByCriteria(criteria, startpos, pageSize);
+        return (List<T>) returnTemplate().findByCriteria(criteria, startpos, pageSize);
 
     }
 

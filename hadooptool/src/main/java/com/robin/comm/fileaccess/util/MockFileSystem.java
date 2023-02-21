@@ -61,7 +61,7 @@ public class MockFileSystem extends FileSystem {
             throw new FileAlreadyExistsException("file already write,wait for closing");
         }
         outputStream=accessUtil.getRawOutputStream(colmeta, ResourceUtil.getProcessPath(path.toString()));
-        return new FSDataOutputStream(outputStream);
+        return new FSDataOutputStream(outputStream,new Statistics(""));
     }
 
     @Override

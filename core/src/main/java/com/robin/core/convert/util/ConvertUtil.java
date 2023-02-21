@@ -20,25 +20,25 @@ import com.robin.core.base.model.BaseObject;
 import com.robin.core.base.reflect.ReflectUtils;
 import com.robin.core.base.util.Const;
 import com.robin.core.fileaccess.meta.DataSetColumnMeta;
-
-
 import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import java.io.Serializable;
-import java.lang.reflect.AnnotatedType;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.sql.Types;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.*;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 public class ConvertUtil {
     public static final DateTimeFormatter ymdformatter = DateTimeFormatter.ofPattern("yyyyMMdd");
@@ -111,7 +111,7 @@ public class ConvertUtil {
             String value = entry.getValue();
             if (methodMap.containsKey(key)) {
                 target.AddDirtyColumn(key);
-                Class type = methodMap.get(key).getParameterTypes()[0];
+                Class<?> type = methodMap.get(key).getParameterTypes()[0];
                 Object retValue = null;
                 if (StringUtils.isEmpty(value)) {
                     retValue = null;
@@ -222,7 +222,7 @@ public class ConvertUtil {
     private static void setBaseObjectValue(BaseObject target, Object value, String field, Method setMethod, String... defaultDateTimeFormatter) throws Exception {
         if (value != null) {
             target.AddDirtyColumn(field);
-            Class type = setMethod.getParameterTypes()[0];
+            Class<?> type = setMethod.getParameterTypes()[0];
             if (StringUtils.isEmpty(value)) {
                 setMethod.invoke(target);
             } else {
@@ -234,7 +234,7 @@ public class ConvertUtil {
 
     private static void setObjectValue(Serializable target, Object value, String field, Method setMethod, String... defaultDateTimeFormatter) throws Exception {
         if (value != null) {
-            Class type = setMethod.getParameterTypes()[0];
+            Class<?> type = setMethod.getParameterTypes()[0];
             if (!"java.lang.String".equalsIgnoreCase(type.getName()) && "".equals(value)) {
                 setMethod.invoke(target);
             } else {
@@ -286,7 +286,7 @@ public class ConvertUtil {
         setMethod.invoke(target, value);
     }
 
-    public static Object parseParameter(DataBaseColumnMeta meta, Object strValue, String... defaultDateTimeFormatter) throws Exception {
+    public static Object parseParameter(DataBaseColumnMeta meta, Object strValue, String... defaultDateTimeFormatter) {
         if (strValue == null) {
             return null;
         }
@@ -328,7 +328,7 @@ public class ConvertUtil {
     }
 
 
-    public static Object parseParameter(Class type, Object strValue, String... defaultDateTimeFormatter) throws Exception {
+    public static Object parseParameter(Class<?> type, Object strValue, String... defaultDateTimeFormatter) throws Exception {
         if (Objects.isNull(strValue)) {
             return null;
         }
@@ -437,7 +437,7 @@ public class ConvertUtil {
         return false;
     }
 
-    public static Object convertStringToTargetObject(String value, DataSetColumnMeta meta, String defaultDateTimefromat) throws Exception {
+    public static Object convertStringToTargetObject(String value, DataSetColumnMeta meta, String defaultDateTimefromat){
         Object retObj;
         SimpleDateFormat dateformat = null;
         String dateformatstr = defaultDateTimefromat;
@@ -453,7 +453,7 @@ public class ConvertUtil {
         return retObj;
     }
 
-    public static Object convertStringToTargetObject(String value, String columnType, String columnName, String defaultDateTimefromat) throws Exception {
+    public static Object convertStringToTargetObject(String value, String columnType, String columnName, String defaultDateTimefromat) {
         Object retObj;
         SimpleDateFormat dateformat = null;
         String dateformatstr = defaultDateTimefromat;
@@ -469,7 +469,7 @@ public class ConvertUtil {
         Object retObj = null;
         if (object != null) {
             DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern(dateFormatStr != null && !dateFormatStr.isEmpty() ? dateFormatStr : "yyyy-MM-dd");
-            Class clazz = object.getClass();
+            Class<?> clazz = object.getClass();
             if (object.getClass().isPrimitive()) {
                 if (clazz.equals(String.class)) {
                     if (NumberUtils.isNumber(object.toString())) {
@@ -501,7 +501,7 @@ public class ConvertUtil {
         return retObj;
     }
 
-    private static Object translateValue(String value, String columnType, String columnName, SimpleDateFormat dateformat) throws Exception {
+    private static Object translateValue(String value, String columnType, String columnName, SimpleDateFormat dateformat) throws RuntimeException {
         Object retObj;
         try {
             if (value == null || StringUtils.isEmpty(value.trim())) {

@@ -474,6 +474,23 @@ public class HbaseBaseDao {
         return filterlist;
     }
 
+   /* public List<Map<String,Object>> queryBySql(SelectPart part, Map<String, DataBaseColumnMeta> metaMap){
+        try(Connection connection=getConnection();Table table=connection.getTable(TableName.valueOf(part.getTableName()))){
+            FilterList filterList=new FilterList();
+            Assert.notNull(part.getConditions(),"");
+            for(ConditionCollection collection:part.getConditions()){
+                if(!CollectionUtils.isEmpty(collection.getConditions())){
+                    for(ConditionNode node:collection.getConditions()){
+                        Filter filter=null;
+
+                    }
+                }
+            }
+        }catch (Exception ex){
+
+        }
+        return null;
+    }*/
 
 
     public Map<String, Map<String, String>> getRegionResult(String tableName, byte[] startKey, byte[] endKey, String fieldArr, List<String> keyList) throws HbaseException {

@@ -5,13 +5,13 @@ import com.robin.core.base.datameta.BaseDataBaseMeta;
 import com.robin.core.base.datameta.DataBaseMetaFactory;
 import com.robin.core.base.datameta.DataBaseParam;
 import com.robin.hadoop.hdfs.HDFSProperty;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.mapred.YARNRunner;
 import org.apache.hadoop.mapreduce.*;
-import org.apache.hadoop.mapreduce.JobStatus.State;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.dom4j.DocumentHelper;
 import org.dom4j.io.OutputFormat;
@@ -30,9 +30,9 @@ import java.net.URLConnection;
 import java.sql.Connection;
 import java.text.DecimalFormat;
 import java.text.Format;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
+@Slf4j
 public class YarnJobInfoUtil extends AbstractJobInfoUtil{
 	private String ipAddress;
 	private int yarnport;
@@ -60,7 +60,6 @@ public class YarnJobInfoUtil extends AbstractJobInfoUtil{
 	public void setConfiguration(HDFSProperty property){
 		config=new Configuration(false);
 		config.clear();
-		//config.set("fs.defaultFS", property.getDefaultName());
 		Iterator<String> iter=property.getHaConfig().keySet().iterator();
 		while(iter.hasNext()){
 			String key=iter.next();
@@ -70,6 +69,7 @@ public class YarnJobInfoUtil extends AbstractJobInfoUtil{
 	}
 	private void initSecurity(HDFSProperty property){
 		try{
+			setConfiguration(property);
 			UserGroupInformation.setConfiguration(config);
 			if(UserGroupInformation.isSecurityEnabled()){
 				logger.debug("visit HDFS using kerberos");
@@ -92,11 +92,11 @@ public class YarnJobInfoUtil extends AbstractJobInfoUtil{
 	public List<JobSummary> getAllJob() throws Exception {
 		YARNRunner runner=getRunner();
 		JobStatus[] status=runner.getAllJobs();
-		List<JobSummary> retList=new ArrayList<JobSummary>();
+		List<JobSummary> retList=new ArrayList<>();
 		for (int i = 0; i < status.length; i++) {
 			try{
 				JobStatus statue=status[i];
-				retList.add(getJobSummary(runner,statue,false));
+				retList.add(getJobSummary(runner,statue));
 			}catch(Exception ex){
 				ex.printStackTrace();
 			}
@@ -107,11 +107,10 @@ public class YarnJobInfoUtil extends AbstractJobInfoUtil{
 		YARNRunner runner=new YARNRunner(config);
 		return runner;
 	}
-	protected JobSummary getJobSummary(YARNRunner runner,JobStatus status,boolean isdetail) throws Exception{
+	protected JobSummary getJobSummary(YARNRunner runner,JobStatus status) throws Exception{
 		JobID jobid=status.getJobID();
 		JobSummary summary=new JobSummary();
 		summary.setJobId(jobid.toString());
-		State state=status.getState();
 		Counters counters=runner.getJobCounters(jobid);
 		
 		long mapcount=counters.findCounter(JobCounter.TOTAL_LAUNCHED_MAPS).getValue();
@@ -177,7 +176,7 @@ public class YarnJobInfoUtil extends AbstractJobInfoUtil{
 		 summary.setReducePrecent(status.getReduceProgress());
 		 TaskReport[] reports=runner.getTaskReports(id, TaskType.MAP);
 		 TaskReport[] reports1=runner.getTaskReports(id, TaskType.REDUCE);
-		 List<TaskAttemptID> attempList=new ArrayList<TaskAttemptID>();
+		 List<TaskAttemptID> attempList=new ArrayList<>();
 		 for (int i = 0; i < reports.length; i++) {
 			attempList.add(reports[i].getSuccessfulTaskAttemptId());
 		 }
@@ -190,7 +189,7 @@ public class YarnJobInfoUtil extends AbstractJobInfoUtil{
 		 return summary;
 	 }
 	 private List<TaskAttemptIDInfo> getTaskAttempInfo(Collection<TaskAttemptID> cols,JobID id,YARNRunner job) throws Exception{
-			List<TaskAttemptIDInfo> retList=new ArrayList<TaskAttemptIDInfo>();
+			List<TaskAttemptIDInfo> retList=new ArrayList<>();
 			int eventCounter=0;
 			TaskCompletionEvent[] events=job.getTaskCompletionEvents(id,0,10);
 			if(events.length!=0){
@@ -228,7 +227,7 @@ public class YarnJobInfoUtil extends AbstractJobInfoUtil{
 		 BufferedReader reader=new BufferedReader(new StringReader(bodyhtml));
 		 JobDetail summary=new JobDetail();
 		 String str=reader.readLine();
-		 System.out.println(str);
+		 log.info("{}",str);
 		 List<String> fielddisplaynames=Arrays.asList(new String[]{"User Name:","Job Name:","State:","Uberized:","Started:","Finished:","Elapsed:","Average Map Time","Average Reduce Time","Killed:","Failed:"});
 		 String[] methodNames={"user","name","state","uberized","startTime","finishTime","elapsed","avgMaptime","avgReducetime","killed","failed"};
 		
@@ -303,7 +302,7 @@ public class YarnJobInfoUtil extends AbstractJobInfoUtil{
 		}
 		 String tmpname=StringEscapeUtils.unescapeHtml(summary.getName());
 		 summary.setName(tmpname);
-		 System.out.println(tmpname);
+		 log.info("{}",tmpname);
 		 return summary;
 	 }
 	 private String getUrlHtml(String url) throws Exception{
@@ -329,7 +328,7 @@ public class YarnJobInfoUtil extends AbstractJobInfoUtil{
 		YARNRunner runner=getRunner();
 		Format decimal = new DecimalFormat();
 		Counters counters=runner.getJobCounters(id);
-		List<String> list=new ArrayList<String>();
+		List<String> list=new ArrayList<>();
 		if(mindNames!=null) {
             list=Arrays.asList(mindNames);
         }
@@ -376,7 +375,7 @@ public class YarnJobInfoUtil extends AbstractJobInfoUtil{
 			}
 			YarnJobInfoUtil util=new YarnJobInfoUtil();
 			YarnJobDetail detail=util.getJobDetailByRunner("1447208692103_312");
-			System.out.println(detail);
+			log.info("{}",detail);
 		}catch(Exception ex){
 			ex.printStackTrace();
 		}finally{

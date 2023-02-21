@@ -40,7 +40,7 @@ public class BaseScriptExecutor  implements IscriptExecutor{
 			@Override
 			public CompiledScript load(String key) throws Exception {
 				if(scriptsrcMap.containsKey(key)){
-					LOG.info("---- get and put into Cache by ----"+key);
+					LOG.info("---- get and put into Cache by {}----",key);
 					String scriptSrc=scriptsrcMap.get(key);
 					return returnScript(scriptSrc);
 				}else{
@@ -49,7 +49,7 @@ public class BaseScriptExecutor  implements IscriptExecutor{
 			}
 		});
 	}
-	public CompiledScript returnScript(String scriptSrc) throws Exception{
+	public CompiledScript returnScript(String scriptSrc) throws ScriptException{
 		return compEngine.compile(scriptSrc);
 	}
 	/**
@@ -87,11 +87,11 @@ public class BaseScriptExecutor  implements IscriptExecutor{
 		Bindings bindings = scriptEngine.createBindings();
 		return bindings;
 	}
-	public Object eval(CompiledScript script,Bindings binding) throws Exception{
+	public Object eval(CompiledScript script,Bindings binding) throws ScriptException{
 		return script.eval(binding);
 	}
 	@Override
-    public Object invokeFunction(Map<String, Object> contextMap, String function, String name, Object[] params) throws Exception{
+    public Object invokeFunction(Map<String, Object> contextMap, String function, String name, Object[] params) throws ScriptException,NoSuchMethodException{
 		if(scriptEngine instanceof Invocable){
 			Iterator<Map.Entry<String,Object>> it=contextMap.entrySet().iterator();
 			while(it.hasNext()){
@@ -102,7 +102,7 @@ public class BaseScriptExecutor  implements IscriptExecutor{
 			Invocable invocable=(Invocable) scriptEngine;
 			return invocable.invokeFunction(name, params);
 		}else{
-			throw new Exception("engine not support invokable");
+			throw new ScriptException("engine not support invokable");
 		}
 	}
 	public Object evaluate(String name,String scripts,Bindings bindings) throws Exception{
@@ -128,8 +128,8 @@ public class BaseScriptExecutor  implements IscriptExecutor{
 				cache.refresh(key);
 			}
 		}
-		if(compareKey && !keyMap.containsKey(key)){
-			keyMap.put(key,key);
+		if(compareKey){
+			keyMap.computeIfAbsent(key,f->keyMap.put(f,f));
 		}
 	}
 	protected class KeyRemoveListener implements RemovalListener<String, CompiledScript>{

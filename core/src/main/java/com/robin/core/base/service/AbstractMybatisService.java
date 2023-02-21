@@ -682,7 +682,7 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>,T extends S
             log.error("{0}",ex);
         }
     }
-    protected void wrapWithCompare(QueryWrapper queryWrapper,Class valueType, String filterColumn,String value) {
+    protected void wrapWithCompare(QueryWrapper<T> queryWrapper,Class<?> valueType, String filterColumn,String value) {
         int pos=-1;
         int startPos=-1;
         for(int i=0;i<compareOperations.size();i++){
@@ -719,7 +719,6 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>,T extends S
             }
         }catch (Exception ex){
             log.error("{0}",ex);
-            //throw ex;
         }
     }
 }
