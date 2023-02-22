@@ -1,10 +1,11 @@
 package com.robin.core.base.reflect;
 
 import com.robin.core.base.dao.util.AnnotationRetriever;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
 
-
+@Slf4j
 public class MetaObject {
     private final Object originalObject;
     private final Map<String, AnnotationRetriever.FieldContent> fieldContentMap;
@@ -26,7 +27,7 @@ public class MetaObject {
                 return fieldContentMap.get(columnName).getGetMethod().invoke(originalObject, null);
             }
         }catch (Exception ex){
-
+            log.error("{}",ex);
         }
         return null;
     }
@@ -36,7 +37,7 @@ public class MetaObject {
                 fieldContentMap.get(fieldName).getSetMethod().invoke(originalObject,fieldValue);
             }
         }catch (Exception ex){
-
+            log.error("{}",ex);
         }
     }
     public boolean hasGetter(String columnName){

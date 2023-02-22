@@ -78,7 +78,7 @@ public class SplitPageResultSetExtractor implements ResultSetExtractor<List<Map<
             allcode = true;
         }
         int rowNum = 0;
-        List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
+        List<Map<String, Object>> list = new ArrayList<>();
         ResultSetMetaData rsmd = rs.getMetaData();
         int count = rsmd.getColumnCount();
         String[] columnName = new String[count];

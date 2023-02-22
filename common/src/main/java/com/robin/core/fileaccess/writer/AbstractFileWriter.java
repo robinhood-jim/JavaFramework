@@ -41,8 +41,8 @@ public abstract class AbstractFileWriter implements IResourceWriter {
 	protected BufferedWriter writer;
 	protected DataCollectionMeta colmeta;
 	protected OutputStream out;
-	protected Map<String, String> columnMap=new HashMap<String, String>();
-	protected List<String> columnList=new ArrayList<String>();
+	protected Map<String, String> columnMap=new HashMap<>();
+	protected List<String> columnList=new ArrayList<>();
 	protected Logger logger= LoggerFactory.getLogger(getClass());
 	protected DateTimeFormatter formatter;
 	protected AbstractResourceAccessUtil accessUtil;
@@ -68,7 +68,7 @@ public abstract class AbstractFileWriter implements IResourceWriter {
 	}
 	
 	protected Map<String, Object> wrapListToMap(List<Object> list){
-		Map<String, Object> valuemap=new HashMap<String, Object>();
+		Map<String, Object> valuemap=new HashMap<>();
 		if(list.size()<colmeta.getColumnList().size()) {
             return null;
         }

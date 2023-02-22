@@ -1,5 +1,6 @@
 package com.robin.core.resaccess;
 
+import com.robin.core.base.exception.MissingConfigException;
 import com.robin.core.base.util.ResourceConst;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.writer.IResourceWriter;
@@ -15,6 +16,9 @@ public class CommResWriterFactory {
     private static final String ROCKET_WRITER_CLASS = "com.robin.comm.resaccess.writer.RocketResourceWriter";
     private static final String HBASE_WRITER_CLASS = "com.robin.comm.resaccess.writer.HbaseResourceWriter";
 
+    private CommResWriterFactory(){
+
+    }
     public static IResourceWriter getFileWriterByType(Long resType, DataCollectionMeta colmeta) {
         IResourceWriter fileWriter = null;
         Class<IResourceWriter> clazz = null;
@@ -31,6 +35,8 @@ public class CommResWriterFactory {
                 clazz = (Class<IResourceWriter>) Class.forName(REDIS_WRITER_CLASS);
             } else if (resType.equals(ResourceConst.ResourceType.TYPE_ROCKETDB.getValue())) {
                 clazz = (Class<IResourceWriter>) Class.forName(ROCKET_WRITER_CLASS);
+            }else{
+                throw new MissingConfigException("resType "+resType+" not supported!");
             }
             fileWriter = clazz.getConstructor(DataCollectionMeta.class).newInstance(colmeta);
         } catch (Exception ex) {

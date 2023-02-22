@@ -19,11 +19,10 @@ import com.robin.core.base.util.Const;
 import net.sf.json.JSONArray;
 import net.sf.json.JsonConfig;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.CellUtil;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
@@ -38,8 +37,8 @@ import java.awt.Color;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Timestamp;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class ExcelBaseOper {
@@ -49,14 +48,7 @@ public class ExcelBaseOper {
     private static final Logger logger = LoggerFactory.getLogger(ExcelBaseOper.class);
 
     public static Sheet createSheet(Workbook wb, String sheetName, ExcelSheetProp prop) {
-        Sheet sheet = null;
-        String fileext = prop.getFileExt();
-        if (TYPE_EXCEL2003.equalsIgnoreCase(fileext)) {
-            sheet = wb.createSheet(sheetName);
-        } else if (TYPE_EXCEL2007.equalsIgnoreCase(fileext)) {
-            sheet = wb.createSheet(sheetName);
-        }
-        return sheet;
+        return wb.createSheet(sheetName);
     }
     public static Workbook createWorkBook(ExcelSheetProp prop){
         return createWorkBook(prop.getFileExt(),prop.isStreamInsert(),prop.getStreamRows());
@@ -385,7 +377,7 @@ public class ExcelBaseOper {
         JSONArray array = JSONArray.fromObject(jsonStr);
         JsonConfig config = new JsonConfig();
         config.setRootClass(ExcelMergeRegion.class);
-        Map map = new HashMap();
+        Map<String,Class> map = new HashMap<>();
         map.put("subRegions", ExcelMergeRegion.class);
         config.setClassMap(map);
         Collection<ExcelMergeRegion> col = JSONArray.toCollection(array, config);
@@ -446,6 +438,8 @@ public class ExcelBaseOper {
                     cellValue = cell.getNumericCellValue();
                 }
                 break;
+            default:
+                cellValue=cell.getStringCellValue();
         }
         return cellValue;
     }
@@ -469,7 +463,7 @@ public class ExcelBaseOper {
                     colorset[i] = 255;
                 }
             }
-            System.out.println(" using color" + colorset[0] + "," + colorset[1] + "," + colorset[2]);
+            //System.out.println(" using color" + colorset[0] + "," + colorset[1] + "," + colorset[2]);
         } catch (Exception e) {
             logger.error("Encounter Error ", e);
         }

@@ -29,12 +29,12 @@ public class GenericsUtils {
 	}
 
 	
-	public static Class getSuperClassGenricType(Class clazz) {
+	public static Class<?> getSuperClassGenricType(Class<?> clazz) {
 		return getSuperClassGenricType(clazz, 0);
 	}
 
 	
-	public static Class getSuperClassGenricType(Class clazz, int index) {
+	public static Class<?> getSuperClassGenricType(Class<?> clazz, int index) {
 
 		Type genType = clazz.getGenericSuperclass();
 

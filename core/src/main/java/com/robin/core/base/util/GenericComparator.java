@@ -227,7 +227,7 @@ public final class GenericComparator implements Comparator, Serializable {
 	 * @return methodName a {@link java.lang.String}
 	 */
 	private static String prepareTargetMethod(String name) {
-		StringBuffer fieldName =  new StringBuffer(METHOD_GET_PREFIX);
+		StringBuilder fieldName =  new StringBuilder(METHOD_GET_PREFIX);
 		fieldName.append(name.substring(0, 1).toUpperCase());
 		fieldName.append(name.substring(1));
 		return fieldName.toString();

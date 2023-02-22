@@ -15,19 +15,18 @@
  */
 package com.robin.core.collection.util;
 
+import org.springframework.util.CollectionUtils;
+
 import java.util.*;
 
 public class CollectionsUtil {
+	private CollectionsUtil(){
 
-	public static ArrayList<Map.Entry<String,Long>> getSortedMapByLongValue(Map<String,Long> h,final boolean asc) {
-		ArrayList<Map.Entry<String, Long>> l = new ArrayList<Map.Entry<String, Long>>(h.entrySet());
-		Collections.sort(l, new Comparator<Map.Entry<String, Long>>() {
-			@Override
-            public int compare(Map.Entry<String, Long> o1,
-                               Map.Entry<String, Long> o2) {
-				return getCompareVal(o1, o2,asc);
-			}
-		});
+	}
+
+	public static List<Map.Entry<String,Long>> getSortedMapByLongValue(Map<String,Long> h, final boolean asc) {
+		List<Map.Entry<String, Long>> l = new ArrayList<>(h.entrySet());
+		Collections.sort(l, (o1, o2) -> getCompareVal(o1, o2,asc));
 		return l;
 	}
 	private static int getCompareVal(Map.Entry<String, ?> o1, Map.Entry<String, ?> o2,boolean asc) {
@@ -77,33 +76,21 @@ public class CollectionsUtil {
 		}
 		return retval;
 	}
-	public static ArrayList<Map.Entry<String,Integer>> getSortedMapByIntValue(Map<String,Integer> h,final boolean asc) {
-		ArrayList<Map.Entry<String, Integer>> l = new ArrayList<Map.Entry<String, Integer>>(h.entrySet());
-		Collections.sort(l, new Comparator<Map.Entry<String, Integer>>() {
-			@Override
-            public int compare(Map.Entry<String, Integer> o1,
-                               Map.Entry<String, Integer> o2) {
-				return getCompareVal(o1,o2,asc);
-			}
-		});
+	public static List<Map.Entry<String,Integer>> getSortedMapByIntValue(Map<String,Integer> h,final boolean asc) {
+		List<Map.Entry<String, Integer>> l = new ArrayList<>(h.entrySet());
+		Collections.sort(l, (o1, o2) -> getCompareVal(o1,o2,asc));
 		return l;
 	}
-	public static ArrayList<Map.Entry<String,Double>> getSortedMapByDoubleValue(Map<String,Double> h,final boolean asc) {
-		ArrayList<Map.Entry<String, Double>> l = new ArrayList<Map.Entry<String, Double>>(h.entrySet());
-		Collections.sort(l, new Comparator<Map.Entry<String, Double>>() {
-			@Override
-            public int compare(Map.Entry<String, Double> o1,
-                               Map.Entry<String, Double> o2) {
-				return getCompareVal(o1,o2,asc);
-			}
-		});
+	public static List<Map.Entry<String,Double>> getSortedMapByDoubleValue(Map<String,Double> h,final boolean asc) {
+		List<Map.Entry<String, Double>> l = new ArrayList<>(h.entrySet());
+		Collections.sort(l, (o1, o2) -> getCompareVal(o1,o2,asc));
 		return l;
 	}
-	public static boolean isEmpty(Collection collection){
-		return collection==null || collection.isEmpty();
+	public static boolean isEmpty(Collection<?> collection){
+		return CollectionUtils.isEmpty(collection);
 	}
-	public static boolean isEmpty(Map map){
-		return map==null || map.isEmpty();
+	public static boolean isEmpty(Map<?,?> map){
+		return CollectionUtils.isEmpty(map);
 	}
 	public static boolean isEmpty(Object[] objects){
 		return objects==null || objects.length==0;

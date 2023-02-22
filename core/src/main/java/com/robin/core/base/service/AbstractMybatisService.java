@@ -14,7 +14,6 @@ import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
-import com.google.common.collect.ObjectArrays;
 import com.robin.core.base.dto.PageDTO;
 import com.robin.core.base.exception.ServiceException;
 import com.robin.core.base.exception.WebException;
@@ -289,7 +288,6 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>,T extends S
         Page<T> page = new Page<>(curPage, limit);
 
         //分页参数
-        //params.put(Constant.PAGE, page);
 
         //排序字段
         String orderField = (String) params.get(Const.ORDER_FIELD);
@@ -524,7 +522,7 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>,T extends S
         return queryWrapper;
     }
 
-    private void wrapWithValue(Map<String, Method> getMethod, QueryWrapper<T> queryWrapper, Iterator<Map.Entry<String, Object>> iter) throws Exception {
+    private void wrapWithValue(Map<String, Method> getMethod, QueryWrapper<T> queryWrapper, Iterator<Map.Entry<String, Object>> iter)  {
         while (iter.hasNext()) {
             Map.Entry<String, Object> entry = iter.next();
             if (getMethod.containsKey(entry.getKey())) {
@@ -638,7 +636,7 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>,T extends S
             if (valueType.isAssignableFrom(Long.TYPE) || valueType.isAssignableFrom(Integer.TYPE) || valueType.isAssignableFrom(Float.TYPE)) {
                 if (value.contains("|")) {
                     String[] arr = value.split("\\|");
-                    List list = new ArrayList();
+                    List<Object> list = new ArrayList<>();
                     for (String str : arr) {
                         list.add(ConvertUtil.parseParameter(valueType, str));
                     }
@@ -672,7 +670,7 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>,T extends S
                     queryWrapper.in(filterColumn, Arrays.asList(arr));
                 } else {
                     if (value.contains("*")) {
-                        queryWrapper.like(filterColumn, value.replaceAll("\\*", ""));
+                        queryWrapper.like(filterColumn, value.replace("\\*", ""));
                     } else {
                         wrapWithCompare(queryWrapper, valueType, filterColumn, value);
                     }

@@ -25,7 +25,6 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import java.io.Serializable;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -85,7 +84,7 @@ public class ConvertUtil {
     }
 
     public static void objectToMapObj(Map<String, Object> target, Object src) throws Exception {
-        if (src == null || target == null) {
+        if (ObjectUtils.isEmpty(src) || ObjectUtils.isEmpty(target)) {
             return;
         }
         Map<String, Method> getMetholds = ReflectUtils.returnGetMethods(src.getClass());
@@ -112,7 +111,7 @@ public class ConvertUtil {
             if (methodMap.containsKey(key)) {
                 target.AddDirtyColumn(key);
                 Class<?> type = methodMap.get(key).getParameterTypes()[0];
-                Object retValue = null;
+                Object retValue;
                 if (StringUtils.isEmpty(value)) {
                     retValue = null;
                 } else {
@@ -136,8 +135,8 @@ public class ConvertUtil {
             String key = entry.getKey();
             Object value = entry.getValue();
             if (targetMap.containsKey(key)) {
-                Class type = targetMap.get(key).getParameterTypes()[0];
-                Object retValue = null;
+                Class<?> type = targetMap.get(key).getParameterTypes()[0];
+                Object retValue;
                 if (StringUtils.isEmpty(value)) {
                     retValue = null;
                 } else {

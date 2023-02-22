@@ -105,10 +105,7 @@ public class CollectionMapConvert {
     public static <T> Map<String, List<T>> convertToMapByParentKey(List<T> listobj, String parentCol) throws InvocationTargetException,IllegalAccessException {
         checkType(listobj);
         Method method = null;
-        if (!(Map.class.isAssignableFrom(listobj.get(0).getClass()))) {
-            method = ReflectUtils.returnGetMethods(listobj.get(0).getClass()).get(parentCol);
-            Assert.notNull(method,"parent column not exists in object!");
-        }
+
         Map<String, List<T>> retMap = new HashMap<>();
         for (T t : listobj) {
             Object targerobj = t;
@@ -116,6 +113,10 @@ public class CollectionMapConvert {
             if (Map.class.isAssignableFrom(t.getClass())) {
                 obj = ((Map) t).get(parentCol);
             } else {
+                if(method==null){
+                    method = ReflectUtils.returnGetMethods(t.getClass()).get(parentCol);
+                    Assert.notNull(method,"parent column not exists in object!");
+                }
                 obj = method.invoke(targerobj, null);
             }
             if (obj == null) {
@@ -248,7 +249,6 @@ public class CollectionMapConvert {
      * @throws Exception
      */
     public static <T> List<T> filterListByColumnCondition(List<T> listobj, String scriptType, String queryConditions) throws Exception {
-        List<T> retList = new ArrayList<>();
         checkType(listobj);
 
         if (SpringContextHolder.getBean(ScriptExecutor.class) == null) {

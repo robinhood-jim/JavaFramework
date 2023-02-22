@@ -15,6 +15,17 @@
  */
 package com.robin.core.base.dao;
 
+import com.robin.core.base.dao.util.AnnotationRetriever;
+import com.robin.core.base.model.BaseObject;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.core.support.AbstractLobCreatingPreparedStatementCallback;
+import org.springframework.jdbc.support.lob.LobCreator;
+import org.springframework.jdbc.support.lob.LobHandler;
+
+import java.io.ByteArrayInputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -23,16 +34,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
-import com.robin.core.base.dao.util.AnnotationRetriever;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.core.support.AbstractLobCreatingPreparedStatementCallback;
-import org.springframework.jdbc.support.lob.LobCreator;
-import org.springframework.jdbc.support.lob.LobHandler;
-
-import com.robin.core.base.model.BaseObject;
-
+@Slf4j
 public class LobCreatingPreparedStatementCallBack extends
         AbstractLobCreatingPreparedStatementCallback {
     private BaseObject obj;
@@ -68,7 +70,7 @@ public class LobCreatingPreparedStatementCallBack extends
                     if (field.isPrimary() && field.getPrimaryKeys() != null) {
                         needDo = false;
                         for (AnnotationRetriever.FieldContent fieldContent : field.getPrimaryKeys()) {
-                            setValueByDataType(ps, value, lobCreator, field.getDataType(), pos);
+                            setValueByDataType(ps, value, lobCreator, fieldContent.getDataType(), pos);
                             pos++;
                         }
                     }
@@ -80,11 +82,10 @@ public class LobCreatingPreparedStatementCallBack extends
 
             }
         } catch (IllegalAccessException ex) {
-
+            log.error("{}",ex);
         } catch (InvocationTargetException ex1) {
-
+            log.error("{}",ex1);
         }
-
     }
 
     private void setValueByDataType(PreparedStatement ps, Object value, LobCreator lobCreator, String dataType, int pos) throws SQLException {
@@ -99,29 +100,27 @@ public class LobCreatingPreparedStatementCallBack extends
 
     private void setValue(PreparedStatement ps, int pos, Object value) {
         try {
-            Class clazz = value.getClass();
-            if (clazz.equals(Long.class)) {
+            Class<?> clazz = value.getClass();
+            if (Long.class.isAssignableFrom(clazz)) {
                 ps.setLong(pos, (Long) value);
-            } else if (clazz.equals(Integer.class)) {
+            } else if (Integer.class.isAssignableFrom(clazz)) {
                 ps.setInt(pos, Integer.parseInt(value.toString()));
-            } else if (clazz.equals(String.class)) {
+            } else if (String.class.isAssignableFrom(clazz)) {
                 ps.setString(pos, value.toString());
-            } else if (clazz.equals(Date.class)) {
+            } else if (Date.class.isAssignableFrom(clazz)|| Timestamp.class.isAssignableFrom(clazz)) {
                 SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                 Timestamp date = new Timestamp(format.parse(value.toString()).getTime());
                 ps.setTimestamp(pos, date);
-            } else if (clazz.equals(Timestamp.class)) {
-                SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                Timestamp date = new Timestamp(format.parse(value.toString()).getTime());
-                ps.setTimestamp(pos, date);
-            } else if (clazz.equals(java.sql.Date.class)) {
+            } else if (java.sql.Date.class.isAssignableFrom(clazz)) {
                 SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
                 java.sql.Date date = new java.sql.Date(format.parse(value.toString()).getTime());
                 ps.setDate(pos, date);
-            } else if (clazz.equals(Double.class)) {
+            } else if (Double.class.isAssignableFrom(clazz)) {
                 ps.setDouble(pos, Double.valueOf(value.toString()));
-            } else if (clazz.equals(Float.class)) {
+            } else if (Float.class.isAssignableFrom(clazz)) {
                 ps.setFloat(pos, Float.valueOf(value.toString()));
+            }else if(byte[].class.isAssignableFrom(clazz)){
+                ps.setBlob(pos,new ByteArrayInputStream((byte[])value));
             }
         } catch (Exception e) {
             logger.error("",e);

@@ -47,14 +47,14 @@ public class PageQuery implements Serializable {
 
 	protected String							orderDirection;	
 
-	protected Map<String, String>			parameters=new HashMap<String, String>();
-	protected Map<String,Object> namedParameters =new HashMap<String, Object>();
-	protected Object[] 	parameterArr;
+	private Map<String, String>		parameters=new HashMap<>();
+	private Map<String,Object> namedParameters =new HashMap<>();
+	private Object[] 	parameterArr;
 	private Map<String, String>			columnTypes;
 
-	protected List<Condition>				conditions;		
+	private List<Condition>				conditions;
 
-	protected List<Map<String, Object>>	recordSet;		
+	private List<Map<String, Object>>	recordSet;
 	
 	protected String 					querySql;			
 

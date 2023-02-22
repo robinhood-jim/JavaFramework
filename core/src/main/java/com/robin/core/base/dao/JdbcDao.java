@@ -66,8 +66,9 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
     }
     @NonNull
     private JdbcTemplate returnTemplate(){
-        Assert.notNull(getJdbcTemplate(), "jdbc Connection is null");
-        return getJdbcTemplate();
+        JdbcTemplate template=getJdbcTemplate();
+        Assert.notNull(template, "jdbc Connection is null");
+        return template;
     }
 
     public JdbcDao(@NonNull DataSource dataSource,@NonNull LobHandler lobHandler, @NonNull QueryFactory queryFactory,@NonNull BaseSqlGen sqlGen) {
@@ -132,7 +133,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
     @Override
     public void queryBySelectId(PageQuery pageQuery) throws DAOException {
         try {
-            String selectId = Assert(pageQuery);
+            String selectId = assertQuery(pageQuery);
             QueryString queryString1 = queryFactory.getQuery(selectId);
             queryByParamter(queryString1, pageQuery);
         } catch (QueryConfgNotFoundException e) {
@@ -146,7 +147,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
     @Override
     public int executeBySelectId(PageQuery pageQuery) throws DAOException {
         try {
-            String selectId = Assert(pageQuery);
+            String selectId = assertQuery(pageQuery);
             if (sqlGen == null) {
                 throw new DAOException("SQLGen property is null!");
             }
@@ -932,7 +933,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
         return namedParameterJdbcTemplate;
     }
 
-    private String Assert(PageQuery pageQuery) {
+    private String assertQuery(PageQuery pageQuery) {
         if (pageQuery == null) {
             throw new DAOException("missing pagerQueryObject");
         }

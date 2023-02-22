@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.List;
+import java.util.Map;
 
 import com.robin.core.base.dao.IHibernateGenericDao;
 import com.robin.core.base.exception.DAOException;
@@ -168,7 +169,7 @@ public abstract class GenericSerivceImpl<V extends BaseObject,P extends Serializ
 			throw new ServiceException(e);
 		}
 	}
-	public List queryBySql(String sql) throws ServiceException{
+	public List<Map<String,Object>> queryBySql(String sql) throws ServiceException{
 		try{
 			return genericDao.queryBySql(sql);
 		}catch (DAOException e) {

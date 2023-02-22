@@ -29,8 +29,8 @@ public class ReflectUtils {
     private static final Cache<String, Map<String, List<Field>>> cacheField= CacheBuilder.newBuilder().maximumSize(1000).expireAfterAccess(30,TimeUnit.MINUTES).build();
     private static final Cache<String, Map<String, Field>> fieldCache= CacheBuilder.newBuilder().maximumSize(1000).expireAfterAccess(30,TimeUnit.MINUTES).build();
 
-    public static final List<String> getAllPropety(Class clazz) {
-        List<String> nameList = new ArrayList<String>();
+    public static final List<String> getAllPropety(Class<?> clazz) {
+        List<String> nameList = new ArrayList<>();
         if (clazz != null && !clazz.isPrimitive()) {
             Field[] fields = clazz.getDeclaredFields();
             for (int i = 0; i < fields.length; i++) {
@@ -40,8 +40,8 @@ public class ReflectUtils {
         return nameList;
     }
 
-    public static final Map<String, Method> getAllSetMethod(Class clazz) {
-        Map<String, Method> methodMap = new HashMap<String, Method>();
+    public static final Map<String, Method> getAllSetMethod(Class<?> clazz) {
+        Map<String, Method> methodMap = new HashMap<>();
         Assert.notNull(clazz,"");
         if (!clazz.isPrimitive()) {
             Method[] method = clazz.getDeclaredMethods();
@@ -55,7 +55,7 @@ public class ReflectUtils {
         }
         return methodMap;
     }
-    public static final Map<String,Field> getAllField(Class clazz){
+    public static final Map<String,Field> getAllField(Class<?> clazz){
         Map<String,Field> map=null;
         if(fieldCache.getIfPresent(clazz.getCanonicalName())==null){
             if(isUseClassGraphForReflect()){
@@ -84,7 +84,7 @@ public class ReflectUtils {
         }
     }
 
-    public static final Map<String, Method> returnGetMethods(Class clazz) {
+    public static final Map<String, Method> returnGetMethods(Class<?> clazz) {
         Map<String, Method> map = null;
         if (cachedGetMethod.getIfPresent(clazz.getCanonicalName()) == null) {
             if (isUseClassGraphForReflect()) {
@@ -106,7 +106,7 @@ public class ReflectUtils {
         return cachedGetMethod.getIfPresent(clazz.getCanonicalName());
     }
 
-    public static final Map<String, Method> returnSetMethods(Class clazz) {
+    public static final Map<String, Method> returnSetMethods(Class<?> clazz) {
         Map<String, Method> map = null;
         if (cachedSetMethod.getIfPresent(clazz.getCanonicalName()) == null) {
             if (isUseClassGraphForReflect()) {
@@ -128,7 +128,7 @@ public class ReflectUtils {
         return cachedSetMethod.getIfPresent(clazz.getCanonicalName());
     }
 
-    public static boolean isAnnotationClassWithAnnotationFields(Class clazz, Class<? extends Annotation> annotationClazz, Class<? extends Annotation> annotationFields) {
+    public static boolean isAnnotationClassWithAnnotationFields(Class<?> clazz, Class<? extends Annotation> annotationClazz, Class<? extends Annotation> annotationFields) {
         if (!isUseClassGraphForReflect()) {
             if (clazz.getAnnotation(annotationClazz) != null) {
                 Field[] fields = clazz.getDeclaredFields();
@@ -161,7 +161,7 @@ public class ReflectUtils {
         return null;
     }
 
-    private static Method getMethodByName(Class clazz, String methodName) {
+    private static Method getMethodByName(Class<?> clazz, String methodName) {
         try {
             return clazz.getDeclaredMethod(methodName);
         } catch (NoSuchMethodException ex) {
@@ -170,7 +170,7 @@ public class ReflectUtils {
         return null;
     }
 
-    private static Method getMethodByName(Class clazz, String methodName, Type type) {
+    private static Method getMethodByName(Class<?> clazz, String methodName, Type type) {
         try {
             return clazz.getDeclaredMethod(methodName, (Class) type);
         } catch (NoSuchMethodException ex) {
@@ -189,7 +189,7 @@ public class ReflectUtils {
         }
         return false;
     }
-    public static <T extends Annotation> T getAnnotationByFieldName(Class baseClazz, String fieldName, Class<T> annotationClazz){
+    public static <T extends Annotation> T getAnnotationByFieldName(Class<?> baseClazz, String fieldName, Class<T> annotationClazz){
         Assert.isTrue(annotationClazz.isAnnotation(),"field class must be annotation!");
         List<Field> fields= getFieldsByAnnotation(baseClazz,annotationClazz);
         for(Field field:fields){
@@ -201,7 +201,7 @@ public class ReflectUtils {
         }
         return null;
     }
-    public static Map<String,Field> getFieldsMapByAnnotation(Class baseClazz,Class annotationClazz){
+    public static Map<String,Field> getFieldsMapByAnnotation(Class<?> baseClazz,Class<? extends Annotation> annotationClazz){
         List<Field> fields= getFieldsByAnnotation(baseClazz,annotationClazz);
         if(null!=fields) {
             Map<String, Field> map = new HashMap<>();
@@ -212,7 +212,7 @@ public class ReflectUtils {
         }
         return null;
     }
-    public static List<Field> getFieldsByAnnotation(Class baseClazz, Class annotationClazz){
+    public static List<Field> getFieldsByAnnotation(Class<?> baseClazz, Class<? extends Annotation> annotationClazz){
         Assert.isTrue(annotationClazz.isAnnotation(),"field class must be annotation!");
         Map<String,List<Field>> tmap=cacheField.getIfPresent(baseClazz.getCanonicalName()+annotationClazz.getCanonicalName());
         if(null==tmap){
@@ -248,7 +248,7 @@ public class ReflectUtils {
      * @param annotationClazz
      * @return
      */
-    public static Object getFieldValueByAnnotation(Class baseClazz, Object baseObj,Class annotationClazz) {
+    public static Object getFieldValueByAnnotation(Class<?> baseClazz, Object baseObj,Class<? extends Annotation> annotationClazz) {
         List<Field> fields= getFieldsByAnnotation(baseClazz,annotationClazz);
         try {
             if (null != fields && !fields.isEmpty()) {
@@ -260,7 +260,7 @@ public class ReflectUtils {
         }
         return null;
     }
-    public static String getFieldNameByAnnotation(Class baseClazz,Class annotationClazz) {
+    public static String getFieldNameByAnnotation(Class<?> baseClazz,Class<? extends Annotation> annotationClazz) {
         List<Field> fields= getFieldsByAnnotation(baseClazz,annotationClazz);
         try {
             if (null != fields && !fields.isEmpty()) {

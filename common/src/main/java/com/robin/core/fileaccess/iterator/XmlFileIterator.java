@@ -138,7 +138,7 @@ public class XmlFileIterator extends AbstractFileIterator {
 		}
 		return retmap;
 	}
-	private void adjustColumn(String sourceColumnName,String value,Map<String,Object> retmap) throws Exception{
+	private void adjustColumn(String sourceColumnName,String value,Map<String,Object> retmap) {
 		String column=sourceColumnName;
 		if(!columnMap.containsKey(sourceColumnName)){
 			if(columnMap.containsKey(sourceColumnName.toLowerCase())){

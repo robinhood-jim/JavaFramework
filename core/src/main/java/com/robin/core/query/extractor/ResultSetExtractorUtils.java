@@ -10,6 +10,9 @@ import java.util.Map;
 
 
 public class ResultSetExtractorUtils {
+    private ResultSetExtractorUtils(){
+
+    }
     public static void wrapResultSetToMap(ResultSet rs, String encode, Map<String, Object> map) throws SQLException {
         String columnName;
         Assert.notNull(rs,"");

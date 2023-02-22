@@ -12,12 +12,20 @@ import com.robin.core.collection.util.CollectionBaseConvert;
 import com.robin.core.sql.util.BaseSqlGen;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.dbutils.DbUtils;
+import org.springframework.util.CollectionUtils;
 
 import java.sql.Connection;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 @Slf4j
 public class ModelSqlGenerator {
+    private ModelSqlGenerator(){
+
+    }
+
     public static void syncTable(BaseSqlGen sqlGen, BaseDataBaseMeta meta, Class<? extends BaseObject> clazz) throws DAOException {
         Connection conn = null;
         try {
@@ -67,11 +75,11 @@ public class ModelSqlGenerator {
         }
     }
 
-    private static boolean tableExists(Connection connection, String schema, String tableName) throws RuntimeException {
+    private static boolean tableExists(Connection connection, String schema, String tableName) throws DAOException {
         try {
             String fullName = StringUtils.isEmpty(schema) ? tableName : schema + "." + tableName;
-            List list = SimpleJdbcDao.queryString(connection, "select COUNT(1) from " + fullName + " where 1!=1");
-            return list.size() > 0;
+            List<Map<String,Object>> list = SimpleJdbcDao.queryString(connection, "select COUNT(1) from " + fullName + " where 1!=1");
+            return !CollectionUtils.isEmpty(list);
         } catch (Exception ex) {
             throw ex;
         }
@@ -115,22 +123,22 @@ public class ModelSqlGenerator {
     }
 
 
-    private static boolean tableExists(JdbcDao jdbcDao, String schema, String tableName) throws RuntimeException {
+    private static boolean tableExists(JdbcDao jdbcDao, String schema, String tableName) throws DAOException {
         try {
             String fullName = StringUtils.isEmpty(schema) ? tableName : schema + "." + tableName;
-            List list = jdbcDao.queryBySql("select COUNT(1) from " + fullName + " where 1!=1");
-            return list.size() > 0;
+            List<Map<String,Object>> list = jdbcDao.queryBySql("select COUNT(1) from " + fullName + " where 1!=1");
+            return !CollectionUtils.isEmpty(list);
         } catch (Exception ex) {
             throw ex;
         }
     }
 
-    public static String generateCreateSql(String clazzName,BaseDataBaseMeta meta, BaseSqlGen sqlGen) throws Exception {
+    public static String generateCreateSql(String clazzName,BaseDataBaseMeta meta, BaseSqlGen sqlGen) throws ClassNotFoundException {
         Class<? extends BaseObject> clazz = (Class<? extends BaseObject>) Class.forName(clazzName);
         return generateCreateSql(clazz,meta, sqlGen);
     }
 
-    public static String generateCreateSql(Class<? extends BaseObject> clazz,BaseDataBaseMeta meta, BaseSqlGen sqlGen) throws Exception {
+    public static String generateCreateSql(Class<? extends BaseObject> clazz,BaseDataBaseMeta meta, BaseSqlGen sqlGen) {
         StringBuilder builder = new StringBuilder();
         AnnotationRetriever.EntityContent entityContent = AnnotationRetriever.getMappingTableByCache(clazz);
         List<AnnotationRetriever.FieldContent> fields = AnnotationRetriever.getMappingFieldsCache(clazz);
