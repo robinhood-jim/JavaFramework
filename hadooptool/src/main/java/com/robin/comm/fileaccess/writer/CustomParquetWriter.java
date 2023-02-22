@@ -33,15 +33,18 @@ public class CustomParquetWriter extends ParquetWriter<Map<String,Object>> {
             this.schema = schema;
             return this;
         }
+        @Override
         public CustomParquetWriter.Builder<T> withCompressionCodec(CompressionCodecName compressCode){
             super.withCompressionCodec(compressCode);
             return this;
         }
 
+        @Override
         protected CustomParquetWriter.Builder<T> self() {
             return this;
         }
 
+        @Override
         protected WriteSupport<T> getWriteSupport(Configuration conf) {
             return new CustomWriteSupport(this.schema);
         }

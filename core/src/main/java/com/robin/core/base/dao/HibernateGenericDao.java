@@ -72,6 +72,7 @@ public class HibernateGenericDao extends HibernateDaoSupport implements IHiberna
     /**
      * findAll
      */
+    @Override
     public <T extends BaseObject> List<T> findAll(Class<T> entityClass) {
         try {
             return returnTemplate().loadAll(entityClass);
@@ -83,6 +84,7 @@ public class HibernateGenericDao extends HibernateDaoSupport implements IHiberna
     /**
      * Save Entity
      */
+    @Override
     public <T extends BaseObject> void save(T o) {
         try {
             returnTemplate().save(o);
@@ -94,6 +96,7 @@ public class HibernateGenericDao extends HibernateDaoSupport implements IHiberna
     /**
      * update Entity
      */
+    @Override
     public <T extends BaseObject> void update(T o) {
         try {
             returnTemplate().saveOrUpdate(o);
@@ -126,6 +129,7 @@ public class HibernateGenericDao extends HibernateDaoSupport implements IHiberna
     }
 
 
+    @Override
     public <T extends BaseObject> List<T> findByNamedParam(Class<T> entityClass, String[] fieldName, Object[] fieldValue) throws DAOException {
         try {
             Assert.isTrue(fieldName.length == fieldValue.length, "");
@@ -140,6 +144,7 @@ public class HibernateGenericDao extends HibernateDaoSupport implements IHiberna
 
     }
 
+    @Override
     public <T extends BaseObject> List<T> findByField(Class<T> entityClass, String fieldName, Object fieldValue) throws DAOException {
 
         try {
@@ -161,13 +166,16 @@ public class HibernateGenericDao extends HibernateDaoSupport implements IHiberna
         return refClass.getSimpleName();
     }
 
+    @Override
     public void batchUpdate(String sql, final List<Map<String, String>> resultList, List<Map<String, String>> columnTypeMapList) throws DAOException {
         CommJdbcUtil.batchUpdate(jdbcTemplate, sql, resultList, columnTypeMapList);
     }
 
+    @Override
     public <T extends BaseObject> long count(Class<T> entityClass) throws DAOException {
         try {
             List<?> countList = returnTemplate().execute(new HibernateCallback<List<?>>() {
+                @Override
                 public List<?> doInHibernate(Session session) throws HibernateException {
                     String hql = "select count(*) from " + getClassName(entityClass);
                     Query query = session.createQuery(hql);
@@ -181,6 +189,7 @@ public class HibernateGenericDao extends HibernateDaoSupport implements IHiberna
         }
     }
 
+    @Override
     public <T extends BaseObject> long countByField(Class<T> entityClass, String fieldName, Object fieldValue) throws DAOException {
         try {
             String hql = "select count(*) from " + getClassName(entityClass) + " where " + fieldName + "=:fieldValue";
@@ -194,6 +203,7 @@ public class HibernateGenericDao extends HibernateDaoSupport implements IHiberna
     }
 
 
+    @Override
     public <T extends BaseObject> List<T> findByFieldPage(Class<T> entityClass, final String fieldName, final Object fieldValue, final int startpos, final int pageSize) throws DAOException {
 
         try {
@@ -210,6 +220,7 @@ public class HibernateGenericDao extends HibernateDaoSupport implements IHiberna
         }
     }
 
+    @Override
     public <T extends BaseObject> List<T> findByFieldPage(Class<T> entityClass, final String fieldName, final Object fieldValue, String orderName, boolean ascending, final int startpos, final int pageSize) throws DAOException {
         DetachedCriteria criteria = DetachedCriteria.forClass(entityClass);
 
@@ -232,6 +243,7 @@ public class HibernateGenericDao extends HibernateDaoSupport implements IHiberna
         }
     }
 
+    @Override
     public <T extends BaseObject> List<T> findByField(Class<T> entityClass, String fieldName, Object fieldValue, String orderName, boolean ascending) throws DAOException {
         DetachedCriteria criteria = DetachedCriteria.forClass(entityClass);
 
@@ -255,6 +267,7 @@ public class HibernateGenericDao extends HibernateDaoSupport implements IHiberna
         }
     }
 
+    @Override
     public <T extends BaseObject> List<T> findByFieldsPage(Class<T> entityClass, final String[] fieldName, final Object[] fieldValue, final int startpos, final int pageSize) throws DAOException {
         try {
             return doInHibernateQuery(entityClass, fieldName, fieldValue, startpos, pageSize);
@@ -263,6 +276,7 @@ public class HibernateGenericDao extends HibernateDaoSupport implements IHiberna
         }
     }
 
+    @Override
     public <T extends BaseObject> List<T> findByFields(Class<T> entityClass, String[] fieldName, Object[] fieldValue) throws DAOException {
         DetachedCriteria criteria = DetachedCriteria.forClass(entityClass);
         Assert.isTrue(fieldName.length == fieldValue.length, "");
@@ -281,6 +295,7 @@ public class HibernateGenericDao extends HibernateDaoSupport implements IHiberna
         }
     }
 
+    @Override
     public <T extends BaseObject> List<T> findByFields(Class<T> entityClass, String[] fieldName, Object[] fieldValue, String orderName, boolean ascending) throws DAOException {
         DetachedCriteria criteria = DetachedCriteria.forClass(entityClass);
         Assert.isTrue(fieldName.length == fieldValue.length, "");
@@ -305,6 +320,7 @@ public class HibernateGenericDao extends HibernateDaoSupport implements IHiberna
         }
     }
 
+    @Override
     public <T extends BaseObject> List<T> findByFieldsPage(Class<T> entityClass, final String[] fieldName, final Object[] fieldValue, String orderName, boolean ascending, final int startpos, final int pageSize) throws DAOException {
         try {
             return doInHibernateQuery(entityClass, fieldName, fieldValue, startpos, pageSize);
@@ -313,6 +329,7 @@ public class HibernateGenericDao extends HibernateDaoSupport implements IHiberna
         }
     }
 
+    @Override
     public <T extends BaseObject> List<T> findByFields(Class<T> entityClass, String[] fieldName, Object[] fieldValue, String[] orderName, boolean[] ascending) throws DAOException {
         DetachedCriteria criteria = DetachedCriteria.forClass(entityClass);
         Assert.isTrue(fieldName.length == fieldValue.length, "");
@@ -340,6 +357,7 @@ public class HibernateGenericDao extends HibernateDaoSupport implements IHiberna
         }
     }
 
+    @Override
     public <T extends BaseObject> List<T> findByHql(Class<T> clazz, String hql) throws DAOException {
         try {
             return (List<T>) returnTemplate().find(hql, null);
@@ -348,6 +366,7 @@ public class HibernateGenericDao extends HibernateDaoSupport implements IHiberna
         }
     }
 
+    @Override
     public <T extends BaseObject> List<T> findByHqlPage(Class<T> clazz, final String hql, final int startpox, final int pageSize) throws DAOException {
         try {
             return (List<T>) returnTemplate().executeWithNativeSession((HibernateCallback<List<?>>) session -> {
@@ -361,18 +380,22 @@ public class HibernateGenericDao extends HibernateDaoSupport implements IHiberna
         }
     }
 
+    @Override
     public <T extends BaseObject, ID extends Serializable> T get(Class<T> entityClass, ID id) throws DAOException {
         return returnTemplate().get(entityClass, id);
     }
 
+    @Override
     public String getTableName() {
         return "";
     }
 
+    @Override
     public <T extends BaseObject, ID extends Serializable> T load(Class<T> entityClass, ID id) throws DAOException {
         return returnTemplate().load(entityClass, id);
     }
 
+    @Override
     public void queryBySelectId(PageQuery pageQuery) throws DAOException {
         try {
             if (pageQuery == null)
@@ -395,6 +418,7 @@ public class HibernateGenericDao extends HibernateDaoSupport implements IHiberna
         }
     }
 
+    @Override
     public int executeBySelectId(PageQuery pageQuery) throws DAOException {
         try {
             if (pageQuery == null)
@@ -421,10 +445,12 @@ public class HibernateGenericDao extends HibernateDaoSupport implements IHiberna
         return -1;
     }
 
+    @Override
     public PageQuery queryBySql(String querySQL, String countSql, String[] displayname, PageQuery pageQuery) throws DAOException {
         return CommJdbcUtil.queryBySql(jdbcTemplate, lobHandler, sqlGen, querySQL, countSql, displayname, pageQuery);
     }
 
+    @Override
     public Object queryBySingle(Class<?> clazz, String sql, Object... values) throws DAOException {
         try {
             return jdbcTemplate.queryForObject(sql, values, clazz);
@@ -435,6 +461,7 @@ public class HibernateGenericDao extends HibernateDaoSupport implements IHiberna
 
     }
 
+    @Override
     public void queryByParamter(QueryString qs, PageQuery pageQuery) throws DAOException {
         if (pageQuery.getParameterArr() != null && pageQuery.getParameterArr().length > 0) {
             CommJdbcUtil.queryByPreparedParamter(jdbcTemplate, getNamedJdbcTemplate(), lobHandler, sqlGen, qs, pageQuery);
@@ -451,6 +478,7 @@ public class HibernateGenericDao extends HibernateDaoSupport implements IHiberna
     }
 
 
+    @Override
     public List<Map<String, Object>> queryBySql(String sql) throws DAOException {
         try {
             int start = 0;
@@ -462,6 +490,7 @@ public class HibernateGenericDao extends HibernateDaoSupport implements IHiberna
         }
     }
 
+    @Override
     public List<Map<String, Object>> queryBySql(String sql, Object... args) throws DAOException {
         try {
             return jdbcTemplate.queryForList(sql, args);
@@ -471,6 +500,7 @@ public class HibernateGenericDao extends HibernateDaoSupport implements IHiberna
         }
     }
 
+    @Override
     public List<?> queryByRowWapper(String sql, RowMapper<?> mapper) throws DAOException {
         try {
             return jdbcTemplate.query(sql, mapper);
@@ -479,6 +509,7 @@ public class HibernateGenericDao extends HibernateDaoSupport implements IHiberna
         }
     }
 
+    @Override
     public int queryForInt(String sumSQL) throws DAOException {
         int count = -1;
         try {
@@ -492,6 +523,7 @@ public class HibernateGenericDao extends HibernateDaoSupport implements IHiberna
         return count;
     }
 
+    @Override
     public <T extends BaseObject, ID extends Serializable> int remove(Class<T> entityClass, ID id) throws DAOException {
         try {
             returnTemplate().delete(get(entityClass, id));
@@ -501,6 +533,7 @@ public class HibernateGenericDao extends HibernateDaoSupport implements IHiberna
         }
     }
 
+    @Override
     public <T extends BaseObject> int removeAll(Class<T> entityClass) throws DAOException {
         this.executeUpdate("delete from " + getClassName(entityClass));
         return 0;
@@ -515,6 +548,7 @@ public class HibernateGenericDao extends HibernateDaoSupport implements IHiberna
         }
     }
 
+    @Override
     public <T extends BaseObject, ID extends Serializable> int removeAll(Class<T> entityClass, ID[] ids) throws DAOException {
         for (Serializable id : ids) {
             ID tmpid = (ID) id;
@@ -542,6 +576,7 @@ public class HibernateGenericDao extends HibernateDaoSupport implements IHiberna
         }
     }
 
+    @Override
     public <T extends BaseObject> void saveOrUpdate(T obj) throws DAOException {
         try {
             returnTemplate().saveOrUpdate(obj);
@@ -586,6 +621,7 @@ public class HibernateGenericDao extends HibernateDaoSupport implements IHiberna
     }
 
 
+    @Override
     @Deprecated
     public int executeSqlUpdate(final String sql) throws DAOException {
         int ret = -1;

@@ -41,6 +41,7 @@ public abstract class AbstractFileIterator extends AbstractResIterator implement
 		this.accessUtil=accessUtil;
 	}
 
+	@Override
 	public void beforeProcess(String resourcePath){
 		checkAccessUtil(resourcePath);
 		Assert.notNull(accessUtil,"ResourceAccessUtil is required!");
