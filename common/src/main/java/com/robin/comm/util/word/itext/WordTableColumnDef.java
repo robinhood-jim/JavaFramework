@@ -13,20 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.robin.comm.util.word;
+package com.robin.comm.util.word.itext;
 
-import java.util.ArrayList;
-import java.util.List;
-
-public class WordParagraph {
-	private List<WordParagraphSection> paragraphList=new ArrayList<WordParagraphSection>();
-
-	public List<WordParagraphSection> getParagraphList() {
-		return paragraphList;
+public class WordTableColumnDef {
+	private String columnName;
+	private int rowSpan;
+	private int colSpan;
+	
+	
+	public String getColumnName() {
+		return columnName;
 	}
-
-	public void setParagraphList(List<WordParagraphSection> paragraphList) {
-		this.paragraphList = paragraphList;
+	public void setColumnName(String columnName) {
+		this.columnName = columnName;
+	}
+	public int getRowSpan() {
+		return rowSpan;
+	}
+	public void setRowSpan(int rowSpan) {
+		this.rowSpan = rowSpan;
+	}
+	public int getColSpan() {
+		return colSpan;
+	}
+	public void setColSpan(int colSpan) {
+		this.colSpan = colSpan;
 	}
 	
 

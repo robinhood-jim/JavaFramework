@@ -31,7 +31,7 @@ public class DbConnectionHolder extends AbstractResourceHolder implements IHolde
         return HikariCPPoolUtils.getInstance().getPool(sourceName) ==null || HikariCPPoolUtils.getInstance().getPool(sourceName).getActiveConnections()==0;
     }
     public void closeConnection(Connection connection){
-
+        HikariCPPoolUtils.getInstance().getPool(sourceName).evictConnection(connection);
     }
 
     @Override

@@ -52,6 +52,7 @@ public class TableConfigProp {
     }
 
     public void setHeaderColumnList(List<List<TableHeaderColumn>> headerColumnList) {
+        this.containrow=headerColumnList.size();
         this.headerColumnList = headerColumnList;
     }
 

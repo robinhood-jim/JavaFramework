@@ -13,6 +13,9 @@ import java.util.Map;
 
 
 public class DhtmxTreeWrapper {
+	private DhtmxTreeWrapper(){
+
+	}
 
 	public static void WrappSingleTree(List<String> list,HttpServletRequest request,HttpServletResponse response) throws Exception{
 		StringBuffer sb = new StringBuffer();
@@ -46,21 +49,21 @@ public class DhtmxTreeWrapper {
 		if(userdatakeys!=null && !"".equals(userdatakeys)) {
             arr=userdatakeys.split(",");
         }
-		Map<String,Object> retmap=new HashMap<String, Object>();
+		Map<String,Object> retmap=new HashMap<>();
 		retmap.put("id", pid);
-		List<Map<String,Object>> itemlist=new ArrayList<Map<String,Object>>();
+		List<Map<String,Object>> itemlist=new ArrayList<>();
 		for (int i = 0; i < list.size(); i++) {
 			Object org=list.get(i);
 			Object keyobj=PropertyUtils.getProperty(org, key);
 			Object valueobj=PropertyUtils.getProperty(org, valuekey);
-			Map<String,Object> insertMap=new HashMap<String, Object>();
+			Map<String,Object> insertMap=new HashMap<>();
 			insertMap.put("id", keyobj);
 			insertMap.put("text", valueobj);
 			if(arr!=null && arr.length>0){
-				List<Map<String,Object>> userdatalist=new ArrayList<Map<String,Object>>();
+				List<Map<String,Object>> userdatalist=new ArrayList<>();
 				for (int j = 0; j < arr.length; j++) {
 					Object val1=PropertyUtils.getProperty(org, arr[j]);
-					Map<String,Object> userMap=new HashMap<String, Object>();
+					Map<String,Object> userMap=new HashMap<>();
 					userMap.put("name", arr[j]);
 					userMap.put("content", val1);
 					userdatalist.add(userMap);

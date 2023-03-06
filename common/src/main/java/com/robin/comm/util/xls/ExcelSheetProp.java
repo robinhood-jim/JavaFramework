@@ -15,16 +15,19 @@
  */
 package com.robin.comm.util.xls;
 
+import lombok.Data;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+@Data
 public class ExcelSheetProp {
 	private String[] headerName;
 	private String[] columnName;
-	private List<Map<String,String>> columnList;
-	private List<ExcelColumnProp> columnPropList=new ArrayList<ExcelColumnProp>();
-	private String fileext=ExcelBaseOper.TYPE_EXCEL2003;
+	private List<Map<String,Object>> columnList;
+	private List<ExcelColumnProp> columnPropList=new ArrayList<>();
+	private String fileExt =ExcelBaseOper.TYPE_EXCEL2003;
 	private String[] columnType;
 	private String sheetName;
 	private int startRow=2;   
@@ -34,98 +37,30 @@ public class ExcelSheetProp {
 	private boolean streamInsert;
 	private Integer streamRows=100;
 	private int sheetNum=0;
-	
-	public List<Map<String,String>> getColumnList() {
-		return columnList;
+	private boolean fillHeader=true;
+	public ExcelSheetProp(){
+
 	}
-	public void setColumnList(List<Map<String,String>> columnList) {
-		this.columnList = columnList;
+	public ExcelSheetProp(String[] headerName,String[] columnName,String fileExt){
+		this.headerName=headerName;
+		this.columnName=columnName;
+		this.fileExt=fileExt;
+	}
+	public ExcelSheetProp(String fileExt,boolean fillHeader){
+		this.fileExt=fileExt;
+		this.fillHeader=fillHeader;
+	}
+	public ExcelSheetProp(String fileExt){
+		this.fileExt=fileExt;
 	}
 
-	public String[] getColumnName() {
-		return columnName;
-	}
-
-	public void setColumnName(String[] columnName) {
-		this.columnName = columnName;
-	}
-	
-	public String[] getColumnType() {
-		return columnType;
-	}
-	
-	public void setColumnType(String[] columnType) {
-		this.columnType = columnType;
-	}
-	
-	public String[] getHeaderName() {
-		return headerName;
-	}
-	
-	public void setHeaderName(String[] headerName) {
-		this.headerName = headerName;
-	}
-	public String getSheetName() {
-		return sheetName;
-	}
-	public void setSheetName(String sheetName) {
-		this.sheetName = sheetName;
-	}
-	public Integer getTableId() {
-		return tableId;
-	}
-	public void setTableId(Integer tableId) {
-		this.tableId = tableId;
-	}
-	public int getStartCol() {
-		return startCol;
-	}
-	public void setStartCol(int startCol) {
-		this.startCol = startCol;
-	}
-	public int getStartRow() {
-		return startRow;
-	}
-	public void setStartRow(int startRow) {
-		this.startRow = startRow;
-	}
-	public String getFileext() {
-		return fileext;
-	}
-	public void setFileext(String fileext) {
-		this.fileext = fileext;
-	}
 	public void addColumnProp(ExcelColumnProp prop){
 		getColumnPropList().add(prop);
 	}
 	public List<ExcelColumnProp> getColumnPropList() {
 		return columnPropList;
 	}
-	public void setColumnPropList(List<ExcelColumnProp> columnPropList) {
-		this.columnPropList = columnPropList;
-	}
 
-	public boolean isStreamInsert() {
-		return streamInsert;
-	}
 
-	public void setStreamInsert(boolean streamInsert) {
-		this.streamInsert = streamInsert;
-	}
 
-	public Integer getStreamRows() {
-		return streamRows;
-	}
-
-	public void setStreamRows(Integer streamRows) {
-		this.streamRows = streamRows;
-	}
-
-	public int getSheetNum() {
-		return sheetNum;
-	}
-
-	public void setSheetNum(int sheetNum) {
-		this.sheetNum = sheetNum;
-	}
 }

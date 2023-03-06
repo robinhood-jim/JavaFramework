@@ -3,19 +3,21 @@ package com.robin.core.base.service;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.enums.SqlMethod;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
+import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
-import com.google.common.collect.ObjectArrays;
 import com.robin.core.base.dto.PageDTO;
 import com.robin.core.base.exception.ServiceException;
 import com.robin.core.base.exception.WebException;
+import com.robin.core.base.model.BaseModel;
 import com.robin.core.base.reflect.ReflectUtils;
 import com.robin.core.base.util.Const;
 import com.robin.core.convert.util.ConvertUtil;
@@ -62,6 +64,7 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>,T extends S
     protected Method setDeleteMethod=null;
     protected Method getDeleteMethod=null;
     protected Integer invalidValue=Integer.valueOf(Const.INVALID);
+    protected Map<String,Class<?>> fieldTypeMap=new HashMap<>();
 
     public AbstractMybatisService(){
         Type genericSuperClass = getClass().getGenericSuperclass();
@@ -80,22 +83,27 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>,T extends S
         this.pkType = ((Class) parametrizedType.getActualTypeArguments()[2]);
         try {
             valueOfMethod = this.pkType.getMethod("valueOf", String.class);
-            List<Field> pkFields= ReflectUtils.getFieldsByAnnotation(voType,TableId.class);
-            if(!CollectionUtils.isEmpty(pkFields)) {
-                pkColumn = pkFields.get(0).getName();
-                idField=pkFields.get(0);
-                tableId=pkFields.get(0).getAnnotation(TableId.class);
-            }
             getMethods= ReflectUtils.returnGetMethods(voType);
             setMethods= ReflectUtils.returnSetMethods(voType);
-            fieldMap= ReflectUtils.getFieldsMapByAnnotation(voType, TableField.class);
-            setMap=ReflectUtils.returnSetMethods(voType);
-            if(null!=fieldMap && !fieldMap.isEmpty()) {
-                Iterator<Map.Entry<String, Field>> iterator = fieldMap.entrySet().iterator();
-                while (iterator.hasNext()) {
-                    Map.Entry<String,Field> entry=iterator.next();
-                    fieldMappingMap.put(entry.getKey(),entry.getValue().getAnnotation(TableField.class).value());
+
+            List<Field> fields=Arrays.asList(voType.getDeclaredFields());
+            if(voType.getSuperclass().isAssignableFrom(BaseModel.class)){
+                Field[] superFields=this.voType.getSuperclass().getDeclaredFields();
+                fields.addAll(Arrays.asList(superFields));
+            }
+            for(Field field:fields){
+                String fieldName=field.getName();
+                String columnName;
+                tableId=field.getAnnotation(TableId.class);
+                if(tableId!=null){
+                    idField=field;
+                    columnName=tableId!=null && !StringUtils.isEmpty(tableId.value())?tableId.value():com.robin.core.base.util.StringUtils.getFieldNameByCamelCase(fieldName);
+                }else{
+                    TableField tableField=field.getAnnotation(TableField.class);
+                    columnName=tableField!=null && !StringUtils.isEmpty(tableField.value())?tableField.value():com.robin.core.base.util.StringUtils.getFieldNameByCamelCase(fieldName);
                 }
+                fieldMappingMap.put(fieldName,columnName);
+                fieldTypeMap.put(columnName,field.getType());
             }
             if(getMethods.containsKey(com.robin.core.base.util.StringUtils.returnCamelCaseByFieldName(deleteColumn))){
                 getDeleteMethod=getMethods.get(com.robin.core.base.util.StringUtils.returnCamelCaseByFieldName(deleteColumn));
@@ -119,9 +127,9 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>,T extends S
     @Override
     @Transactional(rollbackFor = RuntimeException.class)
     public boolean deleteByIds(String ids){
-        P[] idArray=parseId(ids);
+        List<P> idArray=parseId(ids);
         QueryWrapper<T> wrapper=new QueryWrapper<>();
-        wrapper.in(pkColumn,Arrays.asList(idArray));
+        wrapper.in(pkColumn,idArray);
         return this.remove(wrapper);
     }
     @Override
@@ -175,21 +183,45 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>,T extends S
         queryWrapper.between(columnName,fromValue,toValue);
         return baseDao.selectList(queryWrapper);
     }
+    @Override
+    public List<T> queryByField(SFunction<T,?> queryField, Const.OPERATOR operator, Object... value) throws ServiceException{
+        Assert.isTrue(value.length>0,"");
+        LambdaQueryWrapper<T> queryWrapper=getWrapper(queryField,operator,value);
+        try {
+            return baseMapper.selectList(queryWrapper);
+        }catch (Exception ex){
+            throw new ServiceException(ex);
+        }
+    }
+    @Override
+    public List<T> queryByField(SFunction<T,?> queryField ,SFunction<T,?> orderField, Const.OPERATOR operator,boolean ascFlag, Object... value) throws ServiceException{
+        Assert.isTrue(value.length>0,"");
+        LambdaQueryWrapper<T> queryWrapper=getWrapper(queryField,operator,value);
+        if(orderField!=null && ascFlag){
+            queryWrapper.orderByAsc(orderField);
+        }else{
+            queryWrapper.orderByDesc(orderField);
+        }
+        try {
+            return baseMapper.selectList(queryWrapper);
+        }catch (Exception ex){
+            throw new ServiceException(ex);
+        }
+    }
 
 
 
     @Override
-    public  P[] parseId(String ids) throws ServiceException {
-        P[] array;
+    public  List<P> parseId(String ids) throws ServiceException {
+        List<P> array=new ArrayList<>();
         try {
             Assert.notNull(ids,"input id is null");
             Assert.isTrue(ids.length()>0,"input ids is empty");
             String[] idsArr = ids.split(",");
-            array= ObjectArrays.newArray(pkType,idsArr.length);
             for (int i = 0; i < idsArr.length; i++) {
                 P p = pkType.newInstance();
                 valueOfMethod.invoke(p, idsArr[i]);
-                array[i]=p;
+                array.add(p);
             }
         } catch (Exception ex) {
             throw new ServiceException(ex);
@@ -256,7 +288,6 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>,T extends S
         Page<T> page = new Page<>(curPage, limit);
 
         //分页参数
-        //params.put(Constant.PAGE, page);
 
         //排序字段
         String orderField = (String) params.get(Const.ORDER_FIELD);
@@ -491,7 +522,7 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>,T extends S
         return queryWrapper;
     }
 
-    private void wrapWithValue(Map<String, Method> getMethod, QueryWrapper<T> queryWrapper, Iterator<Map.Entry<String, Object>> iter) throws Exception {
+    private void wrapWithValue(Map<String, Method> getMethod, QueryWrapper<T> queryWrapper, Iterator<Map.Entry<String, Object>> iter)  {
         while (iter.hasNext()) {
             Map.Entry<String, Object> entry = iter.next();
             if (getMethod.containsKey(entry.getKey())) {
@@ -555,13 +586,41 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>,T extends S
             }
         }
     }
-
+    private LambdaQueryWrapper<T> getWrapper(SFunction<T,?> queryField, Const.OPERATOR operator, Object... value){
+        LambdaQueryWrapper<T> queryWrapper=new QueryWrapper<T>().lambda();
+        if(operator.equals(Const.OPERATOR.EQ)){
+            queryWrapper.eq(queryField,value[0]);
+        }else if(operator.equals(Const.OPERATOR.GE)){
+            queryWrapper.ge(queryField,value[0]);
+        }else if(operator.equals(Const.OPERATOR.LE)){
+            queryWrapper.ge(queryField,value[0]);
+        }else if(operator.equals(Const.OPERATOR.GT)){
+            queryWrapper.gt(queryField,value[0]);
+        }else if(operator.equals(Const.OPERATOR.LT)){
+            queryWrapper.gt(queryField,value[0]);
+        }else if(operator.equals(Const.OPERATOR.IN)){
+            queryWrapper.in(queryField,value);
+        }else if(operator.equals(Const.OPERATOR.NOTIN)){
+            queryWrapper.notIn(queryField,value);
+        }else if(operator.equals(Const.OPERATOR.NE)){
+            queryWrapper.ne(queryField,value[0]);
+        }else if(operator.equals(Const.OPERATOR.NVL)){
+            queryWrapper.isNotNull(queryField);
+        }else if(operator.equals(Const.OPERATOR.NULL)){
+            queryWrapper.isNull(queryField);
+        }else if(operator.equals(Const.OPERATOR.BETWEEN)){
+            queryWrapper.between(queryField,value[0],value[1]);
+        }else if(operator.equals(Const.OPERATOR.NOTEXIST)){
+            queryWrapper.notExists(value[0].toString());
+        }
+        return queryWrapper;
+    }
 
 
     private String getFilterColumn(String key) {
         String filterColumn;
-        if (fieldMap != null && fieldMap.containsKey(key)) {
-            filterColumn = fieldMap.get(key).getAnnotation(TableField.class).value();
+        if (fieldMappingMap.containsKey(key)) {
+            filterColumn = fieldMappingMap.get(key);
         } else {
             filterColumn = com.robin.core.base.util.StringUtils.getFieldNameByCamelCase(key);
         }
@@ -577,7 +636,7 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>,T extends S
             if (valueType.isAssignableFrom(Long.TYPE) || valueType.isAssignableFrom(Integer.TYPE) || valueType.isAssignableFrom(Float.TYPE)) {
                 if (value.contains("|")) {
                     String[] arr = value.split("\\|");
-                    List list = new ArrayList();
+                    List<Object> list = new ArrayList<>();
                     for (String str : arr) {
                         list.add(ConvertUtil.parseParameter(valueType, str));
                     }
@@ -611,7 +670,7 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>,T extends S
                     queryWrapper.in(filterColumn, Arrays.asList(arr));
                 } else {
                     if (value.contains("*")) {
-                        queryWrapper.like(filterColumn, value.replaceAll("\\*", ""));
+                        queryWrapper.like(filterColumn, value.replace("\\*", ""));
                     } else {
                         wrapWithCompare(queryWrapper, valueType, filterColumn, value);
                     }
@@ -621,7 +680,7 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>,T extends S
             log.error("{0}",ex);
         }
     }
-    protected void wrapWithCompare(QueryWrapper queryWrapper,Class valueType, String filterColumn,String value) {
+    protected void wrapWithCompare(QueryWrapper<T> queryWrapper,Class<?> valueType, String filterColumn,String value) {
         int pos=-1;
         int startPos=-1;
         for(int i=0;i<compareOperations.size();i++){
@@ -658,7 +717,6 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>,T extends S
             }
         }catch (Exception ex){
             log.error("{0}",ex);
-            //throw ex;
         }
     }
 }

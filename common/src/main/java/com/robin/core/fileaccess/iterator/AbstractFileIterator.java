@@ -40,6 +40,7 @@ public abstract class AbstractFileIterator extends AbstractResIterator implement
 		super(colmeta);
 		this.accessUtil=accessUtil;
 	}
+
 	@Override
 	public void beforeProcess(String resourcePath){
 		checkAccessUtil(resourcePath);

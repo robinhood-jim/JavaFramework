@@ -30,7 +30,7 @@ public class OracleDataBaseExportor extends BaseDataBaseExportor {
 	}
 	@Override
 	public int exportToLocal(DataBaseExportParam exParam,DataBaseParam param) {
-		List<String> scriptList=new ArrayList<String>();
+		List<String> scriptList=new ArrayList<>();
 		scriptList.add("sh");
 		scriptList.add("-c");
 		scriptList.add(userPath+Const.ORACLEEXP_SCRIPTS);

@@ -13,29 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.robin.comm.util.word;
+package com.robin.comm.util.word.itext;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class WordTableHeaderDef {
-	private List<List<WordTableColumnDef>> columnList=new ArrayList<List<WordTableColumnDef>>();
-	private int headerNums=1;
+public class WordParagraph {
+	private List<WordParagraphSection> paragraphList=new ArrayList<WordParagraphSection>();
+
+	public List<WordParagraphSection> getParagraphList() {
+		return paragraphList;
+	}
+
+	public void setParagraphList(List<WordParagraphSection> paragraphList) {
+		this.paragraphList = paragraphList;
+	}
 	
-	public List<List<WordTableColumnDef>> getColumnList() {
-		return columnList;
-	}
-
-	public void setColumnList(List<List<WordTableColumnDef>> columnList) {
-		this.columnList = columnList;
-	}
-
-	public int getHeaderNums() {
-		return headerNums;
-	}
-
-	public void setHeaderNums(int headerNums) {
-		this.headerNums = headerNums;
-	}
 
 }

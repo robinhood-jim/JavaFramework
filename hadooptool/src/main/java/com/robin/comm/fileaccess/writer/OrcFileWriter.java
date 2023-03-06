@@ -3,6 +3,7 @@ package com.robin.comm.fileaccess.writer;
 import com.robin.comm.fileaccess.util.MockFileSystem;
 import com.robin.comm.fileaccess.util.OrcUtil;
 import com.robin.core.base.util.Const;
+import com.robin.core.base.util.FileUtils;
 import com.robin.core.base.util.ResourceConst;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.meta.DataSetColumnMeta;
@@ -12,9 +13,11 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.vector.*;
+import org.apache.orc.CompressionKind;
 import org.apache.orc.OrcFile;
 import org.apache.orc.TypeDescription;
 import org.apache.orc.Writer;
+import org.apache.parquet.hadoop.metadata.CompressionCodecName;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
@@ -22,10 +25,7 @@ import javax.naming.OperationNotSupportedException;
 import java.io.IOException;
 
 import java.sql.Timestamp;
-import java.util.Date;
-import java.util.InputMismatchException;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 
 public class OrcFileWriter extends AbstractFileWriter {
@@ -40,6 +40,37 @@ public class OrcFileWriter extends AbstractFileWriter {
     @Override
     public void beginWrite() throws IOException {
         FileSystem fs;
+        CompressionKind compressionKind;
+        List<String> fileSuffix=new ArrayList<>();
+        FileUtils.parseFileFormat(getOutputPath(colmeta.getPath()),fileSuffix);
+        Const.CompressType type= FileUtils.getFileCompressType(fileSuffix);
+        switch (type){
+            case COMPRESS_TYPE_GZ:
+                throw new IOException("orc does not support gzip compression");
+            case COMPRESS_TYPE_BZ2:
+                throw new IOException("orc does not support bzip2 compression");
+            case COMPRESS_TYPE_SNAPPY:
+                compressionKind= CompressionKind.SNAPPY;
+                break;
+            case COMPRESS_TYPE_ZIP:
+                throw new IOException("orc does not support zip compression");
+            case COMPRESS_TYPE_LZO:
+                compressionKind= CompressionKind.LZO;
+                break;
+            case COMPRESS_TYPE_LZ4:
+                compressionKind= CompressionKind.LZ4;
+                break;
+            case COMPRESS_TYPE_LZMA:
+                throw new IOException("orc does not support lzma compression");
+            case COMPRESS_TYPE_BROTLI:
+                throw new IOException("orc does not support brotli compression");
+            case COMPRESS_TYPE_ZSTD:
+                compressionKind=CompressionKind.ZSTD;
+                break;
+            default:
+                compressionKind=CompressionKind.ZLIB;
+        }
+
         if(colmeta.getSourceType().equals(ResourceConst.InputSourceType.TYPE_HDFS.getValue())){
             HDFSUtil util=new HDFSUtil(colmeta);
             conf=util.getConfig();
@@ -47,11 +78,10 @@ public class OrcFileWriter extends AbstractFileWriter {
         }else{
             conf=new Configuration();
             checkAccessUtil(null);
-            //out=accessUtil.getOutResourceByStream(colmeta,getOutputPath(colmeta.getPath()));
             fs=new MockFileSystem(colmeta,accessUtil);
         }
         schema= OrcUtil.getSchema(colmeta);
-        owriter= OrcFile.createWriter(new Path(colmeta.getPath()), OrcFile.writerOptions(conf).setSchema(schema).fileSystem(fs));
+        owriter= OrcFile.createWriter(new Path(colmeta.getPath()), OrcFile.writerOptions(conf).setSchema(schema).compress(compressionKind).fileSystem(fs));
         batch=schema.createRowBatch();
     }
 

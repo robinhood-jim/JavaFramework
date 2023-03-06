@@ -47,7 +47,7 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
     public static String replace(String str) {
 
         if (str != null) {
-            return str.replaceAll("'", "''");
+            return str.replace("'", "''");
         } else {
             return null;
         }
@@ -247,10 +247,10 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
             return null;
         }
         StringTokenizer token = new StringTokenizer(field, ",");
-        int fields_nums = token.countTokens();
-        String[] fields = new String[fields_nums];
+        int fieldsNums = token.countTokens();
+        String[] fields = new String[fieldsNums];
 
-        for (int i = 0; i < fields_nums; i++) {
+        for (int i = 0; i < fieldsNums; i++) {
             fields[i] = token.nextToken().trim();
             int asindex = fields[i].indexOf("as");
             if (asindex == -1) {
@@ -288,7 +288,7 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
     }
 
 
-    protected String getQueryFromPart(QueryString qs, PageQuery query) {
+    protected String getQueryFromPart(QueryString qs) {
         StringBuilder builder = new StringBuilder();
         String fromscript = qs.getFromSql();
         String sql = qs.sql;
@@ -397,18 +397,18 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
             if (nQueryModel.equals(QueryParam.QUERYMODE_GT)) {
                 sql.append(key + ">" + "'" + value + "'");
             } else if (nQueryModel.equals(QueryParam.QUERYMODE_EQUAL)) {
-                String str = value.replaceAll("%", "");
+                String str = value.replace("%", "");
                 if (str.length() > 0) {
                     sql.append(key + "='" + str + "'");
                 }
             } else if (nQueryModel.equals(QueryParam.QUERYMODE_NOTEQUAL)) {
-                String str = value.replaceAll("%", "");
+                String str = value.replace("%", "");
                 if (str.length() > 0) {
                     sql.append(key + "!='" + str + "'");
                 }
             } else if (nQueryModel.equals(QueryParam.QUERYMODE_LIKE)) {
                 if (value.startsWith("%") || value.endsWith("%")) {
-                    String str = value.replaceAll("%", "");
+                    String str = value.replace("%", "");
                     if (str.length() > 0) {
                         sql.append(key + " like '" + value + "'");
                     }
@@ -649,8 +649,8 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
     public String generateCountSql(String strSQL) {
 
         String str = strSQL.trim().toLowerCase();
-        str=str.replaceAll("\\n", "");
-        str=str.replaceAll("\\r", "");
+        str=str.replace("\\n", "");
+        str=str.replace("\\r", "");
         int nFromPos = str.indexOf(" from ");
         int nOrderPos = str.lastIndexOf(ORDERBYSTR);
         if (nOrderPos == -1) {
@@ -677,14 +677,14 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
     }
 
     protected boolean isSchemaIllegal(String schema) {
-        boolean is_illeagl = true;
+        boolean isIlleagl = true;
         for (int i = 0; i < ILLEGAL_SCHEMA_CHARS.length(); i++) {
             if (schema.contains(Character.toString(ILLEGAL_SCHEMA_CHARS.charAt(i)))) {
-                is_illeagl = false;
+                isIlleagl = false;
                 break;
             }
         }
-        return is_illeagl;
+        return isIlleagl;
     }
     @Override
     public String getAutoIncrementDef(){

@@ -18,6 +18,9 @@ package com.robin.core.base.reflect;
 import java.lang.reflect.Method;
 
 public class MethodInvoker {
+	private MethodInvoker(){
+
+	}
 
 	public static void invokeSetMethod(Object baseobj,String methodName,Object value) throws Exception{
 		String methodname="set"+methodName.substring(0,1).toUpperCase()+methodName.substring(1);

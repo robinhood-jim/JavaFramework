@@ -6,14 +6,11 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.robin.core.base.util.StringUtils;
 import com.robin.nosql.cassandra.network.SslContextFactory;
-import lombok.extern.slf4j.Slf4j;
 import io.netty.handler.ssl.SslContext;
-import org.jetbrains.annotations.NotNull;
-import org.springframework.util.CollectionUtils;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.lang.NonNull;
 import org.springframework.util.ObjectUtils;
 
-
-import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -57,13 +54,13 @@ public class CassandraUtils {
         cluster = builder.build();
         session= cluster.connect(keySpace);
     }
-    public static boolean insertRowWithMap(Session session,String keyspace,String tableName, Map<String,Object> valueMap){
+    public static boolean insertRowWithMap(@NonNull Session session,String keyspace,String tableName, Map<String,Object> valueMap){
         return insertRow(session,keyspace,tableName,valueMap);
     }
     public boolean insertRowWithMap(String keyspace,String tableName, Map<String,Object> valueMap){
         return insertRow(session,keyspace,tableName,valueMap);
     }
-    private static boolean insertRow(Session session, String keyspace, String tableName, @NotNull Map<String,Object> valueMap){
+    private static boolean insertRow(@NonNull Session session, String keyspace, String tableName, @NonNull Map<String,Object> valueMap){
         Iterator<Map.Entry<String,Object>> iter=valueMap.entrySet().iterator();
         List<String> keys=new ArrayList<>();
         List<Object> valueList=new ArrayList<>();
@@ -75,20 +72,20 @@ public class CassandraUtils {
         return session.execute(QueryBuilder.insertInto(keyspace,tableName).values(keys,valueList)).wasApplied();
     }
 
-    public static PreparedStatement getPrepareStatement(@NotNull Session session, String sql){
+    public static PreparedStatement getPrepareStatement(@NonNull Session session, String sql){
         return session.prepare(sql);
     }
-    public static boolean deleteRow(@NotNull Session session, String tableName, String condition, Object... params){
+    public static boolean deleteRow(@NonNull Session session, String tableName, String condition, Object... params){
         return session.execute("delete from "+tableName+ " where "+condition,params).wasApplied();
     }
 
-    public static boolean insertRowWithSql(Session session,String sql,Object... param){
+    public static boolean insertRowWithSql(@NonNull Session session,String sql,Object... param){
         return session.execute(sql,param).wasApplied();
     }
     public boolean insertRowWithSql(String sql,Object... param){
         return session.execute(sql,param).wasApplied();
     }
-    public static boolean batchInsert(Session session,String sql,List<Object[]> resultObj){
+    public static boolean batchInsert(@NonNull Session session,String sql,List<Object[]> resultObj){
         PreparedStatement statement=session.prepare(sql);
         BatchStatement batchstmt=new BatchStatement();
         for(Object[] obj:resultObj){
@@ -101,7 +98,7 @@ public class CassandraUtils {
         return batchInsert(session,sql,resultObj);
     }
 
-    public static void bindValueByRowType(BoundStatement statement,int pos,Object value){
+    public static void bindValueByRowType(@NonNull BoundStatement statement,int pos,Object value){
         if(value!=null){
             if(value instanceof Long){
                 statement.setLong(pos,(Long)value);
@@ -221,7 +218,7 @@ public class CassandraUtils {
      * @param insertSql         target insert Sql
      * @param ttlTime if using ttl
      */
-    public static void syncCassandra(CassandraConfig sourceClusterConfig,CassandraConfig targetClusterConfig,String selectSql,Object[] params,String insertSql,long ttlTime){
+    public static void syncCassandra(@NonNull CassandraConfig sourceClusterConfig,CassandraConfig targetClusterConfig,String selectSql,Object[] params,String insertSql,long ttlTime){
         Cluster sourceCluster=null;
         Session sourceSession=null;
         Cluster targetCluster=null;

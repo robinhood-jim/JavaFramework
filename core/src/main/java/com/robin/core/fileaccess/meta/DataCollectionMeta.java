@@ -15,9 +15,11 @@
  */
 package com.robin.core.fileaccess.meta;
 
+import com.robin.core.base.dao.JdbcDao;
 import com.robin.core.base.datameta.BaseDataBaseMeta;
 import com.robin.core.base.datameta.DataBaseColumnMeta;
-import com.robin.core.base.model.BaseObject;
+import com.robin.core.base.util.ResourceConst;
+import com.robin.core.sql.util.FilterCondition;
 import lombok.Data;
 import org.springframework.util.CollectionUtils;
 
@@ -34,7 +36,7 @@ public class DataCollectionMeta implements Serializable {
 	private String encode="UTF-8";
 	private List<DataSetColumnMeta> columnList=new ArrayList<>();
 	private String path;
-	private transient Map<String, Object> resourceCfgMap=new HashMap<String,Object>();
+	private Map<String, Object> resourceCfgMap=new HashMap<>();
 	private String valueClassName="ValueObject";
 	private String classNamespace ="com.robin.avro.vo";
 	private String primaryKeys="";
@@ -78,8 +80,62 @@ public class DataCollectionMeta implements Serializable {
 	}
 	public static List<DataSetColumnMeta> parseMeta(List<DataBaseColumnMeta> columnMetas){
 		if(!CollectionUtils.isEmpty(columnMetas)){
-			return columnMetas.stream().map(f->new DataSetColumnMeta(f.getColumnName(),f.getColumnType().toString(),null)).collect(Collectors.toList());
+			return columnMetas.stream().map(f->new DataSetColumnMeta(f.getColumnName(),f.getColumnType().toString(),f.getDefaultValue(),!f.isNullable(),null)).collect(Collectors.toList());
 		}
 		return null;
+	}
+	public boolean isFileType(){
+		if(resType.equals(ResourceConst.ResourceType.TYPE_FTPFILE.getValue()) || resType.equals(ResourceConst.ResourceType.TYPE_HDFSFILE.getValue()) || resType.equals(ResourceConst.ResourceType.TYPE_LOCALFILE.getValue())){
+			return true;
+		}
+		return false;
+	}
+	public boolean isQueueType(){
+		if(resType.equals(ResourceConst.ResourceType.TYPE_KAFKA.getValue()) || resType.equals(ResourceConst.ResourceType.TYPE_RABBIT.getValue())){
+			return true;
+		}
+		return false;
+	}
+	public static class Builder{
+		private DataCollectionMeta meta=new DataCollectionMeta();
+		public Builder(){
+
+		}
+		public DataCollectionMeta.Builder addColumn(String name, String columnType){
+			meta.addColumnMeta(name,columnType,null);
+			return this;
+		}
+		public DataCollectionMeta.Builder dateFormatter(String formatter){
+			meta.setDefaultTimestampFormat(formatter);
+			return this;
+		}
+		public DataCollectionMeta.Builder resourceType(Long resType){
+			meta.setResType(resType);
+			return this;
+		}
+		public DataCollectionMeta.Builder fileFormat(String format){
+			meta.setFileFormat(format);
+			return this;
+		}
+		public DataCollectionMeta.Builder sourceType(Long sourceType){
+			meta.setSourceType(sourceType);
+			return this;
+		}
+		public DataCollectionMeta.Builder columnList(List<DataSetColumnMeta> columnMetas){
+			meta.setColumnList(columnMetas);
+			return this;
+		}
+		public DataCollectionMeta.Builder resourceCfg(String key,String value){
+			meta.getResourceCfgMap().put(key,value);
+			return this;
+		}
+		public DataCollectionMeta.Builder resPath(String resPath){
+			meta.setPath(resPath);
+			return this;
+		}
+
+		public DataCollectionMeta build(){
+			return meta;
+		}
 	}
 }

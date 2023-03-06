@@ -29,28 +29,28 @@ public class QueryParam {
 	private String prevoper;
 	private String nextoper;
 	
-	public final static String COLUMN_TYPE_STRING="1";
-	public final static String COLUMN_TYPE_INT="2";
-	public final static String COLUMN_TYPE_DOUBLE="3";
-	public final static String COLUMN_TYPE_LONG="4";
-	public final static String COLUMN_TYPE_DATE="5";
-	public final static String COLUMN_TYPE_TIMESTAMP="6";
+	public static final String COLUMN_TYPE_STRING="1";
+	public static final String COLUMN_TYPE_INT="2";
+	public static final String COLUMN_TYPE_DOUBLE="3";
+	public static final String COLUMN_TYPE_LONG="4";
+	public static final String COLUMN_TYPE_DATE="5";
+	public static final String COLUMN_TYPE_TIMESTAMP="6";
 	
-	public final static String QUERYMODE_EQUAL=Const.FILTER_OPER_EQUAL;
-	public final static String QUERYMODE_GT=Const.FILTER_OPER_GT;
-	public final static String QUERYMODE_LT=Const.FILTER_OPER_LT;
-	public final static String QUERYMODE_NOTEQUAL=Const.FILTER_OPER_NOTEQUAL;
-	public final static String QUERYMODE_GTANDEQUAL=Const.FILTER_OPER_GTANDEQL;
-	public final static String QUERYMODE_LTANDEQUAL=Const.FILTER_OPER_GTANDEQL;
-	public final static String QUERYMODE_LIKE=Const.FILTER_OPER_LIKE;
-	public final static String QUERYMODE_BETWEEN=Const.FILTER_OPER_BETWEEN;
-	public final static String QUERYMODE_IN=Const.FILTER_OPER_IN;
-	public final static String QUERYMODE_HAVING=Const.FILTER_OPER_HAVING;
+	public static final String QUERYMODE_EQUAL=Const.FILTER_OPER_EQUAL;
+	public static final String QUERYMODE_GT=Const.FILTER_OPER_GT;
+	public static final String QUERYMODE_LT=Const.FILTER_OPER_LT;
+	public static final String QUERYMODE_NOTEQUAL=Const.FILTER_OPER_NOTEQUAL;
+	public static final String QUERYMODE_GTANDEQUAL=Const.FILTER_OPER_GTANDEQL;
+	public static final String QUERYMODE_LTANDEQUAL=Const.FILTER_OPER_GTANDEQL;
+	public static final String QUERYMODE_LIKE=Const.FILTER_OPER_LIKE;
+	public static final String QUERYMODE_BETWEEN=Const.FILTER_OPER_BETWEEN;
+	public static final String QUERYMODE_IN=Const.FILTER_OPER_IN;
+	public static final String QUERYMODE_HAVING=Const.FILTER_OPER_HAVING;
 	
-	public final static String OPER_AND=" and ";
-	public final static String OPER_OR=" or ";
-	public final static String TYPE_AND="and";
-	public final static String TYPE_OR="or";
+	public static final String OPER_AND=" and ";
+	public static final String OPER_OR=" or ";
+	public static final String TYPE_AND="and";
+	public static final String TYPE_OR="or";
 	
 	public QueryParam(String columnName,String columnType,String queryMode,String queryValue,String[] otherparams){
 		this.columnName=columnName;

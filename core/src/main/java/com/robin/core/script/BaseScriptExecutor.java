@@ -31,7 +31,7 @@ public class BaseScriptExecutor  implements IscriptExecutor{
 	private LoadingCache<String, CompiledScript> cache;
 	protected ScriptEngine scriptEngine;
 	protected Compilable compEngine;
-	private final Logger LOG=LoggerFactory.getLogger(getClass());
+	private final Logger logger=LoggerFactory.getLogger(getClass());
 	public BaseScriptExecutor(String scriptEngineName){
 		ScriptEngineManager factory = new ScriptEngineManager();
 		scriptEngine = factory.getEngineByName(scriptEngineName);
@@ -40,7 +40,7 @@ public class BaseScriptExecutor  implements IscriptExecutor{
 			@Override
 			public CompiledScript load(String key) throws Exception {
 				if(scriptsrcMap.containsKey(key)){
-					LOG.info("---- get and put into Cache by ----"+key);
+					logger.info("---- get and put into Cache by {}----",key);
 					String scriptSrc=scriptsrcMap.get(key);
 					return returnScript(scriptSrc);
 				}else{
@@ -49,7 +49,7 @@ public class BaseScriptExecutor  implements IscriptExecutor{
 			}
 		});
 	}
-	public CompiledScript returnScript(String scriptSrc) throws Exception{
+	public CompiledScript returnScript(String scriptSrc) throws ScriptException{
 		return compEngine.compile(scriptSrc);
 	}
 	/**
@@ -59,7 +59,7 @@ public class BaseScriptExecutor  implements IscriptExecutor{
 	 * @return
 	 */
 	@Override
-    public CompiledScript returnScript(String names, String scripts) throws Exception{
+    public CompiledScript returnScript(String names, String scripts) {
 		CompiledScript script=null;
 		String key=null;
 	
@@ -84,14 +84,13 @@ public class BaseScriptExecutor  implements IscriptExecutor{
 	}
 	@Override
     public Bindings createBindings(){
-		Bindings bindings = scriptEngine.createBindings();
-		return bindings;
+		return scriptEngine.createBindings();
 	}
-	public Object eval(CompiledScript script,Bindings binding) throws Exception{
+	public Object eval(CompiledScript script,Bindings binding) throws ScriptException{
 		return script.eval(binding);
 	}
 	@Override
-    public Object invokeFunction(Map<String, Object> contextMap, String function, String name, Object[] params) throws Exception{
+    public Object invokeFunction(Map<String, Object> contextMap, String function, String name, Object[] params) throws ScriptException,NoSuchMethodException{
 		if(scriptEngine instanceof Invocable){
 			Iterator<Map.Entry<String,Object>> it=contextMap.entrySet().iterator();
 			while(it.hasNext()){
@@ -102,14 +101,14 @@ public class BaseScriptExecutor  implements IscriptExecutor{
 			Invocable invocable=(Invocable) scriptEngine;
 			return invocable.invokeFunction(name, params);
 		}else{
-			throw new Exception("engine not support invokable");
+			throw new ScriptException("engine not support invokable");
 		}
 	}
-	public Object evaluate(String name,String scripts,Bindings bindings) throws Exception{
+	public Object evaluate(String name,String scripts,Bindings bindings) throws ScriptException{
 		CompiledScript script=returnScript(name, scripts);
 		return eval(script, bindings);
 	}
-	public Object evaluate(CompiledScript script,Bindings bindings) throws Exception{
+	public Object evaluate(CompiledScript script,Bindings bindings) throws ScriptException{
 		return eval(script, bindings);
 	}
 	public ScriptEngine getScriptEngine() {
@@ -128,15 +127,15 @@ public class BaseScriptExecutor  implements IscriptExecutor{
 				cache.refresh(key);
 			}
 		}
-		if(compareKey && !keyMap.containsKey(key)){
-			keyMap.put(key,key);
+		if(compareKey){
+			keyMap.computeIfAbsent(key,f->keyMap.put(f,f));
 		}
 	}
 	protected class KeyRemoveListener implements RemovalListener<String, CompiledScript>{
 		@Override
 		public void onRemoval(
 				RemovalNotification<String, CompiledScript> notification) {
-			LOG.info("---- evict Cache by ----"+notification.getKey());
+			logger.info("---- evict Cache by {} ----",notification.getKey());
 			scriptsrcMap.remove(notification.getKey());
 			keyMap.remove(notification.getKey());
 		}

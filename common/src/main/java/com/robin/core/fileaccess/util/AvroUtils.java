@@ -96,22 +96,44 @@ public class AvroUtils {
 
                 for (DataSetColumnMeta meta : colmeta.getColumnList()) {
                     if (meta.getColumnType().equals(Const.META_TYPE_BIGINT)) {
-                        fields = fields.name(meta.getColumnName()).type().nullable().longType().noDefault();
+                        if (meta.isRequired()) {
+                            fields = fields.name(meta.getColumnName()).type().longType().noDefault();
+                        } else {
+                            fields = fields.name(meta.getColumnName()).type().nullable().longType().noDefault();
+                        }
                     } else if (meta.getColumnType().equals(Const.META_TYPE_INTEGER)) {
-                        fields = fields.name(meta.getColumnName()).type().nullable().intType().noDefault();
+                        if (meta.isRequired()) {
+                            fields = fields.name(meta.getColumnName()).type().intType().noDefault();
+                        } else {
+                            fields = fields.name(meta.getColumnName()).type().nullable().intType().noDefault();
+                        }
                     } else if (meta.getColumnType().equals(Const.META_TYPE_DOUBLE) || meta.getColumnType().equals(Const.META_TYPE_NUMERIC)) {
-                        fields = fields.name(meta.getColumnName()).type().nullable().doubleType().noDefault();
+                        if (meta.isRequired()) {
+                            fields = fields.name(meta.getColumnName()).type().doubleType().noDefault();
+                        } else {
+                            fields = fields.name(meta.getColumnName()).type().nullable().doubleType().noDefault();
+                        }
                     } else if (meta.getColumnType().equals(Const.META_TYPE_TIMESTAMP) || meta.getColumnType().equals(Const.META_TYPE_DATE)) {
                         Schema timestampMilliType = LogicalTypes.timestampMillis().addToSchema(Schema.create(Schema.Type.LONG));
                         fields = fields.name(meta.getColumnName()).type(timestampMilliType).noDefault();
                     } else if (meta.getColumnType().equals(Const.META_TYPE_BOOLEAN)) {
-                        fields = fields.name(meta.getColumnName()).type().nullable().booleanType().noDefault();
+                        if (meta.isRequired()) {
+                            fields = fields.name(meta.getColumnName()).type().booleanType().noDefault();
+                        } else {
+                            fields = fields.name(meta.getColumnName()).type().nullable().booleanType().noDefault();
+                        }
                     } else if (meta.getColumnType().equals(Const.META_TYPE_STRING)) {
-                        fields = fields.name(meta.getColumnName()).type().nullable().stringType().noDefault();
+                        if(meta.isRequired()){
+                            fields = fields.name(meta.getColumnName()).type().stringType().noDefault();
+                        }else {
+                            fields = fields.name(meta.getColumnName()).type().nullable().stringType().noDefault();
+                        }
                     }
                 }
                 schema = fields.endRecord();
-                logger.info(schema.toString(true));
+                if(logger.isDebugEnabled()) {
+                    logger.debug(schema.toString(true));
+                }
             } else {
                 throw new ConfigurationIncorrectException("missing avro schema config file or Content");
             }

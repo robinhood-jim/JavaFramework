@@ -21,6 +21,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.http.*;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpRequestRetryHandler;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.*;
 import org.apache.http.client.protocol.HttpClientContext;
@@ -66,6 +67,7 @@ import java.util.*;
 public class HttpUtils {
     static PoolingHttpClientConnectionManager manager;
     static HttpRequestRetryHandler handler;
+    private static Integer timeOut=2000;
 
     private HttpUtils(){
 
@@ -161,6 +163,7 @@ public class HttpUtils {
     public static final Response doPost(String url, String data, String charset, Map<String, String> headerMap) {
         CloseableHttpClient httpClient = createHttpClient();
         HttpPost post = new HttpPost(url);
+        config(post);
         fillHeader(post, headerMap);
         try {
             if (data != null && !"".equals(data)) {
@@ -180,6 +183,7 @@ public class HttpUtils {
     public static final Response doPost(String url, String charset, Map<String, String> postData, Map<String, String> headerMap) {
         CloseableHttpClient httpClient = createHttpClient();
         HttpPost post = new HttpPost(url);
+        config(post);
         fillHeader(post, headerMap);
         try {
             List<NameValuePair> params = new ArrayList<NameValuePair>();
@@ -203,6 +207,7 @@ public class HttpUtils {
     public static final Response doGet(String url, String charset, Map<String, String> headerMap) {
         CloseableHttpClient httpClient = createHttpClient();
         HttpGet get = new HttpGet(url);
+        config(get);
         fillHeader(get, headerMap);
         try {
             return getResponseData(httpClient, get, charset);
@@ -217,6 +222,7 @@ public class HttpUtils {
     public static final Response doPut(String url, String data, String charset, Map<String, String> headerMap) {
         CloseableHttpClient httpClient = createHttpClient();
         HttpPut put = new HttpPut(url);
+        config(put);
         fillHeader(put, headerMap);
         try {
             if (data != null && !"".equals(data)) {
@@ -236,6 +242,7 @@ public class HttpUtils {
     public static final Response doDelete(String url, String charset, Map<String, String> headerMap) {
         CloseableHttpClient httpClient = createHttpClient();
         HttpDelete delete = new HttpDelete(url);
+        config(delete);
         fillHeader(delete, headerMap);
         try {
             return getResponseData(httpClient, delete, charset);
@@ -261,6 +268,7 @@ public class HttpUtils {
         if (Objects.nonNull(inputStream)) {
             HttpPost post = new HttpPost(url);
             fillHeader(post, headerMap);
+            config(post);
             int pos=fileName.lastIndexOf(".");
             String filePrefix=fileName;
             if(pos>-1){
@@ -337,6 +345,13 @@ public class HttpUtils {
             log.error("{}",ex);
         }
         return null;
+
+    }
+    private static void config(HttpRequestBase httpRequestBase){
+        RequestConfig requestConfig = RequestConfig.custom()
+                .setConnectionRequestTimeout(timeOut)
+                .setConnectTimeout(timeOut).setSocketTimeout(timeOut).build();
+        httpRequestBase.setConfig(requestConfig);
 
     }
 

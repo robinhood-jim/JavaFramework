@@ -1,6 +1,8 @@
 package com.robin.comm.fileaccess.iterator;
 
 import com.robin.comm.fileaccess.util.ParquetUtil;
+import com.robin.comm.fileaccess.util.SeekableInputStream;
+import com.robin.core.base.util.IOUtils;
 import com.robin.core.fileaccess.iterator.AbstractFileIterator;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.util.AvroUtils;
@@ -15,10 +17,10 @@ import org.apache.parquet.hadoop.ParquetFileReader;
 import org.apache.parquet.hadoop.ParquetReader;
 import org.apache.parquet.hadoop.metadata.ParquetMetadata;
 import org.apache.parquet.io.InputFile;
-import org.apache.parquet.io.SeekableInputStream;
 import org.apache.parquet.schema.MessageType;
 import org.apache.parquet.schema.Type;
 
+import java.io.ByteArrayOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -53,9 +55,11 @@ public class ParquetStreamIterator extends AbstractFileIterator {
                 schema = AvroUtils.getSchemaFromMeta(colmeta);
             }
             //seek remote file to local tmp
-
+            ByteArrayOutputStream byteout=new ByteArrayOutputStream(instream.available());
+            IOUtils.copyBytes(instream,byteout,8000);
+            com.robin.comm.fileaccess.util.SeekableInputStream seekableInputStream=new SeekableInputStream(byteout.toByteArray());
             preader = AvroParquetReader
-                    .<GenericData.Record>builder(ParquetUtil.makeInputFile(instream)).withConf(conf).build();
+                    .<GenericData.Record>builder(ParquetUtil.makeInputFile(seekableInputStream)).withConf(conf).build();
             fields = schema.getFields();
         }catch (Exception ex){
             logger.error("{0}",ex);

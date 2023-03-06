@@ -20,6 +20,7 @@ import com.robin.core.base.datameta.DataBaseUtil;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.meta.DataSetColumnMeta;
 import com.robin.core.fileaccess.util.AbstractResourceAccessUtil;
+import com.robin.core.fileaccess.util.ResourceUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
@@ -40,8 +41,8 @@ public abstract class AbstractFileWriter implements IResourceWriter {
 	protected BufferedWriter writer;
 	protected DataCollectionMeta colmeta;
 	protected OutputStream out;
-	protected Map<String, String> columnMap=new HashMap<String, String>();
-	protected List<String> columnList=new ArrayList<String>();
+	protected Map<String, String> columnMap=new HashMap<>();
+	protected List<String> columnList=new ArrayList<>();
 	protected Logger logger= LoggerFactory.getLogger(getClass());
 	protected DateTimeFormatter formatter;
 	protected AbstractResourceAccessUtil accessUtil;
@@ -67,7 +68,7 @@ public abstract class AbstractFileWriter implements IResourceWriter {
 	}
 	
 	protected Map<String, Object> wrapListToMap(List<Object> list){
-		Map<String, Object> valuemap=new HashMap<String, Object>();
+		Map<String, Object> valuemap=new HashMap<>();
 		if(list.size()<colmeta.getColumnList().size()) {
             return null;
         }
@@ -81,7 +82,12 @@ public abstract class AbstractFileWriter implements IResourceWriter {
 	public void initalize() throws IOException{
 		beginWrite();
 	}
-	public abstract void beginWrite() throws IOException;
+	public void beginWrite() throws IOException{
+		if(out==null){
+			checkAccessUtil(colmeta.getPath());
+			out = accessUtil.getOutResourceByStream(colmeta, ResourceUtil.getProcessPath(colmeta.getPath()));
+		}
+	}
 
 
 	public abstract void finishWrite() throws IOException;

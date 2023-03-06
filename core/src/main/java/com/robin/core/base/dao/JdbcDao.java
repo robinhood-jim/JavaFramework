@@ -46,6 +46,7 @@ import org.springframework.jdbc.support.lob.LobHandler;
 import org.springframework.lang.NonNull;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 
 import javax.sql.DataSource;
 import java.io.Serializable;
@@ -66,8 +67,9 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
     }
     @NonNull
     private JdbcTemplate returnTemplate(){
-        Assert.notNull(getJdbcTemplate(), "jdbc Connection is null");
-        return getJdbcTemplate();
+        JdbcTemplate template=getJdbcTemplate();
+        Assert.notNull(template, "jdbc Connection is null");
+        return template;
     }
 
     public JdbcDao(@NonNull DataSource dataSource,@NonNull LobHandler lobHandler, @NonNull QueryFactory queryFactory,@NonNull BaseSqlGen sqlGen) {
@@ -81,13 +83,12 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
     }
 
     @Override
-    public PageQuery queryByPageQuery(String sqlstr, PageQuery pageQuery) throws DAOException {
-        String querySQL = sqlstr;
+    public PageQuery queryByPageQuery(String querySQL, PageQuery pageQuery) throws DAOException {
         List<Map<String, Object>> list;
         Assert.notNull(this.returnTemplate(), "no datasource Config");
         try {
             if (logger.isDebugEnabled()) {
-                logger.debug(new StringBuilder("querySQL: ").append(querySQL).toString());
+                logger.debug("querySQL: " + querySQL);
             }
             String sumSQL = sqlGen.generateCountSql(querySQL);
             int total = this.returnTemplate().queryForObject(sumSQL, Integer.class);
@@ -133,7 +134,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
     @Override
     public void queryBySelectId(PageQuery pageQuery) throws DAOException {
         try {
-            String selectId = Assert(pageQuery);
+            String selectId = assertQuery(pageQuery);
             QueryString queryString1 = queryFactory.getQuery(selectId);
             queryByParamter(queryString1, pageQuery);
         } catch (QueryConfgNotFoundException e) {
@@ -147,7 +148,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
     @Override
     public int executeBySelectId(PageQuery pageQuery) throws DAOException {
         try {
-            String selectId = Assert(pageQuery);
+            String selectId = assertQuery(pageQuery);
             if (sqlGen == null) {
                 throw new DAOException("SQLGen property is null!");
             }
@@ -159,7 +160,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
                 throw new DAOException("query ID not found in config file!");
             }
 
-            if ((pageQuery.getParameterArr() != null && pageQuery.getParameterArr().length > 0) || !pageQuery.getNamedParameters().isEmpty()) {
+            if (!ObjectUtils.isEmpty(pageQuery.getParameterArr()) || !ObjectUtils.isEmpty(pageQuery.getNamedParameters())) {
                 return CommJdbcUtil.executeByPreparedParamter(this.returnTemplate(), sqlGen, queryString1, pageQuery);
             } else {
                 throw new DAOException("execute must with nameParameter or prepareStatements!");
@@ -176,11 +177,10 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
 
     @Override
     public List<Map<String, Object>> queryByPageSql(String sqlstr, PageQuery pageQuery) throws DAOException {
-        String querySQL = sqlstr;
         if (logger.isDebugEnabled()) {
-            logger.debug("querySQL: " + querySQL);
+            logger.debug("querySQL: " + sqlstr);
         }
-        return queryItemList(pageQuery, querySQL);
+        return queryItemList(pageQuery, sqlstr);
     }
 
 
@@ -190,14 +190,13 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
     }
 
     @Override
-    public List<Map<String, Object>> queryBySql(String sqlstr, Object... obj) throws DAOException {
+    public List<Map<String, Object>> queryBySql(String querySQL, Object... obj) throws DAOException {
         List<Map<String, Object>> list;
         try {
-            String querySQL = sqlstr;
             if (logger.isDebugEnabled()) {
                 logger.debug("querySQL: " + querySQL);
             }
-            list = queryAllItemList(sqlstr, obj);
+            list = queryAllItemList(querySQL, obj);
             return list;
         } catch (Exception e) {
             throw new DAOException(e);
@@ -438,8 +437,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
     public Map<String, Object> executeCallResultList(String sql, List<SqlParameter> declaredParameters, Map<String, Object> inPara) throws DAOException {
         BaseStoreProcedure xsp = new BaseStoreProcedure(this.returnTemplate(), sql);
         try {
-            for (int i = 0; i < declaredParameters.size(); i++) {
-                SqlParameter parameter = declaredParameters.get(i);
+            for (SqlParameter parameter:declaredParameters) {
                 if (parameter instanceof SqlInOutParameter) {
                     xsp.setInOutParameter(parameter.getName(), parameter.getSqlType());
                 } else if (parameter instanceof SqlOutParameter) {
@@ -460,7 +458,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
 
     @Override
     public <T extends BaseObject,P extends Serializable> P createVO(T obj,Class<P> clazz) throws DAOException {
-        Long retval = null;
+        Long retval ;
         P retObj = null;
         try {
             //function as mybatis-plus MetaObjectHandler
@@ -549,7 +547,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
         if (logger.isDebugEnabled()) {
             logger.debug("Encounter error", ex);
         } else if (logger.isInfoEnabled()) {
-            logger.info("Encounter error", ex);
+            logger.error("Encounter error", ex);
         }
     }
 
@@ -698,7 +696,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
         if (logger.isDebugEnabled()) {
             logger.debug(("querySQL: " + querySQL));
         }
-        if ((pageQuery.getParameterArr() != null && pageQuery.getParameterArr().length > 0) || !pageQuery.getNamedParameters().isEmpty()) {
+        if (!ObjectUtils.isEmpty(pageQuery.getParameterArr()) || !ObjectUtils.isEmpty(pageQuery.getNamedParameters())) {
             CommJdbcUtil.queryByPreparedParamter(this.returnTemplate(), getNamedJdbcTemplate(), lobHandler, sqlGen, qs, pageQuery);
         } else {
             CommJdbcUtil.queryByReplaceParamter(this.returnTemplate(), lobHandler, sqlGen, qs, pageQuery);
@@ -710,6 +708,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
             throws DAOException {
         KeyHolder keyHolder = new GeneratedKeyHolder();
         returnTemplate().update(new DefaultPrepareStatement(field, sql, object, lobHandler), keyHolder);
+        Assert.notNull(keyHolder.getKey(),"");
         return keyHolder.getKey().longValue();
     }
 
@@ -734,7 +733,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
             start = (pageNum - 1) * pageSize;
             end = pageNum * pageSize;
         }
-        return this.returnTemplate().query(pageSQL, new SplitPageResultSetExtractor(start, end) {
+        return this.returnTemplate().query(pageSQL, new SplitPageResultSetExtractor(start, end,lobHandler) {
         });
     }
 
@@ -830,14 +829,18 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
 
 
     private void fillValue(FilterCondition condition, List<Object> objList) {
-        if (condition.getOperator().equals(FilterCondition.LIKE)) {
-            objList.add("%" + condition.getValue() + "%");
-        } else if (condition.getOperator().equals(FilterCondition.LEFT_LIKE)) {
-            objList.add("%" + condition.getValue());
-        } else if (condition.getOperator().equals(FilterCondition.RIGHT_LIKE)) {
-            objList.add(condition.getValue() + "%");
-        } else {
-            objList.add(condition.getValue());
+        switch ((condition.getOperator())) {
+            case FilterCondition.LIKE:
+                objList.add("%" + condition.getValue() + "%");
+                break;
+            case FilterCondition.LEFT_LIKE:
+                objList.add("%" + condition.getValue());
+                break;
+            case FilterCondition.RIGHT_LIKE:
+                objList.add(condition.getValue() + "%");
+                break;
+            default:
+                objList.add(condition.getValue());
         }
     }
 
@@ -909,7 +912,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
             if (FilterCondition.class.isAssignableFrom(condition.getValue().getClass())) {
                 getConditionParam((FilterCondition) condition.getValue(), objList);
             }else if(ArrayList.class.isAssignableFrom(condition.getValue().getClass())){
-                List objArr=(List) condition.getValue();
+                List<?> objArr=(List<?>) condition.getValue();
                 for (int i = 0; i < objArr.size(); i++) {
                     if (FilterCondition.class.isAssignableFrom(objArr.get(i).getClass())) {
                         getConditionParam(((FilterCondition) objArr.get(i)), objList);
@@ -931,7 +934,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
         return namedParameterJdbcTemplate;
     }
 
-    private String Assert(PageQuery pageQuery) {
+    private String assertQuery(PageQuery pageQuery) {
         if (pageQuery == null) {
             throw new DAOException("missing pagerQueryObject");
         }
@@ -949,5 +952,19 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
             retlist.add(obj);
         }
     }
+    public static class Builder{
+        private List<FilterCondition> conditions=new ArrayList<>();
+        public Builder(){
+
+        }
+        public Builder addParameter(String name, String oper, Object value){
+            conditions.add(new FilterCondition(name,oper,value));
+            return this;
+        }
+        public List<FilterCondition> buildCondition(){
+            return conditions;
+        }
+    }
+
 
 }

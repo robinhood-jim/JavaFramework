@@ -178,7 +178,7 @@ public class CommEsQueryUtils {
                                 String columnName = StringUtils.returnCamelCaseByFieldName(key);
                                 if (null != setMap && setMap.containsKey(columnName)) {
                                     Method method = setMap.get(columnName);
-                                    Class paramType = method.getParameterTypes()[0];
+                                    Class<?> paramType = method.getParameterTypes()[0];
                                     method.invoke(obj, ConvertUtil.parseParameter(paramType, entry.getValue()));
                                 }
                             }

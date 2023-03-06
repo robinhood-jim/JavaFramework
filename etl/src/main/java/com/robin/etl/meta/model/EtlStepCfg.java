@@ -19,7 +19,8 @@ public class EtlStepCfg extends BaseObject {
     private Long subFlowId;
     @MappingField
     private String name;
-
+    @MappingField
+    private Long resourceId;
 
 
 }

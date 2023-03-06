@@ -31,6 +31,7 @@ public abstract class AbstractSpringAwareJdbcOperation {
         paramMap.put(pos,value);
     }
     public void constructDefault(Span span){
+
         if(span!=null){
             if(!StringUtils.isEmpty(executeSql)){
                 span.tag("sql",executeSql);

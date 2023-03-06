@@ -4,6 +4,7 @@ import io.github.classgraph.*;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -26,7 +27,7 @@ public class ClassGraphReflector implements InitializingBean {
     public void setScanPackage(String scanPackage) {
         this.scanPackage = scanPackage;
     }
-    public Map<String,Method> returnGetMethods(Class clazz){
+    public Map<String,Method> returnGetMethods(Class<?> clazz){
         ClassInfo classInfo=scanResult.getClassInfo(clazz.getCanonicalName());
         final Map<String,Method> map=new HashMap<>();
         MethodInfoList mList=classInfo.getMethodInfo().filter(methodInfo -> methodInfo.getName().startsWith("get") && methodInfo.getParameterInfo().length==0);
@@ -36,15 +37,15 @@ public class ClassGraphReflector implements InitializingBean {
         });
         return map;
     }
-    public Map<String, Field> returnAllField(Class clazz){
+    public Map<String, Field> returnAllField(Class<?> clazz){
         ClassInfo classInfo=scanResult.getClassInfo(clazz.getCanonicalName());
         final Map<java.lang.String, java.lang.reflect.Field> map=new HashMap<>();
-        classInfo.getFieldInfo().forEach(f->{
-            map.put(f.getName(),f.loadClassAndGetField());
-        });
+        classInfo.getFieldInfo().forEach(f->
+            map.put(f.getName(),f.loadClassAndGetField())
+        );
         return map;
     }
-    public Map<String,Method> returnSetMethods(Class clazz){
+    public Map<String,Method> returnSetMethods(Class<?> clazz){
         ClassInfo classInfo=scanResult.getClassInfo(clazz.getCanonicalName());
         final Map<java.lang.String, java.lang.reflect.Method> map=new HashMap<>();
         MethodInfoList mList=classInfo.getMethodInfo().filter(methodInfo -> methodInfo.getName().startsWith("set") && methodInfo.getParameterInfo().length==1);
@@ -54,16 +55,16 @@ public class ClassGraphReflector implements InitializingBean {
         });
         return map;
     }
-    public FieldInfo returnField(Class clazz,String fieldName){
+    public FieldInfo returnField(Class<?> clazz,String fieldName){
         return scanResult.getClassInfo(clazz.getCanonicalName()).getFieldInfo(fieldName);
     }
-    public ClassInfoList getAnnotationClasses(Class clazz){
+    public ClassInfoList getAnnotationClasses(Class<?> clazz){
         return scanResult.getClassesWithAnnotation(clazz.getCanonicalName());
     }
-    public ClassInfoList getClassesByAnnotationFields(Class fieldClass){
+    public ClassInfoList getClassesByAnnotationFields(Class<?> fieldClass){
         return scanResult.getClassesWithFieldAnnotation(fieldClass.getCanonicalName());
     }
-    public boolean isAnnotationClassWithAnnotationFields(Class clazz,Class annotationClazz,Class annotationFields){
+    public boolean isAnnotationClassWithAnnotationFields(Class<?> clazz, Class<? extends Annotation> annotationClazz, Class<?> annotationFields){
         return scanResult.getClassInfo(clazz.getCanonicalName()).hasAnnotation(annotationClazz.getCanonicalName())
                 && scanResult.getClassInfo(clazz.getCanonicalName()).hasFieldAnnotation(annotationFields.getCanonicalName());
     }

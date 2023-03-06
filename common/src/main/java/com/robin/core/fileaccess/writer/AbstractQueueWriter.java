@@ -41,7 +41,7 @@ public abstract class AbstractQueueWriter extends AbstractResourceWriter {
     public void writeRecord(List<Object> map) throws IOException,OperationNotSupportedException {
         throw new OperationNotSupportedException("operation not Supported!");
     }
-    protected byte[] constructContent(Map<String, ?> map) throws IOException {
+    protected byte[] constructContent(Map<String, ?> map)  {
         byte[] output=null;
         if(colmeta.getPkColumns()!=null && !colmeta.getPkColumns().isEmpty()){
             if(builder.length()>0){
@@ -58,8 +58,8 @@ public abstract class AbstractQueueWriter extends AbstractResourceWriter {
             GenericRecord record = new GenericData.Record(schema);
             Iterator iterator = map.entrySet().iterator();
             while (iterator.hasNext()) {
-                Map.Entry entry = (Map.Entry) iterator.next();
-                record.put(entry.getKey().toString(), entry.getValue());
+                Map.Entry<String,?> entry = (Map.Entry) iterator.next();
+                record.put(entry.getKey(), entry.getValue());
             }
             output=recordInjection.apply(record);
         }else if(ResourceConst.VALUE_TYPE.JSON.getValue().equalsIgnoreCase(valueType)){

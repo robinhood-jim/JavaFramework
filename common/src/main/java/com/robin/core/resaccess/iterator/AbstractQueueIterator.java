@@ -30,7 +30,7 @@ public abstract class AbstractQueueIterator extends AbstractResIterator {
     }
 
     @Override
-    public void beforeProcess(String resourcePath) {
+    public void beforeProcess(String param) {
 
     }
 
@@ -40,7 +40,7 @@ public abstract class AbstractQueueIterator extends AbstractResIterator {
     }
     @Override
     public boolean hasNext() {
-        return false;
+        return true;
     }
 
     @Override

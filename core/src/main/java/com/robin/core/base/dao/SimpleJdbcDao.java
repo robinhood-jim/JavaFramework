@@ -29,12 +29,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.ObjectUtils;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.Serializable;
 import java.sql.*;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -53,8 +55,8 @@ public class SimpleJdbcDao {
     private BaseDataBaseMeta meta;
     private DataBaseParam param;
     private static Logger logger = LoggerFactory.getLogger(SimpleJdbcDao.class);
-    private static final String fullDateformat = "yyyy-MM-dd HH:mm:ss";
-    private static final String shortDateformat = "yyyy-MM-dd";
+    private static final String fullDateFormat = "yyyy-MM-dd HH:mm:ss";
+    private static final String shortDateFormat = "yyyy-MM-dd";
 
     public SimpleJdbcDao(BaseDataBaseMeta meta) {
         this.driverName = meta.getParam().getDriverClassName();
@@ -113,6 +115,17 @@ public class SimpleJdbcDao {
             throw new DAOException(ex);
         }
         return conn;
+    }
+    public static Connection getConnection(String driverName,String jdbcUrl,String userName,String passwd) throws DAOException{
+        Connection conn;
+        try{
+            DbUtils.loadDriver(driverName);
+            conn = DriverManager.getConnection(jdbcUrl, userName, passwd);
+        } catch (Exception e) {
+            throw new DAOException(e);
+        }
+        return conn;
+
     }
 
     public static Connection getConnection(BaseDataBaseMeta meta) throws DAOException {
@@ -447,7 +460,7 @@ public class SimpleJdbcDao {
         } else {
             qRunner = new QueryRunner();
         }
-        return qRunner.query(conn, sql, rs -> extractor.extractData(rs));
+        return qRunner.query(conn, sql, extractor::extractData);
     }
 
     public static int executeOperationWithQuery(final Connection conn, String sql, Object[] param, boolean pmdKnownBroken, final ResultSetOperationExtractor extractor) throws SQLException {
@@ -457,7 +470,7 @@ public class SimpleJdbcDao {
         } else {
             qRunner = new QueryRunner();
         }
-        return qRunner.query(conn, sql, rs -> extractor.extractData(rs), param);
+        return qRunner.query(conn, sql, extractor::extractData, param);
     }
 
     public int executeUpdate(final String sql) throws DAOException {
@@ -510,7 +523,6 @@ public class SimpleJdbcDao {
             Long num = qRunner.query(connection, sql2, new ScalarHandler<>(1));
             return num.longValue();
         } catch (Exception ex) {
-            //logger.error("",ex);
             throw new DAOException(ex);
         }
     }
@@ -614,7 +626,7 @@ public class SimpleJdbcDao {
             }
             retarr = stmt.executeBatch();
             conn.commit();
-        } catch (Exception ex) {
+        } catch (SQLException ex) {
             logger.error("", ex);
             try {
                 conn.rollback();
@@ -649,7 +661,6 @@ public class SimpleJdbcDao {
             }
             retarr = qRunner.batch(conn, sql, params);
         } catch (Exception ex) {
-            //logger.error("",ex);
             throw new DAOException(ex);
         } finally {
             DbUtils.closeQuietly(conn);
@@ -681,10 +692,8 @@ public class SimpleJdbcDao {
             if (querySql == null || "".equals(querySql)) {
                 querySql = "select * from " + tableName;
             }
-            String currDateFormat = dateFormat;
-            if (currDateFormat == null || "".equals(currDateFormat)) {
-                currDateFormat = "yyyy-MM-dd HH:mm:ss";
-            }
+            String currDateFormat = ObjectUtils.isEmpty(dateFormat)?fullDateFormat:dateFormat;
+
             final SimpleDateFormat dateformat = new SimpleDateFormat(currDateFormat);
             ResultSetHandler<Boolean> handler = rs -> {
                 ResultSetMetaData meta = rs.getMetaData();
@@ -766,10 +775,7 @@ public class SimpleJdbcDao {
             List<Object[]> targetList = new ArrayList<>();
             String line = null;
             int linepos = 1;
-            String currDateFormat = dateFormat;
-            if (currDateFormat == null || "".equals(currDateFormat)) {
-                currDateFormat = "yyyy-MM-dd HH:mm:ss";
-            }
+            String currDateFormat = ObjectUtils.isEmpty(dateFormat)?fullDateFormat:dateFormat;
             final SimpleDateFormat dateformat = new SimpleDateFormat(currDateFormat);
             if (reader != null) {
                 while ((line = reader.readLine()) != null) {
@@ -824,10 +830,10 @@ public class SimpleJdbcDao {
         return runOk;
     }
 
-    public static void transformDateType(Map<String, String> resultMap, Map<String, String> poolobj, int pos, int row, Object[][] objArr, Object... dateFormatArr) throws Exception {
+    public static void transformDateType(Map<String, String> resultMap, Map<String, String> poolobj, int pos, int row, Object[][] objArr, Object... dateFormatArr) throws ParseException {
         String value = resultMap.get(poolobj.get("name"));
-        String dateFormat = (dateFormatArr.length == 1 && dateFormatArr[0] != null) ? dateFormatArr[0].toString() : fullDateformat;
-        String dayFormat = (dateFormatArr.length == 2 && dateFormatArr[2] != null) ? dateFormatArr[1].toString() : shortDateformat;
+        String dateFormat = (dateFormatArr.length == 1 && dateFormatArr[0] != null) ? dateFormatArr[0].toString() : fullDateFormat;
+        String dayFormat = (dateFormatArr.length == 2 && dateFormatArr[2] != null) ? dateFormatArr[1].toString() : shortDateFormat;
         if (value == null) {
             value = resultMap.get(poolobj.get("name").toUpperCase());
         }

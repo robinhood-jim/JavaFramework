@@ -24,7 +24,7 @@ public class SqlServerDataBaseExportor extends BaseDataBaseExportor{
 	@Override
 	public int exportToLocal(DataBaseExportParam exParam,
 			DataBaseParam param) {
-		List<String> scriptList=new ArrayList<String>();
+		List<String> scriptList=new ArrayList<>();
 		scriptList.add("bcp");
 		scriptList.add(exParam.getExecuteSql());
 		scriptList.add("queryout");

@@ -32,6 +32,7 @@ public class OrcFileIterator extends AbstractFileIterator {
     TypeDescription schema;
     RecordReader rows ;
     VectorizedRowBatch batch ;
+    List<String> fieldNames;
     public OrcFileIterator(DataCollectionMeta colmeta) {
         super(colmeta);
     }
@@ -132,6 +133,7 @@ public class OrcFileIterator extends AbstractFileIterator {
 
             Reader reader=OrcFile.createReader(new Path(colmeta.getPath()),OrcFile.readerOptions(conf).filesystem(fs));
             schema= reader.getSchema();
+            fieldNames=schema.getFieldNames();
             rows=reader.rows();
             fields=schema.getChildren();
             batch=reader.getSchema().createRowBatch();

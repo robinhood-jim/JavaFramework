@@ -16,23 +16,18 @@
 package com.robin.core.collection.util;
 
 import com.robin.core.base.exception.MissingConfigException;
-import com.robin.core.base.reflect.ReflectUtils;
-import com.robin.core.base.util.StringUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
 import java.io.Serializable;
-import java.lang.reflect.Method;
 import java.util.*;
 import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 public class CollectionBaseConvert {
 	
 	public static Map<String,List<Map<String,String>>> convertToMapByParentKey(List<Map<String, String>> listobj,String key) {
-		 Map<String,List<Map<String,String>>> retMap =new HashMap<String, List<Map<String,String>>>();
+		 Map<String,List<Map<String,String>>> retMap =new HashMap<>();
 		doconvertByParentKey(listobj, key, retMap);
 		return retMap;
 	}
@@ -41,7 +36,7 @@ public class CollectionBaseConvert {
 		for(int i = 0; i < listobj.size(); i++) {
 			String parentKey=listobj.get(i).get(key);
 		   if(retMap.get(parentKey)==null){
-			   List<Map<String,String>> sublist=new ArrayList<Map<String,String>>();
+			   List<Map<String,String>> sublist=new ArrayList<>();
 			   sublist.add(listobj.get(i));
 			   retMap.put(parentKey, sublist);
 		   }else
@@ -52,11 +47,11 @@ public class CollectionBaseConvert {
 	}
 
 	public static Map<String,List<Map<String,Object>>> convertToMapByParentKeyWithObjVal(List<Map<String, Object>> listobj,String key) {
-		 Map<String,List<Map<String,Object>>> retMap =new HashMap<String, List<Map<String,Object>>>();
+		 Map<String,List<Map<String,Object>>> retMap =new HashMap<>();
 	      for(int i = 0; i < listobj.size(); i++) {
 	    	  String parentKey=listobj.get(i).get(key).toString();
 	         if(retMap.get(parentKey)==null){
-	        	 List<Map<String,Object>> sublist=new ArrayList<Map<String,Object>>();
+	        	 List<Map<String,Object>> sublist=new ArrayList<>();
 	        	 sublist.add(listobj.get(i));
 	        	 retMap.put(parentKey, sublist);
 	         }else
@@ -76,13 +71,13 @@ public class CollectionBaseConvert {
 		return retMap;
 	}
 	public static Map<String,List<Map<String,String>>> convertToMapObjByParentKey(List<Map<String, String>> listobj,String key) {
-		 Map<String,List<Map<String,String>>> retMap =new HashMap<String, List<Map<String,String>>>();
+		 Map<String,List<Map<String,String>>> retMap =new HashMap<>();
 		doconvertByParentKey(listobj, key, retMap);
 		return retMap;
 	}
 	
 	public static List<String> extractKeyValueByList(List<Map<String, String>> list,String key){
-		List<String> retList=new ArrayList<String>();
+		List<String> retList=new ArrayList<>();
 		for (Map<String,String> map:list) {
 			if(map.containsKey(key)) {
                 retList.add(map.get(key));
@@ -91,7 +86,7 @@ public class CollectionBaseConvert {
 		return retList;
 	}
 	public static List<Object> extractKeyValueByListObj(List<Map<String, Object>> list,String key){
-		List<Object> retList=new ArrayList<Object>();
+		List<Object> retList=new ArrayList<>();
 		for (Map<String,Object> map:list) {
 			if(map.containsKey(key)) {
                 retList.add(map.get(key));
@@ -100,7 +95,7 @@ public class CollectionBaseConvert {
 		return retList;
 	}
 	public static List<String> extractKeyStringValueByListObj(List<Map<String, Object>> list,String key){
-		List<String> retList=new ArrayList<String>();
+		List<String> retList=new ArrayList<>();
 		for (Map<String,Object> map:list) {
 			if(map.containsKey(key)) {
                 retList.add(map.get(key).toString());
@@ -130,7 +125,7 @@ public class CollectionBaseConvert {
 	}
 	private void addMapToList(Map<String, List<Serializable>> retMap, String key, Serializable t) {
 		if (!retMap.containsKey(key)) {
-			List list = new ArrayList<>();
+			List<Serializable> list = new ArrayList<>();
 			list.add(t);
 			retMap.put(key, list);
 		} else {
@@ -138,13 +133,13 @@ public class CollectionBaseConvert {
 		}
 	}
 	public static List<Map.Entry<String, ? extends Comparable>> sortMapByValue(Map<String,? extends Comparable> inputMap, final boolean order){
-		List<Map.Entry<String,? extends Comparable>> list=new LinkedList<Map.Entry<String, ? extends Comparable>>(inputMap.entrySet());
+		List<Map.Entry<String,? extends Comparable>> list=new LinkedList<>(inputMap.entrySet());
 		Collections.sort(list, (Comparator<Map.Entry<String, ?>>) (o1, o2) -> {
 			if(order){
-				return ((Comparable) o1.getValue()).compareTo((Comparable) o2.getValue());
+				return ((Comparable) o1.getValue()).compareTo(o2.getValue());
 
 			}else{
-				return ((Comparable)o2.getValue()).compareTo((Comparable)o1.getValue());
+				return ((Comparable)o2.getValue()).compareTo(o1.getValue());
 			}
 		});
 		return list;

@@ -55,23 +55,20 @@ public class RabbitMQIterator extends AbstractQueueIterator {
 
     @Override
     public List<Map<String, Object>> pollMessage() throws IOException {
+        List<Map<String, Object>> retList = new ArrayList<>();
         try(Channel channel=connection.createChannel(true)) {
             channel.basicQos(64);
-            List<Map<String, Object>> retList = new ArrayList<>();
             Consumer consumer = new DefaultConsumer(channel) {
                 @Override
                 public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
                     retList.add(AvroUtils.byteArrayBijectionToMap(schema, recordInjection, body));
                     channel.basicAck(envelope.getDeliveryTag(), false);
                 }
-
             };
-            String value=channel.basicConsume(queueName, consumer);
-
         }catch (TimeoutException ex){
             throw new IOException(ex);
         }
-        return null;
+        return retList;
     }
 
     @Override

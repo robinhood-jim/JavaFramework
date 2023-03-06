@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
 public class CommandLineExecutor {
 	private Logger logger=LoggerFactory.getLogger(getClass());
 	private static CommandLineExecutor executor=new CommandLineExecutor();
-	private Map<Long, Integer> processMap=new HashMap<Long, Integer>();
+	private Map<Long, Integer> processMap=new HashMap<>();
 	
 	private CommandLineExecutor(){
 	}
@@ -74,7 +74,7 @@ public class CommandLineExecutor {
 			int runCode=process.waitFor();
 			logger.info("return code={}",runCode);
 			thread.waitFor();
-			logger.info("execute tag="+thread.isExecuteOk());
+			logger.info("execute tag= {}",thread.isExecuteOk());
 			if(runCode!=0 || !thread.isExecuteOk()){
 				runOk=false;
 			}
@@ -180,7 +180,7 @@ public class CommandLineExecutor {
 			curnum++;
 			try{
 				ProcessBuilder builder=new ProcessBuilder(cmd);
-				System.out.println(builder.command());
+				logger.debug("run cmd {}",builder.command());
 				Process process=builder.start();
 				int pid=getPid(process);
 				processMap.put(Long.valueOf(key), pid);
@@ -195,7 +195,7 @@ public class CommandLineExecutor {
 					Thread.sleep(1000L*waitSecond);
 				}
 			}catch(Exception ex){
-				logger.error("",ex);
+				logger.error("{}",ex);
 			}
 			finally{
 				stopCmd(processMap.get(key));
@@ -218,13 +218,13 @@ public class CommandLineExecutor {
 				if(pid!=-1 && pid>1){
 					stopCmd(pid);
 				}
-				logger.info("begin to terminate thread="+pid);
+				logger.info("begin to terminate thread= {}",pid);
 			}
 			else {
-                logger.info(" taskStepId="+key+" already stopped.");
+                logger.info(" taskStepId= {}  already stopped.",key);
             }
 		}else{
-			logger.error(" taskStepId="+key+" does not run command");
+			logger.error(" taskStepId= {} does not run command",key);
 		}
 	}
 	private int getPid(Process process) throws Exception{
@@ -246,13 +246,13 @@ public class CommandLineExecutor {
 			field.setAccessible(true);
 			processid=(Integer)field.get(process);
 		}
-		logger.info("get command line pid="+processid);
+		logger.info("get command line pid= {}",processid);
 		return processid;
 	}
 	private void stopCmd(Integer selpid) throws Exception{
-		Map<Integer, List<Integer>> ppidMap=new HashMap<Integer, List<Integer>>();
+		Map<Integer, List<Integer>> ppidMap=new HashMap<>();
 		try{
-			List<String> cmd=new ArrayList<String>();
+			List<String> cmd=new ArrayList<>();
 			cmd.add("ps");
 			cmd.add("-eo");
 			cmd.add("pid,ppid,command");
@@ -265,17 +265,17 @@ public class CommandLineExecutor {
 				Integer pid=Integer.valueOf(arr.get(0));
 				Integer ppid=Integer.valueOf(arr.get(1));
 				if(!ppidMap.containsKey(ppid)){
-					List<Integer> list=new ArrayList<Integer>();
+					List<Integer> list=new ArrayList<>();
 					list.add(pid);
 					ppidMap.put(ppid, list);
 				}else{
 					ppidMap.get(ppid).add(pid);
 				}
 			}
-			List<Integer> containList=new ArrayList<Integer>();
+			List<Integer> containList=new ArrayList<>();
 			containList.add(selpid);
 			naviagteTree(ppidMap,selpid, containList);
-			logger.info("begin to kill processList="+containList);
+			logger.info("begin to kill processList={}",containList);
 			StringBuilder builder=new StringBuilder();
 			for (int i=containList.size()-1;i>=0;i--) {
 				builder.append(containList.get(i)).append(" ");
@@ -298,7 +298,7 @@ public class CommandLineExecutor {
 		}
 	}
 	public static List<String> splitStr(String input){
-		List<String> retList=new ArrayList<String>();
+		List<String> retList=new ArrayList<>();
 		StringBuilder builder=new StringBuilder();
 		for (int i = 0; i < input.length(); i++) {
 			if(input.charAt(i)!=' '){
@@ -317,7 +317,7 @@ public class CommandLineExecutor {
 		return retList;
 	}
 	public static List<String> splitStr(String input,char split){
-		List<String> retList=new ArrayList<String>();
+		List<String> retList=new ArrayList<>();
 		StringBuilder builder=new StringBuilder();
 		for (int i = 0; i < input.length(); i++) {
 			if(input.charAt(i)!=split){
@@ -354,14 +354,14 @@ public class CommandLineExecutor {
 			try{
 				while((line=reader.readLine())!=null){
 					if(enableOuptut) {
-                        logger.info("message="+line);
+                        logger.info("message={}",line);
                     }
 					builder.append(line).append("\n");
 				}
 				while((line=errreader.readLine())!=null){
 					
 					if(enableOuptut) {
-                        logger.error("error="+line);
+                        logger.error("error= {}",line);
                     }
 					builder.append(line).append("\n");
 				}

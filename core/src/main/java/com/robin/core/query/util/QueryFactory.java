@@ -36,7 +36,7 @@ public class QueryFactory implements InitializingBean {
     private static Logger log = LoggerFactory.getLogger(QueryFactory.class);
     private static Map<String, QueryString> queryMap = new HashMap<>();
 
-    public QueryFactory() {
+    public QueryFactory()  {
     }
 
     public void init() {
@@ -47,8 +47,6 @@ public class QueryFactory implements InitializingBean {
             }
         } catch (Exception e) {
             log.error("", e);
-            e.printStackTrace();
-            System.out.println(e.getMessage());
         }
     }
 
@@ -58,7 +56,9 @@ public class QueryFactory implements InitializingBean {
         if (is == null) {
             throw new IllegalArgumentException("parseXML(InputStream is null)!");
         } else {
-            Document document = new SAXReader().read(is);
+            SAXReader reader=new SAXReader();
+            reader.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+            Document document = reader.read(is);
             putQueryMap(document);
         }
     }
@@ -67,9 +67,9 @@ public class QueryFactory implements InitializingBean {
     private void putQueryMap(Document document) {
         Element root = document.getRootElement();
         String id;
-        Iterator iter = root.elementIterator("SQLSCRIPT");
+        Iterator<Element> iter = root.elementIterator("SQLSCRIPT");
         while (iter.hasNext()) {
-            Element element = (Element) iter.next();
+            Element element = iter.next();
             id = element.attributeValue("ID");
             if (queryMap.containsKey(id)) {
                 throw new MissingConfigException((new StringBuilder()).append("Duplicated selectId:").append(id).toString());
@@ -97,9 +97,9 @@ public class QueryFactory implements InitializingBean {
         String tmpSql = sql;
         if (tmpSql != null) {
             if (tmpSql.indexOf("&lt;") > -1) {
-                tmpSql = tmpSql.replaceAll("&lt;", "<");
+                tmpSql = tmpSql.replace("&lt;", "<");
             } else if (tmpSql.indexOf("&gt;") > -1) {
-                tmpSql = tmpSql.replaceAll("&gt;", ">");
+                tmpSql = tmpSql.replace("&gt;", ">");
             }
         }
         return tmpSql;

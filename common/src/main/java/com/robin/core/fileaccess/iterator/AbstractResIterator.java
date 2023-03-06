@@ -27,6 +27,6 @@ public abstract class AbstractResIterator implements Iterator<Map<String,Object>
         }
     }
     public abstract void init();
-    public abstract void beforeProcess(String resourcePath);
+    public abstract void beforeProcess(String param);
     public abstract void afterProcess();
 }

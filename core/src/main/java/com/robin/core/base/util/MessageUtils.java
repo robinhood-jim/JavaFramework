@@ -11,6 +11,8 @@ import java.util.Locale;
 public class MessageUtils {
     private static MessageSource messageSource;
     private static Environment environment;
+
+
     static {
         messageSource = SpringContextHolder.getBean(MessageSource.class);
         environment=SpringContextHolder.getBean(Environment.class);

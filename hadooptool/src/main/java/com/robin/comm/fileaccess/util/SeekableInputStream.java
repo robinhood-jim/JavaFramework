@@ -1,12 +1,10 @@
 package com.robin.comm.fileaccess.util;
 
+import com.robin.core.base.util.IOUtils;
 import org.apache.hadoop.fs.PositionedReadable;
 import org.apache.hadoop.fs.Seekable;
 
-import java.io.ByteArrayInputStream;
-import java.io.EOFException;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 
 
 public class SeekableInputStream extends ByteArrayInputStream implements Seekable, PositionedReadable {
@@ -15,6 +13,7 @@ public class SeekableInputStream extends ByteArrayInputStream implements Seekabl
     public SeekableInputStream(byte[] buf) {
         super(buf);
     }
+
 
     @Override
     public int read(long position, byte[] buffer, int offset, int length) throws IOException {
@@ -48,7 +47,11 @@ public class SeekableInputStream extends ByteArrayInputStream implements Seekabl
 
     @Override
     public void seek(long l) throws IOException {
-        this.reset();
+        try{
+            this.reset();
+        }catch (Exception ex){
+            ex.printStackTrace();
+        }
         this.skip(l);
     }
 

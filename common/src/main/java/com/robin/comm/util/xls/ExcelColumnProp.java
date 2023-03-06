@@ -45,7 +45,7 @@ public class ExcelColumnProp {
 	public void setNeedMerge(boolean needMerge) {
 		this.needMerge = needMerge;
 	}
-	public ExcelColumnProp(){
+	private ExcelColumnProp(){
 		
 	}
 	public ExcelColumnProp(String columnName,String columnCode,String columnType,boolean needMerge){
@@ -54,6 +54,11 @@ public class ExcelColumnProp {
 		this.columnType = columnType;
 		this.needMerge = needMerge;
 	}
-	
+	public ExcelColumnProp(String columnName,String columnCode,String columnType){
+		this.columnCode = columnCode;
+		this.columnName = columnName;
+		this.columnType = columnType;
+		this.needMerge = false;
+	}
 
 }

@@ -35,6 +35,7 @@ public class XmlFileWriter extends WriterBasedFileWriter{
 
 	@Override
 	public void beginWrite() throws IOException {
+		super.beginWrite();
 		try {
 			factory=XMLOutputFactory.newFactory();
 			streamWriter=factory.createXMLStreamWriter(writer);

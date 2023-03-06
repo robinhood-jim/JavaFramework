@@ -125,7 +125,7 @@ public class ESSchemaAwareUtil {
     }
     public static String translateEsType(String columnType) {
         Assert.notNull(columnType,"type is null");
-        String retType= Const.META_TYPE_STRING;
+        String retType;
         if ("auto".equalsIgnoreCase(columnType) || "keyword".equalsIgnoreCase(columnType) || "text".equalsIgnoreCase(columnType)) {
             retType=Const.META_TYPE_STRING;
         }else if("double".equalsIgnoreCase(columnType)){
@@ -136,6 +136,8 @@ public class ESSchemaAwareUtil {
             retType=Const.META_TYPE_NUMERIC;
         }else if("short".equalsIgnoreCase(columnType)){
             retType=Const.META_TYPE_SHORT;
+        }else {
+            retType=Const.META_TYPE_STRING;
         }
         return retType;
     }

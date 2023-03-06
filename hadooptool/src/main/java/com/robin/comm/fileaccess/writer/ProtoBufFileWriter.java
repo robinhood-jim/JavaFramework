@@ -11,6 +11,7 @@ import com.robin.core.fileaccess.meta.DataSetColumnMeta;
 import com.robin.core.fileaccess.util.ResourceUtil;
 import com.robin.core.fileaccess.writer.AbstractFileWriter;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 
 import javax.naming.OperationNotSupportedException;
 import java.io.IOException;
@@ -44,10 +45,10 @@ public class ProtoBufFileWriter extends AbstractFileWriter {
                 schemaBuilder.addMessageDefinition(definition);
                 schema = schemaBuilder.build();
                 mesgBuilder= DynamicMessage.newBuilder(schema.getMessageDescriptor(colmeta.getValueClassName()));
-            }else{
-                checkAccessUtil(null);
-                out = accessUtil.getOutResourceByStream(colmeta, ResourceUtil.getProcessPath(colmeta.getPath()));
             }
+            checkAccessUtil(null);
+            out = accessUtil.getOutResourceByStream(colmeta, ResourceUtil.getProcessPath(colmeta.getPath()));
+
         }catch (Exception ex){
             ex.printStackTrace();
         }
@@ -72,7 +73,7 @@ public class ProtoBufFileWriter extends AbstractFileWriter {
         while(iter.hasNext()){
             Map.Entry<String,Object> entry=iter.next();
             Descriptors.FieldDescriptor des=msgDesc.findFieldByName(entry.getKey());
-            if(des!=null){
+            if(des!=null && !ObjectUtils.isEmpty(entry.getValue())){
                 msgBuilder.setField(des,entry.getValue());
             }
         }

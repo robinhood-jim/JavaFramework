@@ -1,5 +1,6 @@
 package com.robin.hadoop.hbase;
 
+import com.robin.core.base.datameta.DataBaseColumnMeta;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.*;
@@ -473,6 +474,25 @@ public class HbaseBaseDao {
         return filterlist;
     }
 
+   /* public List<Map<String,Object>> queryBySql(SelectPart part, Map<String, DataBaseColumnMeta> metaMap){
+        try(Connection connection=getConnection();Table table=connection.getTable(TableName.valueOf(part.getTableName()))){
+            FilterList filterList=new FilterList();
+            Assert.notNull(part.getConditions(),"");
+            for(ConditionCollection collection:part.getConditions()){
+                if(!CollectionUtils.isEmpty(collection.getConditions())){
+                    for(ConditionNode node:collection.getConditions()){
+                        Filter filter=null;
+
+                    }
+                }
+            }
+        }catch (Exception ex){
+
+        }
+        return null;
+    }*/
+
+
     public Map<String, Map<String, String>> getRegionResult(String tableName, byte[] startKey, byte[] endKey, String fieldArr, List<String> keyList) throws HbaseException {
         Map<String, Map<String, String>> retMap = new HashMap<>();
         Scan scan = new Scan();
@@ -518,6 +538,9 @@ public class HbaseBaseDao {
         } catch (IOException ex) {
             throw new HbaseException(ex);
         }
+    }
+    private Filter getFilterByMeta(String columnName,String cmpColumn,String value,DataBaseColumnMeta meta){
+        return null;
     }
 
     public static KeyValue createKeyValue(String family, String key, String colName, String value) {

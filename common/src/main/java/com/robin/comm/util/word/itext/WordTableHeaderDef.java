@@ -13,32 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.robin.comm.util.word;
+package com.robin.comm.util.word.itext;
 
-public class WordTableColumnDef {
-	private String columnName;
-	private int rowSpan;
-	private int colSpan;
+import java.util.ArrayList;
+import java.util.List;
+
+public class WordTableHeaderDef {
+	private List<List<WordTableColumnDef>> columnList=new ArrayList<List<WordTableColumnDef>>();
+	private int headerNums=1;
 	
-	
-	public String getColumnName() {
-		return columnName;
+	public List<List<WordTableColumnDef>> getColumnList() {
+		return columnList;
 	}
-	public void setColumnName(String columnName) {
-		this.columnName = columnName;
+
+	public void setColumnList(List<List<WordTableColumnDef>> columnList) {
+		this.columnList = columnList;
 	}
-	public int getRowSpan() {
-		return rowSpan;
+
+	public int getHeaderNums() {
+		return headerNums;
 	}
-	public void setRowSpan(int rowSpan) {
-		this.rowSpan = rowSpan;
+
+	public void setHeaderNums(int headerNums) {
+		this.headerNums = headerNums;
 	}
-	public int getColSpan() {
-		return colSpan;
-	}
-	public void setColSpan(int colSpan) {
-		this.colSpan = colSpan;
-	}
-	
 
 }

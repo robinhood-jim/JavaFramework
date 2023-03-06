@@ -41,8 +41,9 @@ public class SqlMapperDao extends JdbcDaoSupport {
     }
     @NonNull
     private JdbcTemplate returnTemplate(){
-        Assert.notNull(getJdbcTemplate(), "jdbc Connection is null");
-        return getJdbcTemplate();
+        JdbcTemplate template=getJdbcTemplate();
+        Assert.notNull(template, "jdbc Connection is null");
+        return template;
     }
 
     public SqlMapperDao(SqlMapperConfigure mapper, DataSource dataSource, BaseSqlGen sqlGen) {
@@ -62,8 +63,8 @@ public class SqlMapperDao extends JdbcDaoSupport {
         namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(returnTemplate());
     }
 
-    public List queryByMapper(String nameSpace, String id, PageQuery query, Object... params) throws DAOException {
-        List list;
+    public List<?> queryByMapper(String nameSpace, String id, PageQuery query, Object... params) throws DAOException {
+        List<?> list;
         StringBuilder builder = new StringBuilder();
         if (sqlMapperConfigure.getSegmentsMap().containsKey(nameSpace) && sqlMapperConfigure.getSegmentsMap().get(nameSpace).containsKey(id)) {
             ImmutablePair<String, List<AbstractSegment>> pair = sqlMapperConfigure.getSegmentsMap().get(nameSpace).get(id);
@@ -169,7 +170,7 @@ public class SqlMapperDao extends JdbcDaoSupport {
         return updateRows;
     }
 
-    public int batchUpdateByMapper(String nameSpace, String id, List batchList) {
+    public int batchUpdateByMapper(String nameSpace, String id, List<?> batchList) {
         return 0;
     }
 
@@ -180,9 +181,9 @@ public class SqlMapperDao extends JdbcDaoSupport {
         }
     }
 
-    private static ResultSetExtractor<List> resultSetExtractor(SqlMapperConfigure mapper, String nameSpace, CompositeSegment segment, LobHandler lobHandler, PageQuery pageQuery) throws DAOException {
+    private static ResultSetExtractor<List<?>> resultSetExtractor(SqlMapperConfigure mapper, String nameSpace, CompositeSegment segment, LobHandler lobHandler, PageQuery pageQuery) throws DAOException {
         return resultSet -> {
-            List retList = new ArrayList();
+            List retList = new ArrayList<>();
             if (resultSet.next()) {
                 ResultSetMetaData rsmd = resultSet.getMetaData();
                 int count = rsmd.getColumnCount();

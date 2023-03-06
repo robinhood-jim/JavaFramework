@@ -24,6 +24,7 @@ import com.robin.core.collection.util.CollectionMapConvert;
 import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.query.util.PageQuery;
 import com.robin.core.sql.util.FilterCondition;
+import com.robin.core.web.util.RestTemplateUtils;
 import com.robin.core.web.util.Session;
 import com.robin.core.web.util.WebConstant;
 import com.robin.basis.model.system.SysOrg;
@@ -37,8 +38,10 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.Scope;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
+import org.springframework.web.client.RestClientException;
 
 import javax.annotation.Resource;
 import java.util.*;
@@ -61,6 +64,7 @@ public class LoginService {
     private SysUserResponsiblityService sysUserResponsiblityService;
     @Resource
     private SysUserRoleService sysUserRoleService;
+    private BCryptPasswordEncoder encoder=new BCryptPasswordEncoder();
 
 
     public static final String VERIFIED = "1";
@@ -74,6 +78,13 @@ public class LoginService {
         Session session = checkAccount(accountName, password);
 
         return session;
+    }
+    public Map<String,Object> ssoLogin(String requestUrl,Map<String,String> requestMap) throws ServiceException{
+        try{
+            return RestTemplateUtils.postFromSsoRest(requestUrl, requestMap,null);
+        }catch (RestClientException ex){
+            throw new ServiceException(ex);
+        }
     }
     public Map<String,Object> getUserAndResp(String userName){
         Map<String,Object> retMap=new HashMap<>();
@@ -196,13 +207,17 @@ public class LoginService {
     private Session checkAccount(String accountName, String password) {
         SysUser user = new SysUser();
         user.setUserAccount(accountName);
-        user.setUserPassword(password);
+        //user.setUserPassword(password);
         user.setUserStatus(Const.VALID);
         List<SysUser> users = sysUserService.queryByVO(user, null, null);
         if (users.isEmpty()) {
-            throw new ServiceException("AccountName or password incorrect or account is Locked!Please retry");
+            throw new ServiceException("AccountName does not exist or account is Locked!Please retry");
         }
         SysUser queryUser = users.get(0);
+        String dbPwd=queryUser.getUserPassword();
+        if(!encoder.matches(password,dbPwd)){
+            throw new ServiceException("password mismatch");
+        }
         return returnSession(queryUser);
     }
     private Session returnSession(SysUser queryUser){

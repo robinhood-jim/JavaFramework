@@ -83,6 +83,21 @@ public class ApacheVfsResourceAccessUtil extends AbstractResourceAccessUtil {
             throw new IOException(ex);
         }
     }
+    private InputStream getRawInResource(FileObject fo,DataCollectionMeta meta) throws Exception{
+        InputStream reader=null;
+        if (fo.exists()) {
+            if (FileType.FOLDER.equals(fo.getType())) {
+                logger.error("File {} is a directory！", meta.getPath());
+                throw new FileNotFoundException("File " + meta.getPath() + " is a directory!");
+            } else {
+                reader = fo.getContent().getInputStream();
+            }
+        } else {
+            throw new FileNotFoundException("File " + meta.getPath() + " not found!");
+        }
+        return reader;
+    }
+
     private InputStream getInResource(FileObject fo,DataCollectionMeta meta) throws Exception{
         InputStream reader=null;
         if (fo.exists()) {
@@ -152,6 +167,20 @@ public class ApacheVfsResourceAccessUtil extends AbstractResourceAccessUtil {
             FileObject fo = checkFileExist(meta, resourcePath);
             out = fo.getContent().getOutputStream();
             return out;
+        }catch (Exception ex){
+            throw new IOException(ex);
+        }
+    }
+
+    @Override
+    public InputStream getRawInputStream(DataCollectionMeta meta, String resourcePath) throws IOException {
+        VfsParam param = new VfsParam();
+        try {
+            ConvertUtil.convertToTarget(param, meta.getResourceCfgMap());
+
+            FileObject fo = manager.resolveFile(getUriByParam(param, resourcePath).toString(), getOptions(param));
+            InputStream reader = getRawInResource(fo, meta);
+            return reader;
         }catch (Exception ex){
             throw new IOException(ex);
         }

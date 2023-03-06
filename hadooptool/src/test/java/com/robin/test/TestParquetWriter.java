@@ -47,8 +47,9 @@ public class TestParquetWriter {
             colmeta.addColumnMeta("predict_value", Const.META_TYPE_INTEGER, null);
             colmeta.addColumnMeta("predict_time", Const.META_TYPE_TIMESTAMP, null);
             colmeta.setPath("/tmp/luoming/out.parquet.snappy");
+            colmeta.setFileFormat(Const.FILETYPE_PARQUET);
             conn= SimpleJdbcDao.getConnection(meta);
-            final AbstractFileWriter jwriter= TextFileWriterFactory.getFileOutputStreamByType(Const.FILETYPE_PARQUET, colmeta,new FileOutputStream("/tmp/luoming/1.txt"));
+            final AbstractFileWriter jwriter= TextFileWriterFactory.getFileOutputStreamByType(colmeta,new FileOutputStream("/tmp/luoming/1.txt"));
 
             jwriter.beginWrite();
             ResultSetOperationExtractor extractor=new ResultSetOperationExtractor() {

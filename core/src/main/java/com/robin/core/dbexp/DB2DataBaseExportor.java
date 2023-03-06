@@ -29,7 +29,7 @@ public class DB2DataBaseExportor extends BaseDataBaseExportor {
 	}
 	@Override
 	public int exportToLocal(DataBaseExportParam exParam,DataBaseParam param) {
-		List<String> scriptList=new ArrayList<String>();
+		List<String> scriptList=new ArrayList<>();
 		scriptList.add(userPath+Const.DB2EXECUTE_SCRIPTS);
 		scriptList.add(Const.DBDUMP_SHELL_PARAM);
 		scriptList.add(param.getHostName());

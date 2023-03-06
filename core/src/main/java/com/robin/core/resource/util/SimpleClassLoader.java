@@ -21,14 +21,16 @@ package com.robin.core.resource.util;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Hashtable;
 
 import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
+import java.util.Map;
 
 @Slf4j
 public class SimpleClassLoader extends ClassLoader {
-    private Hashtable classes = new Hashtable();
+    private Map<String,Class> classes = new HashMap<>();
 
     public SimpleClassLoader() {
     }
@@ -76,7 +78,7 @@ public class SimpleClassLoader extends ClassLoader {
         System.out.println("        >>>>>> Load class : "+className);
 
         /* Check our local cache of classes */
-        result = (Class)classes.get(className);
+        result = classes.get(className);
         if (result != null) {
             System.out.println("        >>>>>> returning cached result.");
             return result;

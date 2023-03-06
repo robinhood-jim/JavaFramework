@@ -62,4 +62,32 @@ public class CommonConstant {
             return Integer.valueOf(value);
         }
     }
+    public enum MenuType {
+        /**
+         * 目录
+         */
+        CATALOG(0),
+        /**
+         * 菜单
+         */
+        MENU(1),
+        /**
+         * 按钮
+         */
+        BUTTON(2);
+
+        private int value;
+
+        MenuType(int value) {
+            this.value = value;
+        }
+
+        public int getValue() {
+            return value;
+        }
+    }
+    public static final int UNAUTHRIZED=401;
+    public static final String LOGIN_URL="/login/user";
+    public static final String OAUTH_LOGIN_URL="/oauth/token";
+    public static final int SUPER_ADMIN = 1;
 }

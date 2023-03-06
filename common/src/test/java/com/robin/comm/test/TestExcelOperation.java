@@ -8,24 +8,31 @@ import com.robin.core.base.datameta.DataBaseParam;
 import com.robin.core.base.util.Const;
 import com.robin.core.base.util.StringUtils;
 import com.robin.core.fileaccess.iterator.AbstractResIterator;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.dbutils.DbUtils;
+import org.apache.commons.lang3.tuple.Triple;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.sql.Connection;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
-public class TestExcelOperation {
 
+@Slf4j
+public class TestExcelOperation {
+    private Logger logger= LoggerFactory.getLogger(TestExcelOperation.class);
     @Test
     public void testGenerate() throws Exception {
         Long startTs = System.currentTimeMillis() - 3600 * 24 * 1000;
         String str = StringUtils.generateRandomChar(32);
         ExcelSheetProp prop = new ExcelSheetProp();
-        prop.setFileext("xlsx");
+        prop.setFileExt("xlsx");
         prop.setStartCol(1);
         prop.setStartRow(1);
         prop.setSheetName("test");
@@ -44,10 +51,12 @@ public class TestExcelOperation {
             public void init() {
 
             }
+
             @Override
-            public void beforeProcess(String resourcePath) {
+            public void beforeProcess(String param) {
 
             }
+
             @Override
             public void afterProcess() {
 
@@ -88,7 +97,7 @@ public class TestExcelOperation {
     @Test
     public void testGenWithQuery() {
         ExcelSheetProp prop = new ExcelSheetProp();
-        prop.setFileext("xlsx");
+        prop.setFileExt("xlsx");
         prop.setStartCol(1);
         prop.setStartRow(1);
         prop.setSheetName("TestSheet1");
@@ -156,10 +165,70 @@ public class TestExcelOperation {
 
         try {
             ExcelProcessor.readExcelFile(filePath, prop);
-            List<Map<String, String>> list = prop.getColumnList();
+            List<Map<String, Object>> list = prop.getColumnList();
             System.out.println(list);
         } catch (Exception ex) {
 
+        }
+    }
+    @Test
+    public void doRead(){
+        DateTimeFormatter format=DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        try(InputStream stream=new FileInputStream(new File("e:/2022级高一10月校考质量分析表.xls"))){
+            ExcelProcessor.readExcel(stream,"xls",1,2,(w,r,ev)->{
+                Object cValue=ExcelProcessor.readValue(r.getCell(10),Const.META_TYPE_DOUBLE,format,ev);
+                logger.info("{} {}",cValue,cValue.getClass());
+            });
+
+        }catch (Exception ex){
+            ex.printStackTrace();
+        }
+    }
+    @Test
+    public void testMergeHeader(){
+
+        ExcelSheetProp prop=new ExcelSheetProp("xlsx");
+
+        prop.setStartCol(1);
+        prop.setStartRow(2);
+        prop.setSheetName("TestSheet1");
+        TableConfigProp configProp=new TableConfigProp();
+        List<List<TableHeaderColumn>> headList=new ArrayList<>();
+        List<TableHeaderColumn> list1=new ArrayList<>();
+        list1.add(new TableHeaderColumn("班级","gradeNo",2,1));
+        list1.add(new TableHeaderColumn("10月月考","Oct",1,3));
+        list1.add(new TableHeaderColumn("11月月考","Nov",1,3));
+        list1.add(new TableHeaderColumn("期末统考","Last",1,3));
+        headList.add(list1);
+        List<TableHeaderColumn> list2=new ArrayList<>();
+        list2.add(new TableHeaderColumn("平级分","OctAvg",1,1));
+        list2.add(new TableHeaderColumn("名称","OctRank",1,1));
+        list2.add(new TableHeaderColumn("均分差","OctMinus",1,1));
+        list2.add(new TableHeaderColumn("平级分","NovAvg",1,1));
+        list2.add(new TableHeaderColumn("名称","NovRank",1,1));
+        list2.add(new TableHeaderColumn("均分差","NovMinus",1,1));
+        list2.add(new TableHeaderColumn("平级分","LastAvg",1,1));
+        list2.add(new TableHeaderColumn("名称","LastRank",1,1));
+        list2.add(new TableHeaderColumn("均分差","LastMinus",1,1));
+        headList.add(list2);
+        configProp.setHeaderColumnList(headList);
+        configProp.setTotalCol(10);
+
+
+        try(OutputStream outputStream=new FileOutputStream(new File("e:/test1.xlsx"));
+            Workbook wb=ExcelProcessor.generateExcelFile(prop,configProp)){
+            wb.write(outputStream);
+        }catch (Exception ex){
+            ex.printStackTrace();
+        }
+    }
+    @Test
+    public void doReadMergeCells(){
+        try(Workbook wb=new XSSFWorkbook(new FileInputStream(new File("e:/高频事项清单梳理对标广东浙江_0131(终版)(示范事项按条线排序) - v1.0--金信和紫光(luoming).xlsx")))){
+            List<Triple<Integer,Integer,List<Object>>> rList=ExcelBaseOper.getMergedCells(wb.getSheetAt(0),2,1,new int[]{2,3});
+            log.info("",rList);
+        }catch (IOException ex){
+            ex.printStackTrace();
         }
     }
 }

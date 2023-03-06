@@ -60,8 +60,8 @@ public class MockFileSystem extends FileSystem {
         if(outputStream!=null){
             throw new FileAlreadyExistsException("file already write,wait for closing");
         }
-        outputStream=accessUtil.getOutResourceByStream(colmeta, ResourceUtil.getProcessPath(path.toString()));
-        return new FSDataOutputStream(outputStream);
+        outputStream=accessUtil.getRawOutputStream(colmeta, ResourceUtil.getProcessPath(path.toString()));
+        return new FSDataOutputStream(outputStream,new Statistics(""));
     }
 
     @Override
