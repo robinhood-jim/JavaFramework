@@ -46,6 +46,7 @@ import org.springframework.jdbc.support.lob.LobHandler;
 import org.springframework.lang.NonNull;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 
 import javax.sql.DataSource;
 import java.io.Serializable;
@@ -159,7 +160,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
                 throw new DAOException("query ID not found in config file!");
             }
 
-            if ((pageQuery.getParameterArr() != null && pageQuery.getParameterArr().length > 0) || !pageQuery.getNamedParameters().isEmpty()) {
+            if (!ObjectUtils.isEmpty(pageQuery.getParameterArr()) || !ObjectUtils.isEmpty(pageQuery.getNamedParameters())) {
                 return CommJdbcUtil.executeByPreparedParamter(this.returnTemplate(), sqlGen, queryString1, pageQuery);
             } else {
                 throw new DAOException("execute must with nameParameter or prepareStatements!");
@@ -695,7 +696,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
         if (logger.isDebugEnabled()) {
             logger.debug(("querySQL: " + querySQL));
         }
-        if ((pageQuery.getParameterArr() != null && pageQuery.getParameterArr().length > 0) || !pageQuery.getNamedParameters().isEmpty()) {
+        if (!ObjectUtils.isEmpty(pageQuery.getParameterArr()) || !ObjectUtils.isEmpty(pageQuery.getNamedParameters())) {
             CommJdbcUtil.queryByPreparedParamter(this.returnTemplate(), getNamedJdbcTemplate(), lobHandler, sqlGen, qs, pageQuery);
         } else {
             CommJdbcUtil.queryByReplaceParamter(this.returnTemplate(), lobHandler, sqlGen, qs, pageQuery);

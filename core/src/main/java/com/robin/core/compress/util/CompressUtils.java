@@ -53,7 +53,7 @@ public class CompressUtils {
             }
             pack(out, srcDir, "");
         } finally {
-            IOUtils.closeQuietly(out);
+            IOUtils.closeQuietly(out,null);
         }
     }
 
@@ -100,8 +100,8 @@ public class CompressUtils {
                     output = new FileOutputStream(file);
                     IOUtils.copy(input, output);
                 } finally {
-                    IOUtils.closeQuietly(output);
-                    IOUtils.closeQuietly(input);
+                    IOUtils.closeQuietly(output,null);
+                    IOUtils.closeQuietly(input,null);
                 }
             }
         } finally {

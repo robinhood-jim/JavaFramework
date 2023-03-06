@@ -90,6 +90,9 @@ public class Const {
     public static final String FALSE = "false";
     public static final String OPERATOR_AND="and";
     public static final String OPERATOR_OR="or";
+    public static final Integer COLUMN_VALID = 1;
+
+    public static final Integer COLUMN_INVALID = 0;
 
 
     public enum FileFormat {

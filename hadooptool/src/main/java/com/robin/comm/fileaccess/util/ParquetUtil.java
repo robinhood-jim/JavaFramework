@@ -5,8 +5,6 @@ import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.meta.DataSetColumnMeta;
 import com.robin.core.fileaccess.util.AbstractResourceAccessUtil;
 import com.robin.core.fileaccess.util.ResourceUtil;
-import com.sun.istack.NotNull;
-import org.apache.avro.file.SeekableByteArrayInput;
 import org.apache.parquet.io.InputFile;
 import org.apache.parquet.io.OutputFile;
 import org.apache.parquet.io.PositionOutputStream;
@@ -15,6 +13,7 @@ import org.apache.parquet.schema.MessageType;
 import org.apache.parquet.schema.OriginalType;
 import org.apache.parquet.schema.PrimitiveType;
 import org.apache.parquet.schema.Types;
+import org.springframework.lang.NonNull;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
@@ -165,7 +164,7 @@ public class ParquetUtil {
         }
     }
 
-    public static OutputFile makeOutputFile(@NotNull AbstractResourceAccessUtil accessUtil, @NotNull DataCollectionMeta colmeta, @NotNull String filePath) {
+    public static OutputFile makeOutputFile(@NonNull AbstractResourceAccessUtil accessUtil, @NonNull DataCollectionMeta colmeta, @NonNull String filePath) {
         return new OutputFile() {
             @Override
             public PositionOutputStream create(long l) throws IOException {
@@ -189,7 +188,7 @@ public class ParquetUtil {
         };
     }
 
-    private static PositionOutputStream makePositionOutputStream(@NotNull AbstractResourceAccessUtil accessUtil, DataCollectionMeta colmeta, @Nonnull String filePath, int ioBufSize)
+    private static PositionOutputStream makePositionOutputStream(@NonNull AbstractResourceAccessUtil accessUtil, DataCollectionMeta colmeta, @Nonnull String filePath, int ioBufSize)
             throws IOException {
         final OutputStream output = accessUtil.getRawOutputStream(colmeta, ResourceUtil.getProcessPath(colmeta.getPath()));
         return new PositionOutputStream() {

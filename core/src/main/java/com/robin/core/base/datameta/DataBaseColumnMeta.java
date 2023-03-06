@@ -48,8 +48,9 @@ public class DataBaseColumnMeta implements Serializable {
 	public DataBaseColumnMeta(String columnName,Integer columnType,Integer length) {
 		this.columnName=columnName;
 		this.columnType=columnType;
-		if(length!=null)
-			this.columnLength=String.valueOf(length);
+		if(length!=null) {
+            this.columnLength=String.valueOf(length);
+        }
 	}
 
 }	

@@ -5,8 +5,7 @@ import com.robin.core.base.util.ResourceConst;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 
 public class ResourceAccessorFactory {
-    public static AbstractResourceAccessUtil getResourceAccessorByType(DataCollectionMeta colmeta){
-        Long resType=colmeta.getResType();
+    public static AbstractResourceAccessUtil getResourceAccessorByType(Long resType){
         AbstractResourceAccessUtil util=null;
         try {
             if (resType.equals(ResourceConst.InputSourceType.TYPE_HDFS.getValue())) {

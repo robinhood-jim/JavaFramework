@@ -182,8 +182,11 @@ public class HibernateGenericDao extends HibernateDaoSupport implements IHiberna
                     return query.list();
                 }
             });
-            if (countList != null && !countList.isEmpty()) return ((Long) countList.get(0)).longValue();
-            else return 0;
+            if (countList != null && !countList.isEmpty()) {
+                return ((Long) countList.get(0)).longValue();
+            } else {
+                return 0;
+            }
         } catch (HibernateException e) {
             throw new DAOException(e);
         }
@@ -194,8 +197,11 @@ public class HibernateGenericDao extends HibernateDaoSupport implements IHiberna
         try {
             String hql = "select count(*) from " + getClassName(entityClass) + " where " + fieldName + "=:fieldValue";
             List<?> countList = returnTemplate().findByNamedParam(hql, "fieldValue", fieldValue);
-            if (countList != null && !countList.isEmpty()) return ((Long) countList.get(0)).longValue();
-            else return 0;
+            if (countList != null && !countList.isEmpty()) {
+                return ((Long) countList.get(0)).longValue();
+            } else {
+                return 0;
+            }
         } catch (HibernateException e) {
             throw new DAOException(e);
         }
@@ -398,14 +404,23 @@ public class HibernateGenericDao extends HibernateDaoSupport implements IHiberna
     @Override
     public void queryBySelectId(PageQuery pageQuery) throws DAOException {
         try {
-            if (pageQuery == null)
+            if (pageQuery == null) {
                 throw new DAOException("missing pagerQueryObject");
+            }
             String selectId = pageQuery.getSelectParamId();
-            if (selectId == null || selectId.trim().length() == 0) throw new IllegalArgumentException("Selectid");
-            if (sqlGen == null) throw new DAOException("SQLGen property is null!");
-            if (queryFactory == null) throw new DAOException("queryFactory is null");
+            if (selectId == null || selectId.trim().length() == 0) {
+                throw new IllegalArgumentException("Selectid");
+            }
+            if (sqlGen == null) {
+                throw new DAOException("SQLGen property is null!");
+            }
+            if (queryFactory == null) {
+                throw new DAOException("queryFactory is null");
+            }
             QueryString queryString1 = queryFactory.getQuery(selectId);
-            if (queryString1 == null) throw new DAOException("query ID not found in config file!");
+            if (queryString1 == null) {
+                throw new DAOException("query ID not found in config file!");
+            }
 
             queryByParamter(queryString1, pageQuery);
         } catch (QueryConfgNotFoundException e) {
@@ -421,14 +436,23 @@ public class HibernateGenericDao extends HibernateDaoSupport implements IHiberna
     @Override
     public int executeBySelectId(PageQuery pageQuery) throws DAOException {
         try {
-            if (pageQuery == null)
+            if (pageQuery == null) {
                 throw new DAOException("missing pagerQueryObject");
+            }
             String selectId = pageQuery.getSelectParamId();
-            if (selectId == null || selectId.trim().length() == 0) throw new IllegalArgumentException("Selectid");
-            if (sqlGen == null) throw new DAOException("SQLGen property is null!");
-            if (queryFactory == null) throw new DAOException("queryFactory is null");
+            if (selectId == null || selectId.trim().length() == 0) {
+                throw new IllegalArgumentException("Selectid");
+            }
+            if (sqlGen == null) {
+                throw new DAOException("SQLGen property is null!");
+            }
+            if (queryFactory == null) {
+                throw new DAOException("queryFactory is null");
+            }
             QueryString queryString1 = queryFactory.getQuery(selectId);
-            if (queryString1 == null) throw new DAOException("query ID not found in config file!");
+            if (queryString1 == null) {
+                throw new DAOException("query ID not found in config file!");
+            }
 
             if (pageQuery.getParameterArr() != null && pageQuery.getParameterArr().length > 0) {
                 return CommJdbcUtil.executeByPreparedParamter(jdbcTemplate, sqlGen, queryString1, pageQuery);

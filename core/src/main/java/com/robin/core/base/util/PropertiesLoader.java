@@ -8,17 +8,18 @@
  */
 package com.robin.core.base.util;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.NoSuchElementException;
-import java.util.Properties;
-
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.util.ObjectUtils;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.NoSuchElementException;
+import java.util.Properties;
 
 
 public class PropertiesLoader {
@@ -83,9 +84,9 @@ public class PropertiesLoader {
 	}
 
 
-	public Double getDouble(String key, Integer defaultValue) {
+	public Double getDouble(String key, Double defaultValue) {
 		String value = getValue(key);
-		return value != null ? Double.valueOf(value) : defaultValue;
+		return !ObjectUtils.isEmpty(value) ? Double.valueOf(value) : defaultValue;
 	}
 
 	public Boolean getBoolean(String key) {
@@ -106,7 +107,7 @@ public class PropertiesLoader {
 
 		for (String location : resourcesPaths) {
 
-			logger.debug("Loading properties file from:" + location);
+			logger.debug("Loading properties file from: {}" , location);
 
 			InputStream is = null;
 			try {

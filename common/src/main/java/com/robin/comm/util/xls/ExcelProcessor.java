@@ -18,9 +18,11 @@ package com.robin.comm.util.xls;
 import com.robin.core.base.dao.SimpleJdbcDao;
 import com.robin.core.base.util.Const;
 import com.robin.core.convert.util.DataTypeEnum;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.poi.hssf.usermodel.*;
+import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.hssf.usermodel.HSSFDataFormat;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.streaming.SXSSFSheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
@@ -40,7 +42,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.regex.Pattern;
 
-@Slf4j
 public class ExcelProcessor {
     private static Logger log = LoggerFactory.getLogger(ExcelProcessor.class);
     private static DateTimeFormatter localformat = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -59,7 +60,7 @@ public class ExcelProcessor {
 
     public static void readExcelFile(InputStream myxls, ExcelSheetProp prop, IExcelAfterProcessor processor, DateTimeFormatter formatter) throws IOException {
         boolean is2007 = ExcelBaseOper.TYPE_EXCEL2007.equalsIgnoreCase(prop.getFileExt());
-        Workbook wb = null;
+        Workbook wb ;
         if (is2007) {
             wb = new XSSFWorkbook(myxls);
         } else {
@@ -196,58 +197,78 @@ public class ExcelProcessor {
                         strCell = new Timestamp(date.getTime());
                     } else {
                         double d = cell.getNumericCellValue();
-                        if (type.equals(Const.META_TYPE_INTEGER)) {
-                            strCell = Double.valueOf(d).intValue();
-                        } else if (type.equals(Const.META_TYPE_BIGINT)) {
-                            strCell = Double.valueOf(d).intValue();
-                        } else if (type.equals(Const.META_TYPE_FLOAT)) {
-                            strCell = Double.valueOf(d).floatValue();
-                        } else if (type.equals(Const.META_TYPE_DOUBLE) || type.equals(Const.META_TYPE_DECIMAL) || type.equals(Const.META_TYPE_NUMERIC)) {
-                            strCell = d;
-                        } else {
-                            strCell = Double.toString(d);
+                        switch (type) {
+                            case Const.META_TYPE_INTEGER:
+                                strCell = Double.valueOf(d).intValue();
+                                break;
+                            case Const.META_TYPE_BIGINT:
+                                strCell = Double.valueOf(d).intValue();
+                                break;
+                            case Const.META_TYPE_FLOAT:
+                                strCell = Double.valueOf(d).floatValue();
+                                break;
+                            case Const.META_TYPE_DOUBLE:
+                            case Const.META_TYPE_DECIMAL:
+                            case Const.META_TYPE_NUMERIC:
+                                strCell = d;
+                                break;
+                            default:
+                                strCell = Double.toString(d);
+                                break;
                         }
                     }
                     break;
                 case STRING:
                     String str = cell.getStringCellValue();
-                    if (type.equals(Const.META_TYPE_INTEGER)) {
-                        if (!StringUtils.isEmpty(str)) {
-                            Double d = Double.valueOf(str);
-                            strCell = d.intValue();
-                        } else {
-                            strCell = 0.0;
-                        }
-                    } else if (type.equals(Const.META_TYPE_BIGINT)) {
-                        if (!StringUtils.isEmpty(str)) {
-                            Double d = Double.valueOf(str);
-                            strCell = d.longValue();
-                        } else {
-                            strCell = 0L;
-                        }
-                    } else if (type.equals(Const.META_TYPE_FLOAT)) {
-                        if (!StringUtils.isEmpty(str)) {
-                            Double d = Double.valueOf(str);
-                            strCell = d.floatValue();
-                        } else {
-                            strCell = Float.valueOf("0");
-                        }
-                    } else if (type.equals(Const.META_TYPE_DOUBLE) || type.equals(Const.META_TYPE_DECIMAL) || type.equals(Const.META_TYPE_NUMERIC)) {
-                        if (!StringUtils.isEmpty(str)) {
-                            Double d = Double.valueOf(str);
-                            strCell = d.floatValue();
-                        } else {
-                            strCell = 0.0;
-                        }
-                    } else if (type.equals(Const.META_TYPE_DATE) || type.equals(Const.META_TYPE_TIMESTAMP)) {
-                        if (!StringUtils.isEmpty(str)) {
-                            LocalDateTime dateTime = LocalDateTime.parse(str, format);
-                            strCell = Timestamp.valueOf(dateTime);
-                        } else {
-                            strCell = null;
-                        }
-                    } else if (type.equals(Const.META_TYPE_STRING)) {
-                        strCell = cell.getStringCellValue();
+                    switch (type) {
+                        case Const.META_TYPE_INTEGER:
+                            if (!StringUtils.isEmpty(str)) {
+                                Double d = Double.valueOf(str);
+                                strCell = d.intValue();
+                            } else {
+                                strCell = 0.0;
+                            }
+                            break;
+                        case Const.META_TYPE_BIGINT:
+                            if (!StringUtils.isEmpty(str)) {
+                                Double d = Double.valueOf(str);
+                                strCell = d.longValue();
+                            } else {
+                                strCell = 0L;
+                            }
+                            break;
+                        case Const.META_TYPE_FLOAT:
+                            if (!StringUtils.isEmpty(str)) {
+                                Double d = Double.valueOf(str);
+                                strCell = d.floatValue();
+                            } else {
+                                strCell = Float.valueOf("0");
+                            }
+                            break;
+                        case Const.META_TYPE_DOUBLE:
+                        case Const.META_TYPE_DECIMAL:
+                        case Const.META_TYPE_NUMERIC:
+                            if (!StringUtils.isEmpty(str)) {
+                                Double d = Double.valueOf(str);
+                                strCell = d.floatValue();
+                            } else {
+                                strCell = 0.0;
+                            }
+                            break;
+                        case Const.META_TYPE_DATE:
+                        case Const.META_TYPE_TIMESTAMP:
+                            if (!StringUtils.isEmpty(str)) {
+                                LocalDateTime dateTime = LocalDateTime.parse(str, format);
+                                strCell = Timestamp.valueOf(dateTime);
+                            } else {
+                                strCell = null;
+                            }
+                            break;
+                        case Const.META_TYPE_STRING:
+                            strCell = cell.getStringCellValue();
+                            break;
+                        default:
+                            strCell = cell.getStringCellValue();
                     }
                     break;
                 case BOOLEAN:
@@ -279,12 +300,12 @@ public class ExcelProcessor {
     public static void readExcel(InputStream stream, String filePerfix, int sheetIndex, int startRow, IExcelReadProcessor processor) throws IOException {
         boolean is2007 = ExcelBaseOper.TYPE_EXCEL2007.equalsIgnoreCase(filePerfix);
         try (Workbook wb = is2007 ? new XSSFWorkbook(stream) : new HSSFWorkbook(stream)) {
-            readExcel(wb,sheetIndex,startRow,processor);
+            readExcel(wb,filePerfix,sheetIndex,startRow,processor);
         } catch (Exception ex) {
             throw ex;
         }
     }
-    public static void readExcel(Workbook wb, int sheetIndex, int startRow, IExcelReadProcessor processor) {
+    public static void readExcel(Workbook wb,String fileSuffix, int sheetIndex, int startRow, IExcelReadProcessor processor) {
         try  {
             Sheet sheet = wb.getSheetAt(sheetIndex);
             FormulaEvaluator evaluator = wb.getCreationHelper().createFormulaEvaluator();
@@ -319,7 +340,7 @@ public class ExcelProcessor {
 
     public static Workbook generateExcelFile(ExcelSheetProp prop) {
         boolean is2007 = ExcelBaseOper.TYPE_EXCEL2007.equalsIgnoreCase(prop.getFileExt());
-        Workbook wb = null;
+        Workbook wb;
         if (!is2007) {
             wb = new HSSFWorkbook();
         } else {
@@ -338,7 +359,7 @@ public class ExcelProcessor {
         return wb;
     }
 
-    public static void fillSheet(Sheet sheet, ExcelSheetProp prop,TableConfigProp configProp) throws Exception {
+    public static void fillSheet(Sheet sheet, ExcelSheetProp prop,TableConfigProp configProp) throws IOException {
         if (prop.isFillHeader()) {
             if(configProp==null) {
                 generateHeader(sheet, sheet.getWorkbook(), prop);
@@ -639,7 +660,7 @@ public class ExcelProcessor {
         }
     }
 
-    private static void fillColumns(Workbook wb, Sheet targetsheet, ExcelSheetProp prop, TableConfigProp header, CreationHelper helper) throws Exception {
+    private static void fillColumns(Workbook wb, Sheet targetsheet, ExcelSheetProp prop, TableConfigProp header, CreationHelper helper) throws IOException {
         try {
 
             if (!ObjectUtils.isEmpty(prop.getColumnPropList())) {

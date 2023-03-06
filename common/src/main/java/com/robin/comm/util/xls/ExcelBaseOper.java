@@ -42,6 +42,11 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class ExcelBaseOper {
+
+    private ExcelBaseOper(){
+
+    }
+
     public static final String TYPE_EXCEL2003 = "xls";
     public static final String TYPE_EXCEL2007 = "xlsx";
     private static final String defaultFontName = java.awt.Font.SANS_SERIF;
@@ -189,7 +194,6 @@ public class ExcelBaseOper {
         } else {
             int count = header.getHeaderColumnList().size();
             if (pos == 0) {
-                int posnum = 0;
                 int poscount = 0;
                 int posfix = pos + 1;
                 for (int i = 0; i < row; i++) {
@@ -347,7 +351,7 @@ public class ExcelBaseOper {
     }
     private static Cell createFormulaCell(Row row,int column,CellStyle cellStyle,CreationHelper helper,String formula){
         Cell cell = row.createCell(column);
-        cell.setCellType(CellType.FORMULA);
+        //cell.setCellType(CellType.FORMULA);
         cell.setCellFormula(formula);
         cell.setCellStyle(cellStyle);
         return cell;

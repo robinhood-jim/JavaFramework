@@ -26,7 +26,7 @@ import org.slf4j.LoggerFactory;
  */
 
 public class MultiThreadFtp extends SimpleFtp {
-    //LinkedBlockingQueue<Runnable> queue=new LinkedBlockingQueue<Runnable>();
+
     private Logger logger = LoggerFactory.getLogger(getClass());
 
     public MultiThreadFtp(String hostName, String userName, String password) {
@@ -40,21 +40,22 @@ public class MultiThreadFtp extends SimpleFtp {
 
     public boolean downLoadLargeFile(String remote, String local, int threads, int retrys) throws IOException {
         connect();
-        ExecutorService pool = new ThreadPoolExecutor(2, 4, 5000, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
+        ExecutorService pool = new ThreadPoolExecutor(2, 4, 5000, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
         ftpClient.enterLocalPassiveMode();//Enter PassiveMode
         ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
         boolean retflag = false;
-        List<Boolean> boolTag = new ArrayList<Boolean>();
+        List<Boolean> boolTag = new ArrayList<>();
         if (!exists(remote)) {
-            log.info("remote path not exists " + remote);
+            log.info("remote path not exists {}" , remote);
             return false;
         }
         long totalsize = filesize(remote);
-        logger.info("totalsize=" + totalsize);
+        logger.info("totalsize={}" , totalsize);
         long partsize = totalsize / threads + 1;
-        Map<Integer, Boolean> executeMap = new HashMap<Integer, Boolean>();
+        Map<Integer, Boolean> executeMap = new HashMap<>();
 
-        try (RandomAccessFile file = new RandomAccessFile(new File(local), "rw")) {
+        try  {
+            RandomAccessFile file = new RandomAccessFile(new File(local), "rw");
             file.setLength(totalsize);
             file.close();
             disconnect();
@@ -66,7 +67,7 @@ public class MultiThreadFtp extends SimpleFtp {
                     Thread.sleep(10000);
                 }
             } catch (Exception ex) {
-                logger.error("", ex);
+                logger.error("{}", ex);
             }
             pool.shutdown();
             logger.info("job finished with status {}", boolTag.get(0));

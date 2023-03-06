@@ -44,10 +44,10 @@ public class StringUtils {
      */
     public static String[] split(String str, char delimer, String[] excludeArr) {
         char[] chars = str.toCharArray();
-        List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<>();
         String[] arrs = (excludeArr != null && excludeArr.length > 0) ? excludeArr : new String[]{"\"", "'"};
-        List<Character> includeList = new ArrayList<Character>();//Arrays.asList(arrs);
-        List<Character> includeSuffixList = new ArrayList<Character>();
+        List<Character> includeList = new ArrayList<>();
+        List<Character> includeSuffixList = new ArrayList<>();
         for (int i = 0; i < arrs.length; i++) {
             if (!arrs[i].contains(":")) {
                 includeList.add(Character.valueOf(arrs[i].charAt(0)));

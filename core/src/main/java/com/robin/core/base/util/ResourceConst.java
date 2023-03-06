@@ -4,50 +4,54 @@ package com.robin.core.base.util;
 public class ResourceConst {
 
     public enum InputSourceType{
-        TYPE_HDFS(1L),
-        TYPE_LOCAL(2L),
-        TYPE_FTP(3L),
-        TYPE_SFTP(4L),
-        TYPE_AWS(5L);
-        private Long value;
-        InputSourceType(Long value){
+        TYPE_HDFS(1L,"HDFS"),
+        TYPE_LOCAL(2L,"LOCAL"),
+        TYPE_FTP(3L,"FTP"),
+        TYPE_SFTP(4L,"SFTP"),
+        TYPE_AWS(5L,"AWS");
+        private Long key;
+        private String value;
+        InputSourceType(Long key,String value){
+            this.key=key;
             this.value=value;
         }
         public Long getValue(){
-            return this.value;
+            return this.key;
         }
         @Override
         public String toString(){
-            return this.value.toString();
+            return this.value;
         }
     }
     public  enum ResourceType{
-        TYPE_LOCALFILE(0L),  //local
-        TYPE_HDFSFILE(1L),   //hdfs
-        TYPE_FTPFILE(2L),     //ftp
-        TYPE_SFTPFILE(3L), //sftp
-        TYPE_DB(4L),  //db
-        TYPE_REDIS(5L), //redis
-        TYPE_MONGODB(6L), //mongodb
-        TYPE_KAFKA(7L),
-        TYPE_CASSANDRA(8L),
-        TYPE_HBASE(9L),
-        TYPE_ROCKETDB(10L),
-        TYPE_ES(11L),
-        TYPE_RABBIT(12L);
-        private Long value;
+        TYPE_LOCALFILE(0L,"LOCAL"),  //local
+        TYPE_HDFSFILE(1L,"HDFS"),   //hdfs
+        TYPE_FTPFILE(2L,"FTP"),     //ftp
+        TYPE_SFTPFILE(3L,"SFTP"), //sftp
+        TYPE_DB(4L,"DB"),  //db
+        TYPE_REDIS(5L,"REDIS"), //redis
+        TYPE_MONGODB(6L,"MONOGODB"), //mongodb
+        TYPE_KAFKA(7L,"KAFKA"),
+        TYPE_CASSANDRA(8L,"CASSANDRA"),
+        TYPE_HBASE(9L,"HBASE"),
+        TYPE_ROCKETDB(10L,"ROCKETDB"),
+        TYPE_ES(11L,"ES"),
+        TYPE_RABBIT(12L,"RABBITMQ");
+        private Long key;
+        private String value;
 
-        ResourceType(Long value) {
-            this.value = value;
+        ResourceType(Long key,String value) {
+            this.key = key;
+            this.value=value;
         }
 
         @Override
         public String toString() {
-            return String.valueOf(this.value);
+            return value;
         }
 
         public Long getValue() {
-            return value;
+            return key;
         }
     }
     public enum FileFormat{

@@ -131,7 +131,9 @@ public class AvroUtils {
                     }
                 }
                 schema = fields.endRecord();
-                logger.info(schema.toString(true));
+                if(logger.isDebugEnabled()) {
+                    logger.debug(schema.toString(true));
+                }
             } else {
                 throw new ConfigurationIncorrectException("missing avro schema config file or Content");
             }

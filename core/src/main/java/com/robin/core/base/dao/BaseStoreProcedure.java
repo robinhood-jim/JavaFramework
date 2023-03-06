@@ -33,7 +33,7 @@ import org.springframework.jdbc.object.StoredProcedure;
 
 
 public class BaseStoreProcedure extends StoredProcedure{
-	private Map<String,Object> initParameterData = new HashMap<String,Object>();      
+	private Map<String,Object> initParameterData = new HashMap<>();
     private Map<String,?> inParam;                             
     
 	public BaseStoreProcedure(DataSource dataSource,String sql){
@@ -63,7 +63,7 @@ public class BaseStoreProcedure extends StoredProcedure{
              for(int i=0;i<count;i++) {
                  header[i] = rs.getMetaData().getColumnName(i+1);
              }
-             HashMap<String,String> row = new HashMap<String,String>(); //count+7
+             HashMap<String,String> row = new HashMap<>(); //count+7
              for(int i=0;i<count;i++){ 
                  row.put(header[i],rs.getString(i+1)); 
              } 

@@ -460,7 +460,7 @@ public class SimpleJdbcDao {
         } else {
             qRunner = new QueryRunner();
         }
-        return qRunner.query(conn, sql, rs -> extractor.extractData(rs));
+        return qRunner.query(conn, sql, extractor::extractData);
     }
 
     public static int executeOperationWithQuery(final Connection conn, String sql, Object[] param, boolean pmdKnownBroken, final ResultSetOperationExtractor extractor) throws SQLException {
@@ -470,7 +470,7 @@ public class SimpleJdbcDao {
         } else {
             qRunner = new QueryRunner();
         }
-        return qRunner.query(conn, sql, rs -> extractor.extractData(rs), param);
+        return qRunner.query(conn, sql, extractor::extractData, param);
     }
 
     public int executeUpdate(final String sql) throws DAOException {
@@ -523,7 +523,6 @@ public class SimpleJdbcDao {
             Long num = qRunner.query(connection, sql2, new ScalarHandler<>(1));
             return num.longValue();
         } catch (Exception ex) {
-            //logger.error("",ex);
             throw new DAOException(ex);
         }
     }

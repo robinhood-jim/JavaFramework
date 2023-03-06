@@ -45,7 +45,7 @@ public class TestProtobufWriter extends TestCase {
             colmeta.setFileFormat(Const.FILESUFFIX_PROTOBUF);
             colmeta.setResType(ResourceConst.InputSourceType.TYPE_LOCAL.getValue());
             colmeta.setPath("d:/tmp/luoming/1.proto.gz");
-            AbstractResourceAccessUtil util= ResourceAccessorFactory.getResourceAccessorByType(colmeta);
+            AbstractResourceAccessUtil util= ResourceAccessorFactory.getResourceAccessorByType(colmeta.getResType());
 
             final AbstractFileWriter jwriter= TextFileWriterFactory.getFileOutputStreamByType(colmeta,util.getOutResourceByStream(colmeta,colmeta.getPath()));
             jwriter.beginWrite();

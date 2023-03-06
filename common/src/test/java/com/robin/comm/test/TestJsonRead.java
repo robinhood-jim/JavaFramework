@@ -33,7 +33,7 @@ public class TestJsonRead {
 			colmeta.setResType(ResourceConst.ResourceType.TYPE_SFTPFILE.getValue());
 			//ftpparam.put("schemaContent", "{\"namespace\":\"com.robin.avro\",\"name\":\"Content\",\"type\":\"record\",\"fields\":[{\"name\":\"info_id\",\"type\":\"string\"},{\"name\":\"url\",\"type\":\"string\"},{\"name\":\"title\",\"type\":\"string\"},{\"name\":\"content\",\"type\":\"string\"}]}");
 			List<Map<String, Object>> list=new ArrayList<Map<String,Object>>();
-			AbstractResourceAccessUtil util= ResourceAccessorFactory.getResourceAccessorByType(colmeta);
+			AbstractResourceAccessUtil util= ResourceAccessorFactory.getResourceAccessorByType(colmeta.getResType());
 			//BufferedReader reader=util.getInResourceByReader(colmeta);//new BufferedReader(new FileReader(new File("e:/test1.data")));
 			InputStream reader=util.getInResourceByStream(colmeta,colmeta.getPath() );
 			AbstractFileIterator jreader=TextFileIteratorFactory.getProcessIteratorByType(colmeta, reader);

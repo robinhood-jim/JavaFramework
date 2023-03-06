@@ -52,7 +52,7 @@ public class TestJsonGen {
 			colmeta.setEncode("UTF-8");
 			colmeta.setResType(ResourceConst.ResourceType.TYPE_SFTPFILE.getValue());
 
-			AbstractResourceAccessUtil util= ResourceAccessorFactory.getResourceAccessorByType(colmeta);
+			AbstractResourceAccessUtil util= ResourceAccessorFactory.getResourceAccessorByType(colmeta.getResType());
 			OutputStream stream=util.getOutResourceByStream(colmeta, colmeta.getPath());
 			//GsonFileWriter jwriter=new GsonFileWriter(colmeta, writer);
 			final AbstractFileWriter jwriter=TextFileWriterFactory.getFileWriterByPath(colmeta,stream);

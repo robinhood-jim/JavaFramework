@@ -29,15 +29,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.*;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.support.lob.LobHandler;
 
 import java.lang.reflect.Method;
-import java.sql.*;
 import java.sql.Date;
-import java.text.ParseException;
+import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -118,7 +116,7 @@ public class CommJdbcUtil {
             sumSQL = sqlGen.getCountSqlByConfig(qs, pageQuery);
         }
         if (logger.isInfoEnabled()) {
-            logger.info("countSql: " + sumSQL);
+            logger.info("countSql: {}" , sumSQL);
         }
 
         int pageSize = 0;
@@ -166,7 +164,7 @@ public class CommJdbcUtil {
                 }
                 list = getResultItems(jdbcTemplate, lobHandler, sqlGen, pageQuery, qs, pageSQL);
             } else {
-                list = new ArrayList();
+                list = new ArrayList<>();
                 pageQuery.setPageCount(0);
             }
         } else {
@@ -449,7 +447,7 @@ public class CommJdbcUtil {
             selectSql = querySQL.substring(7, pos);
 
         } else {
-            StringBuffer buffer = new StringBuffer();
+            StringBuilder buffer = new StringBuilder();
             for (int i = 0; i < displayname.length; i++) {
                 if (i < displayname.length - 1) {
                     buffer.append(" A as ").append(displayname[i]).append(",");
@@ -620,7 +618,7 @@ public class CommJdbcUtil {
         }
     }
 
-    private static void setValueByType(PreparedStatement ps, Map<String, String> resultMap, List<Map<String, String>> colList) throws SQLException, ParseException {
+    private static void setValueByType(PreparedStatement ps, Map<String, String> resultMap, List<Map<String, String>> colList) throws SQLException {
         for (int pos = 0; pos < colList.size(); pos++) {
             Map<String, String> typeMap = colList.get(pos);
             String value = resultMap.get(typeMap.get("name"));
@@ -698,7 +696,7 @@ public class CommJdbcUtil {
         BatchPreparedStatementSetter setter = new BatchPreparedStatementSetter() {
             @Override
             public int getBatchSize() {
-                return list.size();
+                return batchsize==0?resultList.size():batchsize;
             }
 
             @Override
@@ -722,7 +720,7 @@ public class CommJdbcUtil {
         return doBatchWithSize(template, sql, new BoundedPreparedStatementSetter(batchsize, iterator, collectionMeta), batchsize);
     }
 
-    private static class BoundedPreparedStatementSetter implements BatchPreparedStatementSetter, Iterator {
+    private static class BoundedPreparedStatementSetter implements BatchPreparedStatementSetter, Iterator<Map<String,String>> {
         private int batchsize;
         private Iterator<Map<String, String>> iterator;
         private DataCollectionMeta collectionMeta;
@@ -767,7 +765,7 @@ public class CommJdbcUtil {
         }
 
         @Override
-        public Object next() {
+        public Map<String,String> next() {
             return iterator.next();
         }
     }

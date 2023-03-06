@@ -33,11 +33,11 @@ public class MySqlDataBaseExportor extends BaseDataBaseExportor {
 			split=exParam.getSplit();
 		}
 		String script="mysql -u "+param.getUserName()+" -p"+param.getPasswd()+" -h "+param.getHostName()+" --database "+param.getDatabaseName()+" -N -s -r -e \""+exParam.getExecuteSql()+"\" | tr '\\t' '"+split+"' >"+exParam.getDumpPath();
-		//String script="mysql -u "+param.getUserName()+" -p"+param.getPasswd()+" -h "+param.getHostName()+" --database "+param.getDatabaseName()+" -N -s -r -e \""+exParam.getExecuteSql()+" into outfile '"+exParam.getDumpPath()+"' FIELDS TERMINATED BY '"+split+"'\"";
+
 		System.out.println(script);
 		int ret=-1;
 		try{
-			List<String> cmdList=new ArrayList<String>();
+			List<String> cmdList=new ArrayList<>();
 			cmdList.add("sh");
 			cmdList.add("-c");
 			cmdList.add(script);
