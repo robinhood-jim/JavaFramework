@@ -15,6 +15,7 @@
  */
 package com.robin.core.base.util;
 
+import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.text.StrBuilder;
 
 import java.io.PrintWriter;
@@ -24,9 +25,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-
-
-import javax.xml.bind.DatatypeConverter;
 
 public class StringUtils {
     public static final int ASCII_VISABLE_START = 48;
@@ -257,7 +255,7 @@ public class StringUtils {
     public static String getMd5Encry(String inputStr) throws NoSuchAlgorithmException {
         MessageDigest md = MessageDigest.getInstance("MD5");
         md.update(inputStr.getBytes());
-        return DatatypeConverter.printHexBinary(md.digest()).toUpperCase();
+        return Hex.encodeHexString(md.digest()).toUpperCase();
     }
 
     public static String returnCamelCaseByFieldName(String fieldName) {
