@@ -864,19 +864,19 @@ public class ExcelProcessor {
             if (!StringUtils.isEmpty(value)) {
                 createCell(cellStyle, row1, (short) j, Double.parseDouble(value));
             } else {
-                createCell(cellStyle, row1, (short) j, 0.0);
+                createNullCell(cellStyle, row1, (short) j);
             }
         } else if (colType.equals(Const.META_TYPE_BIGINT)) {
             if (!StringUtils.isEmpty(value)) {
                 createCell(cellStyle, row1, (short) j, Long.parseLong(value));
             } else {
-                createCell(cellStyle, row1, (short) j, 0L);
+                createNullCell(cellStyle, row1, (short) j);
             }
         } else if (colType.equalsIgnoreCase(Const.META_TYPE_INTEGER)) {
             if (!StringUtils.isEmpty(value)) {
                 createCell(cellStyle, row1, (short) j, Integer.parseInt(value));
             } else {
-                createCell(cellStyle, row1, (short) j, 0);
+                createNullCell(cellStyle, row1, (short) j);
             }
         } else if (colType.equals(Const.META_TYPE_DATE)) {
             if (!"".equals(value)) {
@@ -897,11 +897,23 @@ public class ExcelProcessor {
         }
         cell.setCellValue(value);
     }
-
-    private static void createCell(CellStyle cellStyle, Row row, int column, double value) {
+    private static void createNullCell(CellStyle cellStyle,Row row,int column){
         Cell cell = row.createCell(column);
         cell.setCellStyle(cellStyle);
-        cell.setCellValue(value);
+    }
+
+    private static void createCell(CellStyle cellStyle, Row row, int column, Object value) {
+        Cell cell = row.createCell(column);
+        cell.setCellStyle(cellStyle);
+        Assert.notNull(value,"");
+        if(Double.class.isAssignableFrom(value.getClass())) {
+            cell.setCellValue((Double)value);
+        }else if(Long.class.isAssignableFrom(value.getClass())){
+            cell.setCellValue((Long)value);
+        }else if(Integer.class.isAssignableFrom(value.getClass())){
+            cell.setCellValue((Integer)value);
+        }
+
     }
 
     private static void createCellDate(CellStyle cellStyle, Row row, int column, String value) {

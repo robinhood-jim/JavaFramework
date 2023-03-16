@@ -235,6 +235,13 @@
                 <version>1.4</version>
                 <optional>true</optional>
             </dependency>
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-jexl3</artifactId>
+                <version>3.2.1</version>
+                <optional>true</optional>
+            </dependency>
+
             <!-- Apache commons end -->
 
             <!-- db definition -->
@@ -689,6 +696,17 @@
                 <artifactId>com.springsource.org.codehaus.jackson</artifactId>
                 <version>${codehausejackson.version}</version>
                 <optional>true</optional>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-core</artifactId>
+                <version>${jackson.version}</version>
+                <optional>true</optional>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-annotations</artifactId>
+                <version>${jackson.version}</version>
             </dependency>
             <dependency>
                 <groupId>junit</groupId>
