@@ -316,6 +316,14 @@ public class HDFSUtil {
             return (BufferedInputStream) HDFSSecurityUtil.executeHdfsMethodWithSecurity(config, "getHDFSDataByInputStream", new Object[]{config,path});
         }
 	}
+	public BufferedInputStream getHDFSDataByRawInputStream(String path) throws Exception{
+		if(!useSecurity) {
+			return HDFSCallUtil.getHDFSRawInputStream(config, path);
+		} else {
+			return (BufferedInputStream) HDFSSecurityUtil.executeHdfsMethodWithSecurity(config, "getHDFSRawInputStream", new Object[]{config,path});
+		}
+	}
+
 	public BufferedWriter getHDFSDataByWriter(String path, String encode) throws Exception{
 		if(!useSecurity) {
             return HDFSCallUtil.getHDFSDataByWriter(config, path, encode);

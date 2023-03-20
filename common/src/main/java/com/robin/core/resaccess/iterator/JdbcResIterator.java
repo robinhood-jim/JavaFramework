@@ -50,22 +50,6 @@ public class  JdbcResIterator extends AbstractResIterator {
     public void init() {
         try {
             getConnection();
-            /*if(!StringUtils.isEmpty(colmeta.getResourceCfgMap().get("querySql"))) {
-                querySql = colmeta.getResourceCfgMap().get("querySql").toString();
-                Object[] objs = null;
-                if (colmeta.getResourceCfgMap().containsKey("queryParams")) {
-                    objs = (Object[]) colmeta.getResourceCfgMap().get("queryParams");
-                }
-                if (!Objects.isNull(objs)) {
-                    QueryRunner qRunner = new QueryRunner();
-                    preparedStatement = connectionHolder.getConnection().prepareStatement(querySql);
-                    qRunner.fillStatement(preparedStatement, objs);
-                    rs = preparedStatement.executeQuery();
-                } else {
-                    statement = connectionHolder.getConnection().createStatement();
-                    rs = statement.executeQuery(querySql);
-                }
-            }*/
 
         }catch (Exception ex){
             log.error("{}",ex);

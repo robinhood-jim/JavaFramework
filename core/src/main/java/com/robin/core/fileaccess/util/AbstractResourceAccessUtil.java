@@ -58,13 +58,13 @@ public abstract class AbstractResourceAccessUtil {
 		int pos=name.lastIndexOf(File.separator);
 		return name.substring(0,pos);
 	}
-	protected BufferedReader getReaderByPath(String path, InputStream  in, String encode) throws IOException{
+	protected static BufferedReader getReaderByPath(String path, InputStream  in, String encode) throws IOException{
 		return new BufferedReader(new InputStreamReader(getInputStreamByPath(path,in),encode));
 	}
-	protected InputStream getInputStreamByPath(String path, InputStream  in) throws IOException{
+	protected static InputStream getInputStreamByPath(String path, InputStream  in) throws IOException{
 		return CompressDecoder.getInputStreamByCompressType(path,in);
 	}
-	protected BufferedWriter getWriterByPath(String path, OutputStream out, String encode) throws IOException{
+	protected static BufferedWriter getWriterByPath(String path, OutputStream out, String encode) throws IOException{
 		return new BufferedWriter(new OutputStreamWriter(getOutputStreamByPath(path,out),encode));
 	}
 
@@ -86,7 +86,7 @@ public abstract class AbstractResourceAccessUtil {
 		}
 		return in;
 	}
-	protected OutputStream getOutputStreamByPath(String path, OutputStream out) throws IOException{
+	protected static OutputStream getOutputStreamByPath(String path, OutputStream out) throws IOException{
 		return CompressEncoder.getOutputStreamByCompressType(path,out);
 	}
 	

@@ -11,6 +11,7 @@ import org.apache.commons.compress.compressors.zstandard.ZstdCompressorInputStre
 import org.tukaani.xz.LZMA2Options;
 import org.tukaani.xz.LZMAInputStream;
 import org.tukaani.xz.LZMAOutputStream;
+import org.tukaani.xz.XZInputStream;
 import org.xerial.snappy.SnappyInputStream;
 import org.xerial.snappy.SnappyOutputStream;
 
@@ -63,6 +64,9 @@ public class CompressDecoder {
                 break;
             case COMPRESS_TYPE_BROTLI:
                 inputStream=new BrotliCompressorInputStream(wrapInputStream(rawstream));
+                break;
+            case COMPRESS_TYPE_XZ:
+                inputStream=new XZInputStream(wrapInputStream(rawstream));
                 break;
             default:
                 inputStream=wrapInputStream(rawstream);

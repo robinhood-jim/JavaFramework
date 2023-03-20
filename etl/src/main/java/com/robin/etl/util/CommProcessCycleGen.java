@@ -4,6 +4,7 @@ import com.robin.core.base.util.Const;
 import com.robin.etl.common.EtlConstant;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.tomcat.jni.Local;
+import org.springframework.lang.NonNull;
 import org.springframework.util.Assert;
 
 import java.time.DayOfWeek;
@@ -23,7 +24,8 @@ public class CommProcessCycleGen implements IprocessCycleGen {
     private DateTimeFormatter dayFormatter = DateTimeFormatter.ofPattern("yyyyMMdd");
 
     @Override
-    public Pair<Boolean, String> genRunCycleByTypeAndStartTime(Integer cycleType, LocalDateTime dateTime) {
+    public Pair<Boolean, String> genRunCycleByTypeAndStartTime(@NonNull Integer cycleType,@NonNull LocalDateTime dateTime) {
+        Assert.notNull(dateTime,"");
         boolean runTag = false;
         String cycle = null;
         if (null == preTime && null != dateTime) {
@@ -136,7 +138,7 @@ public class CommProcessCycleGen implements IprocessCycleGen {
             Assert.isTrue(cycle.length() == 6, "");
             dateTime = LocalDateTime.parse(cycle.substring(0, 4), yearFormatter);
             int quartzNum = Integer.parseInt(cycle.substring(5));
-            dateTime.minusMonths((quartzNum - 1) * 3L);
+            dateTime=dateTime.minusMonths((quartzNum - 1) * 3L);
         } else if (cycleType.equals(EtlConstant.CYCLE_TYPE.MONTH.getInt())) {
             Assert.isTrue(cycle.length() == 6, "");
             dateTime = LocalDateTime.parse(cycle, monthFormatter);
@@ -144,7 +146,7 @@ public class CommProcessCycleGen implements IprocessCycleGen {
             Assert.isTrue(cycle.length() == 8, "");
             dateTime = LocalDateTime.parse(cycle.substring(0, 6), monthFormatter);
             int xunNum = Integer.parseInt(cycle.substring(7));
-            dateTime.minusDays((xunNum - 1) * 10L);
+            dateTime=dateTime.minusDays((xunNum - 1) * 10L);
         } else if (cycleType.equals(EtlConstant.CYCLE_TYPE.DAY.getInt())) {
             Assert.isTrue(cycle.length() == 8, "");
             dateTime = LocalDateTime.parse(cycle, dayFormatter);

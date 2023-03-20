@@ -16,16 +16,14 @@
 package com.robin.core.fileaccess.iterator;
 
 import com.robin.comm.dal.pool.ResourceAccessHolder;
+import com.robin.core.base.util.IOUtils;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.util.AbstractResourceAccessUtil;
 import com.robin.core.fileaccess.util.ResourceUtil;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
-import java.io.BufferedReader;
-import java.io.Closeable;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.URI;
 
 public abstract class AbstractFileIterator extends AbstractResIterator implements Closeable {
@@ -71,7 +69,7 @@ public abstract class AbstractFileIterator extends AbstractResIterator implement
 				accessUtil = ResourceAccessHolder.getAccessUtilByProtocol(schema.toLowerCase());
 			}
 		}catch (Exception ex){
-
+			logger.error("{}",ex);
 		}
 	}
 
@@ -82,7 +80,13 @@ public abstract class AbstractFileIterator extends AbstractResIterator implement
 	public void setInputStream(InputStream stream){
 		this.instream=stream;
 	}
-
+	protected void copyToLocal(File tmpFile, InputStream stream){
+		try(FileOutputStream outputStream=new FileOutputStream(tmpFile)){
+			IOUtils.copyBytes(stream,outputStream,8192);
+		}catch (IOException ex){
+			logger.error("{}",ex);
+		}
+	}
 
 	@Override
 	public void close() throws IOException {

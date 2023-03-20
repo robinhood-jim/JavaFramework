@@ -16,6 +16,7 @@ import org.apache.orc.Reader;
 import org.apache.orc.RecordReader;
 import org.apache.orc.TypeDescription;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -39,7 +40,8 @@ public class OrcFileIterator extends AbstractFileIterator {
     private Map<String,Object> valueMap=new HashMap<>();
     int maxRow=-1;
     int currentRow=0;
-
+    private FileSystem fs;
+    private Reader reader;
 
 
     @Override
@@ -48,7 +50,6 @@ public class OrcFileIterator extends AbstractFileIterator {
             return true;
         }
         try{
-
             currentRow=0;
             boolean exist= rows.nextBatch(batch);
             maxRow=batch.size;
@@ -118,7 +119,6 @@ public class OrcFileIterator extends AbstractFileIterator {
     @Override
     public void init() {
         try {
-            FileSystem fs;
             if(colmeta.getSourceType().equals(ResourceConst.InputSourceType.TYPE_HDFS.getValue())){
                 HDFSUtil util=new HDFSUtil(colmeta);
                 conf=util.getConfig();
@@ -131,7 +131,7 @@ public class OrcFileIterator extends AbstractFileIterator {
                 fs=new MockFileSystem(conf,byteout.toByteArray());
             }
 
-            Reader reader=OrcFile.createReader(new Path(colmeta.getPath()),OrcFile.readerOptions(conf).filesystem(fs));
+            reader=OrcFile.createReader(new Path(colmeta.getPath()),OrcFile.readerOptions(conf).filesystem(fs));
             schema= reader.getSchema();
             fieldNames=schema.getFieldNames();
             rows=reader.rows();
@@ -149,6 +149,12 @@ public class OrcFileIterator extends AbstractFileIterator {
         super.close();
         if(rows!=null){
             rows.close();
+        }
+        if(!ObjectUtils.isEmpty(fs)){
+            fs.close();
+        }
+        if(!ObjectUtils.isEmpty(reader)){
+            reader.close();
         }
     }
 }

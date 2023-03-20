@@ -4,6 +4,7 @@ import com.robin.core.base.util.Const;
 import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import org.apache.commons.vfs2.FileObject;
+import org.apache.commons.vfs2.FileSystemManager;
 import org.apache.commons.vfs2.FileSystemOptions;
 import org.apache.commons.vfs2.FileType;
 import org.apache.commons.vfs2.impl.StandardFileSystemManager;
@@ -30,7 +31,7 @@ public class ApacheVfsResourceAccessUtil extends AbstractResourceAccessUtil {
     }
 
     private StandardFileSystemManager manager = null;
-    private Logger logger = LoggerFactory.getLogger(getClass());
+    private static Logger logger = LoggerFactory.getLogger(ApacheVfsResourceAccessUtil.class);
 
     @Override
     public BufferedReader getInResourceByReader(DataCollectionMeta meta, String resourcePath) throws IOException {
@@ -83,6 +84,16 @@ public class ApacheVfsResourceAccessUtil extends AbstractResourceAccessUtil {
             throw new IOException(ex);
         }
     }
+    public static FileObject getFileObject(FileSystemManager manager,DataCollectionMeta meta,String resPath) throws IOException{
+        VfsParam param = new VfsParam();
+        try {
+            ConvertUtil.convertToTarget(param, meta.getResourceCfgMap());
+            return manager.resolveFile(getUriByParam(param, resPath).toString(), getOptions(param));
+        }catch (Exception ex){
+            throw new IOException(ex);
+        }
+    }
+
     private InputStream getRawInResource(FileObject fo,DataCollectionMeta meta) throws Exception{
         InputStream reader=null;
         if (fo.exists()) {
@@ -98,7 +109,7 @@ public class ApacheVfsResourceAccessUtil extends AbstractResourceAccessUtil {
         return reader;
     }
 
-    private InputStream getInResource(FileObject fo,DataCollectionMeta meta) throws Exception{
+    public static InputStream getInResource(FileObject fo,DataCollectionMeta meta) throws Exception{
         InputStream reader=null;
         if (fo.exists()) {
             if (FileType.FOLDER.equals(fo.getType())) {
@@ -186,7 +197,7 @@ public class ApacheVfsResourceAccessUtil extends AbstractResourceAccessUtil {
         }
     }
 
-    private URI getUriByParam(VfsParam param, String relativePath) throws Exception {
+    private static URI getUriByParam(VfsParam param, String relativePath) throws Exception {
         String userInfo = param.getUserName() + ":" + param.getPassword();//URLEncoder.encode(param.getPassword(), "iso8859-1");// 解决密码中的特殊字符问题，如@。
         String remoteFilePath = relativePath;
         if (!remoteFilePath.startsWith("/")) {
@@ -199,7 +210,7 @@ public class ApacheVfsResourceAccessUtil extends AbstractResourceAccessUtil {
         return sftpUri;
     }
 
-    private FileSystemOptions getOptions(VfsParam param) throws Exception {
+    private static FileSystemOptions getOptions(VfsParam param) throws Exception {
         FileSystemOptions opts = new FileSystemOptions();
         if (Const.VFS_PROTOCOL.SFTP.getValue().equalsIgnoreCase(param.getProtocol())) {
             SftpFileSystemConfigBuilder.getInstance().setStrictHostKeyChecking(opts, "no");

@@ -559,6 +559,9 @@ public class HDFSCallUtil {
         }
         return reader;
     }
+    public static BufferedInputStream getHDFSRawInputStream(final Configuration config, String path) throws IOException{
+        return new BufferedInputStream(FileSystem.get(config).open(new Path(path)));
+    }
 
     public static BufferedWriter getHDFSDataByWriter(final Configuration config, String path, String encode) throws Exception {
         BufferedWriter writer = null;

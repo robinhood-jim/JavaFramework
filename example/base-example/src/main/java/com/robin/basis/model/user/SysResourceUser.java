@@ -76,7 +76,7 @@ public class SysResourceUser extends BaseObject {
 
 	@Override
     public String toString() {
-		StringBuffer buffer = new StringBuffer();
+		StringBuilder buffer = new StringBuilder();
 		buffer.append("[SysResourceUser:");
 		buffer.append(" id:").append(id);
 		buffer.append(" status:").append(dealNull(status));
@@ -87,7 +87,7 @@ public class SysResourceUser extends BaseObject {
 	}
 
 	public String toJson() {
-		StringBuffer buffer = new StringBuffer();
+		StringBuilder buffer = new StringBuilder();
 		buffer.append("{");
 		buffer.append("\"id\":\"").append(id).append("\"");
 		buffer.append(",\"status\":\"").append(dealNull(status)).append("\"");

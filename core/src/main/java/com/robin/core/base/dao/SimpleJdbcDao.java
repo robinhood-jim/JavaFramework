@@ -45,18 +45,18 @@ import java.util.Map;
 
 
 public class SimpleJdbcDao {
-    String driverName;
-    String jdbcUrl;
-    String userName;
-    String passwd;
+    private String driverName;
+    private String jdbcUrl;
+    private String userName;
+    private String passwd;
     long retryNums = 1;
     int waitSecond = 0;
     boolean getConnectLoop = false;
     private BaseDataBaseMeta meta;
     private DataBaseParam param;
     private static Logger logger = LoggerFactory.getLogger(SimpleJdbcDao.class);
-    private static final String fullDateFormat = "yyyy-MM-dd HH:mm:ss";
-    private static final String shortDateFormat = "yyyy-MM-dd";
+    private static final String FULL_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
+    private static final String SHORT_DATE_FORMAT = "yyyy-MM-dd";
 
     public SimpleJdbcDao(BaseDataBaseMeta meta) {
         this.driverName = meta.getParam().getDriverClassName();
@@ -692,7 +692,7 @@ public class SimpleJdbcDao {
             if (querySql == null || "".equals(querySql)) {
                 querySql = "select * from " + tableName;
             }
-            String currDateFormat = ObjectUtils.isEmpty(dateFormat)?fullDateFormat:dateFormat;
+            String currDateFormat = ObjectUtils.isEmpty(dateFormat)? FULL_DATE_FORMAT :dateFormat;
 
             final SimpleDateFormat dateformat = new SimpleDateFormat(currDateFormat);
             ResultSetHandler<Boolean> handler = rs -> {
@@ -775,7 +775,7 @@ public class SimpleJdbcDao {
             List<Object[]> targetList = new ArrayList<>();
             String line = null;
             int linepos = 1;
-            String currDateFormat = ObjectUtils.isEmpty(dateFormat)?fullDateFormat:dateFormat;
+            String currDateFormat = ObjectUtils.isEmpty(dateFormat)? FULL_DATE_FORMAT :dateFormat;
             final SimpleDateFormat dateformat = new SimpleDateFormat(currDateFormat);
             if (reader != null) {
                 while ((line = reader.readLine()) != null) {
@@ -832,8 +832,8 @@ public class SimpleJdbcDao {
 
     public static void transformDateType(Map<String, String> resultMap, Map<String, String> poolobj, int pos, int row, Object[][] objArr, Object... dateFormatArr) throws ParseException {
         String value = resultMap.get(poolobj.get("name"));
-        String dateFormat = (dateFormatArr.length == 1 && dateFormatArr[0] != null) ? dateFormatArr[0].toString() : fullDateFormat;
-        String dayFormat = (dateFormatArr.length == 2 && dateFormatArr[2] != null) ? dateFormatArr[1].toString() : shortDateFormat;
+        String dateFormat = (dateFormatArr.length == 1 && dateFormatArr[0] != null) ? dateFormatArr[0].toString() : FULL_DATE_FORMAT;
+        String dayFormat = (dateFormatArr.length == 2 && dateFormatArr[2] != null) ? dateFormatArr[1].toString() : SHORT_DATE_FORMAT;
         if (value == null) {
             value = resultMap.get(poolobj.get("name").toUpperCase());
         }

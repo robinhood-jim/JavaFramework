@@ -68,7 +68,7 @@ public class SysOrgController extends AbstractCrudDhtmlxController<SysOrg, Long,
                 SysOrg porg = service.getEntity(Long.valueOf(vo.getUpOrgId()));
                 vo.setTreeCode(porg.getTreeCode() + "0001");
             }
-            if (!vo.getUpOrgId().equals(0)) {
+            if (!vo.getUpOrgId().equals(0L)) {
                 SysOrg porg = service.getEntity(Long.valueOf(vo.getUpOrgId()));
                 vo.setTreeLevel(porg.getTreeLevel() + 1);
             } else {

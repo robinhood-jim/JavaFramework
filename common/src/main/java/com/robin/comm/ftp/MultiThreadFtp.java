@@ -2,6 +2,7 @@ package com.robin.comm.ftp;
 
 import java.io.*;
 import java.net.SocketException;
+import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -154,6 +155,7 @@ public class MultiThreadFtp extends SimpleFtp {
                 byte[] bytes = new byte[81920];
                 int c;
                 while ((c = in.read(bytes)) != -1) {
+
                     if (formsize + processsize + c < tosize) {
                         file.write(bytes, 0, c);
                         processsize += c;

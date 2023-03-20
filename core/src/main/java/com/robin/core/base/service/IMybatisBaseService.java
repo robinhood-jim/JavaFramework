@@ -38,7 +38,7 @@ public interface IMybatisBaseService<M extends BaseMapper<T>,T extends Serializa
     List<T> selectInByField(String columnName, Object value);
     List<T> selectNeByField(String columnName, Object value);
     List<T> selectBetweenByField(String columnName, Object fromValue, Object toValue);
-    List<T> queryWithRequest(Object queryObject) throws ServiceException;
+    List<T> queryWithRequest(Object queryObject);
     IPage<T> queryPageWithRequest(Object queryObject, String orderField, boolean isAsc) throws ServiceException;
     QueryWrapper wrapWithEntity(Object queryObject) throws Exception;
     /**
