@@ -2,6 +2,7 @@ package com.robin.core.web.util;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpHeaders;
+import org.springframework.util.Assert;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -12,12 +13,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class HttpContextUtils {
+    private HttpContextUtils(){
+
+    }
     public static HttpServletRequest getHttpServletRequest() {
         RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
         if(requestAttributes == null){
             return null;
         }
-
         return ((ServletRequestAttributes) requestAttributes).getRequest();
     }
 
@@ -38,12 +41,14 @@ public class HttpContextUtils {
 
     public static String getDomain(){
         HttpServletRequest request = getHttpServletRequest();
+        Assert.notNull(request,"");
         StringBuffer url = request.getRequestURL();
         return url.delete(url.length() - request.getRequestURI().length(), url.length()).toString();
     }
 
     public static String getOrigin(){
         HttpServletRequest request = getHttpServletRequest();
+        Assert.notNull(request,"");
         return request.getHeader(HttpHeaders.ORIGIN);
     }
 

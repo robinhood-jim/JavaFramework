@@ -5,6 +5,7 @@ import brave.Tracing;
 import com.robin.tracer.plugin.datasource.AbstractSpringAwareJdbcOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.util.Assert;
 
 import java.sql.SQLException;
 
@@ -25,11 +26,11 @@ public class TracingUtils {
         Span span=null;
         if(tracing!=null) {
             if (tracing.tracer().currentSpan() != null) {
-
                 span = tracing.tracer().newChild(tracing.tracer().currentSpan().context());
             } else {
                 span = tracing.tracer().newTrace();
             }
+            Assert.notNull(span,"");
             if (span != null) {
                 span.kind(Span.Kind.CLIENT);
                 span.remoteServiceName(serviceName);
@@ -53,6 +54,7 @@ public class TracingUtils {
                     String serviceName = operation.getParam().getDbType().toLowerCase() + "-" + operation.getParam().getHost();
                     span = TracingUtils.recordSpanWithCurrent(operation.getTracing(), serviceName, name, operation.getParam().getHost(),
                             operation.getParam().getPort(), constructSpan);
+                    Assert.notNull(span,"");
                     span.start();
                 }
                 Object rs = doInSpan.callMethod(params);

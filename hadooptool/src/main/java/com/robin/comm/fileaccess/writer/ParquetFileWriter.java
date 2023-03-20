@@ -43,9 +43,7 @@ public class ParquetFileWriter extends AbstractFileWriter {
     public void beginWrite() throws IOException {
 
         CompressionCodecName codecName;
-        List<String> fileSuffix=new ArrayList<>();
-        FileUtils.parseFileFormat(getOutputPath(colmeta.getPath()),fileSuffix);
-        Const.CompressType type= FileUtils.getFileCompressType(fileSuffix);
+        Const.CompressType type= getCompressType();
         switch (type){
             case COMPRESS_TYPE_GZ:
                 codecName=CompressionCodecName.GZIP;
@@ -71,6 +69,8 @@ public class ParquetFileWriter extends AbstractFileWriter {
             case COMPRESS_TYPE_BROTLI:
                 codecName=CompressionCodecName.BROTLI;
                 break;
+            case COMPRESS_TYPE_XZ:
+                throw new IOException("parquet does not support xz compression");
             default:
                 codecName=CompressionCodecName.UNCOMPRESSED;
         }

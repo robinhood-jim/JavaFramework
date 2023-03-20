@@ -10,6 +10,7 @@ import com.baomidou.mybatisplus.core.enums.SqlMethod;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
+import com.baomidou.mybatisplus.core.toolkit.GlobalConfigUtils;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -25,6 +26,7 @@ import com.robin.core.query.util.Condition;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
+import org.mybatis.spring.SqlSessionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
@@ -186,7 +188,7 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>,T extends S
     @Override
     public List<T> queryByField(SFunction<T,?> queryField, Const.OPERATOR operator, Object... value) throws ServiceException{
         Assert.isTrue(value.length>0,"");
-        LambdaQueryWrapper<T> queryWrapper=getWrapper(queryField,operator,value);
+        LambdaQueryWrapper<T> queryWrapper=MybatisUtils.getWrapper(queryField,operator,voType,value);
         try {
             return baseMapper.selectList(queryWrapper);
         }catch (Exception ex){
@@ -196,7 +198,7 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>,T extends S
     @Override
     public List<T> queryByField(SFunction<T,?> queryField ,SFunction<T,?> orderField, Const.OPERATOR operator,boolean ascFlag, Object... value) throws ServiceException{
         Assert.isTrue(value.length>0,"");
-        LambdaQueryWrapper<T> queryWrapper=getWrapper(queryField,operator,value);
+        LambdaQueryWrapper<T> queryWrapper=MybatisUtils.getWrapper(queryField,operator,voType,value);
         if(orderField!=null && ascFlag){
             queryWrapper.orderByAsc(orderField);
         }else{
@@ -364,7 +366,7 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>,T extends S
             }
             batchSqlSession.flushStatements();
         } finally {
-            closeSqlSession(batchSqlSession);
+            SqlSessionUtils.closeSqlSession(batchSqlSession, GlobalConfigUtils.currentSessionFactory(this.entityClass));
         }
         return true;
     }
@@ -394,7 +396,7 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>,T extends S
         return baseDao.selectOne(wrapper);
     }
     @Transactional(rollbackFor = RuntimeException.class)
-    public boolean deleteWithRequest(Object queryObject) throws ServiceException {
+    public boolean deleteWithRequest(Object queryObject) {
         try {
             QueryWrapper<T> wrapper = wrapWithEntity(queryObject);
             return delete(wrapper);
@@ -413,7 +415,7 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>,T extends S
     }
 
     @Override
-    public List<T> queryWithRequest(Object queryObject) throws ServiceException {
+    public List<T> queryWithRequest(Object queryObject) {
         try {
             QueryWrapper<T> wrapper = wrapWithEntity(queryObject);
             return list(wrapper);
@@ -425,7 +427,7 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>,T extends S
 
 
     @Transactional(rollbackFor = RuntimeException.class)
-    public boolean createWithRequest(Object requsetObj) throws ServiceException {
+    public boolean createWithRequest(Object requsetObj) {
         try {
             T obj=voType.newInstance();
             if (requsetObj.getClass().getInterfaces().length>0 && requsetObj.getClass().getInterfaces()[0].isAssignableFrom(Map.class)) {
@@ -447,7 +449,7 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>,T extends S
         }
     }
     @Override
-    public IPage<T> queryPageWithRequest(Object queryObject, String orderField, boolean isAsc) throws ServiceException {
+    public IPage<T> queryPageWithRequest(Object queryObject, String orderField, boolean isAsc){
         try {
             QueryWrapper<T> wrapper = wrapWithEntity(queryObject);
             if(queryObject.getClass().getSuperclass().isAssignableFrom(PageDTO.class)){
@@ -505,7 +507,7 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>,T extends S
                         wrapQueryWithTypeAndValue(getMethod.get(entry.getKey()).getReturnType(), filterColumn, tmpObj.toString(), queryWrapper);
                     }
                 }else{
-
+                    log.warn("param {} not fit in entity {},skip!",entry.getKey(),voType.getSimpleName());
                 }
             }
             if(qtoMethod.containsKey("getOrderField") && qtoMethod.containsKey("getOrder")){
@@ -582,39 +584,13 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>,T extends S
                             )
                         );
                     }
+                }else if(key.equalsIgnoreCase(Condition.NOT)){
+
                 }
             }
         }
     }
-    private LambdaQueryWrapper<T> getWrapper(SFunction<T,?> queryField, Const.OPERATOR operator, Object... value){
-        LambdaQueryWrapper<T> queryWrapper=new QueryWrapper<T>().lambda();
-        if(operator.equals(Const.OPERATOR.EQ)){
-            queryWrapper.eq(queryField,value[0]);
-        }else if(operator.equals(Const.OPERATOR.GE)){
-            queryWrapper.ge(queryField,value[0]);
-        }else if(operator.equals(Const.OPERATOR.LE)){
-            queryWrapper.ge(queryField,value[0]);
-        }else if(operator.equals(Const.OPERATOR.GT)){
-            queryWrapper.gt(queryField,value[0]);
-        }else if(operator.equals(Const.OPERATOR.LT)){
-            queryWrapper.gt(queryField,value[0]);
-        }else if(operator.equals(Const.OPERATOR.IN)){
-            queryWrapper.in(queryField,value);
-        }else if(operator.equals(Const.OPERATOR.NOTIN)){
-            queryWrapper.notIn(queryField,value);
-        }else if(operator.equals(Const.OPERATOR.NE)){
-            queryWrapper.ne(queryField,value[0]);
-        }else if(operator.equals(Const.OPERATOR.NVL)){
-            queryWrapper.isNotNull(queryField);
-        }else if(operator.equals(Const.OPERATOR.NULL)){
-            queryWrapper.isNull(queryField);
-        }else if(operator.equals(Const.OPERATOR.BETWEEN)){
-            queryWrapper.between(queryField,value[0],value[1]);
-        }else if(operator.equals(Const.OPERATOR.NOTEXIST)){
-            queryWrapper.notExists(value[0].toString());
-        }
-        return queryWrapper;
-    }
+
 
 
     private String getFilterColumn(String key) {

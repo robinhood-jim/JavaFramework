@@ -20,7 +20,6 @@ public class ProxyConnection implements Connection {
         this.delegate=connection;
         String appName=environment.getProperty(TracerConstant.APPNAME_KEY);
         boolean traceEnable=environment.containsProperty(TracerConstant.ENABLE_DATASOURCETRACE+".enabled") && "true".equalsIgnoreCase(environment.getProperty(TracerConstant.ENABLE_DATASOURCETRACE+".enabled"));
-        this.tracing=tracing;
         this.param=new TraceParam(appName,traceEnable);
     }
     public ProxyConnection(Connection connection,Tracing tracing,TraceParam param){

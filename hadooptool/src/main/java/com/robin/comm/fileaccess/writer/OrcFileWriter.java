@@ -41,9 +41,7 @@ public class OrcFileWriter extends AbstractFileWriter {
     public void beginWrite() throws IOException {
         FileSystem fs;
         CompressionKind compressionKind;
-        List<String> fileSuffix=new ArrayList<>();
-        FileUtils.parseFileFormat(getOutputPath(colmeta.getPath()),fileSuffix);
-        Const.CompressType type= FileUtils.getFileCompressType(fileSuffix);
+        Const.CompressType type= getCompressType();
         switch (type){
             case COMPRESS_TYPE_GZ:
                 throw new IOException("orc does not support gzip compression");
@@ -67,6 +65,8 @@ public class OrcFileWriter extends AbstractFileWriter {
             case COMPRESS_TYPE_ZSTD:
                 compressionKind=CompressionKind.ZSTD;
                 break;
+            case COMPRESS_TYPE_XZ:
+                throw new IOException("orc does not support xz compression");
             default:
                 compressionKind=CompressionKind.ZLIB;
         }
@@ -99,9 +99,7 @@ public class OrcFileWriter extends AbstractFileWriter {
 
     @Override
     public void flush() throws IOException {
-        if(owriter!=null){
-            owriter.notify();
-        }
+
     }
 
     @Override

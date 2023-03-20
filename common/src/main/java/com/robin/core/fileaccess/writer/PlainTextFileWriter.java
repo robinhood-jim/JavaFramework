@@ -26,9 +26,9 @@ import com.robin.core.fileaccess.meta.DataCollectionMeta;
 
 import javax.naming.OperationNotSupportedException;
 
-public class PlainTextFileWriter extends WriterBasedFileWriter {
+public class PlainTextFileWriter extends TextBasedFileWriter {
 	private List<String> retList=null; 
-	private String split;
+	private String split=",";
 	public PlainTextFileWriter(DataCollectionMeta colmeta) {
 		super(colmeta);
 	}

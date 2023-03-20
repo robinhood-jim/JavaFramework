@@ -58,12 +58,15 @@ public class TextFileWriterFactory {
         AbstractFileWriter fileWriter = null;
         try {
             String fileSuffix=colmeta.getFileFormat();
-            if (fileSuffix.equalsIgnoreCase(Const.FILESUFFIX_JSON)) {
-                fileWriter = new GsonFileWriter(colmeta);
+            if(fileSuffix.equalsIgnoreCase(Const.FILESUFFIX_CSV)){
+                fileWriter=new PlainTextFileWriter(colmeta);
+            } else if (fileSuffix.equalsIgnoreCase(Const.FILESUFFIX_JSON)) {
+                fileWriter = new JsonFileWriter(colmeta);
             } else if (fileSuffix.equalsIgnoreCase(Const.FILESUFFIX_XML)) {
                 fileWriter = new XmlFileWriter(colmeta);
             } else if (fileSuffix.equalsIgnoreCase(Const.FILESUFFIX_AVRO)) {
-                fileWriter = new AvroFileWriter(colmeta);
+                Class<AbstractFileWriter> clazz=(Class<AbstractFileWriter>) Class.forName(Const.FILEWRITER_AVRO_CLASSNAME);
+                fileWriter = clazz.getConstructor(DataCollectionMeta.class).newInstance(colmeta);
             } else if (fileSuffix.equalsIgnoreCase(Const.FILESUFFIX_PARQUET)) {
                 Class<AbstractFileWriter> clazz = (Class<AbstractFileWriter>) Class.forName(Const.FILEWRITER_PARQUET_CLASSNAME);
                 fileWriter = clazz.getConstructor(DataCollectionMeta.class).newInstance(colmeta);

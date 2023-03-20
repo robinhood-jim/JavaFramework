@@ -7,6 +7,7 @@ import org.anarres.lzo.*;
 
 import org.apache.commons.compress.compressors.brotli.BrotliCompressorInputStream;
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorOutputStream;
+import org.apache.commons.compress.compressors.xz.XZCompressorOutputStream;
 import org.apache.commons.compress.compressors.zstandard.ZstdCompressorOutputStream;
 import org.tukaani.xz.LZMA2Options;
 import org.tukaani.xz.LZMAOutputStream;
@@ -70,6 +71,9 @@ public class CompressEncoder {
                 break;
             case COMPRESS_TYPE_BROTLI:
                 throw new IOException("BROTLI encode not support now!");
+            case COMPRESS_TYPE_XZ:
+                outputStream=new XZCompressorOutputStream(wrapOutputStream(rawstream));
+                break;
             default:
                 outputStream=rawstream;
         }

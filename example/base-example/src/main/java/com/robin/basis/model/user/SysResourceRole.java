@@ -72,7 +72,7 @@ public class SysResourceRole extends BaseObject {
 
     @Override
     public String toString() {
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder buffer = new StringBuilder();
         buffer.append("[SysResourceRole:");
         buffer.append(" id:").append(id);
         buffer.append(" roleId:").append(dealNull(roleId));
@@ -83,7 +83,7 @@ public class SysResourceRole extends BaseObject {
     }
 
     public String toJson() {
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder buffer = new StringBuilder();
         buffer.append("{");
         buffer.append("\"id\":\"").append(id).append("\"");
         buffer.append(",\"roleId\":\"").append(dealNull(roleId)).append("\"");

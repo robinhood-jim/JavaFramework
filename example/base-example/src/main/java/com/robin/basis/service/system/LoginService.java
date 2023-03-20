@@ -38,8 +38,10 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.Scope;
+import org.springframework.lang.NonNull;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.RestClientException;
 
@@ -296,8 +298,10 @@ public class LoginService {
         List<Map<String, Object>> list = query.getRecordSet();
         Map<String, List<Map<String, Object>>> privMap = new HashMap();
         Map<String, Integer> idMap = new HashMap<>();
-        for (Map<String, Object> map : list) {
-            fillRights(Long.valueOf(map.get("id").toString()), resmap, privMap, map, idMap);
+        if(!CollectionUtils.isEmpty(list)) {
+            for (Map<String, Object> map : list) {
+                fillRights(Long.valueOf(map.get("id").toString()), resmap, privMap, map, idMap);
+            }
         }
         session.setPrivileges(privMap);
         if(orgId!=0L){
@@ -307,7 +311,11 @@ public class LoginService {
         }
     }
 
-    private void fillRights(Long id, Map<Long, SysResource> resMap, Map<String, List<Map<String, Object>>> privMap, Map<String, Object> vmap, Map<String, Integer> idMap) {
+    private void fillRights(Long id, @NonNull Map<Long, SysResource> resMap, Map<String, List<Map<String, Object>>> privMap, Map<String, Object> vmap, Map<String, Integer> idMap) {
+        Assert.isTrue(!CollectionUtils.isEmpty(resMap),"");
+        Assert.isTrue(!CollectionUtils.isEmpty(privMap),"");
+        Assert.isTrue(!CollectionUtils.isEmpty(vmap),"");
+        Assert.isTrue(!CollectionUtils.isEmpty(idMap),"");
         try {
             if (resMap.containsKey(id)) {
                 Long pid = resMap.get(id).getPid();

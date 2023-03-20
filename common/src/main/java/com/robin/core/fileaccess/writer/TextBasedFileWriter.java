@@ -22,10 +22,10 @@ import java.io.BufferedWriter;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 
-public abstract class WriterBasedFileWriter extends AbstractFileWriter{
+public abstract class TextBasedFileWriter extends AbstractFileWriter{
 	protected  int ioBufSize = 16 * 1024;
 
-	protected WriterBasedFileWriter(DataCollectionMeta colmeta) {
+	protected TextBasedFileWriter(DataCollectionMeta colmeta) {
 		super(colmeta);
 	}
 	@Override

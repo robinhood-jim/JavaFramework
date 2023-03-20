@@ -162,7 +162,7 @@ public class GlobalResourceService extends BaseAnnotationJdbcService<GlobalResou
         Schema schema = null;
 
         try {
-            if (resource.getResType().equals(ResourceConst.ResourceType.TYPE_DB.toString()) || resource.getResType().equals(ResourceConst.ResourceType.TYPE_ES.getValue())) {
+            if (resource.getResType().equals(ResourceConst.ResourceType.TYPE_DB.getValue()) || resource.getResType().equals(ResourceConst.ResourceType.TYPE_ES.getValue())) {
                 schema = AvroUtils.getSchemaFromMeta(colmeta);
             } else if (resource.getResType().equals(ResourceConst.ResourceType.TYPE_HDFSFILE.getValue())) {
                 HdfsResourceAccessUtil util = new HdfsResourceAccessUtil();

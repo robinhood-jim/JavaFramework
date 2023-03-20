@@ -17,6 +17,8 @@ package com.robin.core.fileaccess.writer;
 
 import com.robin.comm.dal.pool.ResourceAccessHolder;
 import com.robin.core.base.datameta.DataBaseUtil;
+import com.robin.core.base.util.Const;
+import com.robin.core.base.util.FileUtils;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.meta.DataSetColumnMeta;
 import com.robin.core.fileaccess.util.AbstractResourceAccessUtil;
@@ -29,6 +31,7 @@ import javax.naming.OperationNotSupportedException;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.net.URI;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -86,6 +89,7 @@ public abstract class AbstractFileWriter implements IResourceWriter {
 		if(out==null){
 			checkAccessUtil(colmeta.getPath());
 			out = accessUtil.getOutResourceByStream(colmeta, ResourceUtil.getProcessPath(colmeta.getPath()));
+			writer=new BufferedWriter(new OutputStreamWriter(out));
 		}
 	}
 
@@ -146,5 +150,11 @@ public abstract class AbstractFileWriter implements IResourceWriter {
 
 		}
 		return url;
+	}
+	protected Const.CompressType getCompressType(){
+		List<String> fileSuffix=new ArrayList<>();
+		FileUtils.parseFileFormat(getOutputPath(colmeta.getPath()),fileSuffix);
+		Const.CompressType type= FileUtils.getFileCompressType(fileSuffix);
+		return type;
 	}
 }

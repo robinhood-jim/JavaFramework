@@ -144,6 +144,7 @@ public class Const {
 
 
     public static final String FILEWRITER_PARQUET_CLASSNAME = "com.robin.comm.fileaccess.writer.ParquetFileWriter";
+    public static final String FILEWRITER_AVRO_CLASSNAME = "com.robin.comm.fileaccess.writer.AvroFileWriter";
     public static final String FILEWRITER_PROTOBUF_CLASSNAME = "com.robin.comm.fileaccess.writer.ProtoBufFileWriter";
     public static final String FILEWRITER_ORC_CLASSNAME = "com.robin.comm.fileaccess.writer.OrcFileWriter";
     public static final String FILEITERATOR_PARQUET_CLASSNAME = "com.robin.comm.fileaccess.iterator.ParquetFileIterator";
@@ -195,6 +196,7 @@ public class Const {
         COMPRESS_TYPE_LZ4("lz4"),
         COMPRESS_TYPE_ZSTD("zstd"),
         COMPRESS_TYPE_BROTLI("br"),
+        COMPRESS_TYPE_XZ("xz"),
         COMPRESS_TYPE_NONE("none");
         private String value;
 

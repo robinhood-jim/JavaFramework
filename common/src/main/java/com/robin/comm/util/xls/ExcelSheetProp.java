@@ -17,15 +17,13 @@ package com.robin.comm.util.xls;
 
 import lombok.Data;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Data
 public class ExcelSheetProp {
 	private String[] headerName;
 	private String[] columnName;
-	private List<Map<String,Object>> columnList;
+	private List<Map<String,Object>> columnList= new ArrayList<>();
 	private List<ExcelColumnProp> columnPropList=new ArrayList<>();
 	private String fileExt =ExcelBaseOper.TYPE_EXCEL2003;
 	private String[] columnType;

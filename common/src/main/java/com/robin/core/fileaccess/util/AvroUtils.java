@@ -91,7 +91,7 @@ public class AvroUtils {
                 throw ex;
             }
         } else {
-            if (colmeta.getColumnList() != null) {
+            if (!CollectionUtils.isEmpty(colmeta.getColumnList())) {
                 SchemaBuilder.FieldAssembler<Schema> fields = SchemaBuilder.record(colmeta.getValueClassName()).namespace(colmeta.getClassNamespace()).fields();
 
                 for (DataSetColumnMeta meta : colmeta.getColumnList()) {
@@ -135,7 +135,7 @@ public class AvroUtils {
                     logger.debug(schema.toString(true));
                 }
             } else {
-                throw new ConfigurationIncorrectException("missing avro schema config file or Content");
+                logger.warn("missing avro schema config file or Content");
             }
         }
         return schema;

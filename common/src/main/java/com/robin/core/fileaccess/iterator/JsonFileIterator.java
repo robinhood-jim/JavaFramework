@@ -25,10 +25,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
-public class GsonFileIterator extends AbstractFileIterator{
+public class JsonFileIterator extends AbstractFileIterator{
 	private JsonReader jreader=null;
 	
-	public GsonFileIterator(DataCollectionMeta metaList) {
+	public JsonFileIterator(DataCollectionMeta metaList) {
 		super(metaList);
 	}
 	@Override

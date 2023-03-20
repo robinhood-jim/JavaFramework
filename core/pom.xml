@@ -47,13 +47,17 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-compress</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-jexl3</artifactId>
+        </dependency>
         <!-- Apache commons end -->
         <!-- Spring start -->
         <dependency>
-        <groupId>org.springframework</groupId>
-        <artifactId>spring-core</artifactId>
-        <optional>true</optional>
-    </dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-core</artifactId>
+            <optional>true</optional>
+        </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
@@ -107,12 +111,16 @@
             <version>${mybatisplus.version}</version>
             <optional>true</optional>
         </dependency>
-       <!-- <dependency>
-            <groupId>org.ow2.asm</groupId>
-            <artifactId>asm</artifactId>
-            <version>6.1</version>
-            <optional>true</optional>
-        </dependency>-->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+        </dependency>
+        <!-- <dependency>
+             <groupId>org.ow2.asm</groupId>
+             <artifactId>asm</artifactId>
+             <version>6.1</version>
+             <optional>true</optional>
+         </dependency>-->
         <dependency>
             <groupId>org.javassist</groupId>
             <artifactId>javassist</artifactId>
@@ -243,9 +251,6 @@
             <artifactId>classgraph</artifactId>
             <optional>true</optional>
         </dependency>
-
-
-
     </dependencies>
 
 
@@ -277,26 +282,6 @@
                     </archive>
                 </configuration>
             </plugin>
-            <plugin><!-- 拷贝依赖的jar包到指定路径 -->
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>copy</id>
-                        <phase>install</phase>
-                        <goals>
-                            <goal>copy-dependencies</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>
-                                ${project.build.directory}/lib
-                            </outputDirectory>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
@@ -307,7 +292,7 @@
             <plugin>
                 <groupId>com.github.wvengen</groupId>
                 <artifactId>proguard-maven-plugin</artifactId>
-                <version>2.0.14</version>
+                <version>2.2.0</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
@@ -331,63 +316,11 @@
                     <injar>core-1.0-SNAPSHOT.jar</injar>
                     <addMavenDescriptor>true</addMavenDescriptor>
                     <injarNotExistsSkip>true</injarNotExistsSkip>
+                    <proguardInclude>${project.basedir}/../config/proguard.cfg</proguardInclude>
                     <libs>
                         <lib>${java.home}/lib/rt.jar</lib>
                     </libs>
-
                     <options> <!-- Detail see ProGuard Config -->
-
-                        <option>-keepattributes *Annotation*,InnerClasses,Signature,Exceptions</option>
-                        <option>
-                            <![CDATA[-keep public class * {public protected <fields>;public protected <methods>;}]]></option>
-                        <option>-keep public class * implements java.io.Serializable{public protected private *;}
-                        </option>
-
-                        <option>-keep public class * extends com.robin.core.base.model.BaseObject{ public protected
-                            private *; }
-                        </option>
-                        <option>-keep enum * { *; }</option>
-
-                        <option><![CDATA[-keepclassmembers enum * {
-							<fields>;
-							public static **[] values();
-    						public static ** valueOf(java.lang.String);
-						}]]></option>
-                        <option><![CDATA[-keepclassmembers class * implements org.apache.commons.dbutils.ResultSetHandler {
-							<methods>;
-							}]]></option>
-                        <option><![CDATA[-keepclassmembers class * implements org.springframework.orm.hibernate3.HibernateCallback {
-							<methods>;
-							}]]></option>
-                        <option><![CDATA[-keepclassmembers class * implements org.springframework.jdbc.core.RowMapper {
-							<methods>;
-							}]]></option>
-                        <option><![CDATA[-keepclassmembers class * extends com.robin.core.query.extractor.SplitPageResultSetExtractor {
-							<methods>;
-							}]]></option>
-                        <option><![CDATA[-keepclassmembers class * implements org.springframework.jdbc.core.ResultSetExtractor {
-							<methods>;
-							}]]></option>
-                        <option><![CDATA[-keepclassmembers class * implements java.util.Comparator {
-							<methods>;
-							}]]></option>
-                        <option><![CDATA[-keepclassmembers class * implements org.springframework.jdbc.core.PreparedStatementSetter {
-							<methods>;
-							}]]></option>
-                        <option>-obfuscationdictionary ${project.basedir}/../config/dictionary_rules.txt</option>
-                        <option>-classobfuscationdictionary ${project.basedir}/../config/dictionary_rules.txt</option>
-
-                        <option>-ignorewarnings</option>
-                        <!--<option>-dontshrink</option>-->
-                        <option>-printmapping out.map</option>
-                        <option>-optimizations code/allocation/variable,code/simplification/string</option>
-                        <option>-keep class **.package-info</option>
-                        <!--<option>-keep public class com.robin.core.base.**</option>-->
-                        <option>
-                            -keepclasseswithmembers public class * {
-                            public static void main(java.lang.String[]);
-                            }
-                        </option>
                     </options>
                 </configuration>
                 <dependencies>

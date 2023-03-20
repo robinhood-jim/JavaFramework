@@ -22,9 +22,9 @@ import javax.naming.OperationNotSupportedException;
 import java.io.IOException;
 import java.util.Map;
 
-public class GsonFileWriter extends WriterBasedFileWriter{
+public class JsonFileWriter extends TextBasedFileWriter {
 	private JsonWriter jwriter=null;
-	public GsonFileWriter(DataCollectionMeta colmeta) {
+	public JsonFileWriter(DataCollectionMeta colmeta) {
 		super(colmeta);
 	}
 

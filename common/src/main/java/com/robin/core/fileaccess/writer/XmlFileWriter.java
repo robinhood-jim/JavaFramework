@@ -25,7 +25,7 @@ import javax.xml.stream.XMLStreamWriter;
 import java.io.IOException;
 import java.util.Map;
 
-public class XmlFileWriter extends WriterBasedFileWriter{
+public class XmlFileWriter extends TextBasedFileWriter {
 	XMLOutputFactory factory;
 	XMLEventFactory ef = XMLEventFactory.newInstance();
 	XMLStreamWriter streamWriter;

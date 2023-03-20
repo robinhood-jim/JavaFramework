@@ -26,7 +26,7 @@ import java.util.Map;
 
 public class PlainTextFileIterator extends AbstractFileIterator{
 	private String readLineStr=null;
-	private String split;
+	private String split=",";
 	public PlainTextFileIterator(DataCollectionMeta metaList) {
 		super(metaList);
 	}

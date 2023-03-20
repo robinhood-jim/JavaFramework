@@ -67,8 +67,10 @@ public class TextFileIteratorFactory {
 		AbstractFileIterator iterator=null;
 		String fileType=colmeta.getFileFormat();
 		try {
-			if (fileType.equalsIgnoreCase(Const.FILESUFFIX_JSON)) {
-				iterator = new GsonFileIterator(colmeta);
+			if(fileType.equalsIgnoreCase(Const.FILESUFFIX_CSV)){
+				iterator=new PlainTextFileIterator(colmeta);
+			}else if (fileType.equalsIgnoreCase(Const.FILESUFFIX_JSON)) {
+				iterator = new JsonFileIterator(colmeta);
 			} else if (fileType.equalsIgnoreCase(Const.FILESUFFIX_XML)) {
 				iterator = new XmlFileIterator(colmeta);
 			} else if (fileType.equalsIgnoreCase(Const.FILESUFFIX_AVRO)) {

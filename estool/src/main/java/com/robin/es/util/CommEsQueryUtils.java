@@ -32,6 +32,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 
 import java.lang.reflect.Method;
 import java.util.*;
@@ -46,7 +47,7 @@ public class CommEsQueryUtils {
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
             public synchronized void start() {
-                if (null != esClientMap && !esClientMap.isEmpty()) {
+                if (!ObjectUtils.isEmpty(esClientMap)) {
                     Iterator<Map.Entry<String, RestHighLevelClient>> iterator = esClientMap.entrySet().iterator();
                     while (iterator.hasNext()) {
                         try {
@@ -150,7 +151,7 @@ public class CommEsQueryUtils {
                 }
                 if (null != response.getHits()) {
                     SearchHit[] hits = response.getHits().getHits();
-                    boolean isContentMap = serializableClass.isAssignableFrom(HashMap.class);
+                    boolean isContentMap = serializableClass.isAssignableFrom(Map.class);
                     Map<String, Method> setMap = null;
                     if (!isContentMap) {
                         setMap = ReflectUtils.returnSetMethods(serializableClass);
@@ -362,7 +363,7 @@ public class CommEsQueryUtils {
         map.put("province", "HUNAN");
         map.put("renzheng_num", "0,100|100,1000|2000,3000|>4000");
         map.put("last_update_time", "20200211,20200312");
-        Page<HashMap> page = CommEsQueryUtils.executeQuery("test", map, "t_certificates", null, HashMap.class, null);
+        Page<Map> page = CommEsQueryUtils.executeQuery("test", map, "t_certificates", null, Map.class, null);
         log.info("{}", page);
     }
 }
