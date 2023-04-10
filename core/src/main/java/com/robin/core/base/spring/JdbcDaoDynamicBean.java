@@ -27,7 +27,7 @@ public class JdbcDaoDynamicBean extends DataSourceDynamicBean{
 	@Override
     protected String getBeanXml() {
 		String dataSourceXml=super.getBeanXml();
-		StringBuffer xmlBuf = new StringBuffer();  
+		StringBuilder xmlBuf = new StringBuilder();  
 		 xmlBuf.append("<bean id=\""+sourceName+"\" class=\"com.robin.core.base.dao.JdbcDao\" >\n")
          .append("	<property name=\"dataSource\" ref=\""+sourceName+"Source"+"\" />\n")
 				 .append("	<property name=\"sqlGen\" ref=\""+sqlGenName+"\" />\n")

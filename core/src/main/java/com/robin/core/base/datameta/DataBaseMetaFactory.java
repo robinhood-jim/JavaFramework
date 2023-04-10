@@ -22,13 +22,16 @@ import java.util.List;
 import java.util.Map;
 
 public class DataBaseMetaFactory {
-	private static Map<String,Constructor> constructorMap=new HashMap<>();
+	private static final Map<String,Constructor> constructorMap=new HashMap<>();
+	private DataBaseMetaFactory(){
+
+	}
 	public static BaseDataBaseMeta getDataBaseMetaByType(String type,DataBaseParam param){
 		BaseDataBaseMeta datameta=null;
 		try{
 		List<String> dbTypes=Arrays.asList(BaseDataBaseMeta.DB_TYPE_ENMU);
 		if(dbTypes.contains(type)){
-			Constructor<?> construct=null;
+			Constructor<?> construct;
 			if(!constructorMap.containsKey(type)){
 				String className="com.robin.core.base.datameta."+type+"DataBaseMeta";
 				Class<?> clazz= Class.forName(className);

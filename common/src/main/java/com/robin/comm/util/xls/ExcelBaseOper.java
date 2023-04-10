@@ -49,8 +49,9 @@ public class ExcelBaseOper {
 
     public static final String TYPE_EXCEL2003 = "xls";
     public static final String TYPE_EXCEL2007 = "xlsx";
-    private static final String defaultFontName = java.awt.Font.SANS_SERIF;
+    public static final String defaultFontName = Locale.CHINA.equals(Locale.getDefault()) || Locale.SIMPLIFIED_CHINESE.equals(Locale.getDefault())?"宋体":java.awt.Font.SANS_SERIF;
     private static final Logger logger = LoggerFactory.getLogger(ExcelBaseOper.class);
+
 
     public static Sheet createSheet(Workbook wb, String sheetName, ExcelSheetProp prop) {
         return wb.createSheet(sheetName);
@@ -119,8 +120,9 @@ public class ExcelBaseOper {
     }
 
     private static void setHeaderFont(Workbook wb, TableConfigProp header, CellStyle cs) {
+        Font font = wb.createFont();
+        font.setFontName(defaultFontName);
         if (header != null) {
-            Font font = wb.createFont();
             font.setFontName((header.getHeaderFontName() == null || header.getHeaderFontName().isEmpty()) ? defaultFontName : header.getHeaderFontName());
             if (header.isBold()) {
                 font.setBold(true);
@@ -128,8 +130,8 @@ public class ExcelBaseOper {
             if (header.isItalic()) {
                 font.setItalic(true);
             }
-            cs.setFont(font);
         }
+        cs.setFont(font);
     }
 
     public static CellStyle getHeaderStyle(Workbook wb, int rowspan, HorizontalAlignment align, TableConfigProp header) {
@@ -289,10 +291,6 @@ public class ExcelBaseOper {
         return row;
     }
 
-    private static Cell creatCell(Row row, int i) {
-        return row.createCell(i);
-    }
-
     private static short getAlignment(int align) {
         return (short) align;
     }
@@ -351,7 +349,6 @@ public class ExcelBaseOper {
     }
     private static Cell createFormulaCell(Row row,int column,CellStyle cellStyle,CreationHelper helper,String formula){
         Cell cell = row.createCell(column);
-        //cell.setCellType(CellType.FORMULA);
         cell.setCellFormula(formula);
         cell.setCellStyle(cellStyle);
         return cell;
@@ -467,7 +464,7 @@ public class ExcelBaseOper {
                     colorset[i] = 255;
                 }
             }
-            //System.out.println(" using color" + colorset[0] + "," + colorset[1] + "," + colorset[2]);
+
         } catch (Exception e) {
             logger.error("Encounter Error ", e);
         }

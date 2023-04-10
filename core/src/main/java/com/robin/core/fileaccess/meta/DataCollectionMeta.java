@@ -15,19 +15,14 @@
  */
 package com.robin.core.fileaccess.meta;
 
-import com.robin.core.base.dao.JdbcDao;
 import com.robin.core.base.datameta.BaseDataBaseMeta;
 import com.robin.core.base.datameta.DataBaseColumnMeta;
 import com.robin.core.base.util.ResourceConst;
-import com.robin.core.sql.util.FilterCondition;
 import lombok.Data;
 import org.springframework.util.CollectionUtils;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Data
@@ -82,7 +77,7 @@ public class DataCollectionMeta implements Serializable {
 		if(!CollectionUtils.isEmpty(columnMetas)){
 			return columnMetas.stream().map(f->new DataSetColumnMeta(f.getColumnName(),f.getColumnType().toString(),f.getDefaultValue(),!f.isNullable(),null)).collect(Collectors.toList());
 		}
-		return null;
+		return Collections.emptyList();
 	}
 	public boolean isFileType(){
 		if(resType.equals(ResourceConst.ResourceType.TYPE_FTPFILE.getValue()) || resType.equals(ResourceConst.ResourceType.TYPE_HDFSFILE.getValue()) || resType.equals(ResourceConst.ResourceType.TYPE_LOCALFILE.getValue())){
@@ -97,7 +92,7 @@ public class DataCollectionMeta implements Serializable {
 		return false;
 	}
 	public static class Builder{
-		private DataCollectionMeta meta=new DataCollectionMeta();
+		private final DataCollectionMeta meta=new DataCollectionMeta();
 		public Builder(){
 
 		}

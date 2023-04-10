@@ -6,7 +6,6 @@ import com.robin.core.fileaccess.util.AbstractResourceAccessUtil;
 import com.robin.hadoop.hdfs.HDFSProperty;
 import com.robin.hadoop.hdfs.HDFSUtil;
 import org.apache.hadoop.fs.FSDataOutputStream;
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,9 +15,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class HdfsResourceAccessUtil extends AbstractResourceAccessUtil {
-	private static Logger logger=LoggerFactory.getLogger(HdfsResourceAccessUtil.class);
-	private Map<String, HDFSUtil> hdfsUtilMap=new MapMaker().concurrencyLevel(16).weakKeys().makeMap();
-	private Map<String, HDFSProperty> hdfspropMap=new HashMap<String, HDFSProperty>();
+	private static final Logger logger=LoggerFactory.getLogger(HdfsResourceAccessUtil.class);
+	private final Map<String, HDFSUtil> hdfsUtilMap=new MapMaker().concurrencyLevel(16).weakKeys().makeMap();
+	private final Map<String, HDFSProperty> hdfspropMap=new HashMap<>();
 	@Override
 	public BufferedReader getInResourceByReader(DataCollectionMeta meta, String resourcePath)
 			throws IOException {
@@ -34,7 +33,7 @@ public class HdfsResourceAccessUtil extends AbstractResourceAccessUtil {
 
 		try(FSDataOutputStream outputStream=util.getFileSystem().create(new Path(resourcePath))) {
 			if (util.exists(resourcePath)) {
-				logger.error("output file " + resourcePath + " exist!,remove it");
+				logger.error("output file {}  exist!,remove it" ,resourcePath );
 				util.delete(meta.getPath());
 			}
 			return getWriterByPath(meta.getPath(), outputStream, meta.getEncode());
@@ -48,7 +47,7 @@ public class HdfsResourceAccessUtil extends AbstractResourceAccessUtil {
 		HDFSUtil util=getHdfsUtil(meta);
 		try {
 			if (util.exists(resourcePath)) {
-				logger.error("output file " + resourcePath + " exist!,remove it");
+				logger.error("output file {} exist!,remove it" , resourcePath);
 				util.delete(meta.getPath());
 			}
 			return getOutputStreamByPath(resourcePath, util.getFileSystem().create(new Path(resourcePath)));
@@ -62,7 +61,7 @@ public class HdfsResourceAccessUtil extends AbstractResourceAccessUtil {
 		HDFSUtil util=getHdfsUtil(meta);
 		try {
 			if (util.exists(resourcePath)) {
-				logger.error("output file " + resourcePath + " exist!,remove it");
+				logger.error("output file {}  exist!,remove it" , resourcePath);
 				util.delete(resourcePath);
 			}
 			return util.getFileSystem().create(new Path(resourcePath));
@@ -76,7 +75,7 @@ public class HdfsResourceAccessUtil extends AbstractResourceAccessUtil {
 		HDFSUtil util=getHdfsUtil(meta);
 		try {
 			if (util.exists(resourcePath)) {
-				logger.error("output file " + resourcePath + " exist!,remove it");
+				logger.error("output file {}  exist!,remove it" , resourcePath);
 				util.delete(resourcePath);
 			}
 			return util.getFileSystem().open(new Path(resourcePath));
@@ -91,7 +90,7 @@ public class HdfsResourceAccessUtil extends AbstractResourceAccessUtil {
 		HDFSUtil util=getHdfsUtil(meta);
 		try {
 			if (util.exists(resourcePath)) {
-				logger.error("output file " + resourcePath + " exist!,remove it");
+				logger.error("output file {}  exist!,remove it" , resourcePath );
 				util.delete(resourcePath);
 			}
 			return getInputStreamByPath(resourcePath, util.getFileSystem().open(new Path(resourcePath)));
@@ -100,7 +99,7 @@ public class HdfsResourceAccessUtil extends AbstractResourceAccessUtil {
 		}
 	}
 	public HDFSUtil getHdfsUtil(DataCollectionMeta meta){
-		HDFSUtil util=null;
+		HDFSUtil util;
 		String defaultName="";
 		if(meta.getResourceCfgMap().containsKey("fs.defaultFS")){
 			defaultName=meta.getResourceCfgMap().get("fs.defaultFS").toString();

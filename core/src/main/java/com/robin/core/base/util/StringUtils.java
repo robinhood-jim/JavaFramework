@@ -31,6 +31,7 @@ public class StringUtils {
     public static final int ASCII_VISABLE_END = 122;
     public static final int ASCII_UPPER_START = 64;
     public static final int ASCII_LOWER_START = 96;
+    private static final Random random = new Random();
 
     /**
      * custom String split
@@ -46,25 +47,25 @@ public class StringUtils {
         String[] arrs = (excludeArr != null && excludeArr.length > 0) ? excludeArr : new String[]{"\"", "'"};
         List<Character> includeList = new ArrayList<>();
         List<Character> includeSuffixList = new ArrayList<>();
-        for (int i = 0; i < arrs.length; i++) {
-            if (!arrs[i].contains(":")) {
-                includeList.add(Character.valueOf(arrs[i].charAt(0)));
-                includeSuffixList.add(Character.valueOf(arrs[i].charAt(0)));
+        for (String arr : arrs) {
+            if (!arr.contains(":")) {
+                includeList.add(arr.charAt(0));
+                includeSuffixList.add(arr.charAt(0));
             } else {
-                String[] sepArr = arrs[i].split(":");
-                includeList.add(Character.valueOf(sepArr[0].charAt(0)));
-                includeSuffixList.add(Character.valueOf(sepArr[1].charAt(0)));
+                String[] sepArr = arr.split(":");
+                includeList.add(sepArr[0].charAt(0));
+                includeSuffixList.add(sepArr[1].charAt(0));
             }
         }
         int start = 0;
         int length = str.length();
         int i = 0;
-        Character curstr = null;
-        int selpos = 0;
+        Character curstr ;
+        int selpos ;
         //start pos
         boolean startpos = true;
         while (i < length) {
-            curstr = Character.valueOf(chars[i]);
+            curstr = chars[i];
             if (startpos && includeList.contains(curstr)) {
                 if (start == i) {
                     start = ++i;
@@ -106,8 +107,8 @@ public class StringUtils {
         }
         if (start < length) {
             int pos = length;
-            for (int j = 0; j < includeSuffixList.size(); j++) {
-                if (str.endsWith(includeSuffixList.get(j).toString())) {
+            for (Character character : includeSuffixList) {
+                if (str.endsWith(character.toString())) {
                     pos--;
                     break;
                 }
@@ -115,11 +116,10 @@ public class StringUtils {
 
             list.add(str.substring(start, pos));
         }
-        if (str.endsWith(new String(new char[]{delimer}))) {
+        if (str.endsWith(String.valueOf(delimer))) {
             list.add("");
         }
-        String[] retArr = list.toArray(new String[1]);
-        return retArr;
+        return list.toArray(new String[1]);
     }
 
     public static String[] split(String str, char delimer) {
@@ -191,7 +191,7 @@ public class StringUtils {
     }
 
     public static String getSplitChar(String split) {
-        String retchar = "";
+        String retchar;
         if ("\\t".equals(split)) {
             retchar = "\t";
         } else if ("0x1F".equalsIgnoreCase(split)) {
@@ -220,7 +220,7 @@ public class StringUtils {
 
     public static String generateRandomChar(int length) {
         StringBuilder builder = new StringBuilder();
-        Random random = new Random();
+
         for (int i = 0; i < length; i++) {
             builder.append((char) (ASCII_VISABLE_START + getRandomChar(random)));
         }
@@ -237,7 +237,6 @@ public class StringUtils {
 
     public static String genarateRandomUpperLowerChar(int length) {
         StringBuilder builder = new StringBuilder();
-        Random random = new Random();
         for (int i = 0; i < length; i++) {
             if (random.nextFloat() < 0.5) {
                 builder.append((char) getRandomUpperChar(random));
@@ -325,7 +324,6 @@ public class StringUtils {
     }
 
     public static void main(String[] args) {
-        //System.out.println(genarateRandomUpperLowerChar(8));
         System.out.println(getFieldNameByCamelCase("asdsadTTsdadDDasda"));
         System.out.println(returnCamelCaseByFieldName("index_cd"));
     }

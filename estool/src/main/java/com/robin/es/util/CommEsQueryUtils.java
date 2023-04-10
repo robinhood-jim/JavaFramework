@@ -31,6 +31,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.lang.NonNull;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
@@ -40,25 +41,22 @@ import java.util.*;
 @Slf4j
 
 public class CommEsQueryUtils {
-    private static Map<String, RestHighLevelClient> esClientMap = new HashMap<>();
-    private static Gson gson = GsonUtil.getGson();
+    private static final Map<String, RestHighLevelClient> esClientMap = new HashMap<>();
+    private static final Gson gson = GsonUtil.getGson();
 
     static {
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            @Override
-            public synchronized void start() {
-                if (!ObjectUtils.isEmpty(esClientMap)) {
-                    Iterator<Map.Entry<String, RestHighLevelClient>> iterator = esClientMap.entrySet().iterator();
-                    while (iterator.hasNext()) {
-                        try {
-                            iterator.next().getValue().close();
-                        } catch (Exception ex) {
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            if (!ObjectUtils.isEmpty(esClientMap)) {
+                Iterator<Map.Entry<String, RestHighLevelClient>> iterator = esClientMap.entrySet().iterator();
+                while (iterator.hasNext()) {
+                    try {
+                        iterator.next().getValue().close();
+                    } catch (Exception ex) {
 
-                        }
                     }
                 }
             }
-        });
+        }));
     }
 
     public static Map<String, Object> reportHealth(String clusterName) {
@@ -72,7 +70,7 @@ public class CommEsQueryUtils {
                 }.getType());
             }
         }
-        return null;
+        return Collections.emptyMap();
     }
 
     public static void registerCluster(String clusterName, String manageUrl, String userName, String passwd) {
@@ -80,7 +78,7 @@ public class CommEsQueryUtils {
         final CredentialsProvider credentialsProvider =
                 new BasicCredentialsProvider();
         RestHighLevelClient client;
-        if (null != userName && !org.apache.commons.lang3.StringUtils.isEmpty(userName) && null != passwd && !org.apache.commons.lang3.StringUtils.isEmpty(passwd)) {
+        if (!ObjectUtils.isEmpty(userName) && !ObjectUtils.isEmpty(passwd)) {
             credentialsProvider.setCredentials(AuthScope.ANY,
                     new UsernamePasswordCredentials(userName, passwd));
 
@@ -104,7 +102,7 @@ public class CommEsQueryUtils {
     }
 
 
-    public static <T> Page<T> executeQuery(RestHighLevelClient client, Map<String, Object> indexDefineMap, Map<String, Object> queryParam, String indexName, Pageable pageable, String includeFields, String orderField, boolean orderDir, Class<T> serializableClass, QueryBuilderWrapper wrapper) throws ServiceException {
+    public static <T> Page<T> executeQuery(RestHighLevelClient client, Map<String, Object> indexDefineMap, Map<String, Object> queryParam, String indexName, @NonNull Pageable pageable, String includeFields, String orderField, boolean orderDir, Class<T> serializableClass, QueryBuilderWrapper wrapper) throws ServiceException {
         Page retPage = null;
         Environment environment = SpringContextHolder.getBean(Environment.class);
         boolean useCamelCaseConvert = environment.containsProperty("es.query.keyconvert") && "true".equalsIgnoreCase(environment.getProperty("es.query.keyconvert"));
@@ -163,9 +161,7 @@ public class CommEsQueryUtils {
                                 contents.add(map);
                             } else {
                                 Map<String, Object> rsMap = new HashMap<>();
-                                Iterator<Map.Entry<String, Object>> hititer = map.entrySet().iterator();
-                                while (hititer.hasNext()) {
-                                    Map.Entry<String, Object> entry = hititer.next();
+                                for (Map.Entry<String, Object> entry : map.entrySet()) {
                                     rsMap.put(StringUtils.returnCamelCaseByFieldName(entry.getKey()), entry.getValue());
                                 }
                                 contents.add(rsMap);
@@ -304,7 +300,7 @@ public class CommEsQueryUtils {
         } else if (fieldType.equals(FieldType.Integer)) {
             return Integer.valueOf(value);
         }
-        return null;
+        return value;
     }
 
 

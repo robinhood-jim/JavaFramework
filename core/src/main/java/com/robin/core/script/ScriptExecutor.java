@@ -30,7 +30,7 @@ import javax.script.ScriptEngineManager;
 import org.springframework.beans.factory.InitializingBean;
 
 public class ScriptExecutor implements InitializingBean {
-	private ConcurrentMap<String, BaseScriptExecutor> scriptExecutorMap=new ConcurrentHashMap<String, BaseScriptExecutor>();
+	private ConcurrentMap<String, BaseScriptExecutor> scriptExecutorMap=new ConcurrentHashMap<>();
 	private List<String> scriptNameList;
 
 	@Override
@@ -43,12 +43,12 @@ public class ScriptExecutor implements InitializingBean {
 
 
 	public List<String> getAllScriptEngineNames() {
-        List<String> scriptEngineNames = new ArrayList<String>();
+        List<String> scriptEngineNames = new ArrayList<>();
         ScriptEngineManager factory = new ScriptEngineManager();
         for (ScriptEngineFactory fac : factory.getEngineFactories()) {
             String name = fac.getLanguageName();
             // Use consistent Camel case, pretty naming.
-            if ("ecmascript".equals(name.toLowerCase())) {
+            if ("ecmascript".equalsIgnoreCase(name)) {
                 name = "js";
             } else if (name.toLowerCase().endsWith("ruby")) {
                 name = "jruby";
@@ -79,25 +79,6 @@ public class ScriptExecutor implements InitializingBean {
 	public Map<String, BaseScriptExecutor> getScriptExecutorMap() {
 		return scriptExecutorMap;
 	}
-	
-	/*public CompiledScript returnScript(BaseScriptExecutor executor,String stepId,String scripts) throws ScriptException{
-		CompiledScript script=null;
-		if(scriptMap.containsKey(stepId.trim())){
-			//script是否有修改
-			System.out.println("--------- hit ---------"+stepId);
-			if(scripts.equals(scriptsrcMap.get(stepId.trim()))){
-				script=scriptMap.get(stepId.trim());
-			}
-		}
-		if(script==null){
-			//System.out.println("--------- not hit ---------"+stepId);
-			script=executor.getCompEngine().compile(scripts.trim());
-			if(script!=null){
-				scriptMap.put(stepId.trim(), script);
-				scriptsrcMap.put(stepId.trim(), scripts);
-			}
-		}
-		return script;
-	}*/
+
 	
 }

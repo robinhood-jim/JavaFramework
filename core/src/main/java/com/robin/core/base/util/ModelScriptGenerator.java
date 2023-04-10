@@ -19,16 +19,14 @@ import com.robin.core.base.annotation.MappingEntity;
 import com.robin.core.base.datameta.BaseDataBaseMeta;
 import com.robin.core.base.model.BaseObject;
 import com.robin.core.base.reflect.ClassGraphReflector;
-import com.robin.core.base.spring.SpringContextHolder;
 import com.robin.core.sql.util.BaseSqlGen;
 import com.robin.core.sql.util.SqlDialectFactory;
 import io.github.classgraph.ClassInfo;
 import io.github.classgraph.ClassInfoList;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.context.support.FileSystemXmlApplicationContext;
 
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
 
 public class ModelScriptGenerator {
     public static void main(String[] args) {
@@ -42,7 +40,7 @@ public class ModelScriptGenerator {
     }
     public static void generateScript(String dbType, BaseDataBaseMeta meta,String outputFile, String... packageNames){
 
-        try (BufferedWriter writer=new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputFile),"UTF-8"));){
+        try (BufferedWriter writer=new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputFile),"UTF-8"))){
 
             ClassGraphReflector reflector= new ClassGraphReflector();
             if(packageNames.length>0){
@@ -69,43 +67,5 @@ public class ModelScriptGenerator {
             //((ApplicationContext) context).close();
         }
     }
-   /* public static void genrateScript(String configFile,String outputFile){
-        ApplicationContext context = null;
-
-        BufferedWriter writer = null;
-        try {
-            if(configFile.startsWith("classpath:")){
-                context=new ClassPathXmlApplicationContext(configFile);
-            }else{
-                context=new FileSystemXmlApplicationContext(configFile);
-            }
-            ClassGraphReflector reflector=context.getBean(ClassGraphReflector.class);
-            ClassInfoList classes=reflector.getAnnotationClasses(MappingEntity.class);
-
-            BaseSqlGen sqlgen = context.getBean(BaseSqlGen.class);
-            //final Set<String> clazzNames = db.getAnnotationIndex().get(MappingEntity.class.getName());
-            writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputFile),"UTF-8"));
-            StringBuilder builder = new StringBuilder();
-            for(ClassInfo classInfo:classes){
-                if(classInfo.getSuperclass().loadClass().equals(BaseObject.class)) {
-                    builder.append(ModelSqlGenerator.generateCreateSql((Class<? extends BaseObject>) classInfo.loadClass(), sqlgen));
-                }
-            }
-            writer.write(builder.toString());
-            writer.flush();
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        } finally {
-            if (writer != null) {
-                try {
-                    writer.close();
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
-            }
-            //((ApplicationContext) context).close();
-        }
-    }*/
-
 
 }

@@ -25,10 +25,11 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+@SuppressWarnings("UnstableApiUsage")
 public class BaseScriptExecutor  implements IscriptExecutor{
-	protected Map<String, String> scriptsrcMap=new MapMaker().makeMap();
-	private Map<String,String> keyMap=new MapMaker().makeMap();
-	private LoadingCache<String, CompiledScript> cache;
+	protected final Map<String, String> scriptsrcMap=new MapMaker().makeMap();
+	private final Map<String,String> keyMap=new MapMaker().makeMap();
+	private final LoadingCache<String, CompiledScript> cache;
 	protected ScriptEngine scriptEngine;
 	protected Compilable compEngine;
 	private final Logger logger=LoggerFactory.getLogger(getClass());

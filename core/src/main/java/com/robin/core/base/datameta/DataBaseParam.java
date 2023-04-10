@@ -177,6 +177,9 @@ public class DataBaseParam implements Serializable {
 		this.passwd=passwd;
 		this.userName=userName;
 	}
+	private DataBaseParam(){
+
+	}
 	@Override
 	public boolean equals(Object obj) {
 		boolean isequal=false;
@@ -191,5 +194,43 @@ public class DataBaseParam implements Serializable {
 	@Override
 	public int hashCode() {
 		return new StringBuilder(this.getType()).append("|").append(this.getDatabaseName()).append("|").append(this.getHostName()).append("|").append(String.valueOf(this.getPort())).toString().hashCode();
+	}
+	public static class Builder{
+		private DataBaseParam param=new DataBaseParam();
+		public Builder setUrlTemplate(String urlTemplate){
+			param.setUrlTemplate(urlTemplate);
+			return this;
+		}
+		public Builder setUrl(String url){
+			param.setUrl(url);
+			return this;
+		}
+		public Builder setUserName(String userName){
+			param.setUserName(userName);
+			return this;
+		}
+		public Builder setPassword(String password){
+			param.setPasswd(password);
+			return this;
+		}
+		public Builder setEncode(String encode){
+			param.setEncode(encode);
+			return this;
+		}
+		public Builder setType(String type){
+			param.setType(type);
+			return this;
+		}
+		public Builder setPort(Integer port){
+			param.setPort(port);
+			return this;
+		}
+		public Builder setDriverClassName(String driverClassName){
+			param.setDriverClassName(driverClassName);
+			return this;
+		}
+		public DataBaseParam build(){
+			return param;
+		}
 	}
 }

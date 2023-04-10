@@ -7,7 +7,7 @@ import java.sql.*;
 
 
 public class ProxyStatement extends AbstractSpringAwareJdbcOperation implements Statement {
-    private Statement delegate;
+    private final Statement delegate;
     public ProxyStatement(Statement delegate, Tracing tracing,TraceParam param){
         this.delegate=delegate;
         this.tracing=tracing;

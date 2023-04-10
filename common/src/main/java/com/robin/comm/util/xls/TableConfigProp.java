@@ -17,7 +17,6 @@ package com.robin.comm.util.xls;
 
 import lombok.Data;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,7 +30,7 @@ public class TableConfigProp {
     private String headerFontName;
     private String contentFontName;
     private int totalCol;
-    private int headerRows;
+    private int colSize;
     private List<String> columnCodeList = new ArrayList<String>();
 
 
@@ -54,6 +53,40 @@ public class TableConfigProp {
     public void setHeaderColumnList(List<List<TableHeaderColumn>> headerColumnList) {
         this.containrow=headerColumnList.size();
         this.headerColumnList = headerColumnList;
+    }
+    public static class Builder{
+        public static  TableConfigProp prop=new TableConfigProp();
+        public Builder(){
+
+        }
+        public TableConfigProp.Builder setFont(String fontName){
+            prop.setHeaderFontName(fontName);
+            prop.setContentFontName(fontName);
+            return this;
+        }
+        public TableConfigProp.Builder setHeaderFont(String fontName){
+            prop.setHeaderFontName(fontName);
+            return this;
+        }
+        public TableConfigProp.Builder setContentFont(String fontName){
+            prop.setContentFontName(fontName);
+            return this;
+        }
+
+        public TableConfigProp.Builder setBold(boolean ifbold){
+            prop.setBold(ifbold);
+            return this;
+        }
+        public TableConfigProp.Builder setHeaderColumnList(List<List<TableHeaderColumn>> headerColumnList){
+            prop.containrow=headerColumnList.size();
+            prop.headerColumnList = headerColumnList;
+            return this;
+        }
+
+        public TableConfigProp build(){
+            return prop;
+        }
+
     }
 
 

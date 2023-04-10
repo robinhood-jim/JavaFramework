@@ -74,7 +74,7 @@ public class SqlMapperDao extends JdbcDaoSupport {
                 String selectSql = builder.toString();
                 NamedParameterJdbcTemplate template = new NamedParameterJdbcTemplate(returnTemplate());
                 if (query.getPageSize() > 0) {
-                    String countSql = "";
+                    String countSql ;
                     if (segment.getCountRef() != null) {
                         countSql = getAppendSql(nameSpace, paramMap, sqlMapperConfigure.getSegmentsMap().get(nameSpace).get(segment.getCountRef()).right);
                     } else {
@@ -124,14 +124,14 @@ public class SqlMapperDao extends JdbcDaoSupport {
         }
 
         for (AbstractSegment segment1 : pair.right) {
-            builder.append(segment.getSqlPart(paramMap, sqlMapperConfigure.getSegmentsMap().get(nameSpace)));
+            builder.append(segment1.getSqlPart(paramMap, sqlMapperConfigure.getSegmentsMap().get(nameSpace)));
         }
         return paramMap;
     }
 
     public int executeByMapper(String nameSpace, String id, Object... targetObject) throws DAOException {
         StringBuilder builder = new StringBuilder();
-        int updateRows = -1;
+        int updateRows;
         try {
             if (sqlMapperConfigure.getSegmentsMap().containsKey(nameSpace) && sqlMapperConfigure.getSegmentsMap().get(nameSpace).containsKey(id)) {
                 ImmutablePair<String, List<AbstractSegment>> pair = sqlMapperConfigure.getSegmentsMap().get(nameSpace).get(id);
@@ -147,7 +147,7 @@ public class SqlMapperDao extends JdbcDaoSupport {
                         }
                     }
                     Map<String, Object> paramMap = wrapSqlAndParamter(nameSpace, id, builder, null, targetObject);
-                    log.debug("execute sql={}", builder.toString());
+                    log.debug("execute sql={}", builder);
                     if ("insert".equalsIgnoreCase(pair.left) && useGenerateKeys) {
                         KeyHolder keyHolder = new GeneratedKeyHolder();
                         updateRows = getNamedJdbcTemplate().update(builder.toString(), (new MapSqlParameterSource(paramMap)), keyHolder);
@@ -170,9 +170,6 @@ public class SqlMapperDao extends JdbcDaoSupport {
         return updateRows;
     }
 
-    public int batchUpdateByMapper(String nameSpace, String id, List<?> batchList) {
-        return 0;
-    }
 
     private void setGenerateKey(Object targetObj, String columnName, Number number) throws Exception {
         Map<String, Method> methodMap = ReflectUtils.returnSetMethods(targetObj.getClass());

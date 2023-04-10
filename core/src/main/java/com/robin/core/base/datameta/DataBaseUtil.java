@@ -133,8 +133,8 @@ public class DataBaseUtil {
                 String datalength = rs.getString("COLUMN_SIZE");
                 boolean nullable = rs.getInt("NULLABLE") != DatabaseMetaData.columnNoNulls;
                 String comment = rs.getString("REMARKS");
-                String precise = rs.getString("DECIMAL_DIGITS");
-                String scale = rs.getString("TABLE_SCHEM");
+                int precise = rs.getInt("DECIMAL_DIGITS");
+                int scale = rs.getInt("NUM_PREC_RADIX");
                 String defaultValue=rs.getString("COLUMN_DEF");
 
                 DataBaseColumnMeta datameta = new DataBaseColumnMeta();
@@ -159,7 +159,7 @@ public class DataBaseUtil {
         }
     }
 
-    private static void setType(String columnname, Integer columnType, Integer datatype, String typeName, String datalength, boolean nullable, String comment, String precise, String scale, DataBaseColumnMeta datameta) {
+    private static void setType(String columnname, Integer columnType, Integer datatype, String typeName, String datalength, boolean nullable, String comment, int precise, int scale, DataBaseColumnMeta datameta) {
         datameta.setColumnName(columnname);
         datameta.setColumnType(columnType);
         datameta.setDataType(datatype);
@@ -222,8 +222,8 @@ public class DataBaseUtil {
                 if (metaNames.contains("REMARKS")) {
                     comment = rs.getString("REMARKS");
                 }
-                String precise = rs.getString("DECIMAL_DIGITS");
-                String scale = rs.getString("NUM_PREC_RADIX");
+                int precise = rs.getInt("DECIMAL_DIGITS");
+                int scale = rs.getInt("NUM_PREC_RADIX");
 
                 DataBaseColumnMeta datameta = new DataBaseColumnMeta();
                 //SqlServer2005 may failed for not support  get AUTOINCREMENT  attribute
@@ -303,8 +303,8 @@ public class DataBaseUtil {
                 datameta.setColumnName(column);
                 datameta.setColumnType(Integer.valueOf(translateDbType(Integer.valueOf(rsmeta.getColumnType(i + 1)))));
                 datameta.setColumnLength(String.valueOf(rsmeta.getColumnDisplaySize(i + 1)));
-                datameta.setDataScale(String.valueOf(rsmeta.getScale(i + 1)));
-                datameta.setDataPrecise(String.valueOf(rsmeta.getPrecision(i + 1)));
+                datameta.setDataScale(rsmeta.getScale(i + 1));
+                datameta.setDataPrecise(rsmeta.getPrecision(i + 1));
                 columnlist.add(datameta);
             }
             return columnlist;

@@ -15,22 +15,16 @@
  */
 package com.robin.core.sql.util;
 
-import java.util.List;
-import java.util.Map;
-
 import com.robin.core.base.datameta.BaseDataBaseMeta;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.robin.core.base.exception.DAOException;
-import com.robin.core.base.util.Const;
 import com.robin.core.query.util.PageQuery;
 import com.robin.core.query.util.QueryParam;
 import com.robin.core.query.util.QueryString;
-import org.springframework.util.StringUtils;
+
+import java.util.List;
 
 public class DB2SqlGen extends AbstractSqlGen implements BaseSqlGen{
-	private static DB2SqlGen sqlGen=new DB2SqlGen();
+	private static final DB2SqlGen sqlGen=new DB2SqlGen();
 	private DB2SqlGen(){
 
 	}
@@ -42,9 +36,8 @@ public class DB2SqlGen extends AbstractSqlGen implements BaseSqlGen{
     public String generateCountSql(String strSQL) {
 
 		String str= strSQL.trim();
-		str=str.replaceAll("\\n", "").replaceAll("\\r", "").replaceAll("\\t", " ");
-		
-		//int nFromPos = str.lastIndexOf("from");
+		str=str.replace("\\n", "").replace("\\r", "").replace("\\t", " ");
+
 		int nFromPos = str.indexOf("from");
 		if(nFromPos==-1) {
             nFromPos=str.indexOf("FROM");
@@ -78,24 +71,14 @@ public class DB2SqlGen extends AbstractSqlGen implements BaseSqlGen{
 
 	@Override
     public String generatePageSql(String strSQL, PageQuery pageQuery) {
+		checkSqlAndPage(strSQL,pageQuery);
 		if(pageQuery!=null && pageQuery.getPageSize()!=0) {
 			Integer[] startEnd = getStartEndRecord(pageQuery);
 
 			strSQL = strSQL.trim();
-			StringBuilder pagingSelect = new StringBuilder(strSQL.length() + 100);
-			pagingSelect.append("select * from ( select row.*,rownumber() over(");
-			if(!StringUtils.isEmpty(pageQuery.getOrderString())){
-				pagingSelect.append(" order by ").append(pageQuery.getOrderString()).append(") as rownum");
-			}
-			else if(!StringUtils.isEmpty(pageQuery.getOrder())){
-				pagingSelect.append(" order by ").append(pageQuery.getOrder()).append(" ").append(Const.ASC.equalsIgnoreCase(pageQuery.getOrderDirection())?"asc":"desc").append(") as rownum");
-			}else{
-				pagingSelect.append(") as rownum");
-			}
-			pagingSelect.append(" from ( ");
-			pagingSelect.append(strSQL);
-			pagingSelect.append(" )row) row_ where rownum <= ").append(startEnd[1]).append(" and rownum > ").append(startEnd[0]).append(" with ur");
-			log.info("pageSql=" + pagingSelect.toString());
+			StringBuilder pagingSelect = getPageSqlByRowNumber(strSQL,pageQuery);
+			pagingSelect.append("where rownum <= ").append(startEnd[1]).append(" and rownum > ").append(startEnd[0]).append(" with ur");
+			log.info("pageSql={}", pagingSelect);
 			return pagingSelect.toString();
 		}else {
 			return getNoPageSql(strSQL,pageQuery);
@@ -103,9 +86,6 @@ public class DB2SqlGen extends AbstractSqlGen implements BaseSqlGen{
 	}
 	
 
-
-
-	
 	private String getClassSql(List<QueryParam> queryList) {
 
 		return null;
@@ -115,7 +95,7 @@ public class DB2SqlGen extends AbstractSqlGen implements BaseSqlGen{
 	@Override
     public String generateSingleRowSql(String querySql) {
 		String str= querySql.trim();
-		str=str.replaceAll("\\n", "").replaceAll("\\r", "").replaceAll("\\t", " ");
+		str=str.replace("\\n", "").replace("\\r", "").replace("\\t", " ");
 
 		int nOrderPos = str.lastIndexOf("order by");
 		if (nOrderPos == -1) {

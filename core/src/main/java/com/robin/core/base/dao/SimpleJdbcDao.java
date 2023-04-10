@@ -29,6 +29,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
 import java.io.BufferedReader;
@@ -49,9 +50,9 @@ public class SimpleJdbcDao {
     private String jdbcUrl;
     private String userName;
     private String passwd;
-    long retryNums = 1;
-    int waitSecond = 0;
-    boolean getConnectLoop = false;
+    private long retryNums = 1;
+    private int waitSecond = 0;
+    private boolean getConnectLoop = false;
     private BaseDataBaseMeta meta;
     private DataBaseParam param;
     private static Logger logger = LoggerFactory.getLogger(SimpleJdbcDao.class);
@@ -59,6 +60,7 @@ public class SimpleJdbcDao {
     private static final String SHORT_DATE_FORMAT = "yyyy-MM-dd";
 
     public SimpleJdbcDao(BaseDataBaseMeta meta) {
+        Assert.isTrue(checkMeta(meta),"meta is empty");
         this.driverName = meta.getParam().getDriverClassName();
         this.userName = param.getUserName();
         this.passwd = param.getPasswd();
@@ -72,6 +74,7 @@ public class SimpleJdbcDao {
     }
 
     public SimpleJdbcDao(BaseDataBaseMeta meta, long retryNums, int waitSecond, boolean getConnectionLoop) {
+        Assert.isTrue(checkMeta(meta),"meta is empty");
         this.driverName = meta.getParam().getDriverClassName();
         this.userName = param.getUserName();
         this.passwd = param.getPasswd();
@@ -85,6 +88,13 @@ public class SimpleJdbcDao {
         this.retryNums = retryNums;
         this.waitSecond = waitSecond;
         this.getConnectLoop = getConnectionLoop;
+    }
+    private boolean checkMeta(BaseDataBaseMeta meta){
+        Assert.notNull(meta.getParam(),"");
+        Assert.notNull(meta.getParam().getDriverClassName(),"");
+        Assert.notNull(meta.getParam().getUserName(),"");
+        Assert.notNull(meta.getParam().getPasswd(),"");
+        return true;
     }
 
     private Connection getConnection() throws DAOException {
@@ -146,12 +156,12 @@ public class SimpleJdbcDao {
     /**
      * 支持出错重连的获取连接方法
      *
-     * @param meta
+     * @param meta           meta
      * @param retryNums      重连次数
      * @param sleepSecond    休眠时间(秒)
      * @param getConnectLoop 连到死标记
-     * @return
-     * @throws DAOException
+     * @return  Connection
+     * @throws  DAOException
      */
     public static Connection getConnection(BaseDataBaseMeta meta, long retryNums, int sleepSecond, boolean getConnectLoop) throws DAOException {
         Connection conn = null;
@@ -160,12 +170,7 @@ public class SimpleJdbcDao {
         while (getConnectLoop || curtryNum < retryNums) {
             curtryNum++;
             try {
-                DataBaseParam param = meta.getParam();
-                if (param.getUrl() == null || param.getUrl().trim().isEmpty()) {
-                    param.setUrl(meta.getUrl());
-                }
-                DbUtils.loadDriver(meta.getParam().getDriverClassName());
-                conn = DriverManager.getConnection(param.getUrl(), param.getUserName(), param.getPasswd());
+                conn =getConnection(meta);
             } catch (Exception e) {
                 logger.error("--get connection Error and retry {} times.", curtryNum);
                 ex = e;
@@ -184,6 +189,7 @@ public class SimpleJdbcDao {
         }
         return conn;
     }
+
 
     public long queryByLong(final String sql) throws DAOException {
         Connection conn = getConnection();
@@ -306,7 +312,7 @@ public class SimpleJdbcDao {
         }
     }
 
-    @SuppressWarnings("deprecation")
+
     public List<Map<String, Object>> queryBySql(final String sql, Object[] obj) throws DAOException {
         Connection conn = getConnection();
         try {
@@ -320,7 +326,6 @@ public class SimpleJdbcDao {
 
     }
 
-    @SuppressWarnings("deprecation")
     public List<Map<String, Object>> queryBySql(final QueryRunner runner, final String sql, Object[] obj) throws DAOException {
         Connection conn = getConnection();
         try {
@@ -382,7 +387,7 @@ public class SimpleJdbcDao {
         }
     }
 
-    public static final Map<String, Object> wrapResultSet(ResultSet rs, ResultSetMetaData meta) throws SQLException {
+    public static Map<String, Object> wrapResultSet(ResultSet rs, ResultSetMetaData meta) throws SQLException {
         Map<String, Object> map = new HashMap<>();
         for (int i = 0; i < meta.getColumnCount(); i++) {
             String columnName = meta.getColumnLabel(i + 1);
@@ -454,7 +459,7 @@ public class SimpleJdbcDao {
     }
 
     public static int executeOperationWithQuery(final Connection conn, String sql, boolean pmdKnownBroken, final ResultSetOperationExtractor extractor) throws SQLException {
-        QueryRunner qRunner = null;
+        QueryRunner qRunner ;
         if (pmdKnownBroken) {
             qRunner = new QueryRunner(pmdKnownBroken);
         } else {
@@ -464,7 +469,7 @@ public class SimpleJdbcDao {
     }
 
     public static int executeOperationWithQuery(final Connection conn, String sql, Object[] param, boolean pmdKnownBroken, final ResultSetOperationExtractor extractor) throws SQLException {
-        QueryRunner qRunner = null;
+        QueryRunner qRunner ;
         if (pmdKnownBroken) {
             qRunner = new QueryRunner(pmdKnownBroken);
         } else {
@@ -520,8 +525,7 @@ public class SimpleJdbcDao {
         try {
             QueryRunner qRunner = new QueryRunner();
             qRunner.update(connection, sql, params);
-            Long num = qRunner.query(connection, sql2, new ScalarHandler<>(1));
-            return num.longValue();
+            return qRunner.query(connection, sql2, new ScalarHandler<>(1));
         } catch (Exception ex) {
             throw new DAOException(ex);
         }
@@ -530,7 +534,7 @@ public class SimpleJdbcDao {
     /**
      * 支持Hive调用和无ResultSet返回的情况
      *
-     * @param hql
+     * @param hql  querysql
      * @return
      * @throws DAOException
      */
@@ -581,7 +585,7 @@ public class SimpleJdbcDao {
     }
 
     public static int executeUpdateWithTransaction(final Connection conn, final String sql, final Object... param) throws DAOException {
-        int i = -1;
+        int i ;
         PreparedStatement stmt = null;
         try {
             QueryRunner runner = new QueryRunner();
@@ -614,7 +618,7 @@ public class SimpleJdbcDao {
     public static int simpleBatch(Connection conn, final String sql, final List<Object[]> valueList) throws DAOException {
         PreparedStatement stmt = null;
         int retnum = -1;
-        int[] retarr = null;
+        int[] retarr ;
         QueryRunner qRunner = new QueryRunner();
         try {
             conn.setAutoCommit(false);
@@ -646,10 +650,10 @@ public class SimpleJdbcDao {
     }
 
     public int batchUpdate(final String sql, final List<Map<String, String>> columnCfgList, final List<Map<String, String>> objList) throws DAOException {
-        Connection conn = getConnection();
+
         int retnum = -1;
         int[] retarr = null;
-        try {
+        try(Connection conn = getConnection()) {
             QueryRunner qRunner = new QueryRunner();
             Object[][] params = new Object[objList.size()][];
             for (int i = 0; i < objList.size(); i++) {
@@ -662,8 +666,6 @@ public class SimpleJdbcDao {
             retarr = qRunner.batch(conn, sql, params);
         } catch (Exception ex) {
             throw new DAOException(ex);
-        } finally {
-            DbUtils.closeQuietly(conn);
         }
         for (int i = 0; i < retarr.length; i++) {
             if (retarr[i] > 0) {
@@ -747,7 +749,7 @@ public class SimpleJdbcDao {
             }
             QueryRunner qRunner = new QueryRunner();
             String querySql = "select " + columns + " from " + tableName + " where 1=0";
-            StringBuilder insertSqlbuilder = new StringBuilder("insert into " + tableName);
+            StringBuilder insertSqlbuilder = new StringBuilder("insert into ").append(tableName);
             if (!"*".equals(columns)) {
                 insertSqlbuilder.append("(" + columns + ") values (");
             } else {

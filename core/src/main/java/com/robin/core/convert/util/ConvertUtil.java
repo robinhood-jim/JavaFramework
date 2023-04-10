@@ -58,9 +58,7 @@ public class ConvertUtil {
         Map<String, Method> srcmap = ReflectUtils.returnGetMethods(src.getClass());
         Map<String, Method> targetMap = ReflectUtils.returnSetMethods(target.getClass());
 
-        Iterator<Map.Entry<String, Method>> iterator = srcmap.entrySet().iterator();
-        while (iterator.hasNext()) {
-            Map.Entry<String, Method> entry = iterator.next();
+        for (Map.Entry<String, Method> entry : srcmap.entrySet()) {
             if (targetMap.containsKey(entry.getKey())) {
                 Object value = parseParameter(targetMap.get(entry.getKey()).getParameterTypes()[0], srcmap.get(entry.getKey()).invoke(src, (Object[]) null), defaultDateTimeFormatter);
                 targetMap.get(entry.getKey()).invoke(target, value);
@@ -73,9 +71,7 @@ public class ConvertUtil {
             return;
         }
         Map<String, Method> getMethods = ReflectUtils.returnGetMethods(src.getClass());
-        Iterator<Map.Entry<String, Method>> iterator = getMethods.entrySet().iterator();
-        while (iterator.hasNext()) {
-            Map.Entry<String, Method> entry = iterator.next();
+        for (Map.Entry<String, Method> entry : getMethods.entrySet()) {
             if (entry.getValue().getParameterTypes().length == 0) {
                 Object value = entry.getValue().invoke(src, (Object[]) null);
                 target.put(entry.getKey(), value == null ? "" : value.toString().trim());
@@ -88,9 +84,7 @@ public class ConvertUtil {
             return;
         }
         Map<String, Method> getMetholds = ReflectUtils.returnGetMethods(src.getClass());
-        Iterator<Map.Entry<String, Method>> iterator = getMetholds.entrySet().iterator();
-        while (iterator.hasNext()) {
-            Map.Entry<String, Method> entry = iterator.next();
+        for (Map.Entry<String, Method> entry : getMetholds.entrySet()) {
             if (entry.getValue().getParameterTypes().length == 0) {
                 Object value = entry.getValue().invoke(src, (Object[]) null);
                 target.put(entry.getKey(), value);
@@ -160,9 +154,7 @@ public class ConvertUtil {
             throw new RuntimeException("source and target class mismatch");
         }
         Map<String, Method> srcmap = ReflectUtils.returnGetMethods(src.getClass());
-        Iterator<Map.Entry<String, Method>> set = srcmap.entrySet().iterator();
-        while (set.hasNext()) {
-            Map.Entry<String, Method> entry = set.next();
+        for (Map.Entry<String, Method> entry : srcmap.entrySet()) {
             String field = entry.getKey();
             Method setMethod = entry.getValue();
             Object value = entry.getValue().invoke(null);
@@ -184,11 +176,10 @@ public class ConvertUtil {
         Map<String, Method> targetMap = ReflectUtils.returnSetMethods(target.getClass());
 
         List<String> dirtyColumnList = src.getDirtyColumn();
-        for (int i = 0; i < dirtyColumnList.size(); i++) {
-
-            Method setMethod = targetMap.get(dirtyColumnList.get(i));
+        for (String s : dirtyColumnList) {
+            Method setMethod = targetMap.get(s);
             if (setMethod != null) {
-                Method getMethod = srcmap.get(dirtyColumnList.get(i));
+                Method getMethod = srcmap.get(s);
                 Object value = getMethod.invoke(src, (Object[]) null);
                 if (value != null) {
                     setMethod.invoke(target, value);
@@ -196,7 +187,6 @@ public class ConvertUtil {
                     setMethod.invoke(target);
                 }
             }
-
         }
     }
 
@@ -207,9 +197,7 @@ public class ConvertUtil {
 
         Map<String, Method> map = ReflectUtils.returnSetMethods(target.getClass());
 
-        Iterator<Map.Entry<String, String>> set = src.entrySet().iterator();
-        while (set.hasNext()) {
-            Map.Entry<String, String> entry = set.next();
+        for (Map.Entry<String, String> entry : src.entrySet()) {
             String field = entry.getKey();
             Method setMethod = map.get(field);
             if (setMethod != null) {
@@ -251,9 +239,7 @@ public class ConvertUtil {
         Map<String, Method> sourceMethodMap = ReflectUtils.returnGetMethods(src.getClass());
         if (src instanceof Map) {
             Map<String, Object> vMap = (Map<String, Object>) src;
-            Iterator<Map.Entry<String, Object>> set = vMap.entrySet().iterator();
-            while (set.hasNext()) {
-                Map.Entry<String, Object> entry = set.next();
+            for (Map.Entry<String, Object> entry : vMap.entrySet()) {
                 String field = entry.getKey();
                 Method setMethod = targetMethodMap.get(field);
                 if (setMethod != null) {

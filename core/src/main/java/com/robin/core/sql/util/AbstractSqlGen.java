@@ -104,13 +104,13 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
                 break;
             }
             if (param.getColumnType().equals(QueryParam.COLUMN_TYPE_INT) || param.getColumnType().equalsIgnoreCase(Const.META_TYPE_BIGINT)) {
-                buffer.append(toSQLForInt(param) + linkOper + " ");
+                buffer.append(toSQLForInt(param)).append(linkOper).append(" ");
             } else if (param.getColumnType().equals(QueryParam.COLUMN_TYPE_DOUBLE)|| param.getColumnType().equalsIgnoreCase(Const.META_TYPE_NUMERIC)) {
-                buffer.append(toSQLForDecimal(param) + linkOper + " ");
+                buffer.append(toSQLForDecimal(param)).append(linkOper).append(" ");
             } else if (param.getColumnType().equals(QueryParam.COLUMN_TYPE_STRING)) {
-                buffer.append(toSQLForString(param) + linkOper + " ");
+                buffer.append(toSQLForString(param)).append(linkOper).append(" ");
             } else if (param.getColumnType().equals(QueryParam.COLUMN_TYPE_DATE)) {
-                buffer.append(toSQLForDate(param) + linkOper + " ");
+                buffer.append(toSQLForDate(param)).append(linkOper).append(" ");
             }
         }
         String retstr = "";
@@ -129,13 +129,13 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
                 break;
             }
             if (param.getColumnType().equals(Const.META_TYPE_INTEGER) || param.getColumnType().equalsIgnoreCase(Const.META_TYPE_BIGINT)) {
-                buffer.append(toSQLForInt(param) + linkOper);
+                buffer.append(toSQLForInt(param)).append(linkOper);
             } else if (param.getColumnType().equals(Const.META_TYPE_DOUBLE)|| param.getColumnType().equalsIgnoreCase(Const.META_TYPE_NUMERIC)) {
-                buffer.append(toSQLForDecimal(param) + linkOper);
+                buffer.append(toSQLForDecimal(param)).append(linkOper);
             } else if (param.getColumnType().equals(Const.META_TYPE_STRING)) {
-                buffer.append(toSQLForString(param) + linkOper);
+                buffer.append(toSQLForString(param)).append(linkOper);
             } else if (param.getColumnType().equals(Const.META_TYPE_DATE)) {
-                buffer.append(toSQLForDate(param) + linkOper);
+                buffer.append(toSQLForDate(param)).append(linkOper);
             }
         }
 
@@ -475,8 +475,8 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
         }else if(dataType.equals(Const.META_TYPE_INTEGER)){
             builder.append(getIntegerFormat());
         }else if(dataType.equals(Const.META_TYPE_DOUBLE) || dataType.equals(Const.META_TYPE_NUMERIC)){
-            int precise= org.apache.commons.lang3.StringUtils.isEmpty(field.getDataPrecise())?0:Integer.parseInt(field.getDataPrecise()) ;
-            int scale= org.apache.commons.lang3.StringUtils.isEmpty(field.getDataScale())?0:Integer.parseInt(field.getDataScale());
+            int precise= field.getDataPrecise();
+            int scale= field.getDataScale();
             if(precise==0) {
                 precise=2;
             }
@@ -708,6 +708,27 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
         }
         builder.append(tableName).append(" (");
         return builder.toString();
+    }
+    protected StringBuilder getPageSqlByRowNumber(String strSQL,PageQuery pageQuery){
+        StringBuilder pagingSelect = new StringBuilder(strSQL.length() + 100);
+        pagingSelect.append("select * from ( select r.*,row_number() over(");
+        if(!org.springframework.util.StringUtils.isEmpty(pageQuery.getOrderString())){
+            pagingSelect.append(ORDERBYSTR).append(pageQuery.getOrderString()).append(") as rownum");
+        }
+        else if(!org.springframework.util.StringUtils.isEmpty(pageQuery.getOrder())){
+            pagingSelect.append(ORDERBYSTR).append(pageQuery.getOrder()).append(" ").append(Const.ASC.equalsIgnoreCase(pageQuery.getOrderDirection())?"asc":"desc").append(") as rownum");
+        }else{
+            pagingSelect.append(") as rownum");
+        }
+        pagingSelect.append(" from ( ");
+        pagingSelect.append(strSQL);
+
+        pagingSelect.append(" )r) r ");
+        return pagingSelect;
+    }
+    protected void checkSqlAndPage(String sql,PageQuery pageQuery){
+        Assert.isTrue(!ObjectUtils.isEmpty(sql),"querySql not null");
+        Assert.notNull(pageQuery,"pageQuery is Null");
     }
 
 

@@ -107,9 +107,9 @@ public abstract class AbstractMyBatisController<S extends AbstractMybatisService
             if(targetClazz==null){
                 return (IPage<D>) page;
             }else{
-                IPage<D> page1=new Page(page.getCurrent(),page.getSize(),page.getTotal());
+                IPage<D> page1=new Page<>(page.getCurrent(),page.getSize(),page.getTotal());
                 List<T> list=page.getRecords();
-                List<D> retList=new ArrayList();
+                List<D> retList=new ArrayList<>();
                 if(!CollectionUtils.isEmpty(list)){
                     list.forEach(f->{
                         try {

@@ -15,21 +15,13 @@
  */
 package com.robin.core.base.dao;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import org.springframework.jdbc.core.*;
+import org.springframework.jdbc.object.StoredProcedure;
+
+import javax.sql.DataSource;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.sql.DataSource;
-
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.core.SqlInOutParameter;
-import org.springframework.jdbc.core.SqlOutParameter;
-import org.springframework.jdbc.core.SqlParameter;
-import org.springframework.jdbc.core.SqlReturnResultSet;
-import org.springframework.jdbc.object.StoredProcedure;
 
 
 public class BaseStoreProcedure extends StoredProcedure{
@@ -46,30 +38,26 @@ public class BaseStoreProcedure extends StoredProcedure{
 	}
 	protected BaseStoreProcedure(JdbcTemplate jdbcTemplate, String sql,List<?> declareParameterList){
 		 setJdbcTemplate(jdbcTemplate);
-	        setSql(sql); 
-	        for(int i=0;i<declareParameterList.size();i++){ 
-	            SqlParameter parameter = (SqlParameter)declareParameterList.get(i); 
-	            this.declareParameter(parameter); 
-	        } 
-	        this.compile(); 
-
+         setSql(sql);
+        for (Object o : declareParameterList) {
+            SqlParameter parameter = (SqlParameter) o;
+            this.declareParameter(parameter);
+        }
+        this.compile();
 	}
 
-	private RowMapper<?> rm = new RowMapper<Object>(){ 
-        @Override
-        public Object mapRow(ResultSet rs, int rowNum) throws SQLException {
-        	 int count = rs.getMetaData().getColumnCount(); 
-             String[] header = new String[count]; 
-             for(int i=0;i<count;i++) {
-                 header[i] = rs.getMetaData().getColumnName(i+1);
-             }
-             HashMap<String,String> row = new HashMap<>(); //count+7
-             for(int i=0;i<count;i++){ 
-                 row.put(header[i],rs.getString(i+1)); 
-             } 
-        	return row;
-        } 
-    }; 
+	private final RowMapper<?> rm = (RowMapper<Object>) (rs, rowNum) -> {
+         int count = rs.getMetaData().getColumnCount();
+         String[] header = new String[count];
+         for(int i=0;i<count;i++) {
+             header[i] = rs.getMetaData().getColumnName(i+1);
+         }
+         HashMap<String,String> row = new HashMap<>(); //count+7
+         for(int i=0;i<count;i++){
+             row.put(header[i],rs.getString(i+1));
+         }
+        return row;
+    };
 
     //set Output Paramter
     public void setOutParameter(String column,int type){ 

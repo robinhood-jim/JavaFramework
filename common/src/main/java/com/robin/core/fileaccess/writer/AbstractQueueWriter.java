@@ -67,11 +67,6 @@ public abstract class AbstractQueueWriter extends AbstractResourceWriter {
         }else if(ResourceConst.VALUE_TYPE.XML.getValue().equalsIgnoreCase(valueType)){
 
         }
-        else if(ResourceConst.VALUE_TYPE.PROTOBUF.getValue().equalsIgnoreCase(valueType)){
-
-        }else if(ResourceConst.VALUE_TYPE.ORC.getValue().equalsIgnoreCase(valueType)){
-
-        }
         return output;
     }
     public abstract void writeMessage(String queue,Map<String, ?> map) throws IOException;

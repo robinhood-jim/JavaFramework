@@ -18,7 +18,7 @@ import java.util.Map;
 
 
 public class HDFSUtil {
-	private Configuration config;
+	private final Configuration config;
 	private Logger logger=LoggerFactory.getLogger(getClass());
 	private boolean useSecurity=false;
 	public HDFSUtil(){
@@ -32,9 +32,7 @@ public class HDFSUtil {
 		if(property.getHaConfig().isEmpty()){
 			config.set(Const.HDFS_NAME_HADOOP2, property.getDefaultName());
 		}else{
-			Iterator<String> iter=property.getHaConfig().keySet().iterator();
-			while(iter.hasNext()){
-				String key=iter.next();
+			for (String key : property.getHaConfig().keySet()) {
 				config.set(key, property.getHaConfig().get(key));
 			}
 		}
@@ -49,9 +47,7 @@ public class HDFSUtil {
 			if (property.getHaConfig().isEmpty()) {
 				config.set(Const.HDFS_NAME_HADOOP2, property.getDefaultName());
 			} else {
-				Iterator<String> iter = property.getHaConfig().keySet().iterator();
-				while (iter.hasNext()) {
-					String key = iter.next();
+				for (String key : property.getHaConfig().keySet()) {
 					config.set(key, property.getHaConfig().get(key));
 				}
 			}
@@ -277,7 +273,7 @@ public class HDFSUtil {
 				return (FileSystem) HDFSSecurityUtil.executeHdfsMethodWithSecurity(config, "getFileSystem", new Object[]{config});
 			}
 		}catch (Exception ex){
-			logger.error("{}",ex);
+			logger.error("{}",ex.getMessage());
 			return null;
 		}
 	}
@@ -346,29 +342,26 @@ public class HDFSUtil {
 		return ret;
 	}
 	public Map<String,String> genCfgMapByPos(String hdfsUrl,String encode,String separator,int[] keyPos,int[] valuePos,String keyStr,String valStr){
-		BufferedReader reader=null;
-		Map<String,String> retMap=new HashMap<String, String>();
-		try{
-			reader=getHDFSDataByReader(hdfsUrl, encode);
+		Map<String,String> retMap=new HashMap<>();
+		try(BufferedReader reader=getHDFSDataByReader(hdfsUrl, encode)){
 			String[] lineArr=null;
 			StringBuilder keyBuilder=new StringBuilder();
 			StringBuilder valueBuilder=new StringBuilder();
 			boolean isOk=true;
 			while((lineArr=getLineMapFromHdfsStream(reader, separator))!=null){
-				
-				for (int i = 0; i < keyPos.length; i++) {
-					if(lineArr.length>keyPos[i]){
-						keyBuilder.append(lineArr[keyPos[i]]).append(keyStr);
-					}else{
-						isOk=false;
+				for (int keyPo : keyPos) {
+					if (lineArr.length > keyPo) {
+						keyBuilder.append(lineArr[keyPo]).append(keyStr);
+					} else {
+						isOk = false;
 					}
 				}
 				if(isOk){
-					for (int i = 0; i < valuePos.length; i++) {
-						if(lineArr.length>valuePos[i]){
-							valueBuilder.append(lineArr[valuePos[i]]).append(valStr);
-						}else{
-							isOk=false;
+					for (int valuePo : valuePos) {
+						if (lineArr.length > valuePo) {
+							valueBuilder.append(lineArr[valuePo]).append(valStr);
+						} else {
+							isOk = false;
 						}
 					}
 				}
@@ -384,21 +377,13 @@ public class HDFSUtil {
 			}
 		}catch(Exception ex){
 			ex.printStackTrace();
-		}finally{
-			if(reader!=null){
-				try{
-					reader.close();
-				}catch(Exception e1){
-					
-				}
-			}
 		}
 		return retMap;
 	}
 	public static String getFileSuffix(File file){
 		String name=file.getName();
 		int pos=name.lastIndexOf(".");
-		String suffix=name.substring(pos+1,name.length());
+		String suffix=name.substring(pos+1);
 		return suffix;
 	}
 	

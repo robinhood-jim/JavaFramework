@@ -20,7 +20,7 @@ import com.robin.core.base.datameta.DataBaseParam;
 public abstract class BaseDataBaseExportor {
 	protected String userPath;
 	protected String tmpPath;
-	public BaseDataBaseExportor(){
+	protected BaseDataBaseExportor(){
 		
 	}
 	protected void init(){

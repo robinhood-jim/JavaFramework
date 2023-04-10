@@ -66,13 +66,13 @@ public abstract class AbstractController
             return;
         }
         String[] codes;
-        if (codeSetNos.indexOf(";") !=-1)
+        if (codeSetNos.contains(";"))
         {
             codes = codeSetNos.split(";");
         }
         else
         {
-            if (codeSetNos.indexOf(",") !=-1)
+            if (codeSetNos.contains(","))
             {
                 codes = codeSetNos.split(",");
             }
@@ -83,9 +83,8 @@ public abstract class AbstractController
             }
         }
         CodeSetService util= SpringContextHolder.getBean(CodeSetService.class);
-        for (int i = 0; i < codes.length; i++)
-        {
-            util.getCacheCode(codes[i]);
+        for (String code : codes) {
+            util.getCacheCode(code);
         }
     }
     protected void setCode(String codeSetNo, List<?> codes, String label, String value) {
@@ -172,9 +171,7 @@ public abstract class AbstractController
     }
     protected void insertMapToSelect(List<Map<String, Object>> list,Map<String,String> codeMap)
     {
-        Iterator<Map.Entry<String,String>> iterator=codeMap.entrySet().iterator();
-        while(iterator.hasNext()){
-            Map.Entry<String,String> entry=iterator.next();
+        for (Map.Entry<String, String> entry : codeMap.entrySet()) {
             Map<String, Object> tmap = new HashMap<>();
             tmap.put("value", entry.getKey());
             tmap.put("text", entry.getValue());
@@ -291,10 +288,7 @@ public abstract class AbstractController
     public static Map<String, String> wrapRequest(HttpServletRequest request)
     {
         Map<String, String> map = new HashMap<>();
-        Iterator<String> iter = request.getParameterMap().keySet().iterator();
-        while (iter.hasNext())
-        {
-            String key = iter.next();
+        for (String key : (Iterable<String>) request.getParameterMap().keySet()) {
             map.put(key, request.getParameter(key));
         }
         return map;

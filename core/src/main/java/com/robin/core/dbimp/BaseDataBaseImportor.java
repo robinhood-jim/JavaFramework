@@ -5,7 +5,7 @@ import com.robin.core.base.datameta.DataBaseParam;
 public abstract class BaseDataBaseImportor {
 	protected String userPath;
 	protected String tmpPath;
-	public BaseDataBaseImportor(){
+	protected BaseDataBaseImportor(){
 		
 	}
 	protected void init(){

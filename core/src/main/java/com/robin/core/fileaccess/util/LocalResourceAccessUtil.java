@@ -8,7 +8,7 @@ import java.io.*;
 public class LocalResourceAccessUtil extends AbstractResourceAccessUtil {
 	@Override
     public BufferedReader getInResourceByReader(DataCollectionMeta meta, String resourcePath) throws IOException{
-		BufferedReader reader=null;
+		BufferedReader reader;
 		File file=new File(resourcePath);
 		if(!file.exists()){
 			throw new IOException("input file "+resourcePath+" does not exist!");
@@ -19,7 +19,7 @@ public class LocalResourceAccessUtil extends AbstractResourceAccessUtil {
 	
 	@Override
     public BufferedWriter getOutResourceByWriter(DataCollectionMeta meta, String resourcePath) throws IOException{
-		BufferedWriter writer=null;
+		BufferedWriter writer;
 		File file=new File(resourcePath);
 		if(file.exists()){
 			FileUtils.forceDelete(file);

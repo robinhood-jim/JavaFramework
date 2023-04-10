@@ -6,7 +6,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.robin.core.base.util.Const;
 
-public class MybatisUtils<T> {
+public class MybatisUtils {
     public static <T> LambdaQueryWrapper<T> getWrapper(SFunction<T,?> queryField, Const.OPERATOR operator,Class<T> clazz,Object... value){
         LambdaQueryWrapper<T> queryWrapper=new QueryWrapper<T>().lambda();
         if(operator.equals(Const.OPERATOR.EQ)){

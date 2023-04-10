@@ -4,9 +4,7 @@ import com.github.os72.protobuf.dynamic.DynamicSchema;
 import com.github.os72.protobuf.dynamic.MessageDefinition;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
-import com.google.protobuf.ExtensionRegistry;
 import com.robin.comm.fileaccess.util.ProtoBufUtil;
-import com.robin.core.base.util.Const;
 import com.robin.core.fileaccess.iterator.AbstractFileIterator;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.meta.DataSetColumnMeta;
@@ -17,8 +15,6 @@ import org.springframework.util.CollectionUtils;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
-
-import static com.robin.core.fileaccess.util.ResourceUtil.getProcessPath;
 
 @Slf4j
 public class ProtoBufFileIterator extends AbstractFileIterator {
@@ -33,9 +29,8 @@ public class ProtoBufFileIterator extends AbstractFileIterator {
     }
 
 
-
     @Override
-    public void init()  {
+    public void init() {
         try {
             if (!CollectionUtils.isEmpty(colmeta.getColumnList())) {
                 schemaBuilder = DynamicSchema.newBuilder();
@@ -48,13 +43,12 @@ public class ProtoBufFileIterator extends AbstractFileIterator {
                 MessageDefinition definition = msgBuilder.build();
                 schemaBuilder.addMessageDefinition(definition);
                 schema = schemaBuilder.build();
-                mesgBuilder=DynamicMessage.newBuilder(schema.getMessageDescriptor(colmeta.getValueClassName()));
+                mesgBuilder = DynamicMessage.newBuilder(schema.getMessageDescriptor(colmeta.getValueClassName()));
                 //registry=getExtension(schema,colmeta);
-            }else{
-                checkAccessUtil(null);
-                instream = accessUtil.getInResourceByStream(colmeta, ResourceUtil.getProcessPath(colmeta.getPath()));
             }
-        }catch (Exception ex){
+            checkAccessUtil(null);
+            instream = accessUtil.getInResourceByStream(colmeta, ResourceUtil.getProcessPath(colmeta.getPath()));
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
 
@@ -73,26 +67,26 @@ public class ProtoBufFileIterator extends AbstractFileIterator {
     public boolean hasNext() {
         try {
             if (mesgBuilder.mergeDelimitedFrom(instream)) {
-                message=mesgBuilder.build();
+                message = mesgBuilder.build();
                 return true;
-            }else {
-                message=null;
+            } else {
+                message = null;
                 return false;
             }
-        }catch (Exception ex){
-            logger.error("{}",ex);
+        } catch (Exception ex) {
+            logger.error("{}", ex);
         }
         return false;
     }
 
     @Override
     public Map<String, Object> next() {
-        if(message==null){
+        if (message == null) {
             throw new NoSuchElementException("");
         }
-        Map<String,Object> tmap=new HashMap<String, Object>();
-        for(Descriptors.FieldDescriptor descriptor:schema.getMessageDescriptor(colmeta.getValueClassName()).getFields()){
-            tmap.put(descriptor.getName(),message.getField(descriptor));
+        Map<String, Object> tmap = new HashMap<String, Object>();
+        for (Descriptors.FieldDescriptor descriptor : schema.getMessageDescriptor(colmeta.getValueClassName()).getFields()) {
+            tmap.put(descriptor.getName(), message.getField(descriptor));
         }
         return tmap;
     }
@@ -103,7 +97,7 @@ public class ProtoBufFileIterator extends AbstractFileIterator {
             if (mesgBuilder.mergeDelimitedFrom(instream, null)) {
                 mesgBuilder.build();
             }
-        }catch (Exception ex){
+        } catch (Exception ex) {
 
         }
     }

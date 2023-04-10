@@ -11,17 +11,19 @@ import org.apache.hadoop.hbase.regionserver.BloomType;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.ObjectUtils;
 
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.*;
 
 public class HbaseBaseDao {
-    private Configuration config;
+    private final Configuration config;
     private static final Logger LOGGER = LoggerFactory.getLogger(HbaseBaseDao.class);
-    private Configuration cfg = null;
+    private Configuration cfg;
 
     public static final int POOL_MAX_SIZE = 20;
+    private static final String QUORUM="hbase.zookeeper.quorum";
 
     public HbaseBaseDao(String configfile) {
         config = new Configuration();
@@ -34,10 +36,7 @@ public class HbaseBaseDao {
     public HbaseBaseDao(Configuration config) {
         this.config = config;
         cfg = HBaseConfiguration.create(config);
-        if (config.get("hbase.zookeeper.quorum") != null) {
-            LOGGER.info("get quorum from config");
-            cfg.set("hbase.zookeeper.quorum", config.get("hbase.zookeeper.quorum"));
-        }
+
     }
 
     public HbaseBaseDao() {
@@ -101,8 +100,7 @@ public class HbaseBaseDao {
             }
             HTableDescriptor desc = new HTableDescriptor(TableName.valueOf(tableName));
             HColumnDescriptor[] columndescArr = desc.getColumnFamilies();
-            for (int i = 0; i < columndescArr.length; i++) {
-                HColumnDescriptor columndesc = columndescArr[i];
+            for (HColumnDescriptor columndesc : columndescArr) {
                 String name = columndesc.getNameAsString();
                 if (name.equalsIgnoreCase(familyName)) {
                     throw new HbaseException("familyName exists");
@@ -115,7 +113,7 @@ public class HbaseBaseDao {
     }
 
     public void putValue(String tableName, String familyName, String columnName, String key, String value) throws HbaseException {
-        try (Connection conn = getConnection(); Table table = conn.getTable(TableName.valueOf(tableName));) {
+        try (Connection conn = getConnection(); Table table = conn.getTable(TableName.valueOf(tableName))) {
             Put put = new Put(Bytes.toBytes(key));
             put.addColumn(Bytes.toBytes(familyName), Bytes.toBytes(columnName), Bytes.toBytes(value));
             table.put(put);
@@ -233,9 +231,7 @@ public class HbaseBaseDao {
         scan.setFilter(filter);
         try (Connection conn = getConnection(); Table table = conn.getTable(TableName.valueOf(tableName));
              ResultScanner scanner = table.getScanner(scan)) {
-            Iterator<Result> iter = scanner.iterator();
-            while (iter.hasNext()) {
-                Result rs = iter.next();
+            for (Result rs : scanner) {
                 NavigableMap<byte[], byte[]> map = rs.getFamilyMap(Bytes.toBytes(familyName));
                 Iterator<byte[]> keyiter = map.keySet().iterator();
                 Map<String, String> tmpMap = new HashMap<>();
@@ -279,13 +275,11 @@ public class HbaseBaseDao {
                 retmap.put(keyName, keyValue);
                 NavigableMap<byte[], byte[]> map = rs.getFamilyMap(Bytes.toBytes(familyName));
                 if (pos == 1) {
-                    Iterator<byte[]> keyiter = map.keySet().iterator();
-                    while (keyiter.hasNext()) {
-                        byte[] keybyte = keyiter.next();
-                        keybyteList.add(keybyte);
-                        String key = new String(keybyte);
+                    for (NavigableMap.Entry<byte[], byte[]> entry : map.entrySet()) {
+                        keybyteList.add(entry.getValue());
+                        String key = new String(entry.getKey());
                         keyList.add(key);
-                        retmap.put(key, new String(map.get(keybyte)));
+                        retmap.put(key, new String(entry.getValue()));
                     }
                 } else {
                     for (int i = 1; i < keyList.size(); i++) {
@@ -317,10 +311,10 @@ public class HbaseBaseDao {
             List<String> fnameList = new ArrayList<>();
             for (Result rs : scanner) {
                 Cell[] kv1 = rs.rawCells();
-                for (int i = 0; i < kv1.length; i++) {
-                    String key = new String(kv1[i].getQualifierArray());
-                    String value = new String(kv1[i].getValueArray());
-                    String fname = new String(kv1[i].getFamilyArray());
+                for (Cell cell : kv1) {
+                    String key = new String(cell.getQualifierArray());
+                    String value = new String(cell.getValueArray());
+                    String fname = new String(cell.getFamilyArray());
                     if (!tmpmap1.containsKey(fname)) {
                         Map<String, List<String>> map1 = new HashMap<>();
                         List<String> list = new ArrayList<>();
@@ -346,8 +340,7 @@ public class HbaseBaseDao {
                         }
                     }
                 }
-                for (int i = 0; i < keyList.size(); i++) {
-                    String key = keyList.get(i);
+                for (String key : keyList) {
                     String fristName = fnameList.get(0);
 
                     List<String> valueList = tmpmap1.get(fristName).get(key);
@@ -387,10 +380,10 @@ public class HbaseBaseDao {
             for (Result rs : scanner) {
                 tmpmap1.clear();
                 Cell[] kv1 = rs.rawCells();
-                for (int i = 0; i < kv1.length; i++) {
-                    String key = new String(kv1[i].getQualifierArray());
-                    String value = new String(kv1[i].getValueArray());
-                    String fname = new String(kv1[i].getFamilyArray());
+                for (Cell cell : kv1) {
+                    String key = new String(cell.getQualifierArray());
+                    String value = new String(cell.getValueArray());
+                    String fname = new String(cell.getFamilyArray());
                     if (!tmpmap1.containsKey(fname)) {
                         Map<String, List<String>> map1 = new HashMap<>();
                         List<String> list = new ArrayList<>();
@@ -459,16 +452,14 @@ public class HbaseBaseDao {
 
     private FilterList generateFamilyFilter(Map<String, String> valueMap) {
         FilterList filterlist = new FilterList();
-        if (valueMap == null || valueMap.isEmpty()) {
+        if (ObjectUtils.isEmpty(valueMap)) {
             return filterlist;
         }
-        Iterator<Map.Entry<String, String>> iter = valueMap.entrySet().iterator();
-        while (iter.hasNext()) {
-            Filter filter = null;
-            Map.Entry<String, String> entry = iter.next();
-            String oper = entry.getValue();
+        for (Map.Entry<String, String> stringStringEntry : valueMap.entrySet()) {
+            Filter filter;
+            String oper = stringStringEntry.getValue();
             String[] arr = oper.split(",");
-            filter = new SingleColumnValueFilter(Bytes.toBytes(entry.getKey()), Bytes.toBytes(arr[0]), CompareOp.EQUAL, Bytes.toBytes(arr[1]));
+            filter = new SingleColumnValueFilter(Bytes.toBytes(stringStringEntry.getKey()), Bytes.toBytes(arr[0]), CompareOp.EQUAL, Bytes.toBytes(arr[1]));
             filterlist.addFilter(filter);
         }
         return filterlist;
@@ -500,8 +491,8 @@ public class HbaseBaseDao {
         scan.setStartRow(startKey);
         scan.setStopRow(endKey);
         String[] fields = fieldArr.split(",");
-        for (int i = 0; i < fields.length; i++) {
-            String[] arr = fields[i].split(":");
+        for (String field : fields) {
+            String[] arr = field.split(":");
             scan.addColumn(arr[0].getBytes(), arr[1].getBytes());
         }
         try(Connection conn = getConnection(); Table table = conn.getTable(TableName.valueOf(tableName));
@@ -528,8 +519,10 @@ public class HbaseBaseDao {
             TableName tabName=TableName.valueOf(tableName);
             List<HRegionInfo> regions=admin.getTableRegions(tabName);
             byte[][] regionKeys = new byte[regions.size()][];
-            for(Integer i=0;i<regions.size();i++){
+            int i = 0;
+            while (i<regions.size()) {
                 regionKeys[i]=regions.get(i).getStartKey();
+                i++;
             }
             HTableDescriptor ds= admin.getTableDescriptor(TableName.valueOf(tableName));
             admin.disableTable(tabName);

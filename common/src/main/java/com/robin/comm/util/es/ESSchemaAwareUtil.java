@@ -33,7 +33,7 @@ import java.util.Map;
 
 @Slf4j
 public class ESSchemaAwareUtil {
-    private static Gson gson= GsonUtil.getGson();
+    private static final Gson gson= GsonUtil.getGson();
     public static Map<String,Object> getIndexs(String httpUrl,String... params){
         String url=httpUrl;
         if(!url.endsWith("/")){
@@ -47,15 +47,11 @@ public class ESSchemaAwareUtil {
         Map<String,Object> indexMap=new HashMap<>();
         if(response.getStatusCode()==200){
             LinkedHashMap<String,Object> map=gson.fromJson(response.getResponseData(),new TypeToken<LinkedHashMap<String,Object>>(){}.getType());
-            //Iterator<Map.Entry<String,Object>> iter=map.entrySet().iterator();
             for(Map.Entry<String,Object> entry:map.entrySet()){
-                //Map.Entry<String,Object> entry=iter.next();
                 String indexName=entry.getKey();
                 Map<String,Object> indexCfgMap=new HashMap<>();
                 LinkedTreeMap<String,Object> mapping=(LinkedTreeMap<String,Object>)((LinkedTreeMap<String,Object>)entry.getValue()).get("mappings");
-                //Iterator<Map.Entry<String,Object>> iter1=mapping.entrySet().iterator();
                 for(Map.Entry<String,Object> entry1:mapping.entrySet()){
-                    //Map.Entry<String,Object> entry1=iter1.next();
                     readMapping(indexCfgMap, mapping, entry1);
                 }
                 indexMap.put(indexName,indexCfgMap);

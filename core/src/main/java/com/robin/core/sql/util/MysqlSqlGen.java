@@ -19,14 +19,12 @@ import com.robin.core.base.datameta.BaseDataBaseMeta;
 import com.robin.core.base.exception.DAOException;
 import com.robin.core.query.util.PageQuery;
 import com.robin.core.query.util.QueryParam;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
 public class MysqlSqlGen extends AbstractSqlGen implements BaseSqlGen{
 
-	private static MysqlSqlGen sqlGen=new MysqlSqlGen();
+	private static final MysqlSqlGen sqlGen=new MysqlSqlGen();
 	private MysqlSqlGen(){
 
 	}
@@ -37,8 +35,8 @@ public class MysqlSqlGen extends AbstractSqlGen implements BaseSqlGen{
     public String generateCountSql(String strSQL) {
 
 		String str = strSQL.trim();
-		str=str.replaceAll("\\n", "");
-		str=str.replaceAll("\\r", "");
+		str=str.replace("\\n", "");
+		str=str.replace("\\r", "");
 		String sqllow=str.toLowerCase();
 		int nFromPos = sqllow.lastIndexOf(" from ");
 		int nOrderPos = sqllow.lastIndexOf(" order by ");
@@ -63,6 +61,7 @@ public class MysqlSqlGen extends AbstractSqlGen implements BaseSqlGen{
 
 	@Override
     public String generatePageSql(String strSQL, PageQuery pageQuery) {
+		checkSqlAndPage(strSQL,pageQuery);
 		if(pageQuery!=null && pageQuery.getPageSize()!=0) {
 			Integer[] startEnd = getStartEndRecord(pageQuery);
 			int nBegin = startEnd[0];
@@ -73,7 +72,7 @@ public class MysqlSqlGen extends AbstractSqlGen implements BaseSqlGen{
 			pagingSelect.append(strSQL);
 			int nums = tonums - nBegin;
 			pagingSelect.append(" limit " + nBegin + "," + nums);
-			log.info("pageSql=" + pagingSelect.toString());
+			log.info("pageSql={}", pagingSelect);
 			return pagingSelect.toString();
 		}else{
 			return getNoPageSql(strSQL,pageQuery);
@@ -92,8 +91,8 @@ public class MysqlSqlGen extends AbstractSqlGen implements BaseSqlGen{
 	@Override
     public String generateSingleRowSql(String querySql) {
 		String str = querySql.trim().toLowerCase();
-		str=str.replaceAll("\\n", "");
-		str=str.replaceAll("\\r", "");
+		str=str.replace("\\n", "");
+		str=str.replace("\\r", "");
 		int nOrderPos = str.lastIndexOf(" order by ");
 		if (nOrderPos == -1) {
             nOrderPos = str.length();

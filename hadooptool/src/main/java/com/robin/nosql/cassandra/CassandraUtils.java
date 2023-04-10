@@ -4,6 +4,7 @@ import com.datastax.driver.core.*;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.robin.core.base.exception.DAOException;
 import com.robin.core.base.util.StringUtils;
 import com.robin.nosql.cassandra.network.SslContextFactory;
 import io.netty.handler.ssl.SslContext;
@@ -16,6 +17,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
+@SuppressWarnings("UnstableApiUsage")
 public class CassandraUtils {
     private String clusterNames;
     private String userName;
@@ -24,7 +26,7 @@ public class CassandraUtils {
     private Session session;
     private String keySpace;
     private String sslPath;
-    private Cache<String,Map<Integer,String>> cache;
+    private final Cache<String,Map<Integer,String>> cache;
     public CassandraUtils(String clusterNames,String userName,String password,String keySpace,Object... params){
         this.clusterNames=clusterNames;
         this.userName=userName;
@@ -48,7 +50,7 @@ public class CassandraUtils {
                 SSLOptions sslOptions = new RemoteEndpointAwareNettySSLOptions(context);
                 builder.withSSL(sslOptions);
             }catch (Exception ex){
-                log.error("{}",ex);
+                log.error("{}",ex.getMessage());
             }
         }
         cluster = builder.build();
@@ -255,7 +257,7 @@ public class CassandraUtils {
                     rowPos++;
                     if (rowPos % batchSize == 0) {
                         if (!insertSession.execute(batchstmt).wasApplied()) {
-                            throw new RuntimeException(" execute failed at " + rowPos);
+                            throw new DAOException(" execute failed at " + rowPos);
                         }
                         batchstmt.clear();
                     }
@@ -272,7 +274,7 @@ public class CassandraUtils {
             }
         }catch (RuntimeException ex){
             ex.printStackTrace();
-            log.error("",ex);
+            log.error("",ex.getMessage());
         }finally {
             if(sourceSession!=null){
                 sourceSession.close();

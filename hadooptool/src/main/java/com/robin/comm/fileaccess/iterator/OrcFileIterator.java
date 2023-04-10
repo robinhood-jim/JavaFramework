@@ -25,8 +25,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.robin.core.fileaccess.util.ResourceUtil.getProcessPath;
-
 public class OrcFileIterator extends AbstractFileIterator {
     private Configuration conf;
     List<TypeDescription> fields;
@@ -37,7 +35,7 @@ public class OrcFileIterator extends AbstractFileIterator {
     public OrcFileIterator(DataCollectionMeta colmeta) {
         super(colmeta);
     }
-    private Map<String,Object> valueMap=new HashMap<>();
+    private final Map<String,Object> valueMap=new HashMap<>();
     int maxRow=-1;
     int currentRow=0;
     private FileSystem fs;

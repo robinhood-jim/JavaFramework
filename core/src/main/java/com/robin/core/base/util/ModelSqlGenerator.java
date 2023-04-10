@@ -41,7 +41,7 @@ public class ModelSqlGenerator {
                 }
             } else {
                 String createSql = generateCreateSql(clazz,meta, sqlGen);
-                //SimpleJdbcDao.executeUpdate(conn, createSql);
+                SimpleJdbcDao.executeUpdate(conn, createSql);
             }
 
         } catch (Exception ex) {
@@ -133,10 +133,7 @@ public class ModelSqlGenerator {
         }
     }
 
-    public static String generateCreateSql(String clazzName,BaseDataBaseMeta meta, BaseSqlGen sqlGen) throws ClassNotFoundException {
-        Class<? extends BaseObject> clazz = (Class<? extends BaseObject>) Class.forName(clazzName);
-        return generateCreateSql(clazz,meta, sqlGen);
-    }
+
 
     public static String generateCreateSql(Class<? extends BaseObject> clazz,BaseDataBaseMeta meta, BaseSqlGen sqlGen) {
         StringBuilder builder = new StringBuilder();

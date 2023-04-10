@@ -11,6 +11,7 @@ import com.robin.core.fileaccess.iterator.AbstractResIterator;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang3.tuple.Triple;
+import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -230,5 +231,57 @@ public class TestExcelOperation {
         }catch (IOException ex){
             ex.printStackTrace();
         }
+    }
+    @Test
+    public void doTestRead(){
+        try(Workbook wb = new XSSFWorkbook(new FileInputStream(new File("e:/高二年级考试成绩.xlsx")))){
+            DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            ExcelProcessor.readExcel(wb,"xlsx",0,2,(w,r,ev)->{
+                for(int i=3;i<21;i++){
+                    Object obj=ExcelProcessor.readValue(r.getCell(i),Const.META_TYPE_DOUBLE,format,ev);
+                    System.out.println(obj);
+                }
+            });
+        }catch (Exception ex){
+
+        }
+    }
+    @Test
+    public void doGen1(){
+        List<List<TableHeaderColumn>> headList = new ArrayList<>();
+        List<TableHeaderColumn> firstCols = new ArrayList<>();
+        List<TableHeaderColumn> secondCols = new ArrayList<>();
+        TableConfigProp tableConfigProp = new TableConfigProp();
+        tableConfigProp.setTotalCol(4);
+
+        ExcelSheetProp sheetProp = new ExcelSheetProp("xlsx");
+        firstCols.add(new TableHeaderColumn("班级", "gradeNo", 2, 1));
+        firstCols.add(new TableHeaderColumn("考试名词", "name", 1, 3));
+        secondCols.add(new TableHeaderColumn("平级分", "avg", 1, 1));
+        secondCols.add(new TableHeaderColumn("名次", "rank", 1, 1));
+        secondCols.add(new TableHeaderColumn("均分差", "minus", 1, 1));
+        headList.add(firstCols);
+        headList.add(secondCols);
+        tableConfigProp.setHeaderColumnList(headList);
+        sheetProp.addColumnProp(new ExcelColumnProp("班级", "className", Const.META_TYPE_STRING));
+        sheetProp.addColumnProp(new ExcelColumnProp("平级分", "avg", Const.META_TYPE_DOUBLE));
+        sheetProp.addColumnProp(new ExcelColumnProp("名次", "rank", Const.META_TYPE_INTEGER));
+        sheetProp.addColumnProp(new ExcelColumnProp("均分差", "minus", Const.META_TYPE_DOUBLE));
+        List<Map<String,Object>> rsList=new ArrayList<>();
+        Map<String,Object> tmap=new HashMap<>();
+        tmap.put("avg",85.0);
+        tmap.put("rank",1);
+        tmap.put("minus",-0.9);
+        tmap.put("className","test123");
+        rsList.add(tmap);
+        sheetProp.setColumnList(rsList);
+        try(Workbook wb=new XSSFWorkbook()){
+            Sheet fSheet=wb.createSheet("test");
+            ExcelProcessor.fillSheet(fSheet,sheetProp,tableConfigProp);
+            wb.write(new FileOutputStream(new File("e:/1234.xlsx")));
+        }catch (Exception ex){
+            ex.printStackTrace();
+        }
+
     }
 }

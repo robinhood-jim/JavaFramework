@@ -18,6 +18,7 @@ package com.robin.core.query.extractor;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.support.lob.LobHandler;
+import org.springframework.lang.NonNull;
 import org.springframework.util.Assert;
 
 import java.sql.*;
@@ -44,12 +45,12 @@ public abstract class ResultSetOperationExtractor implements ResultSetExtractor<
     }
 
     @Override
-    public Integer extractData(ResultSet rs) throws SQLException,
+    public Integer extractData(@NonNull ResultSet rs) throws SQLException,
             DataAccessException {
 
         Integer retVal = 0;
         Assert.notNull(rs,"resultSet must not be null!");
-        Map<String, Object> map = new HashMap<String, Object>();
+        Map<String, Object> map = new HashMap<>();
         while (rs.next()) {
             map.clear();
             ResultSetExtractorUtils.wrapResultSetToMap(rs,encode,map);
@@ -87,7 +88,7 @@ public abstract class ResultSetOperationExtractor implements ResultSetExtractor<
     /**
      *
      * @param map this Param is reused and Singleton, Don not add this Map to Collections
-     * @param rsmd
+     * @param rsmd  resulstsetmetadata
      * @return
      * @throws SQLException
      */

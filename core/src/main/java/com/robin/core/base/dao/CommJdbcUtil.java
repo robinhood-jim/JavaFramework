@@ -43,7 +43,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 public class CommJdbcUtil {
-    private static Logger logger = LoggerFactory.getLogger(CommJdbcUtil.class);
+    private static final Logger logger = LoggerFactory.getLogger(CommJdbcUtil.class);
     private static final DateTimeFormatter dayFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private static final DateTimeFormatter timeFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
@@ -59,22 +59,31 @@ public class CommJdbcUtil {
                     for (int i = 1; i <= len; i++) {
                         String columnType = pageQuery.getColumnTypes().get(String.valueOf(i - 1));
                         String value = pageQuery.getParameters().get(String.valueOf(i));
-                        if (columnType.equals(QueryParam.COLUMN_TYPE_INT)) {
-                            ps.setInt(i, Integer.parseInt(value));
-                        } else if (columnType.equals(QueryParam.COLUMN_TYPE_DOUBLE)) {
-                            ps.setDouble(i, Double.parseDouble(value));
-                        } else if (columnType.equals(QueryParam.COLUMN_TYPE_LONG)) {
-                            ps.setLong(i, Long.parseLong(value));
-                        } else if (columnType.equals(QueryParam.COLUMN_TYPE_DATE)) {
-                            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-                            Date date = new Date(format.parse(value).getTime());
-                            ps.setDate(i, date);
-                        } else if (columnType.equals(QueryParam.COLUMN_TYPE_TIMESTAMP)) {
-                            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:ss:mm");
-                            Date date = new Date(format.parse(value).getTime());
-                            ps.setDate(i, date);
-                        } else if (columnType.equals(QueryParam.COLUMN_TYPE_STRING)) {
-                            ps.setString(i, value);
+                        switch (columnType) {
+                            case QueryParam.COLUMN_TYPE_INT:
+                                ps.setInt(i, Integer.parseInt(value));
+                                break;
+                            case QueryParam.COLUMN_TYPE_DOUBLE:
+                                ps.setDouble(i, Double.parseDouble(value));
+                                break;
+                            case QueryParam.COLUMN_TYPE_LONG:
+                                ps.setLong(i, Long.parseLong(value));
+                                break;
+                            case QueryParam.COLUMN_TYPE_DATE: {
+                                SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+                                Date date = new Date(format.parse(value).getTime());
+                                ps.setDate(i, date);
+                                break;
+                            }
+                            case QueryParam.COLUMN_TYPE_TIMESTAMP: {
+                                SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:ss:mm");
+                                Date date = new Date(format.parse(value).getTime());
+                                ps.setDate(i, date);
+                                break;
+                            }
+                            case QueryParam.COLUMN_TYPE_STRING:
+                                ps.setString(i, value);
+                                break;
                         }
                     }
                 } catch (Exception e) {
@@ -103,7 +112,7 @@ public class CommJdbcUtil {
 
     @SuppressWarnings({"rawtypes", "unchecked"})
     public static PageQuery queryByReplaceParamter(JdbcTemplate jdbcTemplate, LobHandler lobHandler, BaseSqlGen sqlGen, QueryString qs, PageQuery pageQuery) throws DAOException {
-        List list = null;
+        List list ;
         String querySQL = getReplacementSql(sqlGen, qs, pageQuery);
         if (logger.isInfoEnabled()) {
             logger.info((new StringBuilder()).append("querySQL: ").append(querySQL).toString());

@@ -2,7 +2,6 @@ package com.robin.core.query.mapper.handler;
 
 import com.robin.core.query.mapper.segment.*;
 import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.regexp.RE;
 import org.dom4j.Element;
 import org.dom4j.Node;
 
@@ -12,7 +11,7 @@ import java.util.Map;
 
 
 public abstract class AbstractHandler implements IHandler {
-    private StringBuilder builder=new StringBuilder();
+    private final StringBuilder builder=new StringBuilder();
     protected static final String SELECT="select";
     protected static final String RESULTMAP="resultMap";
     protected static final String INSERT="insert";
@@ -26,7 +25,7 @@ public abstract class AbstractHandler implements IHandler {
     public void analyse(Element element,String nameSpace, List<AbstractSegment> segments) {
         List<Node> elements=element.content();
         if(elements.size()>1 && !RESULTMAP.equalsIgnoreCase(element.getName())) {
-            if(SELECT.equalsIgnoreCase(element.getName()) || UPDATE.equalsIgnoreCase(element.getName()) || "insert".equalsIgnoreCase(element.getName()) || "batch".equalsIgnoreCase(element.getName())) {
+            if(SELECT.equalsIgnoreCase(element.getName()) || UPDATE.equalsIgnoreCase(element.getName()) || INSERT.equalsIgnoreCase(element.getName()) || BATCH.equalsIgnoreCase(element.getName())) {
                 doProcessElement(element,nameSpace,segments);
             }else {
                 for (Node ele : elements) {
@@ -104,7 +103,7 @@ public abstract class AbstractHandler implements IHandler {
                 case BATCH:
                     List<Node> elements=ele.content();
                     List<AbstractSegment> segments1=new ArrayList<>();
-                    String resultMap=ele.attributeValue("resultMap");
+                    String resultMap=ele.attributeValue(RESULTMAP);
                     String paramType=ele.attributeValue("parameterType");
                     for(Node node:elements){
                         doProcessNode(node,nameSpace,segments1);

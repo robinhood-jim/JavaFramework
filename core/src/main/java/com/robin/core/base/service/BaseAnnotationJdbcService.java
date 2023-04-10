@@ -113,7 +113,6 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 			}
 	 }
 	@Override
-    @SuppressWarnings("unchecked")
 	@Transactional(readOnly=true)
 	public V getEntity(P id) throws ServiceException{
 		try{
@@ -178,7 +177,6 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 		}
 	}
 	@Override
-    @SuppressWarnings("unchecked")
 	@Transactional(readOnly=true)
 	public List<V> queryByField(String fieldName,String oper,Object... fieldValues) throws ServiceException{
 		List<V> retlist;
@@ -202,7 +200,6 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 	 * @throws ServiceException
 	 */
 	@Override
-    @SuppressWarnings("unchecked")
 	@Transactional(readOnly=true)
 	public List<V> queryByFieldOrderBy(String orderByStr,String fieldName,String oper,Object... fieldValues) throws ServiceException{
 		List<V> retlist;

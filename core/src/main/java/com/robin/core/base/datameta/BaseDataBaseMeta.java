@@ -64,7 +64,7 @@ public abstract class BaseDataBaseMeta implements DataBaseInterface, Serializabl
 		ConvertUtil.objectToMap(map, param);
 	}
 	
-	public BaseDataBaseMeta(DataBaseParam param){
+	protected BaseDataBaseMeta(DataBaseParam param){
 		if(param!=null){
 			this.param=param;
 			if(param.getUrlTemplate()==null || param.getUrlTemplate().isEmpty()){
@@ -96,9 +96,7 @@ public abstract class BaseDataBaseMeta implements DataBaseInterface, Serializabl
 		boolean isequal=false;
 		if(obj instanceof BaseDataBaseMeta){
 			BaseDataBaseMeta compareObj=(BaseDataBaseMeta) obj;
-			if(param.getDriverClassName().equals(param.getDriverClassName()) && this.getParam().equals(compareObj.getParam())){
-				isequal=true;
-			}
+			return compareObj.getParam().equals(param);
 		}
 		return isequal;
 	}
@@ -154,4 +152,5 @@ public abstract class BaseDataBaseMeta implements DataBaseInterface, Serializabl
 		builder.append(v.getColumnName());
 		return builder.toString();
 	}
+
 }

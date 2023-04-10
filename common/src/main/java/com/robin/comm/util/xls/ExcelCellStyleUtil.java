@@ -63,6 +63,9 @@ public class ExcelCellStyleUtil {
         cs.setFillForegroundColor(IndexedColors.WHITE.getIndex());
         cs.setFillPattern(FillPatternType.SOLID_FOREGROUND);
         cs.setWrapText(true);
+        Font font = wb.createFont();
+        font.setFontName(ExcelBaseOper.defaultFontName);
+        cs.setFont(font);
         if (metaType.equals(Const.META_TYPE_NUMERIC) || metaType.equals(Const.META_TYPE_DOUBLE) || metaType.equals(Const.META_TYPE_FLOAT)) {
             cs.setDataFormat(HSSFDataFormat.getBuiltinFormat("0.00"));
         } else if (metaType.equals(Const.META_TYPE_DATE)) {
@@ -93,8 +96,9 @@ public class ExcelCellStyleUtil {
             cs.setBorderTop(BorderStyle.THIN);
             cs.setTopBorderColor(IndexedColors.BLACK.getIndex());
             cs.setFillForegroundColor(IndexedColors.WHITE.getIndex());
+            Font font = wb.createFont();
+            font.setFontName(ExcelBaseOper.defaultFontName);
             if (header != null) {
-                Font font = wb.createFont();
                 font.setFontName((header.getContentFontName() == null || header.getContentFontName().isEmpty()) ? DEFAULT_FONT_NAME : header.getContentFontName());
                 if (header.isBold()) {
                     font.setBold(true);
@@ -102,8 +106,8 @@ public class ExcelCellStyleUtil {
                 if (header.isItalic()) {
                     font.setItalic(true);
                 }
-                cs.setFont(font);
             }
+            cs.setFont(font);
             cs.setFillPattern(FillPatternType.SOLID_FOREGROUND);
             cs.setWrapText(true);
             if (metaType.equals(Const.META_TYPE_NUMERIC) || metaType.equals(Const.META_TYPE_DOUBLE) || metaType.equals(Const.META_TYPE_FLOAT)) {

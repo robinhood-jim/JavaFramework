@@ -29,7 +29,7 @@ public class MergeCellUtil {
 
         int[][] startCol = new int[rows][header.getTotalCol()];
         int columncount = getTotalCount(header);
-        header.setContainrow(columncount);
+        header.setColSize(columncount);
         for (int i = 0; i < startCol.length; i++) {
             startCol[i] = new int[header.getTotalCol()];
         }

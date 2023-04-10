@@ -178,7 +178,7 @@ public class ExcelProcessor {
                 }
             }
         } catch (Exception e) {
-            log.error("encounter error!pos=" + pos + "column size=" + columnValueList.size());
+            log.error("encounter error!pos={} column size={}" ,pos, columnValueList.size());
             log.error("{}", e);
         }
 
@@ -278,21 +278,29 @@ public class ExcelProcessor {
                     strCell = evaluator.evaluate(cell).getStringValue();
                     break;
                 default:
-                    if (type.equals(Const.META_TYPE_INTEGER)) {
-                        strCell = 0;
-                    } else if (type.equals(Const.META_TYPE_BIGINT)) {
-                        strCell = 0L;
-                    } else if (type.equals(Const.META_TYPE_FLOAT)) {
-                        strCell = Float.valueOf("0");
-                    } else if (type.equals(Const.META_TYPE_DATE) || type.equals(Const.META_TYPE_TIMESTAMP)) {
-                        strCell = null;
-                    } else if ((type.equals(Const.META_TYPE_DOUBLE) || type.equals(Const.META_TYPE_DECIMAL) || type.equals(Const.META_TYPE_NUMERIC))) {
-                        strCell = 0.0;
-                    } else {
-                        strCell = "";
-                    }
+                    strCell = getDefaultValue(type);
                     break;
             }
+        }else{
+            strCell= getDefaultValue(type);
+        }
+        return strCell;
+    }
+
+    private static Object getDefaultValue(String type) {
+        Object strCell;
+        if (type.equals(Const.META_TYPE_INTEGER)) {
+            strCell = 0;
+        } else if (type.equals(Const.META_TYPE_BIGINT)) {
+            strCell = 0L;
+        } else if (type.equals(Const.META_TYPE_FLOAT)) {
+            strCell = Float.valueOf("0");
+        } else if (type.equals(Const.META_TYPE_DATE) || type.equals(Const.META_TYPE_TIMESTAMP)) {
+            strCell = null;
+        } else if ((type.equals(Const.META_TYPE_DOUBLE) || type.equals(Const.META_TYPE_DECIMAL) || type.equals(Const.META_TYPE_NUMERIC))) {
+            strCell = 0.0;
+        } else {
+            strCell = "";
         }
         return strCell;
     }
@@ -455,7 +463,7 @@ public class ExcelProcessor {
         try {
             while (iterator.hasNext()) {
                 Map<String, Object> map = iterator.next();
-                processSingleLine(map, wb, sheet, row + 1, prop, header, helper, cellMap);
+                processSingleLine(map, wb, sheet, row , prop, header, helper, cellMap);
                 if (prop.isStreamInsert() && (row + 1) % prop.getStreamRows() == 0) {
                     ((SXSSFSheet) sheet).flushRows(prop.getStreamRows());
                 }
@@ -493,9 +501,7 @@ public class ExcelProcessor {
             generateHeader(sheet, wb, prop, header);
             count = prop.getColumnList().size();
         } else {
-            int containrow = header.getContainrow();
             count = generateHeader(sheet, wb, prop, header, helper);
-            header.setContainrow(containrow);
         }
         fillColumns(wb, sheet, prop, header, helper);
         autoSizeSheet(prop, sheet, count);
@@ -662,13 +668,12 @@ public class ExcelProcessor {
 
     private static void fillColumns(Workbook wb, Sheet targetsheet, ExcelSheetProp prop, TableConfigProp header, CreationHelper helper) throws IOException {
         try {
-
             if (!ObjectUtils.isEmpty(prop.getColumnPropList())) {
                 List<Map<String, Object>> list = prop.getColumnList();
                 //cell style Map
                 Map<String, CellStyle> cellMap = new HashMap<>();
                 for (int i = 0; i < list.size(); i++) {
-                    processSingleLine(list.get(i), wb, targetsheet, i + 1, prop, header, helper, cellMap);
+                    processSingleLine(list.get(i), wb, targetsheet, i, prop, header, helper, cellMap);
                     if (prop.isStreamInsert() && (i + 1) % prop.getStreamRows() == 0) {
                         ((SXSSFSheet) targetsheet).flushRows(prop.getStreamRows());
                     }
@@ -677,13 +682,11 @@ public class ExcelProcessor {
         } catch (Exception e) {
             log.error("{}", e);
             throw e;
-
         }
-
     }
 
     public static void processSingleLine(Map<String, ?> map, Workbook wb, Sheet targetsheet, int i, ExcelSheetProp prop, TableConfigProp header, CreationHelper helper, Map<String, CellStyle> cellMap) {
-        int startRow = prop.getStartRow() + header.getHeaderRows() - 1;
+        int startRow = header!=null && 0!=header.getContainrow()? header.getContainrow():prop.getStartRow()-1 ;
         int startCol = prop.getStartCol() - 1;
         int fieldCount = prop.getColumnPropList().size();
         List<Map<String, Object>> list = prop.getColumnList();
@@ -708,7 +711,7 @@ public class ExcelProcessor {
             if (valObj == null && !StringUtils.isEmpty(map.get(columnCode.toLowerCase()))) {
                 valObj = map.get(columnCode.toLowerCase());
             }
-            if(!StringUtils.isEmpty(valObj)){
+            if(!ObjectUtils.isEmpty(valObj)){
                 valueobj=valObj.toString();
             }else{
                 valueobj="";
@@ -959,7 +962,7 @@ public class ExcelProcessor {
     }
 
     private static int getDigintalByChar(char str) {
-        int startChar = (int) 'A';
+        int startChar =  'A';
         return str - startChar + 1;
     }
 

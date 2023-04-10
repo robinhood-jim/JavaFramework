@@ -615,13 +615,13 @@ public class HibernateGenericDao extends HibernateDaoSupport implements IHiberna
             try {
                 NativeQuery query = session.createNativeQuery(hql);
                 query.executeUpdate();
-                return new Boolean(true);
+                return true;
             } catch (Exception e) {
                 e.printStackTrace();
-                return new Boolean(false);
+                return false;
             }
         };
-        Boolean ret = false;
+        boolean ret = false;
         try {
             ret = returnTemplate().execute(callback).booleanValue();
             return ret;
