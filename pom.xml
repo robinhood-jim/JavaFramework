@@ -126,7 +126,7 @@
         <jcaptcha.version>1.0</jcaptcha.version>
         <svn.version>1.8.9</svn.version>
         <lzocore.version>1.0.4</lzocore.version>
-        <snappy.version>1.1.2.6</snappy.version>
+        <snappy.version>1.1.10.1</snappy.version>
         <xz.version>1.6</xz.version>
         <cassandradriver.version>3.6.0</cassandradriver.version>
         <graal.version>1.0.0-rc7</graal.version>
