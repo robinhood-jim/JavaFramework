@@ -307,6 +307,48 @@ public class ConvertUtil {
             } else if (Types.VARCHAR == meta.getDataType() || Types.CHAR == meta.getDataType()) {
                 ret = strValue.toString();
             } else {
+                ret = strValue.toString();
+            }
+        }
+        return ret;
+    }
+    public static Object parseParameter(DataSetColumnMeta meta, Object strValue, String... defaultDateTimeFormatter) {
+        if (strValue == null) {
+            return null;
+        }
+        DateTimeFormatter formatter = null;
+        Object ret = null;
+        if (!StringUtils.isEmpty(strValue)) {
+            if (Const.META_TYPE_INTEGER.equals(meta.getColumnType())) {
+                ret = Integer.parseInt(strValue.toString());
+            } else if (Const.META_TYPE_BIGINT.equals(meta.getColumnType())) {
+                ret = Long.parseLong(strValue.toString());
+            } else if (Const.META_TYPE_FLOAT.equals(meta.getColumnType())) {
+                ret = Float.parseFloat(strValue.toString());
+            } else if (Const.META_TYPE_DOUBLE.equals(meta.getColumnType()) || Const.META_TYPE_DECIMAL.equals(meta.getColumnType())) {
+                ret = Double.parseDouble(strValue.toString());
+            } else if (Const.META_TYPE_SHORT.equals(meta.getColumnType())) {
+                ret = Short.valueOf(strValue.toString());
+            } else if (Const.META_TYPE_DATE.equals(meta.getColumnType()) || Const.META_TYPE_TIMESTAMP.equals(meta.getColumnType())) {
+                String value = strValue.toString().trim();
+                if (defaultDateTimeFormatter.length == 0) {
+                    formatter = getFormatter(value);
+                } else {
+                    formatter = DateTimeFormatter.ofPattern(defaultDateTimeFormatter[0]);
+                }
+                if (null != formatter) {
+                    LocalDateTime localDateTime = LocalDateTime.parse(value, formatter);
+                    if (Const.META_TYPE_DATE.equals(meta.getColumnType())) {
+                        ret = new java.util.Date(localDateTime.toInstant(ZoneOffset.ofHours(8)).toEpochMilli());
+                    } else if (Const.META_TYPE_TIMESTAMP.equals(meta.getColumnType())) {
+                        ret = new Timestamp(localDateTime.toInstant(ZoneOffset.ofHours(8)).toEpochMilli());
+                    }
+                }
+
+            } else if (Const.META_TYPE_STRING.equals(meta.getColumnType())) {
+                ret = strValue.toString();
+            } else {
+                ret = strValue.toString();
             }
         }
         return ret;

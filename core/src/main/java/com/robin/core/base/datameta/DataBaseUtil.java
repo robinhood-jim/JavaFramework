@@ -44,7 +44,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class DataBaseUtil {
     private Connection connection;
-    private static Logger logger = LoggerFactory.getLogger(DataBaseUtil.class);
+    private static final Logger logger = LoggerFactory.getLogger(DataBaseUtil.class);
     private BaseDataBaseMeta dataBaseMeta;
     private static final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
     private static final SimpleDateFormat format1 = new SimpleDateFormat("yyyyMMddhhmmss");
@@ -129,7 +129,7 @@ public class DataBaseUtil {
             List<String> pklist = this.getAllPrimaryKeyByTableName(tablename, dbOrtablespacename);
             while (rs.next()) {
                 String columnname = rs.getString("COLUMN_NAME");
-                Integer columnType = Integer.valueOf(translateDbType(Integer.valueOf(rs.getInt("DATA_TYPE"))));
+                Integer columnType = Integer.valueOf(translateDbType(rs.getInt("DATA_TYPE")));
                 String datalength = rs.getString("COLUMN_SIZE");
                 boolean nullable = rs.getInt("NULLABLE") != DatabaseMetaData.columnNoNulls;
                 String comment = rs.getString("REMARKS");
@@ -140,7 +140,7 @@ public class DataBaseUtil {
                 DataBaseColumnMeta datameta = new DataBaseColumnMeta();
                 if (dataBaseMeta.supportAutoInc()) {
                     String autoInc = rs.getString("IS_AUTOINCREMENT");
-                    if (autoInc != null && "YES".equals(autoInc)) {
+                    if ("YES".equalsIgnoreCase(autoInc)) {
                         datameta.setIncrement(true);
                     }
                 }
@@ -193,7 +193,7 @@ public class DataBaseUtil {
             }
 
         } catch (SQLException ex) {
-            logger.error("{}", ex);
+            logger.error("{}", ex.getMessage());
         }
         return retList;
     }
@@ -201,7 +201,7 @@ public class DataBaseUtil {
     public static List<DataBaseColumnMeta> getTableMetaByTableName(Connection conn, String tableName, String dbOrtablespacename, String dbType) throws SQLException {
         List<DataBaseColumnMeta> columnlist = new ArrayList<>();
         DatabaseMetaData meta = conn.getMetaData();
-        try (ResultSet rs = meta.getColumns(dbOrtablespacename, dbOrtablespacename, tableName, null);) {
+        try (ResultSet rs = meta.getColumns(dbOrtablespacename, dbOrtablespacename, tableName, null)) {
             List<String> pklist = null;
             try {
                 pklist = DataBaseUtil.getAllPrimaryKeyByTableName(conn, tableName, dbOrtablespacename);
@@ -210,7 +210,7 @@ public class DataBaseUtil {
             }
             while (rs.next()) {
                 String columnname = rs.getString("COLUMN_NAME");
-                Integer columnType = Integer.valueOf(translateDbType(Integer.valueOf(rs.getInt("DATA_TYPE"))));
+                Integer columnType = Integer.valueOf(translateDbType(rs.getInt("DATA_TYPE")));
                 String datalength = rs.getString("COLUMN_SIZE");
                 boolean nullable = rs.getInt("NULLABLE") != DatabaseMetaData.columnNoNulls;
                 String comment = "";
@@ -226,11 +226,11 @@ public class DataBaseUtil {
                 int scale = rs.getInt("NUM_PREC_RADIX");
 
                 DataBaseColumnMeta datameta = new DataBaseColumnMeta();
-                //SqlServer2005 may failed for not support  get AUTOINCREMENT  attribute
+                //SqlServer2005 may fail for not support  get AUTOINCREMENT  attribute
                 if (!dbType.equals(BaseDataBaseMeta.TYPE_ORACLE) && !dbType.equals(BaseDataBaseMeta.TYPE_ORACLERAC) && !dbType.equals(BaseDataBaseMeta.TYPE_HIVE)
                         && !dbType.equals(BaseDataBaseMeta.TYPE_HIVE2) && !dbType.equals(BaseDataBaseMeta.TYPE_PHONEIX)) {
                     String autoInc = rs.getString("IS_AUTOINCREMENT");
-                    if (autoInc != null && "YES".equals(autoInc)) {
+                    if ("YES".equalsIgnoreCase(autoInc)) {
                         datameta.setIncrement(true);
                     }
                 }
@@ -288,7 +288,7 @@ public class DataBaseUtil {
     public static List<DataBaseColumnMeta> getQueryMeta(Connection conn, String sql) throws SQLException {
         List<DataBaseColumnMeta> columnlist = new ArrayList<>();
 
-        ResultSetMetaData rsmeta = null;
+        ResultSetMetaData rsmeta;
         String querySql = "select * from (" + sql + ") a where 1=0";
         try (Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery(querySql)) {
             rsmeta = rs.getMetaData();
@@ -301,7 +301,7 @@ public class DataBaseUtil {
                     column = column.substring(pos + 1);
                 }
                 datameta.setColumnName(column);
-                datameta.setColumnType(Integer.valueOf(translateDbType(Integer.valueOf(rsmeta.getColumnType(i + 1)))));
+                datameta.setColumnType(Integer.valueOf(translateDbType(rsmeta.getColumnType(i + 1))));
                 datameta.setColumnLength(String.valueOf(rsmeta.getColumnDisplaySize(i + 1)));
                 datameta.setDataScale(rsmeta.getScale(i + 1));
                 datameta.setDataPrecise(rsmeta.getPrecision(i + 1));
@@ -313,7 +313,7 @@ public class DataBaseUtil {
 
     public static String translateDbType(Integer dbType) {
         int type = dbType.intValue();
-        String retStr = "";
+        String retStr;
         if (type == Types.INTEGER || type == Types.TINYINT) {
             retStr = Const.META_TYPE_INTEGER;
         } else if (type == Types.BIGINT) {
@@ -387,18 +387,23 @@ public class DataBaseUtil {
     public static Object translateValueByDBType(String value, String type) throws ParseException {
         Object retObj;
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-        if (type.equals(Const.META_TYPE_INTEGER)) {
-            retObj = Integer.valueOf(value);
-        } else if (type.equals(Const.META_TYPE_BIGINT)) {
-            retObj = Long.valueOf(value);
-        } else if (type.equals(Const.META_TYPE_NUMERIC)) {
-            retObj = Double.valueOf(value);
-        } else if (type.equals(Const.META_TYPE_DOUBLE)) {
-            retObj = Double.valueOf(value);
-        } else if (type.equals(Const.META_TYPE_DATE)) {
-            retObj = format.parse(value);
-        } else {
-            retObj = value;
+        switch (type) {
+            case Const.META_TYPE_INTEGER:
+                retObj = Integer.valueOf(value);
+                break;
+            case Const.META_TYPE_BIGINT:
+                retObj = Long.valueOf(value);
+                break;
+            case Const.META_TYPE_NUMERIC:
+            case Const.META_TYPE_DOUBLE:
+                retObj = Double.valueOf(value);
+                break;
+            case Const.META_TYPE_DATE:
+                retObj = format.parse(value);
+                break;
+            default:
+                retObj = value;
+                break;
         }
         return retObj;
     }
@@ -406,16 +411,24 @@ public class DataBaseUtil {
     public static boolean isValueValid(Object value, String type) {
         boolean validtag = false;
         if (value != null) {
-            if (type.equals(Const.META_TYPE_INTEGER) || type.equals(Const.META_TYPE_BIGINT) || type.equals(Const.META_TYPE_NUMERIC) || type.equals(Const.META_TYPE_DOUBLE)) {
-                if (NumberUtils.isNumber(value.toString())) {
+            switch (type) {
+                case Const.META_TYPE_INTEGER:
+                case Const.META_TYPE_BIGINT:
+                case Const.META_TYPE_NUMERIC:
+                case Const.META_TYPE_DOUBLE:
+                    if (NumberUtils.isNumber(value.toString())) {
+                        validtag = true;
+                    }
+                    break;
+                case Const.META_TYPE_DATE:
+                case Const.META_TYPE_TIMESTAMP:
+                    if (Date.class.isAssignableFrom(value.getClass()) || java.sql.Date.class.isAssignableFrom(value.getClass()) || Timestamp.class.isAssignableFrom(value.getClass())) {
+                        validtag = true;
+                    }
+                    break;
+                case Const.META_TYPE_STRING:
                     validtag = true;
-                }
-            } else if (type.equals(Const.META_TYPE_DATE) || type.equals(Const.META_TYPE_TIMESTAMP)) {
-                if (java.util.Date.class.isAssignableFrom(value.getClass()) || java.sql.Date.class.isAssignableFrom(value.getClass()) || Timestamp.class.isAssignableFrom(value.getClass())) {
-                    validtag = true;
-                }
-            } else if (type.equals(Const.META_TYPE_STRING)) {
-                validtag = true;
+                    break;
             }
         }
         return validtag;
@@ -479,7 +492,7 @@ public class DataBaseUtil {
         List<DataBaseTableMeta> tablelist = new ArrayList<>();
 
         DatabaseMetaData meta = connection.getMetaData();
-        try (ResultSet rs1 = meta.getTables(datameta.getCatalog(schema), schema, null, new String[]{"TABLE", "VIEW"});) {
+        try (ResultSet rs1 = meta.getTables(datameta.getCatalog(schema), schema, null, new String[]{"TABLE", "VIEW"})) {
             int pos = 1;
             while (rs1.next()) {
                 String tablename = rs1.getString("TABLE_NAME") == null ? "" : rs1.getString("TABLE_NAME");

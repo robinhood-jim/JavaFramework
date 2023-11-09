@@ -127,54 +127,20 @@ public class ParquetUtil {
             }
         };
     }
-   /* public static InputFile makeInputFile(SeekableInput input){
+
+    public  static InputFile makeInputFile(SeekableInputStream inputStream,Long length){
         return new InputFile() {
             @Override
             public long getLength() throws IOException {
-                return input.length();
+                return length;
             }
 
             @Override
             public SeekableInputStream newStream() throws IOException {
-                return new SeekableInputStream() {
-                    @Override
-                    public long getPos() throws IOException {
-                        return input.tell();
-                    }
-
-                    @Override
-                    public void seek(long l) throws IOException {
-                        input.seek(l);
-                    }
-
-                    @Override
-                    public void readFully(byte[] bytes) throws IOException {
-                        input.read(bytes,0,bytes.length);
-                    }
-
-                    @Override
-                    public void readFully(byte[] bytes, int i, int i1) throws IOException {
-                        input.read(bytes,i,i1);
-                    }
-
-                    @Override
-                    public int read(ByteBuffer byteBuffer) throws IOException {
-                        return 0;
-                    }
-
-                    @Override
-                    public void readFully(ByteBuffer byteBuffer) throws IOException {
-
-                    }
-
-                    @Override
-                    public int read() throws IOException {
-                        return input.read();
-                    }
-                };
+                return inputStream;
             }
-        }
-    }*/
+        };
+    }
 
     private static int readDirectBuffer(ByteBuffer byteBufr, byte[] tmpBuf, InputStream rdr) throws IOException {
         int nextReadLength = Math.min(byteBufr.remaining(), tmpBuf.length);

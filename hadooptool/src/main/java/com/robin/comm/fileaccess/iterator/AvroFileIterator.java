@@ -68,13 +68,13 @@ public class AvroFileIterator extends AbstractFileIterator {
 		}
 	}
 	private void doInit(String resourcePath) throws Exception{
-		if(colmeta.getSourceType().equals(ResourceConst.InputSourceType.TYPE_HDFS.getValue())){
+		if(colmeta.getSourceType().equals(ResourceConst.IngestType.TYPE_HDFS.getValue())){
 			HDFSUtil util=new HDFSUtil(colmeta);
 			instream=util.getHDFSDataByRawInputStream(ResourceUtil.getProcessPath(resourcePath));
 			input=new AvroFSInput(new FSDataInputStream(instream),util.getHDFSFileSize(ResourceUtil.getProcessPath(resourcePath)));
 		}else {
 			//非hdfs和local方式，需先将文件保存至临时目录后处理,避免内存oom
-			if(!ResourceConst.InputSourceType.TYPE_LOCAL.getValue().equals(colmeta.getSourceType())) {
+			if(!ResourceConst.IngestType.TYPE_LOCAL.getValue().equals(colmeta.getSourceType())) {
 				String tmpPath = FileUtils.getTempDirectoryPath() + ResourceUtil.getProcessFileName(resourcePath);
 				instream = accessUtil.getRawInputStream(colmeta, ResourceUtil.getProcessPath(resourcePath));
 				tmpFile = new File(tmpPath);

@@ -42,10 +42,10 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.protocol.HttpContext;
 import org.apache.http.ssl.SSLContexts;
 import org.apache.http.util.EntityUtils;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 
 import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLHandshakeException;
@@ -53,8 +53,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.net.UnknownHostException;
-import java.nio.charset.Charset;
-import java.nio.charset.UnsupportedCharsetException;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
@@ -120,7 +119,7 @@ public class HttpUtils {
 
             HttpClientContext context = HttpClientContext.adapt(httpContext);
             HttpRequest request = context.getRequest();
-            if (!(request instanceof HttpEntityEnclosingRequest)) {
+            if (!(HttpEntityEnclosingRequest.class.isAssignableFrom(request.getClass()))) {
                 //如果请求不是关闭连接的请求
                 return true;
             }
@@ -160,7 +159,7 @@ public class HttpUtils {
         return HttpClients.custom().setConnectionManager(manager).setRetryHandler(handler).build();
     }
 
-    public static final Response doPost(String url, String data, String charset, Map<String, String> headerMap) {
+    public static Response doPost(String url, String data, String charset, Map<String, String> headerMap) {
         CloseableHttpClient httpClient = createHttpClient();
         HttpPost post = new HttpPost(url);
         config(post);
@@ -177,20 +176,18 @@ public class HttpUtils {
         } finally {
             post.releaseConnection();
         }
-        return null;
+        return new Response(500,"");
     }
 
-    public static final Response doPost(String url, String charset, Map<String, String> postData, Map<String, String> headerMap) {
+    public static Response doPost(String url, String charset, Map<String, String> postData, Map<String, String> headerMap) {
         CloseableHttpClient httpClient = createHttpClient();
         HttpPost post = new HttpPost(url);
         config(post);
         fillHeader(post, headerMap);
         try {
-            List<NameValuePair> params = new ArrayList<NameValuePair>();
+            List<NameValuePair> params = new ArrayList<>();
             if (postData != null && !postData.isEmpty()) {
-                Iterator<Map.Entry<String, String>> iter = postData.entrySet().iterator();
-                while (iter.hasNext()) {
-                    Map.Entry<String, String> entry = iter.next();
+                for (Map.Entry<String, String> entry : postData.entrySet()) {
                     params.add(new BasicNameValuePair(entry.getKey(), entry.getValue()));
                 }
                 post.setEntity(new UrlEncodedFormEntity(params, charset));
@@ -204,7 +201,7 @@ public class HttpUtils {
         return null;
     }
 
-    public static final Response doGet(String url, String charset, Map<String, String> headerMap) {
+    public static Response doGet(String url, String charset, Map<String, String> headerMap) {
         CloseableHttpClient httpClient = createHttpClient();
         HttpGet get = new HttpGet(url);
         config(get);
@@ -212,14 +209,14 @@ public class HttpUtils {
         try {
             return getResponseData(httpClient, get, charset);
         } catch (Exception ex) {
-            log.error("{}", ex);
+            log.error("{}", ex.getMessage());
         } finally {
             get.releaseConnection();
         }
-        return null;
+        return new Response(500,"");
     }
 
-    public static final Response doPut(String url, String data, String charset, Map<String, String> headerMap) {
+    public static Response doPut(String url, String data, String charset, Map<String, String> headerMap) {
         CloseableHttpClient httpClient = createHttpClient();
         HttpPut put = new HttpPut(url);
         config(put);
@@ -236,10 +233,10 @@ public class HttpUtils {
         } finally {
             put.releaseConnection();
         }
-        return null;
+        return new Response(500,"");
     }
 
-    public static final Response doDelete(String url, String charset, Map<String, String> headerMap) {
+    public static Response doDelete(String url, String charset, Map<String, String> headerMap) {
         CloseableHttpClient httpClient = createHttpClient();
         HttpDelete delete = new HttpDelete(url);
         config(delete);
@@ -251,7 +248,7 @@ public class HttpUtils {
         } finally {
             delete.releaseConnection();
         }
-        return null;
+        return new Response(500,"");
     }
 
     /**
@@ -259,11 +256,11 @@ public class HttpUtils {
      *
      * @param url
      * @param headerMap
-     * @param key
+     * @param fileName
      * @param inputStream
      * @return
      */
-    public static final Response doUpload(String url, Map<String, String> headerMap, String fileName, InputStream inputStream) {
+    public static Response doUpload(String url, Map<String, String> headerMap, String fileName, InputStream inputStream) {
         CloseableHttpClient httpClient = createHttpClient();
         if (Objects.nonNull(inputStream)) {
             HttpPost post = new HttpPost(url);
@@ -275,7 +272,7 @@ public class HttpUtils {
                 filePrefix=fileName.substring(0,pos);
             }
             MultipartEntityBuilder builder = MultipartEntityBuilder.create();
-            builder.setCharset(Charset.forName("UTF-8"));
+            builder.setCharset(StandardCharsets.UTF_8);
             builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
             ContentType type = ContentType.APPLICATION_OCTET_STREAM;
             builder.addBinaryBody(filePrefix, inputStream, type, fileName);
@@ -305,7 +302,7 @@ public class HttpUtils {
         Map<String,String> headerMap=new HashMap<>();
         try {
             response = httpClient.execute(requestBase);
-            if(null!=response.getAllHeaders() && response.getAllHeaders().length>0){
+            if(!ObjectUtils.isEmpty(response.getAllHeaders())){
                 for(Header header:response.getAllHeaders()){
                     headerMap.put(header.getName(),header.getValue());
                 }
@@ -326,13 +323,9 @@ public class HttpUtils {
             } else {
                 responseData = EntityUtils.toString(respEntity);
             }
-        } catch (ParseException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
+        } catch (ParseException |IOException e) {
             e.printStackTrace();
         }
-
-
         return new Response(response.getStatusLine().getStatusCode(), responseData,headerMap);
     }
     private static CloseableHttpClient accessWithNoSsl(){

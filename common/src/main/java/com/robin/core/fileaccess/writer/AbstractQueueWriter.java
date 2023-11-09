@@ -10,7 +10,6 @@ import org.apache.avro.generic.GenericRecord;
 
 import javax.naming.OperationNotSupportedException;
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -56,16 +55,12 @@ public abstract class AbstractQueueWriter extends AbstractResourceWriter {
         }
         if( ResourceConst.VALUE_TYPE.AVRO.getValue().equals(valueType) && schema!=null) {
             GenericRecord record = new GenericData.Record(schema);
-            Iterator iterator = map.entrySet().iterator();
-            while (iterator.hasNext()) {
-                Map.Entry<String,?> entry = (Map.Entry) iterator.next();
+            for (Map.Entry<String, ?> entry : map.entrySet()) {
                 record.put(entry.getKey(), entry.getValue());
             }
             output=recordInjection.apply(record);
         }else if(ResourceConst.VALUE_TYPE.JSON.getValue().equalsIgnoreCase(valueType)){
             output=gson.toJson(map).getBytes();
-        }else if(ResourceConst.VALUE_TYPE.XML.getValue().equalsIgnoreCase(valueType)){
-
         }
         return output;
     }

@@ -9,10 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 public class SimpleFtp {
     protected static final Logger log = LoggerFactory.getLogger(SimpleFtp.class);
@@ -99,31 +96,28 @@ public class SimpleFtp {
 
     public List<String> listFile(String... args) throws IOException {
         int length = args.length;
-        List<String> retStr = new ArrayList<String>();
+        List<String> retStr = new ArrayList<>();
         String path = args[0];
         List<String> ignorefiles = null;
         if (length >= 2) {
-            ignorefiles = new ArrayList<String>();
-            for (int i = 1; i < args.length; i++) {
-                ignorefiles.add(args[i]);
-            }
+            ignorefiles = Arrays.asList(Arrays.copyOfRange(args,1, args.length-1));
         }
         FTPFile[] files = ftpClient.listFiles(path);
-        for (int i = 0; i < files.length; i++) {
-            if (ignorefiles == null || !ignorefiles.contains(files[i].getName().toLowerCase())) {
-                retStr.add(path + "/" + files[i].getName());
+        for (FTPFile file : files) {
+            if (ignorefiles == null || !ignorefiles.contains(file.getName().toLowerCase())) {
+                retStr.add(path + "/" + file.getName());
             }
         }
         return retStr;
     }
 
     public List<FileInfo> listFileDetail(String path, String interfaceName) {
-        List<FileInfo> retStr = new ArrayList<FileInfo>();
+        List<FileInfo> retStr = new ArrayList<>();
         try {
 
             FTPFile[] files = ftpClient.listFiles(path);
-            for (int i = 0; i < files.length; i++) {
-                retStr.add(new FileInfo(path, files[i].getName(), files[i].getSize(), files[i].getTimestamp(), interfaceName));
+            for (FTPFile file : files) {
+                retStr.add(new FileInfo(path, file.getName(), file.getSize(), file.getTimestamp(), interfaceName));
             }
         } catch (Exception ex) {
             log.error("", ex);
@@ -141,7 +135,7 @@ public class SimpleFtp {
      */
 
     public List<String> listIncrementFile(String path, Date afterTime) throws IOException {
-        List<String> retStr = new ArrayList<String>();
+        List<String> retStr = new ArrayList<>();
         Calendar cal1 = Calendar.getInstance();
         cal1.setTime(afterTime);
         FTPFile[] files = ftpClient.listFiles(path);
@@ -159,12 +153,12 @@ public class SimpleFtp {
 
 
     public List<String> listFileWithPattern(String pathname, String patterntxt) throws IOException {
-        List<String> retStr = new ArrayList<String>();
+        List<String> retStr = new ArrayList<>();
         ftpClient.changeWorkingDirectory(pathname);
         String[] names = ftpClient.listNames(patterntxt);
         String relatepath = pathname.endsWith("/") ? pathname : pathname + "/";
-        for (int i = 0; i < names.length; i++) {
-            String tmppath = relatepath + names[i];
+        for (String name : names) {
+            String tmppath = relatepath + name;
             retStr.add(tmppath);
         }
         return retStr;
@@ -178,7 +172,7 @@ public class SimpleFtp {
         boolean retflag = false;
         IOException iex=null;
         if (!exists(remote)) {
-            log.info("remote path not exists " + remote);
+            log.info("remote path not exists {}", remote);
             return false;
         }
         if (isDirectory(remote)) {
@@ -211,14 +205,9 @@ public class SimpleFtp {
     private boolean doDownload(String remote, String local) throws IOException {
         boolean retflag = false;
         File localfile = new File(local);
-        //long lRemoteSize = filesize(remote);
         if (localfile.exists()) {
             log.info("local file Exist");
             long localSize = localfile.length();
-			/*if (localSize >= lRemoteSize) {
-				log.info("file length not fit");
-				return true;
-			}*/
             try (InputStream in = ftpClient.retrieveFileStream(remote);
                  FileOutputStream os = new FileOutputStream(localfile, true)) {
                 ftpClient.setRestartOffset(localSize);
@@ -261,8 +250,7 @@ public class SimpleFtp {
         if (!localFile.exists()) {
             localFile.mkdir();
         }
-        for (int i = 0; i < remotelist.size(); i++) {
-            String remotefile = remotelist.get(i);
+        for (String remotefile : remotelist) {
             int pos = remotefile.lastIndexOf("/");
             String fileName = remotefile.substring(pos);
             ret = downloadFile(remotefile, local + fileName, retrys);
@@ -299,7 +287,7 @@ public class SimpleFtp {
     }
 
     public boolean doUpload(File localfile, String remoteDir, String remote) throws IOException {
-        boolean retflag = false;
+        boolean retflag ;
         long remotesize = 0;
         long localreadbytes = 0L;
         if (!localfile.exists()) {
@@ -338,8 +326,6 @@ public class SimpleFtp {
                 localreadbytes += c;
             }
             out.flush();
-            raf.close();
-            out.close();
             retflag = ftpClient.completePendingCommand();
         }
         return retflag;

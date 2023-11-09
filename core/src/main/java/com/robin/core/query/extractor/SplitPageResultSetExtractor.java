@@ -19,6 +19,7 @@ import com.robin.core.base.dao.util.AnnotationRetriever;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.support.lob.LobHandler;
+import org.springframework.lang.NonNull;
 import org.springframework.util.ObjectUtils;
 
 import java.sql.*;
@@ -66,17 +67,14 @@ public class SplitPageResultSetExtractor implements ResultSetExtractor<List<Map<
     }
 
     @Override
-    public List<Map<String, Object>> extractData(ResultSet rs) throws SQLException,
+    public List<Map<String, Object>> extractData(@NonNull ResultSet rs) throws SQLException,
             DataAccessException {
         return wrapMapper(rs, start, len);
     }
 
     private List<Map<String, Object>> wrapMapper(ResultSet rs, int start, int len) throws SQLException, DataAccessException {
         int end = start + len;
-        boolean allcode = false;
-        if (end == 0) {
-            allcode = true;
-        }
+        boolean allcode = end==0;
         int rowNum = 0;
         List<Map<String, Object>> list = new ArrayList<>();
         ResultSetMetaData rsmd = rs.getMetaData();

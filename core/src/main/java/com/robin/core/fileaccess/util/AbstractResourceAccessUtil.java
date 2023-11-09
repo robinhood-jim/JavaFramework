@@ -21,6 +21,9 @@ import com.robin.core.fileaccess.meta.DataCollectionMeta;
 
 import java.io.*;
 
+/**
+ * abstract resource system access Utils (Local/Hdfs/ApacheVFS(including ftp sftp)/S3/Tencent cloud/aliyun)
+ */
 public abstract class AbstractResourceAccessUtil {
 	public static String[] retrieveResource(String path){
 		String[] ret=new String[2];
@@ -95,4 +98,5 @@ public abstract class AbstractResourceAccessUtil {
 	public abstract InputStream getInResourceByStream(DataCollectionMeta meta, String resourcePath) throws IOException;
 	public abstract InputStream getRawInputStream(DataCollectionMeta meta, String resourcePath) throws IOException;
 	public abstract boolean exists(DataCollectionMeta meta, String resourcePath) throws IOException;
+	public abstract long getInputStreamSize(DataCollectionMeta meta, String resourcePath) throws IOException;
 }

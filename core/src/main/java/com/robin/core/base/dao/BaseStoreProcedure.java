@@ -79,7 +79,7 @@ public class BaseStoreProcedure extends StoredProcedure{
         declareParameter(new SqlParameter(column, type)); 
     } 
   //set In Paramter
-    public void SetInParam(Map<String,Object> inParam){ 
+    public void setInParam(Map<String,Object> inParam){
         this.inParam = inParam; 
     } 
 

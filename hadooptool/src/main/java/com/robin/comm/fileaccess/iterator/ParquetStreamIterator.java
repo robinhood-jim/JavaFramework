@@ -16,15 +16,10 @@ import org.apache.parquet.format.converter.ParquetMetadataConverter;
 import org.apache.parquet.hadoop.ParquetFileReader;
 import org.apache.parquet.hadoop.ParquetReader;
 import org.apache.parquet.hadoop.metadata.ParquetMetadata;
-import org.apache.parquet.io.InputFile;
 import org.apache.parquet.schema.MessageType;
 import org.apache.parquet.schema.Type;
 
 import java.io.ByteArrayOutputStream;
-import java.io.EOFException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -79,7 +74,7 @@ public class ParquetStreamIterator extends AbstractFileIterator {
 
     @Override
     public Map<String, Object> next() {
-        Map<String,Object> retMap=new HashMap<String, Object>();
+        Map<String,Object> retMap=new HashMap<>();
         if(record==null){
             throw new NoSuchElementException("");
         }

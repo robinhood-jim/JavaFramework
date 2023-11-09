@@ -36,9 +36,10 @@ public class SqlMapperDao extends JdbcDaoSupport {
     private BaseSqlGen sqlGen;
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
-    private SqlMapperDao() {
+    public SqlMapperDao(){
 
     }
+
     @NonNull
     private JdbcTemplate returnTemplate(){
         JdbcTemplate template=getJdbcTemplate();
@@ -212,9 +213,7 @@ public class SqlMapperDao extends JdbcDaoSupport {
                                 retList.add(targetObject);
                             } catch (ClassNotFoundException ex) {
                                 throw new SQLException("target Type not found in classpath");
-                            } catch (IllegalAccessException ex1) {
-                                throw new SQLException("target Type can not initialize");
-                            } catch (InstantiationException ex2) {
+                            } catch (IllegalAccessException|InstantiationException ex1) {
                                 throw new SQLException("target Type can not initialize");
                             }
                         }

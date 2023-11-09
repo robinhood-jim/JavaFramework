@@ -287,7 +287,9 @@ public class Const {
         FTPS("ftps"),
         WEBDAV("webdav"),
         MIME("mime"),
-        SMB("smb");
+        SMB("smb"),
+        HTTP("http"),
+        HTTPS("https");
 
         VFS_PROTOCOL(String value) {
             this.value = value;

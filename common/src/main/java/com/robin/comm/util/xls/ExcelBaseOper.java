@@ -163,7 +163,7 @@ public class ExcelBaseOper {
     }
 
     public static Cell merged(Sheet sheet, String colType, int startRow, int startCell, int endRow, int endCell, CellStyle cs, String value, CreationHelper helper) {
-        Cell cell = null;
+        Cell cell ;
         CellRangeAddress cellRangeAddress = new CellRangeAddress(startRow, endRow,  startCell, endCell);
         sheet.addMergedRegion(cellRangeAddress);
         setRegionStyle(sheet, cellRangeAddress, cs);
@@ -184,7 +184,7 @@ public class ExcelBaseOper {
 
 
 
-    private static void caculateStartColofRow(int row, int pos, ExcelHeaderProp header, int[][] startColArr) {
+    private static void calculateStartColumnofRow(int row, int pos, ExcelHeaderProp header, int[][] startColArr) {
         if (row == 0) {
             if (pos == 0) {
                 startColArr[0][0] = 0;
@@ -296,7 +296,7 @@ public class ExcelBaseOper {
     }
 
     public static Cell createCell(Row row1, int j, String value, String colType, CellStyle cellStyle, CreationHelper helper) {
-        Cell cell = null;
+        Cell cell ;
         if (colType.equals(Const.META_TYPE_STRING)) {
             cell = createCell(row1, j, cellStyle, helper, value);
         } else if (colType.equals(Const.META_TYPE_NUMERIC) || colType.equals(Const.META_TYPE_DOUBLE)) {
@@ -418,7 +418,7 @@ public class ExcelBaseOper {
         if(cell==null){
             return null;
         }
-        Object cellValue=null;
+        Object cellValue;
         FormulaEvaluator evaluator = cell.getSheet().getWorkbook().getCreationHelper().createFormulaEvaluator();
         switch (cell.getCellType()){
             case STRING:

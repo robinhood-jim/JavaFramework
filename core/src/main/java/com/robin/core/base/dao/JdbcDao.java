@@ -312,7 +312,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
             List<AnnotationRetriever.FieldContent> fields = AnnotationRetriever.getMappingFieldsCache(type);
             List<Map<String, Object>> rsList;
             if (map1.containsKey(fieldName)) {
-                String namedstr = generateQuerySqlBySingleFields(map1.get(fieldName), fieldName, oper, queryBuffer);
+                String namedstr = generateQuerySqlBySingleFields(map1.get(fieldName), oper, queryBuffer);
                 buffer.append(queryBuffer);
                 rsList = executeQueryByParam(oper, namedstr, buffer.toString(), fieldValues);
                 wrapList(type, retlist, fields, rsList);
@@ -338,10 +338,10 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
 
             List<Map<String, Object>> rsList;
             if (map1.containsKey(fieldName)) {
-                String namedstr = generateQuerySqlBySingleFields(map1.get(fieldName), fieldName, oper, queryBuffer);
+                String namedstr = generateQuerySqlBySingleFields(map1.get(fieldName), oper, queryBuffer);
                 builder.append(queryBuffer);
-                if (orderByStr != null && !"".equals(orderByStr)) {
-                    builder.append(" order by " + orderByStr);
+                if (!ObjectUtils.isEmpty(orderByStr)) {
+                    builder.append(" order by ").append(orderByStr);
                 }
                 rsList = executeQueryByParam(oper, namedstr, builder.toString(), fieldValues);
                 wrapList(type, retlist, fields, rsList);
@@ -447,7 +447,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
                     xsp.setParameter(parameter.getName(), parameter.getSqlType());
                 }
             }
-            xsp.SetInParam(inPara);
+            xsp.setInParam(inPara);
             return xsp.execute();
         } catch (Exception e) {
             throw new DAOException(e);
@@ -749,7 +749,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
         });
     }
 
-    private String generateQuerySqlBySingleFields(AnnotationRetriever.FieldContent columncfg, String fieldName, String oper, StringBuilder queryBuffer) {
+    private String generateQuerySqlBySingleFields(AnnotationRetriever.FieldContent columncfg, String oper, StringBuilder queryBuffer) {
         String namedstr = "";
         switch (oper) {
             case BaseObject.OPER_EQ:

@@ -31,11 +31,11 @@ public abstract class ResultSetOperationExtractor implements ResultSetExtractor<
     protected String encode = "UTF-8";
     protected LobHandler lobHandler;
 
-    public ResultSetOperationExtractor() {
+    protected ResultSetOperationExtractor() {
         init();
     }
 
-    public ResultSetOperationExtractor(String dateFormat, String timestampFormat) {
+    protected ResultSetOperationExtractor(String dateFormat, String timestampFormat) {
         if (dateFormat != null) {
             this.dateFormat = dateFormat;
         }

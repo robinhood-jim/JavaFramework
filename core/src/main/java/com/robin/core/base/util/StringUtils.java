@@ -17,6 +17,7 @@ package com.robin.core.base.util;
 
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.text.StrBuilder;
+import org.springframework.util.Assert;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -27,8 +28,8 @@ import java.util.List;
 import java.util.Random;
 
 public class StringUtils {
-    public static final int ASCII_VISABLE_START = 48;
-    public static final int ASCII_VISABLE_END = 122;
+    public static final int ASCII_VISIBLE_START = 48;
+    public static final int ASCII_VISIBLE_END = 122;
     public static final int ASCII_UPPER_START = 64;
     public static final int ASCII_LOWER_START = 96;
     private static final Random random = new Random();
@@ -179,7 +180,7 @@ public class StringUtils {
     }
 
     public static int getSplitCharInt(String split) {
-        int retchar = 0;
+        int retchar ;
         if ("\\t".equals(split)) {
             retchar = 10;
         } else if ("0x1F".equalsIgnoreCase(split)) {
@@ -202,7 +203,7 @@ public class StringUtils {
         return retchar;
     }
 
-    public static String initailCharToUpperCase(String input) {
+    public static String initialCharToUpperCase(String input) {
         if (input.length() > 2) {
             return input.substring(0, 1).toUpperCase() + input.substring(1);
         } else {
@@ -210,7 +211,7 @@ public class StringUtils {
         }
     }
 
-    public static String initailCharToLowCase(String input) {
+    public static String initialCharToLowCase(String input) {
         if (input.length() > 2) {
             return input.substring(0, 1).toLowerCase() + input.substring(1);
         } else {
@@ -222,7 +223,7 @@ public class StringUtils {
         StringBuilder builder = new StringBuilder();
 
         for (int i = 0; i < length; i++) {
-            builder.append((char) (ASCII_VISABLE_START + getRandomChar(random)));
+            builder.append((char) (ASCII_VISIBLE_START + getRandomChar(random)));
         }
         return builder.toString();
     }
@@ -248,7 +249,7 @@ public class StringUtils {
     }
 
     private static int getRandomChar(Random random) {
-        return random.nextInt(ASCII_VISABLE_END - ASCII_VISABLE_START + 1);
+        return random.nextInt(ASCII_VISIBLE_END - ASCII_VISIBLE_START + 1);
     }
 
     public static String getMd5Encry(String inputStr) throws NoSuchAlgorithmException {
@@ -322,10 +323,21 @@ public class StringUtils {
         }
         return builder.toString();
     }
+    public static String stringToUnicode(String input,String header){
+        Assert.isTrue(!StringUtils.isEmpty(input),"");
+        String headerStr=StringUtils.isEmpty(header)?"\\u":header;
+        char[] chars=input.toCharArray();
+        StringBuilder builder=new StringBuilder();
+        for(int i=0;i<chars.length;i++){
+            builder.append(headerStr+Integer.toHexString(chars[i]).toUpperCase());
+        }
+        return builder.toString();
+    }
 
     public static void main(String[] args) {
-        System.out.println(getFieldNameByCamelCase("asdsadTTsdadDDasda"));
-        System.out.println(returnCamelCaseByFieldName("index_cd"));
+        //System.out.println(getFieldNameByCamelCase("asdsadTTsdadDDasda"));
+        //System.out.println(returnCamelCaseByFieldName("index_cd"));
+        System.out.println(stringToUnicode("更新时间：2023年09月05日10时","%u"));
     }
 
 }

@@ -246,12 +246,8 @@ public class CollectionMapConvert {
      */
     public static <T> List<T> filterListByColumnCondition(List<T> listobj, String scriptType, String queryConditions) throws Exception {
         checkType(listobj);
-
-        if (SpringContextHolder.getBean(ScriptExecutor.class) == null) {
-            throw new MissingConfigException("must use in spring context!");
-        }
-        CompiledScript script = SpringContextHolder.getBean(ScriptExecutor.class).returnScriptNoCache(scriptType, queryConditions);
-        Bindings bindings = SpringContextHolder.getBean(ScriptExecutor.class).createBindings(scriptType);
+        CompiledScript script =ScriptExecutor.getInstance().returnScriptNoCache(scriptType, queryConditions);
+        Bindings bindings = ScriptExecutor.getInstance().createBindings(scriptType);
         return listobj.stream().filter(f->{
             Map<String, Object> valueMap = new HashMap<>();
             try {

@@ -60,11 +60,8 @@ public class ModelScriptGenerator {
             }
             writer.write(builder.toString());
             writer.flush();
-            writer.close();
         } catch (Exception ex) {
             ex.printStackTrace();
-        } finally {
-            //((ApplicationContext) context).close();
         }
     }
 

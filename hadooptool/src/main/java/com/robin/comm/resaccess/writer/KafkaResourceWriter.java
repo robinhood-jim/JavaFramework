@@ -2,8 +2,6 @@ package com.robin.comm.resaccess.writer;
 
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.writer.AbstractQueueWriter;
-import com.twitter.bijection.Injection;
-import org.apache.avro.generic.GenericRecord;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -20,7 +18,6 @@ import java.util.Properties;
 public class KafkaResourceWriter extends AbstractQueueWriter {
     KafkaProducerConfig config=new KafkaProducerConfig();
     private KafkaProducer<String, byte[]> producer;
-    private Injection<GenericRecord,byte[]> recordInjection;
     public KafkaResourceWriter(DataCollectionMeta colmeta) {
         super(colmeta);
         if(!CollectionUtils.isEmpty(cfgMap)) {

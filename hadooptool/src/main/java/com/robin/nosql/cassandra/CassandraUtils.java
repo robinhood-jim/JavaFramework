@@ -19,13 +19,13 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @SuppressWarnings("UnstableApiUsage")
 public class CassandraUtils {
-    private String clusterNames;
-    private String userName;
-    private String password;
+    private final String clusterNames;
+    private final String userName;
+    private final String password;
     private Cluster cluster;
     private Session session;
-    private String keySpace;
-    private String sslPath;
+    private final String keySpace;
+    private final String sslPath;
     private final Cache<String,Map<Integer,String>> cache;
     public CassandraUtils(String clusterNames,String userName,String password,String keySpace,Object... params){
         this.clusterNames=clusterNames;
@@ -34,6 +34,8 @@ public class CassandraUtils {
         this.keySpace=keySpace;
         if(params.length>0){
             sslPath=params[0].toString();
+        }else{
+            sslPath=null;
         }
         getSession();
         cache= CacheBuilder.newBuilder().expireAfterAccess(30, TimeUnit.MINUTES).build();
@@ -274,7 +276,7 @@ public class CassandraUtils {
             }
         }catch (RuntimeException ex){
             ex.printStackTrace();
-            log.error("",ex.getMessage());
+            log.error("{}",ex.getMessage());
         }finally {
             if(sourceSession!=null){
                 sourceSession.close();

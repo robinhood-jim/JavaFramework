@@ -33,7 +33,13 @@ public class JsonFileIterator extends AbstractFileIterator{
 	}
 	@Override
 	public void init() {
-
+		checkAccessUtil(null);
+		jreader=new JsonReader(reader);
+		try{
+			jreader.beginArray();
+		}catch(Exception ex){
+			ex.printStackTrace();
+		}
 	}
 
 	@Override

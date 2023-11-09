@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 
 import java.io.*;
 import java.lang.reflect.Field;
@@ -40,7 +41,10 @@ import java.time.ZoneOffset;
 import java.util.*;
 
 public class AvroUtils {
-    private static Logger logger = LoggerFactory.getLogger(AvroUtils.class);
+    private static final Logger logger = LoggerFactory.getLogger(AvroUtils.class);
+    private AvroUtils(){
+
+    }
 
     public static Schema getSchemaForDbMeta(String namespace, String className, List<DataBaseColumnMeta> columnList) {
         Schema schema = null;
@@ -52,19 +56,26 @@ public class AvroUtils {
             SchemaBuilder.FieldAssembler<Schema> fields = SchemaBuilder.record(className).namespace(tmpnames).fields();
 
             for (DataBaseColumnMeta meta : columnList) {
-                if (meta.getColumnType().toString().equals(Const.META_TYPE_BIGINT)) {
-                    fields = fields.name(meta.getColumnName()).type().nullable().longType().noDefault();
-                } else if (meta.getColumnType().toString().equals(Const.META_TYPE_INTEGER)) {
-                    fields = fields.name(meta.getColumnName()).type().nullable().intType().noDefault();
-                } else if (meta.getColumnType().toString().equals(Const.META_TYPE_DOUBLE) || meta.getColumnType().toString().equals(Const.META_TYPE_NUMERIC)) {
-                    fields = fields.name(meta.getColumnName()).type().nullable().doubleType().noDefault();
-                } else if (meta.getColumnType().toString().equals(Const.META_TYPE_TIMESTAMP)) {
-                    Schema timestampMilliType = LogicalTypes.timestampMillis().addToSchema(Schema.create(Schema.Type.LONG));
-                    fields = fields.name(meta.getColumnName()).type(timestampMilliType).noDefault();
-                } else if (meta.getColumnType().toString().equals(Const.META_TYPE_BOOLEAN)) {
-                    fields = fields.name(meta.getColumnName()).type().nullable().booleanType().noDefault();
-                } else if (meta.getColumnType().toString().equals(Const.META_TYPE_STRING)) {
-                    fields = fields.name(meta.getColumnName()).type().nullable().stringType().noDefault();
+                switch (meta.getColumnType().toString()) {
+                    case Const.META_TYPE_BIGINT:
+                        fields = fields.name(meta.getColumnName()).type().nullable().longType().noDefault();
+                        break;
+                    case Const.META_TYPE_INTEGER:
+                        fields = fields.name(meta.getColumnName()).type().nullable().intType().noDefault();
+                        break;
+                    case Const.META_TYPE_DOUBLE:
+                    case Const.META_TYPE_NUMERIC:
+                        fields = fields.name(meta.getColumnName()).type().nullable().doubleType().noDefault();
+                        break;
+                    case Const.META_TYPE_TIMESTAMP:
+                        Schema timestampMilliType = LogicalTypes.timestampMillis().addToSchema(Schema.create(Schema.Type.LONG));
+                        fields = fields.name(meta.getColumnName()).type(timestampMilliType).noDefault();
+                        break;
+                    case Const.META_TYPE_BOOLEAN:
+                        fields = fields.name(meta.getColumnName()).type().nullable().booleanType().noDefault();
+                        break;
+                    default:
+                        fields = fields.name(meta.getColumnName()).type().nullable().stringType().noDefault();
                 }
             }
 
@@ -80,7 +91,7 @@ public class AvroUtils {
         if (colmeta.getResourceCfgMap().containsKey(Const.AVRO_SCHEMA_FILE_PARAM)) {
             String schemaPath = colmeta.getResourceCfgMap().get("schemaPath").toString();
             try {
-                schema = new Schema.Parser().parse(new FileInputStream(new File(schemaPath)));
+                schema = new Schema.Parser().parse(new FileInputStream(schemaPath));
             } catch (IOException ex) {
                 throw new ConfigurationIncorrectException("avro schema file load exception:" + ex.getMessage());
             }
@@ -95,39 +106,47 @@ public class AvroUtils {
                 SchemaBuilder.FieldAssembler<Schema> fields = SchemaBuilder.record(colmeta.getValueClassName()).namespace(colmeta.getClassNamespace()).fields();
 
                 for (DataSetColumnMeta meta : colmeta.getColumnList()) {
-                    if (meta.getColumnType().equals(Const.META_TYPE_BIGINT)) {
-                        if (meta.isRequired()) {
-                            fields = fields.name(meta.getColumnName()).type().longType().noDefault();
-                        } else {
-                            fields = fields.name(meta.getColumnName()).type().nullable().longType().noDefault();
-                        }
-                    } else if (meta.getColumnType().equals(Const.META_TYPE_INTEGER)) {
-                        if (meta.isRequired()) {
-                            fields = fields.name(meta.getColumnName()).type().intType().noDefault();
-                        } else {
-                            fields = fields.name(meta.getColumnName()).type().nullable().intType().noDefault();
-                        }
-                    } else if (meta.getColumnType().equals(Const.META_TYPE_DOUBLE) || meta.getColumnType().equals(Const.META_TYPE_NUMERIC)) {
-                        if (meta.isRequired()) {
-                            fields = fields.name(meta.getColumnName()).type().doubleType().noDefault();
-                        } else {
-                            fields = fields.name(meta.getColumnName()).type().nullable().doubleType().noDefault();
-                        }
-                    } else if (meta.getColumnType().equals(Const.META_TYPE_TIMESTAMP) || meta.getColumnType().equals(Const.META_TYPE_DATE)) {
-                        Schema timestampMilliType = LogicalTypes.timestampMillis().addToSchema(Schema.create(Schema.Type.LONG));
-                        fields = fields.name(meta.getColumnName()).type(timestampMilliType).noDefault();
-                    } else if (meta.getColumnType().equals(Const.META_TYPE_BOOLEAN)) {
-                        if (meta.isRequired()) {
-                            fields = fields.name(meta.getColumnName()).type().booleanType().noDefault();
-                        } else {
-                            fields = fields.name(meta.getColumnName()).type().nullable().booleanType().noDefault();
-                        }
-                    } else if (meta.getColumnType().equals(Const.META_TYPE_STRING)) {
-                        if(meta.isRequired()){
-                            fields = fields.name(meta.getColumnName()).type().stringType().noDefault();
-                        }else {
-                            fields = fields.name(meta.getColumnName()).type().nullable().stringType().noDefault();
-                        }
+                    switch (meta.getColumnType()) {
+                        case Const.META_TYPE_BIGINT:
+                            if (meta.isRequired()) {
+                                fields = fields.name(meta.getColumnName()).type().longType().noDefault();
+                            } else {
+                                fields = fields.name(meta.getColumnName()).type().nullable().longType().noDefault();
+                            }
+                            break;
+                        case Const.META_TYPE_INTEGER:
+                            if (meta.isRequired()) {
+                                fields = fields.name(meta.getColumnName()).type().intType().noDefault();
+                            } else {
+                                fields = fields.name(meta.getColumnName()).type().nullable().intType().noDefault();
+                            }
+                            break;
+                        case Const.META_TYPE_DOUBLE:
+                        case Const.META_TYPE_NUMERIC:
+                            if (meta.isRequired()) {
+                                fields = fields.name(meta.getColumnName()).type().doubleType().noDefault();
+                            } else {
+                                fields = fields.name(meta.getColumnName()).type().nullable().doubleType().noDefault();
+                            }
+                            break;
+                        case Const.META_TYPE_TIMESTAMP:
+                        case Const.META_TYPE_DATE:
+                            Schema timestampMilliType = LogicalTypes.timestampMillis().addToSchema(Schema.create(Schema.Type.LONG));
+                            fields = fields.name(meta.getColumnName()).type(timestampMilliType).noDefault();
+                            break;
+                        case Const.META_TYPE_BOOLEAN:
+                            if (meta.isRequired()) {
+                                fields = fields.name(meta.getColumnName()).type().booleanType().noDefault();
+                            } else {
+                                fields = fields.name(meta.getColumnName()).type().nullable().booleanType().noDefault();
+                            }
+                            break;
+                        default:
+                            if (meta.isRequired()) {
+                                fields = fields.name(meta.getColumnName()).type().stringType().noDefault();
+                            } else {
+                                fields = fields.name(meta.getColumnName()).type().nullable().stringType().noDefault();
+                            }
                     }
                 }
                 schema = fields.endRecord();
@@ -146,7 +165,7 @@ public class AvroUtils {
     }
 
     public static Protocol parseProtocolWithFile(String avroFile) throws IOException {
-        return Protocol.parse(new FileInputStream(new File(avroFile)));
+        return Protocol.parse(new FileInputStream(avroFile));
     }
 
     public static Protocol parseProtocolWithString(String fileContent) throws IOException {
@@ -156,10 +175,10 @@ public class AvroUtils {
     public static GenericRecord parse(Schema schema, byte[] value) throws IOException {
         GenericDatumReader<GenericRecord> reader = new GenericDatumReader<>(schema);
         ByteArrayInputStream os = new ByteArrayInputStream(value);
-        GenericRecord record = new GenericData.Record(schema);
+        GenericRecord grecord = new GenericData.Record(schema);
         Decoder de = DecoderFactory.get().binaryDecoder(os, null);
-        reader.read(record, de);
-        return record;
+        reader.read(grecord, de);
+        return grecord;
     }
 
     /**
@@ -170,23 +189,21 @@ public class AvroUtils {
      * @param valueObj
      * @param additionalClazz
      */
-    public static void byteToObject(Schema schema, byte[] bytes, Object valueObj, Class... additionalClazz) throws IOException {
+    public static void byteToObject(Schema schema, byte[] bytes, Object valueObj, Class<?>... additionalClazz) throws IOException {
         Assert.notNull(valueObj, "object should not be null");
-        GenericRecord record = parse(schema, bytes);
-        Assert.notNull(record, "");
+        GenericRecord grecord = parse(schema, bytes);
+        Assert.notNull(grecord, "");
         try {
             if (valueObj.getClass().isAssignableFrom(List.class)) {
                 List list = (List) valueObj;
                 if (!CollectionUtils.isEmpty(list)) {
-                    Class targetClazz = list.get(0).getClass();
+                    Class<?> targetClazz = list.get(0).getClass();
                     Map<String, Method> setMap = ReflectUtils.returnSetMethods(targetClazz);
-                    if (record.getSchema().getType().equals(Schema.Type.ARRAY)) {
-                        List<GenericRecord> flist = (List<GenericRecord>) record.get(0);
+                    if (grecord.getSchema().getType().equals(Schema.Type.ARRAY)) {
+                        List<GenericRecord> flist = (List<GenericRecord>) grecord.get(0);
                         for (GenericRecord g : flist) {
                             Object t = targetClazz.newInstance();
-                            Iterator<Map.Entry<String, Method>> iter = setMap.entrySet().iterator();
-                            while (iter.hasNext()) {
-                                Map.Entry<String, Method> entry = iter.next();
+                            for (Map.Entry<String, Method> entry : setMap.entrySet()) {
                                 if (g.get(entry.getKey()) != null) {
                                     Schema eleType = schema.getField(entry.getKey()).schema().getTypes().get(0).getElementType();
                                     entry.getValue().invoke(t, acquireGenericRecord(entry.getKey(), g.get(entry.getKey()), eleType));
@@ -201,15 +218,15 @@ public class AvroUtils {
                 Map<String, Object> map = (Map<String, Object>) valueObj;
                 List<Schema.Field> fields = schema.getFields();
                 for (Schema.Field field : fields) {
-                    if (record.get(field.name()) != null) {
+                    if (grecord.get(field.name()) != null) {
                         Object vobj = additionalClazz[0].newInstance();
-                        acquireModel(record, vobj);
+                        acquireModel(grecord, vobj);
                         map.put(field.name(), vobj);
                     }
                 }
 
             } else if (valueObj.getClass().isAssignableFrom(Serializable.class)) {
-                acquireModel(record, valueObj);
+                acquireModel(grecord, valueObj);
             }
         } catch (Exception ex) {
 
@@ -228,18 +245,16 @@ public class AvroUtils {
                     Map<String, Method> getMethods = ReflectUtils.returnGetMethods(list.get(0).getClass());
                     Schema eleType = schema.getField(key).schema().getTypes().get(0).getElementType();
                     for (Object t : list) {
-                        GenericRecord record = new GenericData.Record(eleType);
-                        Iterator<Map.Entry<String, Method>> iter = getMethods.entrySet().iterator();
-                        while (iter.hasNext()) {
-                            Map.Entry<String, Method> entry = iter.next();
-                            record.put(entry.getKey(), acquireGenericRecord(entry.getKey(), entry.getValue().invoke(t, null), eleType));
+                        GenericRecord grecord = new GenericData.Record(eleType);
+                        for (Map.Entry<String, Method> entry : getMethods.entrySet()) {
+                            grecord.put(entry.getKey(), acquireGenericRecord(entry.getKey(), entry.getValue().invoke(t, null), eleType));
                         }
-                        records.add(record);
+                        records.add(grecord);
                     }
                     return records;
-                } else if (value.getClass().getInterfaces() != null && value.getClass().getInterfaces().length > 0 && value.getClass().getInterfaces()[0].isAssignableFrom(Map.class)) {
+                } else if (!ObjectUtils.isEmpty(value.getClass().getInterfaces()) && value.getClass().getInterfaces().length > 0 && value.getClass().getInterfaces()[0].isAssignableFrom(Map.class)) {
                     Map<String, Object> map1 = (Map<String, Object>) value;
-                    Class clazz = map1.values().iterator().next().getClass();
+                    Class<?> clazz = map1.values().iterator().next().getClass();
                     if (ClassUtils.isPrimitiveOrWrapper(clazz) || clazz.isAssignableFrom(String.class)) {
                         return value;
                     } else {
@@ -268,9 +283,7 @@ public class AvroUtils {
                 } else {
                     GenericRecord record = new GenericData.Record(schema);
                     Map<String, Method> getMethods = ReflectUtils.returnGetMethods(value.getClass());
-                    Iterator<Map.Entry<String, Method>> iter = getMethods.entrySet().iterator();
-                    while (iter.hasNext()) {
-                        Map.Entry<String, Method> entry = iter.next();
+                    for (Map.Entry<String, Method> entry : getMethods.entrySet()) {
                         if (schema.getField(entry.getKey()) != null) {
                             record.put(entry.getKey(), acquireGenericRecord(entry.getKey(), entry.getValue().invoke(value, null), schema.getField(entry.getKey()).schema()));
                         }
@@ -284,13 +297,13 @@ public class AvroUtils {
         return null;
     }
 
-    public static void acquireModel(GenericRecord record, Object targetObj) throws Exception {
-        List<Schema.Field> fields = record.getSchema().getFields();
+    public static void acquireModel(GenericRecord genericRecord, Object targetObj) throws Exception {
+        List<Schema.Field> fields = genericRecord.getSchema().getFields();
         Map<String, Method> setMap = ReflectUtils.returnSetMethods(targetObj.getClass());
         for (Schema.Field field : fields) {
 
             if ((field.schema().getType().equals(Schema.Type.UNION) && field.schema().getTypes().get(0).getType().equals(Schema.Type.LONG)) || field.schema().getType().equals(Schema.Type.LONG)) {
-                Long val = (Long) record.get(field.name());
+                Long val = (Long) genericRecord.get(field.name());
                 if (setMap.get(field.name()).getParameterTypes()[0].isAssignableFrom(Date.class)) {
                     setMap.get(field.name()).invoke(targetObj, new Date(val));
                 } else if (setMap.get(field.name()).getParameterTypes()[0].isAssignableFrom(Timestamp.class)) {
@@ -302,19 +315,19 @@ public class AvroUtils {
                 }
             } else if (field.schema().getType().equals(Schema.Type.RECORD)) {
                 Object vobj = setMap.get(field.name()).getParameterTypes()[0].newInstance();
-                acquireModel((GenericRecord) record.get(field.name()), vobj);
+                acquireModel((GenericRecord) genericRecord.get(field.name()), vobj);
                 setMap.get(field.name()).invoke(targetObj, vobj);
             } else if (field.schema().getTypes().get(0).getType().equals(Schema.Type.MAP)) {
                 Type[] genericClazzs = ((ParameterizedType) setMap.get(field.name()).getGenericParameterTypes()[0]).getActualTypeArguments();
-                if (!genericClazzs[1].getTypeName().endsWith(".Object")) {
+                /*if (!genericClazzs[1].getTypeName().endsWith(".Object")) {
 
                 } else {
 
-                }
-            } else if (field.schema().getTypes().size() > 0 && field.schema().getTypes().get(0).getType().equals(Schema.Type.ARRAY)) {
+                }*/
+            } else if (!ObjectUtils.isEmpty(field.schema().getTypes()) && field.schema().getTypes().get(0).getType().equals(Schema.Type.ARRAY)) {
                 Type genericClazz = ((ParameterizedType) setMap.get(field.name()).getGenericParameterTypes()[0]).getActualTypeArguments()[0];
-                List list = new ArrayList();
-                List<GenericRecord> records = (List<GenericRecord>) record.get(field.name());
+                List<Object> list = new ArrayList<>();
+                List<GenericRecord> records = (List<GenericRecord>) genericRecord.get(field.name());
                 if (!CollectionUtils.isEmpty(records)) {
                     for (GenericRecord rec : records) {
                         Object vobj = Class.forName(genericClazz.getTypeName()).newInstance();
@@ -325,9 +338,9 @@ public class AvroUtils {
                 setMap.get(field.name()).invoke(targetObj, list);
             } else {
                 if (field.schema().getTypes().get(0).getType().equals(Schema.Type.STRING)) {
-                    setMap.get(field.name()).invoke(targetObj, record.get(field.name()).toString());
+                    setMap.get(field.name()).invoke(targetObj, genericRecord.get(field.name()).toString());
                 } else {
-                    setMap.get(field.name()).invoke(targetObj, record.get(field.name()));
+                    setMap.get(field.name()).invoke(targetObj, genericRecord.get(field.name()));
                 }
             }
         }
@@ -335,26 +348,23 @@ public class AvroUtils {
 
 
     public static byte[] dataToByteArray(Schema schema, GenericRecord datum) throws IOException {
-        GenericDatumWriter<GenericRecord> writer = new GenericDatumWriter<GenericRecord>(schema);
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-        try {
+        GenericDatumWriter<GenericRecord> writer = new GenericDatumWriter<>(schema);
+
+        try(ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             Encoder e = EncoderFactory.get().binaryEncoder(os, null);
             writer.write(datum, e);
             e.flush();
-            byte[] byteData = os.toByteArray();
-            return byteData;
-        } finally {
-            os.close();
+            return  os.toByteArray();
         }
     }
 
-    public static byte[] dataToByteWithBijection(GenericRecord record, Injection<GenericRecord, byte[]> injection) {
-        return injection.apply(record);
+    public static byte[] dataToByteWithBijection(GenericRecord grecord, Injection<GenericRecord, byte[]> injection) {
+        return injection.apply(grecord);
     }
 
-    public static byte[] dataToByteWithBijection(Schema schema, GenericRecord record) {
+    public static byte[] dataToByteWithBijection(Schema schema, GenericRecord grecord) {
         Injection<GenericRecord, byte[]> injection = GenericAvroCodecs.apply(schema);
-        return injection.apply(record);
+        return injection.apply(grecord);
     }
 
 
@@ -364,7 +374,7 @@ public class AvroUtils {
      * @param serialClazz
      * @return
      */
-    public static Schema getSchemaFromModel(Class serialClazz) {
+    public static Schema getSchemaFromModel(Class<?> serialClazz) {
         Map<String, Field> methodMap = ReflectUtils.getAllField(serialClazz);
         Iterator<Map.Entry<String, Field>> iter = methodMap.entrySet().iterator();
         SchemaBuilder.FieldAssembler<Schema> fields = SchemaBuilder.record(serialClazz.getName()).fields();
@@ -400,8 +410,7 @@ public class AvroUtils {
             }
 
         }
-        Schema schema = fields.endRecord();
-        return schema;
+        return fields.endRecord();
     }
 
 
@@ -419,6 +428,7 @@ public class AvroUtils {
 
     public static Map<String, Object> byteArrayToMap(DataCollectionMeta meta, Schema schema, byte[] byteData) {
         GenericRecord genericRecord = byteArrayToData(schema, byteData);
+        Assert.notNull(genericRecord,"");
         Map<String, Object> map = new HashMap<>();
         for (DataSetColumnMeta columnMeta : meta.getColumnList()) {
             if (null != genericRecord.get(columnMeta.getColumnName())) {
@@ -429,22 +439,13 @@ public class AvroUtils {
     }
 
     public static GenericRecord byteArrayToData(Schema schema, byte[] byteData) {
-        GenericDatumReader<GenericRecord> reader = new GenericDatumReader<GenericRecord>(schema);
-        ByteArrayInputStream byteArrayInputStream = null;
-        try {
-            byteArrayInputStream = new ByteArrayInputStream(byteData);
+        GenericDatumReader<GenericRecord> reader = new GenericDatumReader<>(schema);
+
+        try(ByteArrayInputStream byteArrayInputStream=new ByteArrayInputStream(byteData)) {
             Decoder decoder = DecoderFactory.get().binaryDecoder(byteArrayInputStream, null);
             return reader.read(null, decoder);
         } catch (IOException e) {
             return null;
-        } finally {
-            try {
-                if (byteArrayInputStream != null) {
-                    byteArrayInputStream.close();
-                }
-            } catch (IOException e) {
-
-            }
         }
     }
 }

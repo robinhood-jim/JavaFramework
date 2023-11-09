@@ -66,7 +66,7 @@ public class DownloadUtils {
                     public void onFailure(Throwable throwable) {
 
                     }
-                });
+                },pool);
                 futures.add(future);
             }
             for(ListenableFuture<Long> future:futures){

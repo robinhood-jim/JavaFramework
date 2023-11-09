@@ -7,13 +7,10 @@ import com.robin.core.base.exception.ConfigurationIncorrectException;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import com.zaxxer.hikari.pool.HikariPool;
-import lombok.Data;
-import org.springframework.beans.BeanUtils;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReadWriteLock;

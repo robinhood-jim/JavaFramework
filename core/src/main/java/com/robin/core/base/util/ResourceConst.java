@@ -3,15 +3,19 @@ package com.robin.core.base.util;
 
 public class ResourceConst {
 
-    public enum InputSourceType{
+    public enum IngestType {
         TYPE_HDFS(1L,"HDFS"),
         TYPE_LOCAL(2L,"LOCAL"),
         TYPE_FTP(3L,"FTP"),
         TYPE_SFTP(4L,"SFTP"),
-        TYPE_AWS(5L,"AWS");
+        TYPE_AWS(5L,"AWS"),
+        TYPE_COS(6L,"COS"),
+        TYPE_HTTP(7L,"HTTP"),
+        TYPE_HTTPS(8L,"HTTPS"),
+        TYPE_DB(9L,"DB");
         private Long key;
         private String value;
-        InputSourceType(Long key,String value){
+        IngestType(Long key, String value){
             this.key=key;
             this.value=value;
         }
@@ -61,7 +65,8 @@ public class ResourceConst {
         TYPE_XML("4"),     //xml
         TYPE_PARQUET("5"),  //parquet
         TYPE_AVRO("6"),   //avro
-        TYPE_PROTO("7");
+        TYPE_PROTO("7"),
+        TYPE_ORC("8");
         private String value;
         FileFormat(String value){this.value=value;}
         @Override
@@ -75,7 +80,8 @@ public class ResourceConst {
         XML("xml"),
         PROTOBUF("proto"),
         ORC("orc"),
-        CSV("csv");
+        CSV("csv"),
+        PARQUET("parquet");
         private String value;
         VALUE_TYPE(String value){
             this.value=value;

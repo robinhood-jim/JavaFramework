@@ -1,10 +1,11 @@
 package com.robin.comm.fileaccess.util;
 
-import com.robin.core.base.util.IOUtils;
 import org.apache.hadoop.fs.PositionedReadable;
 import org.apache.hadoop.fs.Seekable;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.EOFException;
+import java.io.IOException;
 
 
 public class SeekableInputStream extends ByteArrayInputStream implements Seekable, PositionedReadable {

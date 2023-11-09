@@ -19,7 +19,7 @@ public class ScriptSegment extends AbstractSegment {
 
     public ScriptSegment(String nameSpace,String id, String value) {
         super(nameSpace,id, value);
-        this.executor= SpringContextHolder.getBean(ScriptExecutor.class);
+        this.executor= ScriptExecutor.getInstance();
 
     }
 

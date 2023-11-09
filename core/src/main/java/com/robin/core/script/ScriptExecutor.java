@@ -29,12 +29,12 @@ import javax.script.ScriptEngineManager;
 
 import org.springframework.beans.factory.InitializingBean;
 
-public class ScriptExecutor implements InitializingBean {
+public class ScriptExecutor  {
 	private ConcurrentMap<String, BaseScriptExecutor> scriptExecutorMap=new ConcurrentHashMap<>();
 	private List<String> scriptNameList;
 
-	@Override
-	public void afterPropertiesSet() {
+
+	private ScriptExecutor() {
 		scriptNameList=getAllScriptEngineNames();
 		for (String name:scriptNameList) {
 			scriptExecutorMap.put(name, new BaseScriptExecutor(name));
@@ -80,5 +80,11 @@ public class ScriptExecutor implements InitializingBean {
 		return scriptExecutorMap;
 	}
 
+	private static class InnerClass{
+		private static ScriptExecutor scriptExecutor=new ScriptExecutor();
+	}
+	public static ScriptExecutor getInstance(){
+		return InnerClass.scriptExecutor;
+	}
 	
 }

@@ -43,16 +43,14 @@ import java.util.*;
 import java.util.regex.Pattern;
 
 public class ExcelProcessor {
-    private static Logger log = LoggerFactory.getLogger(ExcelProcessor.class);
-    private static DateTimeFormatter localformat = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    private static final Logger log = LoggerFactory.getLogger(ExcelProcessor.class);
+    private static final DateTimeFormatter localformat = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     public static void readExcelFile(String filename, ExcelSheetProp prop) throws FileNotFoundException {
-        InputStream myxls = new FileInputStream(filename);
-        try {
+        try(InputStream myxls = new FileInputStream(filename)) {
             readExcelFile(myxls, prop, null, null);
         } catch (Exception e) {
-            e.printStackTrace();
-            log.error("{}", e);
+            log.error("{}", e.getMessage());
             throw new FileNotFoundException("Read Error!");
         }
     }
@@ -179,7 +177,7 @@ public class ExcelProcessor {
             }
         } catch (Exception e) {
             log.error("encounter error!pos={} column size={}" ,pos, columnValueList.size());
-            log.error("{}", e);
+            log.error("{}", e.getMessage());
         }
 
         prop.setColumnList(columnValueList);
@@ -187,7 +185,7 @@ public class ExcelProcessor {
     }
 
     public static Object readValue(Cell cell, String type, DateTimeFormatter format, FormulaEvaluator evaluator) {
-        Object strCell = "";
+        Object strCell ;
         if (cell != null) {
             switch (cell.getCellType()) {
                 case NUMERIC:
@@ -202,7 +200,7 @@ public class ExcelProcessor {
                                 strCell = Double.valueOf(d).intValue();
                                 break;
                             case Const.META_TYPE_BIGINT:
-                                strCell = Double.valueOf(d).intValue();
+                                strCell = Double.valueOf(d).longValue();
                                 break;
                             case Const.META_TYPE_FLOAT:
                                 strCell = Double.valueOf(d).floatValue();
@@ -264,9 +262,6 @@ public class ExcelProcessor {
                                 strCell = null;
                             }
                             break;
-                        case Const.META_TYPE_STRING:
-                            strCell = cell.getStringCellValue();
-                            break;
                         default:
                             strCell = cell.getStringCellValue();
                     }
@@ -289,18 +284,28 @@ public class ExcelProcessor {
 
     private static Object getDefaultValue(String type) {
         Object strCell;
-        if (type.equals(Const.META_TYPE_INTEGER)) {
-            strCell = 0;
-        } else if (type.equals(Const.META_TYPE_BIGINT)) {
-            strCell = 0L;
-        } else if (type.equals(Const.META_TYPE_FLOAT)) {
-            strCell = Float.valueOf("0");
-        } else if (type.equals(Const.META_TYPE_DATE) || type.equals(Const.META_TYPE_TIMESTAMP)) {
-            strCell = null;
-        } else if ((type.equals(Const.META_TYPE_DOUBLE) || type.equals(Const.META_TYPE_DECIMAL) || type.equals(Const.META_TYPE_NUMERIC))) {
-            strCell = 0.0;
-        } else {
-            strCell = "";
+        switch (type) {
+            case Const.META_TYPE_INTEGER:
+                strCell = 0;
+                break;
+            case Const.META_TYPE_BIGINT:
+                strCell = 0L;
+                break;
+            case Const.META_TYPE_FLOAT:
+                strCell = Float.valueOf("0");
+                break;
+            case Const.META_TYPE_DATE:
+            case Const.META_TYPE_TIMESTAMP:
+                strCell = null;
+                break;
+            case Const.META_TYPE_DOUBLE:
+            case Const.META_TYPE_DECIMAL:
+            case Const.META_TYPE_NUMERIC:
+                strCell = 0.0;
+                break;
+            default:
+                strCell = "";
+                break;
         }
         return strCell;
     }
@@ -643,7 +648,7 @@ public class ExcelProcessor {
 
 
     private static void createHeaderCellRegion(Sheet targetsheet, Workbook wb, TableConfigProp prop, TableHeaderColumn column, Row[] headerRows, CreationHelper helper) {
-        CellStyle style = null;
+        CellStyle style ;
         Row baseRow = headerRows[column.getStartrow()];
         if (column.getRowspan() > 1 || column.getColspan() > 1) {
             style = ExcelBaseOper.getHeaderStyle(wb, 3, HorizontalAlignment.CENTER, prop);
@@ -704,7 +709,7 @@ public class ExcelProcessor {
             String columnType = excelprop.getColumnType();
             boolean needMerge = excelprop.isNeedMerge();
             Object valObj=map.get(columnCode);
-            String valueobj = null;
+            String valueobj ;
             if (!StringUtils.isEmpty(map.get(columnCode.toUpperCase()))) {
                 valObj = map.get(columnCode.toUpperCase());
             }
@@ -780,7 +785,7 @@ public class ExcelProcessor {
                         String columnType = prop.getColumnPropList().get(d).getColumnType();
                         CellStyle stylesingle = ExcelCellStyleUtil.getCellStyle(wb, 1, 1, columnType, header, cellMap);
                         Object valObj=map.get(columnCode);
-                        String valueobj = null;
+                        String valueobj;
 
                         if (valObj == null) {
                             valObj = map.get(columnCode.toUpperCase());
@@ -958,7 +963,7 @@ public class ExcelProcessor {
     }
 
     public static boolean isValidExcelInput(String str) {
-        return Pattern.matches("[A-Z]+[0-9]+", str);
+        return Pattern.matches("[A-Z]+\\d+", str);
     }
 
     private static int getDigintalByChar(char str) {

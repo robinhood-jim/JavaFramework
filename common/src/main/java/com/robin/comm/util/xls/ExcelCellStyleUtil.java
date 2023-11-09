@@ -39,14 +39,24 @@ public class ExcelCellStyleUtil {
         cs.setFillForegroundColor(IndexedColors.WHITE.getIndex());
         cs.setFillPattern(FillPatternType.SOLID_FOREGROUND);
         cs.setWrapText(true);
-        if (metaType.equals(Const.META_TYPE_NUMERIC) || metaType.equals(Const.META_TYPE_DOUBLE) || metaType.equals(Const.META_TYPE_FLOAT)) {
-            cs.setDataFormat(HSSFDataFormat.getBuiltinFormat("0.00"));
-        } else if (metaType.equals(Const.META_TYPE_DATE)) {
-            cs.setDataFormat(HSSFDataFormat.getBuiltinFormat("yyyy-MM-dd hh:mm:ss"));
-        } else if (metaType.equals(Const.META_TYPE_INTEGER)) {
-            cs.setDataFormat(HSSFDataFormat.getBuiltinFormat("0"));
-        }
+        extractMeta(metaType, cs);
         return cs;
+    }
+
+    private static void extractMeta(String metaType, CellStyle cs) {
+        switch (metaType) {
+            case Const.META_TYPE_NUMERIC:
+            case Const.META_TYPE_DOUBLE:
+            case Const.META_TYPE_FLOAT:
+                cs.setDataFormat(HSSFDataFormat.getBuiltinFormat("0.00"));
+                break;
+            case Const.META_TYPE_DATE:
+                cs.setDataFormat(HSSFDataFormat.getBuiltinFormat("yyyy-MM-dd hh:mm:ss"));
+                break;
+            case Const.META_TYPE_INTEGER:
+                cs.setDataFormat(HSSFDataFormat.getBuiltinFormat("0"));
+                break;
+        }
     }
 
     public static CellStyle getBorderCellType(Workbook wb, String metaType) {
@@ -66,13 +76,7 @@ public class ExcelCellStyleUtil {
         Font font = wb.createFont();
         font.setFontName(ExcelBaseOper.defaultFontName);
         cs.setFont(font);
-        if (metaType.equals(Const.META_TYPE_NUMERIC) || metaType.equals(Const.META_TYPE_DOUBLE) || metaType.equals(Const.META_TYPE_FLOAT)) {
-            cs.setDataFormat(HSSFDataFormat.getBuiltinFormat("0.00"));
-        } else if (metaType.equals(Const.META_TYPE_DATE)) {
-            cs.setDataFormat(HSSFDataFormat.getBuiltinFormat("yyyy-MM-dd hh:mm:ss"));
-        } else if (metaType.equals(Const.META_TYPE_INTEGER)) {
-            cs.setDataFormat(HSSFDataFormat.getBuiltinFormat("0"));
-        }
+        extractMeta(metaType, cs);
         return cs;
 
     }
@@ -110,13 +114,7 @@ public class ExcelCellStyleUtil {
             cs.setFont(font);
             cs.setFillPattern(FillPatternType.SOLID_FOREGROUND);
             cs.setWrapText(true);
-            if (metaType.equals(Const.META_TYPE_NUMERIC) || metaType.equals(Const.META_TYPE_DOUBLE) || metaType.equals(Const.META_TYPE_FLOAT)) {
-                cs.setDataFormat(HSSFDataFormat.getBuiltinFormat("0.00"));
-            } else if (metaType.equals(Const.META_TYPE_DATE)) {
-                cs.setDataFormat(HSSFDataFormat.getBuiltinFormat("yyyy-MM-dd hh:mm:ss"));
-            } else if (metaType.equals(Const.META_TYPE_INTEGER)) {
-                cs.setDataFormat(HSSFDataFormat.getBuiltinFormat("0"));
-            }
+            extractMeta(metaType,cs);
             cellMap.put("C_" + rowspan + "_" + colspan + "_" + metaType, cs);
         }
         return cs;

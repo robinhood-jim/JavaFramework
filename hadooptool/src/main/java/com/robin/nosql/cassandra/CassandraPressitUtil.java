@@ -10,16 +10,16 @@ import java.util.UUID;
 
 
 public class CassandraPressitUtil {
-    private String clusterNames;
-    private String userName;
-    private String password;
+    private final String clusterNames;
+    private final String userName;
+    private final String password;
     private Cluster cluster;
     private Session session;
 
-    private PreparedStatement statement;
-    private BoundStatement boundStatement;
-    private BatchStatement batchStatement;
-    private Logger logger = LoggerFactory.getLogger(getClass());
+    private final PreparedStatement statement;
+    private final BoundStatement boundStatement;
+    private final BatchStatement batchStatement;
+    private final Logger logger = LoggerFactory.getLogger(getClass());
     private String keySpace;
 
     public CassandraPressitUtil(String clusterNames, String userName, String password, String sql) {

@@ -75,10 +75,10 @@ public class HdfsResourceAccessUtil extends AbstractResourceAccessUtil {
 		HDFSUtil util=getHdfsUtil(meta);
 		try {
 			if (util.exists(resourcePath)) {
-				logger.error("output file {}  exist!,remove it" , resourcePath);
-				util.delete(resourcePath);
+				return util.getFileSystem().open(new Path(resourcePath));
+			}else{
+				throw new IOException("path "+resourcePath+" not found");
 			}
-			return util.getFileSystem().open(new Path(resourcePath));
 		}catch (Exception ex){
 			throw new IOException(ex);
 		}
@@ -129,6 +129,20 @@ public class HdfsResourceAccessUtil extends AbstractResourceAccessUtil {
 		HDFSUtil util=getHdfsUtil(meta);
 		try {
 			return util.exists(resourcePath);
+		}catch (Exception ex){
+			throw new IOException(ex);
+		}
+	}
+
+	@Override
+	public long getInputStreamSize(DataCollectionMeta meta, String resourcePath) throws IOException {
+		HDFSUtil util=getHdfsUtil(meta);
+		try {
+			if (util.exists(resourcePath)) {
+				return util.getFileSystem().getFileStatus(new Path(resourcePath)).getLen();
+			}else{
+				throw new IOException("path "+resourcePath+" not found");
+			}
 		}catch (Exception ex){
 			throw new IOException(ex);
 		}

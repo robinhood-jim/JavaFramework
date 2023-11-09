@@ -104,7 +104,6 @@ public class CustomReadSupport extends ReadSupport<java.util.Map> {
 
                     @Override
                     public void end() {
-
                     }
                 };
             }
