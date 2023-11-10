@@ -119,11 +119,6 @@
             <artifactId>weka-stable</artifactId>
             <version>3.8.0</version>
         </dependency>
-        <dependency>
-            <groupId>nz.ac.waikato.cms.weka</groupId>
-            <artifactId>simpleCART</artifactId>
-            <version>1.0.3-SNAPSHOT</version>
-        </dependency>
 
         <dependency>
             <groupId>org.apache.spark</groupId>
