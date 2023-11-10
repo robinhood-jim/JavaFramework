@@ -205,10 +205,10 @@ public class EntityMappingUtil {
                         String oper = additonMap.get(field.getFieldName() + "_oper").toString();
                         if (oper.equals(BaseObject.OPER_EQ) || oper.equals(BaseObject.OPER_NOT_EQ) || oper.equals(BaseObject.OPER_GT_EQ)
                                 || oper.equals(BaseObject.OPER_LT_EQ) || oper.equals(BaseObject.OPER_GT) || oper.equals(BaseObject.OPER_LT)) {
-                            builder.append(field.getFieldName() + oper + "?");
+                            builder.append(field.getFieldName()).append(oper).append("?");
                             params.add(obj);
                         } else if (oper.equals(BaseObject.OPER_BT)) {
-                            builder.append(field.getFieldName() + " between ? and ?");
+                            builder.append(field.getFieldName()).append(" between ? and ?");
                             params.add(additonMap.get(field.getFieldName() + "_from"));
                             params.add(additonMap.get(field.getFieldName() + "_to"));
                         } else if (oper.equals(BaseObject.OPER_IN)) {

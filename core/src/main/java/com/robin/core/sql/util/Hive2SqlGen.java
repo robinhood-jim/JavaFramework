@@ -17,13 +17,11 @@ package com.robin.core.sql.util;
 
 import com.robin.core.base.datameta.BaseDataBaseMeta;
 import com.robin.core.base.exception.DAOException;
-import com.robin.core.base.util.Const;
 import com.robin.core.query.util.PageQuery;
-import org.springframework.util.StringUtils;
 
 
 public class Hive2SqlGen extends AbstractSqlGen implements BaseSqlGen{
-    private static Hive2SqlGen sqlGen=new Hive2SqlGen();
+    private static final Hive2SqlGen sqlGen=new Hive2SqlGen();
     private Hive2SqlGen(){
 
     }
@@ -34,8 +32,8 @@ public class Hive2SqlGen extends AbstractSqlGen implements BaseSqlGen{
     @Override
     public String generateSingleRowSql(String querySql) {
         String str = querySql.trim().toLowerCase();
-        str=str.replaceAll("\\n", "");
-        str=str.replaceAll("\\r", "");
+        str=str.replace("\\n", "");
+        str=str.replace("\\r", "");
         int nOrderPos = str.lastIndexOf(" order by ");
         if (nOrderPos == -1) {
             nOrderPos = str.length();
@@ -47,25 +45,13 @@ public class Hive2SqlGen extends AbstractSqlGen implements BaseSqlGen{
 
     @Override
     public String generatePageSql(String strSQL, PageQuery pageQuery) {
+        checkSqlAndPage(strSQL,pageQuery);
         if(pageQuery!=null && pageQuery.getPageSize()!=0) {
             Integer[] startEnd = getStartEndRecord(pageQuery);
-
             strSQL = strSQL.trim();
-            StringBuilder pagingSelect = new StringBuilder(strSQL.length() + 100);
-            pagingSelect.append("select * from ( select r.*,row_number() over(");
-            if(!StringUtils.isEmpty(pageQuery.getOrderString())){
-                pagingSelect.append(" order by ").append(pageQuery.getOrderString()).append(") as rownum");
-            }
-            else if(!StringUtils.isEmpty(pageQuery.getOrder())){
-                pagingSelect.append(" order by ").append(pageQuery.getOrder()).append(" ").append(Const.ASC.equalsIgnoreCase(pageQuery.getOrderDirection())?"asc":"desc").append(") as rownum");
-            }else{
-                pagingSelect.append(") as rownum");
-            }
-            pagingSelect.append(" from ( ");
-            pagingSelect.append(strSQL);
-
-            pagingSelect.append(" )r) r where rownum between ").append(startEnd[0]+1).append(" and ").append(startEnd[1]);
-            log.info("pageSql=" + pagingSelect.toString());
+            StringBuilder pagingSelect = getPageSqlByRowNumber(strSQL,pageQuery);
+            pagingSelect.append("where rownum between ").append(startEnd[0]+1).append(" and ").append(startEnd[1]);
+            log.info("pageSql={}" ,pagingSelect);
             return pagingSelect.toString();
         }else {
             return getNoPageSql(strSQL,pageQuery);

@@ -12,7 +12,7 @@ public abstract class AbstractSegment {
     protected String id;
     protected String nameSpace;
 
-    public AbstractSegment(String nameSpace,String id,String value){
+    protected AbstractSegment(String nameSpace,String id,String value){
         this.value=value;
         this.nameSpace=nameSpace;
         this.id=id;

@@ -26,8 +26,8 @@ public class DataBaseColumnMeta implements Serializable {
 	private Integer dataType;
 	private String typeName;
 	private String columnLength;
-	private String dataPrecise;
-	private String dataScale;
+	private int dataPrecise;
+	private int dataScale;
 	private String comment;
 	private boolean primaryKey;
 	private boolean foreignKey;

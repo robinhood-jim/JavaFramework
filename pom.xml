@@ -52,6 +52,7 @@
         <module>spring-starter</module>
         <module>estool</module>
         <module>tracer</module>
+        <module>dataming</module>
     </modules>
     <!-- properties -->
     <properties>
@@ -76,10 +77,10 @@
         <pool.version>2.4.3</pool.version>
         <commons-dbcp.version>1.4</commons-dbcp.version>
         <commons-io.version>2.7</commons-io.version>
-        <commons-net.version>1.4.1</commons-net.version>
+        <commons-net.version>3.9.0</commons-net.version>
         <commons-beanutils.version>1.9.4</commons-beanutils.version>
         <comm-codec.version>1.4</comm-codec.version>
-        <vfs.version>2.0</vfs.version>
+        <vfs.version>2.9.0</vfs.version>
         <lang.version>2.6</lang.version>
         <lang3.version>3.2.1</lang3.version>
         <httpclient.version>3.1</httpclient.version>
@@ -107,7 +108,7 @@
         <frm.version>1.0-SNAPSHOT</frm.version>
         <jsonlib.version>2.4</jsonlib.version>
         <itext.version>2.1.4</itext.version>
-        <guava.version>18.0</guava.version>
+        <guava.version>29.0-jre</guava.version>
         <jsoup.version>1.15.3</jsoup.version>
         <freemarker.version>2.3.18</freemarker.version>
         <compress.version>1.21</compress.version>
@@ -133,12 +134,12 @@
         <calcite.version>1.21.0</calcite.version>
         <mybatisplus.version>3.4.3</mybatisplus.version>
         <orc.version>1.7.1</orc.version>
+        <spark.version>2.4.8</spark.version>
     </properties>
 
 
     <dependencyManagement>
         <dependencies>
-
             <!-- Apache commons start -->
             <dependency>
                 <groupId>commons-lang</groupId>
@@ -162,6 +163,12 @@
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-vfs2</artifactId>
                 <version>${vfs.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.hadoop</groupId>
+                        <artifactId>hadoop-hdfs-client</artifactId>
+                    </exclusion>
+                </exclusions>
                 <optional>true</optional>
             </dependency>
             <dependency>

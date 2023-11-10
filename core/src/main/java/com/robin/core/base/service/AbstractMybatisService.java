@@ -56,8 +56,8 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>,T extends S
     protected TableId tableId;
     protected Map<String,Method> getMethods;
     protected Map<String,Method> setMethods;
-    public final List<String> compareOperations=Arrays.asList(new String[]{">",">=","!=","<","<="});
-    public final List<Integer> compareOperationLens=Arrays.asList(new Integer[]{1,2,2,1,2});
+    public final List<String> compareOperations=Arrays.asList(">",">=","!=","<","<=");
+    public final List<Integer> compareOperationLens=Arrays.asList(1,2,2,1,2);
     protected Map<String,Method> setMap=new HashMap<>();
     protected String defaultOrderField="create_time";
     protected Boolean defaultOrder=false;
@@ -80,9 +80,9 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>,T extends S
                 throw new IllegalStateException("class " + getClass() + " is not subtype of ParametrizedType.");
             }
         }
-        this.mapperType = ((Class) parametrizedType.getActualTypeArguments()[0]);
-        this.voType = ((Class) parametrizedType.getActualTypeArguments()[1]);
-        this.pkType = ((Class) parametrizedType.getActualTypeArguments()[2]);
+        this.mapperType = ((Class<M>) parametrizedType.getActualTypeArguments()[0]);
+        this.voType = ((Class<T>) parametrizedType.getActualTypeArguments()[1]);
+        this.pkType = ((Class<P>) parametrizedType.getActualTypeArguments()[2]);
         try {
             valueOfMethod = this.pkType.getMethod("valueOf", String.class);
             getMethods= ReflectUtils.returnGetMethods(voType);
@@ -112,7 +112,7 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>,T extends S
                 setDeleteMethod=setMethods.get(com.robin.core.base.util.StringUtils.returnCamelCaseByFieldName(deleteColumn));
             }
         } catch (Exception ex) {
-            log.error("{}", ex);
+            log.error("{}", ex.getMessage());
         }
     }
     @Override
@@ -220,9 +220,9 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>,T extends S
             Assert.notNull(ids,"input id is null");
             Assert.isTrue(ids.length()>0,"input ids is empty");
             String[] idsArr = ids.split(",");
-            for (int i = 0; i < idsArr.length; i++) {
+            for (String s : idsArr) {
                 P p = pkType.newInstance();
-                valueOfMethod.invoke(p, idsArr[i]);
+                valueOfMethod.invoke(p, s);
                 array.add(p);
             }
         } catch (Exception ex) {

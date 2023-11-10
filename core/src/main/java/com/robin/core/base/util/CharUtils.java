@@ -13,15 +13,15 @@ import java.util.Map;
 
 @Slf4j
 public class CharUtils {
-    private static Map<Integer,String> decryptMap=new HashMap<>();
-    private static Map<Integer,byte[]> encryptMap=new HashMap<>();
-    private static Map<Integer,byte[]> keyMap=new HashMap<>();
+    private static final Map<Integer,String> decryptMap=new HashMap<>();
+    private static final Map<Integer,byte[]> encryptMap=new HashMap<>();
+    private static final Map<Integer,byte[]> keyMap=new HashMap<>();
     private static String encryptStrFile="encrypt.exe";
     private static String wordFile="word.exe";
     public static final byte[] m_datapadding = {0x7F};
     //EXE header,pretent as a exe file
     public static final byte[] mzHeader = {0x4D, 0x5A, 0x50, 0x00, 0x02, 0x00, 0x00, 0x00, 0x04, 0x00, 0x0f, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-    private static CharUtils utils=new CharUtils();
+    private static final CharUtils utils=new CharUtils();
     private CharUtils(){
         try( DataInputStream wordIn=new DataInputStream(CharUtils.class.getClassLoader().getResourceAsStream(wordFile));
              DataInputStream enIn=new DataInputStream(CharUtils.class.getClassLoader().getResourceAsStream(encryptStrFile))){

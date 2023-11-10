@@ -323,7 +323,7 @@ public class JedisClientFactory {
                     jedis.hmset(key, (Map<String, String>) map);
                 } else if (tmpobj != null && isWrapClass(tmpobj.getClass())) {
                     Iterator<? extends Map.Entry<String, ?>> it = map.entrySet().iterator();
-                    Map<String, String> map1 = new HashMap<String, String>();
+                    Map<String, String> map1 = new HashMap<>();
                     while (it.hasNext()) {
                         Map.Entry entry=it.next();
                         String key1 = entry.getKey().toString();
@@ -335,11 +335,12 @@ public class JedisClientFactory {
                     }
                     jedis.hmset(key, map1);
                 } else {
-                    Iterator<String> it = map.keySet().iterator();
+                    Iterator<? extends Map.Entry<String, ?>> it = map.entrySet().iterator();
                     Map<byte[], byte[]> tmpmap = new HashMap<byte[], byte[]>();
                     while (it.hasNext()) {
-                        String key1 = it.next();
-                        byte[] tmpbyte = SerializeObject(map.get(key1));
+                        Map.Entry<String,?> entry=it.next();
+                        String key1 = entry.getKey();
+                        byte[] tmpbyte = SerializeObject(entry.getValue());
                         if (tmpbyte != null) {
                             tmpmap.put(key1.getBytes(), tmpbyte);
                         }

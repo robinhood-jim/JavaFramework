@@ -35,7 +35,6 @@ public class JdbcPresistDao {
 	private String passwd;
 	private BaseDataBaseMeta meta;
 	private DataBaseParam param;
-	//private static  Logger logger=LoggerFactory.getLogger(JdbcOperDao.class);
 	private Connection conn;
 	private String testSql="select 1";
 	public JdbcPresistDao(BaseDataBaseMeta meta, DataBaseParam param) throws DAOException {

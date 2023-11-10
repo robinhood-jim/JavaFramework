@@ -28,7 +28,7 @@ public class ExcelSheetProp {
 	private String fileExt =ExcelBaseOper.TYPE_EXCEL2003;
 	private String[] columnType;
 	private String sheetName;
-	private int startRow=2;   
+	private int startRow=2;
 	private int startCol=1;  
 	private Integer tableId;
 	// using SXSSFWorkbook with streamingWrite

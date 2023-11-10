@@ -31,6 +31,7 @@ import com.robin.core.base.util.ResourceConst;
 import com.robin.core.fileaccess.iterator.AbstractFileIterator;
 import com.robin.core.fileaccess.iterator.TextFileIteratorFactory;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
+import com.robin.core.fileaccess.meta.VfsParam;
 import com.robin.core.fileaccess.util.AbstractResourceAccessUtil;
 import com.robin.core.fileaccess.util.ApacheVfsResourceAccessUtil;
 import com.robin.core.fileaccess.util.AvroUtils;
@@ -172,7 +173,7 @@ public class GlobalResourceService extends BaseAnnotationJdbcService<GlobalResou
                 schema = getFileSchema(util, colmeta, resource, maxReadLines);
             } else if (resource.getResType().equals(ResourceConst.ResourceType.TYPE_FTPFILE.getValue()) || resource.getResType().equals(ResourceConst.ResourceType.TYPE_SFTPFILE.getValue())) {
                 ApacheVfsResourceAccessUtil util = new ApacheVfsResourceAccessUtil();
-                ApacheVfsResourceAccessUtil.VfsParam param = util.returnFtpParam(resource.getHostName(), resource.getPort(), resource.getUserName(), resource.getPassword(), resource.getProtocol());
+                VfsParam param = util.returnFtpParam(resource.getHostName(), resource.getPort(), resource.getUserName(), resource.getPassword(), resource.getProtocol());
                 String inputPath = sourceParamInput.endsWith("/") ? sourceParamInput : sourceParamInput + "/";
                 List<String> fileList = util.listFilePath(param, inputPath);
                 if (!fileList.isEmpty()) {

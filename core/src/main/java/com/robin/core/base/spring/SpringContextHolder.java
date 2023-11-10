@@ -27,7 +27,7 @@ import org.springframework.context.ApplicationContextAware;
 @Slf4j
 public class SpringContextHolder implements ApplicationContextAware, DisposableBean{
 	private static ApplicationContext context;
-	private Logger logger=LoggerFactory.getLogger(getClass());
+	private final Logger logger=LoggerFactory.getLogger(getClass());
 	public SpringContextHolder(){
 		log.info(VersionInfo.getInstance().getVersion());
 	}

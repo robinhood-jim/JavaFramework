@@ -31,7 +31,15 @@ public class PlainTextFileIterator extends AbstractFileIterator{
 		super(metaList);
 	}
 
-
+	@Override
+	public void init() {
+		checkAccessUtil(null);
+		try{
+			reader=accessUtil.getInResourceByReader(colmeta,colmeta.getPath());
+		}catch (Exception ex){
+			ex.printStackTrace();
+		}
+	}
 
 	@Override
 	public boolean hasNext() {
@@ -51,7 +59,7 @@ public class PlainTextFileIterator extends AbstractFileIterator{
 
 	@Override
 	public Map<String, Object> next(){
-		Map<String,Object> map=new HashMap<String, Object>();
+		Map<String,Object> map=new HashMap<>();
 		String[] arr=StringUtils.split(readLineStr, split.charAt(0));
 		try{
 		if(arr.length>=colmeta.getColumnList().size()){

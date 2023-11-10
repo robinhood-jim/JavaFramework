@@ -33,8 +33,8 @@ import java.util.Map;
 
 public class QueryFactory implements InitializingBean {
     private String xmlConfigPath = "";
-    private static Logger log = LoggerFactory.getLogger(QueryFactory.class);
-    private static Map<String, QueryString> queryMap = new HashMap<>();
+    private static final Logger log = LoggerFactory.getLogger(QueryFactory.class);
+    private static final Map<String, QueryString> queryMap = new HashMap<>();
 
     public QueryFactory()  {
     }

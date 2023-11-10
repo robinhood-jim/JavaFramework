@@ -42,7 +42,7 @@ public class ResultSetExtractorUtils {
         }
     }
     private static Object getValueByMeta(ResultSet rs,int i,int columnType,String encode) throws SQLException{
-        Object retObj=null;
+        Object retObj;
         if (Types.DATE == columnType) {
             retObj=rs.getDate(i + 1);
 

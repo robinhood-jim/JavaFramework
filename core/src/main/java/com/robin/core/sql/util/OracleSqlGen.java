@@ -15,20 +15,14 @@
  */
 package com.robin.core.sql.util;
 
-import java.util.List;
-import java.util.Map;
-
 import com.robin.core.base.datameta.BaseDataBaseMeta;
 import com.robin.core.base.exception.DAOException;
-import com.robin.core.base.exception.QueryConfgNotFoundException;
-import com.robin.core.base.util.Const;
 import com.robin.core.query.util.PageQuery;
 import com.robin.core.query.util.QueryParam;
-import com.robin.core.query.util.QueryString;
 
 public class OracleSqlGen extends AbstractSqlGen implements BaseSqlGen {
 
-	private static OracleSqlGen sqlGen=new OracleSqlGen();
+	private static final OracleSqlGen sqlGen=new OracleSqlGen();
 	private OracleSqlGen(){
 
 	}
@@ -39,20 +33,21 @@ public class OracleSqlGen extends AbstractSqlGen implements BaseSqlGen {
     public String generateCountSql(String strSQL) {
 
 		String str = strSQL.trim().toLowerCase();
-		str=str.replaceAll("\\n", "");
-		str=str.replaceAll("\\r", "");
+		str=str.replace("\\n", "");
+		str=str.replace("\\r", "");
 		int nFromPos = str.indexOf(" from ");
 		int nOrderPos = str.lastIndexOf(" order by ");
 		if (nOrderPos == -1) {
             nOrderPos = str.length();
         }
-		StringBuffer strBuf = new StringBuffer();
+		StringBuilder strBuf = new StringBuilder();
 		strBuf.append("select count(*) as total ").append(str, nFromPos, nOrderPos);
 		return strBuf.toString();
 	}
 
 	@Override
     public String generatePageSql(String strSQL, PageQuery pageQuery) {
+		checkSqlAndPage(strSQL,pageQuery);
 		if(pageQuery!=null && pageQuery.getPageSize()!=0) {
 			Integer[] startEnd = getStartEndRecord(pageQuery);
 			int nBegin = startEnd[0];
@@ -63,7 +58,7 @@ public class OracleSqlGen extends AbstractSqlGen implements BaseSqlGen {
 				strSQL = strSQL.substring(0, strSQL.length() - 11);
 				isForUpdate = true;
 			}
-			StringBuffer pagingSelect = new StringBuffer(strSQL.length() + 100);
+			StringBuilder pagingSelect = new StringBuilder(strSQL.length() + 100);
 			if (hasOffset) {
 				pagingSelect.append("select * from ( select row_.*, rownum rownum_ from ( ");
 			} else {
@@ -85,14 +80,9 @@ public class OracleSqlGen extends AbstractSqlGen implements BaseSqlGen {
 		}
 	}
 
-	private String getClassSql(List<QueryParam> queryList) {
-
-		return null;
-	}
-
 	@Override
     protected String toSQLForString(QueryParam param) {
-		StringBuffer sql = new StringBuffer();
+		StringBuilder sql = new StringBuilder();
 		String nQueryModel = param.getQueryMode();
 		if (param.getQueryValue() == null || "".equals(param.getQueryValue().trim())) {
             return "";
@@ -122,7 +112,7 @@ public class OracleSqlGen extends AbstractSqlGen implements BaseSqlGen {
 
 	@Override
     protected String toSQLForDate(QueryParam param) {
-		StringBuffer sql = new StringBuffer();
+		StringBuilder sql = new StringBuilder();
 		String nQueryModel = param.getQueryMode();
 		if (param.getQueryValue() == null || "".equals(param.getQueryValue().trim())) {
             return "";

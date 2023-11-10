@@ -1,21 +1,12 @@
 package com.robin.core.fileaccess.meta;
 
+import com.robin.core.base.datameta.DataBaseParam;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.List;
 
-/**
- * <p>Project:  frame</p>
- * <p>
- * <p>Description:com.robin.core.fileaccess.meta</p>
- * <p>
- * <p>Copyright: Copyright (c) 2019 create at 2019年08月02日</p>
- * <p>
- * <p>Company: zhcx_DEV</p>
- *
- * @author robinjim
- * @version 1.0
- */
+
 @Data
 public class DataSetColumnMeta implements Serializable {
     private String columnName;
@@ -30,6 +21,8 @@ public class DataSetColumnMeta implements Serializable {
     private Integer scale;
     private boolean increment;
     private Integer length;
+    private List<String> nominalValues;
+
 
     public DataSetColumnMeta(String columnName,String columnType,Object defaultNullValue){
         this.columnName=columnName;

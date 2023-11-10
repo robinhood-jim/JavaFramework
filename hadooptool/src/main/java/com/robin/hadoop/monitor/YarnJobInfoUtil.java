@@ -5,6 +5,7 @@ import com.robin.core.base.datameta.BaseDataBaseMeta;
 import com.robin.core.base.datameta.DataBaseMetaFactory;
 import com.robin.core.base.datameta.DataBaseParam;
 import com.robin.hadoop.hdfs.HDFSProperty;
+import com.robin.hadoop.hdfs.HDFSUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringEscapeUtils;
@@ -73,15 +74,8 @@ public class YarnJobInfoUtil extends AbstractJobInfoUtil{
 			UserGroupInformation.setConfiguration(config);
 			if(UserGroupInformation.isSecurityEnabled()){
 				logger.debug("visit HDFS using kerberos");
-				String user=config.get("dfs.kerberos.username");
-				String keytab=config.get("dfs.kerberos.keytab");
-				String ticketCachePath=config.get("dfs.kerberos.ticketCache");
-				if(ticketCachePath!=null) {
-                    UserGroupInformation.getUGIFromTicketCache(ticketCachePath, user);
-                } else {
-                    UserGroupInformation.loginUserFromKeytab(user, keytab);
-                }
-			}
+                HDFSUtil.setSecurity(config);
+            }
 		}catch(Exception ex){
 			logger.error("",ex);
 		}

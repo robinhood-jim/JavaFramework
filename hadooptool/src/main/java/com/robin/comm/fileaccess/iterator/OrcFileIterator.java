@@ -25,8 +25,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.robin.core.fileaccess.util.ResourceUtil.getProcessPath;
-
 public class OrcFileIterator extends AbstractFileIterator {
     private Configuration conf;
     List<TypeDescription> fields;
@@ -37,11 +35,11 @@ public class OrcFileIterator extends AbstractFileIterator {
     public OrcFileIterator(DataCollectionMeta colmeta) {
         super(colmeta);
     }
-    private Map<String,Object> valueMap=new HashMap<>();
+    private final Map<String,Object> valueMap=new HashMap<>();
     int maxRow=-1;
     int currentRow=0;
     private FileSystem fs;
-    private Reader reader;
+    private Reader oreader;
 
 
     @Override
@@ -119,7 +117,7 @@ public class OrcFileIterator extends AbstractFileIterator {
     @Override
     public void init() {
         try {
-            if(colmeta.getSourceType().equals(ResourceConst.InputSourceType.TYPE_HDFS.getValue())){
+            if(colmeta.getSourceType().equals(ResourceConst.IngestType.TYPE_HDFS.getValue())){
                 HDFSUtil util=new HDFSUtil(colmeta);
                 conf=util.getConfig();
                 fs=FileSystem.get(conf);
@@ -131,12 +129,12 @@ public class OrcFileIterator extends AbstractFileIterator {
                 fs=new MockFileSystem(conf,byteout.toByteArray());
             }
 
-            reader=OrcFile.createReader(new Path(colmeta.getPath()),OrcFile.readerOptions(conf).filesystem(fs));
-            schema= reader.getSchema();
+            oreader =OrcFile.createReader(new Path(colmeta.getPath()),OrcFile.readerOptions(conf).filesystem(fs));
+            schema= oreader.getSchema();
             fieldNames=schema.getFieldNames();
-            rows=reader.rows();
+            rows= oreader.rows();
             fields=schema.getChildren();
-            batch=reader.getSchema().createRowBatch();
+            batch= oreader.getSchema().createRowBatch();
             maxRow=batch.size;
 
         }catch (Exception ex){
@@ -153,8 +151,8 @@ public class OrcFileIterator extends AbstractFileIterator {
         if(!ObjectUtils.isEmpty(fs)){
             fs.close();
         }
-        if(!ObjectUtils.isEmpty(reader)){
-            reader.close();
+        if(!ObjectUtils.isEmpty(oreader)){
+            oreader.close();
         }
     }
 }

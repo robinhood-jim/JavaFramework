@@ -15,21 +15,15 @@
  */
 package com.robin.core.sql.util;
 
-import java.util.List;
-import java.util.Map;
-
 import com.robin.core.base.datameta.BaseDataBaseMeta;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.robin.core.base.exception.DAOException;
-import com.robin.core.base.util.Const;
 import com.robin.core.query.util.PageQuery;
 import com.robin.core.query.util.QueryParam;
-import com.robin.core.query.util.QueryString;
+
+import java.util.List;
 
 public class SqlServer2005Gen extends AbstractSqlGen implements BaseSqlGen{
-	private static SqlServer2005Gen sqlGen=new SqlServer2005Gen();
+	private static final SqlServer2005Gen sqlGen=new SqlServer2005Gen();
 	private SqlServer2005Gen(){
 
 	}
@@ -39,14 +33,14 @@ public class SqlServer2005Gen extends AbstractSqlGen implements BaseSqlGen{
 	@Override
     public String generateCountSql(String strSQL) {
 		String str= strSQL.trim();
-		str=str.replaceAll("\\n", "").replaceAll("\\r", "").replaceAll("\\t", " ");
+		str=str.replace("\\n", "").replace("\\r", "").replace("\\t", " ");
 		
 		int nFromPos = str.indexOf("from");
 		int nOrderPos = str.lastIndexOf("order by");
 		if (nOrderPos == -1) {
             nOrderPos = str.length();
         }
-		StringBuffer strBuf = new StringBuffer();
+		StringBuilder strBuf = new StringBuilder();
 		strBuf.append("select count(*) as total ").append(str, nFromPos, nOrderPos);
 		return strBuf.toString();
 	}
@@ -54,17 +48,18 @@ public class SqlServer2005Gen extends AbstractSqlGen implements BaseSqlGen{
 
 	@Override
     public String generatePageSql(String strSQL, PageQuery pageQuery) {
+		checkSqlAndPage(strSQL,pageQuery);
 		if(pageQuery!=null && pageQuery.getPageSize()!=0) {
 			strSQL = strSQL.trim();
 			String order = pageQuery.getOrder();
 			String orderdesc = pageQuery.getOrderDirection();
-			String norder = "";
+			String norder ;
 			if (orderdesc.equalsIgnoreCase(PageQuery.ASC)) {
 				norder = PageQuery.DESC;
 			} else {
 				norder = PageQuery.ASC;
 			}
-			StringBuffer pagingSelect = new StringBuffer(strSQL.length() + 100);
+			StringBuilder pagingSelect = new StringBuilder(strSQL.length() + 100);
 			int pagefrom = pageQuery.getPageSize() * pageQuery.getPageNumber();
 			int pos = strSQL.indexOf("select");
 			int pos1 = strSQL.indexOf("order");
@@ -72,7 +67,7 @@ public class SqlServer2005Gen extends AbstractSqlGen implements BaseSqlGen{
 			pagingSelect.append("select * from (select top " + pageQuery.getPageSize() + " * from (select top ").append(pagefrom + " ").append(sqlpart);
 			pagingSelect.append(" order by " + order + " " + orderdesc + ") _row");
 			pagingSelect.append(" order by " + pageQuery.getOrder() + " " + norder).append(") _row1 order by " + pageQuery.getOrder() + " " + orderdesc);
-			log.info("pageSql=" + pagingSelect.toString());
+			log.info("pageSql={}" ,pagingSelect.toString());
 			return pagingSelect.toString();
 		}else{
 			return getNoPageSql(strSQL,pageQuery);
@@ -90,12 +85,12 @@ public class SqlServer2005Gen extends AbstractSqlGen implements BaseSqlGen{
 	@Override
     public String generateSingleRowSql(String querySql) {
 		String str= querySql.trim();
-		str=str.replaceAll("\\n", "").replaceAll("\\r", "").replaceAll("\\t", " ");
+		str=str.replace("\\n", "").replace("\\r", "").replace("\\t", " ");
 		int nOrderPos = str.lastIndexOf("order by");
 		if (nOrderPos == -1) {
             nOrderPos = str.length();
         }
-		StringBuffer pagingSelect = new StringBuffer();
+		StringBuilder pagingSelect = new StringBuilder();
 		pagingSelect.append("select * from ( select row.*,rownumber() over() as rownum");
 		pagingSelect.append(" from ( ").append(str, 0, nOrderPos);
 		pagingSelect.append(" )row) row_ where rownum = 1").append(" with ur");

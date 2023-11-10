@@ -3,7 +3,6 @@ package com.robin.comm.fileaccess.writer;
 import com.robin.comm.fileaccess.util.MockFileSystem;
 import com.robin.comm.fileaccess.util.OrcUtil;
 import com.robin.core.base.util.Const;
-import com.robin.core.base.util.FileUtils;
 import com.robin.core.base.util.ResourceConst;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.meta.DataSetColumnMeta;
@@ -17,7 +16,6 @@ import org.apache.orc.CompressionKind;
 import org.apache.orc.OrcFile;
 import org.apache.orc.TypeDescription;
 import org.apache.orc.Writer;
-import org.apache.parquet.hadoop.metadata.CompressionCodecName;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
@@ -71,7 +69,7 @@ public class OrcFileWriter extends AbstractFileWriter {
                 compressionKind=CompressionKind.ZLIB;
         }
 
-        if(colmeta.getSourceType().equals(ResourceConst.InputSourceType.TYPE_HDFS.getValue())){
+        if(colmeta.getSourceType().equals(ResourceConst.IngestType.TYPE_HDFS.getValue())){
             HDFSUtil util=new HDFSUtil(colmeta);
             conf=util.getConfig();
             fs= FileSystem.get(conf);

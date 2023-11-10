@@ -12,9 +12,9 @@ import java.util.concurrent.Executor;
 
 
 public class ProxyConnection implements Connection {
-    private Tracing tracing;
-    protected TraceParam param;
-    private Connection delegate;
+    private final Tracing tracing;
+    protected final TraceParam param;
+    private final Connection delegate;
     public ProxyConnection(Connection connection, Environment environment, Tracing tracing){
         this.tracing=tracing;
         this.delegate=connection;

@@ -15,24 +15,27 @@
  */
 package com.robin.core.fileaccess.meta;
 
-import com.robin.core.base.dao.JdbcDao;
 import com.robin.core.base.datameta.BaseDataBaseMeta;
 import com.robin.core.base.datameta.DataBaseColumnMeta;
+import com.robin.core.base.datameta.DataBaseParam;
 import com.robin.core.base.util.ResourceConst;
-import com.robin.core.sql.util.FilterCondition;
+import com.robin.core.convert.util.ConvertUtil;
+import com.robin.core.fileaccess.util.ResourceUtil;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 
+import java.io.IOException;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.net.URI;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Data
+@Slf4j
 public class DataCollectionMeta implements Serializable {
-	private String split;
+	private String split=",";
 	private String encode="UTF-8";
 	private List<DataSetColumnMeta> columnList=new ArrayList<>();
 	private String path;
@@ -52,6 +55,9 @@ public class DataCollectionMeta implements Serializable {
 	private Long sourceId;
 	private Long contentFormat;
 	private String pathTemplate;
+	private DataBaseParam param;
+	private String dbType;
+	private String tableName;
 	public void setAvroSchema(Class<?> clazz){
 		String fullClassName=clazz.getClass().getCanonicalName();
 		int pos=fullClassName.lastIndexOf(".");
@@ -71,6 +77,10 @@ public class DataCollectionMeta implements Serializable {
 		this.columnList.add(new DataSetColumnMeta(columnName, columnType, defaultNullValue,required,dateFormat));
 		columnNameMap.put(columnName,null);
 	}
+	public void addColumnMeta(DataSetColumnMeta columnMeta){
+		this.columnList.add(columnMeta);
+		columnNameMap.put(columnMeta.getColumnName(),1);
+	}
 
 	public  DataSetColumnMeta createColumnMeta(String columnName,String columnType,Object defaultNullValue){
 		return new DataSetColumnMeta(columnName,columnType,defaultNullValue);
@@ -82,10 +92,11 @@ public class DataCollectionMeta implements Serializable {
 		if(!CollectionUtils.isEmpty(columnMetas)){
 			return columnMetas.stream().map(f->new DataSetColumnMeta(f.getColumnName(),f.getColumnType().toString(),f.getDefaultValue(),!f.isNullable(),null)).collect(Collectors.toList());
 		}
-		return null;
+		return Collections.emptyList();
 	}
+
 	public boolean isFileType(){
-		if(resType.equals(ResourceConst.ResourceType.TYPE_FTPFILE.getValue()) || resType.equals(ResourceConst.ResourceType.TYPE_HDFSFILE.getValue()) || resType.equals(ResourceConst.ResourceType.TYPE_LOCALFILE.getValue())){
+		if(sourceType.equals(ResourceConst.IngestType.TYPE_FTP.getValue()) || sourceType.equals(ResourceConst.IngestType.TYPE_SFTP.getValue()) || sourceType.equals(ResourceConst.IngestType.TYPE_HDFS.getValue()) || sourceType.equals(ResourceConst.IngestType.TYPE_LOCAL.getValue())){
 			return true;
 		}
 		return false;
@@ -97,7 +108,7 @@ public class DataCollectionMeta implements Serializable {
 		return false;
 	}
 	public static class Builder{
-		private DataCollectionMeta meta=new DataCollectionMeta();
+		private final DataCollectionMeta meta=new DataCollectionMeta();
 		public Builder(){
 
 		}
@@ -138,4 +149,28 @@ public class DataCollectionMeta implements Serializable {
 			return meta;
 		}
 	}
+	public String constructUrl()  {
+		VfsParam param = new VfsParam();
+		try {
+			ConvertUtil.convertToTarget(param, getResourceCfgMap());
+			param.adjustProtocol();
+			StringBuilder builder = new StringBuilder();
+			builder.append(param.getProtocol()).append("://");
+
+			if (!ObjectUtils.isEmpty(param.getUserName()) ) {
+				builder.append(param.getUserName());
+				if(!ObjectUtils.isEmpty(param.getPassword())) {
+					builder.append(":").append(param.getPassword());
+				}
+				builder.append("@");
+			}
+			builder.append(param.getHostName()).append(":").append(param.getPort())
+					.append(ResourceUtil.getProcessPath(getPath()));
+			return builder.toString();
+		} catch (Exception ex) {
+			log.error("{}",ex.getMessage());
+		}
+		return null;
+	}
+
 }

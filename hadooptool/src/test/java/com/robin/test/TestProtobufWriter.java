@@ -43,7 +43,7 @@ public class TestProtobufWriter extends TestCase {
             colmeta.addColumnMeta("item_value",Const.META_TYPE_STRING,null);
             colmeta.setEncode("UTF-8");
             colmeta.setFileFormat(Const.FILESUFFIX_PROTOBUF);
-            colmeta.setResType(ResourceConst.InputSourceType.TYPE_LOCAL.getValue());
+            colmeta.setResType(ResourceConst.IngestType.TYPE_LOCAL.getValue());
             colmeta.setPath("d:/tmp/luoming/1.proto.gz");
             AbstractResourceAccessUtil util= ResourceAccessorFactory.getResourceAccessorByType(colmeta.getResType());
 

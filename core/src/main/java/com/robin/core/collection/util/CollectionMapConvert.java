@@ -15,7 +15,6 @@
  */
 package com.robin.core.collection.util;
 
-import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.robin.core.base.exception.MissingConfigException;
 import com.robin.core.base.reflect.ReflectUtils;
 import com.robin.core.base.spring.SpringContextHolder;
@@ -54,10 +53,8 @@ public class CollectionMapConvert {
         Map<String, Method> methodMap = ReflectUtils.returnGetMethods(listobj.get(0).getClass());
         Method method = methodMap.get(identityCol);
         if (method != null) {
-            for (int i = 0; i < listobj.size(); i++) {
-                T targerobj = listobj.get(i);
-
-                Object obj = method.invoke(targerobj, null);
+            for (T targerobj : listobj) {
+                Object obj = method.invoke(targerobj, (Object) null);
                 String value = obj.toString();
                 if (obj instanceof Double) {
                     value = String.valueOf(((Double) obj).longValue());
@@ -65,7 +62,7 @@ public class CollectionMapConvert {
                 if (obj instanceof Long) {
                     value = String.valueOf(((Long) obj).longValue());
                 }
-                retMap.put(value, listobj.get(i));
+                retMap.put(value, targerobj);
 
             }
         } else {
@@ -76,9 +73,8 @@ public class CollectionMapConvert {
 
     public static <T> List<T> convertToList(Map<String, T> mapobj) {
         List<T> retList = new ArrayList<>();
-        Iterator<T> iter = mapobj.values().iterator();
-        while (iter.hasNext()) {
-            retList.add(iter.next());
+        for (T t : mapobj.values()) {
+            retList.add(t);
         }
         return retList;
     }
@@ -109,7 +105,7 @@ public class CollectionMapConvert {
         Map<String, List<T>> retMap = new HashMap<>();
         for (T t : listobj) {
             Object targerobj = t;
-            Object obj = null;
+            Object obj;
             if (Map.class.isAssignableFrom(t.getClass())) {
                 obj = ((Map) t).get(parentCol);
             } else {
@@ -117,7 +113,7 @@ public class CollectionMapConvert {
                     method = ReflectUtils.returnGetMethods(t.getClass()).get(parentCol);
                     Assert.notNull(method,"parent column not exists in object!");
                 }
-                obj = method.invoke(targerobj, null);
+                obj = method.invoke(targerobj, (Object) null);
             }
             if (obj == null) {
                 addMapToList(retMap, "NULL", t);
@@ -250,12 +246,8 @@ public class CollectionMapConvert {
      */
     public static <T> List<T> filterListByColumnCondition(List<T> listobj, String scriptType, String queryConditions) throws Exception {
         checkType(listobj);
-
-        if (SpringContextHolder.getBean(ScriptExecutor.class) == null) {
-            throw new MissingConfigException("must use in spring context!");
-        }
-        CompiledScript script = SpringContextHolder.getBean(ScriptExecutor.class).returnScriptNoCache(scriptType, queryConditions);
-        Bindings bindings = SpringContextHolder.getBean(ScriptExecutor.class).createBindings(scriptType);
+        CompiledScript script =ScriptExecutor.getInstance().returnScriptNoCache(scriptType, queryConditions);
+        Bindings bindings = ScriptExecutor.getInstance().createBindings(scriptType);
         return listobj.stream().filter(f->{
             Map<String, Object> valueMap = new HashMap<>();
             try {
@@ -281,7 +273,7 @@ public class CollectionMapConvert {
 
         for (int i = 0; i < listobj.size(); i++) {
             Object targerobj = listobj.get(i);
-            Object obj = method.invoke(targerobj, null);
+            Object obj = method.invoke(targerobj, (Object) null);
             String value = obj != null ? obj.toString() : "";
             buffer.append(value);
             if (i != listobj.size() - 1) {
@@ -299,8 +291,8 @@ public class CollectionMapConvert {
         if (method == null) {
             throw new MissingConfigException("column not exist in object");
         }
-        for (int i = 0; i < listobj.size(); i++) {
-            Object obj = method.invoke(listobj.get(i), null);
+        for (T t : listobj) {
+            Object obj = method.invoke(t, (Object) null);
             String value = obj.toString();
             retList.add(value);
         }
@@ -316,9 +308,7 @@ public class CollectionMapConvert {
         List<Map<String, Object>> retList = new ArrayList<>();
         for (T t : listobj) {
             Map<String, Object> retmap = new HashMap<>();
-            Iterator<Map.Entry<String, Method>> iter = getMetholds.entrySet().iterator();
-            while (iter.hasNext()) {
-                Map.Entry<String, Method> entry = iter.next();
+            for (Map.Entry<String, Method> entry : getMetholds.entrySet()) {
                 Object obj = entry.getValue().invoke(t, null);
                 if (obj != null) {
                     retmap.put(entry.getKey(), obj);
@@ -340,7 +330,7 @@ public class CollectionMapConvert {
             throw new MissingConfigException("identify column not exist in object");
         }
         for (T obj : orgList) {
-            Object val = method.invoke(obj, null);
+            Object val = method.invoke(obj, (Object) null);
             if (map.get(val.toString()) != null) {
                 retList.add(map.get(val.toString()));
             } else {

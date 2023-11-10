@@ -2,7 +2,6 @@ package com.robin.comm.fileaccess.writer;
 
 import com.robin.comm.fileaccess.util.ParquetUtil;
 import com.robin.core.base.util.Const;
-import com.robin.core.base.util.FileUtils;
 import com.robin.core.base.util.ResourceConst;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.util.AvroUtils;
@@ -16,14 +15,11 @@ import org.apache.hadoop.fs.Path;
 import org.apache.parquet.avro.AvroParquetWriter;
 import org.apache.parquet.hadoop.ParquetWriter;
 import org.apache.parquet.hadoop.metadata.CompressionCodecName;
-import org.apache.parquet.io.OutputFile;
-import org.apache.parquet.io.PositionOutputStream;
 import org.apache.parquet.schema.MessageType;
 
 import javax.naming.OperationNotSupportedException;
 import java.io.IOException;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -81,7 +77,7 @@ public class ParquetFileWriter extends AbstractFileWriter {
         if(colmeta.getResourceCfgMap().containsKey("file.useAvroEncode") && "true".equalsIgnoreCase(colmeta.getResourceCfgMap().get("file.useAvroEncode").toString())){
             useAvroEncode=true;
         }
-        if(colmeta.getSourceType().equals(ResourceConst.InputSourceType.TYPE_HDFS.getValue())){
+        if(colmeta.getSourceType().equals(ResourceConst.IngestType.TYPE_HDFS.getValue())){
             if(useAvroEncode) {
                 pwriter = AvroParquetWriter.builder(new Path(colmeta.getPath())).withSchema(avroSchema).withCompressionCodec(codecName).withConf(new HDFSUtil(colmeta).getConfigration()).build();
             }else {

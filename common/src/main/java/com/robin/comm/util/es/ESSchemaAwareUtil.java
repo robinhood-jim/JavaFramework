@@ -27,13 +27,12 @@ import org.springframework.util.Assert;
 import org.springframework.util.Base64Utils;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 @Slf4j
 public class ESSchemaAwareUtil {
-    private static Gson gson= GsonUtil.getGson();
+    private static final Gson gson= GsonUtil.getGson();
     public static Map<String,Object> getIndexs(String httpUrl,String... params){
         String url=httpUrl;
         if(!url.endsWith("/")){
@@ -47,15 +46,11 @@ public class ESSchemaAwareUtil {
         Map<String,Object> indexMap=new HashMap<>();
         if(response.getStatusCode()==200){
             LinkedHashMap<String,Object> map=gson.fromJson(response.getResponseData(),new TypeToken<LinkedHashMap<String,Object>>(){}.getType());
-            //Iterator<Map.Entry<String,Object>> iter=map.entrySet().iterator();
             for(Map.Entry<String,Object> entry:map.entrySet()){
-                //Map.Entry<String,Object> entry=iter.next();
                 String indexName=entry.getKey();
                 Map<String,Object> indexCfgMap=new HashMap<>();
                 LinkedTreeMap<String,Object> mapping=(LinkedTreeMap<String,Object>)((LinkedTreeMap<String,Object>)entry.getValue()).get("mappings");
-                //Iterator<Map.Entry<String,Object>> iter1=mapping.entrySet().iterator();
                 for(Map.Entry<String,Object> entry1:mapping.entrySet()){
-                    //Map.Entry<String,Object> entry1=iter1.next();
                     readMapping(indexCfgMap, mapping, entry1);
                 }
                 indexMap.put(indexName,indexCfgMap);
@@ -84,11 +79,9 @@ public class ESSchemaAwareUtil {
         Map<String,Object> propsMap=new HashMap<>();
         for(Map.Entry<String,Object> propEntry:propMap.entrySet()){
             Map<String,Object> fieldMap=(Map<String,Object>)propEntry.getValue();
-            Iterator<Map.Entry<String,Object>> fielditer=fieldMap.entrySet().iterator();
-            while(fielditer.hasNext()){
-                Map.Entry<String,Object> fieldEntry=fielditer.next();
-                String fieldName=fieldEntry.getKey();
-                if("type".equalsIgnoreCase(fieldName)) {
+            for (Map.Entry<String, Object> fieldEntry : fieldMap.entrySet()) {
+                String fieldName = fieldEntry.getKey();
+                if ("type".equalsIgnoreCase(fieldName)) {
                     String type = fieldEntry.getValue().toString();
                     Map<String, Object> fieldCfgMap = new HashMap<>();
                     fieldCfgMap.put("fieldName", propEntry.getKey());

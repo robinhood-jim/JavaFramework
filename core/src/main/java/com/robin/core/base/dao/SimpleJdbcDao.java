@@ -29,6 +29,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
 import java.io.BufferedReader;
@@ -36,29 +37,29 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.Serializable;
 import java.sql.*;
+import java.sql.Date;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 
 public class SimpleJdbcDao {
-    private String driverName;
-    private String jdbcUrl;
-    private String userName;
-    private String passwd;
-    long retryNums = 1;
-    int waitSecond = 0;
-    boolean getConnectLoop = false;
-    private BaseDataBaseMeta meta;
+    private final String driverName;
+    private final String jdbcUrl;
+    private final String userName;
+    private final String passwd;
+    private long retryNums = 1;
+    private int waitSecond = 0;
+    private boolean getConnectLoop = false;
+    private final BaseDataBaseMeta meta;
     private DataBaseParam param;
-    private static Logger logger = LoggerFactory.getLogger(SimpleJdbcDao.class);
+    private static final Logger logger = LoggerFactory.getLogger(SimpleJdbcDao.class);
     private static final String FULL_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
     private static final String SHORT_DATE_FORMAT = "yyyy-MM-dd";
 
     public SimpleJdbcDao(BaseDataBaseMeta meta) {
+        Assert.isTrue(checkMeta(meta),"meta is empty");
         this.driverName = meta.getParam().getDriverClassName();
         this.userName = param.getUserName();
         this.passwd = param.getPasswd();
@@ -72,6 +73,7 @@ public class SimpleJdbcDao {
     }
 
     public SimpleJdbcDao(BaseDataBaseMeta meta, long retryNums, int waitSecond, boolean getConnectionLoop) {
+        Assert.isTrue(checkMeta(meta),"meta is empty");
         this.driverName = meta.getParam().getDriverClassName();
         this.userName = param.getUserName();
         this.passwd = param.getPasswd();
@@ -85,6 +87,13 @@ public class SimpleJdbcDao {
         this.retryNums = retryNums;
         this.waitSecond = waitSecond;
         this.getConnectLoop = getConnectionLoop;
+    }
+    private boolean checkMeta(BaseDataBaseMeta meta){
+        Assert.notNull(meta.getParam(),"");
+        Assert.notNull(meta.getParam().getDriverClassName(),"");
+        Assert.notNull(meta.getParam().getUserName(),"");
+        Assert.notNull(meta.getParam().getPasswd(),"");
+        return true;
     }
 
     private Connection getConnection() throws DAOException {
@@ -105,7 +114,7 @@ public class SimpleJdbcDao {
             }
             if (waitSecond > 0) {
                 try {
-                    Thread.sleep(1000L * waitSecond);
+                    TimeUnit.SECONDS.sleep(waitSecond);
                 } catch (InterruptedException ex1) {
                     throw new DAOException(ex1);
                 }
@@ -146,12 +155,12 @@ public class SimpleJdbcDao {
     /**
      * 支持出错重连的获取连接方法
      *
-     * @param meta
+     * @param meta           meta
      * @param retryNums      重连次数
      * @param sleepSecond    休眠时间(秒)
      * @param getConnectLoop 连到死标记
-     * @return
-     * @throws DAOException
+     * @return  Connection
+     * @throws  DAOException
      */
     public static Connection getConnection(BaseDataBaseMeta meta, long retryNums, int sleepSecond, boolean getConnectLoop) throws DAOException {
         Connection conn = null;
@@ -160,12 +169,7 @@ public class SimpleJdbcDao {
         while (getConnectLoop || curtryNum < retryNums) {
             curtryNum++;
             try {
-                DataBaseParam param = meta.getParam();
-                if (param.getUrl() == null || param.getUrl().trim().isEmpty()) {
-                    param.setUrl(meta.getUrl());
-                }
-                DbUtils.loadDriver(meta.getParam().getDriverClassName());
-                conn = DriverManager.getConnection(param.getUrl(), param.getUserName(), param.getPasswd());
+                conn =getConnection(meta);
             } catch (Exception e) {
                 logger.error("--get connection Error and retry {} times.", curtryNum);
                 ex = e;
@@ -174,7 +178,7 @@ public class SimpleJdbcDao {
                 break;
             }
             try {
-                Thread.sleep(1000L * sleepSecond);
+                TimeUnit.SECONDS.sleep(sleepSecond);
             } catch (InterruptedException ex1) {
                 throw new DAOException(ex1);
             }
@@ -184,6 +188,7 @@ public class SimpleJdbcDao {
         }
         return conn;
     }
+
 
     public long queryByLong(final String sql) throws DAOException {
         Connection conn = getConnection();
@@ -198,11 +203,11 @@ public class SimpleJdbcDao {
         }
     }
 
-    public static long queryByLong(final Connection conn, final String sql) throws DAOException {
+    public static long queryByLong(final Connection conn, final String sql,Object... objects) throws DAOException {
         try {
             QueryRunner qRunner = new QueryRunner();
             ScalarHandler<Long> handler = new ScalarHandler<>(1);
-            return qRunner.query(conn, sql, handler);
+            return qRunner.query(conn, sql,objects, handler);
         } catch (Exception ex) {
             throw new DAOException(ex);
         }
@@ -249,11 +254,11 @@ public class SimpleJdbcDao {
         }
     }
 
-    public static int queryByInt(final Connection conn, final String sql) throws DAOException {
+    public static int queryByInt(final Connection conn, final String sql,Object... objects) throws DAOException {
         try {
             QueryRunner qRunner = new QueryRunner();
             ScalarHandler<Integer> handler = new ScalarHandler<>(1);
-            return qRunner.query(conn, sql, handler);
+            return qRunner.query(conn, sql,objects, handler);
         } catch (Exception ex) {
             throw new DAOException(ex);
         }
@@ -306,7 +311,7 @@ public class SimpleJdbcDao {
         }
     }
 
-    @SuppressWarnings("deprecation")
+
     public List<Map<String, Object>> queryBySql(final String sql, Object[] obj) throws DAOException {
         Connection conn = getConnection();
         try {
@@ -320,7 +325,6 @@ public class SimpleJdbcDao {
 
     }
 
-    @SuppressWarnings("deprecation")
     public List<Map<String, Object>> queryBySql(final QueryRunner runner, final String sql, Object[] obj) throws DAOException {
         Connection conn = getConnection();
         try {
@@ -382,7 +386,7 @@ public class SimpleJdbcDao {
         }
     }
 
-    public static final Map<String, Object> wrapResultSet(ResultSet rs, ResultSetMetaData meta) throws SQLException {
+    public static Map<String, Object> wrapResultSet(ResultSet rs, ResultSetMetaData meta) throws SQLException {
         Map<String, Object> map = new HashMap<>();
         for (int i = 0; i < meta.getColumnCount(); i++) {
             String columnName = meta.getColumnLabel(i + 1);
@@ -454,7 +458,7 @@ public class SimpleJdbcDao {
     }
 
     public static int executeOperationWithQuery(final Connection conn, String sql, boolean pmdKnownBroken, final ResultSetOperationExtractor extractor) throws SQLException {
-        QueryRunner qRunner = null;
+        QueryRunner qRunner ;
         if (pmdKnownBroken) {
             qRunner = new QueryRunner(pmdKnownBroken);
         } else {
@@ -464,7 +468,7 @@ public class SimpleJdbcDao {
     }
 
     public static int executeOperationWithQuery(final Connection conn, String sql, Object[] param, boolean pmdKnownBroken, final ResultSetOperationExtractor extractor) throws SQLException {
-        QueryRunner qRunner = null;
+        QueryRunner qRunner ;
         if (pmdKnownBroken) {
             qRunner = new QueryRunner(pmdKnownBroken);
         } else {
@@ -520,8 +524,7 @@ public class SimpleJdbcDao {
         try {
             QueryRunner qRunner = new QueryRunner();
             qRunner.update(connection, sql, params);
-            Long num = qRunner.query(connection, sql2, new ScalarHandler<>(1));
-            return num.longValue();
+            return qRunner.query(connection, sql2, new ScalarHandler<>(1));
         } catch (Exception ex) {
             throw new DAOException(ex);
         }
@@ -530,7 +533,7 @@ public class SimpleJdbcDao {
     /**
      * 支持Hive调用和无ResultSet返回的情况
      *
-     * @param hql
+     * @param hql  querysql
      * @return
      * @throws DAOException
      */
@@ -540,16 +543,11 @@ public class SimpleJdbcDao {
     }
 
     public static boolean execute(final Connection conn, final String hql) throws DAOException {
-        Statement stmt = null;
-        try {
-            stmt = conn.createStatement();
+        try (Statement stmt =conn.createStatement()){
             stmt.execute(hql);
             return true;
         } catch (Exception ex) {
             throw new DAOException(ex);
-        } finally {
-            DbUtils.closeQuietly(stmt);
-            DbUtils.closeQuietly(conn);
         }
     }
 
@@ -581,12 +579,10 @@ public class SimpleJdbcDao {
     }
 
     public static int executeUpdateWithTransaction(final Connection conn, final String sql, final Object... param) throws DAOException {
-        int i = -1;
-        PreparedStatement stmt = null;
-        try {
+        int i ;
+        try (PreparedStatement stmt =conn.prepareStatement(sql)){
             QueryRunner runner = new QueryRunner();
             conn.setAutoCommit(false);
-            stmt = conn.prepareStatement(sql);
             runner.fillStatement(stmt, param);
             i = stmt.executeUpdate(sql);
             conn.commit();
@@ -597,10 +593,6 @@ public class SimpleJdbcDao {
                 throw new DAOException(e);
             }
             throw new DAOException(ex);
-        } finally {
-            if (stmt != null) {
-                DbUtils.closeQuietly(stmt);
-            }
         }
         return i;
     }
@@ -614,31 +606,30 @@ public class SimpleJdbcDao {
     public static int simpleBatch(Connection conn, final String sql, final List<Object[]> valueList) throws DAOException {
         PreparedStatement stmt = null;
         int retnum = -1;
-        int[] retarr = null;
+        int[] retarr ;
         QueryRunner qRunner = new QueryRunner();
         try {
             conn.setAutoCommit(false);
             stmt = conn.prepareStatement(sql);
-            for (int i = 0; i < valueList.size(); i++) {
-                Object[] obj = valueList.get(i);
+            for (Object[] obj : valueList) {
                 qRunner.fillStatement(stmt, obj);
                 stmt.addBatch();
             }
             retarr = stmt.executeBatch();
             conn.commit();
         } catch (SQLException ex) {
-            logger.error("", ex);
+            logger.error("{}", ex.getMessage());
             try {
                 conn.rollback();
             } catch (Exception e) {
-
+                throw new DAOException(e);
             }
             throw new DAOException(ex);
         } finally {
             DbUtils.closeQuietly(stmt);
         }
-        for (int i = 0; i < retarr.length; i++) {
-            if (retarr[i] > 0) {
+        for (int j : retarr) {
+            if (j > 0) {
                 retnum++;
             }
         }
@@ -646,10 +637,10 @@ public class SimpleJdbcDao {
     }
 
     public int batchUpdate(final String sql, final List<Map<String, String>> columnCfgList, final List<Map<String, String>> objList) throws DAOException {
-        Connection conn = getConnection();
+
         int retnum = -1;
-        int[] retarr = null;
-        try {
+        int[] retarr ;
+        try(Connection conn = getConnection()) {
             QueryRunner qRunner = new QueryRunner();
             Object[][] params = new Object[objList.size()][];
             for (int i = 0; i < objList.size(); i++) {
@@ -662,11 +653,9 @@ public class SimpleJdbcDao {
             retarr = qRunner.batch(conn, sql, params);
         } catch (Exception ex) {
             throw new DAOException(ex);
-        } finally {
-            DbUtils.closeQuietly(conn);
         }
-        for (int i = 0; i < retarr.length; i++) {
-            if (retarr[i] > 0) {
+        for (int j : retarr) {
+            if (j > 0) {
                 retnum++;
             }
         }
@@ -682,12 +671,12 @@ public class SimpleJdbcDao {
      * @param dateFormat date类型格式
      * @param writer
      * @return 成功导出了数据才视为成功:true
-     * @throws Exception
+     * @throws DAOException
      */
     public boolean dumpBySql(final String sql, String tableName, final String split, String dateFormat, final BufferedWriter writer) throws DAOException {
-        Connection conn = getConnection();
-        Statement stmt = null;
-        try {
+
+        try(Connection conn = getConnection();
+             Statement stmt = conn.createStatement()) {
             String querySql = sql;
             if (querySql == null || "".equals(querySql)) {
                 querySql = "select * from " + tableName;
@@ -704,7 +693,6 @@ public class SimpleJdbcDao {
                     while (rs.next()) {
                         for (int i = 0; i < columncount; i++) {
                             String type = DataBaseUtil.translateDbType(meta.getColumnType(i + 1));
-                            Object obj = rs.getObject(i + 1);
                             if (rs.wasNull()) {
                                 resultList.add("");
                                 continue;
@@ -725,14 +713,10 @@ public class SimpleJdbcDao {
                 }
                 return successCount > 0 ? true : false;
             };
-            stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery(sql);
             return handler.handle(rs);
         } catch (Exception e) {
             throw new DAOException(e);
-        } finally {
-            DbUtils.closeQuietly(stmt);
-            DbUtils.closeQuietly(conn);
         }
 
     }
@@ -747,23 +731,20 @@ public class SimpleJdbcDao {
             }
             QueryRunner qRunner = new QueryRunner();
             String querySql = "select " + columns + " from " + tableName + " where 1=0";
-            StringBuilder insertSqlbuilder = new StringBuilder("insert into " + tableName);
+            StringBuilder insertSqlbuilder = new StringBuilder("insert into ").append(tableName);
             if (!"*".equals(columns)) {
                 insertSqlbuilder.append("(" + columns + ") values (");
             } else {
                 insertSqlbuilder.append(" values (");
             }
             final List<String> columnTypes = new ArrayList<>();
-            int columnCount = qRunner.query(conn, querySql, new ResultSetHandler<Integer>() {
-                @Override
-                public Integer handle(ResultSet rs) throws SQLException {
-                    ResultSetMetaData meta = rs.getMetaData();
-                    int columncount = meta.getColumnCount();
-                    for (int i = 0; i < columncount; i++) {
-                        columnTypes.add(DataBaseUtil.translateDbType(meta.getColumnType(i + 1)));
-                    }
-                    return columncount;
+            int columnCount = qRunner.query(conn, querySql, rs -> {
+                ResultSetMetaData meta = rs.getMetaData();
+                int columncount = meta.getColumnCount();
+                for (int i = 0; i < columncount; i++) {
+                    columnTypes.add(DataBaseUtil.translateDbType(meta.getColumnType(i + 1)));
                 }
+                return columncount;
             });
             for (int i = 0; i < columnCount; i++) {
                 if (i != columnCount - 1) {
@@ -773,7 +754,7 @@ public class SimpleJdbcDao {
                 }
             }
             List<Object[]> targetList = new ArrayList<>();
-            String line = null;
+            String line;
             int linepos = 1;
             String currDateFormat = ObjectUtils.isEmpty(dateFormat)? FULL_DATE_FORMAT :dateFormat;
             final SimpleDateFormat dateformat = new SimpleDateFormat(currDateFormat);
@@ -833,7 +814,7 @@ public class SimpleJdbcDao {
     public static void transformDateType(Map<String, String> resultMap, Map<String, String> poolobj, int pos, int row, Object[][] objArr, Object... dateFormatArr) throws ParseException {
         String value = resultMap.get(poolobj.get("name"));
         String dateFormat = (dateFormatArr.length == 1 && dateFormatArr[0] != null) ? dateFormatArr[0].toString() : FULL_DATE_FORMAT;
-        String dayFormat = (dateFormatArr.length == 2 && dateFormatArr[2] != null) ? dateFormatArr[1].toString() : SHORT_DATE_FORMAT;
+        String dayFormat = (dateFormatArr.length == 2 && dateFormatArr[1] != null) ? dateFormatArr[1].toString() : SHORT_DATE_FORMAT;
         if (value == null) {
             value = resultMap.get(poolobj.get("name").toUpperCase());
         }
@@ -841,52 +822,21 @@ public class SimpleJdbcDao {
             value = resultMap.get(poolobj.get("name").toLowerCase());
         }
         if (poolobj.get("dataType").equals(Const.META_TYPE_STRING)) {
-            if (value != null) {
-                objArr[row][pos] = value;
-            } else {
-                objArr[row][pos] = null;
-            }
+            objArr[row][pos]= Optional.ofNullable(value);
         } else if (poolobj.get("dataType").equals(Const.META_TYPE_NUMERIC)) {
-            if (value == null || "".equals(value)) {
-                objArr[row][pos] = null;
-            } else {
-                objArr[row][pos] = Double.valueOf(value);
-            }
+            objArr[row][pos] =Optional.ofNullable(value).map(Double::valueOf);
         } else if (poolobj.get("dataType").equals(Const.META_TYPE_INTEGER)) {
-            if (value == null || "".equals(value)) {
-                objArr[row][pos] = null;
-            } else {
-                objArr[row][pos] = Integer.valueOf(value);
-            }
+            objArr[row][pos] =Optional.ofNullable(value).map(Integer::valueOf);
         } else if (poolobj.get("dataType").equals(Const.META_TYPE_DOUBLE)) {
-            if (value == null || "".equals(value)) {
-                objArr[row][pos] = null;
-            } else {
-                objArr[row][pos] = Double.valueOf(value);
-            }
+            objArr[row][pos] =Optional.ofNullable(value).map(Double::valueOf);
         } else if (poolobj.get("dataType").equals(Const.META_TYPE_DATE)) {
-
-            if (value == null || "".equals(value)) {
-                objArr[row][pos] = null;
-            } else {
-                java.sql.Date date = new Date(DateUtils.parseDate(value, dateFormat, dayFormat).getTime());
-
-                objArr[row][pos] = date;
-            }
+            Optional<String> optional= Optional.ofNullable(value);
+            objArr[row][pos] =optional.isPresent()?new Date(DateUtils.parseDate(optional.get(), dateFormat, dayFormat).getTime()):null;
         } else if (poolobj.get("dataType").equals(Const.META_TYPE_TIMESTAMP)) {
-
-            if (value == null || "".equals(value)) {
-                objArr[row][pos] = null;
-            } else {
-                java.sql.Timestamp ts = new Timestamp(DateUtils.parseDate(value, dayFormat, dayFormat).getTime());
-                objArr[row][pos] = ts;
-            }
+            Optional<String> optional= Optional.ofNullable(value);
+            objArr[row][pos] =optional.isPresent()?new Timestamp(DateUtils.parseDate(optional.get(), dayFormat, dayFormat).getTime()):null;
         } else {
-            if (value != null) {
-                objArr[row][pos] = value;
-            } else {
-                objArr[row][pos] = null;
-            }
+            objArr[row][pos] =Optional.ofNullable(value);
         }
     }
 

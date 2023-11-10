@@ -104,13 +104,13 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
                 break;
             }
             if (param.getColumnType().equals(QueryParam.COLUMN_TYPE_INT) || param.getColumnType().equalsIgnoreCase(Const.META_TYPE_BIGINT)) {
-                buffer.append(toSQLForInt(param) + linkOper + " ");
+                buffer.append(toSQLForInt(param)).append(linkOper).append(" ");
             } else if (param.getColumnType().equals(QueryParam.COLUMN_TYPE_DOUBLE)|| param.getColumnType().equalsIgnoreCase(Const.META_TYPE_NUMERIC)) {
-                buffer.append(toSQLForDecimal(param) + linkOper + " ");
+                buffer.append(toSQLForDecimal(param)).append(linkOper).append(" ");
             } else if (param.getColumnType().equals(QueryParam.COLUMN_TYPE_STRING)) {
-                buffer.append(toSQLForString(param) + linkOper + " ");
+                buffer.append(toSQLForString(param)).append(linkOper).append(" ");
             } else if (param.getColumnType().equals(QueryParam.COLUMN_TYPE_DATE)) {
-                buffer.append(toSQLForDate(param) + linkOper + " ");
+                buffer.append(toSQLForDate(param)).append(linkOper).append(" ");
             }
         }
         String retstr = "";
@@ -129,13 +129,13 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
                 break;
             }
             if (param.getColumnType().equals(Const.META_TYPE_INTEGER) || param.getColumnType().equalsIgnoreCase(Const.META_TYPE_BIGINT)) {
-                buffer.append(toSQLForInt(param) + linkOper);
+                buffer.append(toSQLForInt(param)).append(linkOper);
             } else if (param.getColumnType().equals(Const.META_TYPE_DOUBLE)|| param.getColumnType().equalsIgnoreCase(Const.META_TYPE_NUMERIC)) {
-                buffer.append(toSQLForDecimal(param) + linkOper);
+                buffer.append(toSQLForDecimal(param)).append(linkOper);
             } else if (param.getColumnType().equals(Const.META_TYPE_STRING)) {
-                buffer.append(toSQLForString(param) + linkOper);
+                buffer.append(toSQLForString(param)).append(linkOper);
             } else if (param.getColumnType().equals(Const.META_TYPE_DATE)) {
-                buffer.append(toSQLForDate(param) + linkOper);
+                buffer.append(toSQLForDate(param)).append(linkOper);
             }
         }
 
@@ -175,16 +175,16 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
             return sql;
         } else {
             if (queryString.getGroupByString() != null && !"".equals(queryString.getGroupByString())) {
-                buffer.append(" group by " + queryString.getGroupByString());
+                buffer.append(" group by ").append(queryString.getGroupByString());
                 if (queryString.getHavingString() != null && !"".equals(queryString.getHavingString())) {
-                    buffer.append(" having " + queryString.getHavingString());
+                    buffer.append(" having ").append(queryString.getHavingString());
                 }
             }
-            if (fromscript.toLowerCase().indexOf(ORDERBYSTR) == -1) {
+            if (!fromscript.toLowerCase().contains(ORDERBYSTR)) {
                 if (queryString.getOrderString() != null && !"".equals(queryString.getOrderString().trim())) {
-                    buffer.append(ORDERBYSTR + queryString.getOrderString());
+                    buffer.append(ORDERBYSTR).append(queryString.getOrderString());
                 } else if (queryString.getOrder() != null && !"".equals(queryString.getOrder())) {
-                    buffer.append(ORDERBYSTR + queryString.getOrder()).append(queryString.getOrderDirection() == null ? "" : " " + queryString.getOrderDirection());
+                    buffer.append(ORDERBYSTR).append(queryString.getOrder()).append(queryString.getOrderDirection() == null ? "" : " " + queryString.getOrderDirection());
                 }
             }
             return buffer.toString();
@@ -314,32 +314,32 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
         }
         if (value != null && !"".equals(value.trim())) {
             if (nQueryModel.equals(QueryParam.QUERYMODE_EQUAL)) {
-                sql.append(key + " = " + value);
+                sql.append(key).append(" = ").append(value);
             } else if (nQueryModel.equals(QueryParam.QUERYMODE_GT)) {
-                sql.append(key + " > " + value);
+                sql.append(key).append(" > ").append(value);
             } else if (nQueryModel.equals(QueryParam.QUERYMODE_LT)) {
-                sql.append(key + " < " + value);
+                sql.append(key).append(" < ").append(value);
             } else if (nQueryModel.equals(QueryParam.QUERYMODE_NOTEQUAL)) {
-                sql.append(key + " != " + value);
+                sql.append(key).append(" != ").append(value);
             } else if (nQueryModel.equals(QueryParam.QUERYMODE_GTANDEQUAL)) {
-                sql.append(key + " >= " + value);
+                sql.append(key).append(" >= ").append(value);
             } else if (nQueryModel.equals(QueryParam.QUERYMODE_LTANDEQUAL)) {
-                sql.append(key + " <= " + value);
+                sql.append(key).append(" <= ").append(value);
             } else if (nQueryModel.equals(QueryParam.QUERYMODE_IN)) {
-                sql.append(key + " IN (" + value + ")");
+                sql.append(key).append(" IN (").append(value).append(")");
             } else if (nQueryModel.equals(QueryParam.QUERYMODE_HAVING)) {
-                sql.append(" having " + key + param.getQueryMode() + param.getQueryValue());
+                sql.append(" having ").append(key).append(param.getQueryMode()).append(param.getQueryValue());
             } else if (nQueryModel.equals(QueryParam.QUERYMODE_BETWEEN) && !";".equals(value)) {
                 String beginvalue = value.substring(0, value.indexOf(";"));
                 String endvalue = value.substring(value.indexOf(";") + 1);
                 if (!"".equals(beginvalue)) {
                     if (!"".equals(endvalue)) {
-                        sql.append("(" + key + " between " + beginvalue + LINKOPER_AND + endvalue + ")");
+                        sql.append("(").append(key).append(" between ").append(beginvalue).append(LINKOPER_AND).append(endvalue).append(")");
                     } else {
-                        sql.append("(" + key + ">=" + beginvalue + ")");
+                        sql.append("(").append(key).append(">=").append(beginvalue).append(")");
                     }
                 } else if (!"".equals(endvalue)) {
-                    sql.append("(" + key + "<=" + endvalue + ")");
+                    sql.append("(").append(key).append("<=").append(endvalue).append(")");
                 }
             }
         }
@@ -358,25 +358,35 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
             key = param.getAliasName() + "." + key;
         }
         if (value != null && !"".equals(value.trim())) {
-            if (nQueryModel.equals(QueryParam.QUERYMODE_EQUAL)) {
-                sql.append(key + " = " + value + LINKOPER_AND);
-            }
-            if (nQueryModel.equals(QueryParam.QUERYMODE_GT)) {
-                sql.append(key + " > " + value + LINKOPER_AND);
-            } else if (nQueryModel.equals(QueryParam.QUERYMODE_LT)) {
-                sql.append(key + " < " + value + LINKOPER_AND);
-            } else if (nQueryModel.equals(QueryParam.QUERYMODE_NOTEQUAL)) {
-                sql.append(key + " != " + value + LINKOPER_AND);
-            } else if (nQueryModel.equals(QueryParam.QUERYMODE_GTANDEQUAL)) {
-                sql.append(key + " >= " + value + LINKOPER_AND);
-            } else if (nQueryModel.equals(QueryParam.QUERYMODE_LTANDEQUAL)) {
-                sql.append(key + " <= " + value + LINKOPER_AND);
-            } else if (nQueryModel.equals(QueryParam.QUERYMODE_HAVING)) {
-                sql.append(" having " + key + param.getQueryMode() + param.getQueryValue());
-            } else if (nQueryModel.equals(QueryParam.QUERYMODE_BETWEEN)) {
-                String beginvalue = value.substring(0, value.indexOf(";"));
-                String endvalue = value.substring(value.indexOf(";") + 1);
-                sql.append("(" + key + " between " + beginvalue + LINKOPER_AND + endvalue + ")");
+            switch (nQueryModel) {
+                case QueryParam.QUERYMODE_EQUAL:
+                    sql.append(key).append(" = ").append(value).append(LINKOPER_AND);
+                    break;
+                case QueryParam.QUERYMODE_GT:
+                    sql.append(key).append(" > ").append(value).append(LINKOPER_AND);
+                    break;
+                case QueryParam.QUERYMODE_LT:
+                    sql.append(key).append(" < ").append(value).append(LINKOPER_AND);
+                    break;
+                case QueryParam.QUERYMODE_NOTEQUAL:
+                    sql.append(key).append(" != ").append(value).append(LINKOPER_AND);
+                    break;
+                case QueryParam.QUERYMODE_GTANDEQUAL:
+                    sql.append(key).append(" >= ").append(value).append(LINKOPER_AND);
+                    break;
+                case QueryParam.QUERYMODE_LTANDEQUAL:
+                    sql.append(key).append(" <= ").append(value).append(LINKOPER_AND);
+                    break;
+                case QueryParam.QUERYMODE_HAVING:
+                    sql.append(" having ").append(key).append(param.getQueryMode()).append(param.getQueryValue());
+                    break;
+                case QueryParam.QUERYMODE_BETWEEN:
+                    String beginvalue = value.substring(0, value.indexOf(";"));
+                    String endvalue = value.substring(value.indexOf(";") + 1);
+                    sql.append("(").append(key).append(" between ").append(beginvalue).append(LINKOPER_AND).append(endvalue).append(")");
+                    break;
+                default:
+                    sql.append(key).append(" = ").append(value).append(LINKOPER_AND);
             }
         }
         return sql.toString();
@@ -394,27 +404,36 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
         }
         String value = replace(param.getQueryValue());
         if (value != null && !"".equals(value)) {
-            if (nQueryModel.equals(QueryParam.QUERYMODE_GT)) {
-                sql.append(key + ">" + "'" + value + "'");
-            } else if (nQueryModel.equals(QueryParam.QUERYMODE_EQUAL)) {
-                String str = value.replace("%", "");
-                if (str.length() > 0) {
-                    sql.append(key + "='" + str + "'");
-                }
-            } else if (nQueryModel.equals(QueryParam.QUERYMODE_NOTEQUAL)) {
-                String str = value.replace("%", "");
-                if (str.length() > 0) {
-                    sql.append(key + "!='" + str + "'");
-                }
-            } else if (nQueryModel.equals(QueryParam.QUERYMODE_LIKE)) {
-                if (value.startsWith("%") || value.endsWith("%")) {
+            switch (nQueryModel) {
+                case QueryParam.QUERYMODE_GT:
+                    sql.append(key).append(">'").append(value).append("'");
+                    break;
+                case QueryParam.QUERYMODE_EQUAL: {
                     String str = value.replace("%", "");
                     if (str.length() > 0) {
-                        sql.append(key + " like '" + value + "'");
+                        sql.append(key).append("='").append(str).append("'");
                     }
-                } else {
-                    sql.append(key + " ='" + value + "'");
+                    break;
                 }
+                case QueryParam.QUERYMODE_NOTEQUAL: {
+                    String str = value.replace("%", "");
+                    if (str.length() > 0) {
+                        sql.append(key).append("!='").append(str).append("'");
+                    }
+                    break;
+                }
+                case QueryParam.QUERYMODE_LIKE:
+                    if (value.startsWith("%") || value.endsWith("%")) {
+                        String str = value.replace("%", "");
+                        if (str.length() > 0) {
+                            sql.append(key).append(" like '").append(value).append("'");
+                        }
+                    } else {
+                        sql.append(key).append(" ='").append(value).append("'");
+                    }
+                    break;
+                default:
+                    sql.append(key).append("='").append(value).append("'");
             }
         }
         return sql.toString();
@@ -422,41 +441,51 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
     @Override
     public String returnTypeDef(String dataType, AnnotationRetriever.FieldContent field) {
         StringBuilder builder=new StringBuilder();
-        if(dataType.equals(Const.META_TYPE_BIGINT)){
-            builder.append(getLongFormat());
-        }else if(dataType.equals(Const.META_TYPE_INTEGER)){
-            builder.append(getIntegerFormat());
-        }else if(dataType.equals(Const.META_TYPE_SHORT)){
-            builder.append(getShortFormat());
-        }
-        else if(dataType.equals(Const.META_TYPE_DOUBLE) || dataType.equals(Const.META_TYPE_NUMERIC)){
-            int precise= field.getPrecise();
-            int scale=field.getScale();
-            if(precise==0) {
-                precise=2;
-            }
-            if(scale==0) {
-                scale=8;
-            }
-            builder.append(getDecimalFormat(precise,scale));
-        }else if(dataType.equals(Const.META_TYPE_DATE)){
-            builder.append("DATE");
-        }else if(dataType.equals(Const.META_TYPE_TIMESTAMP)){
-            builder.append(getTimestampFormat());
-        }else if(dataType.equals(Const.META_TYPE_STRING)){
-            int length=field.getLength();
-            if(length==0){
-                length=32;
-            }
-            if(length==1) {
-                builder.append(getCharFormat(1));
-            } else {
-                builder.append(getVarcharFormat(length));
-            }
-        }else if(dataType.equals(Const.META_TYPE_CLOB)){
-            builder.append(getClobFormat());
-        }else if(dataType.equals(Const.META_TYPE_BLOB)){
-            builder.append(getBlobFormat());
+        switch (dataType) {
+            case Const.META_TYPE_BIGINT:
+                builder.append(getLongFormat());
+                break;
+            case Const.META_TYPE_INTEGER:
+                builder.append(getIntegerFormat());
+                break;
+            case Const.META_TYPE_SHORT:
+                builder.append(getShortFormat());
+                break;
+            case Const.META_TYPE_DOUBLE:
+            case Const.META_TYPE_NUMERIC:
+                int precise = field.getPrecise();
+                int scale = field.getScale();
+                if (precise == 0) {
+                    precise = 2;
+                }
+                if (scale == 0) {
+                    scale = 8;
+                }
+                builder.append(getDecimalFormat(precise, scale));
+                break;
+            case Const.META_TYPE_DATE:
+                builder.append("DATE");
+                break;
+            case Const.META_TYPE_TIMESTAMP:
+                builder.append(getTimestampFormat());
+                break;
+            case Const.META_TYPE_STRING:
+                int length = field.getLength()==0?32:field.getLength();
+                if (length == 1) {
+                    builder.append(getCharFormat(1));
+                } else {
+                    builder.append(getVarcharFormat(length));
+                }
+                break;
+            case Const.META_TYPE_CLOB:
+                builder.append(getClobFormat());
+                break;
+            case Const.META_TYPE_BLOB:
+                builder.append(getBlobFormat());
+                break;
+            default:
+                int length1 = field.getLength()==0?32:field.getLength();
+                builder.append(getVarcharFormat(length1));
         }
         if(field.isIncrement() && supportIncrement()){
             builder.append(getAutoIncrementDef());
@@ -475,8 +504,8 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
         }else if(dataType.equals(Const.META_TYPE_INTEGER)){
             builder.append(getIntegerFormat());
         }else if(dataType.equals(Const.META_TYPE_DOUBLE) || dataType.equals(Const.META_TYPE_NUMERIC)){
-            int precise= org.apache.commons.lang3.StringUtils.isEmpty(field.getDataPrecise())?0:Integer.parseInt(field.getDataPrecise()) ;
-            int scale= org.apache.commons.lang3.StringUtils.isEmpty(field.getDataScale())?0:Integer.parseInt(field.getDataScale());
+            int precise= field.getDataPrecise();
+            int scale= field.getDataScale();
             if(precise==0) {
                 precise=2;
             }
@@ -574,35 +603,42 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
     protected void appendSqlPartWithDate(QueryParam param,StringBuilder builder,String key,String value){
         String nQueryModel = param.getQueryMode();
         if (nQueryModel.equals(QueryParam.QUERYMODE_GT)) {
-            builder.append(key + ">" + "'" + value + "'");
-        } else if (nQueryModel.equals(QueryParam.QUERYMODE_GTANDEQUAL)) {
-            builder.append(key + ">=" + "'" + value + "'");
+            builder.append(key).append(">").append("'").append(value).append("'");
+        }else if (nQueryModel.equals(QueryParam.QUERYMODE_GTANDEQUAL)) {
+            builder.append(key).append(">=").append("'").append(value).append("'");
         } else if (nQueryModel.equals(QueryParam.QUERYMODE_LTANDEQUAL)) {
-            builder.append(key + "<=" + "'" + value + "'");
+            builder.append(key).append("<=").append("'").append(value).append("'");
         } else if (nQueryModel.equals(QueryParam.QUERYMODE_BETWEEN) && !"".equals(value) && !";".equals(value)) {
             String begindate = value.substring(0, value.indexOf(";"));
             String enddate = value.substring(value.indexOf(";") + 1);
             if (!"".equals(begindate)) {
                 if (!"".equals(enddate)) {
-                    builder.append("(" + key + " between '" + begindate + "' and '" + enddate + "')");
+                    builder.append("(").append(key).append(" between '").append(begindate).append("' and '").append(enddate).append("')");
                 } else {
-                    builder.append("(" + key + ">='" + begindate + "')");
+                    builder.append("(").append(key).append(">='").append(begindate).append("')");
                 }
             } else if (!"".equals(enddate)) {
-                builder.append("(" + key + "<='" + enddate + "')");
+                builder.append("(").append(key).append("<='").append(enddate).append("')");
             }
         }
     }
 
     private void fillSqlPart(String linkOper, StringBuilder buffer, QueryParam param, String prevoper, String nextoper) {
-        if (param.getColumnType().equals(QueryParam.COLUMN_TYPE_INT)) {
-            buffer.append(prevoper + toSQLForInt(param) + nextoper + linkOper);
-        } else if (param.getColumnType().equals(QueryParam.COLUMN_TYPE_DOUBLE)) {
-            buffer.append(prevoper + toSQLForDecimal(param) + nextoper + linkOper);
-        } else if (param.getColumnType().equals(QueryParam.COLUMN_TYPE_STRING)) {
-            buffer.append(prevoper + toSQLForString(param) + nextoper + linkOper);
-        } else if (param.getColumnType().equals(QueryParam.COLUMN_TYPE_DATE)) {
-            buffer.append(prevoper + toSQLForDate(param) + nextoper + linkOper);
+        switch (param.getColumnType()) {
+            case QueryParam.COLUMN_TYPE_INT:
+                buffer.append(prevoper).append(toSQLForInt(param)).append(nextoper).append(linkOper);
+                break;
+            case QueryParam.COLUMN_TYPE_DOUBLE:
+                buffer.append(prevoper).append(toSQLForDecimal(param)).append(nextoper).append(linkOper);
+                break;
+            case QueryParam.COLUMN_TYPE_STRING:
+                buffer.append(prevoper).append(toSQLForString(param)).append(nextoper).append(linkOper);
+                break;
+            case QueryParam.COLUMN_TYPE_DATE:
+                buffer.append(prevoper).append(toSQLForDate(param)).append(nextoper).append(linkOper);
+                break;
+            default:
+                buffer.append(prevoper).append(toSQLForString(param)).append(nextoper).append(linkOper);
         }
     }
 
@@ -708,6 +744,27 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
         }
         builder.append(tableName).append(" (");
         return builder.toString();
+    }
+    protected StringBuilder getPageSqlByRowNumber(String strSQL,PageQuery pageQuery){
+        StringBuilder pagingSelect = new StringBuilder(strSQL.length() + 100);
+        pagingSelect.append("select * from ( select r.*,row_number() over(");
+        if(!org.springframework.util.StringUtils.isEmpty(pageQuery.getOrderString())){
+            pagingSelect.append(ORDERBYSTR).append(pageQuery.getOrderString()).append(") as rownum");
+        }
+        else if(!org.springframework.util.StringUtils.isEmpty(pageQuery.getOrder())){
+            pagingSelect.append(ORDERBYSTR).append(pageQuery.getOrder()).append(" ").append(Const.ASC.equalsIgnoreCase(pageQuery.getOrderDirection())?"asc":"desc").append(") as rownum");
+        }else{
+            pagingSelect.append(") as rownum");
+        }
+        pagingSelect.append(" from ( ");
+        pagingSelect.append(strSQL);
+
+        pagingSelect.append(" )r) r ");
+        return pagingSelect;
+    }
+    protected void checkSqlAndPage(String sql,PageQuery pageQuery){
+        Assert.isTrue(!ObjectUtils.isEmpty(sql),"querySql not null");
+        Assert.notNull(pageQuery,"pageQuery is Null");
     }
 
 

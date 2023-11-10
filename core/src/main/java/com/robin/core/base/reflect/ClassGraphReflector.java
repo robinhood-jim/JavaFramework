@@ -3,6 +3,7 @@ package com.robin.core.base.reflect;
 import io.github.classgraph.*;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.lang.NonNull;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -37,6 +38,7 @@ public class ClassGraphReflector implements InitializingBean {
         });
         return map;
     }
+    @NonNull
     public Map<String, Field> returnAllField(Class<?> clazz){
         ClassInfo classInfo=scanResult.getClassInfo(clazz.getCanonicalName());
         final Map<java.lang.String, java.lang.reflect.Field> map=new HashMap<>();

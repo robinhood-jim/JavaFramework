@@ -20,8 +20,8 @@ import java.util.List;
  */
 @Slf4j
 public class ZipKinKafkaProxySender extends Sender {
-    private Sender zipKinSender;
-    private Sender kafkaSender;
+    private final Sender zipKinSender;
+    private final Sender kafkaSender;
     public ZipKinKafkaProxySender(Sender zipKinSender, Sender kafkaSender){
         this.zipKinSender=zipKinSender;
         this.kafkaSender=kafkaSender;

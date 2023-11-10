@@ -5,8 +5,11 @@ import com.robin.core.base.exception.MissingConfigException;
 
 
 public class SqlDialectFactory {
-    public static final BaseSqlGen getSqlGeneratorByDialect(String dbType) throws MissingConfigException {
-        BaseSqlGen sqlGen=null;
+    private SqlDialectFactory(){
+
+    }
+    public static BaseSqlGen getSqlGeneratorByDialect(String dbType) throws MissingConfigException {
+        BaseSqlGen sqlGen;
         if(BaseDataBaseMeta.TYPE_MYSQL.equalsIgnoreCase(dbType)){
             sqlGen=MysqlSqlGen.getInstance();
         }else if(BaseDataBaseMeta.TYPE_ORACLE.equalsIgnoreCase(dbType) || BaseDataBaseMeta.TYPE_ORACLERAC.equalsIgnoreCase(dbType)){

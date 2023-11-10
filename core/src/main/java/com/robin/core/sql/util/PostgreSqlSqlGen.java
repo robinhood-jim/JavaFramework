@@ -19,13 +19,11 @@ import com.robin.core.base.datameta.BaseDataBaseMeta;
 import com.robin.core.base.exception.DAOException;
 import com.robin.core.query.util.PageQuery;
 import com.robin.core.query.util.QueryParam;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
 public class PostgreSqlSqlGen extends AbstractSqlGen implements BaseSqlGen {
-	private static PostgreSqlSqlGen sqlGen=new PostgreSqlSqlGen();
+	private static final PostgreSqlSqlGen sqlGen=new PostgreSqlSqlGen();
 	private PostgreSqlSqlGen(){
 
 	}
@@ -36,8 +34,8 @@ public class PostgreSqlSqlGen extends AbstractSqlGen implements BaseSqlGen {
     public String generateCountSql(String strSQL) {
 
 		String str = strSQL.trim().toLowerCase();
-		str=str.replaceAll("\\n", "");
-		str=str.replaceAll("\\r", "");
+		str=str.replace("\\n", "");
+		str=str.replace("\\r", "");
 		int nFromPos = str.lastIndexOf(" from ");
 		int nOrderPos = str.lastIndexOf(" order by ");
 		int nGroupByPos=str.lastIndexOf("group by");
@@ -48,7 +46,7 @@ public class PostgreSqlSqlGen extends AbstractSqlGen implements BaseSqlGen {
 		if (nOrderPos == -1) {
             nOrderPos = str.length();
         }
-		StringBuffer strBuf = new StringBuffer();
+		StringBuilder strBuf = new StringBuilder();
 		if(nGroupByPos==-1) {
             strBuf.append("select count(*) as total ").append(str, nFromPos, nOrderPos);
         } else {
@@ -61,18 +59,19 @@ public class PostgreSqlSqlGen extends AbstractSqlGen implements BaseSqlGen {
 
 	@Override
     public String generatePageSql(String strSQL, PageQuery pageQuery) {
+		checkSqlAndPage(strSQL,pageQuery);
 		if(pageQuery!=null && pageQuery.getPageSize()!=0) {
 			Integer[] startEnd = getStartEndRecord(pageQuery);
 			int nBegin = startEnd[0];
 
 			strSQL = strSQL.trim();
 
-			StringBuffer pagingSelect = new StringBuffer(strSQL.length() + 100);
+			StringBuilder pagingSelect = new StringBuilder(strSQL.length() + 100);
 			pagingSelect.append(strSQL);
 			int tonums = startEnd[1];
 			int nums = tonums - nBegin;
 			pagingSelect.append(" limit " + nums + " offset " + nBegin);
-			log.info("pageSql=" + pagingSelect.toString());
+			log.info("pageSql= {}" , pagingSelect);
 			return pagingSelect.toString();
 		}else{
 			return getNoPageSql(strSQL,pageQuery);
@@ -88,13 +87,13 @@ public class PostgreSqlSqlGen extends AbstractSqlGen implements BaseSqlGen {
 	@Override
     public String generateSingleRowSql(String querySql) {
 		String str = querySql.trim().toLowerCase();
-		str=str.replaceAll("\\n", "");
-		str=str.replaceAll("\\r", "");
+		str=str.replace("\\n", "");
+		str=str.replace("\\r", "");
 		int nOrderPos = str.lastIndexOf(" order by ");
 		if (nOrderPos == -1) {
             nOrderPos = str.length();
         }
-		StringBuffer strBuf = new StringBuffer();
+		StringBuilder strBuf = new StringBuilder();
 		strBuf.append(str, 0, nOrderPos).append(" limit 1,1");
 		return strBuf.toString();
 	}

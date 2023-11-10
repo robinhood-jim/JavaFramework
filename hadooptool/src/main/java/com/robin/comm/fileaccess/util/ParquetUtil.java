@@ -95,7 +95,7 @@ public class ParquetUtil {
 
                     @Override
                     public long getPos() throws IOException {
-                        return instream.available();
+                        return instream.getPos();
                     }
 
                     @Override
@@ -124,6 +124,20 @@ public class ParquetUtil {
                     }
 
                 };
+            }
+        };
+    }
+
+    public  static InputFile makeInputFile(SeekableInputStream inputStream,Long length){
+        return new InputFile() {
+            @Override
+            public long getLength() throws IOException {
+                return length;
+            }
+
+            @Override
+            public SeekableInputStream newStream() throws IOException {
+                return inputStream;
             }
         };
     }

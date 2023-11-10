@@ -17,6 +17,8 @@ package com.robin.core.base.datameta;
 
 import com.robin.core.base.exception.ConfigurationIncorrectException;
 import com.robin.core.convert.util.ConvertUtil;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.Serializable;
@@ -24,6 +26,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 @Slf4j
+@Getter
+@Setter
 public class DataBaseParam implements Serializable {
 	private String hostName;
 	private int port;
@@ -39,39 +43,8 @@ public class DataBaseParam implements Serializable {
 	private String driverClassName;
 	//defaultTimeZone
 	private String timeZone="Asia/Shanghai";
-	public String getHostName() {
-		return hostName;
-	}
-	public void setHostName(String hostName) {
-		this.hostName = hostName;
-	}
-	public int getPort() {
-		return port;
-	}
-	public void setPort(int port) {
-		this.port = port;
-	}
-	public String getDatabaseName() {
-		return databaseName;
-	}
-	public void setDatabaseName(String databaseName) {
-		this.databaseName = databaseName;
-	}
-	public String getUserName() {
-		return userName;
-	}
-	public void setUserName(String userName) {
-		this.userName = userName;
-	}
-	public String getPasswd() {
-		return passwd;
-	}
-	public void setPasswd(String passwd) {
-		this.passwd = passwd;
-	}
-	public String getUrl() {
-		return url;
-	}
+	private String schema;
+
 	public String getUrlByMeta(BaseDataBaseMeta dbMeta){
 		try{
 			if(this.getUrl()==null || this.getUrl().isEmpty()){
@@ -102,60 +75,7 @@ public class DataBaseParam implements Serializable {
 		return map;
 	}
 
-	public void setUrl(String url) {
-		this.url = url;
-	}
-	
-	public String getEncode() {
-		return encode;
-	}
-	public void setEncode(String encode) {
-		this.encode = encode;
-	}
-	public boolean isReadOnly() {
-		return readOnly;
-	}
-	public void setReadOnly(boolean readOnly) {
-		this.readOnly = readOnly;
-	}
-	
-	public String getUrlTemplate() {
-		return urlTemplate;
-	}
-	public void setUrlTemplate(String urlTemplate) {
-		this.urlTemplate = urlTemplate;
-	}
-	
-	public String getType() {
-		return type;
-	}
-	public void setType(String type) {
-		this.type = type;
-	}
 
-	public Integer getMainVersion() {
-		return mainVersion;
-	}
-
-	public void setMainVersion(Integer mainVersion) {
-		this.mainVersion = mainVersion;
-	}
-
-	public String getDriverClassName() {
-		return driverClassName;
-	}
-
-	public void setDriverClassName(String driverClassName) {
-		this.driverClassName = driverClassName;
-	}
-
-	public String getTimeZone() {
-		return timeZone;
-	}
-
-	public void setTimeZone(String timeZone) {
-		this.timeZone = timeZone;
-	}
 
 	public DataBaseParam(String hostName, int port, String databaseName, String userName, String passwd){
 		this.hostName=hostName;
@@ -177,6 +97,9 @@ public class DataBaseParam implements Serializable {
 		this.passwd=passwd;
 		this.userName=userName;
 	}
+	private DataBaseParam(){
+
+	}
 	@Override
 	public boolean equals(Object obj) {
 		boolean isequal=false;
@@ -191,5 +114,43 @@ public class DataBaseParam implements Serializable {
 	@Override
 	public int hashCode() {
 		return new StringBuilder(this.getType()).append("|").append(this.getDatabaseName()).append("|").append(this.getHostName()).append("|").append(String.valueOf(this.getPort())).toString().hashCode();
+	}
+	public static class Builder{
+		private DataBaseParam param=new DataBaseParam();
+		public Builder setUrlTemplate(String urlTemplate){
+			param.setUrlTemplate(urlTemplate);
+			return this;
+		}
+		public Builder setUrl(String url){
+			param.setUrl(url);
+			return this;
+		}
+		public Builder setUserName(String userName){
+			param.setUserName(userName);
+			return this;
+		}
+		public Builder setPassword(String password){
+			param.setPasswd(password);
+			return this;
+		}
+		public Builder setEncode(String encode){
+			param.setEncode(encode);
+			return this;
+		}
+		public Builder setType(String type){
+			param.setType(type);
+			return this;
+		}
+		public Builder setPort(Integer port){
+			param.setPort(port);
+			return this;
+		}
+		public Builder setDriverClassName(String driverClassName){
+			param.setDriverClassName(driverClassName);
+			return this;
+		}
+		public DataBaseParam build(){
+			return param;
+		}
 	}
 }

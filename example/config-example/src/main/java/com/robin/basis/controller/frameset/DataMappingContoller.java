@@ -1,5 +1,13 @@
 package com.robin.basis.controller.frameset;
 
+import com.robin.basis.model.frameset.DataSource;
+import com.robin.basis.model.frameset.EntityMapping;
+import com.robin.basis.model.frameset.FieldMapping;
+import com.robin.basis.model.frameset.ProjectInfo;
+import com.robin.basis.service.frameset.DataSourceService;
+import com.robin.basis.service.frameset.EntityMappingService;
+import com.robin.basis.service.frameset.FieldMappingService;
+import com.robin.basis.service.frameset.ProjectInfoService;
 import com.robin.core.base.dao.JdbcDao;
 import com.robin.core.base.datameta.*;
 import com.robin.core.base.model.BaseObject;
@@ -14,14 +22,6 @@ import com.robin.core.sql.util.FilterConditions;
 import com.robin.core.template.util.FreeMarkerUtil;
 import com.robin.core.web.controller.AbstractCrudDhtmlxController;
 import com.robin.core.web.util.DhtmxTreeWrapper;
-import com.robin.basis.model.frameset.DataSource;
-import com.robin.basis.model.frameset.EntityMapping;
-import com.robin.basis.model.frameset.FieldMapping;
-import com.robin.basis.model.frameset.ProjectInfo;
-import com.robin.basis.service.frameset.DataSourceService;
-import com.robin.basis.service.frameset.EntityMappingService;
-import com.robin.basis.service.frameset.FieldMappingService;
-import com.robin.basis.service.frameset.ProjectInfoService;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -152,8 +152,7 @@ public class DataMappingContoller extends AbstractCrudDhtmlxController<ProjectIn
             util = new DataBaseUtil();
             util.connect(meta);
             List<DataBaseColumnMeta> collist = util.getTableMetaByTableName(table, schema);
-            for (int i = 0; i < collist.size(); i++) {
-                DataBaseColumnMeta meta1 = collist.get(i);
+            for (DataBaseColumnMeta meta1 : collist) {
                 Map<String, String> map = new HashMap<>();
                 String columnName = meta1.getColumnName();
                 map.put("columnName", meta1.getColumnName());
@@ -296,9 +295,9 @@ public class DataMappingContoller extends AbstractCrudDhtmlxController<ProjectIn
             setCode("DBDISPLAY,PKTYPE");
             filterListByCodeSet(fieldmapList, "type", "DBDISPLAY");
 
-            for (int i = 0; i < fieldmapList.size(); i++) {
-                String name = fieldmapList.get(i).get("code");
-                fieldmapList.get(i).put("uppername", name.substring(0, 1).toUpperCase() + name.substring(1, name.length()));
+            for (Map<String, String> stringStringMap : fieldmapList) {
+                String name = stringStringMap.get("code");
+                stringStringMap.put("uppername", name.substring(0, 1).toUpperCase() + name.substring(1, name.length()));
             }
             parammap.put("fields", fieldmapList);
             List<Map<String, Object>> templist = jdbcDao.queryBySql("select name,template_path as path from t_base_codetemplate");
@@ -350,15 +349,15 @@ public class DataMappingContoller extends AbstractCrudDhtmlxController<ProjectIn
                 List<Map<String, String>> queryFieldList = new ArrayList<>();
                 List<Map<String, String>> displayFieldList = new ArrayList<>();
                 List<Map<String, String>> editList = new ArrayList<>();
-                for (int j = 0; j < fieldmapList.size(); j++) {
-                    if ("1".equals(fieldmapList.get(j).get("showInquery"))) {
-                        queryFieldList.add(fieldmapList.get(j));
+                for (Map<String, String> stringStringMap : fieldmapList) {
+                    if ("1".equals(stringStringMap.get("showInquery"))) {
+                        queryFieldList.add(stringStringMap);
                     }
-                    if ("1".equals(fieldmapList.get(j).get("showIngrid"))) {
-                        displayFieldList.add(fieldmapList.get(j));
+                    if ("1".equals(stringStringMap.get("showIngrid"))) {
+                        displayFieldList.add(stringStringMap);
                     }
-                    if ("1".equals(fieldmapList.get(j).get("editable"))) {
-                        editList.add(fieldmapList.get(j));
+                    if ("1".equals(stringStringMap.get("editable"))) {
+                        editList.add(stringStringMap);
                     }
                 }
                 parammap.put("queryfieldList", queryFieldList);

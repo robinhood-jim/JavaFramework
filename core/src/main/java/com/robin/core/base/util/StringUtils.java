@@ -17,6 +17,7 @@ package com.robin.core.base.util;
 
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.text.StrBuilder;
+import org.springframework.util.Assert;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -27,10 +28,11 @@ import java.util.List;
 import java.util.Random;
 
 public class StringUtils {
-    public static final int ASCII_VISABLE_START = 48;
-    public static final int ASCII_VISABLE_END = 122;
+    public static final int ASCII_VISIBLE_START = 48;
+    public static final int ASCII_VISIBLE_END = 122;
     public static final int ASCII_UPPER_START = 64;
     public static final int ASCII_LOWER_START = 96;
+    private static final Random random = new Random();
 
     /**
      * custom String split
@@ -46,25 +48,25 @@ public class StringUtils {
         String[] arrs = (excludeArr != null && excludeArr.length > 0) ? excludeArr : new String[]{"\"", "'"};
         List<Character> includeList = new ArrayList<>();
         List<Character> includeSuffixList = new ArrayList<>();
-        for (int i = 0; i < arrs.length; i++) {
-            if (!arrs[i].contains(":")) {
-                includeList.add(Character.valueOf(arrs[i].charAt(0)));
-                includeSuffixList.add(Character.valueOf(arrs[i].charAt(0)));
+        for (String arr : arrs) {
+            if (!arr.contains(":")) {
+                includeList.add(arr.charAt(0));
+                includeSuffixList.add(arr.charAt(0));
             } else {
-                String[] sepArr = arrs[i].split(":");
-                includeList.add(Character.valueOf(sepArr[0].charAt(0)));
-                includeSuffixList.add(Character.valueOf(sepArr[1].charAt(0)));
+                String[] sepArr = arr.split(":");
+                includeList.add(sepArr[0].charAt(0));
+                includeSuffixList.add(sepArr[1].charAt(0));
             }
         }
         int start = 0;
         int length = str.length();
         int i = 0;
-        Character curstr = null;
-        int selpos = 0;
+        Character curstr ;
+        int selpos ;
         //start pos
         boolean startpos = true;
         while (i < length) {
-            curstr = Character.valueOf(chars[i]);
+            curstr = chars[i];
             if (startpos && includeList.contains(curstr)) {
                 if (start == i) {
                     start = ++i;
@@ -106,8 +108,8 @@ public class StringUtils {
         }
         if (start < length) {
             int pos = length;
-            for (int j = 0; j < includeSuffixList.size(); j++) {
-                if (str.endsWith(includeSuffixList.get(j).toString())) {
+            for (Character character : includeSuffixList) {
+                if (str.endsWith(character.toString())) {
                     pos--;
                     break;
                 }
@@ -115,11 +117,10 @@ public class StringUtils {
 
             list.add(str.substring(start, pos));
         }
-        if (str.endsWith(new String(new char[]{delimer}))) {
+        if (str.endsWith(String.valueOf(delimer))) {
             list.add("");
         }
-        String[] retArr = list.toArray(new String[1]);
-        return retArr;
+        return list.toArray(new String[1]);
     }
 
     public static String[] split(String str, char delimer) {
@@ -179,7 +180,7 @@ public class StringUtils {
     }
 
     public static int getSplitCharInt(String split) {
-        int retchar = 0;
+        int retchar ;
         if ("\\t".equals(split)) {
             retchar = 10;
         } else if ("0x1F".equalsIgnoreCase(split)) {
@@ -191,7 +192,7 @@ public class StringUtils {
     }
 
     public static String getSplitChar(String split) {
-        String retchar = "";
+        String retchar;
         if ("\\t".equals(split)) {
             retchar = "\t";
         } else if ("0x1F".equalsIgnoreCase(split)) {
@@ -202,7 +203,7 @@ public class StringUtils {
         return retchar;
     }
 
-    public static String initailCharToUpperCase(String input) {
+    public static String initialCharToUpperCase(String input) {
         if (input.length() > 2) {
             return input.substring(0, 1).toUpperCase() + input.substring(1);
         } else {
@@ -210,7 +211,7 @@ public class StringUtils {
         }
     }
 
-    public static String initailCharToLowCase(String input) {
+    public static String initialCharToLowCase(String input) {
         if (input.length() > 2) {
             return input.substring(0, 1).toLowerCase() + input.substring(1);
         } else {
@@ -220,9 +221,9 @@ public class StringUtils {
 
     public static String generateRandomChar(int length) {
         StringBuilder builder = new StringBuilder();
-        Random random = new Random();
+
         for (int i = 0; i < length; i++) {
-            builder.append((char) (ASCII_VISABLE_START + getRandomChar(random)));
+            builder.append((char) (ASCII_VISIBLE_START + getRandomChar(random)));
         }
         return builder.toString();
     }
@@ -237,7 +238,6 @@ public class StringUtils {
 
     public static String genarateRandomUpperLowerChar(int length) {
         StringBuilder builder = new StringBuilder();
-        Random random = new Random();
         for (int i = 0; i < length; i++) {
             if (random.nextFloat() < 0.5) {
                 builder.append((char) getRandomUpperChar(random));
@@ -249,7 +249,7 @@ public class StringUtils {
     }
 
     private static int getRandomChar(Random random) {
-        return random.nextInt(ASCII_VISABLE_END - ASCII_VISABLE_START + 1);
+        return random.nextInt(ASCII_VISIBLE_END - ASCII_VISIBLE_START + 1);
     }
 
     public static String getMd5Encry(String inputStr) throws NoSuchAlgorithmException {
@@ -323,11 +323,21 @@ public class StringUtils {
         }
         return builder.toString();
     }
+    public static String stringToUnicode(String input,String header){
+        Assert.isTrue(!StringUtils.isEmpty(input),"");
+        String headerStr=StringUtils.isEmpty(header)?"\\u":header;
+        char[] chars=input.toCharArray();
+        StringBuilder builder=new StringBuilder();
+        for(int i=0;i<chars.length;i++){
+            builder.append(headerStr+Integer.toHexString(chars[i]).toUpperCase());
+        }
+        return builder.toString();
+    }
 
     public static void main(String[] args) {
-        //System.out.println(genarateRandomUpperLowerChar(8));
-        System.out.println(getFieldNameByCamelCase("asdsadTTsdadDDasda"));
-        System.out.println(returnCamelCaseByFieldName("index_cd"));
+        //System.out.println(getFieldNameByCamelCase("asdsadTTsdadDDasda"));
+        //System.out.println(returnCamelCaseByFieldName("index_cd"));
+        System.out.println(stringToUnicode("更新时间：2023年09月05日10时","%u"));
     }
 
 }

@@ -44,8 +44,8 @@ public class ResourceAccessHolder implements InitializingBean {
 	private boolean hasRecReaderLimit =false;
 	private boolean hasRecWriterLimit =false;
 	private DbPoolMonitorService monitorService=null;
-	private static final List<String> prefixList= Arrays.asList(new String[]{"hdfs","ftp","sftp","file"});
-	private static final List<String> processClassList= Arrays.asList(new String[]{"Hdfs","ApacheVfs","ApacheVfs","Local"});
+	private static final List<String> prefixList= Arrays.asList(new String[]{"hdfs","ftp","sftp","http","https","file"});
+	private static final List<String> processClassList= Arrays.asList(new String[]{"Hdfs","ApacheVfs","ApacheVfs","ApacheVfs","ApacheVfs","Local"});
 
 	public ResourceAccessHolder() {
 

@@ -1,8 +1,9 @@
 package com.robin.core.fileaccess.util;
 
-import org.apache.commons.io.FileUtils;
+import com.robin.core.fileaccess.meta.DataCollectionMeta;
 
 import java.net.URI;
+import java.util.Map;
 
 
 public class ResourceUtil {
@@ -26,5 +27,6 @@ public class ResourceUtil {
         int pos=path.lastIndexOf("/");
         return url.substring(pos+1,url.length());
     }
+
 
 }

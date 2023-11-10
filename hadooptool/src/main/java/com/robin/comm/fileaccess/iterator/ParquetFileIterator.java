@@ -1,5 +1,6 @@
 package com.robin.comm.fileaccess.iterator;
 
+import com.robin.comm.fileaccess.util.FileSeekableInputStream;
 import com.robin.comm.fileaccess.util.ParquetUtil;
 import com.robin.comm.fileaccess.util.SeekableInputStream;
 import com.robin.core.base.util.IOUtils;
@@ -11,6 +12,7 @@ import com.robin.core.fileaccess.util.ResourceUtil;
 import com.robin.hadoop.hdfs.HDFSUtil;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
+import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.parquet.avro.AvroParquetReader;
@@ -19,10 +21,15 @@ import org.apache.parquet.hadoop.ParquetFileReader;
 import org.apache.parquet.hadoop.ParquetReader;
 import org.apache.parquet.hadoop.metadata.ParquetMetadata;
 import org.apache.parquet.hadoop.util.HadoopInputFile;
+import org.apache.parquet.io.InputFile;
 import org.apache.parquet.schema.MessageType;
 import org.apache.parquet.schema.Type;
+import org.springframework.util.ObjectUtils;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,10 +40,9 @@ public class ParquetFileIterator extends AbstractFileIterator {
     private ParquetReader<GenericData.Record> preader;
     private Schema schema;
     private MessageType msgtype;
-    private Configuration conf;
     private GenericData.Record record;
     private ParquetReader<Map> ireader;
-    private boolean useAvroEncode=false;
+    private boolean useAvroEncode = false;
 
     public ParquetFileIterator(DataCollectionMeta colmeta) {
         super(colmeta);
@@ -44,15 +50,24 @@ public class ParquetFileIterator extends AbstractFileIterator {
 
     private List<Schema.Field> fields;
     Map<String, Object> rsMap;
+    private FileSeekableInputStream seekableInputStream = null;
+    private File tmpFile;
+
     @Override
     public void init() {
-
+        Configuration conf;
+        InputFile file;
+        // max allowable parquet file size to load in memory for no hdfs input
+        long maxSize=1024L*1024L*300L;
         try {
             checkAccessUtil(null);
-            if(colmeta.getResourceCfgMap().containsKey("file.useAvroEncode") && "true".equalsIgnoreCase(colmeta.getResourceCfgMap().get("file.useAvroEncode").toString())){
-                useAvroEncode=true;
+            if(colmeta.getResourceCfgMap().containsKey("parquetMaxLoadableSize")){
+                maxSize=Long.parseLong(colmeta.getResourceCfgMap().get("parquetMaxLoadableSize").toString());
             }
-            if(colmeta.getSourceType().equals(ResourceConst.InputSourceType.TYPE_HDFS.getValue())){
+            if (colmeta.getResourceCfgMap().containsKey("file.useAvroEncode") && "true".equalsIgnoreCase(colmeta.getResourceCfgMap().get("file.useAvroEncode").toString())) {
+                useAvroEncode = true;
+            }
+            if (colmeta.getSourceType().equals(ResourceConst.IngestType.TYPE_HDFS.getValue())) {
                 conf = new HDFSUtil(colmeta).getConfigration();
                 if (colmeta.getColumnList().isEmpty()) {
                     ParquetMetadata meta = ParquetFileReader.readFooter(conf, new Path(colmeta.getPath()), ParquetMetadataConverter.NO_FILTER);
@@ -61,49 +76,71 @@ public class ParquetFileIterator extends AbstractFileIterator {
                 } else {
                     schema = AvroUtils.getSchemaFromMeta(colmeta);
                 }
-                if(!useAvroEncode) {
-                    ireader = new ParquetReader<Map>(conf, new Path(ResourceUtil.getProcessPath(colmeta.getPath())), new CustomReadSupport(colmeta));
-                }else {
+                if (!useAvroEncode) {
+                    ParquetReader.Builder<Map> builder=ParquetReader.builder(new CustomReadSupport(colmeta),new Path(ResourceUtil.getProcessPath(colmeta.getPath()))).withConf(conf);
+                    ireader = builder.build();
+                } else {
                     preader = AvroParquetReader
                             .<GenericData.Record>builder(HadoopInputFile.fromPath(new Path(ResourceUtil.getProcessPath(colmeta.getPath())), conf)).withConf(conf).build();
                 }
-            }else{
-                instream = accessUtil.getRawInputStream(colmeta, ResourceUtil.getProcessPath(colmeta.getPath()));
-                ByteArrayOutputStream byteout=new ByteArrayOutputStream(instream.available());
-                IOUtils.copyBytes(instream,byteout,8000);
-                SeekableInputStream seekableInputStream=new SeekableInputStream(byteout.toByteArray());
+            } else {
+                // no hdfs input source
+                if (ResourceConst.IngestType.TYPE_LOCAL.getValue().equals(colmeta.getSourceType())) {
+                    long size = accessUtil.getInputStreamSize(colmeta, ResourceUtil.getProcessPath(colmeta.getPath()));
+                    seekableInputStream = new FileSeekableInputStream(colmeta.getPath());
+                    file = ParquetUtil.makeInputFile(seekableInputStream, size);
+                } else {
+                    instream = accessUtil.getRawInputStream(colmeta, ResourceUtil.getProcessPath(colmeta.getPath()));
+                    long size = accessUtil.getInputStreamSize(colmeta, ResourceUtil.getProcessPath(colmeta.getPath()));
+                    //file size too large ,may cause OOM,download as tmpfile
+                    if(size>maxSize) {
+                        String tmpPath = (!ObjectUtils.isEmpty(colmeta.getResourceCfgMap().get("output.tmppath"))) ? colmeta.getResourceCfgMap().get("output.tmppath").toString() : FileUtils.getUserDirectoryPath();
+                        String tmpFilePath = "file:///" + tmpPath + ResourceUtil.getProcessFileName(colmeta.getPath());
+                        tmpFile = new File(new URL(tmpFilePath).toURI());
+                        copyToLocal(tmpFile, instream);
+                        seekableInputStream = new FileSeekableInputStream(tmpPath);
+                        file = ParquetUtil.makeInputFile(seekableInputStream, size);
+                    }else{
+                        ByteArrayOutputStream byteout=new ByteArrayOutputStream(instream.available());
+                        IOUtils.copyBytes(instream,byteout,8000);
+                        SeekableInputStream seekableInputStream=new SeekableInputStream(byteout.toByteArray());
+                        file = ParquetUtil.makeInputFile(seekableInputStream);
+                    }
+                }
                 if (colmeta.getColumnList().isEmpty()) {
-                    ParquetMetadata meta = ParquetFileReader.readFooter(ParquetUtil.makeInputFile(seekableInputStream), ParquetMetadataConverter.NO_FILTER);
+                    ParquetMetadata meta = ParquetFileReader.readFooter(file, ParquetMetadataConverter.NO_FILTER);
                     msgtype = meta.getFileMetaData().getSchema();
                     //read footer and schema,must return header
-                    seekableInputStream.seek(0L);
+                    if(!ObjectUtils.isEmpty(seekableInputStream)){
+                        seekableInputStream.seek(0L);
+                    }
                 } else {
                     schema = AvroUtils.getSchemaFromMeta(colmeta);
                 }
-                if(!useAvroEncode) {
+                if (!useAvroEncode) {
                     parseSchemaByType();
                     fields = schema.getFields();
-                    ireader = CustomParquetReader.builder(ParquetUtil.makeInputFile(seekableInputStream), colmeta).build();
-                }else {
-                    preader = AvroParquetReader.<GenericData.Record>builder(ParquetUtil.makeInputFile(seekableInputStream)).build();
+                    ireader = CustomParquetReader.builder(file, colmeta).build();
+                } else {
+                    preader = AvroParquetReader.<GenericData.Record>builder(file).build();
                 }
             }
-
         } catch (Exception ex) {
-            logger.error("{0}", ex);
+            logger.error("{0}", ex.getMessage());
         }
+
     }
 
     @Override
     public boolean hasNext() {
         try {
-            if(useAvroEncode) {
+            if (useAvroEncode) {
                 record = null;
                 record = preader.read();
                 return record != null;
-            }else{
-                rsMap=ireader.read();
-                return rsMap!=null;
+            } else {
+                rsMap = ireader.read();
+                return rsMap != null;
             }
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -113,7 +150,7 @@ public class ParquetFileIterator extends AbstractFileIterator {
 
     @Override
     public Map<String, Object> next() {
-        if(useAvroEncode) {
+        if (useAvroEncode) {
             Map<String, Object> retMap = new HashMap<>();
             if (record == null) {
                 throw new NoSuchElementException("");
@@ -122,7 +159,7 @@ public class ParquetFileIterator extends AbstractFileIterator {
                 retMap.put(field.name(), record.get(field.name()));
             }
             return retMap;
-        }else{
+        } else {
             return rsMap;
         }
     }
@@ -145,6 +182,9 @@ public class ParquetFileIterator extends AbstractFileIterator {
     public void remove() {
         try {
             reader.read();
+            if(tmpFile!=null){
+                FileUtils.deleteQuietly(tmpFile);
+            }
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -152,5 +192,22 @@ public class ParquetFileIterator extends AbstractFileIterator {
 
     public MessageType getMessageType() {
         return msgtype;
+    }
+
+    @Override
+    public void close() throws IOException {
+        super.close();
+        if(!ObjectUtils.isEmpty(ireader)){
+            ireader.close();
+        }
+        if(!ObjectUtils.isEmpty(preader)){
+            preader.close();
+        }
+        if(!ObjectUtils.isEmpty(seekableInputStream)) {
+            seekableInputStream.closeQuitly();
+        }
+        if(!ObjectUtils.isEmpty(tmpFile)){
+            FileUtils.deleteQuietly(tmpFile);
+        }
     }
 }

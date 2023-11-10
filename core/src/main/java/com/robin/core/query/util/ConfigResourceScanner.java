@@ -4,20 +4,25 @@ import com.robin.core.base.exception.MissingConfigException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.util.ObjectUtils;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
 public class ConfigResourceScanner {
-    public static final InputStream loadResource(String resourcePath){
+    private ConfigResourceScanner(){
+
+    }
+    public static  InputStream loadResource(String resourcePath){
         try{
             PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
             Resource[] configFiles = resolver.getResources("classpath:" + resourcePath);
-            if(configFiles!=null && configFiles.length>0){
+            if(configFiles.length>0){
                 return configFiles[0].getInputStream();
             }else{
                 return null;
@@ -37,7 +42,7 @@ public class ConfigResourceScanner {
             String classesPath = null;
             PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
             //default config at queryConfig in classpath
-            if (xmlpath == null || "".equals(xmlpath)) {
+            if (ObjectUtils.isEmpty(xmlpath)) {
                 if(defaultPath.length>0) {
                     classesPath=defaultPath[0];
                 } else {
@@ -75,16 +80,15 @@ public class ConfigResourceScanner {
                 }
                 File[] files = file.listFiles();
                 if(files!=null) {
-                    for (int i = 0; i < files.length; i++) {
-                        File subfile = files[i];
+                    for (File subfile : files) {
                         if (subfile.getName().toLowerCase().endsWith("xml")) {
-                            resList.add(new FileInputStream(subfile));
+                            resList.add(Files.newInputStream(Paths.get(subfile.toURI())));
                         }
                     }
                 }
             }
         } catch (Exception e) {
-            log.error("{}", e);
+            log.error("{}", e.getMessage());
         }
         return resList;
     }

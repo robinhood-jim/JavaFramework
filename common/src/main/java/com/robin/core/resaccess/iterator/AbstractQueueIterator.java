@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 public abstract class AbstractQueueIterator extends AbstractResIterator {
-    public AbstractQueueIterator(DataCollectionMeta colmeta){
+    protected AbstractQueueIterator(DataCollectionMeta colmeta){
         super(colmeta);
     }
     protected Schema schema;

@@ -30,12 +30,13 @@ import java.util.Map;
 
 @Slf4j
 public class CsvProcessor {
+    private CsvProcessor(){
 
+    }
     public static int readFile(InputStream inputStream, CsvConfig config, List<Map<String, String>> columnResultList) {
 
         int pos = 0;
-        try {
-            ICsvListReader reader = new CsvListReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8), CsvPreference.STANDARD_PREFERENCE);
+        try (ICsvListReader reader = new CsvListReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8), CsvPreference.STANDARD_PREFERENCE)){
             pos = readHeadContentByConfig(reader, config, columnResultList);
         } catch (Exception e) {
             e.printStackTrace();
@@ -46,8 +47,7 @@ public class CsvProcessor {
     public static int readFile(InputStream inputStream, CsvConfig config, char separator, List<Map<String, String>> columnResultList) {
 
         int pos = 0;
-        try {
-            ICsvListReader reader = new CsvListReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8), new CsvPreference.Builder('"', separator, "n").build());
+        try (ICsvListReader reader = new CsvListReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8), new CsvPreference.Builder('"', separator, "n").build())){
             pos = readHeadContentByConfig(reader, config, columnResultList);
         } catch (Exception e) {
             e.printStackTrace();
@@ -58,8 +58,7 @@ public class CsvProcessor {
     public static int readFile(InputStream inputStream, List<Map<String, String>> columnResultList) {
 
         int pos = 0;
-        try {
-            ICsvListReader reader = new CsvListReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8), CsvPreference.STANDARD_PREFERENCE);
+        try (ICsvListReader reader = new CsvListReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8), CsvPreference.STANDARD_PREFERENCE)){
             pos = readHeadAndContent(reader, columnResultList);
         } catch (Exception e) {
             e.printStackTrace();
@@ -70,8 +69,7 @@ public class CsvProcessor {
     public static int readFile(InputStream inputStream, char seperator, List<Map<String, String>> columnResultList) {
 
         int pos = 0;
-        try {
-            ICsvListReader reader = new CsvListReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8), new CsvPreference.Builder('"', seperator, "n").build());
+        try (ICsvListReader reader = new CsvListReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8), new CsvPreference.Builder('"', seperator, "n").build())){
             pos = readHeadAndContent(reader, columnResultList);
         } catch (Exception e) {
             e.printStackTrace();
@@ -82,8 +80,7 @@ public class CsvProcessor {
     public static int readFile(Reader ireader, List<Map<String, String>> columnResultList) {
 
         int pos = 0;
-        try {
-            ICsvListReader reader = new CsvListReader(ireader, CsvPreference.STANDARD_PREFERENCE);
+        try (ICsvListReader reader = new CsvListReader(ireader, CsvPreference.STANDARD_PREFERENCE)){
             pos = readHeadAndContent(reader, columnResultList);
         } catch (Exception e) {
             log.error("", e);
@@ -94,8 +91,7 @@ public class CsvProcessor {
     public static int readFile(Reader ireader, CsvConfig config, List<Map<String, String>> columnResultList) {
 
         int pos = 0;
-        try {
-            ICsvListReader reader = new CsvListReader(ireader, CsvPreference.STANDARD_PREFERENCE);
+        try (ICsvListReader reader = new CsvListReader(ireader, CsvPreference.STANDARD_PREFERENCE)){
             pos = readHeadContentByConfig(reader, config, columnResultList);
         } catch (Exception e) {
             e.printStackTrace();
@@ -106,8 +102,7 @@ public class CsvProcessor {
     public static int readFile(Reader ireader, char seperator, List<Map<String, String>> columnResultList) {
 
         int pos = 0;
-        try {
-            ICsvListReader reader = new CsvListReader(ireader, new CsvPreference.Builder('"', seperator, "n").build());
+        try (ICsvListReader reader = new CsvListReader(ireader, new CsvPreference.Builder('"', seperator, "n").build())){
             pos = readHeadAndContent(reader, columnResultList);
         } catch (Exception e) {
             e.printStackTrace();
@@ -127,15 +122,12 @@ public class CsvProcessor {
     }
 
     public static void writeFile(PrintWriter pwriter, String[] header, List<String[]> resultList, String splitchar) {
-        try {
-            CsvPreference preference = new CsvPreference.Builder('"', splitchar.charAt(0), "n").build();
-            ICsvListWriter writer = new CsvListWriter(pwriter, preference);
+        CsvPreference preference = new CsvPreference.Builder('"', splitchar.charAt(0), "n").build();
+        try (ICsvListWriter writer = new CsvListWriter(pwriter, preference)){
             writer.writeHeader(header);
             for (String[] strArr : resultList) {
                 writer.write(strArr);
             }
-            writer.close();
-
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -147,7 +139,7 @@ public class CsvProcessor {
         List<String> resultlist;
         while ((resultlist = reader.read()) != null) {
             pos++;
-            Map<String, String> resultMap = new HashMap<String, String>();
+            Map<String, String> resultMap = new HashMap<>();
             for (int j = 0; j < columnList.size(); j++) {
                 CsvColumnConfig colconfig = columnList.get(j);
                 resultMap.put(colconfig.getColumnCode(), resultlist.get(j));
@@ -157,17 +149,17 @@ public class CsvProcessor {
         return pos;
     }
 
-    private static int readHeadAndContent(ICsvListReader reader, List<Map<String, String>> columnResultList) throws Exception {
+    private static int readHeadAndContent(ICsvListReader reader, List<Map<String, String>> columnResultList) throws IOException {
         int pos = 0;
         String[] header = reader.getHeader(true);
         if (header == null || header.length == 0) {
-            throw new Exception("no file");
+            throw new IOException("no file");
         }
 
         List<String> resultlist;
         while ((resultlist = reader.read()) != null) {
             pos++;
-            Map<String, String> resultMap = new HashMap<String, String>();
+            Map<String, String> resultMap = new HashMap<>();
             for (int j = 0; j < header.length; j++) {
                 resultMap.put(header[j], resultlist.get(j));
             }

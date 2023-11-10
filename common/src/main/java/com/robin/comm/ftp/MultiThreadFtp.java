@@ -1,11 +1,15 @@
 package com.robin.comm.ftp;
 
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.net.ftp.FTP;
+import org.apache.commons.net.ftp.FTPClient;
+import org.apache.commons.net.ftp.FTPReply;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.*;
-import java.net.SocketException;
-import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -13,22 +17,16 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.net.ftp.FTP;
-import org.apache.commons.net.ftp.FTPClient;
-import org.apache.commons.net.ftp.FTPReply;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * Support Multi Thread ftp download and upload and support with
  *
  * @author robinjim
  * @version 1.0
  */
-
+@Slf4j
 public class MultiThreadFtp extends SimpleFtp {
 
-    private Logger logger = LoggerFactory.getLogger(getClass());
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     public MultiThreadFtp(String hostName, String userName, String password) {
         ftpClient = new FTPClient();
@@ -44,22 +42,20 @@ public class MultiThreadFtp extends SimpleFtp {
         ExecutorService pool = new ThreadPoolExecutor(2, 4, 5000, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
         ftpClient.enterLocalPassiveMode();//Enter PassiveMode
         ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
-        boolean retflag = false;
         List<Boolean> boolTag = new ArrayList<>();
         if (!exists(remote)) {
-            log.info("remote path not exists {}" , remote);
+            log.info("remote path not exists {}", remote);
             return false;
         }
         long totalsize = filesize(remote);
-        logger.info("totalsize={}" , totalsize);
+        logger.info("totalsize={}", totalsize);
         long partsize = totalsize / threads + 1;
         Map<Integer, Boolean> executeMap = new HashMap<>();
 
-        try  {
-            RandomAccessFile file = new RandomAccessFile(new File(local), "rw");
-            file.setLength(totalsize);
-            file.close();
+        try {
+            generateTargetFile(local,totalsize);
             disconnect();
+
             for (int i = 0; i < threads; i++) {
                 pool.execute(new DownThread(remote, local, retrys, i, threads, partsize, totalsize, executeMap, boolTag));
             }
@@ -68,20 +64,23 @@ public class MultiThreadFtp extends SimpleFtp {
                     Thread.sleep(10000);
                 }
             } catch (Exception ex) {
-                logger.error("{}", ex);
+                logger.error("{}", ex.getMessage());
             }
             pool.shutdown();
             logger.info("job finished with status {}", boolTag.get(0));
             return boolTag.get(0);
-        } catch (FileNotFoundException ex) {
+        } catch (IOException ex) {
             throw ex;
         }
     }
-
-    //TODO wait to code
-    public void uploadFile(String localFile, String remoteFile, int threads, int retrys) {
-
+    private void generateTargetFile(String localPath,long totalSize) throws IOException{
+        try(RandomAccessFile file = new RandomAccessFile(new File(localPath), "rw")){
+            file.setLength(totalSize);
+        }catch (IOException ex1){
+            throw ex1;
+        }
     }
+
 
     private class DownThread extends Thread {
         String remote;
@@ -111,7 +110,7 @@ public class MultiThreadFtp extends SimpleFtp {
         @Override
         public void run() {
             success = doDownloadPart(part, partsize, totalsize, remote, local, retryNums);
-            setJobFinshTag(executeMap, part, success, totalpart, boolTag);
+            setJobFinishTag(executeMap, part, success, totalpart, boolTag);
         }
 
         private boolean doDownloadPart(int part, long partsize, long totalsize, String remote, String local, int retryTimes) {
@@ -125,7 +124,7 @@ public class MultiThreadFtp extends SimpleFtp {
             while (!retflag && processsize != partsize) {
                 try {
                     processsize += doDownloadSect(formsize + processsize, tosize, local, remote);
-                    if (formsize + processsize != tosize && ((Long.parseLong(String.valueOf(processsize)) != partsize || !(tosize == totalsize && processsize != 0)))) {
+                    if (formsize + processsize != tosize && (long)processsize != partsize || !(tosize == totalsize && processsize != 0)){
                         Thread.sleep(waitForReconnect);
                     } else {
                         retflag = true;
@@ -139,18 +138,14 @@ public class MultiThreadFtp extends SimpleFtp {
 
         private int doDownloadSect(long formsize, long tosize, String local, String remote) throws IOException {
             int processsize = 0;
-            try (RandomAccessFile file = new RandomAccessFile(new File(local), "rw")) {
+            FTPClient client = getClient();
+            client.enterLocalPassiveMode();
+            client.setFileType(FTP.BINARY_FILE_TYPE);
+            if (formsize != 0) {
+                client.setRestartOffset(formsize);
+            }
+            try (RandomAccessFile file = new RandomAccessFile(new File(local), "rw"); InputStream in = client.retrieveFileStream(remote)) {
                 file.seek(formsize);
-                FTPClient client = getClient();
-                client.enterLocalPassiveMode();
-                client.setFileType(FTP.BINARY_FILE_TYPE);
-                if (formsize != 0) {
-                    client.setRestartOffset(formsize);
-                }
-                InputStream in = client.retrieveFileStream(remote);
-
-
-                boolean retflag = true;
 
                 byte[] bytes = new byte[81920];
                 int c;
@@ -176,19 +171,16 @@ public class MultiThreadFtp extends SimpleFtp {
         }
     }
 
-    public void setJobFinshTag(Map<Integer, Boolean> finshMap, int part, boolean flag, int totalpart, List<Boolean> boolTag) {
+    public void setJobFinishTag(Map<Integer, Boolean> finshMap, int part, boolean flag, int totalpart, List<Boolean> boolTag) {
         finshMap.put(part, flag);
-        boolean finish = false;
         if (flag) {
             int count = 0;
-            Iterator<Boolean> iter = finshMap.values().iterator();
-            while (iter.hasNext()) {
-                if (iter.next()) {
+            for (Boolean aBoolean : finshMap.values()) {
+                if (aBoolean.booleanValue()) {
                     count++;
                 }
             }
             if (count == totalpart) {
-                finish = true;
                 boolTag.add(true);
             }
         } else if (finshMap.size() == totalpart) {
@@ -197,16 +189,13 @@ public class MultiThreadFtp extends SimpleFtp {
 
     }
 
-    public FTPClient getClient() throws IOException {
+    public FTPClient getClient()  {
         FTPClient client = new FTPClient();
         client.setControlEncoding(ENCODING_DEFAULT);
-        //client.setFileType(FTPClient.BINARY_FILE_TYPE);
         connect(client);
         if (FTPReply.isPositiveCompletion(ftpClient.getReplyCode())) {
             try {
-                if (client.login(userName, password)) {
-
-                } else {
+                if (!client.login(userName, password)) {
                     client = null;
                 }
             } catch (IOException e) {

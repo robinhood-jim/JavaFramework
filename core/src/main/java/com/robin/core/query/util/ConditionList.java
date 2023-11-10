@@ -103,7 +103,7 @@ public class ConditionList extends ArrayList {
 	}
 
 	/**
-	 * 转锟斤拷锟斤拷sql
+	 *
 	 */
 	public String toString(String tablename) throws Exception {
 		StringBuffer sql = new StringBuffer();

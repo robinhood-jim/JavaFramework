@@ -2,15 +2,16 @@ package com.robin.core.base.reflect;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.robin.core.base.annotation.MappingField;
 import com.robin.core.base.spring.SpringContextHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
@@ -22,41 +23,45 @@ import java.util.concurrent.TimeUnit;
 
 
 @Slf4j
+@SuppressWarnings("UnstableApiUsage")
 public class ReflectUtils {
+    private ReflectUtils(){
+
+    }
 
     private static final Cache<String, Map<String, Method>> cachedGetMethod = CacheBuilder.newBuilder().maximumSize(1000).expireAfterAccess(30, TimeUnit.MINUTES).build();
     private static final Cache<String, Map<String, Method>> cachedSetMethod = CacheBuilder.newBuilder().maximumSize(1000).expireAfterAccess(30, TimeUnit.MINUTES).build();
     private static final Cache<String, Map<String, List<Field>>> cacheField= CacheBuilder.newBuilder().maximumSize(1000).expireAfterAccess(30,TimeUnit.MINUTES).build();
     private static final Cache<String, Map<String, Field>> fieldCache= CacheBuilder.newBuilder().maximumSize(1000).expireAfterAccess(30,TimeUnit.MINUTES).build();
 
-    public static final List<String> getAllPropety(Class<?> clazz) {
+    public static List<String> getAllProperty(Class<?> clazz) {
         List<String> nameList = new ArrayList<>();
         if (clazz != null && !clazz.isPrimitive()) {
             Field[] fields = clazz.getDeclaredFields();
-            for (int i = 0; i < fields.length; i++) {
-                nameList.add(fields[i].getName());
+            for (Field field : fields) {
+                nameList.add(field.getName());
             }
         }
         return nameList;
     }
 
-    public static final Map<String, Method> getAllSetMethod(Class<?> clazz) {
+    public static Map<String, Method> getAllSetMethod(Class<?> clazz) {
         Map<String, Method> methodMap = new HashMap<>();
         Assert.notNull(clazz,"");
         if (!clazz.isPrimitive()) {
             Method[] method = clazz.getDeclaredMethods();
-            for (int i = 0; i < method.length; i++) {
-                String name = method[i].getName();
+            for (Method value : method) {
+                String name = value.getName();
                 if (name.startsWith("set")) {
                     name = StringUtils.uncapitalize(name.substring(3));
-                    methodMap.put(name, method[i]);
+                    methodMap.put(name, value);
                 }
             }
         }
         return methodMap;
     }
-    public static final Map<String,Field> getAllField(Class<?> clazz){
-        Map<String,Field> map=null;
+    public static Map<String,Field> getAllField(Class<?> clazz){
+        Map<String,Field> map;
         if(fieldCache.getIfPresent(clazz.getCanonicalName())==null){
             if(isUseClassGraphForReflect()){
                 map= SpringContextHolder.getBean(ClassGraphReflector.class).returnAllField(clazz);
@@ -67,25 +72,27 @@ public class ReflectUtils {
                     map.put(field.getName(),field);
                 }
             }
-            fieldCache.put(clazz.getCanonicalName(),map);
+            if(!CollectionUtils.isEmpty(map)) {
+                fieldCache.put(clazz.getCanonicalName(), map);
+            }
         }
         return fieldCache.getIfPresent(clazz.getCanonicalName());
     }
 
-    public static final void wrapObjWithMap(Map<String, String> map, Object obj) throws Exception {
+    public static void wrapObjWithMap(Map<String, String> map, Object obj) throws IllegalAccessException, InvocationTargetException, NoSuchMethodException {
         if (obj != null && !obj.getClass().isPrimitive()) {
-            List<String> nameList = getAllPropety(obj.getClass());
-            for (int i = 0; i < nameList.size(); i++) {
-                Object vobj = PropertyUtils.getProperty(map, nameList.get(i));
+            List<String> nameList = getAllProperty(obj.getClass());
+            for (String s : nameList) {
+                Object vobj = PropertyUtils.getProperty(map, s);
                 if (vobj != null) {
-                    PropertyUtils.setProperty(obj, nameList.get(i), vobj);
+                    PropertyUtils.setProperty(obj, s, vobj);
                 }
             }
         }
     }
 
-    public static final Map<String, Method> returnGetMethods(Class<?> clazz) {
-        Map<String, Method> map = null;
+    public static Map<String, Method> returnGetMethods(Class<?> clazz) {
+        Map<String, Method> map ;
         if (cachedGetMethod.getIfPresent(clazz.getCanonicalName()) == null) {
             if (isUseClassGraphForReflect()) {
                 map = SpringContextHolder.getBean(ClassGraphReflector.class).returnGetMethods(clazz);
@@ -106,8 +113,8 @@ public class ReflectUtils {
         return cachedGetMethod.getIfPresent(clazz.getCanonicalName());
     }
 
-    public static final Map<String, Method> returnSetMethods(Class<?> clazz) {
-        Map<String, Method> map = null;
+    public static Map<String, Method> returnSetMethods(Class<?> clazz) {
+        Map<String, Method> map;
         if (cachedSetMethod.getIfPresent(clazz.getCanonicalName()) == null) {
             if (isUseClassGraphForReflect()) {
                 map = SpringContextHolder.getBean(ClassGraphReflector.class).returnSetMethods(clazz);
@@ -161,27 +168,25 @@ public class ReflectUtils {
         return null;
     }
 
-    private static Method getMethodByName(Class<?> clazz, String methodName) {
+    private static Method getMethodByName(Class<?> clazz, String methodName) throws NoSuchMethodException {
         try {
             return clazz.getDeclaredMethod(methodName);
         } catch (NoSuchMethodException ex) {
-
+            throw ex;
         }
-        return null;
     }
 
-    private static Method getMethodByName(Class<?> clazz, String methodName, Type type) {
+    private static Method getMethodByName(Class<?> clazz, String methodName, Type type) throws NoSuchMethodException {
         try {
             return clazz.getDeclaredMethod(methodName, (Class) type);
         } catch (NoSuchMethodException ex) {
-
+            throw ex;
         }
-        return null;
     }
 
     private static boolean isUseClassGraphForReflect() {
         try {
-            if (SpringContextHolder.getApplicationContext() != null && SpringContextHolder.getBean("classGraphReflector") != null) {
+            if (SpringContextHolder.getApplicationContext() != null && SpringContextHolder.getBean(ClassGraphReflector.class) != null) {
                 return true;
             }
         } catch (Exception ex) {
@@ -192,9 +197,9 @@ public class ReflectUtils {
     public static <T extends Annotation> T getAnnotationByFieldName(Class<?> baseClazz, String fieldName, Class<T> annotationClazz){
         Assert.isTrue(annotationClazz.isAnnotation(),"field class must be annotation!");
         List<Field> fields= getFieldsByAnnotation(baseClazz,annotationClazz);
-        for(Field field:fields){
-            if(field.getName().equals(fieldName)){
-                if(field.isAnnotationPresent(annotationClazz)){
+        if(!CollectionUtils.isEmpty(fields)) {
+            for (Field field : fields) {
+                if (field.getName().equals(fieldName) && field.isAnnotationPresent(annotationClazz)) {
                     return field.getAnnotation(annotationClazz);
                 }
             }
@@ -218,15 +223,15 @@ public class ReflectUtils {
         if(null==tmap){
             tmap=new HashMap<>();
             Field[] fields=baseClazz.getDeclaredFields();
-            for(int i=0;i<fields.length;i++){
-                if(fields[i].isAnnotationPresent(annotationClazz)){
-                    String clazzName=annotationClazz.getCanonicalName();
-                    if(tmap.containsKey(clazzName)){
-                        tmap.get(clazzName).add(fields[i]);
-                    }else{
-                        List<Field> fieldList=new ArrayList<>();
-                        fieldList.add(fields[i]);
-                        tmap.put(clazzName,fieldList);
+            for (Field field : fields) {
+                if (field.isAnnotationPresent(annotationClazz)) {
+                    String clazzName = annotationClazz.getCanonicalName();
+                    if (tmap.containsKey(clazzName)) {
+                        tmap.get(clazzName).add(field);
+                    } else {
+                        List<Field> fieldList = new ArrayList<>();
+                        fieldList.add(field);
+                        tmap.put(clazzName, fieldList);
                     }
                 }
             }
@@ -267,7 +272,7 @@ public class ReflectUtils {
                 return fields.get(0).getName();
             }
         }catch (Exception ex){
-            log.error("{}",ex);
+            log.error("{}",ex.getMessage());
         }
         return null;
     }

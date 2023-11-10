@@ -53,8 +53,8 @@ public class AvroFileWriter extends AbstractFileWriter {
 	public void beginWrite() throws IOException {
 		checkAccessUtil(colmeta.getPath());
 		out = accessUtil.getRawOutputStream(colmeta, ResourceUtil.getProcessPath(colmeta.getPath()));
-		dwriter=new GenericDatumWriter<GenericRecord>(schema);
-		fileWriter=new DataFileWriter<GenericRecord>(dwriter);
+		dwriter=new GenericDatumWriter<>(schema);
+		fileWriter=new DataFileWriter<>(dwriter);
 		Const.CompressType type= getCompressType();
 		switch (type){
 			case COMPRESS_TYPE_GZ:

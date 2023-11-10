@@ -49,8 +49,9 @@ public class ExcelBaseOper {
 
     public static final String TYPE_EXCEL2003 = "xls";
     public static final String TYPE_EXCEL2007 = "xlsx";
-    private static final String defaultFontName = java.awt.Font.SANS_SERIF;
+    public static final String defaultFontName = Locale.CHINA.equals(Locale.getDefault()) || Locale.SIMPLIFIED_CHINESE.equals(Locale.getDefault())?"宋体":java.awt.Font.SANS_SERIF;
     private static final Logger logger = LoggerFactory.getLogger(ExcelBaseOper.class);
+
 
     public static Sheet createSheet(Workbook wb, String sheetName, ExcelSheetProp prop) {
         return wb.createSheet(sheetName);
@@ -119,8 +120,9 @@ public class ExcelBaseOper {
     }
 
     private static void setHeaderFont(Workbook wb, TableConfigProp header, CellStyle cs) {
+        Font font = wb.createFont();
+        font.setFontName(defaultFontName);
         if (header != null) {
-            Font font = wb.createFont();
             font.setFontName((header.getHeaderFontName() == null || header.getHeaderFontName().isEmpty()) ? defaultFontName : header.getHeaderFontName());
             if (header.isBold()) {
                 font.setBold(true);
@@ -128,8 +130,8 @@ public class ExcelBaseOper {
             if (header.isItalic()) {
                 font.setItalic(true);
             }
-            cs.setFont(font);
         }
+        cs.setFont(font);
     }
 
     public static CellStyle getHeaderStyle(Workbook wb, int rowspan, HorizontalAlignment align, TableConfigProp header) {
@@ -161,7 +163,7 @@ public class ExcelBaseOper {
     }
 
     public static Cell merged(Sheet sheet, String colType, int startRow, int startCell, int endRow, int endCell, CellStyle cs, String value, CreationHelper helper) {
-        Cell cell = null;
+        Cell cell ;
         CellRangeAddress cellRangeAddress = new CellRangeAddress(startRow, endRow,  startCell, endCell);
         sheet.addMergedRegion(cellRangeAddress);
         setRegionStyle(sheet, cellRangeAddress, cs);
@@ -182,7 +184,7 @@ public class ExcelBaseOper {
 
 
 
-    private static void caculateStartColofRow(int row, int pos, ExcelHeaderProp header, int[][] startColArr) {
+    private static void calculateStartColumnofRow(int row, int pos, ExcelHeaderProp header, int[][] startColArr) {
         if (row == 0) {
             if (pos == 0) {
                 startColArr[0][0] = 0;
@@ -289,16 +291,12 @@ public class ExcelBaseOper {
         return row;
     }
 
-    private static Cell creatCell(Row row, int i) {
-        return row.createCell(i);
-    }
-
     private static short getAlignment(int align) {
         return (short) align;
     }
 
     public static Cell createCell(Row row1, int j, String value, String colType, CellStyle cellStyle, CreationHelper helper) {
-        Cell cell = null;
+        Cell cell ;
         if (colType.equals(Const.META_TYPE_STRING)) {
             cell = createCell(row1, j, cellStyle, helper, value);
         } else if (colType.equals(Const.META_TYPE_NUMERIC) || colType.equals(Const.META_TYPE_DOUBLE)) {
@@ -351,7 +349,6 @@ public class ExcelBaseOper {
     }
     private static Cell createFormulaCell(Row row,int column,CellStyle cellStyle,CreationHelper helper,String formula){
         Cell cell = row.createCell(column);
-        //cell.setCellType(CellType.FORMULA);
         cell.setCellFormula(formula);
         cell.setCellStyle(cellStyle);
         return cell;
@@ -421,7 +418,7 @@ public class ExcelBaseOper {
         if(cell==null){
             return null;
         }
-        Object cellValue=null;
+        Object cellValue;
         FormulaEvaluator evaluator = cell.getSheet().getWorkbook().getCreationHelper().createFormulaEvaluator();
         switch (cell.getCellType()){
             case STRING:
@@ -467,7 +464,7 @@ public class ExcelBaseOper {
                     colorset[i] = 255;
                 }
             }
-            //System.out.println(" using color" + colorset[0] + "," + colorset[1] + "," + colorset[2]);
+
         } catch (Exception e) {
             logger.error("Encounter Error ", e);
         }

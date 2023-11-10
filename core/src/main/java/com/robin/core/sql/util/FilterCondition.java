@@ -3,6 +3,7 @@ package com.robin.core.sql.util;
 import com.robin.core.base.dao.util.AnnotationRetriever;
 import com.robin.core.base.exception.ConfigurationIncorrectException;
 import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +16,6 @@ public class FilterCondition {
 	private String columnCode;
 	private Object value;
 	public static final String BETWEEN = "BETWEEN";
-//	public static final String BETWEEN_AND_EQUALS = "BETWEEN_AND_EQUALS";
 	public static final String GREATNESS = "GREATNESS";
 	public static final String SMALLNESS = "SMALLNESS";
 	public static final String GREATNESS_AND_EQUALS = "GREATNESS_AND_EQUALS";
@@ -70,7 +70,7 @@ public class FilterCondition {
 	
 	public String toSQLPart()
 	{
-		StringBuffer sbSQLStr = new StringBuffer();
+		StringBuilder sbSQLStr = new StringBuilder();
 		String realColumn=columnCode;
 		if(fieldMap.containsKey(columnCode)) {
             realColumn=fieldMap.get(columnCode).getFieldName();
@@ -159,7 +159,7 @@ public class FilterCondition {
 			sbSQLStr.append(")) ");
 		}
 		else 
-		if (OR == operator){
+		if (OR.equals(operator)){
 			Assert.notNull(value,"");
 
 			if(ArrayList.class.isAssignableFrom(value.getClass())) {
@@ -177,7 +177,7 @@ public class FilterCondition {
 				throw new ConfigurationIncorrectException(" OR operator must include list elements");
 			}
 			sbSQLStr.append(") ");
-		}else if(AND == operator){
+		}else if(AND.equals(operator)){
 			Assert.notNull(value,"");
 			if(ArrayList.class.isAssignableFrom(value.getClass())){
 				sbSQLStr.append("(");
@@ -194,12 +194,12 @@ public class FilterCondition {
 				throw new ConfigurationIncorrectException(" AND operator must include list elements");
 			}
 		}
-		else if (NOT == operator){
-			if (value == null){
+		else if (NOT.equals(operator)){
+			if (!ObjectUtils.isEmpty(value)){
+				sbSQLStr.append(" (not (");
+				sbSQLStr.append(((FilterCondition)value).toSQLPart());
+				sbSQLStr.append(")) ");
 			}
-			sbSQLStr.append(" (not (");
-			sbSQLStr.append(((FilterCondition)value).toSQLPart());
-			sbSQLStr.append(")) ");
 		}
 		return sbSQLStr.toString();
 	}

@@ -11,6 +11,9 @@ import java.util.Map;
  *
  */
 public class ConditionBuilder {
+	private ConditionBuilder(){
+
+	}
 
 	public static ConditionList build(Object obj1,int empty,Map methods)
 		throws Exception {

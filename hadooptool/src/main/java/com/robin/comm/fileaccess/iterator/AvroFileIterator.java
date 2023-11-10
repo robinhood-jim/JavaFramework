@@ -1,6 +1,5 @@
 package com.robin.comm.fileaccess.iterator;
 
-import com.robin.core.base.util.IOUtils;
 import com.robin.core.base.util.ResourceConst;
 import com.robin.core.fileaccess.iterator.AbstractFileIterator;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
@@ -9,8 +8,10 @@ import com.robin.core.fileaccess.util.ResourceUtil;
 import com.robin.hadoop.hdfs.HDFSUtil;
 import org.apache.avro.Schema;
 import org.apache.avro.Schema.Field;
+import org.apache.avro.file.DataFileReader;
 import org.apache.avro.file.FileReader;
-import org.apache.avro.file.*;
+import org.apache.avro.file.SeekableFileInput;
+import org.apache.avro.file.SeekableInput;
 import org.apache.avro.generic.GenericDatumReader;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.commons.io.FileUtils;
@@ -19,14 +20,15 @@ import org.apache.hadoop.fs.FSDataInputStream;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class AvroFileIterator extends AbstractFileIterator {
 	private Schema schema;
-	private GenericDatumReader<GenericRecord> dreader=null;
+
 	private FileReader<GenericRecord> fileReader;
 	public AvroFileIterator(DataCollectionMeta colmeta) {
 		super(colmeta);
@@ -58,7 +60,6 @@ public class AvroFileIterator extends AbstractFileIterator {
 
 	@Override
 	public void beforeProcess(String resourcePath) {
-		SeekableInput input=null;
 		try {
 			schema= AvroUtils.getSchemaFromMeta(colmeta);
 			doInit(resourcePath);
@@ -67,13 +68,13 @@ public class AvroFileIterator extends AbstractFileIterator {
 		}
 	}
 	private void doInit(String resourcePath) throws Exception{
-		if(colmeta.getSourceType().equals(ResourceConst.InputSourceType.TYPE_HDFS.getValue())){
+		if(colmeta.getSourceType().equals(ResourceConst.IngestType.TYPE_HDFS.getValue())){
 			HDFSUtil util=new HDFSUtil(colmeta);
 			instream=util.getHDFSDataByRawInputStream(ResourceUtil.getProcessPath(resourcePath));
 			input=new AvroFSInput(new FSDataInputStream(instream),util.getHDFSFileSize(ResourceUtil.getProcessPath(resourcePath)));
 		}else {
 			//非hdfs和local方式，需先将文件保存至临时目录后处理,避免内存oom
-			if(!ResourceConst.InputSourceType.TYPE_LOCAL.getValue().equals(colmeta.getSourceType())) {
+			if(!ResourceConst.IngestType.TYPE_LOCAL.getValue().equals(colmeta.getSourceType())) {
 				String tmpPath = FileUtils.getTempDirectoryPath() + ResourceUtil.getProcessFileName(resourcePath);
 				instream = accessUtil.getRawInputStream(colmeta, ResourceUtil.getProcessPath(resourcePath));
 				tmpFile = new File(tmpPath);
@@ -88,7 +89,7 @@ public class AvroFileIterator extends AbstractFileIterator {
 			}
 		}
 		Assert.notNull(input,"Seekable input is null");
-		dreader=new GenericDatumReader<>(schema);
+		GenericDatumReader<GenericRecord> dreader=new GenericDatumReader<>(schema);
 		fileReader=new DataFileReader<>(input,dreader);
 		schema=fileReader.getSchema();
 	}

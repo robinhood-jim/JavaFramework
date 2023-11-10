@@ -41,13 +41,15 @@ public class SourceFileExplorer {
     private static final SimpleDateFormat day_format =new SimpleDateFormat("yyyy-MM-dd");
     private static final SimpleDateFormat digital_format =new SimpleDateFormat("yyyyMMddhhmmss");
     private static final SimpleDateFormat normal_format =new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-    public static final void exploreCsv(BufferedReader reader,DataCollectionMeta meta,String[] headers, int readLines){
+    private SourceFileExplorer(){
+
+    }
+    public static void exploreCsv(BufferedReader reader,DataCollectionMeta meta,String[] headers, int readLines){
         int columnPos=1;
         String[] readHeader=headers;
-        ICsvListReader ireader=null;
-        try {
-            String spiltChar=getSpiltChar(meta.getSplit());
-            ireader=new CsvListReader(reader,new CsvPreference.Builder( '"', spiltChar.charAt(0), "n").build());
+        String spiltChar=getSpiltChar(meta.getSplit());
+        try (ICsvListReader ireader=new CsvListReader(reader,new CsvPreference.Builder( '"', spiltChar.charAt(0), "n").build())){
+
             if(headers==null){
                 readHeader=ireader.getHeader(true);
             }
@@ -64,17 +66,9 @@ public class SourceFileExplorer {
 
         }catch (Exception ex){
             log.error("",ex);
-        }finally {
-            try {
-                if (ireader != null) {
-                    ireader.close();
-                }
-            }catch (Exception ex){
-                log.error("",ex);
-            }
         }
     }
-    public static final void exploreJson(BufferedReader reader,DataCollectionMeta meta,int readLines){
+    public static void exploreJson(BufferedReader reader,DataCollectionMeta meta,int readLines){
         int columnPos=1;
         Gson gson= GsonUtil.getGson();
         Map<String,Map<String, Long>> typeMap=new HashMap<>();
@@ -84,14 +78,12 @@ public class SourceFileExplorer {
             String lineStr;
             while((lineStr=reader.readLine())!=null && columnPos<readLines) {
                 Map<String,Object> map=gson.fromJson(lineStr,new TypeToken<Map<String,Object>>(){}.getType());
-                Iterator<Map.Entry<String,Object>> iter=map.entrySet().iterator();
-                while(iter.hasNext()){
-                    Map.Entry<String,Object> entry=iter.next();
-                    String column=entry.getKey();
-                    if(columnPos==1 && !columns.contains(column)){
+                for (Map.Entry<String, Object> entry : map.entrySet()) {
+                    String column = entry.getKey();
+                    if (columnPos == 1 && !columns.contains(column)) {
                         columns.add(column);
                     }
-                    getTypeByData(entry.getValue().toString(),column,typeMap,dateFormatMap);
+                    getTypeByData(entry.getValue().toString(), column, typeMap, dateFormatMap);
                 }
                 columnPos++;
             }

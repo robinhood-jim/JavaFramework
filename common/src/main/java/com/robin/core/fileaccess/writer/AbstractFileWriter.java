@@ -34,10 +34,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.URI;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 public abstract class AbstractFileWriter implements IResourceWriter {
@@ -73,7 +70,7 @@ public abstract class AbstractFileWriter implements IResourceWriter {
 	protected Map<String, Object> wrapListToMap(List<Object> list){
 		Map<String, Object> valuemap=new HashMap<>();
 		if(list.size()<colmeta.getColumnList().size()) {
-            return null;
+            return Collections.emptyMap();
         }
 		for (int i=0;i<colmeta.getColumnList().size();i++) {
 			DataSetColumnMeta meta = colmeta.getColumnList().get(i);
@@ -154,7 +151,6 @@ public abstract class AbstractFileWriter implements IResourceWriter {
 	protected Const.CompressType getCompressType(){
 		List<String> fileSuffix=new ArrayList<>();
 		FileUtils.parseFileFormat(getOutputPath(colmeta.getPath()),fileSuffix);
-		Const.CompressType type= FileUtils.getFileCompressType(fileSuffix);
-		return type;
+		return FileUtils.getFileCompressType(fileSuffix);
 	}
 }

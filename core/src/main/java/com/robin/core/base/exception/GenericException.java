@@ -16,15 +16,15 @@
 package com.robin.core.base.exception;
 
 @SuppressWarnings("serial")
-public class GenricException extends RuntimeException {
-	public GenricException() {
+public class GenericException extends RuntimeException {
+	public GenericException() {
 	}
 
-	public GenricException(String s) {
+	public GenericException(String s) {
 		super(s);
 	}
 
-	public GenricException(Exception e) {
+	public GenericException(Exception e) {
 		super(e.getMessage());
 	}
 

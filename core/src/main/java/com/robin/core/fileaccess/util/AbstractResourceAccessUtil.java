@@ -20,8 +20,10 @@ import com.robin.core.compress.util.CompressEncoder;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 
 import java.io.*;
-import java.net.URI;
 
+/**
+ * abstract resource system access Utils (Local/Hdfs/ApacheVFS(including ftp sftp)/S3/Tencent cloud/aliyun)
+ */
 public abstract class AbstractResourceAccessUtil {
 	public static String[] retrieveResource(String path){
 		String[] ret=new String[2];
@@ -51,8 +53,7 @@ public abstract class AbstractResourceAccessUtil {
 	public static String getFileName(String name){
 		int pos=name.lastIndexOf(".");
 		int frompos=name.lastIndexOf(File.separator)+1;
-		String filename=name.substring(frompos,pos);
-		return filename;
+		return name.substring(frompos,pos);
 	}	
 	public static String getFilePath(String name){
 		int pos=name.lastIndexOf(File.separator);
@@ -69,7 +70,7 @@ public abstract class AbstractResourceAccessUtil {
 	}
 
 	protected static OutputStream wrapOutputStream(OutputStream outputStream){
-		OutputStream out=null;
+		OutputStream out;
 		if(outputStream instanceof  BufferedOutputStream){
 			out=outputStream;
 		}else{
@@ -78,7 +79,7 @@ public abstract class AbstractResourceAccessUtil {
 		return out;
 	}
 	protected static InputStream wrapInputStream(InputStream instream){
-		InputStream in=null;
+		InputStream in;
 		if(instream instanceof  BufferedInputStream){
 			in=instream;
 		}else{
@@ -97,4 +98,5 @@ public abstract class AbstractResourceAccessUtil {
 	public abstract InputStream getInResourceByStream(DataCollectionMeta meta, String resourcePath) throws IOException;
 	public abstract InputStream getRawInputStream(DataCollectionMeta meta, String resourcePath) throws IOException;
 	public abstract boolean exists(DataCollectionMeta meta, String resourcePath) throws IOException;
+	public abstract long getInputStreamSize(DataCollectionMeta meta, String resourcePath) throws IOException;
 }

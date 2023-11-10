@@ -14,9 +14,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class CommandLineExecutor {
-	private Logger logger=LoggerFactory.getLogger(getClass());
-	private static CommandLineExecutor executor=new CommandLineExecutor();
-	private Map<Long, Integer> processMap=new HashMap<>();
+	private final Logger logger=LoggerFactory.getLogger(getClass());
+	private static final CommandLineExecutor executor=new CommandLineExecutor();
+	private final Map<Long, Integer> processMap=new HashMap<>();
 	
 	private CommandLineExecutor(){
 	}

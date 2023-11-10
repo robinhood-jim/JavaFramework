@@ -33,32 +33,30 @@ public class CollectionBaseConvert {
 	}
 
 	private static void doconvertByParentKey(List<Map<String, String>> listobj, String key, Map<String, List<Map<String, String>>> retMap) {
-		for(int i = 0; i < listobj.size(); i++) {
-			String parentKey=listobj.get(i).get(key);
-		   if(retMap.get(parentKey)==null){
-			   List<Map<String,String>> sublist=new ArrayList<>();
-			   sublist.add(listobj.get(i));
-			   retMap.put(parentKey, sublist);
-		   }else
-		   {
-			   retMap.get(parentKey).add(listobj.get(i));
-		   }
+		for (Map<String, String> stringStringMap : listobj) {
+			String parentKey = stringStringMap.get(key);
+			if (retMap.get(parentKey) == null) {
+				List<Map<String, String>> sublist = new ArrayList<>();
+				sublist.add(stringStringMap);
+				retMap.put(parentKey, sublist);
+			} else {
+				retMap.get(parentKey).add(stringStringMap);
+			}
 		}
 	}
 
 	public static Map<String,List<Map<String,Object>>> convertToMapByParentKeyWithObjVal(List<Map<String, Object>> listobj,String key) {
 		 Map<String,List<Map<String,Object>>> retMap =new HashMap<>();
-	      for(int i = 0; i < listobj.size(); i++) {
-	    	  String parentKey=listobj.get(i).get(key).toString();
-	         if(retMap.get(parentKey)==null){
-	        	 List<Map<String,Object>> sublist=new ArrayList<>();
-	        	 sublist.add(listobj.get(i));
-	        	 retMap.put(parentKey, sublist);
-	         }else
-	         {
-	        	 retMap.get(parentKey).add(listobj.get(i));
-	         }
-	      }
+		for (Map<String, Object> stringObjectMap : listobj) {
+			String parentKey = stringObjectMap.get(key).toString();
+			if (retMap.get(parentKey) == null) {
+				List<Map<String, Object>> sublist = new ArrayList<>();
+				sublist.add(stringObjectMap);
+				retMap.put(parentKey, sublist);
+			} else {
+				retMap.get(parentKey).add(stringObjectMap);
+			}
+		}
 	      return retMap;
 	}
 	public static Map<String,Map<String,Object>> listObjectToMap(List<Map<String, Object>> listobj,String key){

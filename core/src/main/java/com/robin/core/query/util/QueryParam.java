@@ -41,7 +41,7 @@ public class QueryParam {
 	public static final String QUERYMODE_LT=Const.FILTER_OPER_LT;
 	public static final String QUERYMODE_NOTEQUAL=Const.FILTER_OPER_NOTEQUAL;
 	public static final String QUERYMODE_GTANDEQUAL=Const.FILTER_OPER_GTANDEQL;
-	public static final String QUERYMODE_LTANDEQUAL=Const.FILTER_OPER_GTANDEQL;
+	public static final String QUERYMODE_LTANDEQUAL=Const.FILTER_OPER_LTANDEQL;
 	public static final String QUERYMODE_LIKE=Const.FILTER_OPER_LIKE;
 	public static final String QUERYMODE_BETWEEN=Const.FILTER_OPER_BETWEEN;
 	public static final String QUERYMODE_IN=Const.FILTER_OPER_IN;
