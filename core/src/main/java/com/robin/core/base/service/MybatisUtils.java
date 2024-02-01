@@ -5,9 +5,12 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.robin.core.base.util.Const;
+import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 
 public class MybatisUtils {
-    public static <T> LambdaQueryWrapper<T> getWrapper(SFunction<T,?> queryField, Const.OPERATOR operator,Class<T> clazz,Object... value){
+    public static <T> LambdaQueryWrapper<T> getWrapper(SFunction<T,?> queryField, Const.OPERATOR operator,Object... value){
+        Assert.isTrue(!ObjectUtils.isEmpty(value),"value must not be null!");
         LambdaQueryWrapper<T> queryWrapper=new QueryWrapper<T>().lambda();
         if(operator.equals(Const.OPERATOR.EQ)){
             queryWrapper.eq(queryField,value[0]);
@@ -30,10 +33,24 @@ public class MybatisUtils {
         }else if(operator.equals(Const.OPERATOR.NULL)){
             queryWrapper.isNull(queryField);
         }else if(operator.equals(Const.OPERATOR.BETWEEN)){
+            Assert.isTrue(value.length==2,"must have two parameters");
             queryWrapper.between(queryField,value[0],value[1]);
-        }else if(operator.equals(Const.OPERATOR.NOTEXIST)){
-            queryWrapper.notExists(value[0].toString());
+        }else if(operator.equals(Const.OPERATOR.NBT)){
+            Assert.isTrue(value.length==2,"must have two parameters");
+            queryWrapper.notBetween(queryField,value[0],value[1]);
         }
+        else if(operator.equals(Const.OPERATOR.NOTEXIST)){
+            queryWrapper.notExists(value[0].toString());
+        }else if(operator.equals(Const.OPERATOR.LL)){
+            queryWrapper.likeLeft(queryField,value[0]);
+        }else if(operator.equals(Const.OPERATOR.RL)){
+            queryWrapper.likeRight(queryField,value[0]);
+        }else if(operator.equals(Const.OPERATOR.LIKE)){
+            queryWrapper.like(queryField,value[0]);
+        }else if(operator.equals(Const.OPERATOR.NOTLIKE)){
+            queryWrapper.notLike(queryField,value[0]);
+        }
+
         return queryWrapper;
     }
 }

@@ -86,6 +86,15 @@ public class ExcelBaseOper {
         }
         return wb;
     }
+    public static Workbook getWorkBook(String filePrefix, InputStream stream) throws IOException {
+        Workbook wb = null;
+        if (TYPE_EXCEL2003.equalsIgnoreCase(filePrefix)) {
+            wb = new HSSFWorkbook(stream);
+        } else if (TYPE_EXCEL2007.equalsIgnoreCase(filePrefix)) {
+            wb = new XSSFWorkbook(stream);
+        }
+        return wb;
+    }
 
     public static CellStyle getHeaderStyle(Workbook wb, int rowspan, HorizontalAlignment align, TableMergeRegion region, TableConfigProp header) {
         CellStyle cs = wb.createCellStyle();

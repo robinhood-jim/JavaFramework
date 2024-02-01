@@ -313,7 +313,13 @@ public class Const {
         NVL("NVL"),
         NULL("NULL"),
         BETWEEN("BT"),
-        NOTEXIST("NOTEXIST");
+        NBT("NBT"),
+        NOTEXIST("NOTEXIST"),
+        LIKE("LIKE"),
+        NOTLIKE("NOTLIKE"),
+        LL("LL"),
+        RL("RL");
+
         private String value;
 
         OPERATOR(String value) {
@@ -323,6 +329,22 @@ public class Const {
         @Override
         public String toString() {
             return String.valueOf(this.value);
+        }
+    }
+    public enum HTTPRESPONSECODE{
+        OK(200),
+        NOTFOUND(404),
+        SERVERERR(400),
+        ERR(500);
+        private int value;
+        HTTPRESPONSECODE(int value){
+            this.value=value;
+        }
+        public int getValue(){
+            return value;
+        }
+        public String getValueStr(){
+            return String.valueOf(value);
         }
     }
 

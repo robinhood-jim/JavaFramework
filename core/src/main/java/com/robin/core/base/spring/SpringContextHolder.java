@@ -15,23 +15,29 @@
  */
 package com.robin.core.base.spring;
 
-import com.robin.core.version.VersionInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.stereotype.Component;
 
 @Slf4j
-public class SpringContextHolder implements ApplicationContextAware, DisposableBean{
+@Component
+public class SpringContextHolder implements BeanFactoryPostProcessor,ApplicationContextAware, DisposableBean{
 	private static ApplicationContext context;
 	private final Logger logger=LoggerFactory.getLogger(getClass());
-	public SpringContextHolder(){
-		log.info(VersionInfo.getInstance().getVersion());
+	private static ConfigurableListableBeanFactory beanFactory;
+
+	@Override
+	public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
+		SpringContextHolder.beanFactory=beanFactory;
 	}
-	
+
 	public static void injectApplicationContext(ApplicationContext appcontext){
 		if (context == null){
 			context = appcontext;
@@ -47,14 +53,22 @@ public class SpringContextHolder implements ApplicationContextAware, DisposableB
 	}
 	public static <T> T  getBean(Class<T> clazzName){
 		try {
-			return context.getBean(clazzName);
+			if(context!=null) {
+				return context.getBean(clazzName);
+			}else{
+				return beanFactory.getBean(clazzName);
+			}
 		}catch (Exception ex){
 			return null;
 		}
 	}
 
 	public static <T> T getBean(String beanName, Class<T> clazz){
-		return context.getBean(beanName, clazz);
+		if(context!=null) {
+			return context.getBean(beanName, clazz);
+		}else{
+			return beanFactory.getBean(beanName,clazz);
+		}
 	}
 
 
@@ -77,5 +91,6 @@ public class SpringContextHolder implements ApplicationContextAware, DisposableB
 	@Override
 	public void destroy() throws Exception {
 		context = null;
+		beanFactory=null;
 	}
 }

@@ -188,7 +188,7 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>,T extends S
     @Override
     public List<T> queryByField(SFunction<T,?> queryField, Const.OPERATOR operator, Object... value) throws ServiceException{
         Assert.isTrue(value.length>0,"");
-        LambdaQueryWrapper<T> queryWrapper=MybatisUtils.getWrapper(queryField,operator,voType,value);
+        LambdaQueryWrapper<T> queryWrapper=MybatisUtils.getWrapper(queryField,operator,value);
         try {
             return baseMapper.selectList(queryWrapper);
         }catch (Exception ex){
@@ -198,7 +198,7 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>,T extends S
     @Override
     public List<T> queryByField(SFunction<T,?> queryField ,SFunction<T,?> orderField, Const.OPERATOR operator,boolean ascFlag, Object... value) throws ServiceException{
         Assert.isTrue(value.length>0,"");
-        LambdaQueryWrapper<T> queryWrapper=MybatisUtils.getWrapper(queryField,operator,voType,value);
+        LambdaQueryWrapper<T> queryWrapper=MybatisUtils.getWrapper(queryField,operator,value);
         if(orderField!=null && ascFlag){
             queryWrapper.orderByAsc(orderField);
         }else{
