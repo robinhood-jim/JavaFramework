@@ -25,10 +25,8 @@ import com.robin.core.web.controller.AbstractController;
 import com.robin.core.web.util.CookieUtils;
 import com.robin.core.web.util.Session;
 import com.robin.core.web.util.WebConstant;
-import com.robin.example.model.invoice.Operator;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.stereotype.Controller;
-import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -60,11 +58,7 @@ public class LoginController extends AbstractController {
         Map<String, Object> map = new HashMap();
         try {
             Session session = this.loginService.simpleLogin(accountName, password.toUpperCase());
-            Operator operator=jdbcDao.getByField(Operator.class,"operatorCode", Const.OPERATOR.EQ,accountName);
-            if(!ObjectUtils.isEmpty(operator)) {
-                session.setRegionCode(operator.getRegionCode());
-                session.setStoreCode(operator.getStoreCode());
-            }
+
             Map<String, Object> sessionMap = new HashMap<>();
             Map<String, Object> headerMap = new HashMap<>();
             headerMap.put("type", "JWT");

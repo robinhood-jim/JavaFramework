@@ -49,26 +49,7 @@
 		</property>
 	</bean>
 	
-<!-- 	<bean class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping">
-		<property name="interceptors">
-			<list>
-				<ref bean="adminContextInterceptor" />
-			</list>
-		</property>
-	</bean>
-	
-	<bean id="adminContextInterceptor" class="com.talkyun.tbe.web.core.AdminContextInterceptor">
-		<property name="adminId" value="1"/>
-		<property name="auth" value="true" />
-		<property name="loginUrl" value="/admin/console/login.do" />
-		<property name="returnUrl" value="/admin/console/index.do" />
-		<property name="excludeUrls">
-			<list>
-				<value>/login.do</value>
-				<value>/logout.do</value>
-			</list>
-		</property>
-	</bean> -->
+
 
 	<bean id="multipartResolver"
 		class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
@@ -78,9 +59,10 @@
 	<mvc:resources mapping="/resources/**" location="/resources/" />
 	<mvc:default-servlet-handler />
 	<mvc:interceptors>
-		<bean class="com.robin.basis.interceptor.LoginInterceptor">
-			<property name="ignoreUrls" value="/main/login,/login,/logout" />
-			<property name="ignoreResources" value="gif,bmp,png,jpg,js,flash,css,swf,flv,metaget" />
+		<bean class="com.robin.example.interceptor.LoginInterceptor">
+			<property name="ignoreUrls" value="${login.ignoreUrls}" />
+			<property name="ignoreResources" value="${login.ignoreResources}" />
+			<property name="loginUrl" value="${login.loginUrl}" />
 		</bean>
 	</mvc:interceptors>
 
@@ -92,5 +74,4 @@
 		<property name="viewClass"
 			value="org.springframework.web.servlet.view.JstlView" />
 	</bean>
-	 <bean id="springInit" class="com.robin.core.base.spring.SpringContextHolder"  lazy-init="false" />
 </beans>

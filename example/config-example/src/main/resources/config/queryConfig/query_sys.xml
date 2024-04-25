@@ -17,7 +17,7 @@
 	<SQLSCRIPT ID="GET_SYSROLE_PAGE">  
 		<FROMSQL>from t_sys_role_info a where 1=1 ${queryString}
 		 </FROMSQL>
-		 <FIELD>a.id AS id, a.role_name AS name, a.role_type AS type, a.role_status as status</FIELD>
+		 <FIELD>a.id AS id, a.role_name AS name, a.role_type AS type, a.status as status</FIELD>
 	</SQLSCRIPT>
 	<SQLSCRIPT ID="GET_SYSRESP_PAGE">
 		<FROMSQL>from t_sys_responsibility a where 1=1 ${queryString}
@@ -80,14 +80,14 @@
 		</FIELD>
 	</SQLSCRIPT>
 	<SQLSCRIPT ID="GET_RESOURCEINFO">
-		<FROMSQL>from (select a.*,null as assign_type from t_sys_resource_info a,t_sys_resource_role_r b where a.ID=b.RES_ID and b.ROLE_ID in (:roleIds) and a.STATUS=1
+		<FROMSQL> from (select a.*,0 as assign_type from t_sys_resource_info a,t_sys_resource_role_r b where a.ID=b.RES_ID and b.ROLE_ID in (:roleIds) and a.STATUS='1' and b.status='1'
 			union 
 			select c.*,d.assign_type from t_sys_resource_info c,t_sys_resource_user_r d where c.id=d.res_id and d.USER_ID=:userId and c.STATUS=1)e order by res_code
 		</FROMSQL>
 			<FIELD>id,res_name as name,url,is_leaf as leafTag,res_code as code,pid,seq_no as seqNo,assign_type as assignType</FIELD>
 	</SQLSCRIPT>
 	<SQLSCRIPT ID="GET_RESOURCEINFOBYSYSRESP">
-		<FROMSQL>from (select a.*,0 as assignType from t_sys_resource_info a,t_sys_resource_resp_r b where a.ID=b.RES_ID and b.RESP_ID in (${respIds}) and a.STATUS='1'
+		<FROMSQL> from (select a.*,0 as assignType from t_sys_resource_info a,t_sys_resource_resp_r b where a.ID=b.RES_ID and b.RESP_ID in (${respIds}) and a.STATUS='1'
 			union
 			select c.*,d.ASSIGN_TYPE as assignType from t_sys_resource_info c,t_sys_resource_user_r d where c.id=d.res_id and d.USER_ID=${userId} and c.STATUS=1)e order by res_code,assignType desc
 		</FROMSQL>
@@ -102,19 +102,19 @@
 			<FIELD>id as value,org_name as text</FIELD>
 	</SQLSCRIPT>
 	<SQLSCRIPT ID="GET_SUBORG">
-		<FROMSQL>from t_sys_org_info where up_org_id=${id} and org_status=1 order by tree_code</FROMSQL>
+		<FROMSQL> from t_sys_org_info where up_org_id=${id} and org_status=1 order by tree_code</FROMSQL>
 		<FIELD>id as id,org_name as text</FIELD>
 	</SQLSCRIPT>
 	<SQLSCRIPT ID="GET_ORGMAXCODE">
-		<FROMSQL>from t_sys_org_info where up_org_id=${id}</FROMSQL>
+		<FROMSQL> from t_sys_org_info where up_org_id=${id}</FROMSQL>
 		<FIELD>max(tree_code) as code</FIELD>
 	</SQLSCRIPT>
 	<SQLSCRIPT ID="GET_SYSUSERINFO">
 		<FROMSQL>from t_sys_user_info  where 1=1 ${queryCondition}</FROMSQL>
-		<FIELD>id,user_name as name,user_account as account,account_type as accountType,org_id as orgId</FIELD>
+		<FIELD>id,user_name as name,user_account as account,account_type as accountType,org_id as orgId,user_status as userStatus</FIELD>
 	</SQLSCRIPT>
 	<SQLSCRIPT ID="$_GETCODESET">
-		<FROMSQL>from t_sys_code a,t_sys_codeset b where a.CS_ID=b.ID and en_name=?</FROMSQL>
+		<FROMSQL> from t_sys_code a,t_sys_codeset b where a.CS_ID=b.ID and en_name=? order by order_no</FROMSQL>
 		<FIELD>a.ITEM_NAME as ITEMNAME,a.ITEM_VALUE as ITEMVALUE</FIELD>
 	</SQLSCRIPT>
 	<SQLSCRIPT ID="GETUSER_ORG">
@@ -122,8 +122,38 @@
 		<FIELD>a.id as value,a.org_name as text</FIELD>
 	</SQLSCRIPT>
 	<SQLSCRIPT ID="GETUSER_ROLE">
-		<FROMSQL> from t_sys_user_role_r a,t_sys_role_info b where a.role_id=b.id and b.status=1 and a.user_id=?</FROMSQL>
+		<FROMSQL> from t_sys_user_role_r a,t_sys_role_info b where a.role_id=b.id and a.status='1' and b.status='1' and a.user_id=?</FROMSQL>
 		<FIELD>a.role_id as role_id,b.role_name as name,b.role_code as code,b.role_type</FIELD>
+	</SQLSCRIPT>
+	<SQLSCRIPT ID="GETBSFEE">
+		<FROMSQL> from t_bsfee where 1=1 ${queryString}</FROMSQL>
+		<FIELD>fee_no as feeNo,regioncode as regionCode,operatorcode as operatorCode,cust_no as custNo,SERV_ID as servId,totalfee as totalFee,paytype as payType,
+			ORIGINFEENO as originFeeno,WECHAT_SN as wechatSn</FIELD>
+	</SQLSCRIPT>
+	<SQLSCRIPT ID="GETFEELISTDETAIL">
+		<FROMSQL> from t_bsfeelist a,t_bsfee b where a.fee_no=b.fee_no ${queryString}</FROMSQL>
+		<FIELD>a.feelist_no as feeListNo,a.fee_no as feeNo,a.cust_no as custNo,a.serv_id as servId,a.tran_no as tranNo
+				,a.buss_type as bussType,b.paytype as payType,b.totalfee as totalFee,b.rebatefee as rebateFee,b.factfee as factFee,a.discount,a.money,a.remoney,a.createdate as createDate</FIELD>
+	</SQLSCRIPT>
+	<SQLSCRIPT ID="GETBSFEEGLOBALINFO">
+		<FROMSQL> from (select a.feelist_no,b.fee_no,a.feename,a.cust_no,b.serv_id,a.tran_no,a.buss_type,b.regioncode,
+			b.paytype,b.totalfee,b.rebatefee,b.factfee,a.discount as discount, a.money, a.remoney, a.createdate,
+			d.cust_name,d.address,e.cardno ,e.cardtype as cardtype,b.operatorcode as operatorcode,f.operatorname as operatorname,b.storecode from t_bsfeelist a,t_bsfee b,t_bsuserpack c,t_customerinfo d,t_bsusercard e,t_operator f where a.fee_no=b.fee_no and a.tran_no=c.tran_no and a.cust_no=d.cust_no and a.cust_no=e.cust_no and a.serv_id=e.serv_id and b.operatorcode=f.operatorcode and a.money>0 ${queryString}) t1 left join t_bsinvoice g on t1.fee_no=g.fee_no</FROMSQL>
+		<FIELD>t1.feelist_no as feeListNo,t1.fee_no as feeNo,t1.feename as feeName,t1.cust_no as custNo,t1.serv_id as servId,t1.tran_no as tranNo,t1.buss_type as bussType,t1.regioncode as regionCode,
+			t1.paytype as payType,t1.totalfee as totalFee,t1.rebatefee as rebateFee,t1.factfee as factFee,t1.discount as discount, t1.money as money, t1.remoney, t1.createdate as createDate,
+			t1.CUST_NAME as custName,t1.ADDRESS as address,t1.cardno as cardNo,t1.cardtype as cardType,t1.OPERATORCODE as operatorCode,t1.OPERATORNAME as operatorName,t1.storecode as storeCode,g.invo_no as invoNo</FIELD>
+	</SQLSCRIPT>
+	<SQLSCRIPT ID="GETMININVOICE">
+		<FROMSQL> from T_ACRECEIPT t where t.status = '5' and t.ente_no = '000000000001' and t.rp_type = '2' and t.storecode =:storeCode </FROMSQL>
+		<FIELD>min(invo_no) as invoNo</FIELD>
+	</SQLSCRIPT>
+	<SQLSCRIPT ID="GETCUSTOMERINFO">
+		<FROMSQL> from T_CUSTOMERINFO where 1=1 ${queryString}</FROMSQL>
+		<FIELD>cust_name as custName,cust_no as custNo,cert_type as certType,cert_no as certNo</FIELD>
+	</SQLSCRIPT>
+	<SQLSCRIPT ID="GETUSERORGINFO">
+		<FROMSQL> from t_sys_org_info a,t_sys_user_org_r b where a.id=b.org_id and b.status='1' and a.org_status='1' and b.user_id=?</FROMSQL>
+		<FIELD>a.org_name as orgName,a.org_code as orgCode,a.id as orgId</FIELD>
 	</SQLSCRIPT>
 
 	
