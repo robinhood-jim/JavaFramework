@@ -29,12 +29,13 @@ import com.robin.core.query.util.PageQuery;
 import com.robin.core.query.util.QueryString;
 import org.springframework.transaction.annotation.Transactional;
 
-public abstract class GenericSerivceImpl<V extends BaseObject,P extends Serializable> implements GenericService<V,P> {
+@Deprecated
+public abstract class GenericServiceImpl<V extends BaseObject,P extends Serializable> implements GenericService<V,P> {
 	protected IHibernateGenericDao genericDao;
 	protected Class<V> modelClazz;
 	protected Class<P> pkClazz;
 
-	protected GenericSerivceImpl(){
+	protected GenericServiceImpl(){
 		Type genericSuperClass = getClass().getGenericSuperclass();
 		ParameterizedType parametrizedType;
 		if (genericSuperClass instanceof ParameterizedType) { // class

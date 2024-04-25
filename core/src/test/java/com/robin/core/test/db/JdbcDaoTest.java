@@ -18,6 +18,7 @@ package com.robin.core.test.db;
 import com.robin.core.base.annotation.MappingEntity;
 import com.robin.core.base.annotation.MappingField;
 import com.robin.core.base.dao.JdbcDao;
+import com.robin.core.base.dao.util.AnnotationRetriever;
 import com.robin.core.base.datameta.BaseDataBaseMeta;
 import com.robin.core.base.datameta.DataBaseMetaFactory;
 import com.robin.core.base.datameta.DataBaseParam;
@@ -28,10 +29,9 @@ import com.robin.core.base.spring.JdbcDaoDynamicBean;
 import com.robin.core.base.spring.SpringContextHolder;
 import com.robin.core.base.util.Const;
 import com.robin.core.base.util.StringUtils;
-import com.robin.core.query.util.Condition;
 import com.robin.core.query.util.PageQuery;
 import com.robin.core.sql.util.FilterCondition;
-import com.robin.core.sql.util.FilterConditions;
+import com.robin.core.sql.util.FilterConditionBuilder;
 import com.robin.core.test.model.*;
 import com.robin.core.test.service.*;
 import io.github.classgraph.*;
@@ -69,7 +69,7 @@ public class JdbcDaoTest extends TestCase {
     @Test
     public void testJpaQuery() {
         TestJpaModelService service = SpringContextHolder.getBean(TestJpaModelService.class);
-        List<TestJPaModel> list = service.queryByField("csId", BaseObject.OPER_EQ, 1);
+        List<TestJPaModel> list = service.queryByField("csId", Const.OPERATOR.EQ, 1);
         Assert.assertNotNull(list);
     }
     @Test
@@ -188,7 +188,7 @@ public class JdbcDaoTest extends TestCase {
         tobj.setId(4L);
         TestMutilPK obj = service.getEntity(tobj);
         assertNotNull(obj);
-        List<TestMutilPK> list = service.queryByFieldOrderBy("time desc", "outputval", BaseObject.OPER_IN, 1.1);
+        List<TestMutilPK> list = service.queryByFieldOrderBy("time desc", "outputval", Const.OPERATOR.EQ, 1.1);
         List<TestMutilPK> list1 = service.queryAll();
         assertNotNull(list);
     }
@@ -213,11 +213,11 @@ public class JdbcDaoTest extends TestCase {
     }
     @Test
     public void testCondition() throws Exception{
-        FilterConditions filterConditions=new FilterConditions();
+        FilterConditionBuilder filterConditions=new FilterConditionBuilder();
         SysUserService sysUserService=SpringContextHolder.getBean(SysUserService.class);
-        filterConditions.withCondition(new FilterCondition("userAccount", Condition.EQUALS,"admin"))
-                .withCondition(new FilterCondition("userPassword", Condition.EQUALS, StringUtils.getMd5Encry("123456")))
-                .withCondition(new FilterCondition("accountType", Condition.EQUALS,"1"));
+        filterConditions.withCondition(new FilterCondition("userAccount", Const.OPERATOR.EQ,"admin"))
+                .withCondition(new FilterCondition("userPassword", Const.OPERATOR.EQ, StringUtils.getMd5Encry("123456")))
+                .withCondition(new FilterCondition("accountType", Const.OPERATOR.EQ,"1"));
         List<SysUser> list=sysUserService.queryByCondition(filterConditions,new PageQuery());
     }
     @Test
@@ -259,6 +259,10 @@ public class JdbcDaoTest extends TestCase {
         user.setUserPassword("t1");
         user.setUserName("t1");
         SpringContextHolder.getBean(SysUserService.class).saveEntity(user);
+    }
+    @Test
+    public void testGetFunctionName(){
+        System.out.println(AnnotationRetriever.getFieldName(TestModel::getDescription));
     }
 
 }

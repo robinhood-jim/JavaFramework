@@ -16,28 +16,28 @@
 package com.robin.basis.controller.main;
 
 import com.robin.core.base.util.Const;
-
 import com.robin.core.web.util.Session;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 @Controller
-@RequestMapping("/main")
+
 public class MainContorller {
-	@RequestMapping("index")
-	public String mainpage(HttpServletRequest request,HttpServletResponse response){
-		Session session=(Session) request.getSession().getAttribute(Const.SESSION);
-		if(session==null) {
+    @GetMapping("/main/index")
+    public String mainpage(HttpServletRequest request, HttpServletResponse response) {
+        Session session = (Session) request.getSession().getAttribute(Const.SESSION);
+        if (session == null) {
             return "../login";
         } else {
             return "../main";
         }
-	}
-	@RequestMapping("login")
-	public String login(HttpServletRequest request,HttpServletResponse response){
-		return "../login";
-	}
+    }
+
+    @GetMapping("/user/login")
+    public String login(HttpServletRequest request, HttpServletResponse response) {
+        return "../login";
+    }
 }

@@ -764,7 +764,7 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
     }
     protected void checkSqlAndPage(String sql,PageQuery pageQuery){
         Assert.isTrue(!ObjectUtils.isEmpty(sql),"querySql not null");
-        Assert.notNull(pageQuery,"pageQuery is Null");
+        //Assert.notNull(pageQuery,"pageQuery is Null");
     }
 
 

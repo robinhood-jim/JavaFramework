@@ -18,6 +18,7 @@ package com.robin.core.convert.util;
 import com.robin.core.base.datameta.DataBaseColumnMeta;
 import com.robin.core.base.model.BaseObject;
 import com.robin.core.base.reflect.ReflectUtils;
+
 import com.robin.core.base.service.IModelConvert;
 import com.robin.core.base.util.Const;
 import com.robin.core.fileaccess.meta.DataSetColumnMeta;
@@ -82,7 +83,7 @@ public class ConvertUtil {
     }
 
     public static void objectToMapObj(Map<String, Object> target, Object src) throws Exception {
-        if (ObjectUtils.isEmpty(src) || ObjectUtils.isEmpty(target)) {
+        if (ObjectUtils.isEmpty(src)) {
             return;
         }
         Map<String, Method> getMetholds = ReflectUtils.returnGetMethods(src.getClass());
@@ -228,7 +229,9 @@ public class ConvertUtil {
                 setMethod.invoke(target);
             } else {
                 Object retValue = parseParameter(type, value, defaultDateTimeFormatter);
-                setMethod.invoke(target, retValue);
+                if(retValue!=null) {
+                    setMethod.invoke(target, retValue);
+                }
             }
         }
     }
@@ -250,7 +253,9 @@ public class ConvertUtil {
                     } else {
                         if (targetMethodMap.containsKey(field)) {
                             Object retValue = parseParameter(targetMethodMap.get(field).getParameterTypes()[0], entry.getValue(), defaultDateTimeFormatter);
-                            setObjectValue(targetMethodMap.get(field), target, retValue);
+                            if(retValue!=null) {
+                                setObjectValue(targetMethodMap.get(field), target, retValue);
+                            }
                         }
                     }
                 }

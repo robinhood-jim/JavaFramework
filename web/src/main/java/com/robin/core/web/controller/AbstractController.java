@@ -30,6 +30,9 @@ import com.robin.core.web.codeset.CodeSetService;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
@@ -42,6 +45,7 @@ public abstract class AbstractController
     protected static final String COL_MESSAGE="message";
     protected static final String COL_SUCCESS="success";
     protected static final String COL_COED="code";
+    protected static final String COL_DATA="data";
     protected MessageUtils messageUtils=SpringContextHolder.getBean(MessageUtils.class);
 
     protected List<Map<String, String>> convertObjToMapList(List<?> orglist)
@@ -178,6 +182,17 @@ public abstract class AbstractController
             list.add(tmap);
         }
     }
+    protected void insertListToSelect(List<Map<String, Object>> list,List<Code> lists){
+        if(!CollectionUtils.isEmpty(lists)){
+            lists.forEach(code->{
+                Map<String, Object> tmap = new HashMap<>();
+                tmap.put("value", code.getValue());
+                tmap.put("text", code.getCodeName());
+                list.add(tmap);
+            });
+
+        }
+    }
     protected List<Map<String,Object>> wrapYesNoCombo(boolean insertNullVal){
         List<Map<String,Object>> list=new ArrayList<>();
         if (insertNullVal) {
@@ -219,12 +234,12 @@ public abstract class AbstractController
             wrapFailed(retmap,ex);
         }else
         {
-            wrapSuccess(retmap,COL_SUCCESS);
+            wrapSuccessMap(retmap,COL_SUCCESS);
         }
     }
 
 
-    protected void wrapSuccess(Map<String, Object> retMap)
+    protected void constructRetMap(Map<String, Object> retMap)
     {
         retMap.put(COL_SUCCESS, true);
         retMap.put(COL_COED, 0);
@@ -259,7 +274,7 @@ public abstract class AbstractController
         return retmap;
     }
 
-    protected void wrapSuccess(Map<String, Object> retmap, String displayMsg)
+    protected void wrapSuccessMap(Map<String, Object> retmap, String displayMsg)
     {
         retmap.put(COL_SUCCESS, true);
         retmap.put(COL_MESSAGE, displayMsg);
@@ -273,7 +288,7 @@ public abstract class AbstractController
     {
         Map<String, Object> retmap = new HashMap<>();
         retmap.put(COL_SUCCESS, true);
-        retmap.put("data", object);
+        retmap.put(COL_DATA, object);
         return retmap;
     }
 
@@ -316,9 +331,7 @@ public abstract class AbstractController
         while (iter.hasNext())
         {
             String key = iter.next();
-            if (key.startsWith("query.")) {
-                tmpmap.put(key.substring(6), request.getParameter(key));
-            }
+            tmpmap.put(key, request.getParameter(key));
         }
         try
         {
@@ -353,6 +366,20 @@ public abstract class AbstractController
             retmap.put(COL_MESSAGE,ex.getMessage());
         }
         return retmap;
+    }
+    protected  Long[] parseLongId(String ids) throws ServiceException {
+        Assert.isTrue(!ObjectUtils.isEmpty(ids),"input ids is empty");
+        Long[] array;
+        try {
+            String[] idsArr = ids.split(",");
+            array=new Long[idsArr.length];
+            for (int i = 0; i < idsArr.length; i++) {
+                array[i]=Long.valueOf(idsArr[i]);
+            }
+        } catch (Exception ex) {
+            throw new ServiceException(ex);
+        }
+        return array;
     }
 
 }

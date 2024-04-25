@@ -15,14 +15,13 @@
  */
 package com.robin.core.convert.util;
 
-import java.text.DecimalFormat;
-import java.text.ParseException;
-
 import org.apache.commons.beanutils.ConversionException;
 import org.apache.commons.beanutils.Converter;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import java.text.DecimalFormat;
+import java.text.ParseException;
 
 /**
  * This class is converts a Double to a double-digit String

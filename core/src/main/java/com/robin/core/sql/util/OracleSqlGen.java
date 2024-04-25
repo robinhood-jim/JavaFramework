@@ -165,6 +165,13 @@ public class OracleSqlGen extends AbstractSqlGen implements BaseSqlGen {
 	}
 
 	@Override
+	public String getLongFormat() {
+		return "NUMBER(19,0)";
+	}
+
+
+
+	@Override
 	public String getDbType() {
 		return BaseDataBaseMeta.TYPE_ORACLE;
 	}

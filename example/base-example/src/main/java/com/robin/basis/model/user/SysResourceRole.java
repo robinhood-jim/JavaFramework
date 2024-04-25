@@ -20,7 +20,7 @@ import com.robin.core.base.annotation.MappingField;
 import com.robin.core.base.model.BaseObject;
 
 
-@MappingEntity(table = "t_sys_resource_role_r", schema = "frameset")
+@MappingEntity(table = "t_sys_resource_role_r")
 public class SysResourceRole extends BaseObject {
 
     // primary key

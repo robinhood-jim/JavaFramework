@@ -18,11 +18,14 @@ package com.robin.core.test.service;
 import com.robin.core.base.exception.DAOException;
 import com.robin.core.base.exception.ServiceException;
 import com.robin.core.base.service.BaseAnnotationJdbcService;
+import com.robin.core.sql.util.FilterCondition;
 import com.robin.core.test.model.SysUser;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 /**
  * Table in another DataSource,So must use declared Transactional to override Super class method
@@ -43,7 +46,7 @@ public class SysUserService extends BaseAnnotationJdbcService<SysUser,Long> {
     @Override
     public int updateEntity(SysUser sysUser){
         try{
-            return getJdbcDao().updateVO(type,sysUser);
+            return getJdbcDao().updateByKey(type,sysUser);
         }catch (DAOException e) {
             throw new ServiceException(e);
         }

@@ -24,6 +24,7 @@ import com.robin.core.base.model.BaseObject;
 import com.robin.core.query.util.PageQuery;
 import com.robin.core.query.util.QueryString;
 
+@Deprecated
 public interface GenericService<V extends BaseObject,P extends Serializable> {
 	V find(P id) throws ServiceException;
 

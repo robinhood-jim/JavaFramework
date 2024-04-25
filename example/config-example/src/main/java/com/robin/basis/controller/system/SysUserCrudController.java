@@ -24,7 +24,6 @@ import com.robin.core.collection.util.CollectionBaseConvert;
 import com.robin.core.query.util.PageQuery;
 import com.robin.core.web.controller.AbstractCrudDhtmlxController;
 import com.robin.core.web.util.Session;
-import com.robin.basis.model.system.SysOrg;
 import com.robin.basis.model.system.SysResource;
 import com.robin.basis.model.user.SysUser;
 import com.robin.basis.service.system.SysOrgService;
@@ -33,6 +32,8 @@ import com.robin.basis.service.user.SysUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
@@ -71,10 +72,11 @@ public class SysUserCrudController extends AbstractCrudDhtmlxController<SysUser,
 
         doQuery(request,null, query);
 
-        List<SysOrg> orgList = sysOrgService.queryByField("orgStatus", BaseObject.OPER_EQ, Const.VALID);
-        setCode("ORG", orgList, "orgName", "id");
-        setCode("ACCOUNTTYPE");
+        //List<SysOrg> orgList = sysOrgService.queryByField("orgStatus", BaseObject.OPER_EQ, Const.VALID);
+        //setCode("ORG", orgList, "orgName", "id");
+        setCode("ACCOUNTTYPE,YNTYPE");
         filterListByCodeSet(query, "accountType", "ACCOUNTTYPE",null);
+        filterListByCodeSet(query, "userStatus", "YNTYPE",null);
         filterListByCodeSet(query, "orgId", "ORG",messageSource.getMessage("title.defaultOrg",null,Locale.getDefault()));
         return wrapDhtmlxGridOutput(query);
     }
@@ -103,7 +105,7 @@ public class SysUserCrudController extends AbstractCrudDhtmlxController<SysUser,
                                         HttpServletResponse response){
 
         //check userAccount unique
-        List<SysUser> list = this.service.queryByField("userAccount", BaseObject.OPER_EQ, request.getParameter("userAccount"));
+        List<SysUser> list = this.service.queryByField("userAccount", Const.OPERATOR.EQ, request.getParameter("userAccount"));
         if (!list.isEmpty()) {
             return wrapError(new WebException(messageSource.getMessage("message.userNameExists", null, Locale.getDefault())));
         } else {
@@ -117,7 +119,7 @@ public class SysUserCrudController extends AbstractCrudDhtmlxController<SysUser,
                                           HttpServletResponse response) {
         Long id = Long.valueOf(request.getParameter("id"));
         //check userAccount unique
-        List<SysUser> list = this.service.queryByField("userAccount", BaseObject.OPER_EQ, request.getParameter("userAccount"));
+        List<SysUser> list = this.service.queryByField("userAccount", Const.OPERATOR.EQ, request.getParameter("userAccount"));
         if ((list.size() == 1 && id.equals(list.get(0).getId())) || list.isEmpty()) {
             return doUpdate(wrapRequest(request), id);
         } else {
@@ -139,7 +141,7 @@ public class SysUserCrudController extends AbstractCrudDhtmlxController<SysUser,
             query.setParameterArr(new Object[]{session.getUserId()});
             service.queryBySelectId(query);
             retMap.put("options", query.getRecordSet());
-            wrapSuccess(retMap);
+            constructRetMap(retMap);
         } else {
             wrapFailed(retMap, messageSource.getMessage("login.require", null, Locale.getDefault()));
         }
@@ -155,7 +157,7 @@ public class SysUserCrudController extends AbstractCrudDhtmlxController<SysUser,
         try{
             Long[] ids = parseId(request.getParameter("ids"));
             service.deleteUsers(ids);
-            wrapSuccess(retMap);
+            constructRetMap(retMap);
         }catch (Exception ex){
             wrapFailed(retMap,ex);
         }
@@ -178,18 +180,16 @@ public class SysUserCrudController extends AbstractCrudDhtmlxController<SysUser,
             }
             user.setUserPassword(StringUtils.getMd5Encry(request.getParameter("newPwd")));
             this.service.updateEntity(user);
-            wrapSuccess(retMap);
+            constructRetMap(retMap);
         } catch (Exception ex) {
             wrapFailed(retMap, ex);
         }
         return retMap;
     }
 
-    @RequestMapping("/active")
+    @RequestMapping("/active/{id}")
     @ResponseBody
-    public Map<String, Object> activeUser(HttpServletRequest request,
-                                          HttpServletResponse response) {
-        Long id = Long.valueOf(request.getParameter("id"));
+    public Map<String, Object> activeUser(@PathVariable Long id) {
         Map<String, Object> retMap = new HashMap<>();
         try {
             SysUser user = this.service.getEntity(id);
@@ -198,12 +198,51 @@ public class SysUserCrudController extends AbstractCrudDhtmlxController<SysUser,
             } else {
                 user.setUserStatus(Const.VALID);
                 this.service.updateEntity(user);
-                wrapSuccess(retMap);
+                constructRetMap(retMap);
             }
         } catch (ServiceException ex) {
             wrapFailed(retMap, ex);
         }
         return retMap;
+    }
+    @RequestMapping("/deactive/{id}")
+    @ResponseBody
+    public Map<String,Object> deactiveUser(@PathVariable Long id){
+        Map<String, Object> retMap = new HashMap<>();
+        try {
+            SysUser user = this.service.getEntity(id);
+            if (user.getUserPassword() == null || user.getUserPassword().isEmpty()) {
+                throw new ServiceException(messageSource.getMessage("message.passwordEmpty", null, Locale.getDefault()));
+            } else {
+                user.setUserStatus(Const.INVALID);
+                this.service.updateEntity(user);
+                constructRetMap(retMap);
+            }
+        } catch (ServiceException ex) {
+            wrapFailed(retMap, ex);
+        }
+        return retMap;
+    }
+
+    @GetMapping("/get")
+    @ResponseBody
+    public Map<String,Object> getCurrentUser(HttpServletRequest request){
+        if(request.getSession().getAttribute(Const.SESSION)!=null){
+            Session session=(Session) request.getSession().getAttribute(Const.SESSION);
+            Map<String,Object> map=new HashMap<>();
+            map.put("userName",session.getUserName());
+            map.put("userId",session.getUserId());
+            if (session.getOrgName() != null) {
+                map.put("orgName",session.getOrgName());
+            } else {
+                map.put("orgName",messageSource.getMessage("title.defaultOrg", null, Locale.getDefault()));
+            }
+            map.put("orgName",session.getOrgName());
+            map.put("accountType",session.getAccountType());
+            return wrapObject(map);
+        }else{
+            return wrapFailedMsg("");
+        }
     }
 
     public String wrapQuery(HttpServletRequest request, String orgIds) {
@@ -250,9 +289,9 @@ public class SysUserCrudController extends AbstractCrudDhtmlxController<SysUser,
             for (Map<String, Object> map : list) {
                 resIdList.add(Long.valueOf(map.get("id").toString()));
             }
-            List<SysResource> resList = sysResourceService.queryByField("status", BaseObject.OPER_EQ, "1");
+            List<SysResource> resList = sysResourceService.queryByField("status", Const.OPERATOR.EQ, "1");
             //正向方向赋权
-            List<Map<String, Object>> userRightList = service.queryBySql("select res_id as resId,assign_type as type from t_sys_resource_user_r where user_id=? and status=?", new Object[]{Long.valueOf(userId), "1"});
+            List<Map<String, Object>> userRightList = service.queryBySql("select res_id as \"resId\",assign_type as \"type\" from t_sys_resource_user_r where user_id=? and status=?", new Object[]{Long.valueOf(userId), "1"});
             Map<String, List<Map<String, Object>>> typeMap = CollectionBaseConvert.convertToMapByParentKeyWithObjVal(userRightList, "type");
             filterMenu(typeMap,resList,retList,resIdList);
         } catch (Exception ex) {

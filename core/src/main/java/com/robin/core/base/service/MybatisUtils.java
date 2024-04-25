@@ -41,9 +41,9 @@ public class MybatisUtils {
         }
         else if(operator.equals(Const.OPERATOR.NOTEXIST)){
             queryWrapper.notExists(value[0].toString());
-        }else if(operator.equals(Const.OPERATOR.LL)){
+        }else if(operator.equals(Const.OPERATOR.LLIKE)){
             queryWrapper.likeLeft(queryField,value[0]);
-        }else if(operator.equals(Const.OPERATOR.RL)){
+        }else if(operator.equals(Const.OPERATOR.RLIKE)){
             queryWrapper.likeRight(queryField,value[0]);
         }else if(operator.equals(Const.OPERATOR.LIKE)){
             queryWrapper.like(queryField,value[0]);

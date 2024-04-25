@@ -32,7 +32,7 @@ public class SysRoleService extends BaseAnnotationJdbcService<SysRole, Long> imp
 	@Transactional(propagation= Propagation.REQUIRED,rollbackFor=RuntimeException.class)
 	public void saveRoleRigth(String[] ids,String resId) throws ServiceException {
 		try{
-			this.getJdbcDao().deleteByField(SysResourceRole.class, "resId", Long.valueOf(resId));
+			this.getJdbcDao().deleteByField(SysResourceRole.class, SysResourceRole::getResId, Long.valueOf(resId));
 			for (int i = 0; i < ids.length; i++) {
 				if(!"".equals(ids[i])){
 					SysResourceRole resRole=new SysResourceRole();

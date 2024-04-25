@@ -40,7 +40,7 @@ import java.util.stream.Collectors;
 public class SysResourceService extends BaseAnnotationJdbcService<SysResource, Long> implements IBaseAnnotationJdbcService<SysResource,Long> {
 	@Transactional(propagation= Propagation.REQUIRED,rollbackFor=RuntimeException.class)
 	public void updateUserResourceRight(String userId,List<String> addList,List<String> delList){
-		this.getJdbcDao().deleteByField(SysResourceUser.class, "userId", Integer.valueOf(userId));
+		this.getJdbcDao().deleteByField(SysResourceUser.class, SysResourceUser::getUserId, Integer.valueOf(userId));
 		//Add Right
 		if(addList!=null && !addList.isEmpty()){
 			for (String addId:addList) {
@@ -69,6 +69,11 @@ public class SysResourceService extends BaseAnnotationJdbcService<SysResource, L
 		SysResource queryVO=new SysResource();
 		queryVO.setStatus(Const.VALID);
 		queryVO.setOrgId(orgId);
+		return queryByVO(queryVO,null,null);
+	}
+	public List<SysResource> getAllValidate(){
+		SysResource queryVO=new SysResource();
+		queryVO.setStatus(Const.VALID);
 		return queryByVO(queryVO,null,null);
 	}
 	public Map<String,Object> getUserRights(Long userId){

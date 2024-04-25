@@ -84,7 +84,7 @@ public abstract class AbstractSparkModeler implements Serializable {
             return returnRdd(ds,collectionMeta,classNum);
         }else if(ResourceConst.IngestType.TYPE_LOCAL.getValue().equals(collectionMeta.getSourceType())){
             if(ResourceConst.FileFormat.TYPE_AVRO.toString().equals(collectionMeta.getFileFormat()) || ResourceConst.FileFormat.TYPE_ORC.toString().equals(collectionMeta.getFileFormat()) || ResourceConst.FileFormat.TYPE_PARQUET.toString().equals(collectionMeta.getFileFormat())){
-                throw new MissingConfigException("when using ftp or sftp,can not read binary files!");
+                throw new MissingConfigException("when using local file,can not read binary files!");
             }
             JavaRDD<String>  rdd=session.sparkContext().textFile("file://"+ResourceUtil.getProcessPath(collectionMeta.getPath()),1).toJavaRDD();
             return rdd.map(f->construct(collectionMeta,f,classNum));

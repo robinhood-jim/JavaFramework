@@ -45,7 +45,7 @@ public class SysResponsiblityController extends AbstractCrudDhtmlxController<Sys
         query.setSelectParamId("GET_SYSUSERRESP_PAGE");
         query.getParameters().put("queryString", wrapQuery(request,orgIds));
         service.queryBySelectId(query);
-        List<SysOrg> orgList = sysOrgService.queryByField("orgStatus", BaseObject.OPER_EQ, Const.VALID);
+        List<SysOrg> orgList = sysOrgService.queryByField(SysOrg::getOrgStatus, Const.OPERATOR.EQ, Const.VALID);
         setCode("ORG", orgList, "orgName", "id");
         setCode("ACCOUNTTYPE");
         filterListByCodeSet(query, "accountType", "ACCOUNTTYPE",null);

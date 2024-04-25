@@ -15,6 +15,7 @@
  */
 package com.robin.core.query.util;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -104,6 +105,57 @@ public class PageQuery implements Serializable {
 			timestampFormater=new SimpleDateFormat(timestampFormatString);
 		}
 		return timestampFormater;
+	}
+	public static class Builder{
+		private PageQuery pageQuery=new PageQuery();
+		public Builder setPageSize(Integer pageSize){
+			pageQuery.setPageSize(pageSize);
+			return this;
+		}
+		public Builder setPageCount(Integer pageCount){
+			pageQuery.setPageCount(pageCount);
+			return this;
+		}
+		public Builder setSelectedId(String selectedId){
+			pageQuery.setSelectParamId(selectedId);
+			return this;
+		}
+		public Builder setPageNumber(Integer pageNumber){
+			pageQuery.setPageNumber(pageNumber);
+			return this;
+		}
+		public Builder setOrder(String order){
+			pageQuery.setOrder(order);
+			return this;
+		}
+		public Builder setOrderDir(String orderDir){
+			pageQuery.setOrderDirection(orderDir);
+			return this;
+		}
+		public Builder setParameterArr(Object[] objects){
+			pageQuery.setParameterArr(objects);
+			return this;
+		}
+		public Builder putNamedParameter(String key,Object value){
+			pageQuery.getNamedParameters().put(key,value);
+			return this;
+		}
+		public Builder addParameter(String key,String value){
+			pageQuery.getParameters().put(key,value);
+			return this;
+		}
+		public Builder setNamedParameters(Map<String,Object> namedParameter){
+			pageQuery.setNamedParameters(namedParameter);
+			return this;
+		}
+		public Builder setParameters(Map<String,String> parameters){
+			pageQuery.setParameters(parameters);
+			return this;
+		}
+		public PageQuery build(){
+			return pageQuery;
+		}
+
 	}
 	
 

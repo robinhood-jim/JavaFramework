@@ -41,7 +41,7 @@ import org.springframework.util.StringUtils;
 
 import java.io.Serializable;
 import java.util.*;
-
+@Deprecated
 public class HibernateGenericDao extends HibernateDaoSupport implements IHibernateGenericDao {
     private JdbcTemplate jdbcTemplate;
 

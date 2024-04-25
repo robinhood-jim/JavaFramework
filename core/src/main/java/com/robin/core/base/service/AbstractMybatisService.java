@@ -21,8 +21,10 @@ import com.robin.core.base.exception.WebException;
 import com.robin.core.base.model.BaseModel;
 import com.robin.core.base.reflect.ReflectUtils;
 import com.robin.core.base.util.Const;
+import com.robin.core.base.util.LicenseUtils;
 import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.query.util.Condition;
+import com.robin.core.version.VersionInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
@@ -111,6 +113,7 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>,T extends S
                 getDeleteMethod=getMethods.get(com.robin.core.base.util.StringUtils.returnCamelCaseByFieldName(deleteColumn));
                 setDeleteMethod=setMethods.get(com.robin.core.base.util.StringUtils.returnCamelCaseByFieldName(deleteColumn));
             }
+            LicenseUtils.getInstance();
         } catch (Exception ex) {
             log.error("{}", ex.getMessage());
         }

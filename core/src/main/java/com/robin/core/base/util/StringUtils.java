@@ -316,11 +316,19 @@ public class StringUtils {
         }
         return input.substring(0,pos);
     }
-    public static String fillChar(String input,int length,char fillChar){
+    public static String fillCharHeader(String input,int length,char fillChar){
         StringBuilder builder=new StringBuilder(input);
         for(int i=0;i<length-input.length();i++){
             builder.append(fillChar);
         }
+        return builder.toString();
+    }
+    public static String fillCharTail(String input,int length,char fillChar){
+        StringBuilder builder=new StringBuilder();
+        for(int i=0;i<length-input.length();i++){
+            builder.append(fillChar);
+        }
+        builder.append(input);
         return builder.toString();
     }
     public static String stringToUnicode(String input,String header){

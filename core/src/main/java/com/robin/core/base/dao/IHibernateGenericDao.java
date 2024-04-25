@@ -27,6 +27,7 @@ import com.robin.core.query.util.PageQuery;
 import com.robin.core.query.util.QueryString;
 
 
+@Deprecated
 public  interface IHibernateGenericDao {
 
 	<T extends BaseObject,ID extends Serializable> T get(Class<T> entityClass, ID id) throws DAOException;

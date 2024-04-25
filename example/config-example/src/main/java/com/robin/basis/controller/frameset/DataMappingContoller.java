@@ -18,7 +18,7 @@ import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.query.util.Condition;
 import com.robin.core.query.util.PageQuery;
 import com.robin.core.sql.util.FilterCondition;
-import com.robin.core.sql.util.FilterConditions;
+import com.robin.core.sql.util.FilterConditionBuilder;
 import com.robin.core.template.util.FreeMarkerUtil;
 import com.robin.core.web.controller.AbstractCrudDhtmlxController;
 import com.robin.core.web.util.DhtmxTreeWrapper;
@@ -67,9 +67,9 @@ public class DataMappingContoller extends AbstractCrudDhtmlxController<ProjectIn
         String table = request.getParameter("table");
         ProjectInfo info = projectInfoService.getEntity(Long.valueOf(projId));
         DataSource source = dataSourceService.getEntity(info.getDataSourceId());
-        FilterConditions conditions = new FilterConditions();
-        conditions.withCondition(new FilterCondition("proj_id", Condition.EQUALS, info.getId())).withCondition(new FilterCondition("source_id", Condition.EQUALS, source.getId()))
-                .withCondition(new FilterCondition("db_schema", Condition.EQUALS, schema)).withCondition(new FilterCondition("entity_code", Condition.EQUALS, table));
+        FilterConditionBuilder conditions = new FilterConditionBuilder();
+        conditions.withCondition(new FilterCondition("proj_id", Const.OPERATOR.EQ, info.getId())).withCondition(new FilterCondition("source_id", Const.OPERATOR.EQ, source.getId()))
+                .withCondition(new FilterCondition("db_schema", Const.OPERATOR.EQ, schema)).withCondition(new FilterCondition("entity_code", Const.OPERATOR.EQ, table));
         request.setAttribute("sourceId", source.getId());
         List<EntityMapping> mappinglist = entityMappingService.queryByCondition(conditions, new PageQuery());
         if (mappinglist != null && !mappinglist.isEmpty()) {
@@ -172,15 +172,15 @@ public class DataMappingContoller extends AbstractCrudDhtmlxController<ProjectIn
                 }
                 list.add(map);
             }
-            FilterConditions filterConditions = new FilterConditions();
-            filterConditions.withCondition(new FilterCondition("proj_id", Condition.EQUALS, info.getId())).withCondition(new FilterCondition("source_id", Condition.EQUALS, source.getId()))
-                    .withCondition(new FilterCondition("db_schema", Condition.EQUALS, schema)).withCondition(new FilterCondition("entity_code", Condition.EQUALS, table));
+            FilterConditionBuilder filterConditions = new FilterConditionBuilder();
+            filterConditions.withCondition(new FilterCondition("proj_id", Const.OPERATOR.EQ, info.getId())).withCondition(new FilterCondition("source_id", Const.OPERATOR.EQ, source.getId()))
+                    .withCondition(new FilterCondition("db_schema", Const.OPERATOR.EQ, schema)).withCondition(new FilterCondition("entity_code", Const.OPERATOR.EQ, table));
 
             List<EntityMapping> mappinglist = entityMappingService.queryByCondition(filterConditions, new PageQuery());
             if (mappinglist != null && !mappinglist.isEmpty()) {
                 mapping = mappinglist.get(0);
 
-                List<FieldMapping> fieldmapList = fieldMappingService.queryByField("entityId", BaseObject.OPER_EQ, mapping.getId());
+                List<FieldMapping> fieldmapList = fieldMappingService.queryByField("entityId", Const.OPERATOR.EQ, mapping.getId());
                 for (int i = 0; i < fieldmapList.size(); i++) {
                     list.get(i).put("propName", fieldmapList.get(i).getCode());
                     list.get(i).put("propType", fieldmapList.get(i).getType());
@@ -229,7 +229,7 @@ public class DataMappingContoller extends AbstractCrudDhtmlxController<ProjectIn
             if (mappingId != null && !mappingId.isEmpty()) {
                 mapping = entityMappingService.getEntity(Long.valueOf(mappingId));
                 List<FieldMapping> fieldList = entityMappingService.addMappingWithXml(info, mapping, request, collist);
-                wrapSuccess(retMap, "保存配置成功");
+                wrapSuccessMap(retMap, "保存配置成功");
             } else {
                 mapping = new EntityMapping();
                 wrapObjectWithRequest(request, mapping);
@@ -268,7 +268,7 @@ public class DataMappingContoller extends AbstractCrudDhtmlxController<ProjectIn
             EntityMapping enmap = entityMappingService.getEntity(mapping.getId());
             String pktype = findCodeName("PKTYPE", enmap.getPkType());
             enmap.setPkType(pktype);
-            List<FieldMapping> fieldList = fieldMappingService.queryByField("entityId", BaseObject.OPER_EQ, mapping.getId());
+            List<FieldMapping> fieldList = fieldMappingService.queryByField("entityId", Const.OPERATOR.EQ, mapping.getId());
             List<Map<String, String>> fieldmapList = convertObjToMapList(fieldList);
             boolean genDao = request.getParameter("genDao") != null && request.getParameter("genDao").equals(Const.VALID);
 
@@ -372,7 +372,7 @@ public class DataMappingContoller extends AbstractCrudDhtmlxController<ProjectIn
                 generateCode(freeutil, listjsp, tempmap.get(webfrm + "listjsp").get(0).get("path").toString(), parammap);
                 generateCode(freeutil, editjsp, tempmap.get(webfrm + "editjsp").get(0).get("path").toString(), parammap);
             }
-            wrapSuccess(retMap, "OK");
+            wrapSuccessMap(retMap, "OK");
         } catch (Exception ex) {
             wrapFailed(retMap, ex);
         } finally {
@@ -447,7 +447,7 @@ public class DataMappingContoller extends AbstractCrudDhtmlxController<ProjectIn
             } else {
                 entityMappingService.saveEntity(mapping);
             }
-            wrapSuccess(retMap, "OK");
+            wrapSuccessMap(retMap, "OK");
         } catch (Exception ex) {
             wrapFailed(retMap, ex);
         }

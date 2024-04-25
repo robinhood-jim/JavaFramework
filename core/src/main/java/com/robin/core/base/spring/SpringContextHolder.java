@@ -24,19 +24,11 @@ import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.stereotype.Component;
 
 @Slf4j
-@Component
-public class SpringContextHolder implements BeanFactoryPostProcessor,ApplicationContextAware, DisposableBean{
+public class SpringContextHolder implements ApplicationContextAware, DisposableBean{
 	private static ApplicationContext context;
 	private final Logger logger=LoggerFactory.getLogger(getClass());
-	private static ConfigurableListableBeanFactory beanFactory;
-
-	@Override
-	public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
-		SpringContextHolder.beanFactory=beanFactory;
-	}
 
 	public static void injectApplicationContext(ApplicationContext appcontext){
 		if (context == null){
@@ -53,22 +45,14 @@ public class SpringContextHolder implements BeanFactoryPostProcessor,Application
 	}
 	public static <T> T  getBean(Class<T> clazzName){
 		try {
-			if(context!=null) {
-				return context.getBean(clazzName);
-			}else{
-				return beanFactory.getBean(clazzName);
-			}
+			return context.getBean(clazzName);
 		}catch (Exception ex){
 			return null;
 		}
 	}
 
 	public static <T> T getBean(String beanName, Class<T> clazz){
-		if(context!=null) {
-			return context.getBean(beanName, clazz);
-		}else{
-			return beanFactory.getBean(beanName,clazz);
-		}
+		return context.getBean(beanName, clazz);
 	}
 
 
@@ -91,6 +75,5 @@ public class SpringContextHolder implements BeanFactoryPostProcessor,Application
 	@Override
 	public void destroy() throws Exception {
 		context = null;
-		beanFactory=null;
 	}
 }

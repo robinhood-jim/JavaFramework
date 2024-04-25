@@ -1,5 +1,6 @@
 package com.robin.core.version;
 
+import com.robin.core.base.util.LicenseUtils;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ResourceBundle;
@@ -30,6 +31,7 @@ public class VersionInfo {
         return version;
     }
     public String getVersion(){
+        LicenseUtils.getInstance().checkValid();
         return description+" Version:"+ver+",Creator:"+creator;
     }
 }

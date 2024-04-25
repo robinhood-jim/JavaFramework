@@ -1,11 +1,11 @@
 package com.robin.basis.service.frameset;
 
-import com.robin.core.base.datameta.DataBaseColumnMeta;
-import com.robin.core.base.exception.ServiceException;
-import com.robin.core.base.service.BaseAnnotationJdbcService;
 import com.robin.basis.model.frameset.EntityMapping;
 import com.robin.basis.model.frameset.FieldMapping;
 import com.robin.basis.model.frameset.ProjectInfo;
+import com.robin.core.base.datameta.DataBaseColumnMeta;
+import com.robin.core.base.exception.ServiceException;
+import com.robin.core.base.service.BaseAnnotationJdbcService;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
@@ -81,7 +81,7 @@ public class EntityMappingService extends BaseAnnotationJdbcService<EntityMappin
 			if(mapping.getId()==null){
 				jdbcDao.createVO(mapping,Long.class);
 			}else{
-				jdbcDao.updateVO(EntityMapping.class, mapping);
+				jdbcDao.updateByKey(EntityMapping.class, mapping);
 			}
 			jdbcDao.deleteByField(FieldMapping.class, "entityId", mapping.getId());
 			Long entityId=mapping.getId();

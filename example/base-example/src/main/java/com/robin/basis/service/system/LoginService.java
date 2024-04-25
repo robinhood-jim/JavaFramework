@@ -19,11 +19,10 @@ import com.robin.core.base.dao.JdbcDao;
 import com.robin.core.base.exception.ServiceException;
 import com.robin.core.base.model.BaseObject;
 import com.robin.core.base.util.Const;
-import com.robin.core.collection.util.CollectionBaseConvert;
-import com.robin.core.collection.util.CollectionMapConvert;
 import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.query.util.PageQuery;
 import com.robin.core.sql.util.FilterCondition;
+import com.robin.core.sql.util.FilterConditionBuilder;
 import com.robin.core.web.util.RestTemplateUtils;
 import com.robin.core.web.util.Session;
 import com.robin.core.web.util.WebConstant;
@@ -41,7 +40,6 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.lang.NonNull;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
-import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.RestClientException;
 
@@ -66,7 +64,7 @@ public class LoginService {
     private SysUserResponsiblityService sysUserResponsiblityService;
     @Resource
     private SysUserRoleService sysUserRoleService;
-    private BCryptPasswordEncoder encoder=new BCryptPasswordEncoder();
+    private BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
 
     public static final String VERIFIED = "1";
@@ -81,15 +79,28 @@ public class LoginService {
 
         return session;
     }
-    public Map<String,Object> ssoLogin(String requestUrl,Map<String,String> requestMap) throws ServiceException{
-        try{
-            return RestTemplateUtils.postFromSsoRest(requestUrl, requestMap,null);
-        }catch (RestClientException ex){
+    public Session simpleLogin(String accountName, String password) throws ServiceException{
+        if (accountName == null || accountName.isEmpty() || password == null || password.isEmpty()) {
+            throw new ServiceException("System Error.");
+        }
+        SysUser user=getSysUser(accountName,password);
+        Session session=getSession(user);
+
+        getUserRightsByRole(session);
+        return session;
+
+    }
+
+    public Map<String, Object> ssoLogin(String requestUrl, Map<String, String> requestMap) throws ServiceException {
+        try {
+            return RestTemplateUtils.postFromSsoRest(requestUrl, requestMap, null);
+        } catch (RestClientException ex) {
             throw new ServiceException(ex);
         }
     }
-    public Map<String,Object> getUserAndResp(String userName){
-        Map<String,Object> retMap=new HashMap<>();
+
+    public Map<String, Object> getUserAndResp(String userName) {
+        Map<String, Object> retMap = new HashMap<>();
         SysUser user = new SysUser();
         user.setUserAccount(userName);
         user.setUserStatus(Const.VALID);
@@ -98,25 +109,26 @@ public class LoginService {
             throw new ServiceException("AccountName or password incorrect or Account is locked!Please retry");
         }
         SysUser queryUser = users.get(0);
-        List<SysUserResponsiblity> respList=sysUserResponsiblityService.queryByField("userId", BaseObject.OPER_EQ,queryUser.getId());
+        List<SysUserResponsiblity> respList = sysUserResponsiblityService.queryByField("userId", Const.OPERATOR.EQ, queryUser.getId());
 
-        try{
-            ConvertUtil.objectToMapObj(retMap,queryUser);
-        }catch (Exception ex){
+        try {
+            ConvertUtil.objectToMapObj(retMap, queryUser);
+        } catch (Exception ex) {
             throw new ServiceException(ex);
         }
-        List<Long> respIdList=new ArrayList<>();
-        if(!respList.isEmpty()){
-            for(SysUserResponsiblity resp:respList){
+        List<Long> respIdList = new ArrayList<>();
+        if (!respList.isEmpty()) {
+            for (SysUserResponsiblity resp : respList) {
                 respIdList.add(resp.getRespId());
             }
         }
-        if(!respIdList.isEmpty()) {
-            retMap.put("resps",respIdList);
+        if (!respIdList.isEmpty()) {
+            retMap.put("resps", respIdList);
         }
         return retMap;
     }
-    public SysUser getUserInfo(String userName){
+
+    public SysUser getUserInfo(String userName) {
         SysUser user = new SysUser();
         user.setUserAccount(userName);
         user.setUserStatus(Const.VALID);
@@ -127,68 +139,80 @@ public class LoginService {
         return users.get(0);
     }
 
-    public List<Long> getUserOrgs(Long userId){
-        List<FilterCondition> conditions=new ArrayList<>();
-        conditions.add(new FilterCondition("userId",BaseObject.OPER_EQ,userId));
-        conditions.add(new FilterCondition("status",BaseObject.OPER_EQ,Const.VALID));
-
-        List<SysUserRole> roles=sysUserRoleService.queryByCondition(conditions);
-        if(CollectionUtils.isEmpty(roles)){
+    public List<Long> getUserOrgs(Long userId) {
+        FilterConditionBuilder builder=new FilterConditionBuilder();
+        builder.eq("userId", userId);
+        builder.eq("status", Const.VALID);
+        List<SysUserRole> roles = sysUserRoleService.queryByCondition(builder.getConditions());
+        if (CollectionUtils.isEmpty(roles)) {
             return roles.stream().map(SysUserRole::getRoleId).collect(Collectors.toList());
-        }else{
+        } else {
             return Collections.emptyList();
         }
     }
 
-    public Map<String,Object> getUserRights(Long userId){
-        Map<String,Object> retMap=new HashMap<>();
+    public void getUserRightsByRole(Session session) {
+        Map<String, Object> retMap = new HashMap<>();
         //get userRole
-        PageQuery query=new PageQuery();
-        query.setPageSize(0);
-        query.setSelectParamId("GETUSER_ROLE");
-        query.setParameterArr(new Object[]{userId});
+        PageQuery.Builder userBuilder=new PageQuery.Builder();
+        userBuilder.setPageSize(0).setSelectedId("GETUSER_ROLE").setParameterArr(new Object[]{session.getUserId()});
+        PageQuery query =userBuilder.build();
         jdbcDao.queryBySelectId(query);
-        List<Long> roleIds=new ArrayList<>();
-        List<String> roleCodes=new ArrayList<>();
-        if(!query.getRecordSet().isEmpty()){
-            query.getRecordSet().forEach(f->{
+        List<Long> roleIds = new ArrayList<>();
+        List<String> roleCodes = new ArrayList<>();
+        if (!query.getRecordSet().isEmpty()) {
+            query.getRecordSet().forEach(f -> {
                 roleIds.add(Long.parseLong(f.get("role_id").toString()));
                 roleCodes.add(f.get("code").toString());
             });
         }
-        if(roleIds.isEmpty()){
-            throw new ServiceException("user "+userId+" does not have any role");
+        if (roleIds.isEmpty()) {
+            //未配置使用缺省角色
+            roleIds.add(Const.ROLEDEF.NORMAL.getId());
+            roleCodes.add(Const.ROLEDEF.NORMAL.getCode());
+            //throw new ServiceException("user " + session.getUserId() + " does not have any role");
         }
-        retMap.put("roles",roleCodes);
+        retMap.put("roles", roleCodes);
+        //get user org info
+        /*PageQuery.Builder builder=new PageQuery.Builder();
+        builder.setPageSize(0).setSelectedId("GETUSERORGINFO").setParameterArr(new Object[]{session.getUserId()});
+        PageQuery orgQuery=builder.build();
+        jdbcDao.queryBySelectId(orgQuery);
+        //未配置使用缺省企业
+        if(!CollectionUtils.isEmpty(orgQuery.getRecordSet())){
+            session.setOrgId(Long.valueOf(orgQuery.getRecordSet().get(0).get("orgId").toString()));
+            session.setOrgName(orgQuery.getRecordSet().get(0).get("orgName").toString());
+        }else{*/
+        session.setOrgId(1L);
+        session.setOrgName("缺省企业");
+        //}
         //get user access resources
-        PageQuery query1=new PageQuery();
-        query1.setPageSize(0);
-        query1.setSelectParamId("GET_RESOURCEINFO");
-        Map<String,Object> paramMap=new HashMap<>();
-        paramMap.put("userId",userId);
-        paramMap.put("roleIds",roleIds);
-        query1.setNamedParameters(paramMap);
+        PageQuery.Builder resourceBuilder=new PageQuery.Builder();
+        resourceBuilder.setPageSize(0).setSelectedId("GET_RESOURCEINFO")
+                .putNamedParameter("userId",session.getUserId()).putNamedParameter("roleIds", roleIds);
+        PageQuery query1 =resourceBuilder.build();
         jdbcDao.queryBySelectId(query1);
-        if(!query1.getRecordSet().isEmpty()){
+        if (!query1.getRecordSet().isEmpty()) {
             try {
-                Map<String,List<Map<String,Object>>> resTypeMap= CollectionMapConvert.convertToMapByParentKey(query1.getRecordSet(), "assignType");
-                Map<String,Map<String,Object>> accessResMap= CollectionBaseConvert.listObjectToMap(resTypeMap.get(Const.RESOURCE_ASSIGN_ACCESS),"id");
-                if(resTypeMap.containsKey(Const.RESOURCE_ASSIGN_DENIED)){
-                    //reverse assign,remove denied resources
-                    for(Map<String,Object> tmap:resTypeMap.get(Const.RESOURCE_ASSIGN_DENIED)){
-                        if(accessResMap.containsKey(tmap.get("id").toString())){
-                            accessResMap.remove(tmap.get("id").toString());
-                        }
+                List<SysResource> commresources = sysResourceService.getAllValidate();
+                Map<Long, SysResource> resmap = commresources.stream().collect(Collectors.toMap(SysResource::getId, Function.identity()));
+
+                List<Map<String, Object>> list = query1.getRecordSet();
+                Map<String, List<Map<String, Object>>> privMap = new HashMap();
+                Map<String, Integer> idMap = new HashMap<>();
+                if (!CollectionUtils.isEmpty(list)) {
+                    for (Map<String, Object> map : list) {
+                        fillRights(Long.valueOf(map.get("id").toString()), resmap, privMap, map, idMap);
                     }
                 }
-                retMap.put("permission",accessResMap);
-            }catch (Exception ex) {
+                session.setPrivileges(privMap);
+            } catch (Exception ex) {
                 throw new ServiceException(" internal error");
             }
         }
-        return retMap;
     }
-    public Session ssoGetUser(String userName){
+
+    public Session ssoGetUser(String userName) {
         SysUser user = new SysUser();
         user.setUserAccount(userName);
         user.setUserStatus(Const.VALID);
@@ -198,15 +222,21 @@ public class LoginService {
         }
         return returnSession(users.get(0));
     }
-    public Session ssoGetUserById(Long userId){
+
+    public Session ssoGetUserById(Long userId) {
         SysUser user = sysUserService.getEntity(userId);
-        if (user==null) {
+        if (user == null) {
             throw new ServiceException("AccountName or password incorrect or Account is locked!Please retry");
         }
         return returnSession(user);
     }
 
     private Session checkAccount(String accountName, String password) {
+        SysUser queryUser = getSysUser(accountName, password);
+        return returnSession(queryUser);
+    }
+
+    private SysUser getSysUser(String accountName, String password) throws ServiceException {
         SysUser user = new SysUser();
         user.setUserAccount(accountName);
         //user.setUserPassword(password);
@@ -216,17 +246,15 @@ public class LoginService {
             throw new ServiceException("AccountName does not exist or account is Locked!Please retry");
         }
         SysUser queryUser = users.get(0);
-        String dbPwd=queryUser.getUserPassword();
-        if(!encoder.matches(password,dbPwd)){
+        String dbPwd = queryUser.getUserPassword();
+        if (!password.equalsIgnoreCase(dbPwd)) {//!encoder.matches(password,dbPwd)
             throw new ServiceException("password mismatch");
         }
-        return returnSession(queryUser);
+        return queryUser;
     }
-    private Session returnSession(SysUser queryUser){
-        Session session = new Session();
-        session.setUserId(queryUser.getId());
-        session.setLoginTime(new Date());
-        BeanUtils.copyProperties(queryUser, session);
+
+    private Session returnSession(SysUser queryUser) {
+        Session session = getSession(queryUser);
 
         if (!session.getAccountType().equals(WebConstant.ACCOUNT_TYPE.ORGUSER.toString())) {
             getRights(session);
@@ -243,11 +271,19 @@ public class LoginService {
         return session;
     }
 
+    private static Session getSession(SysUser queryUser) {
+        Session session = new Session();
+        session.setUserId(queryUser.getId());
+        session.setLoginTime(new Date());
+        BeanUtils.copyProperties(queryUser, session);
+        return session;
+    }
+
     public void getRights(Session session)
             throws ServiceException {
         Long orgId = session.getOrgId() == null ? 0L : session.getOrgId();
         if (orgId != 0L) {
-            SysOrg sysOrg = (SysOrg) this.jdbcDao.getEntity(SysOrg.class, Long.valueOf(orgId));
+            SysOrg sysOrg =  this.jdbcDao.getEntity(SysOrg.class, Long.valueOf(orgId));
             if (sysOrg == null) {
                 log.error("User {} try to login to No exist OrgId {}", session.getUserName());
                 throw new ServiceException("Organization not Exists");
@@ -269,10 +305,10 @@ public class LoginService {
             ex.printStackTrace();
         }
         //get comm menu from SysResponsiblity
-        SysUserResponsiblity queryVO=new SysUserResponsiblity();
+        SysUserResponsiblity queryVO = new SysUserResponsiblity();
         queryVO.setUserId(session.getUserId());
         queryVO.setStatus(Const.VALID);
-        List resps = this.jdbcDao.queryByVO(SysUserResponsiblity.class, queryVO, null,null);
+        List resps = this.jdbcDao.queryByVO(SysUserResponsiblity.class, queryVO, null, null);
         List<Long> respsList = new ArrayList();
         if (resps != null && !resps.isEmpty()) {
             for (int i = 0; i < resps.size(); i++) {
@@ -282,7 +318,7 @@ public class LoginService {
                     session.getResponsiblitys().add(sur.getRespId());
                 }
             }
-        }else if(session.getAccountType().equals(WebConstant.ACCOUNT_TYPE.ORGUSER.toString())){
+        } else if (session.getAccountType().equals(WebConstant.ACCOUNT_TYPE.ORGUSER.toString())) {
             respsList.add(WebConstant.SYS_RESPONSIBLITIY.ORG_RESP.getValue());
         }
         PageQuery query = new PageQuery();
@@ -298,29 +334,23 @@ public class LoginService {
         List<Map<String, Object>> list = query.getRecordSet();
         Map<String, List<Map<String, Object>>> privMap = new HashMap();
         Map<String, Integer> idMap = new HashMap<>();
-        if(!CollectionUtils.isEmpty(list)) {
+        if (!CollectionUtils.isEmpty(list)) {
             for (Map<String, Object> map : list) {
                 fillRights(Long.valueOf(map.get("id").toString()), resmap, privMap, map, idMap);
             }
         }
         session.setPrivileges(privMap);
-        if(orgId!=0L){
+        if (orgId != 0L) {
             //get menu from Organization
-
-
         }
     }
 
     private void fillRights(Long id, @NonNull Map<Long, SysResource> resMap, Map<String, List<Map<String, Object>>> privMap, Map<String, Object> vmap, Map<String, Integer> idMap) {
-        Assert.isTrue(!CollectionUtils.isEmpty(resMap),"");
-        Assert.isTrue(!CollectionUtils.isEmpty(privMap),"");
-        Assert.isTrue(!CollectionUtils.isEmpty(vmap),"");
-        Assert.isTrue(!CollectionUtils.isEmpty(idMap),"");
         try {
             if (resMap.containsKey(id)) {
                 Long pid = resMap.get(id).getPid();
-                if(!idMap.containsKey(id)) {
-                    if(Integer.parseInt(vmap.get("assignType").toString())< SysResourceUser.ASSIGN_DEL) {
+                if (!idMap.containsKey(id)) {
+                    if (Integer.parseInt(vmap.get("assignType").toString()) < SysResourceUser.ASSIGN_DEL) {
                         if (!privMap.containsKey(String.valueOf(pid))) {
                             List<Map<String, Object>> tlist = new ArrayList();
                             tlist.add(vmap);
@@ -333,14 +363,14 @@ public class LoginService {
                 Map<String, Object> tmap = new HashMap<>();
                 if (!idMap.containsKey(pid.toString())) {
                     ConvertUtil.objectToMapObj(tmap, resMap.get(pid));
-                    tmap.put("assignType","0");
+                    tmap.put("assignType", "0");
                     fillRights(pid, resMap, privMap, tmap, idMap);
                 }
-                idMap.put(id.toString(),1);
+                idMap.put(id.toString(), 1);
                 idMap.put(pid.toString(), 1);
             }
         } catch (Exception ex) {
-            log.error("",ex);
+            log.error("", ex);
         }
     }
 
@@ -349,7 +379,4 @@ public class LoginService {
         return sysResourceService.getOrgAllMenu(orgId);
     }
 
-    public void setJdbcDao(JdbcDao jdbcDao) {
-        this.jdbcDao = jdbcDao;
-    }
 }

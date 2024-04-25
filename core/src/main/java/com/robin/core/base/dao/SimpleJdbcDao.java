@@ -21,6 +21,7 @@ import com.robin.core.base.datameta.DataBaseUtil;
 import com.robin.core.base.exception.DAOException;
 import com.robin.core.base.util.Const;
 import com.robin.core.query.extractor.ResultSetOperationExtractor;
+import com.robin.core.version.VersionInfo;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -71,6 +72,7 @@ public class SimpleJdbcDao {
         }
         this.meta = meta;
         this.param = meta.getParam();
+        logger.debug(VersionInfo.getInstance().getVersion());
     }
 
     public SimpleJdbcDao(BaseDataBaseMeta meta, long retryNums, int waitSecond, boolean getConnectionLoop) {

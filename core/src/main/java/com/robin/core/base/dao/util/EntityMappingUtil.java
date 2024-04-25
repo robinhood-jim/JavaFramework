@@ -4,8 +4,13 @@ import com.robin.core.base.exception.DAOException;
 import com.robin.core.base.model.BaseObject;
 import com.robin.core.base.model.BasePrimaryObject;
 import com.robin.core.base.util.Const;
+import com.robin.core.query.util.Condition;
 import com.robin.core.sql.util.BaseSqlGen;
+import com.robin.core.sql.util.FilterCondition;
 import lombok.Data;
+import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 
 import java.io.Serializable;
 import java.sql.SQLException;
@@ -15,6 +20,9 @@ import java.util.Map;
 
 
 public class EntityMappingUtil {
+    private EntityMappingUtil(){
+
+    }
     public static InsertSegment getInsertSegment(BaseObject obj, BaseSqlGen sqlGen) throws DAOException {
         AnnotationRetriever.EntityContent tableDef = AnnotationRetriever.getMappingTableByCache(obj.getClass());
         List<AnnotationRetriever.FieldContent> fields = AnnotationRetriever.getMappingFieldsCache(obj.getClass());
@@ -34,7 +42,7 @@ public class EntityMappingUtil {
         AnnotationRetriever.FieldContent incrementcolumn = null;
         try {
             for (AnnotationRetriever.FieldContent content : fields) {
-                Object value = content.getGetMethod().invoke(obj, new Object[]{});
+                Object value = content.getGetMethod().invoke(obj);
                 if (content.getDataType().equals(Const.META_TYPE_BLOB) || content.getDataType().equals(Const.META_TYPE_CLOB)) {
                     containlob = true;
                 }
@@ -95,7 +103,60 @@ public class EntityMappingUtil {
         return insertSegment;
     }
 
-    public static UpdateSegment getUpdateSegment(BaseObject obj, BaseSqlGen sqlGen) throws SQLException {
+    public static UpdateSegment getUpdateSegment(BaseObject obj, List<FilterCondition> conditions, BaseSqlGen sqlGen) throws SQLException {
+        AnnotationRetriever.EntityContent tableDef = AnnotationRetriever.getMappingTableByCache(obj.getClass());
+        List<AnnotationRetriever.FieldContent> fields = AnnotationRetriever.getMappingFieldsCache(obj.getClass());
+        Map<String,AnnotationRetriever.FieldContent> fieldContentMap=AnnotationRetriever.getMappingFieldsMapCache(obj.getClass());
+
+        AnnotationRetriever.validateEntity(obj);
+
+        //get must change column
+        List<String> dirtyColumns = obj.getDirtyColumn();
+        StringBuilder fieldBuffer = new StringBuilder();
+        fieldBuffer.append("update ");
+        if (tableDef.getSchema() != null && !tableDef.getSchema().isEmpty()) {
+            fieldBuffer.append(sqlGen.getSchemaName(tableDef.getSchema())).append(".");
+        }
+        fieldBuffer.append(tableDef.getTableName()).append(" set ");
+
+        StringBuilder wherebuffer = new StringBuilder();
+        List<Object> objList = new ArrayList<>();
+        List<Object> whereObjects = new ArrayList<>();
+        UpdateSegment updateSegment = new UpdateSegment();
+        for (AnnotationRetriever.FieldContent field : fields) {
+            Object object = AnnotationRetriever.getValueFromVO(field, obj);
+            if (object == null) {
+                if (dirtyColumns.contains(field.getPropertyName())) {
+                    fieldBuffer.append(field.getFieldName()).append("=?,");
+                    objList.add(null);
+                }
+            } else {
+                fieldBuffer.append(field.getFieldName()).append("=?,");
+                objList.add(object);
+            }
+        }
+        Assert.isTrue(!CollectionUtils.isEmpty(conditions),"");
+        for(FilterCondition condition:conditions){
+            String fieldName=condition.getColumnCode();
+            if(!fieldContentMap.containsKey(fieldName)){
+                if(fieldContentMap.containsKey(fieldName.toLowerCase())){
+                    fieldName=fieldName.toLowerCase();
+                }else if(fieldContentMap.containsKey(fieldName.toUpperCase())){
+                    fieldName=fieldName.toUpperCase();
+                }
+            }
+            if(fieldContentMap.containsKey(fieldName)){
+                wherebuffer.append(condition.toSQLPart());
+                condition.fillValue(whereObjects);
+            }
+        }
+        objList.addAll(whereObjects);
+        updateSegment.setFieldStr(fieldBuffer.substring(0, fieldBuffer.length() - 1));
+        updateSegment.setWhereStr(wherebuffer.toString());
+        updateSegment.setParams(objList);
+        return updateSegment;
+    }
+    public static UpdateSegment getUpdateSegmentByKey(BaseObject obj, BaseSqlGen sqlGen) throws SQLException {
         AnnotationRetriever.EntityContent tableDef = AnnotationRetriever.getMappingTableByCache(obj.getClass());
         List<AnnotationRetriever.FieldContent> fields = AnnotationRetriever.getMappingFieldsCache(obj.getClass());
         AnnotationRetriever.validateEntity(obj);
@@ -110,7 +171,7 @@ public class EntityMappingUtil {
         fieldBuffer.append(tableDef.getTableName()).append(" set ");
 
         StringBuilder wherebuffer = new StringBuilder();
-        List<Object> objList = new ArrayList<Object>();
+        List<Object> objList = new ArrayList<>();
         List<Object> whereObjects = new ArrayList<>();
         UpdateSegment updateSegment = new UpdateSegment();
         for (AnnotationRetriever.FieldContent field : fields) {
@@ -195,7 +256,7 @@ public class EntityMappingUtil {
         List<AnnotationRetriever.FieldContent> fields = AnnotationRetriever.getMappingFieldsCache(type);
         SelectSegment selectSegment=new SelectSegment();
         for (AnnotationRetriever.FieldContent field : fields) {
-            Object obj = field.getGetMethod().invoke(vo, new Object[]{});
+            Object obj = field.getGetMethod().invoke(vo);
             if (obj != null) {
                 if (additonMap == null) {
                     builder.append(field.getFieldName()).append("=?");
@@ -203,26 +264,38 @@ public class EntityMappingUtil {
                 } else {
                     if (additonMap.containsKey(field.getFieldName() + "_oper")) {
                         String oper = additonMap.get(field.getFieldName() + "_oper").toString();
-                        if (oper.equals(BaseObject.OPER_EQ) || oper.equals(BaseObject.OPER_NOT_EQ) || oper.equals(BaseObject.OPER_GT_EQ)
-                                || oper.equals(BaseObject.OPER_LT_EQ) || oper.equals(BaseObject.OPER_GT) || oper.equals(BaseObject.OPER_LT)) {
-                            builder.append(field.getFieldName()).append(oper).append("?");
-                            params.add(obj);
-                        } else if (oper.equals(BaseObject.OPER_BT)) {
-                            builder.append(field.getFieldName()).append(" between ? and ?");
-                            params.add(additonMap.get(field.getFieldName() + "_from"));
-                            params.add(additonMap.get(field.getFieldName() + "_to"));
-                        } else if (oper.equals(BaseObject.OPER_IN)) {
-                            StringBuilder tmpbuffer = new StringBuilder();
-                            List<Object> inobj = (List<Object>) additonMap.get(field.getFieldName());
-                            for (int i = 0; i < inobj.size(); i++) {
-                                if (i < inobj.size() - 1) {
-                                    tmpbuffer.append("?,");
-                                } else {
-                                    tmpbuffer.append("?");
+                        Const.OPERATOR operator= Const.OPERATOR.valueOf(oper);
+                        switch (operator){
+                            case EQ:
+                            case NE:
+                            case LE:
+                            case GE:
+                            case GT:
+                            case LT:
+                                builder.append(field.getFieldName()).append(operator.getSignal()).append("?");
+                                params.add(obj);
+                                break;
+                            case BETWEEN:
+                                builder.append(field.getFieldName()).append(" between ? and ?");
+                                params.add(additonMap.get(field.getFieldName() + "_from"));
+                                params.add(additonMap.get(field.getFieldName() + "_to"));
+                                break;
+                            case IN:
+                                StringBuilder tmpbuffer = new StringBuilder();
+                                List<Object> inobj = (List<Object>) additonMap.get(field.getFieldName());
+                                for (int i = 0; i < inobj.size(); i++) {
+                                    if (i < inobj.size() - 1) {
+                                        tmpbuffer.append("?,");
+                                    } else {
+                                        tmpbuffer.append("?");
+                                    }
                                 }
-                            }
-                            builder.append(field.getFieldName() + " in (" + tmpbuffer + ")");
-                            params.addAll(inobj);
+                                builder.append(field.getFieldName() + " in (" + tmpbuffer + ")");
+                                params.addAll(inobj);
+                                break;
+                            default:
+                                builder.append(field.getFieldName()).append("=?");
+                                params.add(obj);
                         }
                     }
                 }

@@ -22,17 +22,20 @@ public class URIUtils {
         return contentPath;
     }
     public static String getRequestPath(HttpServletRequest request) {
-        String contentPath = request.getRequestURI();
-        int pos = contentPath.indexOf("?");
+        String requestURI = request.getRequestURI();
+        String contentPath=request.getContextPath();
+        int pos = requestURI.indexOf(contentPath);
+        requestURI = requestURI.substring(pos + contentPath.length());
+        pos = requestURI.indexOf("?");
         if (pos != -1) {
-            contentPath = contentPath.substring(0, pos);
+            requestURI = requestURI.substring(0, pos);
         }
-        return contentPath;
+        return requestURI;
     }
     public static String getRequestRelativePathOrSuffix(String requestPath,String contentPath){
-        if (!"/".equals(requestPath)) {
-            int pos = contentPath.indexOf(contentPath);
-            contentPath = contentPath.substring(pos + contentPath.length());
+        if (!"/".equals(contentPath)) {
+            int pos = requestPath.indexOf(contentPath);
+            contentPath = requestPath.substring(pos + contentPath.length());
         }
         String resourcePath = contentPath;
         int pos = resourcePath.lastIndexOf("/");
@@ -42,6 +45,10 @@ public class URIUtils {
             if (pos != -1) {
                 resourcePath = resourcePath.substring(pos + 1);
                 pos = resourcePath.indexOf("?");
+                if (pos != -1) {
+                    resourcePath = resourcePath.substring(0, pos);
+                }
+                pos = resourcePath.indexOf(";");
                 if (pos != -1) {
                     resourcePath = resourcePath.substring(0, pos);
                 }

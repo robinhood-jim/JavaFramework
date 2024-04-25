@@ -88,7 +88,7 @@ public class ModelSqlGenerator {
     private static List<String> adjustDiffSqls(AnnotationRetriever.EntityContent entityContent, List<AnnotationRetriever.FieldContent> fields, List<DataBaseColumnMeta> columnMetas, BaseSqlGen sqlGen) {
         List<String> alertSqls = new ArrayList<>();
         try {
-            Map<String, DataBaseColumnMeta> columMap = CollectionBaseConvert.groupByUniqueKey(columnMetas, "",DataBaseColumnMeta::getColumnName);
+            Map<String, DataBaseColumnMeta> columMap = CollectionBaseConvert.groupByUniqueKey(columnMetas,DataBaseColumnMeta::getColumnName);
             for (AnnotationRetriever.FieldContent field : fields) {
                 if (columMap.containsKey(field.getFieldName())) {
                     //length change

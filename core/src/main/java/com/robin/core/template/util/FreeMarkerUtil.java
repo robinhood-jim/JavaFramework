@@ -15,14 +15,14 @@
  */
 package com.robin.core.template.util;
 
-import java.io.PrintWriter;
-import java.util.Locale;
-
-import javax.servlet.ServletContext;
-
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateModelException;
+
+import javax.servlet.ServletContext;
+import java.io.PrintWriter;
+import java.io.Writer;
+import java.util.Locale;
 
 
 public class FreeMarkerUtil {
@@ -60,12 +60,12 @@ public class FreeMarkerUtil {
 	public void setShareVariable(String name,Object obj) throws TemplateModelException{
 		config.setSharedVariable(name, obj);
 	}
-	public void process(String templateName,Object rootMap,PrintWriter w) throws Exception{
+	public void process(String templateName, Object rootMap, Writer w) throws Exception{
 		getConfiguration();
 		Template template=config.getTemplate(templateName, Locale.ENGLISH, "UTF-8");
 		template.process(rootMap, w);
 	}
-	public void process(Configuration configuration,String templateName,Object rootMap,PrintWriter w) throws Exception{
+	public void process(Configuration configuration,String templateName,Object rootMap,Writer w) throws Exception{
 		getConfiguration();
 		configuration.getTemplate(templateName).process(rootMap, w);
 	}
