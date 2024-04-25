@@ -19,6 +19,7 @@ import com.robin.core.base.model.BaseObject;
 import com.robin.core.base.service.BaseAnnotationJdbcService;
 import com.robin.core.base.service.IBaseAnnotationJdbcService;
 import com.robin.basis.model.system.SysOrg;
+import com.robin.core.base.util.Const;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -31,7 +32,7 @@ public class SysOrgService extends BaseAnnotationJdbcService<SysOrg, Long> imple
     public String getSubIdByParentOrgId(Long orgId){
         SysOrg sysOrg=getEntity(orgId);
         String orgCode=sysOrg.getTreeCode();
-        List<SysOrg> list1=queryByField("treeCode", BaseObject.OPER_LEFT_LK,orgCode+"%");
+        List<SysOrg> list1=queryByField("treeCode", Const.OPERATOR.LLIKE,orgCode+"%");
         StringBuilder builder=new StringBuilder();
         if(!list1.isEmpty()){
             for(SysOrg org:list1) {

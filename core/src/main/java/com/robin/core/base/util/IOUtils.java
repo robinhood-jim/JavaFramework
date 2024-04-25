@@ -107,16 +107,19 @@ public class IOUtils {
      */
     public static void copyBytes(InputStream in, OutputStream out, int buffSize)
             throws IOException {
-        PrintStream ps = out instanceof PrintStream ? (PrintStream) out : null;
-        byte[] buf = new byte[buffSize];
-        int bytesRead = in.read(buf);
-        while (bytesRead >= 0) {
-            out.write(buf, 0, bytesRead);
-            if ((ps != null) && ps.checkError()) {
-                throw new IOException("Unable to write to output stream.");
-            }
-            bytesRead = in.read(buf);
+        copyLarge(in,out,new byte[buffSize]);
+    }
+    public static void copyBytes(InputStream in, OutputStream out)
+            throws IOException {
+        copyLarge(in,out,new byte[8192]);
+    }
+    public static long copyLarge(InputStream input, OutputStream output, byte[] buffer) throws IOException {
+        long count;
+        int n;
+        for(count = 0L; -1 != (n = input.read(buffer)); count += (long)n) {
+            output.write(buffer, 0, n);
         }
+        return count;
     }
 
 }

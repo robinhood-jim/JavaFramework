@@ -66,7 +66,7 @@
         <slf4j.version>1.7.6</slf4j.version>
         <junit.version>4.13.1</junit.version>
         <org.springframework.version>5.1.5.RELEASE</org.springframework.version>
-        <spring.boot.version>2.1.3.RELEASE</spring.boot.version>
+        <spring.boot.version>2.5.14</spring.boot.version>
         <spring.cloud.version>2.1.0.RELEASE</spring.cloud.version>
         <mysql.version>8.0.28</mysql.version>
         <logback.version>1.2.2</logback.version>
@@ -83,7 +83,6 @@
         <vfs.version>2.9.0</vfs.version>
         <lang.version>2.6</lang.version>
         <lang3.version>3.2.1</lang3.version>
-        <httpclient.version>3.1</httpclient.version>
         <jackson-mapper-asl.version>1.9.10</jackson-mapper-asl.version>
         <jackson-core-asl.version>1.9.10</jackson-core-asl.version>
         <dom4j.version>2.1.3</dom4j.version>
@@ -135,6 +134,7 @@
         <mybatisplus.version>3.4.3</mybatisplus.version>
         <orc.version>1.7.1</orc.version>
         <spark.version>2.4.8</spark.version>
+        <hutool.version>5.8.11</hutool.version>
     </properties>
 
 
@@ -187,12 +187,7 @@
                 <artifactId>httpmime</artifactId>
                 <version>4.5.2</version>
             </dependency>
-            <dependency>
-                <groupId>commons-httpclient</groupId>
-                <artifactId>commons-httpclient</artifactId>
-                <version>${httpclient.version}</version>
-                <optional>true</optional>
-            </dependency>
+
             <dependency>
                 <groupId>commons-dbutils</groupId>
                 <artifactId>commons-dbutils</artifactId>
@@ -686,35 +681,7 @@
                 <version>${servlet.version}</version>
                 <scope>provided</scope>
             </dependency>
-            <dependency>
-                <groupId>org.codehaus.jackson</groupId>
-                <artifactId>jackson-core-asl</artifactId>
-                <version>${jackson-core-asl.version}</version>
-                <optional>true</optional>
-            </dependency>
-            <dependency>
-                <groupId>org.codehaus.jackson</groupId>
-                <artifactId>jackson-mapper-asl</artifactId>
-                <version>${jackson-mapper-asl.version}</version>
-                <optional>true</optional>
-            </dependency>
-            <dependency>
-                <groupId>org.codehaus.jackson</groupId>
-                <artifactId>com.springsource.org.codehaus.jackson</artifactId>
-                <version>${codehausejackson.version}</version>
-                <optional>true</optional>
-            </dependency>
-            <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-core</artifactId>
-                <version>${jackson.version}</version>
-                <optional>true</optional>
-            </dependency>
-            <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-annotations</artifactId>
-                <version>${jackson.version}</version>
-            </dependency>
+
             <dependency>
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
@@ -1078,6 +1045,17 @@
                 <artifactId>classgraph</artifactId>
                 <version>4.8.48</version>
                 <optional>true</optional>
+            </dependency>
+            <dependency>
+                <groupId>cn.hutool</groupId>
+                <artifactId>hutool-all</artifactId>
+                <version>${hutool.version}</version>
+                <optional>true</optional>
+            </dependency>
+            <dependency>
+                <groupId>org.aspectj</groupId>
+                <artifactId>aspectjweaver</artifactId>
+                <version>1.9.4</version>
             </dependency>
             <!-- Other tool end -->
         </dependencies>

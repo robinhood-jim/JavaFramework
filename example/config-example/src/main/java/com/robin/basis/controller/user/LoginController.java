@@ -15,12 +15,16 @@
  */
 package com.robin.basis.controller.user;
 
-import com.robin.core.base.util.Const;
-import com.robin.core.web.controller.AbstractController;
-import com.robin.core.web.util.Session;
+import cn.hutool.jwt.JWTPayload;
+import cn.hutool.jwt.JWTUtil;
 import com.robin.basis.service.system.LoginService;
+import com.robin.core.base.dao.JdbcDao;
+import com.robin.core.base.util.Const;
+import com.robin.core.convert.util.ConvertUtil;
+import com.robin.core.web.controller.AbstractController;
+import com.robin.core.web.util.CookieUtils;
+import com.robin.core.web.util.Session;
 import com.robin.core.web.util.WebConstant;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,42 +32,58 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import javax.annotation.Resource;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.net.URLEncoder;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.*;
 
 @Controller
 public class LoginController extends AbstractController {
-    @Autowired
+    @Resource
     private LoginService loginService;
 
-    @Autowired
+    @Resource
     private ResourceBundleMessageSource messageSource;
+    @Resource
+    private JdbcDao jdbcDao;
+
 
     @RequestMapping("/login")
     @ResponseBody
     public Map<String, Object> login(HttpServletRequest request, HttpServletResponse response, @RequestParam String accountName, @RequestParam String password) {
         Map<String, Object> map = new HashMap();
         try {
-            Session session = this.loginService.doLogin(accountName, password.toUpperCase());
+            Session session = this.loginService.simpleLogin(accountName, password.toUpperCase());
+
+            Map<String, Object> sessionMap = new HashMap<>();
+            Map<String, Object> headerMap = new HashMap<>();
+            headerMap.put("type", "JWT");
+            headerMap.put("alg", "RS256");
+
+            ConvertUtil.objectToMapObj(sessionMap, session);
+            ResourceBundle bundle=ResourceBundle.getBundle("application");
+            Integer expireDays= !bundle.containsKey("session.expireDay")?15:Integer.parseInt(bundle.getString("session.expireDay"));
+            LocalDateTime dateTime = LocalDateTime.now();
+            LocalDateTime expTs = dateTime.plusDays(expireDays);
+            sessionMap.put(JWTPayload.EXPIRES_AT, expTs.atZone(ZoneId.systemDefault()).toInstant());
+
+            String salt = bundle.getString("jwt.salt");
+
+            String token = JWTUtil.createToken(sessionMap, salt.getBytes());
+            Cookie cookie = new Cookie(Const.TOKEN, token);
+            cookie.setPath("/");
+            cookie.setMaxAge(3600 * 24 * expireDays);
+            response.addCookie(cookie);
             request.getSession().setAttribute(Const.SESSION, session);
             map.put("success", true);
             if (session.getAccountType().equals(WebConstant.ACCOUNT_TYPE.ORGUSER.toString()) && session.getOrgId() == null) {
                 //User has more than one Org,Select from page
                 map.put("selectOrg", true);
                 map.put("userId", session.getUserId());
-            }
-            response.addCookie(new Cookie("userName", URLEncoder.encode(session.getUserName(), "UTF-8")));
-            response.addCookie(new Cookie("accountType", session.getAccountType()));
-            response.addCookie(new Cookie("userId", String.valueOf(session.getUserId())));
-            if (session.getOrgName() != null) {
-                response.addCookie(new Cookie("orgName", URLEncoder.encode(session.getOrgName(), "UTF-8")));
-            } else {
-                response.addCookie(new Cookie("orgName", URLEncoder.encode(messageSource.getMessage("title.defaultOrg", null, Locale.getDefault()), "UTF-8")));
             }
         } catch (Exception ex) {
             map.put("success", false);
@@ -86,6 +106,7 @@ public class LoginController extends AbstractController {
     @RequestMapping("/logout")
     public String logOut(HttpServletRequest request, HttpServletResponse response) {
         request.getSession().removeAttribute(Const.SESSION);
+        CookieUtils.delCookie(request,response,"/",Arrays.asList(Const.TOKEN,"orgName","userName","accountType"));
         return "../login";
     }
 
@@ -103,7 +124,7 @@ public class LoginController extends AbstractController {
                     response.addCookie(new Cookie("orgName", URLEncoder.encode(session.getOrgName(), "UTF-8")));
                     response.addCookie(new Cookie("accountType", session.getAccountType()));
                     response.addCookie(new Cookie("userId", String.valueOf(session.getUserId())));
-                    wrapSuccess(retMap);
+                    constructRetMap(retMap);
                 } else {
                     wrapFailed(retMap, messageSource.getMessage("login.require", null, Locale.getDefault()));
                 }

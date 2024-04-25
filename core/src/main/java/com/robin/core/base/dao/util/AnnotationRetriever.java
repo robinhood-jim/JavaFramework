@@ -28,6 +28,9 @@ import lombok.Data;
 import org.springframework.jdbc.support.lob.LobHandler;
 
 import javax.persistence.*;
+import java.lang.invoke.SerializedLambda;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -41,6 +44,7 @@ public class AnnotationRetriever {
     private static Map<Class<? extends BaseObject>, EntityContent> entityCfgMap = new HashMap<>();
     private static Map<Class<? extends BaseObject>, Map<String, FieldContent>> fieldCfgMap = new HashMap<>();
     private static Map<Class<? extends BaseObject>, List<FieldContent>> fieldListMap = new HashMap<>();
+    private static Map<String, WeakReference<SerializedLambda>> functionMap=new HashMap<>();
     private AnnotationRetriever(){
 
     }
@@ -93,7 +97,11 @@ public class AnnotationRetriever {
                 Field field = fields.get(i);
                 MappingField mapfield = field.getAnnotation(MappingField.class);
                 if (mapfield != null || !entity.explicit() && !Modifier.isStatic(field.getModifiers()) && !Modifier.isFinal(field.getModifiers())) {
-                    list.add(retrieveField(field, fieldClasses.get(i)));
+                    FieldContent content=retrieveField(field, fieldClasses.get(i));
+                    if(content!=null) {
+                        list.add(content);
+                    }
+
                 }
             }
         } else {
@@ -139,7 +147,10 @@ public class AnnotationRetriever {
             for (Field field : fields) {
                 MappingField mapfield = field.getAnnotation(MappingField.class);
                 if (!Objects.isNull(mapfield) || !entity.explicit() && !Modifier.isStatic(field.getModifiers()) && !Modifier.isFinal(field.getModifiers())) {
-                    map.put(field.getName(), retrieveField(field, clazz));
+                    FieldContent content=retrieveField(field, clazz);
+                    if(content!=null) {
+                        map.put(field.getName(), content);
+                    }
                 }
             }
         } else {
@@ -270,8 +281,10 @@ public class AnnotationRetriever {
     }
 
     public static boolean isBaseObjectClassValid(Class<? extends BaseObject> clazz) throws DAOException {
-        if (!ReflectUtils.isAnnotationClassWithAnnotationFields(clazz, MappingEntity.class, MappingField.class) && !ReflectUtils.isAnnotationClassWithAnnotationFields(clazz, Entity.class, Column.class)) {
-            throw new DAOException("Model object " + clazz.getSimpleName() + " must using Annotation MappingEntity or Jpa Entity");
+        if (!ReflectUtils.isAnnotationClassWithAnnotationFields(clazz, MappingEntity.class, MappingField.class)
+                && !ReflectUtils.isAnnotationClassWithAnnotationFields(clazz, Entity.class, Column.class)
+                && !ReflectUtils.isAnnotationClassWithAnnotationFields(clazz,TableName.class,TableId.class)) {
+            throw new DAOException("Model object " + clazz.getSimpleName() + " must using Annotation MappingEntity or Jpa Entity or mybatis-plus Entity");
         }
         return true;
     }
@@ -318,7 +331,7 @@ public class AnnotationRetriever {
             }
             adjustByType(content,type);
         }catch (Exception ex){
-            throw new DAOException(ex);
+            return null;
         }
         return content;
     }
@@ -415,8 +428,7 @@ public class AnnotationRetriever {
             }
             parseType(content,type,datatype);
         } catch (Exception ex) {
-            ex.printStackTrace();
-            throw new DAOException(ex);
+            return null;
         }
         return content;
     }
@@ -430,7 +442,10 @@ public class AnnotationRetriever {
             for (Field field : fields) {
                 MappingField mapfield = field.getAnnotation(MappingField.class);
                 if (mapfield != null || !declareExplicit) {
-                    pkList.add(retrieveField(field, (Class<? extends BaseObject>) type));
+                    FieldContent content=retrieveField(field, (Class<? extends BaseObject>) type);
+                    if(content!=null) {
+                        pkList.add(content);
+                    }
                 }
             }
 
@@ -485,6 +500,39 @@ public class AnnotationRetriever {
         retMap.put("increment", fieldContent.isIncrement());
         return retMap;
     }
+    public static <T> String getFieldName(PropertyFunction<T, ?> field) {
+        Class<?> clazz = field.getClass();
+        String name=clazz.getName();
+        SerializedLambda lambda=Optional.ofNullable(functionMap.get(name)).map(Reference::get).orElseGet(()-> getLambdaSerialized(field));
+        return uncapitalize(lambda.getImplMethodName());
+    }
+    private static <T> SerializedLambda getLambdaSerialized(PropertyFunction<T, ?> field){
+        Class<?> clazz = field.getClass();
+        String name=clazz.getName();
+        try {
+            Method method = clazz.getDeclaredMethod("writeReplace");
+            method.setAccessible(true);
+            SerializedLambda lambda= (SerializedLambda) method.invoke(field);
+            functionMap.put(name,new WeakReference<>(lambda));
+            return lambda;
+        } catch (Exception e) {
+            if (!Object.class.isAssignableFrom(clazz.getSuperclass())) {
+                return getLambdaSerialized(field);
+            }
+            throw new RuntimeException("current property is not exists");
+        }
+    }
+
+
+    private static String uncapitalize(String str) {
+        if (str == null || str.length() < 4) {
+            return str;
+        }
+        String fieldName = str.startsWith("get") && !str.equalsIgnoreCase("getClass") ?
+                str.substring(3) : str.startsWith("is") ? str.substring(2) : str;
+        return fieldName.substring(0, 1).toLowerCase() + fieldName.substring(1);
+    }
+
 
     private static void wrapValue(PreparedStatement ps, LobHandler lobHandler, AnnotationRetriever.FieldContent field, BaseObject object, int pos) throws SQLException {
         Object value = getValueFromVO(field, object);

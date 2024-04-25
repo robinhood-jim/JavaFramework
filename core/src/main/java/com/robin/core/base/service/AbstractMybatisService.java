@@ -21,8 +21,10 @@ import com.robin.core.base.exception.WebException;
 import com.robin.core.base.model.BaseModel;
 import com.robin.core.base.reflect.ReflectUtils;
 import com.robin.core.base.util.Const;
+import com.robin.core.base.util.LicenseUtils;
 import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.query.util.Condition;
+import com.robin.core.version.VersionInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
@@ -111,6 +113,7 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>,T extends S
                 getDeleteMethod=getMethods.get(com.robin.core.base.util.StringUtils.returnCamelCaseByFieldName(deleteColumn));
                 setDeleteMethod=setMethods.get(com.robin.core.base.util.StringUtils.returnCamelCaseByFieldName(deleteColumn));
             }
+            LicenseUtils.getInstance();
         } catch (Exception ex) {
             log.error("{}", ex.getMessage());
         }
@@ -188,7 +191,7 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>,T extends S
     @Override
     public List<T> queryByField(SFunction<T,?> queryField, Const.OPERATOR operator, Object... value) throws ServiceException{
         Assert.isTrue(value.length>0,"");
-        LambdaQueryWrapper<T> queryWrapper=MybatisUtils.getWrapper(queryField,operator,voType,value);
+        LambdaQueryWrapper<T> queryWrapper=MybatisUtils.getWrapper(queryField,operator,value);
         try {
             return baseMapper.selectList(queryWrapper);
         }catch (Exception ex){
@@ -198,7 +201,7 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>,T extends S
     @Override
     public List<T> queryByField(SFunction<T,?> queryField ,SFunction<T,?> orderField, Const.OPERATOR operator,boolean ascFlag, Object... value) throws ServiceException{
         Assert.isTrue(value.length>0,"");
-        LambdaQueryWrapper<T> queryWrapper=MybatisUtils.getWrapper(queryField,operator,voType,value);
+        LambdaQueryWrapper<T> queryWrapper=MybatisUtils.getWrapper(queryField,operator,value);
         if(orderField!=null && ascFlag){
             queryWrapper.orderByAsc(orderField);
         }else{

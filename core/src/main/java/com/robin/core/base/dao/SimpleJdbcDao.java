@@ -21,6 +21,7 @@ import com.robin.core.base.datameta.DataBaseUtil;
 import com.robin.core.base.exception.DAOException;
 import com.robin.core.base.util.Const;
 import com.robin.core.query.extractor.ResultSetOperationExtractor;
+import com.robin.core.version.VersionInfo;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -57,6 +58,7 @@ public class SimpleJdbcDao {
     private static final Logger logger = LoggerFactory.getLogger(SimpleJdbcDao.class);
     private static final String FULL_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
     private static final String SHORT_DATE_FORMAT = "yyyy-MM-dd";
+    private static final String DATATYPE="dataType";
 
     public SimpleJdbcDao(BaseDataBaseMeta meta) {
         Assert.isTrue(checkMeta(meta),"meta is empty");
@@ -70,6 +72,7 @@ public class SimpleJdbcDao {
         }
         this.meta = meta;
         this.param = meta.getParam();
+        logger.debug(VersionInfo.getInstance().getVersion());
     }
 
     public SimpleJdbcDao(BaseDataBaseMeta meta, long retryNums, int waitSecond, boolean getConnectionLoop) {
@@ -162,7 +165,7 @@ public class SimpleJdbcDao {
      * @return  Connection
      * @throws  DAOException
      */
-    public static Connection getConnection(BaseDataBaseMeta meta, long retryNums, int sleepSecond, boolean getConnectLoop) throws DAOException {
+    public static Connection getConnection(BaseDataBaseMeta meta, long retryNums, int sleepSecond, boolean getConnectLoop) throws RuntimeException,InterruptedException {
         Connection conn = null;
         long curtryNum = 0;
         Exception ex = null;
@@ -177,11 +180,7 @@ public class SimpleJdbcDao {
             if (conn != null) {
                 break;
             }
-            try {
-                TimeUnit.SECONDS.sleep(sleepSecond);
-            } catch (InterruptedException ex1) {
-                throw new DAOException(ex1);
-            }
+            TimeUnit.SECONDS.sleep(sleepSecond);
         }
         if (conn == null) {
             throw new DAOException(ex);
@@ -207,7 +206,7 @@ public class SimpleJdbcDao {
         try {
             QueryRunner qRunner = new QueryRunner();
             ScalarHandler<Long> handler = new ScalarHandler<>(1);
-            return qRunner.query(conn, sql,objects, handler);
+            return qRunner.query(conn, sql, handler,objects);
         } catch (Exception ex) {
             throw new DAOException(ex);
         }
@@ -258,7 +257,7 @@ public class SimpleJdbcDao {
         try {
             QueryRunner qRunner = new QueryRunner();
             ScalarHandler<Integer> handler = new ScalarHandler<>(1);
-            return qRunner.query(conn, sql,objects, handler);
+            return qRunner.query(conn, sql, handler,objects);
         } catch (Exception ex) {
             throw new DAOException(ex);
         }
@@ -618,7 +617,6 @@ public class SimpleJdbcDao {
             retarr = stmt.executeBatch();
             conn.commit();
         } catch (SQLException ex) {
-            logger.error("{}", ex.getMessage());
             try {
                 conn.rollback();
             } catch (Exception e) {
@@ -711,7 +709,7 @@ public class SimpleJdbcDao {
                     successCount = -1;
                     logger.error("", ex1);
                 }
-                return successCount > 0 ? true : false;
+                return successCount > 0 ;
             };
             ResultSet rs = stmt.executeQuery(sql);
             return handler.handle(rs);
@@ -821,18 +819,18 @@ public class SimpleJdbcDao {
         if (value == null) {
             value = resultMap.get(poolobj.get("name").toLowerCase());
         }
-        if (poolobj.get("dataType").equals(Const.META_TYPE_STRING)) {
+        if (poolobj.get(DATATYPE).equals(Const.META_TYPE_STRING)) {
             objArr[row][pos]= Optional.ofNullable(value);
-        } else if (poolobj.get("dataType").equals(Const.META_TYPE_NUMERIC)) {
+        } else if (poolobj.get(DATATYPE).equals(Const.META_TYPE_NUMERIC)) {
             objArr[row][pos] =Optional.ofNullable(value).map(Double::valueOf);
-        } else if (poolobj.get("dataType").equals(Const.META_TYPE_INTEGER)) {
+        } else if (poolobj.get(DATATYPE).equals(Const.META_TYPE_INTEGER)) {
             objArr[row][pos] =Optional.ofNullable(value).map(Integer::valueOf);
-        } else if (poolobj.get("dataType").equals(Const.META_TYPE_DOUBLE)) {
+        } else if (poolobj.get(DATATYPE).equals(Const.META_TYPE_DOUBLE)) {
             objArr[row][pos] =Optional.ofNullable(value).map(Double::valueOf);
-        } else if (poolobj.get("dataType").equals(Const.META_TYPE_DATE)) {
+        } else if (poolobj.get(DATATYPE).equals(Const.META_TYPE_DATE)) {
             Optional<String> optional= Optional.ofNullable(value);
             objArr[row][pos] =optional.isPresent()?new Date(DateUtils.parseDate(optional.get(), dateFormat, dayFormat).getTime()):null;
-        } else if (poolobj.get("dataType").equals(Const.META_TYPE_TIMESTAMP)) {
+        } else if (poolobj.get(DATATYPE).equals(Const.META_TYPE_TIMESTAMP)) {
             Optional<String> optional= Optional.ofNullable(value);
             objArr[row][pos] =optional.isPresent()?new Timestamp(DateUtils.parseDate(optional.get(), dayFormat, dayFormat).getTime()):null;
         } else {

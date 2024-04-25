@@ -5,6 +5,7 @@ import com.robin.comm.subversion.util.SvnUtil;
 import com.robin.core.base.dao.JdbcDao;
 import com.robin.core.base.exception.ServiceException;
 import com.robin.core.base.model.BaseObject;
+import com.robin.core.base.util.Const;
 import com.robin.core.collection.util.CollectionBaseConvert;
 import com.robin.core.compress.util.CompressUtils;
 import com.robin.core.convert.util.ConvertUtil;
@@ -69,7 +70,7 @@ public class ProjectInfoContorller extends AbstractCrudDhtmlxController<ProjectI
             ConvertUtil.mapToObject(projectInfo, wrapRequest(request));
             //DataSourceService DataSourceService = (DataSourceService) getBean("DataSourceService");
             this.service.saveEntity(projectInfo);
-            wrapSuccess(retmap);
+            constructRetMap(retmap);
         } catch (ServiceException e) {
             wrapFailed(retmap,e);
         } catch (Exception e) {
@@ -141,7 +142,7 @@ public class ProjectInfoContorller extends AbstractCrudDhtmlxController<ProjectI
             //DataSourceService DataSourceService = (DataSourceService) getBean("DataSourceService");
             ProjectInfo projectInfo = this.service.getEntity(id);
             ConvertUtil.objectToMapObj(retmap, projectInfo);
-            wrapSuccess(retmap, "OK");
+            wrapSuccessMap(retmap, "OK");
         } catch (Exception e) {
             retmap.put("success", false);
             retmap.put("message", e.getMessage());
@@ -210,7 +211,7 @@ public class ProjectInfoContorller extends AbstractCrudDhtmlxController<ProjectI
     public String queryDriverType(HttpServletRequest request, HttpServletResponse response) throws Exception {
         try {
             String dbtype = request.getParameter("dbType");
-            List<DbDriver> list = dbDriverService.queryByField("dbType", BaseObject.OPER_EQ, Long.valueOf(dbtype));
+            List<DbDriver> list = dbDriverService.queryByField(DbDriver::getDbType, Const.OPERATOR.EQ, Long.valueOf(dbtype));
             //JaksonUtil.wrapHttpRequestList(list, response);
         } catch (Exception ex) {
             ex.printStackTrace();

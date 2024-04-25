@@ -79,11 +79,6 @@ public class DbConfig {
         return MysqlSqlGen.getInstance();
     }
 
-    @Bean(name="springContextHolder")
-    @Lazy(false)
-    public SpringContextHolder getHolder(){
-        return new SpringContextHolder();
-    }
     /**
      * DependsOn is required,Otherwise springContextHolder may not initialize
      * @return

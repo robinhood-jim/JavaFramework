@@ -122,7 +122,7 @@ public class ReflectUtils {
                 Method[] methods = clazz.getMethods();
                 map = new HashMap<>();
                 for (Method method : methods) {
-                    if (method.getName().startsWith("set") && method.getParameterTypes().length == 1) {
+                    if (method.getName().startsWith("set") && !"setClass".equals(method.getName()) && method.getParameterTypes().length == 1) {
                         String name = StringUtils.uncapitalize(method.getName().substring(3));
                         map.put(name, method);
                     }

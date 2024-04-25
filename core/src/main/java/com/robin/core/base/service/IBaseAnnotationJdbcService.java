@@ -15,11 +15,13 @@
  */
 package com.robin.core.base.service;
 
+import com.robin.core.base.dao.util.PropertyFunction;
 import com.robin.core.base.exception.ServiceException;
 import com.robin.core.base.model.BaseObject;
+import com.robin.core.base.util.Const;
 import com.robin.core.query.util.PageQuery;
 import com.robin.core.sql.util.FilterCondition;
-import com.robin.core.sql.util.FilterConditions;
+import com.robin.core.sql.util.FilterConditionBuilder;
 
 import java.io.Serializable;
 import java.util.List;
@@ -33,6 +35,7 @@ public interface IBaseAnnotationJdbcService<V extends BaseObject, P extends Seri
     int deleteEntity(P[] vo) throws ServiceException;
 
     int deleteByField(String field, Object value) throws ServiceException;
+    int deleteByField(PropertyFunction<V,?> function, Object value) throws ServiceException;
 
     V getEntity(P id) throws ServiceException;
 
@@ -49,14 +52,18 @@ public interface IBaseAnnotationJdbcService<V extends BaseObject, P extends Seri
 
     int queryByInt(String querySQL,Object... objects) throws ServiceException;
 
-    List<V> queryByField(String fieldName, String oper, Object... fieldValues) throws ServiceException;
+    List<V> queryByField(String fieldName, Const.OPERATOR oper, Object... fieldValues) throws ServiceException;
+    List<V> queryByField(PropertyFunction<V,?> function, Const.OPERATOR oper, Object... fieldValues) throws ServiceException;
 
-    List<V> queryByFieldOrderBy(String orderByStr, String fieldName, String oper, Object... fieldValues) throws ServiceException;
+    List<V> queryByFieldOrderBy(String orderByStr, String fieldName, Const.OPERATOR oper, Object... fieldValues) throws ServiceException;
+    List<V> queryByFieldOrderBy(String orderByStr, PropertyFunction<V,?> function, Const.OPERATOR oper, Object... fieldValues) throws ServiceException;
 
     List<V> queryAll() throws ServiceException;
 
     List<V> queryByVO(V vo, Map<String, Object> additonMap, String orderByStr)throws ServiceException;
     List<V> queryByCondition(List<FilterCondition> filterConditions, PageQuery pageQuery);
-    List<V> queryByCondition(FilterConditions filterConditions, PageQuery pageQuery);
+    List<V> queryByCondition(FilterConditionBuilder filterConditions, PageQuery pageQuery);
     List<V> queryByCondition(List<FilterCondition> filterConditions);
+    V getByField(String fieldName,Const.OPERATOR oper,Object... fieldValues) throws ServiceException;
+    V getByField(PropertyFunction<V,?> function,Const.OPERATOR oper,Object... fieldValues) throws ServiceException;
 }

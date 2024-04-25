@@ -65,7 +65,7 @@ public class PlainTextFileIterator extends AbstractFileIterator{
 		if(arr.length>=colmeta.getColumnList().size()){
 			for (int i=0;i<colmeta.getColumnList().size();i++) {
 				DataSetColumnMeta meta=colmeta.getColumnList().get(i);
-				map.put(meta.getColumnName(), ConvertUtil.convertStringToTargetObject(arr[i], meta,null));
+				map.put(meta.getColumnName(), ConvertUtil.convertStringToTargetObject(arr[i], meta));
 			}
 			return map;
 		}else{

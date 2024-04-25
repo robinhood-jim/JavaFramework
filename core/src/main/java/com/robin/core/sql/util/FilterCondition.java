@@ -2,6 +2,8 @@ package com.robin.core.sql.util;
 
 import com.robin.core.base.dao.util.AnnotationRetriever;
 import com.robin.core.base.exception.ConfigurationIncorrectException;
+import com.robin.core.base.util.Const;
+import lombok.Data;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
@@ -9,29 +11,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+@Data
 public class FilterCondition {
 	private String prefixOper;
-	private String suffixOper= AND;
-	private String operator;
+	private String suffixOper= Const.OPERATOR.LINK_AND.getValue();
+	private Const.OPERATOR operator;
 	private String columnCode;
 	private Object value;
-	public static final String BETWEEN = "BETWEEN";
-	public static final String GREATNESS = "GREATNESS";
-	public static final String SMALLNESS = "SMALLNESS";
-	public static final String GREATNESS_AND_EQUALS = "GREATNESS_AND_EQUALS";
-	public static final String SMALLNESS_AND_EQUALS = "SMALLNESS_AND_EQUALS";
-	public static final String LIKE = "LIKE";
-	public static final String LEFT_LIKE="LLIKE";
-	public static final String RIGHT_LIKE="RLIKE";
-	public static final String EQS = "EQS";
-    public static final String NOT_EQUALS = "NOT_EQUALS";
-	public static final String IS_NOT_NULL = "NOT_NULL";
-	public static final String IS_NULL = "IS_NULL";
-	public static final String OR = "OR";
-	public static final String IN = "IN";
-	public static final String NOT = "NOT";
-	public static final String AND ="AND";
-	public static final String NOTIN = "NOTIN";
+	private List<?> values;
+
+
 	private Map<String, AnnotationRetriever.FieldContent> fieldMap;
 	public Map<String, AnnotationRetriever.FieldContent> getFieldMap() {
 		return fieldMap;
@@ -41,32 +30,47 @@ public class FilterCondition {
 		this.fieldMap = fieldMap;
 	}
 
-	public FilterCondition(String columnCode,String operator){
+	public FilterCondition(String columnCode,Const.OPERATOR operator){
 		this.operator = operator;
 		this.columnCode = columnCode;
 	}
 
-	public FilterCondition(String columnCode,String operator,Object value){
+	public FilterCondition(String columnCode,Const.OPERATOR operator,Object value){
 		this.columnCode = columnCode;
 		this.operator = operator;
 		this.value = value;
 	}
-	public FilterCondition(String columnCode,String operator,Object value,String suffixOper){
+	public FilterCondition(String columnCode,Const.OPERATOR operator,List<?> values){
+		this.columnCode = columnCode;
+		this.operator = operator;
+		this.values = values;
+	}
+	public FilterCondition(String columnCode,Const.OPERATOR operator,Object value,String suffixOper){
 		this.columnCode = columnCode;
 		this.operator = operator;
 		this.value = value;
 		this.suffixOper=suffixOper;
 	}
-	public FilterCondition(String columnCode,String operator,Object value,String prefixOper,String suffixOper){
+	public FilterCondition(String columnCode,Const.OPERATOR operator,List<?> values,String suffixOper){
+		this.columnCode = columnCode;
+		this.operator = operator;
+		this.values = values;
+		this.suffixOper=suffixOper;
+	}
+	public FilterCondition(String columnCode,Const.OPERATOR operator,Object value,String prefixOper,String suffixOper){
 		this.columnCode = columnCode;
 		this.operator = operator;
 		this.value = value;
 		this.prefixOper=prefixOper;
 		this.suffixOper=suffixOper;
 	}
-	
-
-
+	public FilterCondition(String columnCode,Const.OPERATOR operator,List<?> values,String prefixOper,String suffixOper){
+		this.columnCode = columnCode;
+		this.operator = operator;
+		this.values = values;
+		this.prefixOper=prefixOper;
+		this.suffixOper=suffixOper;
+	}
 	
 	public String toSQLPart()
 	{
@@ -75,175 +79,208 @@ public class FilterCondition {
 		if(fieldMap.containsKey(columnCode)) {
             realColumn=fieldMap.get(columnCode).getFieldName();
         }
-		if (BETWEEN.equals(operator)){
-			if(ArrayList.class.isAssignableFrom(value.getClass())) {
-				List values=(List) value;
-				if (values.size() == 2) {
-					sbSQLStr.append(" (");
-					sbSQLStr.append(realColumn);
-					sbSQLStr.append(" between ? and ?) ");
-				}
-			}
-
-		} else 
-		if (LIKE .equals(operator) || LEFT_LIKE.equals(operator) || RIGHT_LIKE.equals(operator)){
-			sbSQLStr.append(" (");
-			sbSQLStr.append(realColumn);
-			sbSQLStr.append(" like ?)");
-		}
-		else 
-		if (EQS.equals(operator)){
-			sbSQLStr.append(" (");
-			sbSQLStr.append(realColumn);
-			sbSQLStr.append("=?) ");
-		} else 
-        if (NOT_EQUALS.equals(operator)){
-            sbSQLStr.append(" (");
-            sbSQLStr.append(realColumn);
-            sbSQLStr.append("<>?) ");
-        }else
-		if (GREATNESS.equals(operator)){
-			sbSQLStr.append(" (");
-			sbSQLStr.append(realColumn);
-			sbSQLStr.append(">?) ");
-		}else 
-		if (SMALLNESS.equals(operator)){
-			sbSQLStr.append(" (");
-			sbSQLStr.append(realColumn);
-			sbSQLStr.append("<?) ");
-		}else if (GREATNESS_AND_EQUALS .equals(operator)){
-			sbSQLStr.append(" (");
-			sbSQLStr.append(realColumn);
-			sbSQLStr.append(">=?) ");
-		}else 
-		if (SMALLNESS_AND_EQUALS.equals(operator)){
-			sbSQLStr.append(" (");
-			sbSQLStr.append(realColumn);
-			sbSQLStr.append("<=?) ");
-		} else 
-		if (IS_NOT_NULL.equals(operator)){
-			sbSQLStr.append(" (");
-			sbSQLStr.append(realColumn);
-			sbSQLStr.append(" is not null) ");
-		} else 
-		if (IS_NULL.equals(operator)){
-			sbSQLStr.append(" (");
-			sbSQLStr.append(realColumn);
-			sbSQLStr.append(" is null) ");
-		} else 
-		if (IN.equals(operator)){
-			Assert.notNull(value,"");
-			sbSQLStr.append(" (");
-			sbSQLStr.append(realColumn);
-			sbSQLStr.append(" in (");
-			List values=(List) value;
-            for (int i=0; i<values.size(); i++) {
-            	if (i != 0) {
-            		sbSQLStr.append(",");
-            	}
-    			sbSQLStr.append("?");
-            }
-			sbSQLStr.append(")) ");
-		}else if(NOTIN.equals(operator)){
-			Assert.notNull(value,"");
-			sbSQLStr.append(" (");
-			sbSQLStr.append(realColumn);
-			sbSQLStr.append(" not in (");
-			List values=(List) value;
-            for (int i=0; i<values.size(); i++) {
-            	if (i != 0) {
-            		sbSQLStr.append(",");
-            	}
-    			sbSQLStr.append("?");
-            }
-			sbSQLStr.append(")) ");
-		}
-		else 
-		if (OR.equals(operator)){
-			Assert.notNull(value,"");
-
-			if(ArrayList.class.isAssignableFrom(value.getClass())) {
-				List<FilterCondition> values=(List<FilterCondition>) value;
-				sbSQLStr.append("(");
-				for (int i = 0; i < values.size(); i++) {
-					values.get(i).setFieldMap(fieldMap);
-					sbSQLStr.append(values.get(i).toSQLPart());
-					if (i != values.size() - 1) {
-						sbSQLStr.append(values.get(i).getSuffixOper());
+		switch (operator){
+			case BETWEEN:
+				if(ArrayList.class.isAssignableFrom(value.getClass())) {
+					List values=(List) value;
+					if (values.size() == 2) {
+						sbSQLStr.append(" (");
+						sbSQLStr.append(realColumn);
+						sbSQLStr.append(" between ? and ?) ");
 					}
 				}
-				sbSQLStr.append("(");
-			}else{
-				throw new ConfigurationIncorrectException(" OR operator must include list elements");
-			}
-			sbSQLStr.append(") ");
-		}else if(AND.equals(operator)){
-			Assert.notNull(value,"");
-			if(ArrayList.class.isAssignableFrom(value.getClass())){
-				sbSQLStr.append("(");
-				List<FilterCondition> values=(List<FilterCondition>) value;
-				for (int i = 0; i < values.size(); i++) {
-					values.get(i).setFieldMap(fieldMap);
-					sbSQLStr.append(values.get(i).toSQLPart());
-					if (i != values.size() - 1) {
-						sbSQLStr.append(values.get(i).getSuffixOper());
+				break;
+			case LIKE:
+			case RLIKE:
+			case LLIKE:
+				sbSQLStr.append(" (");
+				sbSQLStr.append(realColumn);
+				sbSQLStr.append(" like ?)");
+				break;
+			case EQ:
+				sbSQLStr.append(" (");
+				sbSQLStr.append(realColumn);
+				sbSQLStr.append("=?) ");
+				break;
+			case NE:
+				sbSQLStr.append(" (");
+				sbSQLStr.append(realColumn);
+				sbSQLStr.append("<>?) ");
+				break;
+			case GT:
+				sbSQLStr.append(" (");
+				sbSQLStr.append(realColumn);
+				sbSQLStr.append(">?) ");
+				break;
+			case LT:
+				sbSQLStr.append(" (");
+				sbSQLStr.append(realColumn);
+				sbSQLStr.append("<?) ");
+				break;
+			case LE:
+				sbSQLStr.append(" (");
+				sbSQLStr.append(realColumn);
+				sbSQLStr.append("<=?) ");
+				break;
+			case GE:
+				sbSQLStr.append(" (");
+				sbSQLStr.append(realColumn);
+				sbSQLStr.append(">=?) ");
+				break;
+			case NOTNULL:
+				sbSQLStr.append(" (");
+				sbSQLStr.append(realColumn);
+				sbSQLStr.append(" is not null) ");
+				break;
+			case NULL:
+				sbSQLStr.append(" (");
+				sbSQLStr.append(realColumn);
+				sbSQLStr.append(" is null) ");
+				break;
+			case IN:
+				Assert.notNull(value,"");
+				sbSQLStr.append(" (");
+				sbSQLStr.append(realColumn);
+				sbSQLStr.append(" in (");
+				if(ArrayList.class.isAssignableFrom(value.getClass())) {
+					List<?> values = (List<?>) value;
+					for (int i = 0; i < values.size(); i++) {
+						if (i != 0) {
+							sbSQLStr.append(",");
+						}
+						sbSQLStr.append("?");
 					}
+				}else{
+					sbSQLStr.append("?");
 				}
-				sbSQLStr.append(")");
-			}else{
-				throw new ConfigurationIncorrectException(" AND operator must include list elements");
-			}
-		}
-		else if (NOT.equals(operator)){
-			if (!ObjectUtils.isEmpty(value)){
-				sbSQLStr.append(" (not (");
-				sbSQLStr.append(((FilterCondition)value).toSQLPart());
 				sbSQLStr.append(")) ");
-			}
+				break;
+			case NOTIN:
+				Assert.notNull(value,"");
+				sbSQLStr.append(" (");
+				sbSQLStr.append(realColumn);
+				sbSQLStr.append(" not in (");
+				if(ArrayList.class.isAssignableFrom(value.getClass())) {
+					List<?> values1 = (List<?>) value;
+					for (int i = 0; i < values1.size(); i++) {
+						if (i != 0) {
+							sbSQLStr.append(",");
+						}
+						sbSQLStr.append("?");
+					}
+				}else{
+					sbSQLStr.append("?");
+				}
+				sbSQLStr.append(")) ");
+				break;
+			case LINK_OR:
+				Assert.isTrue(!ObjectUtils.isEmpty(values),"");
+				if(ArrayList.class.isAssignableFrom(value.getClass())) {
+					List<FilterCondition> filterConditions=(List<FilterCondition>) value;
+					sbSQLStr.append("(");
+					for (int i = 0; i < filterConditions.size(); i++) {
+						filterConditions.get(i).setFieldMap(fieldMap);
+						sbSQLStr.append(filterConditions.get(i).toSQLPart());
+						if (i != filterConditions.size() - 1) {
+							sbSQLStr.append(filterConditions.get(i).getSuffixOper());
+						}
+					}
+					sbSQLStr.append("(");
+				}else{
+					throw new ConfigurationIncorrectException(" OR operator must include list elements");
+				}
+				sbSQLStr.append(") ");
+				break;
+			case LINK_AND:
+				Assert.notNull(value,"");
+				if(ArrayList.class.isAssignableFrom(value.getClass())){
+					sbSQLStr.append("(");
+					List<FilterCondition> filterConditions1=(List<FilterCondition>) value;
+					for (int i = 0; i < filterConditions1.size(); i++) {
+						filterConditions1.get(i).setFieldMap(fieldMap);
+						sbSQLStr.append(filterConditions1.get(i).toSQLPart());
+						if (i != filterConditions1.size() - 1) {
+							sbSQLStr.append(filterConditions1.get(i).getSuffixOper());
+						}
+					}
+					sbSQLStr.append(")");
+				}else{
+					throw new ConfigurationIncorrectException(" AND operator must include list elements");
+				}
+				break;
+			case NOT:
+				if (!ObjectUtils.isEmpty(value)){
+					sbSQLStr.append(" (not (");
+					sbSQLStr.append(((FilterCondition)value).toSQLPart());
+					sbSQLStr.append(")) ");
+				}
+				break;
+			case EXISTS:
+				if (!ObjectUtils.isEmpty(value)){
+					sbSQLStr.append(" (exists (");
+					sbSQLStr.append(((FilterCondition)value).toSQLPart());
+					sbSQLStr.append(")) ");
+				}
+				break;
+			default:
+				sbSQLStr.append(" (");
+				sbSQLStr.append(realColumn);
+				sbSQLStr.append("=?) ");
 		}
+
 		return sbSQLStr.toString();
 	}
-
-	public String getPrefixOper() {
-		return prefixOper;
+	public void fillValue(List<Object> objList) {
+		switch (getOperator()) {
+			case LIKE:
+				objList.add("%" + getValue() + "%");
+				break;
+			case LLIKE:
+				objList.add("%" + getValue());
+				break;
+			case RLIKE:
+				objList.add(getValue() + "%");
+				break;
+			case BETWEEN:
+				if(ArrayList.class.isAssignableFrom(value.getClass())) {
+					List<?> values = (List<?>) value;
+					if (values.size() == 2) {
+						objList.add(values.get(0));
+						objList.add(values.get(1));
+					}
+				}
+				break;
+			case EQ:
+			case GT:
+			case LT:
+			case NE:
+			case LE:
+			case GE:
+				objList.add(getValue());
+				break;
+			case IN:
+			case NOTIN:
+				if(ArrayList.class.isAssignableFrom(value.getClass())){
+					List<?> values=(List<?>)value;
+					values.forEach(f->objList.add(f));
+				}else{
+					objList.add(value);
+				}
+				break;
+			case LINK_AND:
+			case LINK_OR:
+				List<FilterCondition> filterConditions=(List<FilterCondition>) value;
+				filterConditions.forEach(f->f.fillValue(objList));
+				break;
+			case NOT:
+			case EXISTS:
+				FilterCondition condition=(FilterCondition) value;
+				condition.fillValue(objList);
+				break;
+			default:
+				objList.add(getValue());
+		}
 	}
 
-	public void setPrefixOper(String prefixOper) {
-		this.prefixOper = prefixOper;
-	}
-
-	public String getSuffixOper() {
-		return suffixOper;
-	}
-
-	public void setSuffixOper(String suffixOper) {
-		this.suffixOper = suffixOper;
-	}
-
-	public String getOperator() {
-		return operator;
-	}
-
-	public void setOperator(String operator) {
-		this.operator = operator;
-	}
-
-
-	public String getColumnCode() {
-		return columnCode;
-	}
-
-	public void setColumnCode(String columnCode) {
-		this.columnCode = columnCode;
-	}
-
-
-	public Object getValue() {
-		return value;
-	}
-
-	public void setValue(Object value) {
-		this.value = value;
-	}
 	
 }

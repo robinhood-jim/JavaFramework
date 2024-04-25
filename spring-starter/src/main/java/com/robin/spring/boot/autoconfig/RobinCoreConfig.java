@@ -108,12 +108,6 @@ public class RobinCoreConfig implements TransactionManagementConfigurer, BeanFac
         return null;
     }
 
-    @Primary
-    @Bean(name="springContextHolder")
-    @Lazy(false)
-    public SpringContextHolder getHolder(){
-        return new SpringContextHolder();
-    }
 
     @Primary
     @Bean(name="jdbcDao")

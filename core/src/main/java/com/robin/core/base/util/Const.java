@@ -18,7 +18,6 @@ package com.robin.core.base.util;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Const {
@@ -27,6 +26,7 @@ public class Const {
     public static final String MIN_PAGE_SIZE = "2";
     //login session
     public static final String SESSION = "SESS_LOGINUSER";
+    public static final String TOKEN="LOGINTOKEN";
     public static final String LOGIN_DEACTIVE = "0";
     public static final String LOGIN_ACTIVE = "1";
     public static final String LOGIN_VERFIYCODE = "verify_code";
@@ -302,27 +302,60 @@ public class Const {
         }
     }
     public enum OPERATOR {
-        EQ("="),
-        NE("!="),
-        GE(">="),
-        LE("<="),
-        GT(">"),
-        LT("<="),
-        IN("IN"),
-        NOTIN("NOTIN"),
-        NVL("NVL"),
-        NULL("NULL"),
-        BETWEEN("BT"),
-        NOTEXIST("NOTEXIST");
-        private String value;
+        EQ("=","="),
+        NE("!=","<>"),
+        GE(">=",">="),
+        LE("<=","<="),
+        GT(">",">"),
+        LT("<=","<="),
+        IN("IN"," IN "),
+        NOT("NOT"," NOT "),
+        NOTIN("NOTIN"," NOT IN"),
+        NVL("NVL","NVL"),
+        NULL("NULL","NULL"),
+        NOTNULL("NOTNULL","NOTNULL"),
+        BETWEEN("BT","BETWEEN"),
+        NBT("NBT"," NOT BETWEEN"),
+        EXISTS("EXISTS"," EXISTS"),
+        NOTEXIST("NOTEXIST"," NOT EXISTS"),
+        LIKE("LIKE"," LIKE "),
+        NOTLIKE("NOTLIKE"," NOT LIKE"),
+        LLIKE("LL"," LIKE "),
+        RLIKE("RL", " LIKE "),
+        LINK_AND("AND"," AND "),
+        LINK_OR("OR"," OR ");
 
-        OPERATOR(String value) {
+        private String value;
+        private String signal;
+
+        OPERATOR(String value,String signal) {
             this.value = value;
+            this.signal=signal;
         }
 
-        @Override
-        public String toString() {
+
+        public String getValue() {
             return String.valueOf(this.value);
+        }
+        public String getSignal(){
+            return signal;
+        }
+
+    }
+    public enum HTTPRESPONSECODE{
+        OK(200),
+        NOTFOUND(404),
+        SERVERERR(400),
+        ERR(500);
+        private int value;
+        HTTPRESPONSECODE(int value){
+            this.value=value;
+        }
+        public int getValue(){
+            return value;
+        }
+        public String getValueStr(){
+            return String.valueOf(value);
         }
     }
 
@@ -351,4 +384,33 @@ public class Const {
      * 排序方式
      */
     public static final String ORDER = "order";
+    public enum ACCOUNTTYPE{
+        ADMIN("1"),
+        NORMAL("2");
+        private String value;
+        ACCOUNTTYPE(String value){
+            this.value=value;
+        }
+
+        public String getValue() {
+            return value;
+        }
+    }
+    public enum ROLEDEF{
+        ADMIN(1L,"admin"),
+        NORMAL(2L,"normal");
+        ROLEDEF(Long id,String code){
+            this.id=id;
+            this.code=code;
+        }
+        private Long id;
+        private String code;
+
+        public Long getId() {
+            return id;
+        }
+        public String getCode() {
+            return code;
+        }
+    }
 }

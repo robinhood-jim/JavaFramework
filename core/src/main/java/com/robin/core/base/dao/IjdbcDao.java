@@ -15,19 +15,20 @@
  */
 package com.robin.core.base.dao;
 
+import com.robin.core.base.dao.util.PropertyFunction;
+import com.robin.core.base.exception.DAOException;
+import com.robin.core.base.model.BaseObject;
+import com.robin.core.base.util.Const;
+import com.robin.core.fileaccess.meta.DataCollectionMeta;
+import com.robin.core.query.extractor.ResultSetOperationExtractor;
+import com.robin.core.query.util.PageQuery;
+import com.robin.core.sql.util.FilterCondition;
+import org.springframework.jdbc.core.SqlParameter;
+
 import java.io.Serializable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
-import com.robin.core.fileaccess.meta.DataCollectionMeta;
-import com.robin.core.query.extractor.ResultSetOperationExtractor;
-import com.robin.core.sql.util.FilterCondition;
-import org.springframework.jdbc.core.SqlParameter;
-
-import com.robin.core.base.exception.DAOException;
-import com.robin.core.base.model.BaseObject;
-import com.robin.core.query.util.PageQuery;
 
 
 public interface IjdbcDao {
@@ -40,6 +41,7 @@ public interface IjdbcDao {
      */
 
     int queryByInt(String querySQL, Object... objects) throws DAOException;
+    Long queryByLong(String querySQL, Object... objects) throws DAOException;
 
     /**
      * Query With page
@@ -177,8 +179,8 @@ public interface IjdbcDao {
      * @return
      * @throws DAOException
      */
-    <T extends BaseObject> int updateVO(Class<T> clazz, T obj) throws DAOException;
-
+    <T extends BaseObject> int updateVO(Class<T> clazz, T obj,List<FilterCondition> conditions) throws DAOException;
+    <T extends BaseObject> int updateByKey(Class<T> clazz, T obj) throws DAOException;
     /**
      * Delete Records by PK array,now only support single column pk
      *
@@ -211,14 +213,16 @@ public interface IjdbcDao {
 
     int executeOperationWithSql(String sql, ResultSetOperationExtractor oper, Object... paramObj) throws DAOException;
 
-    <T extends BaseObject> List<T> queryByField(Class<T> type, String fieldName, String oper, Object... fieldValues) throws DAOException;
-
-    <T extends BaseObject> List<T> queryByFieldOrderBy(Class<T> type, String orderByStr, String fieldName, String oper, Object... fieldValues) throws DAOException;
-
+    <T extends BaseObject> List<T> queryByField(Class<T> type, String fieldName, Const.OPERATOR oper, Object... fieldValues) throws DAOException;
+    <T extends BaseObject> List<T> queryByField(Class<T> type, PropertyFunction<T,?> function, Const.OPERATOR oper, Object... fieldValues) throws DAOException;
+    <T extends BaseObject> List<T> queryByFieldOrderBy(Class<T> type, String fieldName, Const.OPERATOR oper, String orderByStr, Object... fieldValues) throws DAOException;
+    <T extends BaseObject> List<T> queryByFieldOrderBy(Class<T> type, PropertyFunction<T,?> function, Const.OPERATOR oper, String orderByStr, Object... fieldValues) throws DAOException;
     <T extends BaseObject> List<T> queryAll(Class<T> type) throws DAOException;
 
     <T extends BaseObject> List<T> queryByCondition(Class<T> type, List<FilterCondition> conditions, PageQuery pageQuery);
 
+    <T extends BaseObject> T getByField(Class<T> type, String fieldName, Const.OPERATOR oper, Object... fieldValues) throws DAOException;
+    <T extends BaseObject> T getByField(Class<T> type, PropertyFunction<T,?> function, Const.OPERATOR oper, Object... fieldValues) throws DAOException;
     /**
      * Delete entity by parameter
      *
@@ -229,5 +233,8 @@ public interface IjdbcDao {
      * @throws DAOException
      */
     <T extends BaseObject> int deleteByField(Class<T> clazz, String field, Object value) throws DAOException;
+    <T extends BaseObject> int deleteByField(Class<T> clazz, PropertyFunction<T,?> function, Object value) throws DAOException;
     <T extends BaseObject,P extends Serializable> int deleteByLogic(Class<T> clazz,List<P> pkObjs,String statusColumn,String statusValue) throws DAOException;
+    <T extends BaseObject> List<T> queryByVO(Class<T> type, BaseObject vo, Map<String, Object> additonMap, String orderByStr);
+    List<Map<String, Object>> queryByNamedParam(String executeSql, Map<String, List<Object>> parmaMap) throws DAOException;
 }

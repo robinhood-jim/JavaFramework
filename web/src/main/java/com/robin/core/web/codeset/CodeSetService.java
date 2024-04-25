@@ -23,7 +23,7 @@ public class CodeSetService {
     protected Map<String,String> getCodeSetDefault(String codeSetNo) {
         JdbcDao jdbcDao = SpringContextHolder.getBean(JdbcDao.class);
         QueryFactory factory = SpringContextHolder.getBean(QueryFactory.class);
-        Map<String,String> codeMap=new HashMap<>();
+        Map<String,String> codeMap=new LinkedHashMap<>();
         if (factory.isSelectIdExists("$_GETCODESET")) {
             PageQuery query = new PageQuery();
             query.setPageSize(0);

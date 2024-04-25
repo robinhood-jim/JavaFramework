@@ -27,7 +27,7 @@ import java.util.Map;
 public class HadoopClusterDefService extends BaseAnnotationJdbcService<HadoopClusterDef, Long> {
     @Cacheable(value = "resourceCache", key = "#resourceId.toString()")
     public Map<String, Object> getResourceCfg(Long resourceId) {
-        HadoopClusterDef def = queryByField("resId", BaseObject.OPER_EQ, resourceId).get(0);
+        HadoopClusterDef def = queryByField(HadoopClusterDef::getResId, Const.OPERATOR.EQ, resourceId).get(0);
         Map<String, Object> retMap = new HashMap<String, Object>();
 
         boolean is_ha = def.getHaTag().equals(Const.VALID);

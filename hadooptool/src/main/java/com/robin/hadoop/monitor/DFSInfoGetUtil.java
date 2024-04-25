@@ -25,7 +25,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class DFSInfoGetUtil {
-	private static final int defaultport = 9000;
+	private static final int DEFAULTPORT = 9000;
 	private String ipAddress;
 	private int port;
 	private Configuration conf;
@@ -34,17 +34,16 @@ public class DFSInfoGetUtil {
 		if(port!=0) {
             this.port=port;
         } else {
-            this.port=defaultport;
+            this.port= DEFAULTPORT;
         }
 		
 		this.conf=conf;
 	}
 	public NameNodeInfo getNameNodeInfo() throws Exception{
-		DFSClient client = null;
+
 		NameNodeInfo info=new NameNodeInfo();
-		try{
-			InetSocketAddress namenodeAddr = new InetSocketAddress(ipAddress,port);
-			client = new DFSClient(namenodeAddr, conf);
+		InetSocketAddress namenodeAddr = new InetSocketAddress(ipAddress,port);
+		try(DFSClient client = new DFSClient(namenodeAddr, conf)){
 		    ClientProtocol namenode = client.getNamenode();
 		    long[] stats = namenode.getStats();
 		    Format decimal = new DecimalFormat();
@@ -71,10 +70,6 @@ public class DFSInfoGetUtil {
 		    info.setCorruptblocks(String.valueOf(client.getCorruptBlocksCount()));
 		}catch(Exception ex){
 			throw ex;
-		}finally{
-			if(client!=null) {
-                client.close();
-            }
 		}
 	    return info;
 	}

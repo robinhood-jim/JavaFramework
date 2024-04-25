@@ -59,7 +59,10 @@ public abstract class AbstractCrudController<O extends BaseObject, P extends Ser
         this.pkType = ((Class) parametrizedType.getActualTypeArguments()[1]);
         this.serviceType = ((Class) parametrizedType.getActualTypeArguments()[2]);
         try {
-            valueOfMethod = this.pkType.getMethod("valueOf", String.class);
+            if(!pkType.isAssignableFrom(String.class)) {
+                valueOfMethod = this.pkType.getMethod("valueOf", String.class);
+            }
+
         } catch (Exception ex) {
             log.error("{0}", ex);
         }
@@ -75,7 +78,7 @@ public abstract class AbstractCrudController<O extends BaseObject, P extends Ser
         Map<String, Object> retMap = new HashMap<>();
         try {
             P pk=this.service.saveEntity(obj);
-            wrapSuccess(retMap);
+            constructRetMap(retMap);
             doAfterAdd(obj,pk, retMap);
         } catch (ServiceException ex) {
             this.log.error("{0}", ex);
@@ -89,7 +92,7 @@ public abstract class AbstractCrudController<O extends BaseObject, P extends Ser
             O object=this.objectType.newInstance();
             ConvertUtil.convertToModel(object,paramMap);
             P pk=this.service.saveEntity(object);
-            wrapSuccess(retMap);
+            constructRetMap(retMap);
             doAfterAdd(object,pk, retMap);
         } catch (Exception ex) {
             this.log.error("{0}", ex);
@@ -102,9 +105,9 @@ public abstract class AbstractCrudController<O extends BaseObject, P extends Ser
         Map<String, Object> retMap = new HashMap<String, Object>();
         try {
             O object = service.getEntity(id);
-            retMap = wrapSuccess("success");
+            retMap = new HashMap<>();
             doAfterView(object, retMap);
-            wrapSuccess(retMap);
+            constructRetMap(retMap);
         } catch (Exception e) {
             log.error("{0}", e);
             wrapFailed(retMap, e);
@@ -117,7 +120,7 @@ public abstract class AbstractCrudController<O extends BaseObject, P extends Ser
         try {
             BaseObject object = service.getEntity(id);
             doAfterEdit(object, retMap);
-            wrapSuccess(retMap);
+            constructRetMap(retMap);
         } catch (Exception e) {
             log.error("{0}", e);
             wrapFailed(retMap, e);
@@ -143,7 +146,7 @@ public abstract class AbstractCrudController<O extends BaseObject, P extends Ser
         ConvertUtil.convertToModelForUpdate(updateObj, originObj);
         service.updateEntity(updateObj);
         doAfterUpdate(updateObj, retMap);
-        wrapSuccess(retMap);
+        constructRetMap(retMap);
     }
 
     protected Map<String, Object> doUpdate(O base,P id) {
@@ -190,7 +193,7 @@ public abstract class AbstractCrudController<O extends BaseObject, P extends Ser
         try {
             this.service.deleteEntity(ids);
             doAfterDelete(ids, retMap);
-            wrapSuccess(retMap);
+            constructRetMap(retMap);
         } catch (Exception ex) {
             wrapFailed(retMap, ex);
         }
@@ -206,7 +209,7 @@ public abstract class AbstractCrudController<O extends BaseObject, P extends Ser
             }
             this.service.queryBySelectId(query);
             doAfterQuery(query, retMap);
-            wrapSuccess(retMap);
+            constructRetMap(retMap);
         } catch (Exception ex) {
             wrapFailed(retMap, ex);
         }
@@ -229,9 +232,14 @@ public abstract class AbstractCrudController<O extends BaseObject, P extends Ser
             String[] idsArr = ids.split(",");
             array=(P[])java.lang.reflect.Array.newInstance(pkType,idsArr.length);
             for (int i = 0; i < idsArr.length; i++) {
-                P p = pkType.newInstance();
-                valueOfMethod.invoke(p, idsArr[i]);
-                array[i]=p;
+                if (valueOfMethod != null) {
+                    P p = pkType.newInstance();
+                    valueOfMethod.invoke(p, idsArr[i]);
+                    array[i]=p;
+                }else{
+                    array[i]=(P)idsArr[i];
+                }
+
             }
         } catch (Exception ex) {
             throw new ServiceException(ex);

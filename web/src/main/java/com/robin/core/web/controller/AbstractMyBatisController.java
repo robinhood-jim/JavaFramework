@@ -6,7 +6,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.robin.core.base.dto.PageDTO;
 import com.robin.core.base.exception.ServiceException;
 import com.robin.core.base.exception.WebException;
-import com.robin.core.base.service.AbstractMybatisService;
+import com.robin.core.base.service.IMybatisBaseService;
 import com.robin.core.base.spring.SpringContextHolder;
 import com.robin.core.convert.util.ConvertUtil;
 import org.springframework.beans.BeanUtils;
@@ -34,7 +34,7 @@ import java.util.Map;
  * @author robinjim
  * @version 1.0
  */
-public abstract class AbstractMyBatisController<S extends AbstractMybatisService<M,T,P>,M extends BaseMapper<T>,T extends Serializable,P extends Serializable> extends AbstractController {
+public abstract class AbstractMyBatisController<S extends IMybatisBaseService<M,T,P>,M extends BaseMapper<T>,T extends Serializable,P extends Serializable> extends AbstractController {
     protected Class<T> voType;
     protected Class<P> pkType;
     protected Class<S> serviceType;

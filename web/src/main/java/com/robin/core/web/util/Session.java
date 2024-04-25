@@ -10,7 +10,7 @@ public class Session implements Serializable {
     private Long userId;
     private String userCode;
     private String userName;
-    private String accountName;
+    private String userAccount;
     private String address;
     private String zipCode;
     private String telephone;
@@ -24,6 +24,8 @@ public class Session implements Serializable {
     private String orgNumber;
     //Oauth2 Authorize code
     private String authCode;
+    private String regionCode;
+    private String storeCode;
 
     private Date loginTime;
     private String cityCode;

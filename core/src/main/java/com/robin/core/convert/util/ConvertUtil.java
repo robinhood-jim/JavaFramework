@@ -18,9 +18,13 @@ package com.robin.core.convert.util;
 import com.robin.core.base.datameta.DataBaseColumnMeta;
 import com.robin.core.base.model.BaseObject;
 import com.robin.core.base.reflect.ReflectUtils;
+
+import com.robin.core.base.service.IModelConvert;
 import com.robin.core.base.util.Const;
 import com.robin.core.fileaccess.meta.DataSetColumnMeta;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.math.NumberUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
@@ -31,14 +35,13 @@ import java.sql.Timestamp;
 import java.sql.Types;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
+@Slf4j
 public class ConvertUtil {
     public static final DateTimeFormatter ymdformatter = DateTimeFormatter.ofPattern("yyyyMMdd");
     public static final DateTimeFormatter ymdSepformatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -80,7 +83,7 @@ public class ConvertUtil {
     }
 
     public static void objectToMapObj(Map<String, Object> target, Object src) throws Exception {
-        if (ObjectUtils.isEmpty(src) || ObjectUtils.isEmpty(target)) {
+        if (ObjectUtils.isEmpty(src)) {
             return;
         }
         Map<String, Method> getMetholds = ReflectUtils.returnGetMethods(src.getClass());
@@ -131,7 +134,7 @@ public class ConvertUtil {
             if (targetMap.containsKey(key)) {
                 Class<?> type = targetMap.get(key).getParameterTypes()[0];
                 Object retValue;
-                if (StringUtils.isEmpty(value)) {
+                if (ObjectUtils.isEmpty(value)) {
                     retValue = null;
                 } else {
                     retValue = parseParameter(type, value, defaultDateTimeFormatter);
@@ -226,7 +229,9 @@ public class ConvertUtil {
                 setMethod.invoke(target);
             } else {
                 Object retValue = parseParameter(type, value, defaultDateTimeFormatter);
-                setMethod.invoke(target, retValue);
+                if(retValue!=null) {
+                    setMethod.invoke(target, retValue);
+                }
             }
         }
     }
@@ -248,7 +253,9 @@ public class ConvertUtil {
                     } else {
                         if (targetMethodMap.containsKey(field)) {
                             Object retValue = parseParameter(targetMethodMap.get(field).getParameterTypes()[0], entry.getValue(), defaultDateTimeFormatter);
-                            setObjectValue(targetMethodMap.get(field), target, retValue);
+                            if(retValue!=null) {
+                                setObjectValue(targetMethodMap.get(field), target, retValue);
+                            }
                         }
                     }
                 }
@@ -464,14 +471,14 @@ public class ConvertUtil {
         return false;
     }
 
-    public static Object convertStringToTargetObject(String value, DataSetColumnMeta meta, String defaultDateTimefromat){
+    public static Object convertStringToTargetObject(String value, DataSetColumnMeta meta){
         Object retObj;
-        SimpleDateFormat dateformat = null;
-        String dateformatstr = defaultDateTimefromat;
+        DateTimeFormatter dateformat = null;
+        String dateformatstr = meta.getDateFormat();
         if (dateformatstr == null || StringUtils.isEmpty(dateformatstr)) {
             dateformatstr = Const.DEFAULT_DATETIME_FORMAT;
         }
-        dateformat = new SimpleDateFormat(dateformatstr);
+        dateformat = DateTimeFormatter.ofPattern(dateformatstr);
         String columnType = meta.getColumnType();
         retObj = translateValue(value, columnType, meta.getColumnName(), dateformat);
         if (retObj == null && meta.getDefaultNullValue() != null) {
@@ -482,12 +489,12 @@ public class ConvertUtil {
 
     public static Object convertStringToTargetObject(String value, String columnType, String columnName, String defaultDateTimefromat) {
         Object retObj;
-        SimpleDateFormat dateformat = null;
+        DateTimeFormatter dateformat = null;
         String dateformatstr = defaultDateTimefromat;
         if (dateformatstr == null || StringUtils.isEmpty(dateformatstr)) {
             dateformatstr = Const.DEFAULT_DATETIME_FORMAT;
         }
-        dateformat = new SimpleDateFormat(dateformatstr);
+        dateformat = DateTimeFormatter.ofPattern(dateformatstr);
         retObj = translateValue(value, columnType, columnName, dateformat);
         return retObj;
     }
@@ -528,7 +535,7 @@ public class ConvertUtil {
         return retObj;
     }
 
-    private static Object translateValue(String value, String columnType, String columnName, SimpleDateFormat dateformat) throws RuntimeException {
+    private static Object translateValue(String value, String columnType, String columnName, DateTimeFormatter dateformat) throws RuntimeException {
         Object retObj;
         try {
             if (value == null || StringUtils.isEmpty(value.trim())) {
@@ -543,9 +550,9 @@ public class ConvertUtil {
             } else if (columnType.equals(Const.META_TYPE_DOUBLE)) {
                 retObj = Double.valueOf(value);
             } else if (columnType.equals(Const.META_TYPE_DATE)) {
-                retObj = dateformat.parse(value);
+                retObj = new java.util.Date(LocalDateTime.parse(value,dateformat).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
             } else if (columnType.equals(Const.META_TYPE_TIMESTAMP)) {
-                retObj = new Timestamp(dateformat.parse(value).getTime());
+                retObj = new Timestamp(LocalDateTime.parse(value,dateformat).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
             } else {
                 retObj = value;
             }
@@ -553,5 +560,90 @@ public class ConvertUtil {
             throw new RuntimeException("columnName =" + columnName + ",type=" + columnType + " with value=" + value + "failed! type mismatch,Please check!");
         }
         return retObj;
+    }
+    public static <T> T wrapVoObject(Object obj, IModelConvert<T> convert, Class<T> voType, String... ignoreKeys) {
+        T voObj;
+        if (convert != null) {
+            voObj = convert.doConvert(obj);
+        } else {
+            if(obj.getClass().getSuperclass().getInterfaces().length>0 &&  Map.class.isAssignableFrom(obj.getClass())){
+                voObj=(T)ConvertUtil.sourceToTargetWithMap((Map)obj,voType,ignoreKeys);
+            }else {
+                voObj = BeanUtils.instantiateClass(voType);
+                BeanUtils.copyProperties(obj, voObj,ignoreKeys);
+            }
+        }
+        return voObj;
+    }
+    public static <T> T sourceToTargetWithMap(Map<String, Object> map, Class<T> target,String... ignoreColumns) {
+        if (map == null || map.isEmpty()) {
+            return null;
+        }
+        Set<String> ignoreKeys=new HashSet<>();
+        boolean hasIgnore=false;
+        if(ignoreColumns.length>0){
+            ignoreKeys.addAll(Arrays.asList(ignoreColumns));
+            hasIgnore=true;
+        }
+        T targetObject = null;
+        Map<String, Method> methodMap = ReflectUtils.returnSetMethods(target);
+        try {
+            targetObject = target.newInstance();
+            Iterator<Map.Entry<String, Object>> iter = map.entrySet().iterator();
+            while (iter.hasNext()) {
+                Map.Entry<String, Object> entry = iter.next();
+                if (entry.getValue() != null ) {
+                    if (entry.getValue() instanceof String) {
+                        if (StringUtils.isEmpty(entry.getValue().toString())) {
+                            continue;
+                        }
+                    }
+                    if (methodMap.containsKey(entry.getKey()) && (!hasIgnore || !ignoreKeys.contains(entry.getKey()))) {
+                        setFields(targetObject, methodMap.get(entry.getKey()), entry.getValue());
+                    }
+                }
+            }
+
+        } catch (Exception e) {
+            log.error("convert error {}", e);
+        }
+        return targetObject;
+    }
+
+
+    private static <T> void setFields(T target, Method method, Object value) {
+        try {
+            if (value != null) {
+                method.invoke(target, parseParameter(method.getParameterTypes()[0], value));
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+    public static <T> void sourceToMap(Map<String, Object> map, T sourceObj,String defaultTimeFormat, String... ignoreKeys) {
+        Map<String, Method> methodMap = ReflectUtils.returnGetMethods(sourceObj.getClass());
+        Iterator<Map.Entry<String, Method>> iterator = methodMap.entrySet().iterator();
+        List<String> ignoreList = new ArrayList<>();
+        DateTimeFormatter timeFormatter=!ObjectUtils.isEmpty(defaultTimeFormat)?DateTimeFormatter.ofPattern(defaultTimeFormat):ymdSecondformatter;
+        if (ignoreKeys != null && ignoreKeys.length > 0) {
+            for (int i = 0; i < ignoreKeys.length; i++) {
+                ignoreList.addAll(Arrays.asList(ignoreKeys[i]));
+            }
+        }
+        while (iterator.hasNext()) {
+            try {
+                Map.Entry<String, Method> entry = iterator.next();
+                Object value = entry.getValue().invoke(sourceObj, null);
+                if (!ignoreList.contains(entry.getKey()) && value != null) {
+                    if(value.getClass().isAssignableFrom(LocalDateTime.class)){
+                        map.put(entry.getKey(),timeFormatter.format((LocalDateTime) value));
+                    }else {
+                        map.put(entry.getKey(), value);
+                    }
+                }
+            } catch (Exception ex) {
+                log.error("{}", ex);
+            }
+        }
     }
 }

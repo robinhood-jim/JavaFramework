@@ -80,7 +80,7 @@ public class JsonFileIterator extends AbstractFileIterator{
 						}
 					}
 					meta=columnMap.get(column);
-					retmap.put(column, ConvertUtil.convertStringToTargetObject(value, meta, null));
+					retmap.put(column, ConvertUtil.convertStringToTargetObject(value, meta));
 				}
 				jreader.endObject();
 			}

@@ -3,9 +3,9 @@ package com.robin.basis.service.user;
 import com.robin.basis.model.user.*;
 import com.robin.core.base.exception.DAOException;
 import com.robin.core.base.exception.ServiceException;
-import com.robin.core.base.model.BaseObject;
 import com.robin.core.base.service.BaseAnnotationJdbcService;
 import com.robin.core.base.service.IBaseAnnotationJdbcService;
+import com.robin.core.base.util.Const;
 import com.robin.core.sql.util.FilterCondition;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -29,12 +29,11 @@ public class SysUserService extends BaseAnnotationJdbcService<SysUser, Long> imp
         try {
             for (Long id : ids) {
                 //delete responsilbity
-                jdbcDao.deleteByField(SysUserResponsiblity.class,"userId", id);
+                jdbcDao.deleteByField(SysUserResponsiblity.class,SysUserResponsiblity::getUserId, id);
                 //delete SysResource User right
-                jdbcDao.deleteByField(SysResourceUser.class,SysResourceUser.PROP_USER_ID,id);
+                jdbcDao.deleteByField(SysResourceUser.class,SysResourceUser::getUserId,id);
                 //delete SysOrg user
-                jdbcDao.deleteByField(SysUserOrg.class,"userId",id);
-
+                jdbcDao.deleteByField(SysUserOrg.class,SysUserOrg::getUserId,id);
             }
             jdbcDao.deleteVO(SysUser.class, ids);
         }catch (DAOException ex){
@@ -43,8 +42,8 @@ public class SysUserService extends BaseAnnotationJdbcService<SysUser, Long> imp
     }
     public boolean activateUser(String checkCode){
         List<FilterCondition> conditionList=new ArrayList<>();
-        conditionList.add(new FilterCondition("checkCode", BaseObject.OPER_EQ,checkCode));
-        conditionList.add(new FilterCondition("applyTm",BaseObject.OPER_GT,new Timestamp(System.currentTimeMillis()-3600*24*1000)));
+        conditionList.add(new FilterCondition("checkCode", Const.OPERATOR.EQ,checkCode));
+        conditionList.add(new FilterCondition("applyTm", Const.OPERATOR.EQ,new Timestamp(System.currentTimeMillis()-3600*24*1000)));
         List<UserApply> applyList=jdbcDao.queryByCondition(UserApply.class,conditionList,null);
         return false;
     }

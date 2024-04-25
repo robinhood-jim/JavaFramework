@@ -149,7 +149,7 @@ public class XmlFileIterator extends AbstractFileIterator {
 		}
 		DataSetColumnMeta meta= columnMap.get(column);
 		if(meta!=null) {
-            retmap.put(column, ConvertUtil.convertStringToTargetObject(value, meta, null));
+            retmap.put(column, ConvertUtil.convertStringToTargetObject(value, meta));
         }
 	}
 	private void getValue(StringBuilder builder) throws Exception{

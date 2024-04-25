@@ -310,10 +310,10 @@ public class ExcelProcessor {
         return strCell;
     }
 
-    public static void readExcel(InputStream stream, String filePerfix, int sheetIndex, int startRow, IExcelReadProcessor processor) throws IOException {
-        boolean is2007 = ExcelBaseOper.TYPE_EXCEL2007.equalsIgnoreCase(filePerfix);
+    public static void readExcel(InputStream stream, String filePrefix, int sheetIndex, int startRow, IExcelReadProcessor processor) throws IOException {
+        boolean is2007 = ExcelBaseOper.TYPE_EXCEL2007.equalsIgnoreCase(filePrefix);
         try (Workbook wb = is2007 ? new XSSFWorkbook(stream) : new HSSFWorkbook(stream)) {
-            readExcel(wb,filePerfix,sheetIndex,startRow,processor);
+            readExcel(wb,filePrefix,sheetIndex,startRow,processor);
         } catch (Exception ex) {
             throw ex;
         }

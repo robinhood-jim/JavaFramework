@@ -202,7 +202,9 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
-        </dependency>
+            <version>${jackson.version}</version>
+            <optional>true</optional>
+         </dependency>
 
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>

@@ -30,17 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 public abstract class BaseObject implements Serializable,Cloneable{
 	private static final long serialVersionUID = -1156095048376157515L;
 	private List<String> dirtyColumnList=new ArrayList<String>();
-	public static final String OPER_EQ="=";
-	public static final String OPER_GT_EQ=">=";
-	public static final String OPER_GT=">";
-	public static final String OPER_LT_EQ="<=";
-	public static final String OPER_LT="<";
-	public static final String OPER_NOT_EQ="<>";
-	public static final String OPER_LEFT_LK="like1";
-	public static final String OPER_RIGHT_LK="like2";
-	public static final String OPER_CENTER_LK="like3";
-	public static final String OPER_BT="bt";
-	public static final String OPER_IN="IN";
+
 	
 	public BaseObject()
     {

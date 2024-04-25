@@ -49,11 +49,5 @@ public class MvcConfig implements WebMvcConfigurer {
         registry.addInterceptor(localeChangeInterceptor());
 
     }
-    @Bean(name="springContextHolder")
-    @Lazy(false)
-    public SpringContextHolder getHolder(){
-        return new SpringContextHolder();
-    }
-
 
 }

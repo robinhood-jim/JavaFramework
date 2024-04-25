@@ -130,7 +130,7 @@ public class GlobalResourceService extends BaseAnnotationJdbcService<GlobalResou
                     }
                 }
             } else {
-                List<ResourceConfig> configs = resourceConfigService.queryByField("resourceId", BaseObject.OPER_EQ, sourceId);
+                List<ResourceConfig> configs = resourceConfigService.queryByField(ResourceConfig::getResId, Const.OPERATOR.EQ, sourceId);
                 Map<String, Object> cfgMap = colmeta.getResourceCfgMap();
                 for (ResourceConfig rsConfig : configs) {
                     cfgMap.put(rsConfig.getParamKey(), rsConfig.getParamValue());

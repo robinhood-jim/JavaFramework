@@ -1,16 +1,17 @@
 package com.robin.core.encrypt;
 
+import cn.hutool.core.codec.Base64Decoder;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base64;
 
 import javax.crypto.*;
 import javax.crypto.spec.DESKeySpec;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.security.Key;
 import java.security.MessageDigest;
 
 
+@Slf4j
 public class CipherUtil{  
     private static  String algorithm = "DES";
     private static final String DEFAULT_CIPHER_ALGORITHM = "DES/ECB/PKCS5Padding";
@@ -18,7 +19,8 @@ public class CipherUtil{
 	public static final byte[] m_datapadding = {0x7F};
 	//EXE header,pretent as a exe file
 	public static final byte[] mzHeader = {0x4D, 0x5A, 0x50, 0x00, 0x02, 0x00, 0x00, 0x00, 0x04, 0x00, 0x0f, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-
+	public static final String DEFAULTKEY ="@#Robin&()!@";
+	public static final byte[] FILEENDS={0x7F,0x7F};
 	public static byte[] initSecretKey() throws Exception{
 
         KeyGenerator kg = KeyGenerator.getInstance(algorithm);  
@@ -123,6 +125,37 @@ public class CipherUtil{
     	}
     	return null;
     }
+	public static byte[] getPrivatePublicKey(String keyFile){
+		ByteArrayOutputStream outputStream=new ByteArrayOutputStream();
+		StringBuilder builder=new StringBuilder();
+		try(BufferedReader reader=new BufferedReader(new InputStreamReader(CipherUtil.class.getClassLoader().getResourceAsStream(keyFile)))){
+			String readLineStr=null;
+			while((readLineStr=reader.readLine())!=null){
+				if(!readLineStr.startsWith("-")){
+					builder.append(readLineStr);
+				}
+			}
+		}catch (IOException ex){
+			log.error("{}",ex);
+		}
+		return Base64Decoder.decode(builder.toString());
+	}
+	public static byte[] getPrivatePublicKeyByPath(String keyFile){
+		ByteArrayOutputStream outputStream=new ByteArrayOutputStream();
+		StringBuilder builder=new StringBuilder();
+		try(BufferedReader reader=new BufferedReader(new InputStreamReader(new FileInputStream(keyFile)))){
+			String readLineStr=null;
+			while((readLineStr=reader.readLine())!=null){
+				if(!readLineStr.startsWith("-")){
+					builder.append(readLineStr);
+				}
+			}
+		}catch (IOException ex){
+			log.error("{}",ex);
+		}
+		return Base64Decoder.decode(builder.toString());
+	}
+
     public static void main(String[] args){
     	try{
     		byte[] bytes=CipherUtil.initSecretKey();

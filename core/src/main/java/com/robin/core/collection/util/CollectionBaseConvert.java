@@ -15,9 +15,12 @@
  */
 package com.robin.core.collection.util;
 
+import com.robin.core.base.dao.util.AnnotationRetriever;
+import com.robin.core.base.dao.util.PropertyFunction;
 import com.robin.core.base.exception.MissingConfigException;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 
 import java.io.Serializable;
 import java.util.*;
@@ -48,7 +51,8 @@ public class CollectionBaseConvert {
 	public static Map<String,List<Map<String,Object>>> convertToMapByParentKeyWithObjVal(List<Map<String, Object>> listobj,String key) {
 		 Map<String,List<Map<String,Object>>> retMap =new HashMap<>();
 		for (Map<String, Object> stringObjectMap : listobj) {
-			String parentKey = stringObjectMap.get(key).toString();
+			Object parentKeyObj= ObjectUtils.isEmpty(stringObjectMap.get(key))?stringObjectMap.get(key.toUpperCase()):stringObjectMap.get(key);
+			String parentKey = parentKeyObj.toString();
 			if (retMap.get(parentKey) == null) {
 				List<Map<String, Object>> sublist = new ArrayList<>();
 				sublist.add(stringObjectMap);
@@ -107,7 +111,7 @@ public class CollectionBaseConvert {
 		Assert.isTrue(!list.get(0).getClass().isPrimitive(),"Primitive type can not using this function!");
 		return  list.stream().collect(Collectors.groupingBy(function));
 	}
-	public static <T extends Serializable> Map<String,T> groupByUniqueKey(List<T> list, String identifyColumn, Function<T,String> function) throws Exception{
+	public static <T extends Serializable> Map<String,T> groupByUniqueKey(List<T> list, PropertyFunction<T,String> function) throws Exception{
 		Assert.notNull(list,"");
 		Assert.isTrue(!CollectionUtils.isEmpty(list),"Collection is Empty");
 		Class<? extends Serializable> clazz=list.get(0).getClass();
@@ -117,7 +121,8 @@ public class CollectionBaseConvert {
 		if(!(list.get(0) instanceof HashMap)){
 			return list.stream().collect(Collectors.toMap(f->function.apply(f),Function.identity()));
 		}else{
-			return list.stream().collect(Collectors.toMap(f->((Map)f).get(identifyColumn).toString(),Function.identity()));
+			String columnName= AnnotationRetriever.getFieldName(function);
+			return list.stream().collect(Collectors.toMap(f->((Map)f).get(columnName).toString(),Function.identity()));
 		}
 
 	}

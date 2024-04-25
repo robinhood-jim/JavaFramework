@@ -44,22 +44,22 @@ public class MenuController {
 		String id=request.getParameter("id");
 		Session session=(Session) request.getSession().getAttribute(Const.SESSION);
 		List<Map<String,Object>> privList=session.getPrivileges().get(id);
-		Map<String,Object> map=new HashMap<String, Object>();
+		Map<String,Object> map=new HashMap<>();
 		map.put("id", id);
-		List<Map<String,Object>> itemlist=new ArrayList<Map<String,Object>>();
+		List<Map<String,Object>> itemlist=new ArrayList<>();
 		if(privList!=null){
 			for (Map<String, Object> tmap:privList) {
-				Map<String,Object> insertMap=new HashMap<String, Object>();
+				Map<String,Object> insertMap=new HashMap<>();
 				insertMap.put("id", tmap.get("id"));
 				insertMap.put("text", tmap.get("name"));
-				Map<String,String> userMap=new HashMap<String, String>();
+				Map<String,String> userMap=new HashMap<>();
 				userMap.put("name", "url");
 				if(tmap.get("url")!=null) {
                     userMap.put("content", tmap.get("url").toString());
                 } else{
 					userMap.put("content", "");
 				}
-				List<Map<String,String>> list1=new ArrayList<Map<String,String>>();
+				List<Map<String,String>> list1=new ArrayList<>();
 				list1.add(userMap);
 				insertMap.put("userdata", list1);
 				if(tmap.get("leafTag").toString().equals(Const.VALID)){

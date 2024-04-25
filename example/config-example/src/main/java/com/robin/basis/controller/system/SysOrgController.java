@@ -1,14 +1,13 @@
 package com.robin.basis.controller.system;
 
 import com.google.gson.Gson;
-import com.robin.core.base.model.BaseObject;
+import com.robin.basis.model.system.SysOrg;
+import com.robin.basis.service.system.SysOrgService;
 import com.robin.core.base.util.Const;
 import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.query.util.PageQuery;
 import com.robin.core.web.controller.AbstractCrudDhtmlxController;
 import com.robin.core.web.util.Session;
-import com.robin.basis.model.system.SysOrg;
-import com.robin.basis.service.system.SysOrgService;
 import com.robin.core.web.util.WebConstant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.ResourceBundleMessageSource;
@@ -139,7 +138,7 @@ public class SysOrgController extends AbstractCrudDhtmlxController<SysOrg, Long,
         }
     }
     private void getSubList(List<Map<String,Object>> list,Long parentId){
-        List<SysOrg> orgList=service.queryByField("upOrgId", BaseObject.OPER_EQ,parentId);
+        List<SysOrg> orgList=service.queryByField(SysOrg::getUpOrgId, Const.OPERATOR.EQ,parentId);
         if(!orgList.isEmpty()){
             for(SysOrg org:orgList){
                 Map<String,Object> map=new HashMap<>();

@@ -21,7 +21,7 @@ import com.robin.core.base.model.BaseObject;
 import lombok.Data;
 
 
-@MappingEntity(table="t_sys_role_info", schema="frameset")
+@MappingEntity(table="t_sys_role_info")
 @Data
 public class SysRole extends BaseObject
 {
