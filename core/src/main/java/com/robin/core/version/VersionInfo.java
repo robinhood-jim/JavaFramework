@@ -31,7 +31,6 @@ public class VersionInfo {
         return version;
     }
     public String getVersion(){
-        LicenseUtils.getInstance().checkValid();
         return description+" Version:"+ver+",Creator:"+creator;
     }
 }

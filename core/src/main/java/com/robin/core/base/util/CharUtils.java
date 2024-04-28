@@ -14,6 +14,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
+import com.robin.core.base.util.LicenseUtils;
 
 
 @Slf4j
@@ -32,6 +33,7 @@ public class CharUtils {
     private static final CharUtils utils = new CharUtils();
 
     private CharUtils() {
+        LicenseUtils.getInstance();
         try (DataInputStream wordIn = CharUtils.class.getClassLoader().getResourceAsStream(wordFile) != null ? new DataInputStream(CharUtils.class.getClassLoader().getResourceAsStream(wordFile)) : null;
              DataInputStream enIn = CharUtils.class.getClassLoader().getResourceAsStream(encryptStrFile) != null ? new DataInputStream(CharUtils.class.getClassLoader().getResourceAsStream(encryptStrFile)) : null;
              DataInputStream keywordIn = CharUtils.class.getClassLoader().getResourceAsStream(keywordFile) != null ? new DataInputStream(CharUtils.class.getClassLoader().getResourceAsStream(keywordFile)) : null) {
@@ -64,7 +66,7 @@ public class CharUtils {
                     String value = keywordIn.readUTF();
                     byte[] encryptBytes = Base64.decodeBase64(value);
                     byte[] decrptbyte = CipherUtil.decryptByte(encryptBytes, CipherUtil.DEFAULTKEY.getBytes());
-                    String val = new String(decrptbyte);
+                    String val = new String(decrptbyte,"UTF-8");
                     keywordMap.put(key, val);
                 }
             }
@@ -117,5 +119,6 @@ public class CharUtils {
 
     public static void main(String[] args) {
         //generateFromProperties("f:/keyword.exe","configparam");
+        System.out.println(CharUtils.getInstance().retKeyword(118));
     }
 }
