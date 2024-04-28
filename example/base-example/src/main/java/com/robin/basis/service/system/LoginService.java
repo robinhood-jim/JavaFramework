@@ -15,31 +15,26 @@
  */
 package com.robin.basis.service.system;
 
-import com.robin.core.base.dao.JdbcDao;
-import com.robin.core.base.exception.ServiceException;
-import com.robin.core.base.model.BaseObject;
-import com.robin.core.base.util.Const;
-import com.robin.core.convert.util.ConvertUtil;
-import com.robin.core.query.util.PageQuery;
-import com.robin.core.sql.util.FilterCondition;
-import com.robin.core.sql.util.FilterConditionBuilder;
-import com.robin.core.web.util.RestTemplateUtils;
-import com.robin.core.web.util.Session;
-import com.robin.core.web.util.WebConstant;
 import com.robin.basis.model.system.SysOrg;
 import com.robin.basis.model.system.SysResource;
 import com.robin.basis.model.user.*;
 import com.robin.basis.service.user.SysUserResponsiblityService;
 import com.robin.basis.service.user.SysUserService;
+import com.robin.core.base.dao.JdbcDao;
+import com.robin.core.base.exception.ServiceException;
+import com.robin.core.base.util.Const;
+import com.robin.core.convert.util.ConvertUtil;
+import com.robin.core.query.util.PageQuery;
+import com.robin.core.sql.util.FilterConditionBuilder;
+import com.robin.core.web.util.RestTemplateUtils;
+import com.robin.core.web.util.Session;
+import com.robin.core.web.util.WebConstant;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.context.annotation.Scope;
 import org.springframework.lang.NonNull;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.RestClientException;
 
@@ -48,19 +43,18 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-@Component
-@Scope("singleton")
+
 @Slf4j
-public class LoginService {
-    @Autowired
+public class LoginService implements ILoginService {
+    @Resource
     private SysUserService sysUserService;
-    @Autowired
+    @Resource
     private JdbcDao jdbcDao;
-    @Autowired
+    @Resource
     private SysResourceService sysResourceService;
-    @Autowired
+    @Resource
     private SysUserOrgService sysUserOrgService;
-    @Autowired
+    @Resource
     private SysUserResponsiblityService sysUserResponsiblityService;
     @Resource
     private SysUserRoleService sysUserRoleService;
@@ -70,6 +64,7 @@ public class LoginService {
     public static final String VERIFIED = "1";
     public static final String NEEDVERIFY = "0";
 
+    @Override
     public Session doLogin(String accountName, String password) throws ServiceException {
 
         if (accountName == null || accountName.isEmpty() || password == null || password.isEmpty()) {
@@ -79,12 +74,13 @@ public class LoginService {
 
         return session;
     }
-    public Session simpleLogin(String accountName, String password) throws ServiceException{
+    @Override
+    public Session simpleLogin(String accountName, String password) throws ServiceException {
         if (accountName == null || accountName.isEmpty() || password == null || password.isEmpty()) {
             throw new ServiceException("System Error.");
         }
-        SysUser user=getSysUser(accountName,password);
-        Session session=getSession(user);
+        SysUser user = getSysUser(accountName, password);
+        Session session = getSession(user);
 
         getUserRightsByRole(session);
         return session;
@@ -140,7 +136,7 @@ public class LoginService {
     }
 
     public List<Long> getUserOrgs(Long userId) {
-        FilterConditionBuilder builder=new FilterConditionBuilder();
+        FilterConditionBuilder builder = new FilterConditionBuilder();
         builder.eq("userId", userId);
         builder.eq("status", Const.VALID);
         List<SysUserRole> roles = sysUserRoleService.queryByCondition(builder.getConditions());
@@ -154,9 +150,9 @@ public class LoginService {
     public void getUserRightsByRole(Session session) {
         Map<String, Object> retMap = new HashMap<>();
         //get userRole
-        PageQuery.Builder userBuilder=new PageQuery.Builder();
+        PageQuery.Builder userBuilder = new PageQuery.Builder();
         userBuilder.setPageSize(0).setSelectedId("GETUSER_ROLE").setParameterArr(new Object[]{session.getUserId()});
-        PageQuery query =userBuilder.build();
+        PageQuery query = userBuilder.build();
         jdbcDao.queryBySelectId(query);
         List<Long> roleIds = new ArrayList<>();
         List<String> roleCodes = new ArrayList<>();
@@ -187,10 +183,10 @@ public class LoginService {
         session.setOrgName("缺省企业");
         //}
         //get user access resources
-        PageQuery.Builder resourceBuilder=new PageQuery.Builder();
+        PageQuery.Builder resourceBuilder = new PageQuery.Builder();
         resourceBuilder.setPageSize(0).setSelectedId("GET_RESOURCEINFO")
-                .putNamedParameter("userId",session.getUserId()).putNamedParameter("roleIds", roleIds);
-        PageQuery query1 =resourceBuilder.build();
+                .putNamedParameter("userId", session.getUserId()).putNamedParameter("roleIds", roleIds);
+        PageQuery query1 = resourceBuilder.build();
         jdbcDao.queryBySelectId(query1);
         if (!query1.getRecordSet().isEmpty()) {
             try {
@@ -279,11 +275,12 @@ public class LoginService {
         return session;
     }
 
+    @Override
     public void getRights(Session session)
             throws ServiceException {
         Long orgId = session.getOrgId() == null ? 0L : session.getOrgId();
         if (orgId != 0L) {
-            SysOrg sysOrg =  this.jdbcDao.getEntity(SysOrg.class, Long.valueOf(orgId));
+            SysOrg sysOrg = this.jdbcDao.getEntity(SysOrg.class, Long.valueOf(orgId));
             if (sysOrg == null) {
                 log.error("User {} try to login to No exist OrgId {}", session.getUserName());
                 throw new ServiceException("Organization not Exists");

@@ -14,7 +14,7 @@ import java.util.*;
 
 @Component
 public class CodeSetService {
-    @Cacheable(value = "codeSetCache", key = "#codeSetNo")
+    @Cacheable(value = "codeSetCache", key = "'SYSCODE_'+#codeSetNo")
     public Map<String,String> getCacheCode(String codeSetNo) throws DAOException {
         return getCodeSetDefault(codeSetNo);
     }

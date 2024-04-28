@@ -17,7 +17,7 @@ package com.robin.basis.controller.user;
 
 import cn.hutool.jwt.JWTPayload;
 import cn.hutool.jwt.JWTUtil;
-import com.robin.basis.service.system.LoginService;
+import com.robin.basis.service.system.ILoginService;
 import com.robin.core.base.dao.JdbcDao;
 import com.robin.core.base.util.Const;
 import com.robin.core.convert.util.ConvertUtil;
@@ -44,7 +44,7 @@ import java.util.*;
 @Controller
 public class LoginController extends AbstractController {
     @Resource
-    private LoginService loginService;
+    private ILoginService loginService;
 
     @Resource
     private ResourceBundleMessageSource messageSource;
@@ -57,7 +57,7 @@ public class LoginController extends AbstractController {
     public Map<String, Object> login(HttpServletRequest request, HttpServletResponse response, @RequestParam String accountName, @RequestParam String password) {
         Map<String, Object> map = new HashMap();
         try {
-            Session session = this.loginService.simpleLogin(accountName, password.toUpperCase());
+            Session session = this.loginService.doLogin(accountName, password.toUpperCase());
 
             Map<String, Object> sessionMap = new HashMap<>();
             Map<String, Object> headerMap = new HashMap<>();
@@ -65,8 +65,8 @@ public class LoginController extends AbstractController {
             headerMap.put("alg", "RS256");
 
             ConvertUtil.objectToMapObj(sessionMap, session);
-            ResourceBundle bundle=ResourceBundle.getBundle("application");
-            Integer expireDays= !bundle.containsKey("session.expireDay")?15:Integer.parseInt(bundle.getString("session.expireDay"));
+            ResourceBundle bundle = ResourceBundle.getBundle("application");
+            Integer expireDays = !bundle.containsKey("session.expireDay") ? 15 : Integer.parseInt(bundle.getString("session.expireDay"));
             LocalDateTime dateTime = LocalDateTime.now();
             LocalDateTime expTs = dateTime.plusDays(expireDays);
             sessionMap.put(JWTPayload.EXPIRES_AT, expTs.atZone(ZoneId.systemDefault()).toInstant());
@@ -106,7 +106,7 @@ public class LoginController extends AbstractController {
     @RequestMapping("/logout")
     public String logOut(HttpServletRequest request, HttpServletResponse response) {
         request.getSession().removeAttribute(Const.SESSION);
-        CookieUtils.delCookie(request,response,"/",Arrays.asList(Const.TOKEN,"orgName","userName","accountType"));
+        CookieUtils.delCookie(request, response, "/", Arrays.asList(Const.TOKEN, "orgName", "userName", "accountType"));
         return "../login";
     }
 

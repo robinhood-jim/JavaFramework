@@ -1,5 +1,5 @@
-# SimpleJavaFrame
-
+# Simple Java Frame V1.0
+简易支持只定义ORM,可以灵活整合JPA，mybatis_plus,提供大数据相关工具类
 [![Build Status](https://api.travis-ci.com/robinhood-jim/JavaFramework.svg?branch=master)](https://app.travis-ci.com/github/robinhood-jim/JavaFramework)
 [![CircleCI](https://circleci.com/gh/robinhood-jim/JavaFramework.svg?style=svg)](https://circleci.com/gh/robinhood-jim/JavaFramework)
 ![license](https://img.shields.io/badge/license-Apache--2.0-green.svg)
@@ -13,9 +13,10 @@
 目前框架由6个模块组成
 
     1.Core：核心包，包含Model/DAO/Service及ORM的基础类及DB Dialect。数据库Dump和Import的工具包等，支持JAVA基本框架的内容
+    增加License 管理功能，支持引用核心包后带上许可验证功能
     2.Common：通用工具包，包含统一资源访问的接口定义和Apache VFS与本地资源的实现，基于poi的xls读取和生成工具（支持Stream），
     3.hadooptool：包含大数据相关的基本工具类和统一资源访问的大数据实现
-    4.web：基于strut2和SpringMVC的基础类及Spring message的基础类（支持多国语言）
+    4.web：基于SpringMVC的基础类及Spring message的基础类（支持多国语言）
     5.metadata 基于统一资源访问的关系数据源与NoSql数据源的元数据数据探索和管理；
     6.estool 通用的ElasticSearch查询访问工具类，能自动感知es下的所有索引，基于restapi
 
@@ -34,7 +35,7 @@ core与common工程由ProGuard进行混淆保护
 
 开发说明
     
-    I.Model:支持JPA和自定义的Annotation,可支持符合主键，自增长字段保存后自动回填相应字段
+    I.自定义Model:支持JPA和自定义的Annotation,可支持符合主键，自增长字段保存后自动回填相应字段
         
         1.Example:
             包: core/src/test/java/com/robin/core/test/model
@@ -70,7 +71,7 @@ core与common工程由ProGuard进行混淆保护
              
              符合主键,见例子 core/src/test/java/com/robin/core/test/model/TestMutiPK
                 
-    II.DAO层:
+    II.自定义得DAO层:
             使用 com.robin.core.base.dao.JdbcDao,没有特殊业务需要，无需另外创建
             1.配置式SQL查询     
             类似于mybatis的配置式查询，简化了相应的配置，去掉了Map转Model的操作，可支持PreparedStatement与NamedPreparedStatment，
@@ -89,7 +90,7 @@ core与common工程由ProGuard进行混淆保护
                          factory.setXmlConfigPath(queryConfigPath);
                          return factory;
                     }
-            1.2 配置文件
+            1.2 SQL配置文件
                 在xmlConfigPath 目录下，添加任意xml文件
                 内容如下
                     <SQLSCRIPT ID="$_GETCODESET">
@@ -111,7 +112,7 @@ core与common工程由ProGuard进行混淆保护
                 SybaseSqlGen                Sybase
 
             
-    III.Service层
+    III.自定义Service层
             实例: core/src/test/java/com/robin/core/test/service 
             主要方法
                 ---------------------------------------------------------------------------------
@@ -142,4 +143,4 @@ core与common工程由ProGuard进行混淆保护
 
     VI.web工程
         基于传统配置式 spring maven 项目 example/config-example
-        基于spring boot和 cloud的微服务架构  webui
+        基于spring boot和 cloud的微服务架构  webui，引擎使用thymeleaf
