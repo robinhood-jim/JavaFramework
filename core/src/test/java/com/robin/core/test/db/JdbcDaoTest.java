@@ -22,7 +22,6 @@ import com.robin.core.base.dao.util.AnnotationRetriever;
 import com.robin.core.base.datameta.BaseDataBaseMeta;
 import com.robin.core.base.datameta.DataBaseMetaFactory;
 import com.robin.core.base.datameta.DataBaseParam;
-import com.robin.core.base.model.BaseObject;
 import com.robin.core.base.service.SqlMapperService;
 import com.robin.core.base.spring.DynamicBeanReader;
 import com.robin.core.base.spring.JdbcDaoDynamicBean;

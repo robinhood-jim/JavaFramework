@@ -24,7 +24,6 @@ import com.robin.core.base.util.Const;
 import com.robin.core.base.util.LicenseUtils;
 import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.query.util.Condition;
-import com.robin.core.version.VersionInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;

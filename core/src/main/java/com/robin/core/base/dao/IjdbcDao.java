@@ -140,6 +140,7 @@ public interface IjdbcDao {
      * @throws DAOException
      */
     List<Map<String, Object>> queryBySql(String sqlstr, Object... obj) throws DAOException;
+    Map<String,Object> getBySql(String querySQL,Object ... objects) throws DAOException;
 
     /**
      * Query With PageQuery

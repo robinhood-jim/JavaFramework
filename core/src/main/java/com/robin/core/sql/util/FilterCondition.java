@@ -1,6 +1,6 @@
 package com.robin.core.sql.util;
 
-import com.robin.core.base.dao.util.AnnotationRetriever;
+import com.robin.core.base.dao.util.FieldContent;
 import com.robin.core.base.exception.ConfigurationIncorrectException;
 import com.robin.core.base.util.Const;
 import lombok.Data;
@@ -21,12 +21,12 @@ public class FilterCondition {
 	private List<?> values;
 
 
-	private Map<String, AnnotationRetriever.FieldContent> fieldMap;
-	public Map<String, AnnotationRetriever.FieldContent> getFieldMap() {
+	private Map<String, FieldContent> fieldMap;
+	public Map<String, FieldContent> getFieldMap() {
 		return fieldMap;
 	}
 
-	public void setFieldMap(Map<String, AnnotationRetriever.FieldContent> fieldMap) {
+	public void setFieldMap(Map<String, FieldContent> fieldMap) {
 		this.fieldMap = fieldMap;
 	}
 

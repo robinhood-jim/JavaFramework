@@ -13,11 +13,11 @@ import java.util.List;
 
 public class DefaultPrepareStatement implements PreparedStatementCreator {
     private String sql;
-    private List<AnnotationRetriever.FieldContent> fields;
+    private List<FieldContent> fields;
     private BaseObject object;
     private LobHandler lobHandler;
 
-    public DefaultPrepareStatement(List<AnnotationRetriever.FieldContent> fields, final String sql, BaseObject object, LobHandler lobHandler) {
+    public DefaultPrepareStatement(List<FieldContent> fields, final String sql, BaseObject object, LobHandler lobHandler) {
         this.sql = sql;
         this.fields = fields;
         this.object = object;
@@ -29,7 +29,7 @@ public class DefaultPrepareStatement implements PreparedStatementCreator {
             throws SQLException {
         PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
         int pos = 1;
-        for (AnnotationRetriever.FieldContent field : fields) {
+        for (FieldContent field : fields) {
             pos = AnnotationRetriever.replacementPrepared(ps, lobHandler, field, object, pos);
         }
         return ps;

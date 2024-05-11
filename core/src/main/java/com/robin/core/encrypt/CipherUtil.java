@@ -1,6 +1,7 @@
 package com.robin.core.encrypt;
 
 import cn.hutool.core.codec.Base64Decoder;
+import com.robin.core.base.util.CharUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base64;
 
@@ -79,18 +80,6 @@ public class CipherUtil {
         return null;
     }
 
-    public static byte[] decryptByteWithKey(SecretKey key, byte[] bytes) {
-        try {
-            Cipher cipher = Cipher.getInstance(DEFAULT_CIPHER_ALGORITHM);
-
-            cipher.init(Cipher.DECRYPT_MODE, key);
-
-            return cipher.doFinal(bytes);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-        return null;
-    }
 
     public static byte[] decryptByte(byte[] bytes, byte[] key) {
         try {
@@ -245,6 +234,7 @@ public class CipherUtil {
             byte[] bytes = CipherUtil.initSecretKey();
             String ret = Base64.encodeBase64String(bytes);
             System.out.println(ret);
+            System.out.println(CharUtils.getInstance().retKeyword(118));
 			/*String userPath = System.getProperty("user.home");
 			//PrivateKey key=CipherUtil.readPrivateKey(CipherUtil.getKeyByPath(userPath+File.separator+".ssh"+File.separator+"id_rsa"));
 			PrivateKey key=CipherUtil.readPrivateKey(CipherUtil.getKeyByPath("e:/dev/ssh/id_rsa"));

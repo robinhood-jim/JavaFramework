@@ -1,6 +1,6 @@
 package com.robin.core.base.reflect;
 
-import com.robin.core.base.dao.util.AnnotationRetriever;
+import com.robin.core.base.dao.util.FieldContent;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
@@ -8,8 +8,8 @@ import java.util.Map;
 @Slf4j
 public class MetaObject {
     private final Object originalObject;
-    private final Map<String, AnnotationRetriever.FieldContent> fieldContentMap;
-    public MetaObject(Object object,Map<String, AnnotationRetriever.FieldContent> contentMap){
+    private final Map<String, FieldContent> fieldContentMap;
+    public MetaObject(Object object,Map<String, FieldContent> contentMap){
         this.originalObject=object;
         this.fieldContentMap=contentMap;
     }
@@ -18,7 +18,7 @@ public class MetaObject {
         return originalObject;
     }
 
-    public Map<String, AnnotationRetriever.FieldContent> getFieldContentMap() {
+    public Map<String, FieldContent> getFieldContentMap() {
         return fieldContentMap;
     }
     public Object getValue(String columnName){

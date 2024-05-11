@@ -11,39 +11,37 @@ import cn.hutool.jwt.signers.JWTSigner;
 import cn.hutool.jwt.signers.JWTSignerUtil;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.RemovalListener;
-import com.google.common.cache.RemovalNotification;
+import com.google.gson.Gson;
 import com.robin.core.encrypt.CipherUtil;
 import com.robin.core.hardware.MachineIdUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.ObjectUtils;
 
 import java.io.*;
-import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 public class LicenseUtils {
     private static Logger log = LoggerFactory.getLogger(SecurityException.class);
     private static Cache<String, Integer> loadingCache = CacheBuilder.newBuilder().initialCapacity(2).expireAfterWrite(5, TimeUnit.MINUTES).build();
-    private static LicenseUtils utils=new LicenseUtils();
+    private static LicenseUtils utils = new LicenseUtils();
+    private RunThread thread = null;
+    private Gson gson = new Gson();
+
     private LicenseUtils() {
         checkValid();
-        ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(2);
-        executor.scheduleAtFixedRate(()-> getInstance().checkValid(),0,6,TimeUnit.MINUTES);
     }
 
-    public void checkValid() {
+    public Pair<Boolean, LocalDateTime> checkValid() {
         boolean verify = false;
+        Pair<Boolean, LocalDateTime> pair = null;
         if (ObjectUtils.isEmpty(loadingCache.getIfPresent("alive"))) {
             log.info(CharUtils.getInstance().retKeyword(118));
             String userPath = System.getProperty(CharUtils.getInstance().retKeyword(115));
@@ -54,14 +52,14 @@ public class LicenseUtils {
                 String token = null;
                 try {
                     token = readToken(userPath);
-                    if(FileUtil.exist(userPath+File.separator+".ssh"+File.separator+"id_rsa.pub")) {
+                    if (FileUtil.exist(userPath + File.separator + ".ssh" + File.separator + "id_rsa.pub")) {
                         publicKey = CipherUtil.readPublicKey(CipherUtil.getPublicKeyByPath(userPath + File.separator + ".ssh" + File.separator + "id_rsa.pub"));
-                        if(publicKey.getEncoded().length<=300) {
+                        if (publicKey.getEncoded().length <= 300) {
                             valid = true;
                         }
                     }
                 } catch (Exception ex1) {
-                    log.error("{}",ex1.getMessage());
+                    log.error("{}", ex1.getMessage());
                 }
                 try {
                     if (!valid) {
@@ -71,18 +69,26 @@ public class LicenseUtils {
                 } catch (Exception ex1) {
                     log.error("{}", ex1.getMessage());
                 }
-                verify = validate(publicKey, token);
+                pair = validate(publicKey, token);
+                verify = pair.getKey();
             } else {
                 generateDefaultLicense();
                 verify = true;
+                pair = Pair.of(true, null);
             }
         }
         if (verify) {
             loadingCache.put("alive", 1);
         }
+        if (thread == null) {
+            thread = new RunThread();
+            thread.start();
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> thread.stopRun()));
+        }
+        return pair;
     }
 
-    private  String readToken(String userPath) throws IOException {
+    private String readToken(String userPath) throws IOException {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(userPath + File.separator + CharUtils.getInstance().retKeyword(107) + File.separator + CharUtils.getInstance().retKeyword(108))))) {
             return reader.readLine();
         } catch (IOException ex) {
@@ -95,29 +101,30 @@ public class LicenseUtils {
         return KeyUtil.generateRSAPublicKey(bytes);
     }
 
-    private boolean validate(PublicKey publicKey, String token) {
+    private Pair<Boolean, LocalDateTime> validate(PublicKey publicKey, String token) {
+        LocalDateTime exp = null;
         try {
             JWTSigner signer = JWTSignerUtil.rs256(publicKey);
             JWTValidator.of(token).validateAlgorithm(signer);
             JWT jwt = JWTUtil.parseToken(token);
             String machineId = MachineIdUtils.getMachineId();
             //本地与服务器差异，本地需要去掉getJsonObject   getJSONObject("playload")
-            String tokenMachineId=!ObjectUtils.isEmpty(jwt.getPayloads().getJSONObject("playload"))?jwt.getPayloads().getJSONObject("playload").get("machineId").toString():jwt.getPayloads().get("machineId").toString();
+            String tokenMachineId = !ObjectUtils.isEmpty(jwt.getPayloads().getJSONObject("playload")) ? jwt.getPayloads().getJSONObject("playload").get("machineId").toString() : jwt.getPayloads().get("machineId").toString();
             if (!machineId.equals(tokenMachineId)) {
                 log.error(CharUtils.getInstance().retKeyword(103));
                 System.exit(1);
             }
-            LocalDateTime exp = jwt.getPayloads().getLocalDateTime(CharUtils.getInstance().retKeyword(102), LocalDateTimeUtil.of(1));
+            exp = jwt.getPayloads().getLocalDateTime(CharUtils.getInstance().retKeyword(102), LocalDateTimeUtil.of(1));
             if (!exp.isAfter(LocalDateTime.now())) {
                 log.error(CharUtils.getInstance().retKeyword(104));
                 System.exit(1);
             }
-        }catch (ValidateException ex1){
+        } catch (ValidateException ex1) {
             ex1.printStackTrace();
-            log.error("exception {}",ex1);
+            log.error("exception {}", ex1);
             System.exit(1);
         }
-        return true;
+        return Pair.of(true, exp);
     }
 
     //生成证书，15天有效
@@ -139,10 +146,10 @@ public class LicenseUtils {
         //使用系统配置的rsa证书签名
         File file = FileUtil.touch(userPath + File.separator + CharUtils.getInstance().retKeyword(107) + File.separator + CharUtils.getInstance().retKeyword(108));
         boolean finishGen = false;
-        if(FileUtil.exist(userPath+File.separator+".ssh"+File.separator+"id_rsa")) {
+        if (FileUtil.exist(userPath + File.separator + ".ssh" + File.separator + "id_rsa")) {
             log.info("--- generate using ssh key ");
             try (FileOutputStream outputStream = new FileOutputStream(file)) {
-                PrivateKey key=CipherUtil.readPrivateKey(CipherUtil.getKeyByPath(userPath+File.separator+".ssh"+File.separator+"id_rsa"));
+                PrivateKey key = CipherUtil.readPrivateKey(CipherUtil.getKeyByPath(userPath + File.separator + ".ssh" + File.separator + "id_rsa"));
                 JWTSigner signer = JWTSignerUtil.rs256(key);
                 String jwt = JWTUtil.createToken(header, bodyMap, signer);
                 outputStream.write(jwt.getBytes());
@@ -167,11 +174,33 @@ public class LicenseUtils {
             }
         }
     }
-    public static LicenseUtils getInstance(){
+
+    public static LicenseUtils getInstance() {
         return utils;
     }
 
     public static void main(String[] args) {
-        LicenseUtils.getInstance().checkValid();
+        LicenseUtils.getInstance();
+        System.out.println(LicenseUtils.getInstance().checkValid());
+    }
+
+    private class RunThread extends Thread {
+        private boolean stopTag = false;
+
+        @Override
+        public void run() {
+            try {
+                while (!stopTag) {
+                    Thread.sleep(60000L);
+                    checkValid();
+                }
+            } catch (Exception ex) {
+                log.error("{}", ex);
+            }
+        }
+
+        public void stopRun() {
+            stopTag = true;
+        }
     }
 }
