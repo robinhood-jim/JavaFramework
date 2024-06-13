@@ -15,7 +15,7 @@
  */
 package com.robin.core.base.dao;
 
-import com.robin.core.base.dao.util.AnnotationRetriever;
+import com.robin.core.base.dao.util.FieldContent;
 import com.robin.core.base.model.BaseObject;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
@@ -38,7 +38,7 @@ import java.util.List;
 public class LobCreatingPreparedStatementCallBack extends
         AbstractLobCreatingPreparedStatementCallback {
     private BaseObject obj;
-    private List<AnnotationRetriever.FieldContent> fields;
+    private List<FieldContent> fields;
     private Logger logger= LoggerFactory.getLogger(getClass());
 
     public LobCreatingPreparedStatementCallBack(LobHandler lobHandler) {
@@ -46,7 +46,7 @@ public class LobCreatingPreparedStatementCallBack extends
 
     }
 
-    public LobCreatingPreparedStatementCallBack(LobHandler lobHandler, List<AnnotationRetriever.FieldContent> fields, BaseObject object) {
+    public LobCreatingPreparedStatementCallBack(LobHandler lobHandler, List<FieldContent> fields, BaseObject object) {
         super(lobHandler);
         this.obj = object;
         this.fields = fields;
@@ -63,13 +63,13 @@ public class LobCreatingPreparedStatementCallBack extends
             throws SQLException, DataAccessException {
         int pos = 1;
         try {
-            for (AnnotationRetriever.FieldContent field : fields) {
+            for (FieldContent field : fields) {
                 Object value = field.getGetMethod().invoke(obj, null);
                 if (!field.isIncrement() && !field.isSequential() && value != null) {
                     boolean needDo = true;
                     if (field.isPrimary() && field.getPrimaryKeys() != null) {
                         needDo = false;
-                        for (AnnotationRetriever.FieldContent fieldContent : field.getPrimaryKeys()) {
+                        for (FieldContent fieldContent : field.getPrimaryKeys()) {
                             setValueByDataType(ps, value, lobCreator, fieldContent.getDataType(), pos);
                             pos++;
                         }

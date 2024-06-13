@@ -40,7 +40,8 @@ public class ResourceConst {
         TYPE_HBASE(9L,"HBASE"),
         TYPE_ROCKETDB(10L,"ROCKETDB"),
         TYPE_ES(11L,"ES"),
-        TYPE_RABBIT(12L,"RABBITMQ");
+        TYPE_RABBIT(12L,"RABBITMQ"),
+        TYPE_VFS(13L,"VFS");
         private Long key;
         private String value;
 
@@ -102,6 +103,20 @@ public class ResourceConst {
         }
         @Override
         public String toString() {
+            return value;
+        }
+    }
+    public enum S3PARAM{
+        ACCESSKEY("S3AccessKey"),
+        SECRET("S3Secret"),
+        REGION("S3Region"),
+        BUCKETNAME("S3BucketName");
+        private String value;
+        S3PARAM(String value){
+            this.value=value;
+        }
+
+        public String getValue() {
             return value;
         }
     }

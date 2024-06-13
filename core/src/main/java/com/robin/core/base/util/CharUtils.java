@@ -14,7 +14,6 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
-import com.robin.core.base.util.LicenseUtils;
 
 
 @Slf4j
@@ -30,10 +29,10 @@ public class CharUtils {
     public static final byte[] separator = {0x7f, 0x7f};
     //EXE header,pretent as a exe file
     public static final byte[] mzHeader = {0x4D, 0x5A, 0x50, 0x00, 0x02, 0x00, 0x00, 0x00, 0x04, 0x00, 0x0f, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-    private static final CharUtils utils = new CharUtils();
+    private static final CharUtils instance = new CharUtils();
+
 
     private CharUtils() {
-        LicenseUtils.getInstance();
         try (DataInputStream wordIn = CharUtils.class.getClassLoader().getResourceAsStream(wordFile) != null ? new DataInputStream(CharUtils.class.getClassLoader().getResourceAsStream(wordFile)) : null;
              DataInputStream enIn = CharUtils.class.getClassLoader().getResourceAsStream(encryptStrFile) != null ? new DataInputStream(CharUtils.class.getClassLoader().getResourceAsStream(encryptStrFile)) : null;
              DataInputStream keywordIn = CharUtils.class.getClassLoader().getResourceAsStream(keywordFile) != null ? new DataInputStream(CharUtils.class.getClassLoader().getResourceAsStream(keywordFile)) : null) {
@@ -70,14 +69,13 @@ public class CharUtils {
                     keywordMap.put(key, val);
                 }
             }
-
         } catch (Exception ex) {
             log.error("{}", ex);
         }
     }
 
     public static CharUtils getInstance() {
-        return utils;
+        return instance;
     }
 
     public static void generateFromProperties(String encryptFile, String bundleName) {
@@ -118,7 +116,7 @@ public class CharUtils {
     }
 
     public static void main(String[] args) {
-        //generateFromProperties("f:/keyword.exe","configparam");
-        System.out.println(CharUtils.getInstance().retKeyword(118));
+        generateFromProperties("f:/keyword.exe","configparam");
+        //System.out.println(CharUtils.getInstance().retKeyword(118));
     }
 }

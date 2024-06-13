@@ -15,7 +15,7 @@
  */
 package com.robin.core.query.extractor;
 
-import com.robin.core.base.dao.util.AnnotationRetriever;
+import com.robin.core.base.dao.util.FieldContent;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.support.lob.LobHandler;
@@ -34,7 +34,7 @@ public class SplitPageResultSetExtractor implements ResultSetExtractor<List<Map<
 
     private final int len;
     private LobHandler lobHandler;
-    private List<AnnotationRetriever.FieldContent> mappingFieldList;
+    private List<FieldContent> mappingFieldList;
     private DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private DateTimeFormatter timestampFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
@@ -44,7 +44,7 @@ public class SplitPageResultSetExtractor implements ResultSetExtractor<List<Map<
         this.len = len;
     }
 
-    public SplitPageResultSetExtractor(int start, int len, LobHandler handler, List<AnnotationRetriever.FieldContent> mappingFieldList) {
+    public SplitPageResultSetExtractor(int start, int len, LobHandler handler, List<FieldContent> mappingFieldList) {
 
         this.start = start;
         this.len = len;
@@ -84,10 +84,10 @@ public class SplitPageResultSetExtractor implements ResultSetExtractor<List<Map<
         Integer[] types = new Integer[count];
         int colpos = 0;
         if (mappingFieldList != null) {
-            for (AnnotationRetriever.FieldContent fieldContent : mappingFieldList) {
+            for (FieldContent fieldContent : mappingFieldList) {
                 if (fieldContent.isPrimary()) {
                     if (fieldContent.getPrimaryKeys() != null) {
-                        for (AnnotationRetriever.FieldContent fieldContent1 : fieldContent.getPrimaryKeys()) {
+                        for (FieldContent fieldContent1 : fieldContent.getPrimaryKeys()) {
                             assignVal(fieldContent1, rsmd, columnName, types, className, colpos);
                             colpos++;
                         }
@@ -165,7 +165,7 @@ public class SplitPageResultSetExtractor implements ResultSetExtractor<List<Map<
         return list;
     }
 
-    private void assignVal(AnnotationRetriever.FieldContent fieldContent, ResultSetMetaData rsmd, String[] columnName, Integer[] types, String[] className, int colpos) throws SQLException {
+    private void assignVal(FieldContent fieldContent, ResultSetMetaData rsmd, String[] columnName, Integer[] types, String[] className, int colpos) throws SQLException {
         columnName[colpos] = fieldContent.getPropertyName();
         types[colpos] = rsmd.getColumnType(colpos + 1);
         String fullclassName = rsmd.getColumnClassName(colpos + 1);

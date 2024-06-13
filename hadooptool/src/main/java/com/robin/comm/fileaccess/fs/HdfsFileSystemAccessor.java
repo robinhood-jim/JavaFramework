@@ -1,8 +1,9 @@
-package com.robin.comm.fileaccess.util;
+package com.robin.comm.fileaccess.fs;
 
 import com.google.common.collect.MapMaker;
+import com.robin.core.base.util.Const;
+import com.robin.core.fileaccess.fs.AbstractFileSystemAccessor;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
-import com.robin.core.fileaccess.util.AbstractResourceAccessUtil;
 import com.robin.hadoop.hdfs.HDFSProperty;
 import com.robin.hadoop.hdfs.HDFSUtil;
 import org.apache.hadoop.fs.FSDataOutputStream;
@@ -14,10 +15,14 @@ import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 
-public class HdfsResourceAccessUtil extends AbstractResourceAccessUtil {
-	private static final Logger logger=LoggerFactory.getLogger(HdfsResourceAccessUtil.class);
+public class HdfsFileSystemAccessor extends AbstractFileSystemAccessor {
+	private static final Logger logger=LoggerFactory.getLogger(HdfsFileSystemAccessor.class);
 	private final Map<String, HDFSUtil> hdfsUtilMap=new MapMaker().concurrencyLevel(16).weakKeys().makeMap();
 	private final Map<String, HDFSProperty> hdfspropMap=new HashMap<>();
+
+	public HdfsFileSystemAccessor(){
+		this.identifier= Const.FILESYSTEM.HDFS.getValue();
+	}
 	@Override
 	public BufferedReader getInResourceByReader(DataCollectionMeta meta, String resourcePath)
 			throws IOException {

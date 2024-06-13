@@ -34,7 +34,7 @@ import java.util.Map;
  * @author robinjim
  * @version 1.0
  */
-public abstract class AbstractMyBatisController<S extends IMybatisBaseService<M,T,P>,M extends BaseMapper<T>,T extends Serializable,P extends Serializable> extends AbstractController {
+public abstract class AbstractMyBatisController<S extends IMybatisBaseService<T,P>,M extends BaseMapper<T>,T extends Serializable,P extends Serializable> extends AbstractController {
     protected Class<T> voType;
     protected Class<P> pkType;
     protected Class<S> serviceType;

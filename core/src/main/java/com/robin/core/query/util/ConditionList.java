@@ -35,7 +35,7 @@ public class ConditionList extends ArrayList {
 		while (iterator.hasNext()) {
 			Condition condition = (Condition) iterator.next();
 			// BETWENN
-			if (condition.getState() == Condition.BETWEEN) {
+			if (Condition.BETWEEN.equals(condition.getState())) {
 				if (condition.getValues().length < 2) {
 					continue;
 					
@@ -58,7 +58,7 @@ public class ConditionList extends ArrayList {
 				}
 			}
 			// EQS
-			if (condition.getState() == Condition.EQUALS) {
+			if (Condition.EQUALS.equals(condition.getState())) {
 				if (condition.getValue() == null) {
 					continue;
 				}
@@ -68,7 +68,7 @@ public class ConditionList extends ArrayList {
 				sql.append(valueToString(condition.getValue()));
 			}
 			// LIKE
-			if (condition.getState() == Condition.LIKE) {
+			if (Condition.LIKE.equals(condition.getState())) {
 				if (condition.getValue() == null) {
 					continue;
 				}
@@ -80,7 +80,7 @@ public class ConditionList extends ArrayList {
 				sql.append("'");
 			}
 			// IS_NOT_NULL
-			if (condition.getState() == Condition.IS_NOT_NULL) {
+			if (Condition.IS_NOT_NULL.equals(condition.getState())) {
 				if (condition.getValue() == null) {
 					continue;
 				}
@@ -89,7 +89,7 @@ public class ConditionList extends ArrayList {
 				sql.append(IS_NOT_NULL);
 			}
 			// IS_NULL
-			if (condition.getState() == Condition.IS_NULL) {
+			if (Condition.IS_NULL.equals(condition.getState())) {
 				if (condition.getValue() == null) {
 					continue;
 				}
@@ -106,7 +106,7 @@ public class ConditionList extends ArrayList {
 	 *
 	 */
 	public String toString(String tablename) throws Exception {
-		StringBuffer sql = new StringBuffer();
+		StringBuilder sql = new StringBuilder();
 		Iterator iterator = iterator();
 		while (iterator.hasNext()) {
 			Condition condition = (Condition) iterator.next();

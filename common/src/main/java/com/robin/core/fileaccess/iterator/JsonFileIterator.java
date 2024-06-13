@@ -16,6 +16,7 @@
 package com.robin.core.fileaccess.iterator;
 
 import com.google.gson.stream.JsonReader;
+import com.robin.core.base.util.Const;
 import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.meta.DataSetColumnMeta;
@@ -27,9 +28,12 @@ import java.util.NoSuchElementException;
 
 public class JsonFileIterator extends AbstractFileIterator{
 	private JsonReader jreader=null;
-	
+	public JsonFileIterator(){
+		identifier= Const.FILEFORMATSTR.JSON.getValue();
+	}
 	public JsonFileIterator(DataCollectionMeta metaList) {
 		super(metaList);
+		identifier= Const.FILEFORMATSTR.JSON.getValue();
 	}
 	@Override
 	public void init() {

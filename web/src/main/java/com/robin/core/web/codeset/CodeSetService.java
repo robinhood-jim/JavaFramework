@@ -21,7 +21,8 @@ public class CodeSetService {
 
 
     protected Map<String,String> getCodeSetDefault(String codeSetNo) {
-        JdbcDao jdbcDao = SpringContextHolder.getBean(JdbcDao.class);
+        JdbcDao jdbcDao = SpringContextHolder.getBean("jdbcDao",JdbcDao.class);
+
         QueryFactory factory = SpringContextHolder.getBean(QueryFactory.class);
         Map<String,String> codeMap=new LinkedHashMap<>();
         if (factory.isSelectIdExists("$_GETCODESET")) {

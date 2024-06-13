@@ -1,6 +1,7 @@
 package com.robin.comm.resaccess.iterator;
 
 import com.rabbitmq.client.*;
+import com.robin.core.base.util.ResourceConst;
 import com.robin.core.fileaccess.util.AvroUtils;
 import com.robin.core.resaccess.iterator.AbstractQueueIterator;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
@@ -22,9 +23,13 @@ public class RabbitMQIterator extends AbstractQueueIterator {
 
     private String queueName;
     private Connection connection;
+    public RabbitMQIterator(){
+        this.identifier= ResourceConst.ResourceType.TYPE_RABBIT.toString();
+    }
 
     public RabbitMQIterator(DataCollectionMeta collectionMeta){
         super(collectionMeta);
+        this.identifier= ResourceConst.ResourceType.TYPE_RABBIT.toString();
     }
 
     @Override
@@ -74,5 +79,10 @@ public class RabbitMQIterator extends AbstractQueueIterator {
     @Override
     public void close() throws IOException {
 
+    }
+
+    @Override
+    public String getIdentifier() {
+        return "rabbitmq";
     }
 }

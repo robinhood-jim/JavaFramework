@@ -15,10 +15,7 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.util.StringUtils;
 
 import java.io.IOException;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.Map;
 import java.util.Objects;
 
@@ -90,7 +87,9 @@ public class  JdbcResIterator extends AbstractResIterator {
 
     @Override
     public void close() throws IOException {
-
+        DbUtils.closeQuietly(statement);
+        DbUtils.closeQuietly(preparedStatement);
+        connectionHolder.close();
     }
 
     @Override
@@ -104,7 +103,11 @@ public class  JdbcResIterator extends AbstractResIterator {
 
     @Override
     public Map<String, Object> next() {
-
         return null;
+    }
+
+    @Override
+    public String getIdentifier() {
+        return "jdbc";
     }
 }

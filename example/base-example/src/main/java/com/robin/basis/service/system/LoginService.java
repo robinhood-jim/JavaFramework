@@ -137,8 +137,7 @@ public class LoginService implements ILoginService {
 
     public List<Long> getUserOrgs(Long userId) {
         FilterConditionBuilder builder = new FilterConditionBuilder();
-        builder.eq("userId", userId);
-        builder.eq("status", Const.VALID);
+        builder.eq(SysUserRole::getUserId, userId).eq(SysUserRole::getStatus, Const.VALID);
         List<SysUserRole> roles = sysUserRoleService.queryByCondition(builder.getConditions());
         if (CollectionUtils.isEmpty(roles)) {
             return roles.stream().map(SysUserRole::getRoleId).collect(Collectors.toList());

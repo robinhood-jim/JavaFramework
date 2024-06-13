@@ -729,8 +729,8 @@ public class SimpleJdbcDao {
                 columns = "*";
             }
             QueryRunner qRunner = new QueryRunner();
-            String querySql = "select " + columns + " from " + tableName + " where 1=0";
-            StringBuilder insertSqlbuilder = new StringBuilder("insert into ").append(tableName);
+            String querySql = Const.SQL_SELECT + columns + Const.SQL_FROM + tableName + " where 1=0";
+            StringBuilder insertSqlbuilder = new StringBuilder(Const.SQL_INSERTINTO).append(tableName);
             if (!"*".equals(columns)) {
                 insertSqlbuilder.append("(" + columns + ") values (");
             } else {

@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import com.robin.core.base.util.Const;
 import org.apache.commons.lang3.StringUtils;
 
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
@@ -29,8 +30,12 @@ import javax.naming.OperationNotSupportedException;
 public class PlainTextFileWriter extends TextBasedFileWriter {
 	private List<String> retList=null; 
 	private String split=",";
+	public PlainTextFileWriter(){
+		this.identifier= Const.FILEFORMATSTR.CSV.getValue();
+	}
 	public PlainTextFileWriter(DataCollectionMeta colmeta) {
 		super(colmeta);
+		this.identifier= Const.FILEFORMATSTR.CSV.getValue();
 	}
 
 	@Override

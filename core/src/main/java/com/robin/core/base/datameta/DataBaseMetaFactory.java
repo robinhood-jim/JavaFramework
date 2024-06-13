@@ -15,8 +15,9 @@
  */
 package com.robin.core.base.datameta;
 
+import com.google.common.collect.Lists;
+
 import java.lang.reflect.Constructor;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,7 +30,7 @@ public class DataBaseMetaFactory {
 	public static BaseDataBaseMeta getDataBaseMetaByType(String type,DataBaseParam param){
 		BaseDataBaseMeta datameta=null;
 		try{
-		List<String> dbTypes=Arrays.asList(BaseDataBaseMeta.DB_TYPE_ENMU);
+		List<String> dbTypes= Lists.newArrayList(BaseDataBaseMeta.DB_TYPE_ENMU);
 		if(dbTypes.contains(type)){
 			Constructor<?> construct;
 			if(!constructorMap.containsKey(type)){

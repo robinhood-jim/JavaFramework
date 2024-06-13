@@ -16,6 +16,7 @@
 package com.robin.core.base.util;
 
 import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.lang3.CharSequenceUtils;
 import org.apache.commons.lang3.text.StrBuilder;
 import org.springframework.util.Assert;
 
@@ -27,7 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-public class StringUtils {
+public class StringUtils extends org.apache.commons.lang3.StringUtils {
     public static final int ASCII_VISIBLE_START = 48;
     public static final int ASCII_VISIBLE_END = 122;
     public static final int ASCII_UPPER_START = 64;
@@ -341,6 +342,7 @@ public class StringUtils {
         }
         return builder.toString();
     }
+
 
     public static void main(String[] args) {
         //System.out.println(getFieldNameByCamelCase("asdsadTTsdadDDasda"));

@@ -140,6 +140,7 @@ public interface IjdbcDao {
      * @throws DAOException
      */
     List<Map<String, Object>> queryBySql(String sqlstr, Object... obj) throws DAOException;
+    Map<String,Object> getBySql(String querySQL,Object ... objects) throws DAOException;
 
     /**
      * Query With PageQuery
@@ -179,7 +180,7 @@ public interface IjdbcDao {
      * @return
      * @throws DAOException
      */
-    <T extends BaseObject> int updateVO(Class<T> clazz, T obj,List<FilterCondition> conditions) throws DAOException;
+    <T extends BaseObject> int updateVO(T obj,List<FilterCondition> conditions) throws DAOException;
     <T extends BaseObject> int updateByKey(Class<T> clazz, T obj) throws DAOException;
     /**
      * Delete Records by PK array,now only support single column pk

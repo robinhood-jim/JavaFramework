@@ -12,6 +12,6 @@ public interface IResourceWriter extends Closeable {
     void writeRecord(List<Object> map) throws IOException,OperationNotSupportedException;
 
     void initalize() throws IOException;
-
+    String getIdentifier();
 
 }

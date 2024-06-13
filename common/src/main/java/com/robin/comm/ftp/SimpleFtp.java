@@ -1,6 +1,7 @@
 package com.robin.comm.ftp;
 
 
+import com.google.common.collect.Lists;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
@@ -100,7 +101,7 @@ public class SimpleFtp {
         String path = args[0];
         List<String> ignorefiles = null;
         if (length >= 2) {
-            ignorefiles = Arrays.asList(Arrays.copyOfRange(args,1, args.length-1));
+            ignorefiles = Lists.newArrayList(Arrays.copyOfRange(args,1, args.length-1));
         }
         FTPFile[] files = ftpClient.listFiles(path);
         for (FTPFile file : files) {

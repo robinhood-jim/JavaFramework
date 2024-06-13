@@ -1,8 +1,11 @@
 package com.robin.core.web.util;
 
+import lombok.extern.slf4j.Slf4j;
+
 import javax.servlet.http.HttpServletRequest;
 import java.net.URI;
 
+@Slf4j
 public class URIUtils {
 
     public static String getRequestPath(String uri) {
@@ -24,20 +27,26 @@ public class URIUtils {
     public static String getRequestPath(HttpServletRequest request) {
         String requestURI = request.getRequestURI();
         String contentPath=request.getContextPath();
+        log.debug("{} {}",requestURI,contentPath);
         int pos = requestURI.indexOf(contentPath);
         requestURI = requestURI.substring(pos + contentPath.length());
         pos = requestURI.indexOf("?");
         if (pos != -1) {
             requestURI = requestURI.substring(0, pos);
         }
+        log.debug(" get requesturi {}",requestURI);
         return requestURI;
     }
     public static String getRequestRelativePathOrSuffix(String requestPath,String contentPath){
+        log.debug(" get suffix {} {}",requestPath,contentPath);
         if (!"/".equals(contentPath)) {
             int pos = requestPath.indexOf(contentPath);
-            contentPath = requestPath.substring(pos + contentPath.length());
+            if(pos!=-1) {
+                requestPath = requestPath.substring(pos + contentPath.length());
+            }
         }
-        String resourcePath = contentPath;
+        String resourcePath = requestPath;
+        log.debug("contentPath {}",contentPath);
         int pos = resourcePath.lastIndexOf("/");
         if (pos != -1) {
             resourcePath = resourcePath.substring(pos);
@@ -54,6 +63,7 @@ public class URIUtils {
                 }
             }
         }
+        log.debug("resourcePath {}",resourcePath);
         return  resourcePath;
     }
 

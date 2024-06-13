@@ -82,6 +82,11 @@ public class TestExcelOperation {
                 row++;
                 return map;
             }
+
+            @Override
+            public String getIdentifier() {
+                return "test";
+            }
         };
         Workbook wb=ExcelProcessor.generateExcelFile(prop,header,iterator);
         FileOutputStream out=new FileOutputStream("d:/test.xlsx");

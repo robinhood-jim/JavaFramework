@@ -24,6 +24,9 @@ import java.io.OutputStreamWriter;
 
 public abstract class TextBasedFileWriter extends AbstractFileWriter{
 	protected  int ioBufSize = 16 * 1024;
+	public TextBasedFileWriter(){
+
+	}
 
 	protected TextBasedFileWriter(DataCollectionMeta colmeta) {
 		super(colmeta);

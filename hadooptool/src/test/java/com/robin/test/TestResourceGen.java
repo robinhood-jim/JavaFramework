@@ -1,6 +1,6 @@
 package com.robin.test;
 
-import com.robin.comm.fileaccess.util.HdfsResourceAccessUtil;
+import com.robin.comm.fileaccess.fs.HdfsFileSystemAccessor;
 import com.robin.core.base.dao.SimpleJdbcDao;
 import com.robin.core.base.datameta.BaseDataBaseMeta;
 import com.robin.core.base.datameta.DataBaseMetaFactory;
@@ -46,7 +46,7 @@ public class TestResourceGen {
 			List<Map<String, Object>> list=SimpleJdbcDao.queryString(conn, "select config_name as name,config_value as value from t_hadoop_cluster_config where cluster_id=4");
 			conn=SimpleJdbcDao.getConnection(meta1);
 			List<Map<String, Object>> resultlist=SimpleJdbcDao.queryString(conn, "select info_id,url,title,content from shw_internet_info_dtl");
-			HdfsResourceAccessUtil util=new HdfsResourceAccessUtil();
+			HdfsFileSystemAccessor util=new HdfsFileSystemAccessor();
 			Map<String, Object> hdfsparam=new HashMap<String, Object>();
 			for (Map<String, Object> tmap:list) {
 				hdfsparam.put(tmap.get("name").toString(), tmap.get("value"));

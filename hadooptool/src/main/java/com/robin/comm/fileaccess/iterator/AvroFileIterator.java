@@ -1,5 +1,6 @@
 package com.robin.comm.fileaccess.iterator;
 
+import com.robin.core.base.util.Const;
 import com.robin.core.base.util.ResourceConst;
 import com.robin.core.fileaccess.iterator.AbstractFileIterator;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
@@ -30,8 +31,12 @@ public class AvroFileIterator extends AbstractFileIterator {
 	private Schema schema;
 
 	private FileReader<GenericRecord> fileReader;
+	public AvroFileIterator(){
+		identifier= Const.FILEFORMATSTR.AVRO.getValue();
+	}
 	public AvroFileIterator(DataCollectionMeta colmeta) {
 		super(colmeta);
+		identifier= Const.FILEFORMATSTR.AVRO.getValue();
 	}
 	private File tmpFile;
 	private SeekableInput input=null;

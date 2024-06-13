@@ -10,8 +10,8 @@ import com.robin.core.base.util.ResourceConst;
 import com.robin.core.fileaccess.iterator.AbstractFileIterator;
 import com.robin.core.fileaccess.iterator.TextFileIteratorFactory;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
-import com.robin.core.fileaccess.util.AbstractResourceAccessUtil;
-import com.robin.core.fileaccess.util.ResourceAccessorFactory;
+import com.robin.core.fileaccess.fs.AbstractFileSystemAccessor;
+import com.robin.core.fileaccess.fs.FileSystemAccessorFactory;
 import com.robin.core.fileaccess.writer.AbstractFileWriter;
 import com.robin.core.fileaccess.writer.TextFileWriterFactory;
 import com.robin.core.query.extractor.ResultSetOperationExtractor;
@@ -45,7 +45,7 @@ public class TestProtobufWriter extends TestCase {
             colmeta.setFileFormat(Const.FILESUFFIX_PROTOBUF);
             colmeta.setResType(ResourceConst.IngestType.TYPE_LOCAL.getValue());
             colmeta.setPath("d:/tmp/luoming/1.proto.gz");
-            AbstractResourceAccessUtil util= ResourceAccessorFactory.getResourceAccessorByType(colmeta.getResType());
+            AbstractFileSystemAccessor util= FileSystemAccessorFactory.getResourceAccessorByType(colmeta.getResType());
 
             final AbstractFileWriter jwriter= TextFileWriterFactory.getFileOutputStreamByType(colmeta,util.getOutResourceByStream(colmeta,colmeta.getPath()));
             jwriter.beginWrite();

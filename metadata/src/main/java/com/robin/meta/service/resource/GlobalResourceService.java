@@ -19,11 +19,10 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.robin.comm.fileaccess.iterator.AvroFileIterator;
 import com.robin.comm.fileaccess.iterator.ParquetFileIterator;
-import com.robin.comm.fileaccess.util.HdfsResourceAccessUtil;
+import com.robin.comm.fileaccess.fs.HdfsFileSystemAccessor;
 import com.robin.comm.util.es.ESSchemaAwareUtil;
 import com.robin.core.base.dao.SimpleJdbcDao;
 import com.robin.core.base.datameta.*;
-import com.robin.core.base.model.BaseObject;
 import com.robin.core.base.service.BaseAnnotationJdbcService;
 import com.robin.core.base.util.Const;
 import com.robin.core.base.util.FileUtils;
@@ -32,8 +31,8 @@ import com.robin.core.fileaccess.iterator.AbstractFileIterator;
 import com.robin.core.fileaccess.iterator.TextFileIteratorFactory;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.meta.VfsParam;
-import com.robin.core.fileaccess.util.AbstractResourceAccessUtil;
-import com.robin.core.fileaccess.util.ApacheVfsResourceAccessUtil;
+import com.robin.core.fileaccess.fs.AbstractFileSystemAccessor;
+import com.robin.core.fileaccess.fs.ApacheVfsFileSystemAccessor;
 import com.robin.core.fileaccess.util.AvroUtils;
 import com.robin.hadoop.hdfs.HDFSUtil;
 import com.robin.meta.explore.SourceFileExplorer;
@@ -166,13 +165,13 @@ public class GlobalResourceService extends BaseAnnotationJdbcService<GlobalResou
             if (resource.getResType().equals(ResourceConst.ResourceType.TYPE_DB.getValue()) || resource.getResType().equals(ResourceConst.ResourceType.TYPE_ES.getValue())) {
                 schema = AvroUtils.getSchemaFromMeta(colmeta);
             } else if (resource.getResType().equals(ResourceConst.ResourceType.TYPE_HDFSFILE.getValue())) {
-                HdfsResourceAccessUtil util = new HdfsResourceAccessUtil();
+                HdfsFileSystemAccessor util = new HdfsFileSystemAccessor();
                 HDFSUtil dfsutil = new HDFSUtil(colmeta);
                 List<String> fileList = dfsutil.listFile(sourceParamInput);
                 colmeta.setPath(fileList.get(0));
                 schema = getFileSchema(util, colmeta, resource, maxReadLines);
             } else if (resource.getResType().equals(ResourceConst.ResourceType.TYPE_FTPFILE.getValue()) || resource.getResType().equals(ResourceConst.ResourceType.TYPE_SFTPFILE.getValue())) {
-                ApacheVfsResourceAccessUtil util = new ApacheVfsResourceAccessUtil();
+                ApacheVfsFileSystemAccessor util = new ApacheVfsFileSystemAccessor();
                 VfsParam param = util.returnFtpParam(resource.getHostName(), resource.getPort(), resource.getUserName(), resource.getPassword(), resource.getProtocol());
                 String inputPath = sourceParamInput.endsWith("/") ? sourceParamInput : sourceParamInput + "/";
                 List<String> fileList = util.listFilePath(param, inputPath);
@@ -198,7 +197,7 @@ public class GlobalResourceService extends BaseAnnotationJdbcService<GlobalResou
         return trimName.substring(0, 1).toUpperCase() + trimName.substring(1, trimName.length());
     }
 
-    private Schema getFileSchema(AbstractResourceAccessUtil util, DataCollectionMeta meta, GlobalResource resource, int maxReadLines) throws Exception {
+    private Schema getFileSchema(AbstractFileSystemAccessor util, DataCollectionMeta meta, GlobalResource resource, int maxReadLines) throws Exception {
         Schema schema = null;
         List<String> suffixList = new ArrayList<String>();
         FileUtils.parseFileFormat(meta.getPath(), suffixList);

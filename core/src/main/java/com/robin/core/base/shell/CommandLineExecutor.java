@@ -9,9 +9,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
+
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.ObjectUtils;
 
 public class CommandLineExecutor {
 	private final Logger logger=LoggerFactory.getLogger(getClass());
@@ -28,11 +32,10 @@ public class CommandLineExecutor {
 		String retStr=null;
 		try{
 			Process process=Runtime.getRuntime().exec(cmd);
-			CommandOutputThread thread=new CommandOutputThread(process,false);
-			thread.start();
+			CompletableFuture<Pair<Boolean,String>> future=CompletableFuture.supplyAsync(()->readOutput(process,0));
 			runCode=process.waitFor();
-			thread.waitFor();
-			retStr=thread.getOutput();
+			Pair<Boolean,String> pair=future.get();
+			retStr=pair.getValue();
 		}catch(Exception ex){
 			throw ex;
 		}
@@ -48,11 +51,9 @@ public class CommandLineExecutor {
 			Process process=Runtime.getRuntime().exec(cmd);
 			int pid=getPid(process);
 			processMap.put(Long.valueOf(key), pid);
-			CommandOutputThread thread=new CommandOutputThread(process,true);
-			thread.start();
+			CompletableFuture<Pair<Boolean,String>> future=CompletableFuture.supplyAsync(()->readOutput(process,0));
 			runCode=process.waitFor();
-			thread.waitFor();
-			retStr=thread.getOutput();
+			retStr=future.get().getValue();
 		}catch(Exception ex){
 			throw ex;
 		}finally{
@@ -69,16 +70,61 @@ public class CommandLineExecutor {
 		try{
 			ProcessBuilder builder=new ProcessBuilder(cmd);
 			Process process=builder.start();
-			CommandOutputThread thread=new CommandOutputThread(process,false);
-			thread.start();
+			CompletableFuture<Pair<Boolean,String>> future=CompletableFuture.supplyAsync(()->readOutput(process,0));
 			int runCode=process.waitFor();
+			Pair<Boolean,String> pair=future.get();
 			logger.info("return code={}",runCode);
-			thread.waitFor();
-			logger.info("execute tag= {}",thread.isExecuteOk());
-			if(runCode!=0 || !thread.isExecuteOk()){
+			logger.info("execute tag= {}",pair.getKey());
+			if(runCode!=0 || !pair.getKey()){
 				runOk=false;
 			}
-			retStr=thread.getOutput();
+			retStr=pair.getValue();
+		}catch(Exception ex){
+			throw ex;
+		}
+		if(!runOk){
+			throw new RuntimeException("run script with error,output="+retStr);
+		}
+		return retStr;
+	}
+	public String executeCmdReturnAfterRow(List<String> cmd,int afterRow) throws Exception{
+		String retStr=null;
+		boolean runOk=true;
+		try{
+			ProcessBuilder builder=new ProcessBuilder(cmd);
+			Process process=builder.start();
+			CompletableFuture<Pair<Boolean,String>> future=CompletableFuture.supplyAsync(()->readOutput(process,afterRow));
+			int runCode=process.waitFor();
+			Pair<Boolean,String> pair=future.get();
+			logger.info("return code={}",runCode);
+			logger.info("execute tag= {}",pair.getKey());
+			if(runCode!=0 || !pair.getKey()){
+				runOk=false;
+			}
+			retStr=pair.getValue();
+		}catch(Exception ex){
+			throw ex;
+		}
+		if(!runOk){
+			throw new RuntimeException("run script with error,output="+retStr);
+		}
+		return retStr;
+	}
+	public String executeCmdReturnSpecifyKey(List<String> cmd,String key) throws Exception{
+		String retStr=null;
+		boolean runOk=true;
+		try{
+			ProcessBuilder builder=new ProcessBuilder(cmd);
+			Process process=builder.start();
+			CompletableFuture<Pair<Boolean,String>> future=CompletableFuture.supplyAsync(()->readOutputWithSpecifyKey(process,key));
+			int runCode=process.waitFor();
+			Pair<Boolean,String> pair=future.get();
+			logger.info("return code={}",runCode);
+			logger.info("execute tag= {}",pair.getKey());
+			if(runCode!=0 || !pair.getKey()){
+				runOk=false;
+			}
+			retStr=pair.getValue();
 		}catch(Exception ex){
 			throw ex;
 		}
@@ -96,17 +142,15 @@ public class CommandLineExecutor {
 	 */
 	public String executeCmd(List<String> cmd,long key) throws Exception{
 		int runCode=0;
-		String retStr=null;
+		String retStr;
 		try{
 			ProcessBuilder builder=new ProcessBuilder(cmd);
 			Process process=builder.start();
 			int pid=getPid(process);
 			processMap.put(Long.valueOf(key), pid);
-			CommandOutputThread thread=new CommandOutputThread(process,true);
-			thread.start();
+			CompletableFuture<Pair<Boolean,String>> future=CompletableFuture.supplyAsync(()->readOutput(process,0));
 			runCode=process.waitFor();
-			thread.waitFor();
-			retStr=thread.getOutput();
+			retStr=future.get().getValue();
 		}catch(Exception ex){
 			throw ex;
 		}
@@ -138,11 +182,9 @@ public class CommandLineExecutor {
 				Process process=builder.start();
 				int pid=getPid(process);
 				processMap.put(env.getKeyId(), pid);
-				CommandOutputThread thread=new CommandOutputThread(process,true);
-				thread.start();
+				CompletableFuture<Pair<Boolean,String>> future=CompletableFuture.supplyAsync(()->readOutput(process,0));
 				runCode=process.waitFor();
-				thread.waitFor();
-				retStr=thread.getOutput();
+				retStr=future.get().getValue();
 				if(runCode==0) {
                     break;
                 } else {
@@ -184,11 +226,9 @@ public class CommandLineExecutor {
 				Process process=builder.start();
 				int pid=getPid(process);
 				processMap.put(Long.valueOf(key), pid);
-				CommandOutputThread thread=new CommandOutputThread(process,true);
-				thread.start();
+				CompletableFuture<Pair<Boolean,String>> future=CompletableFuture.supplyAsync(()->readOutput(process,0));
 				runCode=process.waitFor();
-				thread.waitFor();
-				retStr=thread.getOutput();
+				retStr=future.get().getValue();
 				if(runCode==0){
 					break;
 				}else{
@@ -335,70 +375,55 @@ public class CommandLineExecutor {
 		}
 		return retList;
 	}
-	public class CommandOutputThread extends Thread{
-		private Process process;
-		private StringBuilder builder=new StringBuilder();
-		private boolean finished=false;
-		//是否在后台显示日志
-		private boolean enableOuptut=false;
-		private boolean executeOk=true;
-		public CommandOutputThread(Process process,boolean enableOutput){
-			this.process=process;
-			this.enableOuptut=enableOutput;
-		}
-		@Override
-		public void run() {
-			BufferedReader reader=new BufferedReader(new InputStreamReader(process.getInputStream()));
-			BufferedReader errreader=new BufferedReader(new InputStreamReader(process.getErrorStream()));
-			String line=null;
-			try{
-				while((line=reader.readLine())!=null){
-					if(enableOuptut) {
-                        logger.info("message={}",line);
-                    }
-					builder.append(line).append("\n");
+
+	private Pair<Boolean,String> readOutput(Process process,int afterrow){
+		String line;
+		StringBuilder builder=new StringBuilder();
+		boolean executeOk=false;
+		int pos=0;
+		try(BufferedReader reader=new BufferedReader(new InputStreamReader(process.getInputStream()))){
+			while((line=reader.readLine())!=null){
+				pos++;
+				if(logger.isDebugEnabled()) {
+					logger.debug("message={}",line);
 				}
-				while((line=errreader.readLine())!=null){
-					
-					if(enableOuptut) {
-                        logger.error("error= {}",line);
-                    }
-					builder.append(line).append("\n");
+				if(pos>afterrow && !ObjectUtils.isEmpty(line)) {
+					if(builder.length()>0){
+						builder.append("\n");
+					}
+					builder.append(line.trim());
 				}
-			}catch(Exception ex){
-				executeOk=false;
-				logger.error("",ex);
-			}finally{
-				try{
-				if(reader!=null){
-					reader.close();
-				}
-				if(errreader!=null){
-					errreader.close();
-				}
-				}catch(Exception ex){
-					executeOk=false;
-					logger.error("",ex);
-				}
-				finished=true;
 			}
+			executeOk=true;
+		}catch(Exception ex){
+			logger.error("",ex);
 		}
-		public String getOutput(){
-			String ret="";
-			if(builder.length()>0) {
-                ret=builder.toString();
-            }
-			return ret;
+		return Pair.of(executeOk,builder.toString());
+	}
+	private Pair<Boolean,String> readOutputWithSpecifyKey(Process process,String key){
+		String line;
+		StringBuilder builder=new StringBuilder();
+		boolean executeOk=false;
+		int pos=0;
+		try(BufferedReader reader=new BufferedReader(new InputStreamReader(process.getInputStream()))){
+			while((line=reader.readLine())!=null){
+				pos++;
+				if(logger.isDebugEnabled()) {
+					logger.debug("message={}",line);
+				}
+				if(line.contains(key)) {
+					if(builder.length()>0){
+						builder.append("\n");
+					}
+					int pos1=line.indexOf(key);
+					builder.append(line.substring(pos1+key.length()).trim());
+				}
+			}
+			executeOk=true;
+		}catch(Exception ex){
+			logger.error("",ex);
 		}
-		public void waitFor() throws Exception{
-			if(!finished) {
-                Thread.sleep(100L);
-            }
-		}
-		public boolean isExecuteOk() {
-			return executeOk;
-		}
-		
+		return Pair.of(executeOk,builder.toString());
 	}
 
 }

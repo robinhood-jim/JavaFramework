@@ -1,11 +1,9 @@
-package com.robin.core.fileaccess.util;
+package com.robin.core.fileaccess.fs;
 
 import com.robin.core.base.util.Const;
 import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.meta.VfsParam;
-import lombok.Getter;
-import lombok.Setter;
 import org.apache.commons.vfs2.FileObject;
 import org.apache.commons.vfs2.FileSystemManager;
 import org.apache.commons.vfs2.FileSystemOptions;
@@ -23,8 +21,10 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ApacheVfsResourceAccessUtil extends AbstractResourceAccessUtil {
-    public ApacheVfsResourceAccessUtil() {
+public class ApacheVfsFileSystemAccessor extends AbstractFileSystemAccessor {
+
+    public ApacheVfsFileSystemAccessor() {
+        this.identifier= Const.FILESYSTEM.VFS.getValue();
         try {
             manager = new StandardFileSystemManager();
             logger.info(" manager {} ", manager);
@@ -35,7 +35,7 @@ public class ApacheVfsResourceAccessUtil extends AbstractResourceAccessUtil {
     }
 
     private StandardFileSystemManager manager = null;
-    private static final Logger logger = LoggerFactory.getLogger(ApacheVfsResourceAccessUtil.class);
+    private static final Logger logger = LoggerFactory.getLogger(ApacheVfsFileSystemAccessor.class);
 
     @Override
     public BufferedReader getInResourceByReader(DataCollectionMeta meta, String resourcePath) throws IOException {

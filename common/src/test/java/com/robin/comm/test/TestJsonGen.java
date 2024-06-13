@@ -15,11 +15,10 @@ import com.robin.core.base.datameta.DataBaseMetaFactory;
 import com.robin.core.base.datameta.DataBaseParam;
 import com.robin.core.base.util.Const;
 import com.robin.core.base.util.ResourceConst;
+import com.robin.core.fileaccess.fs.AbstractFileSystemAccessor;
+import com.robin.core.fileaccess.fs.FileSystemAccessorFactory;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 
-import com.robin.core.fileaccess.util.AbstractResourceAccessUtil;
-import com.robin.core.fileaccess.util.ApacheVfsResourceAccessUtil;
-import com.robin.core.fileaccess.util.ResourceAccessorFactory;
 import com.robin.core.fileaccess.writer.AbstractFileWriter;
 import com.robin.core.fileaccess.writer.TextFileWriterFactory;
 import com.robin.core.query.extractor.ResultSetOperationExtractor;
@@ -52,7 +51,7 @@ public class TestJsonGen {
 			colmeta.setEncode("UTF-8");
 			colmeta.setResType(ResourceConst.ResourceType.TYPE_SFTPFILE.getValue());
 
-			AbstractResourceAccessUtil util= ResourceAccessorFactory.getResourceAccessorByType(colmeta.getResType());
+			AbstractFileSystemAccessor util= FileSystemAccessorFactory.getResourceAccessorByType(colmeta.getResType());
 			OutputStream stream=util.getOutResourceByStream(colmeta, colmeta.getPath());
 			//GsonFileWriter jwriter=new GsonFileWriter(colmeta, writer);
 			final AbstractFileWriter jwriter=TextFileWriterFactory.getFileWriterByPath(colmeta,stream);

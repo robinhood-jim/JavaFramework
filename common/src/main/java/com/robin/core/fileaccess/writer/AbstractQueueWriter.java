@@ -18,6 +18,10 @@ public abstract class AbstractQueueWriter extends AbstractResourceWriter {
     protected Injection<GenericRecord,byte[]> recordInjection;
     protected boolean useCompress;
     protected String compressType;
+    protected String identifier;
+    public AbstractQueueWriter(){
+
+    }
     protected AbstractQueueWriter(DataCollectionMeta collectionMeta){
         super(collectionMeta);
         if (null != cfgMap.get("resource.useCompress") && Const.TRUE.equalsIgnoreCase(cfgMap.get("resource.useCompress").toString())) {
@@ -65,4 +69,9 @@ public abstract class AbstractQueueWriter extends AbstractResourceWriter {
         return output;
     }
     public abstract void writeMessage(String queue,Map<String, ?> map) throws IOException;
+
+    @Override
+    public String getIdentifier() {
+        return identifier;
+    }
 }

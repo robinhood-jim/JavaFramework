@@ -1,16 +1,17 @@
 package com.robin.comm.dal.pool;
 
+import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.AbstractScheduledService;
-import com.robin.comm.dal.holder.db.DbConnectionHolder;
 import com.robin.comm.dal.holder.FsRecordIteratorHolder;
 import com.robin.comm.dal.holder.RecordWriterHolder;
+import com.robin.comm.dal.holder.db.DbConnectionHolder;
 import com.robin.comm.dal.holder.db.JdbcResourceHolder;
 import com.robin.comm.dal.holder.fs.InputStreamHolder;
 import com.robin.comm.dal.holder.fs.OutputStreamHolder;
 import com.robin.core.base.datameta.BaseDataBaseMeta;
 import com.robin.core.base.spring.SpringContextHolder;
+import com.robin.core.fileaccess.fs.AbstractFileSystemAccessor;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
-import com.robin.core.fileaccess.util.AbstractResourceAccessUtil;
 import com.zaxxer.hikari.HikariConfig;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
@@ -18,7 +19,6 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.env.Environment;
 
 import java.lang.reflect.Constructor;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,7 +31,7 @@ public class ResourceAccessHolder implements InitializingBean {
 	private int bufferedReaderNum =0;
 	private int bufferedWriterNum=0;
 	private int jdbcHolderNum=10;
-	private static final Map<String, AbstractResourceAccessUtil> resouceAccessUtilMap=new LinkedHashMap<>();
+	private static final Map<String, AbstractFileSystemAccessor> resouceAccessUtilMap=new LinkedHashMap<>();
 	private Map<Long, DbConnectionHolder> connectionHolderCache= new LinkedHashMap<>();
 	private Map<Long,JdbcResourceHolder> jdbcResourceHolderMap=new LinkedHashMap<>();
 	private GenericObjectPool<InputStreamHolder> inputStreamPool=null;
@@ -44,22 +44,22 @@ public class ResourceAccessHolder implements InitializingBean {
 	private boolean hasRecReaderLimit =false;
 	private boolean hasRecWriterLimit =false;
 	private DbPoolMonitorService monitorService=null;
-	private static final List<String> prefixList= Arrays.asList(new String[]{"hdfs","ftp","sftp","http","https","file"});
-	private static final List<String> processClassList= Arrays.asList(new String[]{"Hdfs","ApacheVfs","ApacheVfs","ApacheVfs","ApacheVfs","Local"});
+	private static final List<String> prefixList= Lists.newArrayList(new String[]{"hdfs","ftp","sftp","http","https","file"});
+	private static final List<String> processClassList= Lists.newArrayList(new String[]{"Hdfs","ApacheVfs","ApacheVfs","ApacheVfs","ApacheVfs","Local"});
 
 	public ResourceAccessHolder() {
 
 	}
 
-	private static AbstractResourceAccessUtil loadResourceUtil(String type){
-		AbstractResourceAccessUtil util=null;
+	private static AbstractFileSystemAccessor loadResourceUtil(String type){
+		AbstractFileSystemAccessor util=null;
 		try{
 			int pos=prefixList.indexOf(type.toLowerCase());
 			if(pos!=-1) {
 				String className = "com.robin.core.fileaccess.util." + processClassList.get(pos) + "ResourceAccessUtil";
 				Class<?> clazz = Class.forName(className);
 				Constructor<?> construct = clazz.getDeclaredConstructor(new Class[]{});
-				util = (AbstractResourceAccessUtil) construct.newInstance(new Object[]{});
+				util = (AbstractFileSystemAccessor) construct.newInstance(new Object[]{});
 			}
 		}catch(Exception ex){
 			ex.printStackTrace();
@@ -67,11 +67,11 @@ public class ResourceAccessHolder implements InitializingBean {
 		return util;
 	}
 
-	public static AbstractResourceAccessUtil getAccessUtilByProtocol(String protocol){
+	public static AbstractFileSystemAccessor getAccessUtilByProtocol(String protocol){
 		if(resouceAccessUtilMap.containsKey(protocol)){
 			return resouceAccessUtilMap.get(protocol);
 		}else{
-			AbstractResourceAccessUtil util=loadResourceUtil(protocol);
+			AbstractFileSystemAccessor util=loadResourceUtil(protocol);
 			if(util!=null) {
                 resouceAccessUtilMap.put(protocol,util);
             }

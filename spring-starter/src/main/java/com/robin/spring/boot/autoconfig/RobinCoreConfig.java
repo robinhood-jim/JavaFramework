@@ -20,6 +20,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.*;
+import org.springframework.core.annotation.Order;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jdbc.support.lob.DefaultLobHandler;
 import org.springframework.jdbc.support.lob.LobHandler;
@@ -57,12 +58,11 @@ public class RobinCoreConfig implements TransactionManagementConfigurer, BeanFac
                 throw new ConfigurationIncorrectException("datasource main is missing");
             }
         }catch (Exception ex){
-
+            ex.printStackTrace();
         }
         return null;
     }
     @Bean(name="queryFactory")
-    @Qualifier("queryFactory")
     @ConditionalOnProperty(value = "core.query.xmlConfig",havingValue = "true")
     public QueryFactory getQueryFactory(){
         QueryFactory factory=new QueryFactory();
@@ -163,7 +163,13 @@ public class RobinCoreConfig implements TransactionManagementConfigurer, BeanFac
     private JdbcDao createJdbcDao(DataSource dataSource){
         return new JdbcDao(dataSource,SpringContextHolder.getBean(LobHandler.class),SpringContextHolder.getBean(QueryFactory.class),SpringContextHolder.getBean(BaseSqlGen.class));
     }
-
+    @Primary
+    @Bean(name="springContextHolder")
+    @Lazy(false)
+    @Order(-1)
+    public SpringContextHolder getHolder(){
+        return new SpringContextHolder();
+    }
 
     @Override
     public void setBeanFactory(BeanFactory beanFactory) throws BeansException {

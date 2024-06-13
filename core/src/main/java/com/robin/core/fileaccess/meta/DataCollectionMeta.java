@@ -46,6 +46,7 @@ public class DataCollectionMeta implements Serializable {
 	private Map<String,Integer> columnNameMap=new HashMap<>();
 	private String defaultTimestampFormat="yyyy-MM-dd HH:mm:ss";
 	private Long resType;
+	private String fsType;
 	private Long dbSourceId;
 	private Long sourceType;
 	private String fileFormat;
@@ -138,6 +139,10 @@ public class DataCollectionMeta implements Serializable {
 		}
 		public DataCollectionMeta.Builder resourceCfg(String key,String value){
 			meta.getResourceCfgMap().put(key,value);
+			return this;
+		}
+		public DataCollectionMeta.Builder fsType(String fsType){
+			meta.setFsType(fsType);
 			return this;
 		}
 		public DataCollectionMeta.Builder resPath(String resPath){

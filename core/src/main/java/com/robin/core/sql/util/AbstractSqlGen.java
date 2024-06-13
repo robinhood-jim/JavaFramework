@@ -16,6 +16,7 @@
 package com.robin.core.sql.util;
 
 import com.robin.core.base.dao.util.AnnotationRetriever;
+import com.robin.core.base.dao.util.FieldContent;
 import com.robin.core.base.datameta.DataBaseColumnMeta;
 import com.robin.core.base.util.Const;
 import com.robin.core.base.util.StringUtils;
@@ -233,7 +234,7 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
     @Override
     public String[] getResultColName(QueryString qs) {
         String field = qs.getField();
-        if (!field.contains(".*")) {
+        if (!field.contains(".*") && !field.contains("*")) {
             return getResultColName(field);
         } else {
             return null;
@@ -252,9 +253,9 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
 
         for (int i = 0; i < fieldsNums; i++) {
             fields[i] = token.nextToken().trim();
-            int asindex = fields[i].indexOf("as");
+            int asindex = fields[i].lastIndexOf("as");
             if (asindex == -1) {
-                asindex = fields[i].indexOf("AS");
+                asindex = fields[i].lastIndexOf("AS");
             }
             if (asindex != -1) {
                 int index = fields[i].lastIndexOf(" ");
@@ -267,7 +268,7 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
     }
 
     @Override
-    public String getFieldDefineSqlPart(AnnotationRetriever.FieldContent field) {
+    public String getFieldDefineSqlPart(FieldContent field) {
         String datatype = field.getDataType();
         StringBuilder builder = new StringBuilder();
         String name = field.getFieldName();
@@ -439,7 +440,7 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
         return sql.toString();
     }
     @Override
-    public String returnTypeDef(String dataType, AnnotationRetriever.FieldContent field) {
+    public String returnTypeDef(String dataType, FieldContent field) {
         StringBuilder builder=new StringBuilder();
         switch (dataType) {
             case Const.META_TYPE_BIGINT:
@@ -698,7 +699,7 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
     }
 
     @Override
-    public String getAlertColumnSqlPart(AnnotationRetriever.EntityContent entityContent, AnnotationRetriever.FieldContent fieldContent, AlertType type) {
+    public String getAlertColumnSqlPart(AnnotationRetriever.EntityContent entityContent, FieldContent fieldContent, AlertType type) {
         StringBuilder builder=new StringBuilder();
         String fullName= StringUtils.isEmpty(entityContent.getSchema())?entityContent.getTableName():entityContent.getSchema()+"."+entityContent.getTableName();
         builder.append("ALERT TABLE ").append(fullName);

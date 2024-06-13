@@ -5,11 +5,11 @@ import com.google.gson.Gson;
 
 import com.robin.comm.util.redis.JedisClientFactory;
 import com.robin.core.base.util.Const;
+import com.robin.core.fileaccess.fs.LocalFileSystemAccessor;
 import com.robin.core.fileaccess.iterator.AbstractFileIterator;
 import com.robin.core.fileaccess.iterator.TextFileIteratorFactory;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.util.AvroUtils;
-import com.robin.core.fileaccess.util.LocalResourceAccessUtil;
 import org.apache.avro.Schema;
 import org.apache.avro.SchemaBuilder;
 import org.apache.avro.generic.GenericRecord;
@@ -36,7 +36,7 @@ public class TestXMLReader {
         colmeta.setFileFormat(Const.FILETYPE_XML);
         BufferedReader reader=null;
         try {
-            LocalResourceAccessUtil utils = new LocalResourceAccessUtil();
+            LocalFileSystemAccessor utils = new LocalFileSystemAccessor();
             AbstractFileIterator iter= TextFileIteratorFactory.getProcessIteratorByType(colmeta);
             iter.beforeProcess(colmeta.getPath());
             while(iter.hasNext()){

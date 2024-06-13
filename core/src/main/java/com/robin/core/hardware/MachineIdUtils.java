@@ -1,19 +1,19 @@
 package com.robin.core.hardware;
 
-import com.google.common.collect.Lists;
 import com.robin.core.base.shell.CommandLineExecutor;
 
 import java.io.*;
 import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.Arrays;
 import java.util.List;
 
 public class MachineIdUtils {
     private static String osName = System.getProperty("os.name").toLowerCase();
     public static final String DUBS_PATH = "/var/lib/dbus/machine-id";
     public static final String DUBS_PATH_EXT = "/etc/machine-id";
-    public static final List<String> EXEC_DARWIN = Lists.newArrayList(new String[]{"ioreg", "-rd1", "-c", "IOPlatformExpertDevice"});
+    public static final List<String> EXEC_DARWIN = Arrays.asList(new String[]{"ioreg", "-rd1", "-c", "IOPlatformExpertDevice"});
 
     public static String getMachineId() throws RuntimeException {
         String machineId = null;
@@ -57,8 +57,69 @@ public class MachineIdUtils {
 
             }
         }
-
     }
+    public static String getCPUSerial() throws RuntimeException{
+        String serial="";
+        try {
+            if (isWindows()) {
+                //windows get disk serial
+                serial = CommandLineExecutor.getInstance().executeCmdReturnAfterRow(Arrays.asList("wmic", "cpu", "get", "ProcessorId"), 1);
+            }else if(isLinux()){
+                //serial=CommandLineExecutor.getInstance().executeCmd("dmidecode -s baseboard-serial-number");
+                serial = CommandLineExecutor.getInstance().executeCmdReturnSpecifyKey(Arrays.asList("dmidecode", "-t", "4", "|", "grep", "\"ID\""), "ID:");
+                if("Not Sepcified".equalsIgnoreCase(serial)){
+                    serial="";
+                }
+            }else if(isMacosName() || isMacosNameX()){
+                serial=CommandLineExecutor.getInstance().executeCmdReturnSpecifyKey(Arrays.asList("system_profiler","SPHardwareDataType"),"Serial Number (system):");
+                if("Not Sepcified".equalsIgnoreCase(serial)){
+                    serial="";
+                }
+            }
+            return serial;
+        }catch (Exception ex){
+            throw new RuntimeException(ex);
+        }
+    }
+    public static String getSystemSerial() throws RuntimeException{
+        String serial="";
+        try {
+            if (isWindows()) {
+                //windows get disk serial
+                serial = CommandLineExecutor.getInstance().executeCmdReturnAfterRow(Arrays.asList("wmic", "diskdrive", "get", "serialnumber"), 1);
+            }else if(isLinux()){
+                serial=CommandLineExecutor.getInstance().executeCmdReturnSpecifyKey(Arrays.asList("dmidecode","-t","system"),"Serial Number:");
+                if("Not Sepcified".equalsIgnoreCase(serial)){
+                    serial="";
+                }
+            }else if(isMacosName() || isMacosNameX()){
+                serial=CommandLineExecutor.getInstance().executeCmdReturnSpecifyKey(Arrays.asList("system_profiler","SPHardwareDataType"),"Serial Number (system):");
+                if("Not Sepcified".equalsIgnoreCase(serial)){
+                    serial="";
+                }
+            }
+            return serial;
+        }catch (Exception ex){
+            throw new RuntimeException(ex);
+        }
+    }
+    public static String getHardDiskSerial() throws RuntimeException{
+        String serial=null;
+        try{
+            if(isWindows()){
+                serial=CommandLineExecutor.getInstance().executeCmdReturnAfterRow(Arrays.asList("wmic","path","win32_physicalmedia","get","serialnumber"),1);
+            }else if(isLinux()){
+                serial=CommandLineExecutor.getInstance().executeCmdReturnSpecifyKey(Arrays.asList("sudo","lshw","-class","disk","|","grep","serial"),"serial:");
+            }else if(isMacosName() || isMacosNameX()){
+                serial=CommandLineExecutor.getInstance().executeCmdReturnSpecifyKey(Arrays.asList("system_profiler","SPStorageDataType"),"Volume UUID");
+            }
+            return serial;
+        }catch (Exception ex){
+            throw new RuntimeException(ex);
+        }
+    }
+
+
 
     public static boolean isLinux() {
         return osName.indexOf("linux") >= 0;
@@ -133,13 +194,16 @@ public class MachineIdUtils {
         //String[] strs=caculateMachineSerail(machineId,System.currentTimeMillis()+3600*24*365*1000);
         BigInteger val = new BigInteger(machineId.replaceAll("-", ""), 16);
         System.out.println(machineId);
-        System.out.println(val);
+        System.out.println("cpu "+MachineIdUtils.getCPUSerial());
+        System.out.println("system "+MachineIdUtils.getSystemSerial());
+        System.out.println("hardware "+MachineIdUtils.getHardDiskSerial());
+        //System.out.println(val);
         long ts = LocalDateTime.now().toInstant(ZoneOffset.of("+8")).getEpochSecond();
-        System.out.println(ts);
+        //System.out.println(ts);
 
         val = val.subtract(BigInteger.valueOf(ts));
 
-        System.out.println(val);
+        //System.out.println(val);
     }
 
 

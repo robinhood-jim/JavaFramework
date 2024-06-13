@@ -21,7 +21,7 @@ import com.robin.core.base.util.Const;
 import com.robin.core.base.util.FileUtils;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.meta.DataSetColumnMeta;
-import com.robin.core.fileaccess.util.AbstractResourceAccessUtil;
+import com.robin.core.fileaccess.fs.AbstractFileSystemAccessor;
 import com.robin.core.fileaccess.util.ResourceUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +45,12 @@ public abstract class AbstractFileWriter implements IResourceWriter {
 	protected List<String> columnList=new ArrayList<>();
 	protected Logger logger= LoggerFactory.getLogger(getClass());
 	protected DateTimeFormatter formatter;
-	protected AbstractResourceAccessUtil accessUtil;
+	protected AbstractFileSystemAccessor accessUtil;
+	protected String identifier;
+
+	public AbstractFileWriter(){
+
+	}
 
 	protected AbstractFileWriter(DataCollectionMeta colmeta){
 		this.colmeta=colmeta;
@@ -152,5 +157,10 @@ public abstract class AbstractFileWriter implements IResourceWriter {
 		List<String> fileSuffix=new ArrayList<>();
 		FileUtils.parseFileFormat(getOutputPath(colmeta.getPath()),fileSuffix);
 		return FileUtils.getFileCompressType(fileSuffix);
+	}
+
+	@Override
+	public String getIdentifier() {
+		return identifier;
 	}
 }

@@ -17,19 +17,24 @@ package com.robin.core.fileaccess.writer;
 
 import com.robin.core.base.util.Const;
 import com.robin.core.base.util.FileUtils;
+import com.robin.core.fileaccess.iterator.AbstractFileIterator;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.ObjectUtils;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 
 public class TextFileWriterFactory {
     private static Logger logger = LoggerFactory.getLogger(TextFileWriterFactory.class);
+    private static Map<String,Class<? extends IResourceWriter>> fileWriterMap =new HashMap<>();
+    static {
+        discoverIterator(fileWriterMap);
+    }
 
     public static AbstractFileWriter getFileWriterByType(DataCollectionMeta colmeta, BufferedWriter writer) throws IOException {
         AbstractFileWriter fileWriter = getFileWriterByType(colmeta);
@@ -57,35 +62,21 @@ public class TextFileWriterFactory {
     private static AbstractFileWriter getFileWriterByType(DataCollectionMeta colmeta) throws IOException {
         AbstractFileWriter fileWriter = null;
         try {
-            String fileSuffix=colmeta.getFileFormat();
-            if(fileSuffix.equalsIgnoreCase(Const.FILESUFFIX_CSV)){
-                fileWriter=new PlainTextFileWriter(colmeta);
-            } else if (fileSuffix.equalsIgnoreCase(Const.FILESUFFIX_JSON)) {
-                fileWriter = new JsonFileWriter(colmeta);
-            } else if (fileSuffix.equalsIgnoreCase(Const.FILESUFFIX_XML)) {
-                fileWriter = new XmlFileWriter(colmeta);
-            } else if (fileSuffix.equalsIgnoreCase(Const.FILESUFFIX_AVRO)) {
-                Class<AbstractFileWriter> clazz=(Class<AbstractFileWriter>) Class.forName(Const.FILEWRITER_AVRO_CLASSNAME);
-                fileWriter = clazz.getConstructor(DataCollectionMeta.class).newInstance(colmeta);
-            } else if (fileSuffix.equalsIgnoreCase(Const.FILESUFFIX_PARQUET)) {
-                Class<AbstractFileWriter> clazz = (Class<AbstractFileWriter>) Class.forName(Const.FILEWRITER_PARQUET_CLASSNAME);
-                fileWriter = clazz.getConstructor(DataCollectionMeta.class).newInstance(colmeta);
-            } else if (fileSuffix.equalsIgnoreCase(Const.FILESUFFIX_PROTOBUF)) {
-                Class<AbstractFileWriter> clazz = (Class<AbstractFileWriter>) Class.forName(Const.FILEWRITER_PROTOBUF_CLASSNAME);
-                fileWriter = clazz.getConstructor(DataCollectionMeta.class).newInstance(colmeta);
-            }else if(fileSuffix.equalsIgnoreCase(Const.FILESUFFIX_ORC)){
-                Class<AbstractFileWriter> clazz = (Class<AbstractFileWriter>) Class.forName(Const.FILEWRITER_ORC_CLASSNAME);
-                fileWriter = clazz.getConstructor(DataCollectionMeta.class).newInstance(colmeta);
-            }
 
-            else {
-                fileWriter = new PlainTextFileWriter(colmeta);
+            String fileSuffix=colmeta.getFileFormat();
+            Class<? extends IResourceWriter> writerClass=fileWriterMap.get(fileSuffix);
+            if (!ObjectUtils.isEmpty(writerClass)) {
+                fileWriter = (AbstractFileWriter) writerClass.getConstructor(DataCollectionMeta.class).newInstance(colmeta);
             }
 
         } catch (Exception ex) {
             throw new IOException(ex);
         }
         return fileWriter;
+    }
+    private static void discoverIterator(Map<String,Class<? extends IResourceWriter>> fileIterMap){
+        ServiceLoader.load(IResourceWriter.class).iterator().forEachRemaining(i->{if(i.getClass().isAssignableFrom(AbstractFileWriter.class))
+                fileIterMap.put(i.getIdentifier(),i.getClass());});
     }
 
 }

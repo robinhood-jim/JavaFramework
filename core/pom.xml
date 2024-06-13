@@ -91,6 +91,11 @@
         <!-- Spring end -->
         <dependency>
             <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
             <optional>true</optional>
         </dependency>
@@ -306,7 +311,7 @@
                     <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>
-            <plugin>
+           <!-- <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
@@ -323,11 +328,11 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>
+            </plugin>-->
             <plugin>
                 <groupId>com.github.wvengen</groupId>
                 <artifactId>proguard-maven-plugin</artifactId>
-                <version>2.2.0</version>
+                <version>2.6.1</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
@@ -347,7 +352,7 @@
                             <artifactId>lombok</artifactId>
                         </exclusion>
                     </exclusions>
-                    <proguardVersion>5.1</proguardVersion>
+                    <proguardVersion>7.1.0</proguardVersion>
                     <injar>core-1.0-SNAPSHOT.jar</injar>
                     <addMavenDescriptor>true</addMavenDescriptor>
                     <injarNotExistsSkip>true</injarNotExistsSkip>
@@ -360,9 +365,16 @@
                 </configuration>
                 <dependencies>
                     <dependency>
-                        <groupId>net.sf.proguard</groupId>
+                        <groupId>com.guardsquare</groupId>
                         <artifactId>proguard-base</artifactId>
-                        <version>6.2.2</version>
+                        <version>7.1.0</version>
+                        <scope>runtime</scope>
+                    </dependency>
+                    <dependency>
+                        <groupId>com.guardsquare</groupId>
+                        <artifactId>proguard-core</artifactId>
+                        <version>7.1.0</version>
+                        <scope>runtime</scope>
                     </dependency>
                 </dependencies>
             </plugin>

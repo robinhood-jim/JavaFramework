@@ -1,7 +1,7 @@
 package com.robin.comm.fileaccess.util;
 
+import com.robin.core.fileaccess.fs.AbstractFileSystemAccessor;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
-import com.robin.core.fileaccess.util.AbstractResourceAccessUtil;
 import com.robin.core.fileaccess.util.ResourceUtil;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.*;
@@ -21,7 +21,7 @@ public class MockFileSystem extends FileSystem {
     byte[] streamBytes;
     final List<MockInputStream> streams = new ArrayList<>();
     OutputStream outputStream;
-    AbstractResourceAccessUtil accessUtil;
+    AbstractFileSystemAccessor accessUtil;
     DataCollectionMeta colmeta;
 
     @Override
@@ -36,7 +36,7 @@ public class MockFileSystem extends FileSystem {
         setConf(conf);
         this.streamBytes = streamBytes;
     }
-    public MockFileSystem(DataCollectionMeta colmeta,AbstractResourceAccessUtil accessUtil) {
+    public MockFileSystem(DataCollectionMeta colmeta, AbstractFileSystemAccessor accessUtil) {
        this.accessUtil=accessUtil;
        this.colmeta=colmeta;
     }

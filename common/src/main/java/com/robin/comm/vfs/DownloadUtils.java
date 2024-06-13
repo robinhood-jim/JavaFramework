@@ -2,8 +2,8 @@ package com.robin.comm.vfs;
 
 
 import com.google.common.util.concurrent.*;
+import com.robin.core.fileaccess.fs.ApacheVfsFileSystemAccessor;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
-import com.robin.core.fileaccess.util.ApacheVfsResourceAccessUtil;
 import lombok.Data;
 import org.apache.commons.vfs2.FileObject;
 import org.apache.commons.vfs2.FileSystemManager;
@@ -41,7 +41,7 @@ public class DownloadUtils {
      * @throws InterruptedException
      */
     public static void asyncDownloadLocal(DataCollectionMeta collectionMeta,String resPath, String targetPath, int threadNum) throws IOException,ExecutionException,InterruptedException {
-        FileObject sourceObject = ApacheVfsResourceAccessUtil.getFileObject(manager, collectionMeta, resPath);
+        FileObject sourceObject = ApacheVfsFileSystemAccessor.getFileObject(manager, collectionMeta, resPath);
         ListeningExecutorService pool = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(threadNum));
         //目标为本地文件
         FileObject targetObject = manager.resolveFile("file:///" + targetPath, new FileSystemOptions());
