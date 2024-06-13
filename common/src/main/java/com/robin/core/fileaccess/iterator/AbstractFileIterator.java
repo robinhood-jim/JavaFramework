@@ -18,24 +18,46 @@ package com.robin.core.fileaccess.iterator;
 import com.robin.comm.dal.pool.ResourceAccessHolder;
 import com.robin.core.base.util.IOUtils;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
-import com.robin.core.fileaccess.util.AbstractResourceAccessUtil;
+import com.robin.core.fileaccess.fs.AbstractFileSystemAccessor;
+import com.robin.core.fileaccess.meta.DataSetColumnMeta;
 import com.robin.core.fileaccess.util.ResourceUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 import java.io.*;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-public abstract class AbstractFileIterator extends AbstractResIterator implements Closeable {
+public abstract class AbstractFileIterator implements IResourceIterator {
 	protected BufferedReader reader;
 	protected InputStream instream;
-	protected AbstractResourceAccessUtil accessUtil;
+	protected AbstractFileSystemAccessor accessUtil;
+	protected String identifier;
+	protected DataCollectionMeta colmeta;
+	protected List<String> columnList=new ArrayList<String>();
+	protected Map<String, DataSetColumnMeta> columnMap=new HashMap<>();
+	protected Logger logger= LoggerFactory.getLogger(getClass());
+	public AbstractFileIterator(){
 
-	protected AbstractFileIterator(DataCollectionMeta colmeta){
-		super(colmeta);
 	}
-	protected AbstractFileIterator(DataCollectionMeta colmeta,AbstractResourceAccessUtil accessUtil){
-		super(colmeta);
+	public AbstractFileIterator(DataCollectionMeta colmeta){
+		this.colmeta=colmeta;
+		for (DataSetColumnMeta meta:colmeta.getColumnList()) {
+			columnList.add(meta.getColumnName());
+			columnMap.put(meta.getColumnName(), meta);
+		}
+	}
+	public AbstractFileIterator(DataCollectionMeta colmeta, AbstractFileSystemAccessor accessUtil){
+		this.colmeta=colmeta;
+		for (DataSetColumnMeta meta:colmeta.getColumnList()) {
+			columnList.add(meta.getColumnName());
+			columnMap.put(meta.getColumnName(), meta);
+		}
 		this.accessUtil=accessUtil;
 	}
 
@@ -96,5 +118,8 @@ public abstract class AbstractFileIterator extends AbstractResIterator implement
 		if(instream!=null){
 			instream.close();
 		}
+	}
+	public String getIdentifier(){
+		return identifier;
 	}
 }

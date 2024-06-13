@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.robin.core.fileaccess.util;
+package com.robin.core.fileaccess.fs;
 
 import com.robin.core.compress.util.CompressDecoder;
 import com.robin.core.compress.util.CompressEncoder;
@@ -24,7 +24,12 @@ import java.io.*;
 /**
  * abstract resource system access Utils (Local/Hdfs/ApacheVFS(including ftp sftp)/S3/Tencent cloud/aliyun)
  */
-public abstract class AbstractResourceAccessUtil {
+public abstract class AbstractFileSystemAccessor implements IFileSystemAccessor {
+	protected String identifier;
+	public AbstractFileSystemAccessor(){
+
+	}
+
 	public static String[] retrieveResource(String path){
 		String[] ret=new String[2];
 
@@ -91,12 +96,13 @@ public abstract class AbstractResourceAccessUtil {
 		return CompressEncoder.getOutputStreamByCompressType(path,out);
 	}
 	
-	public abstract BufferedReader getInResourceByReader(DataCollectionMeta meta, String resourcePath) throws IOException;
-	public abstract BufferedWriter getOutResourceByWriter(DataCollectionMeta meta, String resourcePath) throws IOException;
-	public abstract OutputStream getOutResourceByStream(DataCollectionMeta meta, String resourcePath) throws IOException;
-	public abstract OutputStream getRawOutputStream(DataCollectionMeta meta, String resourcePath) throws IOException;
-	public abstract InputStream getInResourceByStream(DataCollectionMeta meta, String resourcePath) throws IOException;
-	public abstract InputStream getRawInputStream(DataCollectionMeta meta, String resourcePath) throws IOException;
-	public abstract boolean exists(DataCollectionMeta meta, String resourcePath) throws IOException;
-	public abstract long getInputStreamSize(DataCollectionMeta meta, String resourcePath) throws IOException;
+	@Override
+	public void init(DataCollectionMeta meta){
+
+	}
+
+	@Override
+	public String getIdentifier() {
+		return identifier;
+	}
 }

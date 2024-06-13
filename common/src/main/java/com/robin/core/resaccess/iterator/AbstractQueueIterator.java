@@ -20,6 +20,9 @@ public abstract class AbstractQueueIterator extends AbstractResIterator {
     protected Schema schema;
     protected Map<String,Object> cfgMap;
     protected Injection<GenericRecord,byte[]> recordInjection;
+    public AbstractQueueIterator(){
+
+    }
 
     @Override
     public void init() {

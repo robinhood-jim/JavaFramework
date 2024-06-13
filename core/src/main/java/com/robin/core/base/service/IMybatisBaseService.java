@@ -15,7 +15,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-public interface IMybatisBaseService<M extends BaseMapper<T>,T extends Serializable,P extends Serializable> extends IService<T> {
+public interface IMybatisBaseService<T extends Serializable,P extends Serializable> extends IService<T> {
     boolean deleteByIds(String ids);
     T get(P id);
     IPage<T> getPage(Map<String, Object> params, String defaultOrderField, boolean isAsc);

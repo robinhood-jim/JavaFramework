@@ -115,18 +115,12 @@ public class CommJdbcUtil {
     public static PageQuery queryByReplaceParamter(JdbcTemplate jdbcTemplate, LobHandler lobHandler, BaseSqlGen sqlGen, QueryString qs, PageQuery pageQuery) throws DAOException {
         List list ;
         String querySQL = getReplacementSql(sqlGen, qs, pageQuery);
-        if (logger.isInfoEnabled()) {
-            logger.info("querySQL: {}",querySQL);
-        }
 
         String sumSQL;
         if (qs.getCountSql() == null || "".equals(qs.getCountSql().trim())) {
             sumSQL = sqlGen.generateCountSql(querySQL);
         } else {
             sumSQL = sqlGen.getCountSqlByConfig(qs, pageQuery);
-        }
-        if (logger.isInfoEnabled()) {
-            logger.info("countSql: {}" , sumSQL);
         }
 
         int pageSize;
@@ -383,9 +377,6 @@ public class CommJdbcUtil {
         List list;
         try {
             String querySQL = getReplacementSql(sqlGen, qs, pageQuery);
-            if (logger.isInfoEnabled()) {
-                logger.info("querySQL: {}",querySQL);
-            }
             if (pageQuery.getPageSize() > 0) {
                 String sumSQL;
                 if (qs.getCountSql() == null || StringUtils.isEmpty(qs.getCountSql().trim())) {

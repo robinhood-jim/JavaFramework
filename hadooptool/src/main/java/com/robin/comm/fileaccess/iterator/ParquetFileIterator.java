@@ -3,6 +3,7 @@ package com.robin.comm.fileaccess.iterator;
 import com.robin.comm.fileaccess.util.FileSeekableInputStream;
 import com.robin.comm.fileaccess.util.ParquetUtil;
 import com.robin.comm.fileaccess.util.SeekableInputStream;
+import com.robin.core.base.util.Const;
 import com.robin.core.base.util.IOUtils;
 import com.robin.core.base.util.ResourceConst;
 import com.robin.core.fileaccess.iterator.AbstractFileIterator;
@@ -25,13 +26,11 @@ import org.apache.parquet.io.InputFile;
 import org.apache.parquet.schema.MessageType;
 import org.apache.parquet.schema.Type;
 import org.springframework.util.ObjectUtils;
-import sun.misc.Unsafe;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,9 +44,12 @@ public class ParquetFileIterator extends AbstractFileIterator {
     private GenericData.Record record;
     private ParquetReader<Map> ireader;
     private boolean useAvroEncode = false;
-
+    public ParquetFileIterator(){
+        identifier= Const.FILEFORMATSTR.PARQUET.getValue();
+    }
     public ParquetFileIterator(DataCollectionMeta colmeta) {
         super(colmeta);
+        identifier= Const.FILEFORMATSTR.PARQUET.getValue();
     }
 
     private List<Schema.Field> fields;

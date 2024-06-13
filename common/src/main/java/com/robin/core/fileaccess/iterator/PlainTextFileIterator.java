@@ -15,6 +15,7 @@
  */
 package com.robin.core.fileaccess.iterator;
 
+import com.robin.core.base.util.Const;
 import com.robin.core.base.util.StringUtils;
 import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
@@ -27,8 +28,12 @@ import java.util.Map;
 public class PlainTextFileIterator extends AbstractFileIterator{
 	private String readLineStr=null;
 	private String split=",";
+	public PlainTextFileIterator(){
+		identifier= Const.FILEFORMATSTR.CSV.getValue();
+	}
 	public PlainTextFileIterator(DataCollectionMeta metaList) {
 		super(metaList);
+		identifier= Const.FILEFORMATSTR.CSV.getValue();
 	}
 
 	@Override

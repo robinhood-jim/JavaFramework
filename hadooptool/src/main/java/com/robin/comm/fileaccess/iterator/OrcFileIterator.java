@@ -1,6 +1,7 @@
 package com.robin.comm.fileaccess.iterator;
 
 import com.robin.comm.fileaccess.util.MockFileSystem;
+import com.robin.core.base.util.Const;
 import com.robin.core.base.util.IOUtils;
 import com.robin.core.base.util.ResourceConst;
 import com.robin.core.fileaccess.iterator.AbstractFileIterator;
@@ -32,8 +33,12 @@ public class OrcFileIterator extends AbstractFileIterator {
     RecordReader rows ;
     VectorizedRowBatch batch ;
     List<String> fieldNames;
+    public OrcFileIterator(){
+        identifier= Const.FILEFORMATSTR.ORC.getValue();
+    }
     public OrcFileIterator(DataCollectionMeta colmeta) {
         super(colmeta);
+        identifier= Const.FILEFORMATSTR.ORC.getValue();
     }
     private final Map<String,Object> valueMap=new HashMap<>();
     int maxRow=-1;

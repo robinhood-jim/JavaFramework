@@ -1,37 +1,37 @@
 package com.robin.core.resaccess;
 
-import com.robin.core.base.util.ResourceConst;
 import com.robin.core.fileaccess.iterator.AbstractResIterator;
+import com.robin.core.fileaccess.iterator.IResourceIterator;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
-
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.ServiceLoader;
 
 
 @Slf4j
 public class CommResIteratorFactory {
-    private static final String KAFKA_ITER_CLASS = "com.robin.comm.resaccess.writer.KafkaResourceIterator";
-    private static final String CASSANDRA_ITER_CLASS = "com.robin.comm.resaccess.writer.CassandraResourceWriter";
-    private static final String MONGO_ITER_CLASS = "com.robin.comm.resaccess.writer.MongoResourceWriter";
-    private static final String REDIS_ITER_CLASS = "com.robin.comm.resaccess.writer.RedisResourceWriter";
-    private static final String ROCKET_ITER_CLASS = "com.robin.comm.resaccess.writer.RocketResourceWriter";
-    private static final String HBASE_ITER_CLASS = "com.robin.comm.resaccess.writer.HbaseResourceWriter";
+    private static Map<String,Class<? extends IResourceIterator>> iterMap =new HashMap<>();
+    static {
+        discoverIterator(iterMap);
+    }
 
-    public static AbstractResIterator getIter(Long resType, DataCollectionMeta colmeta) {
+    public static AbstractResIterator getIterator(Long resType, DataCollectionMeta colmeta) {
         AbstractResIterator iterator = null;
-        Class<AbstractResIterator> clazz = null;
+        Class<? extends IResourceIterator> clazz = iterMap.get(resType);
         try {
-            if(resType.equals(ResourceConst.ResourceType.TYPE_DB.getValue())){
-                //iterator=new JdbcResIterator(colmeta);
-            }
-            if (resType.equals(ResourceConst.ResourceType.TYPE_KAFKA.getValue())) {
-                clazz = (Class<AbstractResIterator>) Class.forName(KAFKA_ITER_CLASS);
-            }
             if(clazz!=null) {
-                iterator = clazz.getConstructor(DataCollectionMeta.class).newInstance(colmeta);
+                iterator = (AbstractResIterator)clazz.getConstructor(DataCollectionMeta.class).newInstance(colmeta);
             }
         } catch (Exception ex) {
             log.error("", ex);
         }
         return iterator;
+    }
+    private static void discoverIterator(Map<String,Class<? extends IResourceIterator>> fileIterMap){
+        ServiceLoader.load(IResourceIterator.class).iterator().forEachRemaining(i->{
+            if(i.getClass().isAssignableFrom(AbstractResIterator.class))
+                fileIterMap.put(i.getIdentifier(),i.getClass());});
     }
 }

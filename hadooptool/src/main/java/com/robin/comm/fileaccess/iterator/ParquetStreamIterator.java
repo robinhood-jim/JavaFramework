@@ -2,6 +2,7 @@ package com.robin.comm.fileaccess.iterator;
 
 import com.robin.comm.fileaccess.util.ParquetUtil;
 import com.robin.comm.fileaccess.util.SeekableInputStream;
+import com.robin.core.base.util.Const;
 import com.robin.core.base.util.IOUtils;
 import com.robin.core.fileaccess.iterator.AbstractFileIterator;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
@@ -32,8 +33,12 @@ public class ParquetStreamIterator extends AbstractFileIterator {
     private MessageType msgtype;
     private Configuration conf;
     private GenericData.Record record;
+    public ParquetStreamIterator(){
+        identifier= Const.FILEFORMATSTR.PARQUETSTREAM.getValue();
+    }
     public ParquetStreamIterator(DataCollectionMeta colmeta) {
         super(colmeta);
+        identifier= Const.FILEFORMATSTR.PARQUETSTREAM.getValue();
     }
     private List<Schema.Field> fields;
     private static final int COPY_BUFFER_SIZE = 8192;

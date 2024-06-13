@@ -65,7 +65,7 @@
         <servlet.version>2.5</servlet.version>
         <slf4j.version>1.7.6</slf4j.version>
         <junit.version>4.13.1</junit.version>
-        <org.springframework.version>5.1.5.RELEASE</org.springframework.version>
+        <org.springframework.version>5.2.22.RELEASE</org.springframework.version>
         <spring.boot.version>2.5.14</spring.boot.version>
         <spring.cloud.version>2.1.0.RELEASE</spring.cloud.version>
         <mysql.version>8.0.28</mysql.version>
@@ -1019,7 +1019,7 @@
             <dependency>
                 <groupId>org.projectlombok</groupId>
                 <artifactId>lombok</artifactId>
-                <version>1.18.10</version>
+                <version>1.18.14</version>
                 <optional>true</optional>
             </dependency>
             <dependency>

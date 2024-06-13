@@ -5,6 +5,7 @@ import com.github.os72.protobuf.dynamic.MessageDefinition;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
 import com.robin.comm.fileaccess.util.ProtoBufUtil;
+import com.robin.core.base.util.Const;
 import com.robin.core.fileaccess.iterator.AbstractFileIterator;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.meta.DataSetColumnMeta;
@@ -23,9 +24,12 @@ public class ProtoBufFileIterator extends AbstractFileIterator {
     //private ExtensionRegistry registry;
     private DynamicSchema.Builder schemaBuilder;
     private DynamicMessage.Builder mesgBuilder;
-
+    public ProtoBufFileIterator(){
+        identifier= Const.FILEFORMATSTR.PROTOBUF.getValue();
+    }
     public ProtoBufFileIterator(DataCollectionMeta colmeta) {
         super(colmeta);
+        identifier= Const.FILEFORMATSTR.PROTOBUF.getValue();
     }
 
 

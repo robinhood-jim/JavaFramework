@@ -15,8 +15,9 @@
  */
 package com.robin.core.base.util;
 
+import com.google.common.collect.Lists;
+
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -95,7 +96,7 @@ public class Const {
     public static final Integer COLUMN_INVALID = 0;
 
 
-    public enum FileFormat {
+    public enum FILEFORMAT {
         TYPE_CSV("1"),       //csv
         TYPE_JSON("2"),   //json
         TYPE_XLSX("3"),     //xlsx
@@ -104,7 +105,7 @@ public class Const {
         TYPE_AVRO("6");   //avro
         private String value;
 
-        FileFormat(String value) {
+        FILEFORMAT(String value) {
             this.value = value;
         }
 
@@ -181,6 +182,11 @@ public class Const {
 
     public static final String MRFRAME_YARN = "yarn";
     public static final String SQL_SELECT = "SELECT ";
+    public static final String SQL_UPDATE = "UPDATE ";
+    public static final String SQL_AS = " AS ";
+    public static final String SQL_FROM = " FROM ";
+    public static final String SQL_WHERE = " WHERE ";
+    public static final String SQL_INSERTINTO = "INSERT INTO ";
     public static final String USER_DEFAULTPASSWORD = "123456";
     public static final String RESOURCE_ASSIGN_ACCESS = "1";
     public static final String RESOURCE_ASSIGN_DENIED = "2";
@@ -358,12 +364,64 @@ public class Const {
             return String.valueOf(value);
         }
     }
+    public enum FILESYSTEM{
+        LOCAL("file"),
+        VFS("vfs"),
+        HDFS("hdfs"),
+        S3("s3"),
+        ALIYUN("oss"),
+        TENCENT("cos");
+        private String value;
+        FILESYSTEM(String value){
+            this.value=value;
+        }
+        public String getValue(){
+            return value;
+        }
+    }
+    public enum ACCESSRESOURCE{
+        JDBC("jdbc"),
+        MONGO("mongo"),
+        KAFAK("kafka"),
+        RABBITMQ("rabbitmq"),
+        ROCKETMQ("rocket"),
+        ZEROQ("zero"),
+        CLICKHOUSE("clickhouse"),
+        CASSANDRA("cassandra");
+
+
+        private String value;
+        ACCESSRESOURCE(String value){
+            this.value=value;
+        }
+        public String getValue(){
+            return value;
+        }
+    }
+    public enum FILEFORMATSTR {
+        JSON("json"),
+        AVRO("avro"),
+        ORC("orc"),
+        PARQUET("parquet"),
+        PARQUETSTREAM("parquetStream"),
+        XML("xml"),
+        PLAIN("txt"),
+        CSV("csv"),
+        PROTOBUF("proto");
+        private String value;
+        FILEFORMATSTR(String value){
+            this.value=value;
+        }
+        public String getValue(){
+            return value;
+        }
+    }
 
     //定时任务触发时间点
     public static final String TRIGGER_TIMESPAN = "triggerTimeSpan";
 
     public final static List<String> ESCAPE_CHARACTERS = new ArrayList<String>(
-            Arrays.asList("$", "(", ")", "*", "+", ".", "[",
+            Lists.newArrayList("$", "(", ")", "*", "+", ".", "[",
                     "?", "\\", "^", "{", "|"));
 
     public static final String ASC = "asc";

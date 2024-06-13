@@ -1,16 +1,17 @@
 package com.robin.core.base.util;
 
+import com.google.common.collect.Lists;
+
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 public class FileUtils {
-    public static final List<String> avaiableCompressSuffixs = Collections.unmodifiableList(Arrays.asList(Const.CompressType.COMPRESS_TYPE_GZ.toString(),
+    public static final List<String> avaiableCompressSuffixs = Collections.unmodifiableList(Lists.newArrayList(Const.CompressType.COMPRESS_TYPE_GZ.toString(),
             Const.CompressType.COMPRESS_TYPE_LZO.toString(), Const.CompressType.COMPRESS_TYPE_BZ2.toString(), Const.CompressType.COMPRESS_TYPE_SNAPPY.toString(),
             Const.CompressType.COMPRESS_TYPE_ZIP.toString(), Const.CompressType.COMPRESS_TYPE_LZMA.toString(),Const.CompressType.COMPRESS_TYPE_LZ4.toString(),Const.CompressType.COMPRESS_TYPE_ZSTD.toString(),Const.CompressType.COMPRESS_TYPE_BROTLI.toString(),Const.CompressType.COMPRESS_TYPE_XZ.toString()));
-    public static final List<Const.CompressType> compressTypeEnum =Collections.unmodifiableList(Arrays.asList(Const.CompressType.COMPRESS_TYPE_GZ, Const.CompressType.COMPRESS_TYPE_LZO,
+    public static final List<Const.CompressType> compressTypeEnum =Collections.unmodifiableList(Lists.newArrayList(Const.CompressType.COMPRESS_TYPE_GZ, Const.CompressType.COMPRESS_TYPE_LZO,
             Const.CompressType.COMPRESS_TYPE_BZ2, Const.CompressType.COMPRESS_TYPE_SNAPPY, Const.CompressType.COMPRESS_TYPE_ZIP, Const.CompressType.COMPRESS_TYPE_LZMA,Const.CompressType.COMPRESS_TYPE_LZ4,Const.CompressType.COMPRESS_TYPE_ZSTD,Const.CompressType.COMPRESS_TYPE_BROTLI,Const.CompressType.COMPRESS_TYPE_XZ));
 
     private FileUtils(){

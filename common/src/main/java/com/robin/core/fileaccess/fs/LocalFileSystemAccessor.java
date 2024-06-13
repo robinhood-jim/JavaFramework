@@ -1,12 +1,18 @@
-package com.robin.core.fileaccess.util;
+package com.robin.core.fileaccess.fs;
 
+import com.robin.core.base.util.Const;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import org.apache.commons.io.FileUtils;
 
 import java.io.*;
 import java.net.URI;
 
-public class LocalResourceAccessUtil extends AbstractResourceAccessUtil {
+public class LocalFileSystemAccessor extends AbstractFileSystemAccessor {
+	public LocalFileSystemAccessor(){
+		this.identifier= Const.FILESYSTEM.LOCAL.getValue();
+	}
+
+
 	@Override
     public BufferedReader getInResourceByReader(DataCollectionMeta meta, String resourcePath) throws IOException{
 		BufferedReader reader;
@@ -79,6 +85,8 @@ public class LocalResourceAccessUtil extends AbstractResourceAccessUtil {
 		}
 		return FileUtils.sizeOf(file);
 	}
+
+
 	private static  String getProcessPath(String url){
 		try {
 			URI uri = new URI(url);

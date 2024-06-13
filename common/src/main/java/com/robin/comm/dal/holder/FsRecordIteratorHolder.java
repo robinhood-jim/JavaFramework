@@ -16,11 +16,11 @@
 package com.robin.comm.dal.holder;
 
 import com.robin.core.base.exception.OperationInWorkException;
+import com.robin.core.fileaccess.fs.AbstractFileSystemAccessor;
 import com.robin.core.fileaccess.iterator.AbstractFileIterator;
 import com.robin.core.fileaccess.iterator.TextFileIteratorFactory;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.comm.dal.pool.ResourceAccessHolder;
-import com.robin.core.fileaccess.util.AbstractResourceAccessUtil;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -40,7 +40,7 @@ public class FsRecordIteratorHolder extends AbstractResourceHolder {
         URI uri=new URI(colmeta.getPath());
         String schema=uri.getScheme();
         String path=uri.getPath();
-        AbstractResourceAccessUtil util = ResourceAccessHolder.getAccessUtilByProtocol(schema.toLowerCase());
+        AbstractFileSystemAccessor util = ResourceAccessHolder.getAccessUtilByProtocol(schema.toLowerCase());
         InputStream inputStream = util.getInResourceByStream(colmeta, path);
         iterator = TextFileIteratorFactory.getProcessIteratorByPath(colmeta, inputStream);
     }

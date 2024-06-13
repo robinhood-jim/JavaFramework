@@ -210,15 +210,13 @@ public class ConvertUtil {
     }
 
     private static void setBaseObjectValue(BaseObject target, Object value, String field, Method setMethod, String... defaultDateTimeFormatter) throws Exception {
-        if (value != null) {
+        if (!ObjectUtils.isEmpty(value)) {
             target.AddDirtyColumn(field);
             Class<?> type = setMethod.getParameterTypes()[0];
-            if (StringUtils.isEmpty(value)) {
-                setMethod.invoke(target);
-            } else {
-                Object retValue = parseParameter(type, value, defaultDateTimeFormatter);
-                setMethod.invoke(target, retValue);
-            }
+            Object retValue = parseParameter(type, value, defaultDateTimeFormatter);
+            setMethod.invoke(target, retValue);
+        }else if(target.getDirtyColumn().contains(field)){
+            setMethod.invoke(target,null);
         }
     }
 

@@ -45,6 +45,9 @@ public abstract class AbstractResourceWriter implements IResourceWriter{
 
 
     protected StringBuilder builder=new StringBuilder();
+    public AbstractResourceWriter(){
+
+    }
     public AbstractResourceWriter(DataCollectionMeta colmeta){
         this.colmeta=colmeta;
         cfgMap=colmeta.getResourceCfgMap();

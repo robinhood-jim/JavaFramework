@@ -1,9 +1,9 @@
 package com.robin.comm.fileaccess.util;
 
 import com.robin.core.base.util.Const;
+import com.robin.core.fileaccess.fs.AbstractFileSystemAccessor;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.meta.DataSetColumnMeta;
-import com.robin.core.fileaccess.util.AbstractResourceAccessUtil;
 import com.robin.core.fileaccess.util.ResourceUtil;
 import org.apache.parquet.io.InputFile;
 import org.apache.parquet.io.OutputFile;
@@ -178,7 +178,7 @@ public class ParquetUtil {
         }
     }
 
-    public static OutputFile makeOutputFile(@NonNull AbstractResourceAccessUtil accessUtil, @NonNull DataCollectionMeta colmeta, @NonNull String filePath) {
+    public static OutputFile makeOutputFile(@NonNull AbstractFileSystemAccessor accessUtil, @NonNull DataCollectionMeta colmeta, @NonNull String filePath) {
         return new OutputFile() {
             @Override
             public PositionOutputStream create(long l) throws IOException {
@@ -202,7 +202,7 @@ public class ParquetUtil {
         };
     }
 
-    private static PositionOutputStream makePositionOutputStream(@NonNull AbstractResourceAccessUtil accessUtil, DataCollectionMeta colmeta, @Nonnull String filePath, int ioBufSize)
+    private static PositionOutputStream makePositionOutputStream(@NonNull AbstractFileSystemAccessor accessUtil, DataCollectionMeta colmeta, @Nonnull String filePath, int ioBufSize)
             throws IOException {
         final OutputStream output = accessUtil.getRawOutputStream(colmeta, ResourceUtil.getProcessPath(colmeta.getPath()));
         return new PositionOutputStream() {

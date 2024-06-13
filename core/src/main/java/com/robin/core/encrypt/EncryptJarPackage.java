@@ -1,5 +1,6 @@
 package com.robin.core.encrypt;
 
+import com.google.common.collect.Lists;
 import com.robin.core.base.util.IOUtils;
 import com.robin.core.hardware.MachineIdUtils;
 import com.thoughtworks.qdox.JavaProjectBuilder;
@@ -35,7 +36,7 @@ public class EncryptJarPackage {
 
     public static void main(String[] args) {
         String sourcePath = "D:/dev/workspaceframe/JavaFramework/core/src/";
-        String compileclassPath = ".;D:/dev/workspaceframe/JavaFramework/core/target/lib/*;d:/servlet-api-2.5.jar;D:/dev/workspaceframe/JavaFramework/core/target/core-1.0-SNAPSHOT_proguard_base.jar;d:/jdk1.8/lib/tools.jar";
+        String compileclassPath = ".;D:/dev/workspaceframe/JavaFramework/core/target/lib/*;d:/servlet-api-2.5.jar;D:/dev/workspaceframe/JavaFramework/core/target/core-1.0-SNAPSHOT_proLists.newArrayListrd_base.jar;d:/jdk1.8/lib/tools.jar";
         String srcPath = "d:/tmp/corencrypt/src/";
         JavaProjectBuilder builder = new JavaProjectBuilder();
         builder.addSourceFolder(new File(sourcePath));
@@ -54,7 +55,7 @@ public class EncryptJarPackage {
 
             //bin encrypt key file init
             dout = new DataOutputStream(new FileOutputStream(new File(srcPath + "config.bin")));
-            ZipOutputStream outputStream = getJarClasses("D:/dev/workspaceframe/JavaFramework/core/target/core-1.0-SNAPSHOT_proguard_base.jar", "com/robin/core/ext/", dout, machineSerial);
+            ZipOutputStream outputStream = getJarClasses("D:/dev/workspaceframe/JavaFramework/core/target/core-1.0-SNAPSHOT_proLists.newArrayListrd_base.jar", "com/robin/core/ext/", dout, machineSerial);
             while (iter1.hasNext()) {
                 StringBuilder buffer = new StringBuilder();
                 JavaSource source = iter1.next();
@@ -304,8 +305,8 @@ public class EncryptJarPackage {
                 List<String> optionList = new ArrayList<String>();
                 DiagnosticListener listener = new MyDiagnosticListener();
                 StandardJavaFileManager fileManager = compiler.getStandardFileManager(listener, Locale.ENGLISH, null);
-                optionList.addAll(Arrays.asList("-classpath", compileclassPath, "-d", srcPath));
-                JavaCompiler.CompilationTask task = compiler.getTask(null, fileManager, listener, optionList, null, Arrays.asList(new MyJavaFileObject(fullName, buffer)));
+                optionList.addAll(Lists.newArrayList("-classpath", compileclassPath, "-d", srcPath));
+                JavaCompiler.CompilationTask task = compiler.getTask(null, fileManager, listener, optionList, null, Lists.newArrayList(new MyJavaFileObject(fullName, buffer)));
                 boolean result = task.call();
                 if (result) {
                     writeFile(outputStream, encryptclaspath, new FileInputStream(new File(srcPath + encryptclaspath)));

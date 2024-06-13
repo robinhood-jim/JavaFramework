@@ -15,26 +15,47 @@
  */
 package com.robin.core.fileaccess.iterator;
 
-import com.robin.core.base.util.Const;
+import com.robin.core.base.exception.MissingConfigException;
 import com.robin.core.base.util.FileUtils;
 import com.robin.core.base.util.StringUtils;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
+import com.robin.core.fileaccess.fs.AbstractFileSystemAccessor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.ObjectUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @Slf4j
 public class TextFileIteratorFactory {
+	private static Map<String,Class<? extends IResourceIterator>> fileIterMap=new HashMap<>();
+	static {
+		discoverIterator(fileIterMap);
+	}
 	public static AbstractFileIterator getProcessIteratorByType(DataCollectionMeta colmeta) throws IOException{
 		AbstractFileIterator iterator=getIter(colmeta);
 		try {
 			iterator.init();
 		}catch (Exception ex){
 			log.error("{}",ex);
+		}
+		return iterator;
+	}
+	public static AbstractFileIterator getProcessIterator(DataCollectionMeta colmeta, AbstractFileSystemAccessor utils){
+		AbstractFileIterator iterator=null;
+		String fileType=colmeta.getFileFormat();
+
+		Class<? extends IResourceIterator> iterclass=fileIterMap.get(fileType);
+		try {
+			if (!ObjectUtils.isEmpty(iterclass)) {
+				iterator = (AbstractFileIterator) iterclass.getConstructor(DataCollectionMeta.class, AbstractFileSystemAccessor.class).newInstance(colmeta,utils);
+			}
+			iterator.setReader(utils.getInResourceByReader(colmeta,colmeta.getPath()));
+			iterator.init();
+		}catch (Exception ex){
+			throw new MissingConfigException(ex);
 		}
 		return iterator;
 	}
@@ -63,40 +84,24 @@ public class TextFileIteratorFactory {
 		iterator.init();
 		return iterator;
 	}
-	private static AbstractFileIterator getIter(DataCollectionMeta colmeta) throws IOException{
+	private static AbstractFileIterator getIter(DataCollectionMeta colmeta) throws MissingConfigException {
 		AbstractFileIterator iterator=null;
 		String fileType=colmeta.getFileFormat();
+
+		Class<? extends IResourceIterator> iterclass=fileIterMap.get(fileType);
 		try {
-			if(fileType.equalsIgnoreCase(Const.FILESUFFIX_CSV)){
-				iterator=new PlainTextFileIterator(colmeta);
-			}else if (fileType.equalsIgnoreCase(Const.FILESUFFIX_JSON)) {
-				iterator = new JsonFileIterator(colmeta);
-			} else if (fileType.equalsIgnoreCase(Const.FILESUFFIX_XML)) {
-				iterator = new XmlFileIterator(colmeta);
-			} else if (fileType.equalsIgnoreCase(Const.FILESUFFIX_AVRO)) {
-				Class<AbstractFileIterator> clazz = (Class<AbstractFileIterator>) Class.forName(Const.ITERATOR_AVRO_CLASSNAME);
-				iterator = clazz.getConstructor(DataCollectionMeta.class).newInstance(colmeta);
-			} else if (fileType.equalsIgnoreCase(Const.FILESUFFIX_PARQUET)) {
-				Class<AbstractFileIterator> clazz = (Class<AbstractFileIterator>) Class.forName(Const.FILEITERATOR_PARQUET_CLASSNAME);
-				iterator = clazz.getConstructor(DataCollectionMeta.class).newInstance(colmeta);
-			}else if(fileType.equalsIgnoreCase(Const.FILESUFFIX_PROTOBUF)){
-				Class<AbstractFileIterator> clazz = (Class<AbstractFileIterator>) Class.forName(Const.FILEITERATOR_PROTOBUF_CLASSNAME);
-				iterator = clazz.getConstructor(DataCollectionMeta.class).newInstance(colmeta);
-			}
-			else if(fileType.equalsIgnoreCase(Const.FILETYPE_PROTOBUF)){
-				Class<AbstractFileIterator> clazz = (Class<AbstractFileIterator>) Class.forName(Const.FILEITERATOR_PROTOBUF_CLASSNAME);
-				iterator = clazz.getConstructor(DataCollectionMeta.class).newInstance(colmeta);
-			}else if(fileType.equalsIgnoreCase(Const.FILETYPE_ORC)){
-				Class<AbstractFileIterator> clazz = (Class<AbstractFileIterator>) Class.forName(Const.FILEITERATOR_ORC_CLASSNAME);
-				iterator = clazz.getConstructor(DataCollectionMeta.class).newInstance(colmeta);
-			}
-			else{
-				iterator = new PlainTextFileIterator(colmeta);
+			if (!ObjectUtils.isEmpty(iterclass)) {
+				iterator = (AbstractFileIterator) iterclass.getConstructor(DataCollectionMeta.class).newInstance(colmeta);
 			}
 		}catch (Exception ex){
-			throw new IOException(ex);
+			throw new MissingConfigException(ex);
 		}
 		return iterator;
+	}
+	private static void discoverIterator(Map<String,Class<? extends IResourceIterator>> fileIterMap){
+		ServiceLoader.load(IResourceIterator.class).iterator().forEachRemaining(i->{
+			if(i.getClass().isAssignableFrom(AbstractFileIterator.class))
+				fileIterMap.put(i.getIdentifier(),i.getClass());});
 	}
 	
 

@@ -5,16 +5,16 @@ import com.robin.core.fileaccess.meta.DataSetColumnMeta;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Closeable;
 import java.util.*;
 
 
-public abstract class AbstractResIterator implements Iterator<Map<String,Object>>, Closeable {
+public abstract class AbstractResIterator implements IResourceIterator {
 
     protected DataCollectionMeta colmeta;
     protected List<String> columnList=new ArrayList<String>();
-    protected Map<String, DataSetColumnMeta> columnMap=new HashMap<String, DataSetColumnMeta>();
+    protected Map<String, DataSetColumnMeta> columnMap=new HashMap<>();
     protected Logger logger= LoggerFactory.getLogger(getClass());
+    protected String identifier;
     protected AbstractResIterator(){
 
     }
@@ -26,7 +26,9 @@ public abstract class AbstractResIterator implements Iterator<Map<String,Object>
             columnMap.put(meta.getColumnName(), meta);
         }
     }
-    public abstract void init();
-    public abstract void beforeProcess(String param);
-    public abstract void afterProcess();
+
+    @Override
+    public String getIdentifier() {
+        return identifier;
+    }
 }

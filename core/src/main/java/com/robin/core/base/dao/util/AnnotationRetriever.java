@@ -340,8 +340,7 @@ public class AnnotationRetriever {
                     } else if (IdType.INPUT.equals(idfield.type())) {
                         KeySequence sequence = clazz.getAnnotation(KeySequence.class);
                         if (!Objects.isNull(sequence)) {
-                            builder.setSequential(true);
-                            builder.setSequenceName(sequence.value());
+                            builder.setSequential(true).setSequenceName(sequence.value());
                         }
                     }
                 }
@@ -396,8 +395,7 @@ public class AnnotationRetriever {
                     } else if (genval.strategy() == GenerationType.SEQUENCE) {
                         SequenceGenerator generator = field.getAnnotation(SequenceGenerator.class);
                         if (generator != null) {
-                            builder.setSequential(true);
-                            builder.setSequenceName(generator.sequenceName());
+                            builder.setSequential(true).setSequenceName(generator.sequenceName());
                         }
                     }
                 }
@@ -447,7 +445,7 @@ public class AnnotationRetriever {
                 if (mapfield.primary()) {
                     builder.setPrimary(true);
                 }
-                if (mapfield.sequenceName() != null && !mapfield.sequenceName().isEmpty()) {
+                if (!ObjectUtils.isEmpty(mapfield.sequenceName())) {
                     builder.setSequential(true).setSequenceName(mapfield.sequenceName());
                 }
             }

@@ -26,7 +26,7 @@ public class EntityMappingUtil {
         List<FieldContent> fields = AnnotationRetriever.getMappingFieldsCache(obj.getClass());
         AnnotationRetriever.validateEntity(obj);
         StringBuilder buffer = new StringBuilder();
-        buffer.append("insert into ");
+        buffer.append(Const.SQL_INSERTINTO);
         if (tableDef.getSchema() != null && !tableDef.getSchema().isEmpty()) {
             buffer.append(sqlGen.getSchemaName(tableDef.getSchema())).append(".");
         }
@@ -106,12 +106,12 @@ public class EntityMappingUtil {
         List<FieldContent> fields = AnnotationRetriever.getMappingFieldsCache(obj.getClass());
         Map<String, FieldContent> fieldContentMap=AnnotationRetriever.getMappingFieldsMapCache(obj.getClass());
 
-        AnnotationRetriever.validateEntity(obj);
+        //AnnotationRetriever.validateEntity(obj);
 
         //get must change column
         List<String> dirtyColumns = obj.getDirtyColumn();
         StringBuilder fieldBuffer = new StringBuilder();
-        fieldBuffer.append("update ");
+        fieldBuffer.append(Const.SQL_UPDATE);
         if (tableDef.getSchema() != null && !tableDef.getSchema().isEmpty()) {
             fieldBuffer.append(sqlGen.getSchemaName(tableDef.getSchema())).append(".");
         }
@@ -157,7 +157,7 @@ public class EntityMappingUtil {
     public static UpdateSegment getUpdateSegmentByKey(BaseObject obj, BaseSqlGen sqlGen) throws SQLException {
         AnnotationRetriever.EntityContent tableDef = AnnotationRetriever.getMappingTableByCache(obj.getClass());
         List<FieldContent> fields = AnnotationRetriever.getMappingFieldsCache(obj.getClass());
-        AnnotationRetriever.validateEntity(obj);
+        //AnnotationRetriever.validateEntity(obj);
 
         //get must change column
         List<String> dirtyColumns = obj.getDirtyColumn();
@@ -229,17 +229,17 @@ public class EntityMappingUtil {
                 } else {
                     wherebuffer.append(field.getFieldName()).append("=? and ");
                     selectObjs.add(id);
-                    sqlbuffer.append(field.getFieldName()).append(" as ").append(field.getPropertyName()).append(",");
+                    sqlbuffer.append(field.getFieldName()).append(Const.SQL_AS).append(field.getPropertyName()).append(",");
                 }
 
             } else {
-                sqlbuffer.append(field.getFieldName()).append(" as ").append(field.getPropertyName()).append(",");
+                sqlbuffer.append(field.getFieldName()).append(Const.SQL_AS).append(field.getPropertyName()).append(",");
             }
 
         }
-        sqlbuffer.deleteCharAt(sqlbuffer.length() - 1).append(" from ");
+        sqlbuffer.deleteCharAt(sqlbuffer.length() - 1).append(Const.SQL_FROM);
         appendSchemaAndTable(tableDef, sqlbuffer, sqlGen);
-        sqlbuffer.append(" where ");
+        sqlbuffer.append(Const.SQL_WHERE);
         sqlbuffer.append(wherebuffer.substring(0, wherebuffer.length() - 5));
         segment.setSelectSql(sqlbuffer.toString());
         segment.setValues(selectObjs);
@@ -250,7 +250,7 @@ public class EntityMappingUtil {
         AnnotationRetriever.isBaseObjectClassValid(type);
         List<Object> params = new ArrayList<>();
         StringBuilder builder=new StringBuilder();
-        builder.append(wholeSelectSql).append(" where ");
+        builder.append(wholeSelectSql).append(Const.SQL_WHERE);
         List<FieldContent> fields = AnnotationRetriever.getMappingFieldsCache(type);
         SelectSegment selectSegment=new SelectSegment();
         for (FieldContent field : fields) {

@@ -16,11 +16,16 @@
 package com.robin.core.base.model;
 
 import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
 import com.google.gson.Gson;
+import com.robin.core.base.dao.util.AnnotationRetriever;
+import com.robin.core.base.dao.util.FieldContent;
+import com.robin.core.base.exception.DAOException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.ObjectUtils;
 
 /**
  * <p>Description:<b>Model VO BaseObject,All DataObject should Override this class</b></p>
@@ -55,5 +60,20 @@ public abstract class BaseObject implements Serializable,Cloneable{
 			log.error("",ex);
 		}
 		return str;
+	}
+	public boolean isEmpty() throws DAOException {
+		boolean emptyTag=true;
+		List<FieldContent> fields = AnnotationRetriever.getMappingFieldsCache(getClass());
+		try {
+			for (FieldContent content : fields) {
+				if (!ObjectUtils.isEmpty(content.getGetMethod().invoke(this))) {
+					emptyTag = false;
+					break;
+				}
+			}
+		}catch (InvocationTargetException | IllegalAccessException ex){
+			throw new DAOException(ex);
+		}
+		return emptyTag;
 	}
 }

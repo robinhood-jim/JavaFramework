@@ -17,9 +17,9 @@ package com.robin.comm.dal.holder.fs;
 
 import com.robin.comm.dal.holder.AbstractResourceHolder;
 import com.robin.core.base.exception.OperationInWorkException;
+import com.robin.core.fileaccess.fs.AbstractFileSystemAccessor;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.comm.dal.pool.ResourceAccessHolder;
-import com.robin.core.fileaccess.util.AbstractResourceAccessUtil;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,7 +39,7 @@ public class InputStreamHolder extends AbstractResourceHolder {
 		URI uri=new URI(colmeta.getPath());
 		String schema=uri.getScheme();
 		String path=uri.getPath();
-		AbstractResourceAccessUtil util= ResourceAccessHolder.getAccessUtilByProtocol(schema.toLowerCase());
+		AbstractFileSystemAccessor util= ResourceAccessHolder.getAccessUtilByProtocol(schema.toLowerCase());
 		in=util.getInResourceByStream(colmeta, path);
 	}
 
