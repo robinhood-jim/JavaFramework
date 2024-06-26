@@ -264,20 +264,13 @@ public class JdbcDaoTest extends TestCase {
     }
     @Test
     public void testQueryCondition(){
-        /*FilterConditionBuilder builder=new FilterConditionBuilder();
+        FilterConditionBuilder builder=new FilterConditionBuilder();
         builder.filter(SysUser::getAccountType, Const.OPERATOR.IN, Arrays.asList(1,2))
                 .eq(SysUser::getUserStatus,Const.VALID);
         List<SysUser> users=SpringContextHolder.getBean(SysUserService.class).queryByCondition(builder.getConditions());
         List<SysUser> users1=SpringContextHolder.getBean(SysUserService.class).queryByField(SysUser::getAccountType, Const.OPERATOR.IN,1,2);
-        log.info("get user {}",users);*/
-        PageQuery query=new PageQuery();
-        FilterConditionBuilder builder=new FilterConditionBuilder();
-        builder.filter(BsReceipt::getPrintDate,Const.OPERATOR.GT,"2024-05-10",Const.META_TYPE_DATE).eq(BsReceipt::getStatus,Const.VALID,Const.META_TYPE_STRING).notNull(BsReceipt::getInvoNo);
-        FilterCondition condition=new FilterCondition(Const.OPERATOR.EQ,builder.getConditions(),BsReceipt.class);
-        query.getConditionMap().put(PageQuery.DEFAULTQUERYSTRING,condition);
-        query.setSelectParamId("GETBSRECEIPT");
-        SpringContextHolder.getBean("jdbcDao",JdbcDao.class).queryBySelectId(query);
-        log.info("{}",query.getRecordSet());
+        log.info("get user {}",users);
+
 
     }
     @Test
