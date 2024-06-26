@@ -9,8 +9,12 @@ import com.robin.core.base.util.Const;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.writer.AbstractFileWriter;
 import com.robin.core.fileaccess.writer.TextFileWriterFactory;
+import org.apache.commons.lang3.tuple.Pair;
+import org.springframework.util.ObjectUtils;
 
 import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.sql.Connection;
 import java.util.Date;
 import java.util.HashMap;
@@ -36,6 +40,7 @@ public class TestResourceGen {
 		DataBaseParam param1=new DataBaseParam("192.168.147.93",0,"wi","root","123456");
 		BaseDataBaseMeta meta1=DataBaseMetaFactory.getDataBaseMetaByType("MySql", param1);
 		Connection conn=null;
+		Pair<BufferedWriter, OutputStream> pair=null;
 		try{
 			DataCollectionMeta colmeta=new DataCollectionMeta();
 			colmeta.addColumnMeta("infoId",Const.META_TYPE_BIGINT,null);
@@ -54,9 +59,9 @@ public class TestResourceGen {
 			colmeta.setResourceCfgMap(hdfsparam);
 			colmeta.setPath("/testdata/test1.gz");
 			colmeta.setEncode("UTF-8");
-			BufferedWriter writer=util.getOutResourceByWriter(colmeta, colmeta.getPath());
+			pair=util.getOutResourceByWriter(colmeta, colmeta.getPath());
 			colmeta.setFileFormat(Const.FILETYPE_JSON);
-			AbstractFileWriter jwriter=TextFileWriterFactory.getFileWriterByType(colmeta, writer);
+			AbstractFileWriter jwriter=(AbstractFileWriter) TextFileWriterFactory.getWriterByType(colmeta, pair.getKey());
 			System.out.println(new Date());
 			jwriter.beginWrite();
 			for (Map<String, Object> map:resultlist) {
@@ -68,6 +73,15 @@ public class TestResourceGen {
 			System.out.println(new Date());
 		}catch(Exception ex){
 			ex.printStackTrace();
+		}finally {
+			try {
+				if (!ObjectUtils.isEmpty(pair)) {
+					pair.getKey().close();
+					pair.getValue().close();
+				}
+			}catch (IOException ex){
+
+			}
 		}
 	}
 

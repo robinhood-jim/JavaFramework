@@ -20,7 +20,6 @@ import com.robin.core.base.dao.util.FieldContent;
 import com.robin.core.base.datameta.DataBaseColumnMeta;
 import com.robin.core.base.exception.DAOException;
 import com.robin.core.query.util.PageQuery;
-import com.robin.core.query.util.QueryParam;
 import com.robin.core.query.util.QueryString;
 
 import java.util.List;
@@ -42,15 +41,15 @@ public interface BaseSqlGen {
 
     String generatePageSql(String strSQL, PageQuery pageQuery);
 
-    String getQueryStringPart(List<QueryParam> paramList, String linkOper);
+    String getQueryStringPart(List<FilterCondition> paramList, String linkOper);
 
-    String getQueryStringPart(List<QueryParam> paramList);
+    String getQueryStringPart(List<FilterCondition> paramList);
 
-    String getQueryString(List<QueryParam> paramList, String linkOper);
+    String getQueryString(List<FilterCondition> paramList, String linkOper);
 
-    String getQueryStringByDiffOper(List<QueryParam> paramList);
+    String getQueryStringByDiffOper(List<FilterCondition> paramList);
 
-    String toSQLWithType(QueryParam param);
+    String toSQLWithType(FilterCondition param);
 
     String[] getResultColName(QueryString qs);
 

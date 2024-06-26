@@ -15,15 +15,9 @@
  */
 package com.robin.core.sql.util;
 
-import java.util.List;
-import java.util.Map;
-
 import com.robin.core.base.datameta.BaseDataBaseMeta;
 import com.robin.core.base.exception.DAOException;
-import com.robin.core.base.util.Const;
 import com.robin.core.query.util.PageQuery;
-import com.robin.core.query.util.QueryParam;
-import com.robin.core.query.util.QueryString;
 
 public class SybaseSqlGen extends AbstractSqlGen implements BaseSqlGen{
 	private static SybaseSqlGen sqlGen=new SybaseSqlGen();
@@ -76,11 +70,7 @@ public class SybaseSqlGen extends AbstractSqlGen implements BaseSqlGen{
 		}
 	}
 
-	
-	private String getClassSql(List<QueryParam> queryList) {
 
-		return null;
-	}
 
 	@Override
     public String generateSingleRowSql(String querySql) {

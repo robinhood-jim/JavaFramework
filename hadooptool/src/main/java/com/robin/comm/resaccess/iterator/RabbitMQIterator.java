@@ -33,6 +33,11 @@ public class RabbitMQIterator extends AbstractQueueIterator {
     }
 
     @Override
+    public void beforeProcess(String param) {
+
+    }
+
+    @Override
     public void init() {
         connectionFactory=new CachingConnectionFactory();
         int port=5672;

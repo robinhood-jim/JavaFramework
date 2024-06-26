@@ -3,6 +3,7 @@ package com.robin.comm.test;
 import com.robin.core.base.util.ResourceConst;
 import com.robin.core.fileaccess.fs.FileSystemAccessorFactory;
 import com.robin.core.fileaccess.iterator.AbstractFileIterator;
+import com.robin.core.fileaccess.iterator.IResourceIterator;
 import com.robin.core.fileaccess.iterator.TextFileIteratorFactory;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.fs.AbstractFileSystemAccessor;
@@ -35,7 +36,7 @@ public class TestJsonRead {
 			AbstractFileSystemAccessor util= FileSystemAccessorFactory.getResourceAccessorByType(colmeta.getResType());
 			//BufferedReader reader=util.getInResourceByReader(colmeta);//new BufferedReader(new FileReader(new File("e:/test1.data")));
 			InputStream reader=util.getInResourceByStream(colmeta,colmeta.getPath() );
-			AbstractFileIterator jreader=TextFileIteratorFactory.getProcessIteratorByType(colmeta, reader);
+			IResourceIterator jreader=TextFileIteratorFactory.getProcessIteratorByType(colmeta, reader);
 			while(jreader.hasNext()){
 				Map<String,Object> map=jreader.next();
 				logger.info("{}",map);

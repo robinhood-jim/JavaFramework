@@ -21,9 +21,9 @@ import com.robin.core.base.util.Const;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.meta.DataSetColumnMeta;
 import com.robin.core.query.util.PageQuery;
-import com.robin.core.query.util.QueryParam;
 import com.robin.core.query.util.QueryString;
 import com.robin.core.sql.util.BaseSqlGen;
+import com.robin.core.sql.util.FilterCondition;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -62,27 +62,22 @@ public class CommJdbcUtil {
                     String columnType = pageQuery.getColumnTypes().get(String.valueOf(i - 1));
                     String value = pageQuery.getParameters().get(String.valueOf(i));
                     switch (columnType) {
-                        case QueryParam.COLUMN_TYPE_INT:
+                        case Const.META_TYPE_INTEGER:
                             ps.setInt(i, Integer.parseInt(value));
                             break;
-                        case QueryParam.COLUMN_TYPE_DOUBLE:
+                        case Const.META_TYPE_DOUBLE:
                             ps.setDouble(i, Double.parseDouble(value));
                             break;
-                        case QueryParam.COLUMN_TYPE_LONG:
+                        case Const.META_TYPE_BIGINT:
                             ps.setLong(i, Long.parseLong(value));
                             break;
-                        case QueryParam.COLUMN_TYPE_DATE: {
+                        case Const.META_TYPE_DATE:
                             Date date = new Date(Date.from(LocalDateTime.parse(value,dayFormat).atZone(ZoneId.systemDefault()).toInstant()).getTime());
                             ps.setDate(i, date);
                             break;
-                        }
-                        case QueryParam.COLUMN_TYPE_TIMESTAMP: {
-                            Date date = new Date(Date.from(LocalDateTime.parse(value,timeFormat).atZone(ZoneId.systemDefault()).toInstant()).getTime());
-                            ps.setDate(i, date);
-                            break;
-                        }
-                        case QueryParam.COLUMN_TYPE_STRING:
-                            ps.setString(i, value);
+                        case Const.META_TYPE_TIMESTAMP:
+                            Timestamp ts= new Timestamp(Date.from(LocalDateTime.parse(value,timeFormat).atZone(ZoneId.systemDefault()).toInstant()).getTime());
+                            ps.setTimestamp(i, ts);
                             break;
                         default:
                             ps.setString(i, value);
@@ -194,15 +189,29 @@ public class CommJdbcUtil {
         String querySQL = sqlGen.generateSqlBySelectId(qs, pageQuery);
 
         Map<String, String> params = pageQuery.getParameters();
+        if(!CollectionUtils.isEmpty(params)) {
 
-        for (Map.Entry<String, String> entry : params.entrySet()) {
-            String key = entry.getKey();
-            String replacestr = "\\$\\{" + key + "\\}";
-            String value = entry.getValue();
-            if (value != null) {
-                querySQL = querySQL.replaceAll(replacestr, value);
-            } else {
-                querySQL = querySQL.replaceAll(replacestr, "");
+            for (Map.Entry<String, String> entry : params.entrySet()) {
+                String key = entry.getKey();
+                String replacestr = "\\$\\{" + key + "\\}";
+                String value = entry.getValue();
+                if (value != null) {
+                    querySQL = querySQL.replaceAll(replacestr, value);
+                } else {
+                    querySQL = querySQL.replaceAll(replacestr, "");
+                }
+            }
+        }
+        if(!CollectionUtils.isEmpty(pageQuery.getConditionMap())){
+            for(Map.Entry<String,FilterCondition> entry:pageQuery.getConditionMap().entrySet()){
+                String key = entry.getKey();
+                String replacestr = "\\$\\{" + key + "\\}";
+                String value = sqlGen.toSQLWithType(entry.getValue());
+                if (value != null) {
+                    querySQL = querySQL.replaceAll(replacestr, entry.getValue().getLinkOper()+value);
+                } else {
+                    querySQL = querySQL.replaceAll(replacestr, "");
+                }
             }
         }
         return querySQL;

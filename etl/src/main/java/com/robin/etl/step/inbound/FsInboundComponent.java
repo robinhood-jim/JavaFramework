@@ -1,15 +1,13 @@
 package com.robin.etl.step.inbound;
 
-import com.robin.core.fileaccess.iterator.AbstractResIterator;
-import com.robin.core.fileaccess.meta.DataCollectionMeta;
+import com.robin.core.fileaccess.iterator.IResourceIterator;
+import com.robin.core.fileaccess.iterator.TextFileIteratorFactory;
 import com.robin.etl.context.StatefulJobContext;
 import com.robin.etl.context.StepContext;
-import com.robin.core.fileaccess.iterator.AbstractFileIterator;
-import com.robin.core.fileaccess.iterator.TextFileIteratorFactory;
 import com.robin.etl.step.AbstractComponent;
 
 public class FsInboundComponent extends AbstractComponent {
-    protected AbstractResIterator iterator;
+    protected IResourceIterator iterator;
 
     public FsInboundComponent(Long stepId) {
         super(stepId);
@@ -46,7 +44,7 @@ public class FsInboundComponent extends AbstractComponent {
         return true;
     }
 
-    public AbstractResIterator getResourceIterator(){
+    public IResourceIterator getResourceIterator(){
         return iterator;
     }
 

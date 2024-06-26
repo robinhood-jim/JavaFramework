@@ -16,5 +16,5 @@ import org.apache.hadoop.conf.Configuration;
  */
 @FunctionalInterface
 public interface HDFSSecurityProxy {
-	Object run(final Configuration config);
+	Object run(final Configuration config) throws HdfsException;
 }

@@ -23,7 +23,10 @@ public class FilterCondition {
     private Const.OPERATOR operator;
     private String columnCode;
     private Object value;
-    private List<?> values;
+    private List<FilterCondition> values;
+    private String columnType;
+    private String linkOper=Const.OPERATOR.LINK_AND.getSignal();
+    private Class<? extends BaseObject> mappingClass;
 
 
     private Map<String, FieldContent> fieldMap;
@@ -41,10 +44,17 @@ public class FilterCondition {
         this.value = value;
     }
 
+
     public FilterCondition(String columnCode, Const.OPERATOR operator, Object value) {
         this.columnCode = columnCode;
         this.operator = operator;
         this.value = value;
+    }
+    public FilterCondition(String columnCode,Const.OPERATOR operator, Object value,String columnType) {
+        this.columnCode = columnCode;
+        this.operator = operator;
+        this.value = value;
+        this.columnType=columnType;
     }
 
     public <T extends BaseObject> FilterCondition(PropertyFunction<T, ?> function, Const.OPERATOR operator, Object value) {
@@ -54,42 +64,22 @@ public class FilterCondition {
         this.value = value;
     }
 
-    public FilterCondition(String columnCode, Const.OPERATOR operator, List<?> values) {
+    public FilterCondition(String columnCode, Const.OPERATOR operator, List<FilterCondition> values) {
         this.columnCode = columnCode;
         this.operator = operator;
         this.values = values;
     }
 
-    public <T extends BaseObject> FilterCondition(PropertyFunction<T, ?> function, Const.OPERATOR operator, List<?> values) {
+    public <T extends BaseObject> FilterCondition(PropertyFunction<T, ?> function, Const.OPERATOR operator, List<FilterCondition> values) {
         String columnCode = AnnotationRetriever.getFieldName(function);
         this.columnCode = columnCode;
         this.operator = operator;
         this.values = values;
     }
 
-    public FilterCondition(String columnCode, Const.OPERATOR operator, Object value, String suffixOper) {
-        this.columnCode = columnCode;
-        this.operator = operator;
-        this.value = value;
-        this.suffixOper = suffixOper;
-    }
 
-    public FilterCondition(String columnCode, Const.OPERATOR operator, List<?> values, String suffixOper) {
-        this.columnCode = columnCode;
-        this.operator = operator;
-        this.values = values;
-        this.suffixOper = suffixOper;
-    }
 
-    public FilterCondition(String columnCode, Const.OPERATOR operator, Object value, String prefixOper, String suffixOper) {
-        this.columnCode = columnCode;
-        this.operator = operator;
-        this.value = value;
-        this.prefixOper = prefixOper;
-        this.suffixOper = suffixOper;
-    }
-
-    public FilterCondition(String columnCode, Const.OPERATOR operator, List<?> values, String prefixOper, String suffixOper) {
+    public FilterCondition(String columnCode, Const.OPERATOR operator, List<FilterCondition> values, String prefixOper, String suffixOper) {
         this.columnCode = columnCode;
         this.operator = operator;
         this.values = values;
@@ -97,19 +87,27 @@ public class FilterCondition {
         this.suffixOper = suffixOper;
     }
 
-    public FilterCondition(Const.OPERATOR operator, List<?> values, String prefixOper, String suffixOper) {
+    public FilterCondition(Const.OPERATOR operator, List<FilterCondition> values, String prefixOper, String suffixOper) {
         this.operator = operator;
         this.values = values;
         this.prefixOper = prefixOper;
         this.suffixOper = suffixOper;
     }
 
-    public FilterCondition(Const.OPERATOR operator, List<?> values) {
+    public FilterCondition(Const.OPERATOR operator, List<FilterCondition> values) {
         this.operator = operator;
         this.values = values;
     }
+    public FilterCondition(Const.OPERATOR operator, List<FilterCondition> values,Class<? extends BaseObject> mappingClass) {
+        this.operator = operator;
+        if(!CollectionUtils.isEmpty(values)){
+            values.forEach(f->f.setMappingClass(mappingClass));
+        }
+        this.values = values;
+        this.mappingClass=mappingClass;
+    }
 
-    public String toSQLPart() {
+    public String toPreparedSQLPart() {
         StringBuilder sbSQLStr = new StringBuilder();
         String realColumn = columnCode;
         if (fieldMap.containsKey(columnCode)) {
@@ -196,7 +194,7 @@ public class FilterCondition {
                     sbSQLStr.append("(");
                     for (int i = 0; i < filterConditions.size(); i++) {
                         filterConditions.get(i).setFieldMap(fieldMap);
-                        sbSQLStr.append(filterConditions.get(i).toSQLPart());
+                        sbSQLStr.append(filterConditions.get(i).toPreparedSQLPart());
                         if (i != filterConditions.size() - 1) {
                             sbSQLStr.append(filterConditions.get(i).getSuffixOper());
                         }
@@ -214,7 +212,7 @@ public class FilterCondition {
                     List<FilterCondition> filterConditions1 = (List<FilterCondition>) value;
                     for (int i = 0; i < filterConditions1.size(); i++) {
                         filterConditions1.get(i).setFieldMap(fieldMap);
-                        sbSQLStr.append(filterConditions1.get(i).toSQLPart());
+                        sbSQLStr.append(filterConditions1.get(i).toPreparedSQLPart());
                         if (i != filterConditions1.size() - 1) {
                             sbSQLStr.append(filterConditions1.get(i).getSuffixOper());
                         }
@@ -297,6 +295,5 @@ public class FilterCondition {
                 objList.add(getValue());
         }
     }
-
 
 }

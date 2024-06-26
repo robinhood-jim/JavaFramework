@@ -14,7 +14,9 @@ import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.util.StringUtils;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.sql.*;
 import java.util.Map;
 import java.util.Objects;
@@ -53,7 +55,6 @@ public class  JdbcResIterator extends AbstractResIterator {
         }
     }
 
-    @Override
     public void beforeProcess(String param) {
         try {
             if (param.toLowerCase().startsWith("select ")) {
@@ -110,4 +111,5 @@ public class  JdbcResIterator extends AbstractResIterator {
     public String getIdentifier() {
         return "jdbc";
     }
+
 }

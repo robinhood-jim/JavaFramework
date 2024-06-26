@@ -17,12 +17,14 @@ package com.robin.core.sql.util;
 
 import com.robin.core.base.datameta.BaseDataBaseMeta;
 import com.robin.core.base.exception.DAOException;
+import com.robin.core.base.util.Const;
 import com.robin.core.query.util.PageQuery;
-import com.robin.core.query.util.QueryParam;
 
 public class OracleSqlGen extends AbstractSqlGen implements BaseSqlGen {
 
 	private static final OracleSqlGen sqlGen=new OracleSqlGen();
+	private String dayFormatStr="YYYY-MM-DD";
+	private String timeFormatStr="YYYY-MM-DD HH:MM:SS";
 	private OracleSqlGen(){
 
 	}
@@ -79,39 +81,21 @@ public class OracleSqlGen extends AbstractSqlGen implements BaseSqlGen {
 			return getNoPageSql(strSQL,pageQuery);
 		}
 	}
-
 	@Override
-    protected String toSQLForString(QueryParam param) {
-		StringBuilder sql = new StringBuilder();
-		String nQueryModel = param.getQueryMode();
-		if (param.getQueryValue() == null || "".equals(param.getQueryValue().trim())) {
-            return "";
-        }
-		String key = param.getColumnName();
-		if (param.getAliasName() != null && !"".equals(param.getAliasName())) {
-            key = param.getAliasName() + "." + key;
-        }
-		String value = replace(param.getQueryValue());
-		if (value != null && !"".equals(value)) {
-			if (nQueryModel.equals(QueryParam.QUERYMODE_GT)) {
-                sql.append(key + ">" + "'" + value + "'");
-            } else if (nQueryModel.equals(QueryParam.QUERYMODE_EQUAL)) {
-                sql.append(key + "='" + value + "'");
-            } else if (nQueryModel.equals(QueryParam.QUERYMODE_NOTEQUAL)) {
-                sql.append(key + "!='" + value + "'");
-            } else if (nQueryModel.equals(QueryParam.QUERYMODE_LIKE)) {
-				if(value.contains("%")) {
-                    sql.append(key + " like '" + value + "'");
-                } else {
-                    sql.append(key + " like '%" + value + "%'");
-                }
-			}
+	protected String wrapValue(FilterCondition condition) {
+		if(containsSqlInjection(condition.getValue())){
+			return null;
 		}
-		return sql.toString();
+		if(Const.META_TYPE_DATE.equals(condition.getColumnType())){
+			return "to_date('" + condition.getValue().toString() + "','"+dayFormatStr+"')";
+		}else if(Const.META_TYPE_TIMESTAMP.equals(condition.getColumnType())){
+			return "to_date('" + condition.getValue().toString() + "','"+timeFormatStr+"')";
+		}
+		return super.wrapValue(condition);
 	}
 
-	@Override
-    protected String toSQLForDate(QueryParam param) {
+	/*@Override
+    protected String toSQLForDate(FilterCondition param) {
 		StringBuilder sql = new StringBuilder();
 		String nQueryModel = param.getQueryMode();
 		if (param.getQueryValue() == null || "".equals(param.getQueryValue().trim())) {
@@ -122,7 +106,7 @@ public class OracleSqlGen extends AbstractSqlGen implements BaseSqlGen {
             key = param.getAliasName() + "." + key;
         }
 		String value = param.getQueryValue();
-		if (nQueryModel.equals(QueryParam.QUERYMODE_GT)) {
+		if (Const.OPERATOR.GT.getValue().equals(nQueryModel)) {
             sql.append(key + ">" + "to_date('" + value + "','YYYY-MM-DD')");
         } else if (nQueryModel.equals(QueryParam.QUERYMODE_GTANDEQUAL)) {
             sql.append(key + ">=" + "to_date('" + value + "','YYYY-MM-DD')");
@@ -142,7 +126,7 @@ public class OracleSqlGen extends AbstractSqlGen implements BaseSqlGen {
             }
 		}
 		return sql.toString();
-	}
+	}*/
 
 	@Override
     public String generateSingleRowSql(String querySql) {
@@ -178,5 +162,13 @@ public class OracleSqlGen extends AbstractSqlGen implements BaseSqlGen {
 	@Override
 	public boolean supportIncrement() throws DAOException {
 		return false;
+	}
+
+	public void setDayFormatStr(String dayFormatStr) {
+		this.dayFormatStr = dayFormatStr;
+	}
+
+	public void setTimeFormatStr(String timeFormatStr) {
+		this.timeFormatStr = timeFormatStr;
 	}
 }

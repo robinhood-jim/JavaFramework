@@ -6,7 +6,7 @@ import com.robin.core.fileaccess.fs.AbstractFileSystemAccessor;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.hadoop.hdfs.HDFSProperty;
 import com.robin.hadoop.hdfs.HDFSUtil;
-import org.apache.hadoop.fs.FSDataOutputStream;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.fs.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,31 +17,32 @@ import java.util.Map;
 
 public class HdfsFileSystemAccessor extends AbstractFileSystemAccessor {
 	private static final Logger logger=LoggerFactory.getLogger(HdfsFileSystemAccessor.class);
-	private final Map<String, HDFSUtil> hdfsUtilMap=new MapMaker().concurrencyLevel(16).weakKeys().makeMap();
+	private final Map<String, HDFSUtil> hdfsUtilMap=new MapMaker().concurrencyLevel(16).makeMap();
 	private final Map<String, HDFSProperty> hdfspropMap=new HashMap<>();
 
 	public HdfsFileSystemAccessor(){
 		this.identifier= Const.FILESYSTEM.HDFS.getValue();
 	}
 	@Override
-	public BufferedReader getInResourceByReader(DataCollectionMeta meta, String resourcePath)
+	public Pair<BufferedReader,InputStream> getInResourceByReader(DataCollectionMeta meta, String resourcePath)
 			throws IOException {
 		HDFSUtil util=getHdfsUtil(meta);
-
-		return getReaderByPath(resourcePath, util.getFileSystem().open(new Path(resourcePath)), meta.getEncode());
+		InputStream stream=util.getFileSystem().open(new Path(resourcePath));
+		return Pair.of(getReaderByPath(resourcePath, stream, meta.getEncode()),stream);
 	}
 	
 	@Override
-	public BufferedWriter getOutResourceByWriter(DataCollectionMeta meta, String resourcePath)
+	public Pair<BufferedWriter,OutputStream> getOutResourceByWriter(DataCollectionMeta meta, String resourcePath)
 			throws IOException {
 		HDFSUtil util=getHdfsUtil(meta);
-
-		try(FSDataOutputStream outputStream=util.getFileSystem().create(new Path(resourcePath))) {
+		OutputStream outputStream=null;
+		try {
 			if (util.exists(resourcePath)) {
 				logger.error("output file {}  exist!,remove it" ,resourcePath );
 				util.delete(meta.getPath());
 			}
-			return getWriterByPath(meta.getPath(), outputStream, meta.getEncode());
+			outputStream=util.getFileSystem().create(new Path(resourcePath));
+			return Pair.of(getWriterByPath(meta.getPath(), outputStream, meta.getEncode()),outputStream);
 		}catch (Exception ex){
 			throw new IOException(ex);
 		}

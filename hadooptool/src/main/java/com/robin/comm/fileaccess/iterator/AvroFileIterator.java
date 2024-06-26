@@ -63,15 +63,7 @@ public class AvroFileIterator extends AbstractFileIterator {
 	}
 
 
-	@Override
-	public void beforeProcess(String resourcePath) {
-		try {
-			schema= AvroUtils.getSchemaFromMeta(colmeta);
-			doInit(resourcePath);
-		}catch (Exception ex){
-			logger.error("Exception {0}",ex);
-		}
-	}
+
 	private void doInit(String resourcePath) throws Exception{
 		if(colmeta.getSourceType().equals(ResourceConst.IngestType.TYPE_HDFS.getValue())){
 			HDFSUtil util=new HDFSUtil(colmeta);

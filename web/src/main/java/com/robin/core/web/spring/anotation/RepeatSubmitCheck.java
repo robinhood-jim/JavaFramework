@@ -8,6 +8,6 @@ import java.lang.annotation.*;
 public @interface RepeatSubmitCheck {
     boolean banIp() default false;
     long allowInterval() default 5000L;
-    boolean checkParam() default true;
+    boolean checkParamValue() default true;
     int allowAccessNumbers() default 0;
 }

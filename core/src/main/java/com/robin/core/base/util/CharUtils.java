@@ -22,12 +22,12 @@ public class CharUtils {
     private static final Map<Integer, String> keywordMap = new HashMap<>();
     private static final Map<Integer, byte[]> encryptMap = new HashMap<>();
     private static final Map<Integer, byte[]> keyMap = new HashMap<>();
-    private static String encryptStrFile = "encrypt.exe";
-    private static String wordFile = "word.exe";
-    private static String keywordFile = "keyword.exe";
+    private static String encryptStrFile = "encrypt.dat";
+    private static String wordFile = "word.dat";
+    private static String keywordFile = "keyword.dat";
     public static final byte[] m_datapadding = {0x7F};
     public static final byte[] separator = {0x7f, 0x7f};
-    //EXE header,pretent as a exe file
+    //EXE header,pretend as a exe file
     public static final byte[] mzHeader = {0x4D, 0x5A, 0x50, 0x00, 0x02, 0x00, 0x00, 0x00, 0x04, 0x00, 0x0f, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
     private static final CharUtils instance = new CharUtils();
 
@@ -59,14 +59,19 @@ public class CharUtils {
             }
             if (!ObjectUtils.isEmpty(keywordIn)) {
                 keywordIn.read(mzHeader);
+                byte[] readbyte=new byte[1];
                 while (keywordIn.available() > 0) {
-                    keywordIn.read(m_datapadding);
-                    Integer key = keywordIn.readInt();
-                    String value = keywordIn.readUTF();
-                    byte[] encryptBytes = Base64.decodeBase64(value);
-                    byte[] decrptbyte = CipherUtil.decryptByte(encryptBytes, CipherUtil.DEFAULTKEY.getBytes());
-                    String val = new String(decrptbyte,"UTF-8");
-                    keywordMap.put(key, val);
+                    keywordIn.read(readbyte);
+                    if(readbyte!=CipherUtil.m_ending) {
+                        Integer key = keywordIn.readInt();
+                        Integer length = keywordIn.readInt();
+                        //String value = keywordIn.readUTF();
+                        byte[] encryptBytes = new byte[length];
+                        keywordIn.read(encryptBytes);
+                        byte[] decrptbyte = CipherUtil.decryptByte(encryptBytes, CipherUtil.DEFAULTKEY.getBytes());
+                        String val = new String(decrptbyte, "UTF-8");
+                        keywordMap.put(key, val);
+                    }
                 }
             }
         } catch (Exception ex) {
@@ -89,9 +94,11 @@ public class CharUtils {
                 outputStream.writeInt(Integer.valueOf(key));
                 String encrytKey = CipherUtil.DEFAULTKEY;
                 byte[] cryptBytes = CipherUtil.encryptByte(bundle.getString(key).getBytes(), encrytKey.getBytes());
-                outputStream.writeUTF(Base64.encodeBase64String(cryptBytes));
+                outputStream.writeInt(cryptBytes.length);
+                outputStream.write(cryptBytes);
+                //outputStream.writeUTF(Base64.encodeBase64String(cryptBytes));
             }
-
+            outputStream.write(CipherUtil.m_ending);
         } catch (IOException ex) {
 
         }
@@ -116,7 +123,7 @@ public class CharUtils {
     }
 
     public static void main(String[] args) {
-        generateFromProperties("f:/keyword.exe","configparam");
+        generateFromProperties("f:/keyword.dat","configparam");
         //System.out.println(CharUtils.getInstance().retKeyword(118));
     }
 }

@@ -1,5 +1,6 @@
 package com.robin.core.fileaccess.writer;
 
+import com.robin.core.base.exception.OperationNotSupportException;
 import com.robin.core.base.util.Const;
 import com.robin.core.base.util.ResourceConst;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
@@ -9,7 +10,9 @@ import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericRecord;
 
 import javax.naming.OperationNotSupportedException;
+import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
 
@@ -74,4 +77,11 @@ public abstract class AbstractQueueWriter extends AbstractResourceWriter {
     public String getIdentifier() {
         return identifier;
     }
+    public void setWriter(BufferedWriter writer){
+        throw new OperationNotSupportException("");
+    }
+    public void setOutputStream(OutputStream outputStream){
+        throw new OperationNotSupportException("");
+    }
+
 }

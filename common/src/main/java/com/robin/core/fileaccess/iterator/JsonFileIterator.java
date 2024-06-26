@@ -38,6 +38,7 @@ public class JsonFileIterator extends AbstractFileIterator{
 	@Override
 	public void init() {
 		checkAccessUtil(null);
+		super.beforeProcess(colmeta.getPath());
 		jreader=new JsonReader(reader);
 		try{
 			jreader.beginArray();
@@ -46,16 +47,7 @@ public class JsonFileIterator extends AbstractFileIterator{
 		}
 	}
 
-	@Override
-	public void beforeProcess(String resourcePath) {
-		super.beforeProcess(resourcePath);
-		jreader=new JsonReader(reader);
-		try{
-			jreader.beginArray();
-		}catch(Exception ex){
-			ex.printStackTrace();
-		}
-	}
+
 
 	@Override
 	public boolean hasNext() {

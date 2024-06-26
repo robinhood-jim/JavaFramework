@@ -33,11 +33,6 @@ public abstract class AbstractQueueIterator extends AbstractResIterator {
     }
 
     @Override
-    public void beforeProcess(String param) {
-
-    }
-
-    @Override
     public void afterProcess() {
 
     }

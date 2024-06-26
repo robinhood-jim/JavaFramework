@@ -49,7 +49,7 @@ public class TestParquetWriter {
             colmeta.setPath("/tmp/luoming/out.parquet.snappy");
             colmeta.setFileFormat(Const.FILETYPE_PARQUET);
             conn= SimpleJdbcDao.getConnection(meta);
-            final AbstractFileWriter jwriter= TextFileWriterFactory.getFileOutputStreamByType(colmeta,new FileOutputStream("/tmp/luoming/1.txt"));
+            final AbstractFileWriter jwriter= (AbstractFileWriter) TextFileWriterFactory.getOutputStreamByType(colmeta,new FileOutputStream("/tmp/luoming/1.txt"));
 
             jwriter.beginWrite();
             ResultSetOperationExtractor extractor=new ResultSetOperationExtractor() {

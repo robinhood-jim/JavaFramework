@@ -7,6 +7,7 @@ import com.robin.comm.util.redis.JedisClientFactory;
 import com.robin.core.base.util.Const;
 import com.robin.core.fileaccess.fs.LocalFileSystemAccessor;
 import com.robin.core.fileaccess.iterator.AbstractFileIterator;
+import com.robin.core.fileaccess.iterator.IResourceIterator;
 import com.robin.core.fileaccess.iterator.TextFileIteratorFactory;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.util.AvroUtils;
@@ -37,8 +38,8 @@ public class TestXMLReader {
         BufferedReader reader=null;
         try {
             LocalFileSystemAccessor utils = new LocalFileSystemAccessor();
-            AbstractFileIterator iter= TextFileIteratorFactory.getProcessIteratorByType(colmeta);
-            iter.beforeProcess(colmeta.getPath());
+            IResourceIterator iter= TextFileIteratorFactory.getProcessIteratorByType(colmeta);
+            //iter.beforeProcess(colmeta.getPath());
             while(iter.hasNext()){
                 System.out.println(iter.next());
             }

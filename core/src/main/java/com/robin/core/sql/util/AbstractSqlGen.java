@@ -21,17 +21,19 @@ import com.robin.core.base.datameta.DataBaseColumnMeta;
 import com.robin.core.base.util.Const;
 import com.robin.core.base.util.StringUtils;
 import com.robin.core.query.util.PageQuery;
-import com.robin.core.query.util.QueryParam;
 import com.robin.core.query.util.QueryString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 public abstract class AbstractSqlGen implements BaseSqlGen {
@@ -39,6 +41,7 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
     protected static final String SELECT = "select ";
     protected static final String LINKOPER_AND=" and ";
     protected static final String ORDERBYSTR=" order by ";
+    private static final Pattern pattern = Pattern.compile("\\b(and|exec|insert|select|drop|grant|alter|delete|update|count|chr|mid|master|truncate|char|declare|or)\\b|(\\*|;|\\+|'|%)");
     protected Logger log= LoggerFactory.getLogger(getClass());
 
     /**
@@ -55,24 +58,24 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
     }
 
     @Override
-    public String getQueryStringPart(List<QueryParam> paramList, String linkOper) {
+    public String getQueryStringPart(List<FilterCondition> paramList, String linkOper) {
         return doFilterSql(paramList,linkOper);
     }
 
 
     @Override
-    public String getQueryStringPart(List<QueryParam> paramList) {
+    public String getQueryStringPart(List<FilterCondition> paramList) {
         return doFilterSql(paramList,null);
     }
-    private String doFilterSql(List<QueryParam> paramList,String linkOper){
+    private String doFilterSql(List<FilterCondition> paramList,String linkOper){
         StringBuilder buffer = new StringBuilder();
         String replaceStr=linkOper;
-        for (QueryParam param : paramList) {
-            if (param.getQueryValue() == null || "".equals(param.getQueryValue())) {
+        for (FilterCondition param : paramList) {
+            if (ObjectUtils.isEmpty(param.getValue()) || CollectionUtils.isEmpty(param.getValues())) {
                 continue;
             }
-            String prevoper = param.getPrevoper();
-            String nextoper = param.getNextoper();
+            String prevoper = param.getPrefixOper();
+            String nextoper = param.getSuffixOper();
 
             if (prevoper == null || prevoper.length() == 0) {
                 prevoper = "";
@@ -81,9 +84,13 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
                 nextoper = "";
             }
             if(org.apache.commons.lang3.StringUtils.isEmpty(linkOper)) {
-                replaceStr = param.getCombineOper();
+                replaceStr = Const.OPERATOR_AND;
             }
-            fillSqlPart(replaceStr, buffer, param, prevoper, nextoper);
+            //fillSqlPart(replaceStr, buffer, param, prevoper, nextoper);
+            String queryPart=toSQLForGeneric(param);
+            if(!ObjectUtils.isEmpty(queryPart)) {
+                buffer.append(prevoper).append(queryPart).append(nextoper).append(linkOper);
+            }
         }
         String retstr = "";
         if (buffer.length() > 0) {
@@ -93,25 +100,20 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
     }
 
     @Override
-    public String getQueryStringByDiffOper(List<QueryParam> paramList) {
+    public String getQueryStringByDiffOper(List<FilterCondition> paramList) {
         StringBuilder buffer = new StringBuilder();
         for (int i = 0; i < paramList.size(); i++) {
-            QueryParam param = paramList.get(i);
-            String linkOper = param.getCombineOper() == null ? "" : param.getCombineOper();
+            FilterCondition param = paramList.get(i);
+            String linkOper = Const.OPERATOR_AND;
             if (i == paramList.size() - 1) {
                 linkOper = "";
             }
-            if (param.getQueryValue() == null || "".equals(param.getQueryValue())) {
+            if (ObjectUtils.isEmpty(param.getValue()) && CollectionUtils.isEmpty(param.getValues())) {
                 break;
             }
-            if (param.getColumnType().equals(QueryParam.COLUMN_TYPE_INT) || param.getColumnType().equalsIgnoreCase(Const.META_TYPE_BIGINT)) {
-                buffer.append(toSQLForInt(param)).append(linkOper).append(" ");
-            } else if (param.getColumnType().equals(QueryParam.COLUMN_TYPE_DOUBLE)|| param.getColumnType().equalsIgnoreCase(Const.META_TYPE_NUMERIC)) {
-                buffer.append(toSQLForDecimal(param)).append(linkOper).append(" ");
-            } else if (param.getColumnType().equals(QueryParam.COLUMN_TYPE_STRING)) {
-                buffer.append(toSQLForString(param)).append(linkOper).append(" ");
-            } else if (param.getColumnType().equals(QueryParam.COLUMN_TYPE_DATE)) {
-                buffer.append(toSQLForDate(param)).append(linkOper).append(" ");
+            String queryPart=toSQLForGeneric(param);
+            if(!ObjectUtils.isEmpty(queryPart)) {
+                buffer.append(queryPart).append(linkOper).append(" ");
             }
         }
         String retstr = "";
@@ -122,21 +124,16 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
     }
 
     @Override
-    public String getQueryString(List<QueryParam> paramList, String linkOper) {
+    public String getQueryString(List<FilterCondition> paramList, String linkOper) {
         StringBuilder buffer = new StringBuilder();
         buffer.append(" 1=1 and ");
-        for (QueryParam param : paramList) {
-            if (param.getQueryValue() == null || "".equals(param.getQueryValue())) {
+        for (FilterCondition param : paramList) {
+            if (ObjectUtils.isEmpty(param.getValue()) && CollectionUtils.isEmpty(param.getValues())) {
                 break;
             }
-            if (param.getColumnType().equals(Const.META_TYPE_INTEGER) || param.getColumnType().equalsIgnoreCase(Const.META_TYPE_BIGINT)) {
-                buffer.append(toSQLForInt(param)).append(linkOper);
-            } else if (param.getColumnType().equals(Const.META_TYPE_DOUBLE)|| param.getColumnType().equalsIgnoreCase(Const.META_TYPE_NUMERIC)) {
-                buffer.append(toSQLForDecimal(param)).append(linkOper);
-            } else if (param.getColumnType().equals(Const.META_TYPE_STRING)) {
-                buffer.append(toSQLForString(param)).append(linkOper);
-            } else if (param.getColumnType().equals(Const.META_TYPE_DATE)) {
-                buffer.append(toSQLForDate(param)).append(linkOper);
+            String queryPart=toSQLForGeneric(param);
+            if(!ObjectUtils.isEmpty(queryPart)) {
+                buffer.append(queryPart).append(linkOper);
             }
         }
 
@@ -144,22 +141,27 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
     }
 
     @Override
-    public String toSQLWithType(QueryParam param) {
-        String sqlstr = "";
-        if (param.getQueryValue() == null || "".equals(param.getQueryValue())) {
-            return sqlstr;
+    public String toSQLWithType(FilterCondition param) {
+        StringBuilder builder=new StringBuilder();
+        if (ObjectUtils.isEmpty(param.getValue()) && CollectionUtils.isEmpty(param.getValues())) {
+            return "";
         }
-        if (param.getColumnType().equals(Const.META_TYPE_INTEGER) || param.getColumnType().equalsIgnoreCase(Const.META_TYPE_BIGINT)) {
-            sqlstr = toSQLForInt(param);
+
+        if(!CollectionUtils.isEmpty(param.getValues())){
+            for(FilterCondition condition:param.getValues()){
+                String queryPart=toSQLForGeneric(condition);
+                if(!ObjectUtils.isEmpty(queryPart)) {
+                    builder.append(queryPart).append(param.getLinkOper());
+                }
+            }
+            builder.delete(builder.length()-param.getLinkOper().length(),builder.length());
+        }else {
+            String queryPart=toSQLForGeneric(param);
+            if(!ObjectUtils.isEmpty(queryPart)) {
+                builder.append(queryPart).append(param.getLinkOper());
+            }
         }
-        else if (param.getColumnType().equals(Const.META_TYPE_DOUBLE) || param.getColumnType().equals(Const.META_TYPE_NUMERIC)) {
-            sqlstr = toSQLForDecimal(param);
-        } else if (param.getColumnType().equals(Const.META_TYPE_STRING)) {
-            sqlstr = toSQLForString(param);
-        } else if (param.getColumnType().equals(Const.META_TYPE_DATE)) {
-            sqlstr = toSQLForDate(param);
-        }
-        return sqlstr;
+        return builder.toString();
     }
 
     @Override
@@ -302,143 +304,143 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
         return builder.toString();
     }
 
-    protected String toSQLForInt(QueryParam param) {
+    protected String toSQLForGeneric(FilterCondition param) {
         StringBuilder sql = new StringBuilder();
-        String nQueryModel = param.getQueryMode();
-        if (param.getQueryValue() == null || "".equals(param.getQueryValue().trim())) {
-            return "";
-        }
-        String value = param.getQueryValue();
-        String key = param.getColumnName();
-        if (param.getAliasName() != null && !"".equals(param.getAliasName())) {
-            key = param.getAliasName() + "." + key;
-        }
-        if (value != null && !"".equals(value.trim())) {
-            if (nQueryModel.equals(QueryParam.QUERYMODE_EQUAL)) {
-                sql.append(key).append(" = ").append(value);
-            } else if (nQueryModel.equals(QueryParam.QUERYMODE_GT)) {
-                sql.append(key).append(" > ").append(value);
-            } else if (nQueryModel.equals(QueryParam.QUERYMODE_LT)) {
-                sql.append(key).append(" < ").append(value);
-            } else if (nQueryModel.equals(QueryParam.QUERYMODE_NOTEQUAL)) {
-                sql.append(key).append(" != ").append(value);
-            } else if (nQueryModel.equals(QueryParam.QUERYMODE_GTANDEQUAL)) {
-                sql.append(key).append(" >= ").append(value);
-            } else if (nQueryModel.equals(QueryParam.QUERYMODE_LTANDEQUAL)) {
-                sql.append(key).append(" <= ").append(value);
-            } else if (nQueryModel.equals(QueryParam.QUERYMODE_IN)) {
-                sql.append(key).append(" IN (").append(value).append(")");
-            } else if (nQueryModel.equals(QueryParam.QUERYMODE_HAVING)) {
-                sql.append(" having ").append(key).append(param.getQueryMode()).append(param.getQueryValue());
-            } else if (nQueryModel.equals(QueryParam.QUERYMODE_BETWEEN) && !";".equals(value)) {
-                String beginvalue = value.substring(0, value.indexOf(";"));
-                String endvalue = value.substring(value.indexOf(";") + 1);
-                if (!"".equals(beginvalue)) {
-                    if (!"".equals(endvalue)) {
-                        sql.append("(").append(key).append(" between ").append(beginvalue).append(LINKOPER_AND).append(endvalue).append(")");
-                    } else {
-                        sql.append("(").append(key).append(">=").append(beginvalue).append(")");
-                    }
-                } else if (!"".equals(endvalue)) {
-                    sql.append("(").append(key).append("<=").append(endvalue).append(")");
+        Const.OPERATOR nQueryModel = param.getOperator();
+
+        if(!CollectionUtils.isEmpty(param.getValues())){
+            List<FilterCondition> conditions=param.getValues();
+            for(int i=0;i<conditions.size();i++){
+                sql.append("(");
+                String queryPart=toSQLForGeneric(conditions.get(i));
+                if(!ObjectUtils.isEmpty(queryPart)) {
+                    sql.append(queryPart);
+                }
+                if(!ObjectUtils.isEmpty(queryPart) && i!=conditions.size()-1){
+                    sql.append(param.getLinkOper());
                 }
             }
-        }
-        return sql.toString();
-    }
-
-    protected String toSQLForDecimal(QueryParam param) {
-        StringBuilder sql = new StringBuilder();
-        String nQueryModel = param.getQueryMode();
-        if (param.getQueryValue() == null || "".equals(param.getQueryValue().trim())) {
-            return "";
-        }
-        String value = param.getQueryValue();
-        String key = param.getColumnName();
-        if (param.getAliasName() != null && !"".equals(param.getAliasName())) {
-            key = param.getAliasName() + "." + key;
-        }
-        if (value != null && !"".equals(value.trim())) {
+            sql.append(")");
+        }else {
+            //sql.append(param.getLinkOper());
+            String value =!ObjectUtils.isEmpty(param.getValue())?wrapValue(param):null;
+            String key = wrapColumn(param);
+            if(!ObjectUtils.isEmpty(param.getValue()) && ObjectUtils.isEmpty(value)){
+                log.error("detect sql injection in {}",param);
+                return "";
+            }
             switch (nQueryModel) {
-                case QueryParam.QUERYMODE_EQUAL:
-                    sql.append(key).append(" = ").append(value).append(LINKOPER_AND);
+                case GT:
+                    sql.append(key).append(" > ").append(value);
                     break;
-                case QueryParam.QUERYMODE_GT:
-                    sql.append(key).append(" > ").append(value).append(LINKOPER_AND);
+                case LT:
+                    sql.append(key).append(" < ").append(value);
                     break;
-                case QueryParam.QUERYMODE_LT:
-                    sql.append(key).append(" < ").append(value).append(LINKOPER_AND);
+                case GE:
+                    sql.append(key).append(" >= ").append(value);
                     break;
-                case QueryParam.QUERYMODE_NOTEQUAL:
-                    sql.append(key).append(" != ").append(value).append(LINKOPER_AND);
+                case LE:
+                    sql.append(key).append(" <= ").append(value);
                     break;
-                case QueryParam.QUERYMODE_GTANDEQUAL:
-                    sql.append(key).append(" >= ").append(value).append(LINKOPER_AND);
+                case IN:
+                    sql.append(key).append(" IN (").append(value).append(")");
                     break;
-                case QueryParam.QUERYMODE_LTANDEQUAL:
-                    sql.append(key).append(" <= ").append(value).append(LINKOPER_AND);
-                    break;
-                case QueryParam.QUERYMODE_HAVING:
-                    sql.append(" having ").append(key).append(param.getQueryMode()).append(param.getQueryValue());
-                    break;
-                case QueryParam.QUERYMODE_BETWEEN:
+                case BETWEEN:
                     String beginvalue = value.substring(0, value.indexOf(";"));
                     String endvalue = value.substring(value.indexOf(";") + 1);
-                    sql.append("(").append(key).append(" between ").append(beginvalue).append(LINKOPER_AND).append(endvalue).append(")");
-                    break;
-                default:
-                    sql.append(key).append(" = ").append(value).append(LINKOPER_AND);
-            }
-        }
-        return sql.toString();
-    }
-
-    protected String toSQLForString(QueryParam param) {
-        StringBuilder sql = new StringBuilder();
-        String nQueryModel = param.getQueryMode();
-        if (param.getQueryValue() == null || "".equals(param.getQueryValue().trim())) {
-            return "";
-        }
-        String key = param.getColumnName();
-        if (param.getAliasName() != null && !"".equals(param.getAliasName())) {
-            key = param.getAliasName() + "." + key;
-        }
-        String value = replace(param.getQueryValue());
-        if (value != null && !"".equals(value)) {
-            switch (nQueryModel) {
-                case QueryParam.QUERYMODE_GT:
-                    sql.append(key).append(">'").append(value).append("'");
-                    break;
-                case QueryParam.QUERYMODE_EQUAL: {
-                    String str = value.replace("%", "");
-                    if (str.length() > 0) {
-                        sql.append(key).append("='").append(str).append("'");
+                    if (!ObjectUtils.isEmpty(beginvalue)) {
+                        if (!ObjectUtils.isEmpty(endvalue)) {
+                            sql.append("(").append(key).append(" between ").append(wrapValue(beginvalue,param.getColumnType())).append(LINKOPER_AND).append(wrapValue(endvalue,param.getColumnType())).append(")");
+                        } else {
+                            sql.append("(").append(key).append(">=").append(wrapValue(beginvalue,param.getColumnType())).append(")");
+                        }
+                    } else if (!ObjectUtils.isEmpty(endvalue)) {
+                        sql.append("(").append(key).append("<=").append(wrapValue(endvalue,param.getColumnType())).append(")");
                     }
                     break;
-                }
-                case QueryParam.QUERYMODE_NOTEQUAL: {
-                    String str = value.replace("%", "");
-                    if (str.length() > 0) {
-                        sql.append(key).append("!='").append(str).append("'");
-                    }
-                    break;
-                }
-                case QueryParam.QUERYMODE_LIKE:
-                    if (value.startsWith("%") || value.endsWith("%")) {
-                        String str = value.replace("%", "");
-                        if (str.length() > 0) {
-                            sql.append(key).append(" like '").append(value).append("'");
+                case LIKE:
+                case RLIKE:
+                case LLIKE:
+                    if (Const.META_TYPE_STRING.equals(param.getColumnType())) {
+                        if (param.getValue().toString().startsWith("%") || param.getValue().toString().endsWith("%")) {
+                            String str = param.getValue().toString().replace("%", "");
+                            if (!ObjectUtils.isEmpty(str)) {
+                                if (Const.OPERATOR.LIKE.equals(nQueryModel)) {
+                                    sql.append(key).append(" like '%").append(str).append("%'");
+                                } else if (Const.OPERATOR.RLIKE.equals(nQueryModel)) {
+                                    sql.append(key).append(" like '").append(str).append("%'");
+                                } else {
+                                    sql.append(key).append(" like '%").append(str).append("'");
+                                }
+                            }
+                        } else {
+                            sql.append(key).append(" ='").append(value).append("'");
                         }
                     } else {
-                        sql.append(key).append(" ='").append(value).append("'");
+                        log.error("column {} is not string,can not use like", key);
                     }
                     break;
+                case NOTIN:
+                    sql.append(key).append(" NOT IN (").append(value).append(")");
+                    break;
+                case EXISTS:
+                    sql.append(" EXISTS ").append(value);
+                    break;
+                case NOTEXIST:
+                    sql.append(" NOT EXISTS ").append(value);
+                    break;
+                case NOT:
+                    sql.append(" NOT ").append(value);
+                    break;
+                case HAVING:
+                    sql.append(" HAVING ").append(value);
+                    break;
+                case NOTNULL:
+                    sql.append(key).append(" IS NOT NULL");
+                    break;
+                case NULL:
+                    sql.append(key).append(" IS NULL");
+                    break;
                 default:
-                    sql.append(key).append("='").append(value).append("'");
+                    sql.append(key).append(" = ").append(value);
             }
         }
         return sql.toString();
     }
+    private String wrapColumn(FilterCondition condition){
+        if(ObjectUtils.isEmpty(condition.getMappingClass())) {
+            return condition.getColumnCode();
+        }else{
+            Map<String, FieldContent> map1 = AnnotationRetriever.getMappingFieldsMapCache(condition.getMappingClass());
+            if(map1.containsKey(condition.getColumnCode())){
+                return map1.get(condition.getColumnCode()).getFieldName();
+            }else{
+                return condition.getColumnCode();
+            }
+        }
+    }
+    protected String wrapValue(FilterCondition condition){
+        if(containsSqlInjection(condition.getValue())){
+            return null;
+        }
+        if(Const.META_TYPE_DATE.equals(condition.getColumnType()) || Const.META_TYPE_TIMESTAMP.equals(condition.getColumnType()) ||Const.META_TYPE_STRING.equals(condition.getColumnType())){
+            return "'"+condition.getValue().toString()+"'";
+        }
+        return condition.getValue().toString();
+    }
+    protected String wrapValue(String value,String columnType){
+        if(Const.META_TYPE_DATE.equals(columnType) || Const.META_TYPE_TIMESTAMP.equals(columnType) ||Const.META_TYPE_STRING.equals(columnType)){
+            return "'"+value+"'";
+        }
+        return value;
+    }
+    protected static boolean containsSqlInjection(Object obj) {
+        Matcher matcher = pattern.matcher(obj.toString());
+        return matcher.find();
+
+    }
+
+
     @Override
     public String returnTypeDef(String dataType, FieldContent field) {
         StringBuilder builder=new StringBuilder();
@@ -588,60 +590,8 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
         return new StringBuilder("CHAR(").append(length).append(")").toString();
     }
 
-    protected String toSQLForDate(QueryParam param) {
-        StringBuilder builder = new StringBuilder();
-        if (param.getQueryValue() == null || "".equals(param.getQueryValue().trim())) {
-            return "";
-        }
-        String key = param.getColumnName();
-        if (param.getAliasName() != null && !"".equals(param.getAliasName())) {
-            key = param.getAliasName() + "." + key;
-        }
-        String value = param.getQueryValue();
-        appendSqlPartWithDate(param,builder,key,value);
-        return builder.toString();
-    }
-    protected void appendSqlPartWithDate(QueryParam param,StringBuilder builder,String key,String value){
-        String nQueryModel = param.getQueryMode();
-        if (nQueryModel.equals(QueryParam.QUERYMODE_GT)) {
-            builder.append(key).append(">").append("'").append(value).append("'");
-        }else if (nQueryModel.equals(QueryParam.QUERYMODE_GTANDEQUAL)) {
-            builder.append(key).append(">=").append("'").append(value).append("'");
-        } else if (nQueryModel.equals(QueryParam.QUERYMODE_LTANDEQUAL)) {
-            builder.append(key).append("<=").append("'").append(value).append("'");
-        } else if (nQueryModel.equals(QueryParam.QUERYMODE_BETWEEN) && !"".equals(value) && !";".equals(value)) {
-            String begindate = value.substring(0, value.indexOf(";"));
-            String enddate = value.substring(value.indexOf(";") + 1);
-            if (!"".equals(begindate)) {
-                if (!"".equals(enddate)) {
-                    builder.append("(").append(key).append(" between '").append(begindate).append("' and '").append(enddate).append("')");
-                } else {
-                    builder.append("(").append(key).append(">='").append(begindate).append("')");
-                }
-            } else if (!"".equals(enddate)) {
-                builder.append("(").append(key).append("<='").append(enddate).append("')");
-            }
-        }
-    }
 
-    private void fillSqlPart(String linkOper, StringBuilder buffer, QueryParam param, String prevoper, String nextoper) {
-        switch (param.getColumnType()) {
-            case QueryParam.COLUMN_TYPE_INT:
-                buffer.append(prevoper).append(toSQLForInt(param)).append(nextoper).append(linkOper);
-                break;
-            case QueryParam.COLUMN_TYPE_DOUBLE:
-                buffer.append(prevoper).append(toSQLForDecimal(param)).append(nextoper).append(linkOper);
-                break;
-            case QueryParam.COLUMN_TYPE_STRING:
-                buffer.append(prevoper).append(toSQLForString(param)).append(nextoper).append(linkOper);
-                break;
-            case QueryParam.COLUMN_TYPE_DATE:
-                buffer.append(prevoper).append(toSQLForDate(param)).append(nextoper).append(linkOper);
-                break;
-            default:
-                buffer.append(prevoper).append(toSQLForString(param)).append(nextoper).append(linkOper);
-        }
-    }
+
 
     private String getSqlByReplaceParam(String querySQL, Map<String, String> params, Iterator<String> keyiter) {
         while (keyiter.hasNext()) {

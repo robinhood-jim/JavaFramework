@@ -35,6 +35,7 @@ import com.robin.core.test.model.*;
 import com.robin.core.test.service.*;
 import io.github.classgraph.*;
 import junit.framework.TestCase;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -42,12 +43,14 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.sql.Timestamp;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = "classpath:applicationContext-test.xml")
+@Slf4j
 public class JdbcDaoTest extends TestCase {
     @Override
     protected void setUp() {
@@ -258,6 +261,17 @@ public class JdbcDaoTest extends TestCase {
         user.setUserPassword("t1");
         user.setUserName("t1");
         SpringContextHolder.getBean(SysUserService.class).saveEntity(user);
+    }
+    @Test
+    public void testQueryCondition(){
+        FilterConditionBuilder builder=new FilterConditionBuilder();
+        builder.filter(SysUser::getAccountType, Const.OPERATOR.IN, Arrays.asList(1,2))
+                .eq(SysUser::getUserStatus,Const.VALID);
+        List<SysUser> users=SpringContextHolder.getBean(SysUserService.class).queryByCondition(builder.getConditions());
+        List<SysUser> users1=SpringContextHolder.getBean(SysUserService.class).queryByField(SysUser::getAccountType, Const.OPERATOR.IN,1,2);
+        log.info("get user {}",users);
+
+
     }
     @Test
     public void testGetFunctionName(){

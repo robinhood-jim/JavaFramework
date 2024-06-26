@@ -30,7 +30,7 @@ public class RecordWriterHolder extends AbstractResourceHolder {
         AbstractFileSystemAccessor util = ResourceAccessHolder.getAccessUtilByProtocol(schema.toLowerCase());
         OutputStream outStream = util.getOutResourceByStream(colmeta, path);
         if(!colmeta.isFsTag()) {
-            writer = TextFileWriterFactory.getFileWriterByPath(colmeta, outStream);
+            writer = TextFileWriterFactory.getWriterByPath(colmeta, outStream);
         } else{
             writer= CommResWriterFactory.getFileWriterByType(colmeta.getResType(),colmeta);
         }
@@ -43,7 +43,7 @@ public class RecordWriterHolder extends AbstractResourceHolder {
     public void close() {
         try {
             if(writer!=null){
-                if(writer instanceof AbstractFileWriter) {
+                if(AbstractFileWriter.class.isAssignableFrom(writer.getClass())) {
                     ((AbstractFileWriter)writer).finishWrite();
                     ((AbstractFileWriter)writer).flush();
                 }

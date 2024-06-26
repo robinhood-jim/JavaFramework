@@ -17,9 +17,9 @@ package com.robin.meta.service.resource;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.robin.comm.fileaccess.fs.HdfsFileSystemAccessor;
 import com.robin.comm.fileaccess.iterator.AvroFileIterator;
 import com.robin.comm.fileaccess.iterator.ParquetFileIterator;
-import com.robin.comm.fileaccess.fs.HdfsFileSystemAccessor;
 import com.robin.comm.util.es.ESSchemaAwareUtil;
 import com.robin.core.base.dao.SimpleJdbcDao;
 import com.robin.core.base.datameta.*;
@@ -27,12 +27,12 @@ import com.robin.core.base.service.BaseAnnotationJdbcService;
 import com.robin.core.base.util.Const;
 import com.robin.core.base.util.FileUtils;
 import com.robin.core.base.util.ResourceConst;
-import com.robin.core.fileaccess.iterator.AbstractFileIterator;
+import com.robin.core.fileaccess.fs.AbstractFileSystemAccessor;
+import com.robin.core.fileaccess.fs.ApacheVfsFileSystemAccessor;
+import com.robin.core.fileaccess.iterator.IResourceIterator;
 import com.robin.core.fileaccess.iterator.TextFileIteratorFactory;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.meta.VfsParam;
-import com.robin.core.fileaccess.fs.AbstractFileSystemAccessor;
-import com.robin.core.fileaccess.fs.ApacheVfsFileSystemAccessor;
 import com.robin.core.fileaccess.util.AvroUtils;
 import com.robin.hadoop.hdfs.HDFSUtil;
 import com.robin.meta.explore.SourceFileExplorer;
@@ -41,13 +41,15 @@ import com.robin.meta.model.resource.ResourceConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.avro.Schema;
 import org.apache.commons.dbutils.DbUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
-
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
+import org.springframework.util.ObjectUtils;
 
 import java.io.BufferedReader;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -199,34 +201,45 @@ public class GlobalResourceService extends BaseAnnotationJdbcService<GlobalResou
 
     private Schema getFileSchema(AbstractFileSystemAccessor util, DataCollectionMeta meta, GlobalResource resource, int maxReadLines) throws Exception {
         Schema schema = null;
-        List<String> suffixList = new ArrayList<String>();
+        List<String> suffixList = new ArrayList<>();
         FileUtils.parseFileFormat(meta.getPath(), suffixList);
         String fileFormat = suffixList.get(0);
         int columnPos = 0;
         //read Header 10000 Line
         int readLines = maxReadLines > 0 ? maxReadLines : 10000;
-        BufferedReader reader = util.getInResourceByReader(meta, meta.getPath());
+
+        Pair<BufferedReader, InputStream> pair = util.getInResourceByReader(meta, meta.getPath());
 
         if (fileFormat.equalsIgnoreCase(Const.FILESUFFIX_CSV)) {
-            SourceFileExplorer.exploreCsv(reader, meta, resource.getRecordContent() == null ? null : resource.getRecordContent().split(","), readLines);
+            SourceFileExplorer.exploreCsv(pair.getKey(), meta, resource.getRecordContent() == null ? null : resource.getRecordContent().split(","), readLines);
             schema = AvroUtils.getSchemaFromMeta(meta);
         } else if (fileFormat.equalsIgnoreCase(Const.FILESUFFIX_JSON)) {
-            SourceFileExplorer.exploreJson(reader, meta, readLines);
+            SourceFileExplorer.exploreJson(pair.getKey(), meta, readLines);
             schema = AvroUtils.getSchemaFromMeta(meta);
         } else if (fileFormat.equalsIgnoreCase(Const.FILESUFFIX_XML)) {
 
         } else if (fileFormat.equalsIgnoreCase(Const.FILESUFFIX_PARQUET)) {
-            AbstractFileIterator iterator = TextFileIteratorFactory.getProcessIteratorByType(meta, reader);
+            IResourceIterator iterator = TextFileIteratorFactory.getProcessIteratorByType(meta, pair.getKey());
             if (iterator.hasNext()) {
                 schema = ((ParquetFileIterator) iterator).getSchema();
             }
         } else if (fileFormat.equalsIgnoreCase(Const.FILESUFFIX_AVRO)) {
-            AbstractFileIterator iterator = TextFileIteratorFactory.getProcessIteratorByType(meta, reader);
+            IResourceIterator iterator = TextFileIteratorFactory.getProcessIteratorByType(meta, pair.getKey());
             if (iterator.hasNext()) {
                 schema = ((AvroFileIterator) iterator).getSchema();
             }
         }else if(fileFormat.equalsIgnoreCase(Const.FILESUFFIX_ORC)){
 
+        }
+        try{
+
+        }finally {
+            if(!ObjectUtils.isEmpty(pair.getKey())){
+                pair.getKey().close();
+            }
+            if(!ObjectUtils.isEmpty(pair.getValue())){
+                pair.getValue().close();
+            }
         }
         return schema;
     }

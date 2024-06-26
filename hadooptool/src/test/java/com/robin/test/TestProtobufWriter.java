@@ -7,7 +7,7 @@ import com.robin.core.base.datameta.DataBaseMetaFactory;
 import com.robin.core.base.datameta.DataBaseParam;
 import com.robin.core.base.util.Const;
 import com.robin.core.base.util.ResourceConst;
-import com.robin.core.fileaccess.iterator.AbstractFileIterator;
+import com.robin.core.fileaccess.iterator.IResourceIterator;
 import com.robin.core.fileaccess.iterator.TextFileIteratorFactory;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.fs.AbstractFileSystemAccessor;
@@ -47,7 +47,7 @@ public class TestProtobufWriter extends TestCase {
             colmeta.setPath("d:/tmp/luoming/1.proto.gz");
             AbstractFileSystemAccessor util= FileSystemAccessorFactory.getResourceAccessorByType(colmeta.getResType());
 
-            final AbstractFileWriter jwriter= TextFileWriterFactory.getFileOutputStreamByType(colmeta,util.getOutResourceByStream(colmeta,colmeta.getPath()));
+            final AbstractFileWriter jwriter= (AbstractFileWriter) TextFileWriterFactory.getOutputStreamByType(colmeta,util.getOutResourceByStream(colmeta,colmeta.getPath()));
             jwriter.beginWrite();
             SimpleJdbcDao.executeOperationWithQuery(connection, "select id,cs_id,item_name,item_value from t_sys_code", null, false, new ResultSetOperationExtractor() {
                 @Override
@@ -82,7 +82,7 @@ public class TestProtobufWriter extends TestCase {
         colmeta.addColumnMeta("item_value",Const.META_TYPE_STRING,null);
         colmeta.setPath("d:/tmp/luoming/1.proto");
         try{
-            AbstractFileIterator iterator= TextFileIteratorFactory.getProcessIteratorByPath(colmeta,new FileInputStream("d:/tmp/luoming/1.proto"));
+            IResourceIterator iterator= TextFileIteratorFactory.getProcessIteratorByPath(colmeta,new FileInputStream("d:/tmp/luoming/1.proto"));
             while(iterator.hasNext()){
                 logger.info("{}",iterator.next());
             }
