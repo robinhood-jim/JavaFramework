@@ -2,13 +2,15 @@ package com.robin.dataming.weka.utils;
 
 
 import com.robin.core.base.util.Const;
-import com.robin.core.fileaccess.iterator.AbstractFileIterator;
+import com.robin.core.fileaccess.iterator.IResourceIterator;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.meta.DataSetColumnMeta;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
+import weka.classifiers.Classifier;
+import weka.classifiers.evaluation.Evaluation;
 import weka.core.Attribute;
 import weka.core.DenseInstance;
 import weka.core.Instance;
@@ -26,7 +28,7 @@ public class WekaUtils {
 
     }
 
-    public static Instances getInstancesByResource(DataCollectionMeta collectionMeta, AbstractFileIterator iterator, int classIndex) {
+    public static Instances getInstancesByResource(DataCollectionMeta collectionMeta, IResourceIterator iterator, int classIndex) {
         Assert.notNull(collectionMeta, "columnMeat should not be null!");
         ArrayList<Attribute> attributes = new ArrayList<>();
         Map<String, Attribute> attributeMap = new HashMap<>();
@@ -85,5 +87,12 @@ public class WekaUtils {
             log.error("{}", ex.getMessage());
         }
         return null;
+    }
+    public static String evaluateClassifier(Classifier classifier, Instances testInst) throws Exception {
+        Evaluation evaluation=new Evaluation(testInst);
+        for(int i=0;i<testInst.numInstances();i++) {
+            evaluation.evaluateModelOnceAndRecordPrediction(classifier, testInst.instance(i));
+        }
+        return evaluation.toSummaryString();
     }
 }

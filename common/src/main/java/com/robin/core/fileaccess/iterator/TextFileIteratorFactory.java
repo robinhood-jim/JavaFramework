@@ -34,8 +34,8 @@ public class TextFileIteratorFactory {
 	static {
 		discoverIterator(fileIterMap);
 	}
-	public static AbstractFileIterator getProcessIteratorByType(DataCollectionMeta colmeta) throws IOException{
-		AbstractFileIterator iterator=getIter(colmeta);
+	public static IResourceIterator getProcessIteratorByType(DataCollectionMeta colmeta) throws IOException{
+		IResourceIterator iterator=getIter(colmeta);
 		try {
 			iterator.init();
 		}catch (Exception ex){
@@ -43,7 +43,7 @@ public class TextFileIteratorFactory {
 		}
 		return iterator;
 	}
-	public static AbstractFileIterator getProcessIterator(DataCollectionMeta colmeta, AbstractFileSystemAccessor utils){
+	public static AbstractFileIterator getProcessReaderIterator(DataCollectionMeta colmeta, AbstractFileSystemAccessor utils){
 		AbstractFileIterator iterator=null;
 		String fileType=colmeta.getFileFormat();
 
@@ -52,7 +52,7 @@ public class TextFileIteratorFactory {
 			if (!ObjectUtils.isEmpty(iterclass)) {
 				iterator = (AbstractFileIterator) iterclass.getConstructor(DataCollectionMeta.class, AbstractFileSystemAccessor.class).newInstance(colmeta,utils);
 			}
-			iterator.setReader(utils.getInResourceByReader(colmeta,colmeta.getPath()));
+			iterator.beforeProcess(colmeta.getPath());
 			iterator.init();
 		}catch (Exception ex){
 			throw new MissingConfigException(ex);
@@ -60,38 +60,38 @@ public class TextFileIteratorFactory {
 		return iterator;
 	}
 
-	public static AbstractFileIterator getProcessIteratorByType(DataCollectionMeta colmeta, BufferedReader reader) throws IOException {
-		AbstractFileIterator iterator=getIter(colmeta);
+	public static IResourceIterator getProcessIteratorByType(DataCollectionMeta colmeta, BufferedReader reader) throws IOException {
+		IResourceIterator iterator=getIter(colmeta);
 		iterator.setReader(reader);
 		iterator.init();
 		return iterator;
 	}
-	public static AbstractFileIterator getProcessIteratorByType(DataCollectionMeta colmeta, InputStream in) throws IOException{
-		AbstractFileIterator iterator=getIter(colmeta);
+	public static IResourceIterator getProcessIteratorByType(DataCollectionMeta colmeta, InputStream in) throws IOException{
+		IResourceIterator iterator=getIter(colmeta);
 		iterator.setInputStream(in);
 		iterator.init();
 		return iterator;
 	}
-	public static AbstractFileIterator getProcessIteratorByPath(DataCollectionMeta colmeta,InputStream in) throws IOException{
+	public static IResourceIterator getProcessIteratorByPath(DataCollectionMeta colmeta,InputStream in) throws IOException{
 		List<String> suffixList=new ArrayList<String>();
 		FileUtils.parseFileFormat(colmeta.getPath(),suffixList);
 		String fileFormat=suffixList.get(0);
 		if(StringUtils.isEmpty(colmeta.getFileFormat())){
 			colmeta.setFileFormat(fileFormat);
 		}
-		AbstractFileIterator iterator=getIter(colmeta);
+		IResourceIterator iterator=getIter(colmeta);
 		iterator.setInputStream(in);
 		iterator.init();
 		return iterator;
 	}
-	private static AbstractFileIterator getIter(DataCollectionMeta colmeta) throws MissingConfigException {
-		AbstractFileIterator iterator=null;
+	private static IResourceIterator getIter(DataCollectionMeta colmeta) throws MissingConfigException {
+		IResourceIterator iterator=null;
 		String fileType=colmeta.getFileFormat();
 
 		Class<? extends IResourceIterator> iterclass=fileIterMap.get(fileType);
 		try {
 			if (!ObjectUtils.isEmpty(iterclass)) {
-				iterator = (AbstractFileIterator) iterclass.getConstructor(DataCollectionMeta.class).newInstance(colmeta);
+				iterator =  iterclass.getConstructor(DataCollectionMeta.class).newInstance(colmeta);
 			}
 		}catch (Exception ex){
 			throw new MissingConfigException(ex);

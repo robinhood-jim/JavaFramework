@@ -4,6 +4,7 @@ import com.robin.core.base.util.Const;
 import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.meta.VfsParam;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.vfs2.FileObject;
 import org.apache.commons.vfs2.FileSystemManager;
 import org.apache.commons.vfs2.FileSystemOptions;
@@ -38,26 +39,29 @@ public class ApacheVfsFileSystemAccessor extends AbstractFileSystemAccessor {
     private static final Logger logger = LoggerFactory.getLogger(ApacheVfsFileSystemAccessor.class);
 
     @Override
-    public BufferedReader getInResourceByReader(DataCollectionMeta meta, String resourcePath) throws IOException {
+    public Pair<BufferedReader,InputStream> getInResourceByReader(DataCollectionMeta meta, String resourcePath) throws IOException {
         VfsParam param = new VfsParam();
+        InputStream stream;
         try {
             ConvertUtil.convertToTarget(param, meta.getResourceCfgMap());
 
             FileObject fo = manager.resolveFile(getUriByParam(param, resourcePath).toString(), getOptions(param));
-
-            return new BufferedReader(new InputStreamReader(getInResource(fo, meta), meta.getEncode()));
+            stream=getInResource(fo, meta);
+            return Pair.of(new BufferedReader(new InputStreamReader(stream, meta.getEncode())),stream);
         } catch (Exception ex) {
             throw new IOException(ex);
         }
     }
 
     @Override
-    public BufferedWriter getOutResourceByWriter(DataCollectionMeta meta, String resourcePath) throws IOException {
+    public Pair<BufferedWriter,OutputStream> getOutResourceByWriter(DataCollectionMeta meta, String resourcePath) throws IOException {
         BufferedWriter writer;
+        OutputStream outputStream;
         try {
             FileObject fo = checkFileExist(meta, resourcePath);
-            writer = getWriterByPath(resourcePath, fo.getContent().getOutputStream(), meta.getEncode());
-            return writer;
+            outputStream=fo.getContent().getOutputStream();
+            writer = getWriterByPath(resourcePath, outputStream, meta.getEncode());
+            return Pair.of(writer,outputStream);
         } catch (Exception ex) {
             throw new IOException(ex);
         }

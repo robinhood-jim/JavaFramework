@@ -21,17 +21,34 @@ public class FilterConditionBuilder {
         conditions.add(new FilterCondition(columnName, Const.OPERATOR.EQ,object));
         return this;
     }
+    public FilterConditionBuilder eq(String columnName, Object object,String columnType){
+        conditions.add(new FilterCondition(columnName, Const.OPERATOR.EQ,object,columnType));
+        return this;
+    }
     public <T extends BaseObject> FilterConditionBuilder eq(PropertyFunction<T,?> function, Object object){
         String fieldName=AnnotationRetriever.getFieldName(function);
         conditions.add(new FilterCondition(fieldName, Const.OPERATOR.EQ,object));
+        return this;
+    }
+    public <T extends BaseObject> FilterConditionBuilder eq(PropertyFunction<T,?> function, Object object,String columnType){
+        String fieldName=AnnotationRetriever.getFieldName(function);
+        conditions.add(new FilterCondition(fieldName, Const.OPERATOR.EQ,object,columnType));
         return this;
     }
     public FilterConditionBuilder filter(String columnName,Const.OPERATOR operator, Object object){
         conditions.add(new FilterCondition(columnName, operator,object));
         return this;
     }
+    public FilterConditionBuilder filter(String columnName,Const.OPERATOR operator, Object object,String columnType){
+        conditions.add(new FilterCondition(columnName, operator,object,columnType));
+        return this;
+    }
     public FilterConditionBuilder filter(String columnName,Const.OPERATOR operator, List<?> values){
         conditions.add(new FilterCondition(columnName, operator,values));
+        return this;
+    }
+    public FilterConditionBuilder filter(String columnName,Const.OPERATOR operator, List<?> values,String columnType){
+        conditions.add(new FilterCondition(columnName, operator,values,columnType));
         return this;
     }
     public <T extends BaseObject> FilterConditionBuilder filter(PropertyFunction<T,?> function,Const.OPERATOR operator,Object value){
@@ -39,9 +56,37 @@ public class FilterConditionBuilder {
         conditions.add(new FilterCondition(fieldName, operator,value));
         return this;
     }
+    public <T extends BaseObject> FilterConditionBuilder filter(PropertyFunction<T,?> function,Const.OPERATOR operator,Object value,String columnType){
+        String fieldName=AnnotationRetriever.getFieldName(function);
+        conditions.add(new FilterCondition(fieldName, operator,value,columnType));
+        return this;
+    }
     public <T extends BaseObject> FilterConditionBuilder filter(PropertyFunction<T,?> function,Const.OPERATOR operator,List<?> value){
         String fieldName=AnnotationRetriever.getFieldName(function);
         conditions.add(new FilterCondition(fieldName, operator,value));
+        return this;
+    }
+    public <T extends BaseObject> FilterConditionBuilder filter(PropertyFunction<T,?> function,Const.OPERATOR operator,List<?> value,String columnType){
+        String fieldName=AnnotationRetriever.getFieldName(function);
+        conditions.add(new FilterCondition(fieldName, operator,value,columnType));
+        return this;
+    }
+    public <T extends BaseObject> FilterConditionBuilder notNull(PropertyFunction<T,?> function){
+        String fieldName=AnnotationRetriever.getFieldName(function);
+        conditions.add(new FilterCondition(fieldName, Const.OPERATOR.NOTNULL,null));
+        return this;
+    }
+    public FilterConditionBuilder notNull(String columnName){
+        conditions.add(new FilterCondition(columnName, Const.OPERATOR.NOTNULL,null));
+        return this;
+    }
+    public <T extends BaseObject> FilterConditionBuilder isNull(PropertyFunction<T,?> function){
+        String fieldName=AnnotationRetriever.getFieldName(function);
+        conditions.add(new FilterCondition(fieldName, Const.OPERATOR.NULL,null));
+        return this;
+    }
+    public FilterConditionBuilder isNull(String columnName){
+        conditions.add(new FilterCondition(columnName, Const.OPERATOR.NULL,null));
         return this;
     }
     public FilterConditionBuilder exists(String value){
@@ -58,7 +103,8 @@ public class FilterConditionBuilder {
     }
 
 
-    public FilterConditionBuilder or(List<?> objects){
+
+    public FilterConditionBuilder or(List<FilterCondition> objects){
         conditions.add(new FilterCondition(Const.OPERATOR.LINK_OR,objects));
         return this;
     }

@@ -96,44 +96,44 @@ public class HDFSUtil {
 			UserGroupInformation.loginUserFromKeytab(user, keytab);
 		}
 	}
-
+	@SuppressWarnings({"unchecked","unused"})
 	public String upload(final String filePath,String toUrl) throws HdfsException{
 		if(!useSecurity) {
             return HDFSCallUtil.upload(config, filePath, toUrl);
         } else {
-            return (String) HDFSSecurityUtil.executeHdfsMethodWithSecurity(config, "upload", new Object[]{config,filePath,toUrl});
+            return (String) HDFSSecurityUtil.executeSecurityWithProxy(config,config->HDFSCallUtil.upload(config,filePath,toUrl));
         }
 	}
-
+	@SuppressWarnings("unchecked")
 	public boolean uploadByInputStream(final InputStream in,String toUrl, int bufferSize) throws HdfsException{
 		if(!useSecurity) {
             return HDFSCallUtil.uploadByInputStream(config, in, toUrl, bufferSize);
         } else {
-            return (Boolean) HDFSSecurityUtil.executeHdfsMethodWithSecurity(config, "uploadByInputStream", new Object[]{config,in,toUrl, bufferSize});
+            return (Boolean) HDFSSecurityUtil.executeSecurityWithProxy(config, config-> HDFSCallUtil.uploadByInputStream(config,in,toUrl, bufferSize));
         }
 	}
-
-	public String uploadByInputStream(final InputStream in,String toUrl, int bufferSize, String fromCharset, String toCharset) throws HdfsException, IOException{
+	@SuppressWarnings("unchecked")
+	public String uploadByInputStream(final InputStream in,String toUrl, int bufferSize, String fromCharset, String toCharset) throws HdfsException{
 		if(!useSecurity) {
             return HDFSCallUtil.uploadByInputStream(config, in, toUrl, bufferSize, fromCharset, toCharset);
         } else {
-            return (String) HDFSSecurityUtil.executeHdfsMethodWithSecurity(config, "uploadByInputStream", new Object[]{config,in,toUrl, bufferSize, fromCharset, toCharset});
+            return (String) HDFSSecurityUtil.executeSecurityWithProxy(config, config->HDFSCallUtil.uploadByInputStream(config,in,toUrl, bufferSize, fromCharset, toCharset));
         }
 	}
-
+	@SuppressWarnings("unchecked")
 	public synchronized void deleteHdsfUrl(String uri,String path) throws HdfsException{
 		if(!useSecurity) {
             HDFSCallUtil.deleteHdsfUrl(config, uri, path);
         } else {
-            HDFSSecurityUtil.executeHdfsMethodWithSecurity(config, "deleletHdfsUrl", new Object[]{config,uri,path});
+            HDFSSecurityUtil.executeSecurityWithProxy(config, config->{HDFSCallUtil.deleteHdsfUrl(config,uri,path);return null;});
         }
 	}
-
+	@SuppressWarnings("unchecked")
 	public void emptyDirectory(String hdfsUrl) throws HdfsException{
 		if(!useSecurity) {
             HDFSCallUtil.emptyDirectory(config, hdfsUrl);
         } else {
-            HDFSSecurityUtil.executeHdfsMethodWithSecurity(config, "emptyDirectory", new Object[]{config,hdfsUrl});
+            HDFSSecurityUtil.executeSecurityWithProxy(config, config->{HDFSCallUtil.emptyDirectory(config,hdfsUrl);return null;});
         }
 	}
 
@@ -148,111 +148,112 @@ public class HDFSUtil {
 		}
 		return defExt;
 	}
-
+	@SuppressWarnings("unchecked")
 	public  List<String> listFile(String hdfsUrl) throws HdfsException{
 		if(!useSecurity) {
             return HDFSCallUtil.listFile(config, hdfsUrl);
         } else {
-            return (List<String>) HDFSSecurityUtil.executeHdfsMethodWithSecurity(config, "listFile", new Object[]{config,hdfsUrl});
+            return (List<String>) HDFSSecurityUtil.executeSecurityWithProxy(config, config->HDFSCallUtil.listFile(config,hdfsUrl));
         }
 	}
-
+	@SuppressWarnings("unchecked")
 	public  List<Map<String,String>> listFileAndDirectory(String hdfsUrl) throws HdfsException{
 		if(!useSecurity) {
             return HDFSCallUtil.listFileAndDirectory(config, hdfsUrl);
         } else {
-            return (List<Map<String,String>>) HDFSSecurityUtil.executeHdfsMethodWithSecurity(config, "listFileAndDirectory", new Object[]{config,hdfsUrl});
+            return (List<Map<String,String>>) HDFSSecurityUtil.executeSecurityWithProxy(config,config->HDFSCallUtil.listFileAndDirectory(config,hdfsUrl));
         }
 	}
-
+	@SuppressWarnings("unchecked")
 	public  List<String> listFileName(String hdfsUrl) throws HdfsException{
 		if(!useSecurity) {
             return HDFSCallUtil.listFileName(config, hdfsUrl);
         } else {
-            return (List<String>) HDFSSecurityUtil.executeHdfsMethodWithSecurity(config, "listFileName", new Object[]{config,hdfsUrl});
+            return (List<String>) HDFSSecurityUtil.executeSecurityWithProxy(config, config->HDFSCallUtil.listFileName(config,hdfsUrl));
         }
 	}
-
+	@SuppressWarnings("unchecked")
 	public void rmdirs(String relativeName) throws HdfsException{
 		if(!useSecurity) {
             HDFSCallUtil.rmdirs(config, relativeName);
         } else {
-            HDFSSecurityUtil.executeHdfsMethodWithSecurity(config, "rmdirs", new Object[]{config,relativeName});
+            HDFSSecurityUtil.executeSecurityWithProxy(config, config->{HDFSCallUtil.rmdirs(config,relativeName);return null;});
         }
 	}
-
+	@SuppressWarnings("unchecked")
 	public void mkdir(String relativeName) throws HdfsException{
 		if(!useSecurity) {
             HDFSCallUtil.mkdir(config, relativeName);
         } else {
-            HDFSSecurityUtil.executeHdfsMethodWithSecurity(config, "mkdir", new Object[]{config,relativeName});
+            HDFSSecurityUtil.executeSecurityWithProxy(config, config->{HDFSCallUtil.mkdir(config,relativeName);return null;});
         }
 	}
-
+	@SuppressWarnings("unchecked")
 	public  boolean isDirectory(String hdfsUrl) throws HdfsException{
 		if(!useSecurity) {
             return HDFSCallUtil.isDirectory(config, hdfsUrl);
         } else {
-            return (Boolean) HDFSSecurityUtil.executeHdfsMethodWithSecurity(config, "isDirectory", new Object[]{config,hdfsUrl});
+            return (Boolean) HDFSSecurityUtil.executeSecurityWithProxy(config, config->HDFSCallUtil.isDirectory(config,hdfsUrl));
         }
 	}
-
+	@SuppressWarnings("unchecked")
 	public void delete(String hdfsUrl) throws HdfsException{
 		if(!useSecurity) {
             HDFSCallUtil.delete(config, hdfsUrl);
         } else {
-            HDFSSecurityUtil.executeHdfsMethodWithSecurity(config, "delete", new Object[]{config,hdfsUrl});
+            HDFSSecurityUtil.executeSecurityWithProxy(config, config->{HDFSCallUtil.delete(config,hdfsUrl);return null;});
         }
 	}
-
+	@SuppressWarnings("unchecked")
 	public void setresp(String hdfsUrl,int resp) throws HdfsException{
 		if(!useSecurity) {
             HDFSCallUtil.setresp(config, hdfsUrl, resp);
         } else {
-            HDFSSecurityUtil.executeHdfsMethodWithSecurity(config, "setresp", new Object[]{config,hdfsUrl, resp});
+            HDFSSecurityUtil.executeSecurityWithProxy(config, config1 -> {HDFSCallUtil.setresp(config,hdfsUrl, resp);return null;});
         }
 	}
-
+	@SuppressWarnings("unchecked")
 	public boolean exists(String hdfsUrl) throws HdfsException{
 		if(!useSecurity) {
             return HDFSCallUtil.exists(config, hdfsUrl);
         } else {
-            return (Boolean) HDFSSecurityUtil.executeHdfsMethodWithSecurity(config, "exists", new Object[]{config,hdfsUrl});
+            return (Boolean) HDFSSecurityUtil.executeSecurityWithProxy(config, config1 -> HDFSCallUtil.exists(config,hdfsUrl));
         }
 	}
-
+	@SuppressWarnings("unchecked")
 	public String read(String hdfsUrl,String encode) throws HdfsException{
 		if(!useSecurity) {
             return HDFSCallUtil.read(config, hdfsUrl,encode);
         } else {
-            return (String) HDFSSecurityUtil.executeHdfsMethodWithSecurity(config, "read", new Object[]{config,hdfsUrl,encode});
+            return (String) HDFSSecurityUtil.executeSecurityWithProxy(config, config1 -> HDFSCallUtil.read(config,hdfsUrl,encode));
         }
 	}
-
+	@SuppressWarnings("unchecked")
 	public void copyToLocal(String hdfsUrl,String toUrl) throws HdfsException{
 		if(!useSecurity) {
             HDFSCallUtil.copyToLocal(config, hdfsUrl,toUrl);
         } else {
-            HDFSSecurityUtil.executeHdfsMethodWithSecurity(config, "copyToLocal", new Object[]{config,hdfsUrl,toUrl});
+            HDFSSecurityUtil.executeSecurityWithProxy(config, config1 -> {HDFSCallUtil.copyFromLocal(config,hdfsUrl,toUrl);return null;});
         }
 	}
 
+	@SuppressWarnings({"unchecked","unused"})
 	public void copyFromLocal(String hdfsUrl,String toUrl) throws HdfsException{
 		if(!useSecurity) {
             HDFSCallUtil.copyFromLocal(config, hdfsUrl,toUrl);
         } else {
-            HDFSSecurityUtil.executeHdfsMethodWithSecurity(config, "copyFromLocal", new Object[]{config,hdfsUrl,toUrl});
+            HDFSSecurityUtil.executeSecurityWithProxy(config,config1 -> {HDFSCallUtil.copyFromLocal(config,hdfsUrl,toUrl);return null;});
         }
 	}
-
+	@SuppressWarnings({"unchecked","unused"})
 	public void moveFile(String hdfsUrl,String toUrl) throws HdfsException{
 		if(!useSecurity) {
             HDFSCallUtil.moveFile(config, hdfsUrl,toUrl);
         } else {
-            HDFSSecurityUtil.executeHdfsMethodWithSecurity(config, "moveFile", new Object[]{config,hdfsUrl,toUrl});
+            HDFSSecurityUtil.executeSecurityWithProxy(config, config1 -> {HDFSCallUtil.moveFile(config,hdfsUrl,toUrl);return null;});
         }
 	}
-
+	@SuppressWarnings({"unchecked","unused"})
 	public void copy(String fromPath,String toPath) throws  HdfsException{
 		if(!useSecurity) {
             HDFSCallUtil.copy(config, fromPath, toPath);
@@ -260,7 +261,7 @@ public class HDFSUtil {
             HDFSSecurityUtil.executeHdfsMethodWithSecurity(config, "copy", new Object[]{config,fromPath,toPath});
         }
 	}
-
+	@SuppressWarnings({"unchecked","unused"})
 	public byte[] readByte(String hdfsUrl) throws HdfsException{
 		if(!useSecurity) {
             return HDFSCallUtil.readByte(config, hdfsUrl);
@@ -268,7 +269,7 @@ public class HDFSUtil {
             return (byte[]) HDFSSecurityUtil.executeHdfsMethodWithSecurity(config, "readByte", new Object[]{config,hdfsUrl});
         }
 	}
-
+	@SuppressWarnings({"unchecked","unused"})
 	public FSDataOutputStream createFile(String hdfsUrl,Boolean overwriteOrigion) throws HdfsException{
 		if(!useSecurity) {
             return HDFSCallUtil.createFile(config, hdfsUrl,overwriteOrigion);
@@ -276,7 +277,7 @@ public class HDFSUtil {
             return (FSDataOutputStream) HDFSSecurityUtil.executeHdfsMethodWithSecurity(config, "createFile", new Object[]{config,hdfsUrl,overwriteOrigion});
         }
 	}
-
+	@SuppressWarnings({"unchecked","unused"})
 	public void insertLine(FSDataOutputStream out,String outStr) throws HdfsException{
 		try{
 			out.writeUTF(outStr);
@@ -284,7 +285,7 @@ public class HDFSUtil {
 			logger.error("",e);
 		}
 	}
-
+	@SuppressWarnings({"unchecked","unused"})
 	public BufferedReader readStream(String hdfsUrl,String encode) throws HdfsException{
 		if(!useSecurity) {
             return HDFSCallUtil.readStream(config, hdfsUrl, encode);
@@ -298,7 +299,7 @@ public class HDFSUtil {
 			if (!useSecurity) {
 				return HDFSCallUtil.getFileSystem(config);
 			} else {
-				return (FileSystem) HDFSSecurityUtil.executeHdfsMethodWithSecurity(config, "getFileSystem", new Object[]{config});
+				return (FileSystem) HDFSSecurityUtil.executeSecurityWithProxy(config,config1 -> HDFSCallUtil.getFileSystem(config));
 			}
 		}catch (Exception ex){
 			logger.error("{}",ex.getMessage());

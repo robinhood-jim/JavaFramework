@@ -15,7 +15,7 @@
  */
 package com.robin.core.query.util;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.robin.core.sql.util.FilterCondition;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -66,9 +66,12 @@ public class PageQuery implements Serializable {
 	protected SimpleDateFormat dateFormater=null;
 	protected SimpleDateFormat timestampFormater=null;
 
+	private Map<String, FilterCondition> conditionMap=new HashMap<>();
+
 	public static final String						ASC	= "asc";
 
 	public static final String						DESC	= "desc";
+	public static final String DEFAULTQUERYSTRING="queryString";
 
 
 	public PageQuery() {
@@ -152,11 +155,14 @@ public class PageQuery implements Serializable {
 			pageQuery.setParameters(parameters);
 			return this;
 		}
+		public Builder setConditions(String key,FilterCondition conditions){
+			pageQuery.conditionMap.put(key,conditions);
+			return this;
+		}
 		public PageQuery build(){
 			return pageQuery;
 		}
 
 	}
-	
 
 }

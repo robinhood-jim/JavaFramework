@@ -78,6 +78,10 @@ public class EntityMappingService extends BaseAnnotationJdbcService<EntityMappin
 		Document doc=null;
 		SAXReader reader=new SAXReader();
 		try{
+			reader.setFeature("http://apache.org//features/disallow-doctype-decl", true);
+			reader.setFeature("http://apache.org//features/nonvalidating/load-external-dtd", false);
+			reader.setFeature("http://.org/sax/features/external-general-entities", false);
+			reader.setFeature("http://.org/sax/features/external-parameter-entities", false);
 			if(mapping.getId()==null){
 				jdbcDao.createVO(mapping,Long.class);
 			}else{

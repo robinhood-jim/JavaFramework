@@ -35,9 +35,9 @@ public class EncryptJarPackage {
     private static ByteBuffer buffer = ByteBuffer.allocate(8);
 
     public static void main(String[] args) {
-        String sourcePath = "D:/dev/workspaceframe/JavaFramework/core/src/";
-        String compileclassPath = ".;D:/dev/workspaceframe/JavaFramework/core/target/lib/*;d:/servlet-api-2.5.jar;D:/dev/workspaceframe/JavaFramework/core/target/core-1.0-SNAPSHOT_proLists.newArrayListrd_base.jar;d:/jdk1.8/lib/tools.jar";
-        String srcPath = "d:/tmp/corencrypt/src/";
+        String sourcePath = "E:/dev/workspaceframe/JavaFramework/core/src/";
+        String compileclassPath = ".;E:/dev/workspaceframe/JavaFramework/core/target/lib/*;d:/servlet-api-2.5.jar;D:/dev/workspaceframe/JavaFramework/core/target/core-1.0-SNAPSHOT_proLists.newArrayListrd_base.jar;d:/jdk1.8/lib/tools.jar";
+        String srcPath = "E:/tmp/corencrypt/src/";
         JavaProjectBuilder builder = new JavaProjectBuilder();
         builder.addSourceFolder(new File(sourcePath));
         String machineSerial = MachineIdUtils.getMachineId();
@@ -55,7 +55,7 @@ public class EncryptJarPackage {
 
             //bin encrypt key file init
             dout = new DataOutputStream(new FileOutputStream(new File(srcPath + "config.bin")));
-            ZipOutputStream outputStream = getJarClasses("D:/dev/workspaceframe/JavaFramework/core/target/core-1.0-SNAPSHOT_proLists.newArrayListrd_base.jar", "com/robin/core/ext/", dout, machineSerial);
+            ZipOutputStream outputStream = getJarClasses("E:/dev/workspaceframe/JavaFramework/core/target/core-1.0-SNAPSHOT_proguard_base.jar", "com/robin/core/ext/", dout, machineSerial);
             while (iter1.hasNext()) {
                 StringBuilder buffer = new StringBuilder();
                 JavaSource source = iter1.next();
@@ -495,16 +495,16 @@ public class EncryptJarPackage {
                     String className = path.substring(pos + 1);
                     pos = className.indexOf(".");
                     String clazzName = className.substring(0, pos);
-                    String keystr = generateEncrytKey(range, 12, random);
+                    String keystr = generateEncrytKey(range, 16, random);
                     byte[] key = Base64.decodeBase64(keystr.getBytes());
                     byte[] bytes = getZipByte(inputStream);
                     //使用随机密码加密
-                    byte[] outbyte = CipherUtil.encryptByte(bytes, key);
+                    byte[] outbyte = CipherUtil.encryptByte(bytes, keystr.getBytes());
                     //使用机器码加密，用于失效验证
-                    byte[] encryptbytes = CipherUtil.encryptByte(outbyte, machineSerailbytes);
+                    byte[] encryptbytes = CipherUtil.encryptByte(outbyte, caculateStr[0].getBytes());
                     //FileUtils.writeByteArrayToFile(new File(basePath + path), outbyte);
                     String randomoutputPath = randomFolders.get(random1.nextInt(8));
-                    List<String> params = getRandomName(9, random);
+                    List<String> params = getRandomName(16, random);
                     String fileName = params.get(0);
                     dout.writeUTF(encrypt(packageName + "." + clazzName));
                     dout.write(CipherUtil.m_datapadding);
@@ -666,9 +666,10 @@ public class EncryptJarPackage {
 
     private static String[] caculateMachineSerail(String machineId, Long expireTs) {
         //取机器码对应bigint
-        BigInteger integer = new BigInteger(machineId.replaceAll("-", ""), 16);
+        //BigInteger integer = new BigInteger(machineId.replaceAll("-", ""), 16);
         int len = String.valueOf(expireTs).length();
-        String machineStr = integer.toString();
+        //String machineStr = integer.toString();
+        String machineStr=machineId.replace("-","");
         StringBuilder builder = new StringBuilder();
         String key = machineStr.substring(0, machineStr.length() - len);
         builder.append(key);

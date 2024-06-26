@@ -4,9 +4,8 @@ import com.google.common.collect.Lists;
 import com.robin.core.base.util.CharUtils;
 import lombok.extern.slf4j.Slf4j;
 
-
 import javax.crypto.*;
-import javax.crypto.spec.DESKeySpec;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.*;
 import java.math.BigInteger;
 import java.security.*;
@@ -16,28 +15,34 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 import java.security.spec.RSAPrivateKeySpec;
 import java.security.spec.RSAPublicKeySpec;
-
-import static com.google.common.base.Preconditions.checkArgument;
 import java.util.Base64;
 import java.util.List;
+
+import static com.google.common.base.Preconditions.checkArgument;
 
 
 @Slf4j
 public class CipherUtil {
-    private static final String algorithm = "DES";
-    private static final String DEFAULT_CIPHER_ALGORITHM = "DES/ECB/PKCS5Padding";
+    private static final String DEFAULTALGORITHM = "AES";
+    private static final String DEFAULT_CIPHER_ALGORITHM = "AES/ECB/PKCS7Padding";
+
     public static final String SIGNATURE_ALGORITHM = "SHA256WithRSA";
     public static final char[] avaiablechar = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '-', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '/'};
     public static final byte[] m_datapadding = {0x7F};
+    public static final byte[] m_ending = {0x00};
     //EXE header,pretent as a exe file
     public static final byte[] mzHeader = {0x4D, 0x5A, 0x50, 0x00, 0x02, 0x00, 0x00, 0x00, 0x04, 0x00, 0x0f, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-    public static final String DEFAULTKEY = "@#Robin&()!@";
+    public static final String DEFAULTKEY = "Robin1234567@123";
     public static final byte[] FILEENDS = {0x7F, 0x7F};
     private final static int KEY_SIZE = 512;
 
+    static {
+        Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
+    }
+
     public static byte[] initSecretKey() throws Exception {
 
-        KeyGenerator kg = KeyGenerator.getInstance(algorithm);
+        KeyGenerator kg = KeyGenerator.getInstance(DEFAULTALGORITHM);
 
         kg.init(56);
 
@@ -45,16 +50,15 @@ public class CipherUtil {
         return secretKey.getEncoded();
     }
 
-    private static Key toKey(byte[] key) throws Exception {
-        DESKeySpec dks = new DESKeySpec(key);
-        SecretKeyFactory skf = SecretKeyFactory.getInstance(algorithm);
-        SecretKey secretKey = skf.generateSecret(dks);
-        return secretKey;
+    private static SecretKey toKey(byte[] keybyte) throws Exception {
+        SecretKeySpec key = new SecretKeySpec(keybyte, DEFAULTALGORITHM);
+        SecretKeyFactory skf = SecretKeyFactory.getInstance(DEFAULTALGORITHM);
+        return skf.generateSecret(key);
     }
 
     public static SecretKey getKey() {
         try {
-            KeyGenerator kg = KeyGenerator.getInstance(algorithm);
+            KeyGenerator kg = KeyGenerator.getInstance(DEFAULTALGORITHM);
             kg.init(56);
             return kg.generateKey();
         } catch (Exception ex) {
@@ -100,7 +104,7 @@ public class CipherUtil {
 
     public static void decryptByte(byte[] key, InputStream is, OutputStream os) {
         try {
-            Cipher cipher = Cipher.getInstance(DEFAULT_CIPHER_ALGORITHM);
+            Cipher cipher = Cipher.getInstance(DEFAULTALGORITHM);
             cipher.init(Cipher.DECRYPT_MODE, toKey(key));
             //CipherInputStream cis=new CipherInputStream(is, cipher);
             CipherOutputStream out = new CipherOutputStream(os, cipher);
@@ -305,7 +309,8 @@ public class CipherUtil {
         in.readFully(data);
         return new BigInteger(data);
     }
-    public static List<String> generateRandomKey() throws NoSuchAlgorithmException{
+
+    public static List<String> generateRandomKey() throws NoSuchAlgorithmException {
         KeyPairGenerator keyPairGen = KeyPairGenerator.getInstance("RSA");
         // 初始化密钥对生成器
         keyPairGen.initialize(KEY_SIZE, new SecureRandom());
@@ -318,7 +323,7 @@ public class CipherUtil {
         String publicKeyString = Base64.getEncoder().encodeToString(publicKey.getEncoded());
         // 得到私钥字符串
         String privateKeyString = Base64.getEncoder().encodeToString(privateKey.getEncoded());
-        return Lists.newArrayList(privateKeyString,publicKeyString);
+        return Lists.newArrayList(privateKeyString, publicKeyString);
     }
 
 

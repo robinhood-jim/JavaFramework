@@ -18,10 +18,7 @@ package com.robin.core.sql.util;
 import com.robin.core.base.datameta.BaseDataBaseMeta;
 import com.robin.core.base.exception.DAOException;
 import com.robin.core.query.util.PageQuery;
-import com.robin.core.query.util.QueryParam;
 import com.robin.core.query.util.QueryString;
-
-import java.util.List;
 
 public class DB2SqlGen extends AbstractSqlGen implements BaseSqlGen{
 	private static final DB2SqlGen sqlGen=new DB2SqlGen();
@@ -86,10 +83,6 @@ public class DB2SqlGen extends AbstractSqlGen implements BaseSqlGen{
 	}
 	
 
-	private String getClassSql(List<QueryParam> queryList) {
-
-		return null;
-	}
 
 
 	@Override

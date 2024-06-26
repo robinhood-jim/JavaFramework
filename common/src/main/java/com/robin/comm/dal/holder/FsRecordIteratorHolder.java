@@ -15,12 +15,12 @@
  */
 package com.robin.comm.dal.holder;
 
+import com.robin.comm.dal.pool.ResourceAccessHolder;
 import com.robin.core.base.exception.OperationInWorkException;
 import com.robin.core.fileaccess.fs.AbstractFileSystemAccessor;
-import com.robin.core.fileaccess.iterator.AbstractFileIterator;
+import com.robin.core.fileaccess.iterator.IResourceIterator;
 import com.robin.core.fileaccess.iterator.TextFileIteratorFactory;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
-import com.robin.comm.dal.pool.ResourceAccessHolder;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -30,7 +30,7 @@ import java.util.Map;
 
 @Slf4j
 public class FsRecordIteratorHolder extends AbstractResourceHolder {
-    protected AbstractFileIterator iterator;
+    protected IResourceIterator iterator;
 
     @Override
     public void init(DataCollectionMeta colmeta) throws Exception {

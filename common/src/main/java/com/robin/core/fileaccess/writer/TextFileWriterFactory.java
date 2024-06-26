@@ -15,9 +15,7 @@
  */
 package com.robin.core.fileaccess.writer;
 
-import com.robin.core.base.util.Const;
 import com.robin.core.base.util.FileUtils;
-import com.robin.core.fileaccess.iterator.AbstractFileIterator;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,37 +34,34 @@ public class TextFileWriterFactory {
         discoverIterator(fileWriterMap);
     }
 
-    public static AbstractFileWriter getFileWriterByType(DataCollectionMeta colmeta, BufferedWriter writer) throws IOException {
-        AbstractFileWriter fileWriter = getFileWriterByType(colmeta);
+    public static IResourceWriter getWriterByType(DataCollectionMeta colmeta, BufferedWriter writer) throws IOException {
+        IResourceWriter fileWriter = getWriterByType(colmeta);
         fileWriter.setWriter(writer);
         return fileWriter;
     }
 
-    public static AbstractFileWriter getFileOutputStreamByType(DataCollectionMeta colmeta, OutputStream writer) throws IOException{
-        AbstractFileWriter fileWriter = getFileWriterByType(colmeta);
+    public static IResourceWriter getOutputStreamByType(DataCollectionMeta colmeta, OutputStream writer) throws IOException{
+        IResourceWriter fileWriter = getWriterByType(colmeta);
         if(writer!=null) {
             fileWriter.setOutputStream(writer);
         }
         return fileWriter;
     }
 
-    public static AbstractFileWriter getFileWriterByPath(DataCollectionMeta colmeta, OutputStream writer) throws IOException{
-        List<String> suffixList=new ArrayList<String>();
-        FileUtils.parseFileFormat(colmeta.getPath(),suffixList);
-        String fileFormat=suffixList.get(0);
-        AbstractFileWriter fileWriter = getFileWriterByType(colmeta);
+    public static IResourceWriter getWriterByPath(DataCollectionMeta colmeta, OutputStream writer) throws IOException{
+        IResourceWriter fileWriter = getWriterByType(colmeta);
         fileWriter.setOutputStream(writer);
         return fileWriter;
     }
 
-    private static AbstractFileWriter getFileWriterByType(DataCollectionMeta colmeta) throws IOException {
-        AbstractFileWriter fileWriter = null;
+    private static IResourceWriter getWriterByType(DataCollectionMeta colmeta) throws IOException {
+        IResourceWriter fileWriter = null;
         try {
 
             String fileSuffix=colmeta.getFileFormat();
             Class<? extends IResourceWriter> writerClass=fileWriterMap.get(fileSuffix);
             if (!ObjectUtils.isEmpty(writerClass)) {
-                fileWriter = (AbstractFileWriter) writerClass.getConstructor(DataCollectionMeta.class).newInstance(colmeta);
+                fileWriter =  writerClass.getConstructor(DataCollectionMeta.class).newInstance(colmeta);
             }
 
         } catch (Exception ex) {

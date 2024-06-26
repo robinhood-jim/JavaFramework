@@ -128,7 +128,7 @@ public class RepeatSubmitInterceptor extends HandlerInterceptorAdapter implement
         boolean repeatTag = false;
         if (!CollectionUtils.isEmpty(map)) {
             Stream<Map.Entry<String, Object>> stream = map.entrySet().stream().filter(f -> !LASTACCESSTS.equals(f.getKey()) && !FIRSTACCESSTS.equals(f.getKey()) && !NUMBER.equals(f.getKey()));
-            if (check.checkParam()) {
+            if (check.checkParamValue()) {
                 repeatTag = stream.allMatch(e -> e.getValue().equals(paramMap.get(e.getKey())));
             } else {
                 repeatTag = stream.allMatch(e -> paramMap.containsKey(e.getKey()));

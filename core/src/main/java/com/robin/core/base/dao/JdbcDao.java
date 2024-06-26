@@ -276,7 +276,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
             List<Object> objList = new ArrayList<>();
             for (int i = 0; i < conditions.size(); i++) {
                 conditions.get(i).setFieldMap(fieldMap);
-                buffer.append(conditions.get(i).toSQLPart());
+                buffer.append(conditions.get(i).toPreparedSQLPart());
                 if (i != conditions.size() - 1) {
                     if (!Const.OPERATOR.LINK_OR.getValue().equalsIgnoreCase(conditions.get(i + 1).getSuffixOper())) {
                         buffer.append(" and ");

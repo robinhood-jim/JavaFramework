@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2015,robinjim(robinjim@126.com)
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -17,10 +17,11 @@ package com.robin.core.fileaccess.iterator;
 
 import com.robin.comm.dal.pool.ResourceAccessHolder;
 import com.robin.core.base.util.IOUtils;
-import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.fs.AbstractFileSystemAccessor;
+import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.meta.DataSetColumnMeta;
 import com.robin.core.fileaccess.util.ResourceUtil;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
@@ -33,93 +34,104 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+
 public abstract class AbstractFileIterator implements IResourceIterator {
-	protected BufferedReader reader;
-	protected InputStream instream;
-	protected AbstractFileSystemAccessor accessUtil;
-	protected String identifier;
-	protected DataCollectionMeta colmeta;
-	protected List<String> columnList=new ArrayList<String>();
-	protected Map<String, DataSetColumnMeta> columnMap=new HashMap<>();
-	protected Logger logger= LoggerFactory.getLogger(getClass());
-	public AbstractFileIterator(){
+    protected BufferedReader reader;
+    protected InputStream instream;
+    protected AbstractFileSystemAccessor accessUtil;
+    protected String identifier;
+    protected DataCollectionMeta colmeta;
+    protected List<String> columnList = new ArrayList<String>();
+    protected Map<String, DataSetColumnMeta> columnMap = new HashMap<>();
+    protected Logger logger = LoggerFactory.getLogger(getClass());
 
-	}
-	public AbstractFileIterator(DataCollectionMeta colmeta){
-		this.colmeta=colmeta;
-		for (DataSetColumnMeta meta:colmeta.getColumnList()) {
-			columnList.add(meta.getColumnName());
-			columnMap.put(meta.getColumnName(), meta);
-		}
-	}
-	public AbstractFileIterator(DataCollectionMeta colmeta, AbstractFileSystemAccessor accessUtil){
-		this.colmeta=colmeta;
-		for (DataSetColumnMeta meta:colmeta.getColumnList()) {
-			columnList.add(meta.getColumnName());
-			columnMap.put(meta.getColumnName(), meta);
-		}
-		this.accessUtil=accessUtil;
-	}
+    public AbstractFileIterator() {
 
-	@Override
-	public void beforeProcess(String resourcePath){
-		checkAccessUtil(resourcePath);
-		Assert.notNull(accessUtil,"ResourceAccessUtil is required!");
-		try {
-			this.reader = accessUtil.getInResourceByReader(colmeta, ResourceUtil.getProcessPath(resourcePath));
-		}catch (Exception ex){
+    }
 
-		}
-	}
-	@Override
-	public void afterProcess(){
-		try{
-			close();
-		}catch (Exception ex){
+    public AbstractFileIterator(DataCollectionMeta colmeta) {
+        this.colmeta = colmeta;
+        for (DataSetColumnMeta meta : colmeta.getColumnList()) {
+            columnList.add(meta.getColumnName());
+            columnMap.put(meta.getColumnName(), meta);
+        }
+    }
 
-		}
-	}
-	@Override
-	public void init(){
+    public AbstractFileIterator(DataCollectionMeta colmeta, AbstractFileSystemAccessor accessUtil) {
+        this.colmeta = colmeta;
+        for (DataSetColumnMeta meta : colmeta.getColumnList()) {
+            columnList.add(meta.getColumnName());
+            columnMap.put(meta.getColumnName(), meta);
+        }
+        this.accessUtil = accessUtil;
+    }
 
-	}
-	protected void checkAccessUtil(String inputPath){
-		try {
-			if (accessUtil == null) {
-				URI uri = new URI(StringUtils.isEmpty(inputPath)?colmeta.getPath():inputPath);
-				String schema = uri.getScheme();
-				accessUtil = ResourceAccessHolder.getAccessUtilByProtocol(schema.toLowerCase());
-			}
-		}catch (Exception ex){
-			logger.error("{}",ex);
-		}
-	}
+    public void beforeProcess(String resourcePath) {
+        checkAccessUtil(resourcePath);
+        Assert.notNull(accessUtil, "ResourceAccessUtil is required!");
+        try {
+            Pair<BufferedReader, InputStream> pair = accessUtil.getInResourceByReader(colmeta, ResourceUtil.getProcessPath(resourcePath));
+            this.reader = pair.getKey();
+            this.instream = pair.getValue();
+        } catch (Exception ex) {
+            logger.error("{}",ex.getMessage());
+        }
+    }
+
+    @Override
+    public void afterProcess() {
+        try {
+            close();
+        } catch (Exception ex) {
+
+        }
+    }
+
+    @Override
+    public void init() {
+
+    }
+
+    protected void checkAccessUtil(String inputPath) {
+        try {
+            if (accessUtil == null) {
+                URI uri = new URI(StringUtils.isEmpty(inputPath) ? colmeta.getPath() : inputPath);
+                String schema = uri.getScheme();
+                accessUtil = ResourceAccessHolder.getAccessUtilByProtocol(schema.toLowerCase());
+            }
+        } catch (Exception ex) {
+            logger.error("{}", ex);
+        }
+    }
 
 
-	public void setReader(BufferedReader reader){
-		this.reader=reader;
-	}
-	public void setInputStream(InputStream stream){
-		this.instream=stream;
-	}
-	protected void copyToLocal(File tmpFile, InputStream stream){
-		try(FileOutputStream outputStream=new FileOutputStream(tmpFile)){
-			IOUtils.copyBytes(stream,outputStream,8192);
-		}catch (IOException ex){
-			logger.error("{}",ex);
-		}
-	}
+    public void setReader(BufferedReader reader) {
+        this.reader = reader;
+    }
 
-	@Override
-	public void close() throws IOException {
-		if(reader!=null){
-			reader.close();
-		}
-		if(instream!=null){
-			instream.close();
-		}
-	}
-	public String getIdentifier(){
-		return identifier;
-	}
+    public void setInputStream(InputStream stream) {
+        this.instream = stream;
+    }
+
+    protected void copyToLocal(File tmpFile, InputStream stream) {
+        try (FileOutputStream outputStream = new FileOutputStream(tmpFile)) {
+            IOUtils.copyBytes(stream, outputStream, 8192);
+        } catch (IOException ex) {
+            logger.error("{}", ex);
+        }
+    }
+
+    @Override
+    public void close() throws IOException {
+        if (reader != null) {
+            reader.close();
+        }
+        if (instream != null) {
+            instream.close();
+        }
+    }
+
+    public String getIdentifier() {
+        return identifier;
+    }
 }

@@ -35,6 +35,7 @@ import com.robin.core.test.model.*;
 import com.robin.core.test.service.*;
 import io.github.classgraph.*;
 import junit.framework.TestCase;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -42,12 +43,14 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.sql.Timestamp;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = "classpath:applicationContext-test.xml")
+@Slf4j
 public class JdbcDaoTest extends TestCase {
     @Override
     protected void setUp() {
@@ -258,6 +261,24 @@ public class JdbcDaoTest extends TestCase {
         user.setUserPassword("t1");
         user.setUserName("t1");
         SpringContextHolder.getBean(SysUserService.class).saveEntity(user);
+    }
+    @Test
+    public void testQueryCondition(){
+        /*FilterConditionBuilder builder=new FilterConditionBuilder();
+        builder.filter(SysUser::getAccountType, Const.OPERATOR.IN, Arrays.asList(1,2))
+                .eq(SysUser::getUserStatus,Const.VALID);
+        List<SysUser> users=SpringContextHolder.getBean(SysUserService.class).queryByCondition(builder.getConditions());
+        List<SysUser> users1=SpringContextHolder.getBean(SysUserService.class).queryByField(SysUser::getAccountType, Const.OPERATOR.IN,1,2);
+        log.info("get user {}",users);*/
+        PageQuery query=new PageQuery();
+        FilterConditionBuilder builder=new FilterConditionBuilder();
+        builder.filter(BsReceipt::getPrintDate,Const.OPERATOR.GT,"2024-05-10",Const.META_TYPE_DATE).eq(BsReceipt::getStatus,Const.VALID,Const.META_TYPE_STRING).notNull(BsReceipt::getInvoNo);
+        FilterCondition condition=new FilterCondition(Const.OPERATOR.EQ,builder.getConditions(),BsReceipt.class);
+        query.getConditionMap().put(PageQuery.DEFAULTQUERYSTRING,condition);
+        query.setSelectParamId("GETBSRECEIPT");
+        SpringContextHolder.getBean("jdbcDao",JdbcDao.class).queryBySelectId(query);
+        log.info("{}",query.getRecordSet());
+
     }
     @Test
     public void testGetFunctionName(){

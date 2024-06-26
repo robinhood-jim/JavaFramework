@@ -144,7 +144,7 @@ public class EntityMappingUtil {
                 }
             }
             if(fieldContentMap.containsKey(fieldName)){
-                wherebuffer.append(condition.toSQLPart());
+                wherebuffer.append(condition.toPreparedSQLPart());
                 condition.fillValue(whereObjects);
             }
         }

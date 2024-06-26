@@ -54,7 +54,7 @@ public class TestJsonGen {
 			AbstractFileSystemAccessor util= FileSystemAccessorFactory.getResourceAccessorByType(colmeta.getResType());
 			OutputStream stream=util.getOutResourceByStream(colmeta, colmeta.getPath());
 			//GsonFileWriter jwriter=new GsonFileWriter(colmeta, writer);
-			final AbstractFileWriter jwriter=TextFileWriterFactory.getFileWriterByPath(colmeta,stream);
+			final AbstractFileWriter jwriter=(AbstractFileWriter) TextFileWriterFactory.getWriterByPath(colmeta,stream);
 			System.out.println(new Date());
 			jwriter.beginWrite();
 			ResultSetOperationExtractor extractor=new ResultSetOperationExtractor() {

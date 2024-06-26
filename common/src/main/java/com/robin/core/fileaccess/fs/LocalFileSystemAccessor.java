@@ -3,6 +3,7 @@ package com.robin.core.fileaccess.fs;
 import com.robin.core.base.util.Const;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.*;
 import java.net.URI;
@@ -14,26 +15,30 @@ public class LocalFileSystemAccessor extends AbstractFileSystemAccessor {
 
 
 	@Override
-    public BufferedReader getInResourceByReader(DataCollectionMeta meta, String resourcePath) throws IOException{
+    public Pair<BufferedReader,InputStream> getInResourceByReader(DataCollectionMeta meta, String resourcePath) throws IOException{
 		BufferedReader reader;
+		InputStream stream;
 
 		File file=new File(getProcessPath(resourcePath));
 		if(!file.exists()){
 			throw new IOException("input file "+resourcePath+" does not exist!");
 		}
-		reader= getReaderByPath(getProcessPath(resourcePath), FileUtils.openInputStream(file), meta.getEncode());
-		return reader;
+		stream=FileUtils.openInputStream(file);
+		reader= getReaderByPath(getProcessPath(resourcePath), stream, meta.getEncode());
+		return Pair.of(reader,stream);
 	}
 	
 	@Override
-    public BufferedWriter getOutResourceByWriter(DataCollectionMeta meta, String resourcePath) throws IOException{
+    public Pair<BufferedWriter,OutputStream> getOutResourceByWriter(DataCollectionMeta meta, String resourcePath) throws IOException{
 		BufferedWriter writer;
+		OutputStream outputStream;
 		File file=new File(getProcessPath(resourcePath));
 		if(file.exists()){
 			FileUtils.forceDelete(file);
 		}
-		writer= getWriterByPath(getProcessPath(resourcePath), FileUtils.openOutputStream(file), meta.getEncode());
-		return writer;
+		outputStream=FileUtils.openOutputStream(file);
+		writer= getWriterByPath(getProcessPath(resourcePath), outputStream, meta.getEncode());
+		return Pair.of(writer,outputStream);
 	}
 	@Override
     public OutputStream getOutResourceByStream(DataCollectionMeta meta, String resourcePath) throws IOException{

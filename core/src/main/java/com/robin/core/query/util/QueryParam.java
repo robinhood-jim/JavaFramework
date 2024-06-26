@@ -18,7 +18,7 @@ package com.robin.core.query.util;
 import com.robin.core.base.util.Const;
 
 
-
+@Deprecated
 public class QueryParam {
 	private String columnName;
 	private String columnType;

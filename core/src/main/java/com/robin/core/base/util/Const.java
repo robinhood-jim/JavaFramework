@@ -329,7 +329,8 @@ public class Const {
         LLIKE("LL"," LIKE "),
         RLIKE("RL", " LIKE "),
         LINK_AND("AND"," AND "),
-        LINK_OR("OR"," OR ");
+        LINK_OR("OR"," OR "),
+        HAVING("HAVING"," HAVING ");
 
         private String value;
         private String signal;
