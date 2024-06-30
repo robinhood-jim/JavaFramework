@@ -19,8 +19,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.robin.core.base.datameta.DataBaseParam;
+import com.robin.core.base.shell.CommandLineExecutor;
 
 public class SqlServerDataBaseExportor extends BaseDataBaseExportor{
+	//"bcp \""+exParam.getExecuteSql()+"\"  queryout  "+exParam.getDumpPath()+" -t "+exParam.getSplit()+" -S "+param.getHostName()+" -U "+param.getUserName()+" -P "+param.getPasswd()+" -T -c";
 	@Override
 	public int exportToLocal(DataBaseExportParam exParam,
 			DataBaseParam param) {
@@ -39,15 +41,13 @@ public class SqlServerDataBaseExportor extends BaseDataBaseExportor{
 		scriptList.add(param.getPasswd());
 		scriptList.add("-T");
 		scriptList.add("-c");
-		String executeShell="bcp \""+exParam.getExecuteSql()+"\"  queryout  "+exParam.getDumpPath()+" -t "+exParam.getSplit()+" -S "+param.getHostName()+" -U "+param.getUserName()+" -P "+param.getPasswd()+" -T -c";
-		ProcessBuilder builder=new ProcessBuilder(executeShell);
+
 		int ret=-1;
 		try{
-			System.out.println(builder.command());
-			Process process=builder.start();
-			ret=process.waitFor();
+			CommandLineExecutor.getInstance().executeCmd(scriptList);
+			ret=0;
 		}catch(Exception ex){
-			ex.printStackTrace();
+
 		}
 		return ret;
 	}
