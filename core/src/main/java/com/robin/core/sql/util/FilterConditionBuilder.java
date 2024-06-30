@@ -27,12 +27,72 @@ public class FilterConditionBuilder {
     }
     public <T extends BaseObject> FilterConditionBuilder eq(PropertyFunction<T,?> function, Object object){
         String fieldName=AnnotationRetriever.getFieldName(function);
-        conditions.add(new FilterCondition(fieldName, Const.OPERATOR.EQ,object));
+        String columnType=AnnotationRetriever.getFieldType(function);
+        conditions.add(new FilterCondition(fieldName, Const.OPERATOR.EQ,object,columnType));
         return this;
     }
     public <T extends BaseObject> FilterConditionBuilder eq(PropertyFunction<T,?> function, Object object,String columnType){
         String fieldName=AnnotationRetriever.getFieldName(function);
         conditions.add(new FilterCondition(fieldName, Const.OPERATOR.EQ,object,columnType));
+        return this;
+    }
+    public <T extends BaseObject> FilterConditionBuilder in(String columnName, List<?> objects){
+        FilterCondition condition=new FilterCondition(columnName, Const.OPERATOR.IN);
+        condition.setValues(objects);
+        conditions.add(condition);
+        return this;
+    }
+    public <T extends BaseObject> FilterConditionBuilder in(String columnName, List<?> objects,String columnType){
+        FilterCondition condition=new FilterCondition(columnName, Const.OPERATOR.IN);
+        condition.setValues(objects);
+        condition.setColumnType(columnType);
+        conditions.add(condition);
+        return this;
+    }
+    public <T extends BaseObject> FilterConditionBuilder in(PropertyFunction<T,?> function, List<?> objects){
+        String fieldName=AnnotationRetriever.getFieldName(function);
+        String columnType=AnnotationRetriever.getFieldType(function);
+        FilterCondition condition=new FilterCondition(fieldName, Const.OPERATOR.IN);
+        condition.setValues(objects);
+        condition.setColumnType(columnType);
+        conditions.add(condition);
+        return this;
+    }
+    public <T extends BaseObject> FilterConditionBuilder notIn(String columnName, List<?> objects){
+        FilterCondition condition=new FilterCondition(columnName, Const.OPERATOR.NOTIN);
+        condition.setValues(objects);
+        conditions.add(condition);
+        return this;
+    }
+    public <T extends BaseObject> FilterConditionBuilder notIn(String columnName, List<?> objects,String columnType){
+        FilterCondition condition=new FilterCondition(columnName, Const.OPERATOR.NOTIN);
+        condition.setValues(objects);
+        condition.setColumnType(columnType);
+        conditions.add(condition);
+        return this;
+    }
+    public <T extends BaseObject> FilterConditionBuilder ontIn(PropertyFunction<T,?> function, List<?> objects){
+        String fieldName=AnnotationRetriever.getFieldName(function);
+        String columnType=AnnotationRetriever.getFieldType(function);
+        FilterCondition condition=new FilterCondition(fieldName, Const.OPERATOR.NOTIN);
+        condition.setValues(objects);
+        condition.setColumnType(columnType);
+        conditions.add(condition);
+        return this;
+    }
+    public <T extends BaseObject> FilterConditionBuilder between(String columnName, List<?> objects,String columnType){
+        FilterCondition condition=new FilterCondition(columnName, Const.OPERATOR.BETWEEN);
+        condition.setValues(objects);
+        conditions.add(condition);
+        return this;
+    }
+    public <T extends BaseObject> FilterConditionBuilder between(PropertyFunction<T,?> function, List<?> objects){
+        String fieldName=AnnotationRetriever.getFieldName(function);
+        String columnType=AnnotationRetriever.getFieldType(function);
+        FilterCondition condition=new FilterCondition(fieldName, Const.OPERATOR.BETWEEN);
+        condition.setValues(objects);
+        condition.setColumnType(columnType);
+        conditions.add(condition);
         return this;
     }
     public FilterConditionBuilder filter(String columnName,Const.OPERATOR operator, Object object){
@@ -53,7 +113,8 @@ public class FilterConditionBuilder {
     }
     public <T extends BaseObject> FilterConditionBuilder filter(PropertyFunction<T,?> function,Const.OPERATOR operator,Object value){
         String fieldName=AnnotationRetriever.getFieldName(function);
-        conditions.add(new FilterCondition(fieldName, operator,value));
+        String columnType=AnnotationRetriever.getFieldType(function);
+        conditions.add(new FilterCondition(fieldName, operator,value,columnType));
         return this;
     }
     public <T extends BaseObject> FilterConditionBuilder filter(PropertyFunction<T,?> function,Const.OPERATOR operator,Object value,String columnType){
@@ -106,6 +167,10 @@ public class FilterConditionBuilder {
 
     public FilterConditionBuilder or(List<FilterCondition> objects){
         conditions.add(new FilterCondition(Const.OPERATOR.LINK_OR,objects));
+        return this;
+    }
+    public FilterConditionBuilder addCondition(FilterCondition condition){
+        conditions.add(condition);
         return this;
     }
 

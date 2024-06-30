@@ -62,7 +62,7 @@ public class CharUtils {
                 byte[] readbyte=new byte[1];
                 while (keywordIn.available() > 0) {
                     keywordIn.read(readbyte);
-                    if(readbyte!=CipherUtil.m_ending) {
+                    if(readbyte[0]!=CipherUtil.m_ending[0]) {
                         Integer key = keywordIn.readInt();
                         Integer length = keywordIn.readInt();
                         //String value = keywordIn.readUTF();

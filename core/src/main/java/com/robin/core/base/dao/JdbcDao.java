@@ -991,23 +991,10 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
     }
 
     private void getConditionParam(FilterCondition condition, List<Object> objList) {
-        if (condition.getValue() != null) {
-            if (FilterCondition.class.isAssignableFrom(condition.getValue().getClass())) {
-                getConditionParam((FilterCondition) condition.getValue(), objList);
-            } else if (ArrayList.class.isAssignableFrom(condition.getValue().getClass())) {
-                List<?> objArr = (List<?>) condition.getValue();
-                for (Object o : objArr) {
-                    if (FilterCondition.class.isAssignableFrom(o.getClass())) {
-                        getConditionParam(((FilterCondition) o), objList);
-                    } else {
-                        objList.add(o);
-                    }
-                }
-            } else {
-                condition.fillValue(objList);
-            }
-        }else if(!CollectionUtils.isEmpty(condition.getValues())){
+        if (CollectionUtils.isEmpty(condition.getConditions())) {
             condition.fillValue(objList);
+        }else {
+            condition.getConditions().forEach(f->f.fillValue(objList));
         }
     }
 

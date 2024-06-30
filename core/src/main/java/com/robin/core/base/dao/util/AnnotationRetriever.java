@@ -537,6 +537,28 @@ public class AnnotationRetriever {
         SerializedLambda lambda = Optional.ofNullable(functionMap.get(name)).map(Reference::get).orElseGet(() -> getLambdaSerialized(field));
         return uncapitalize(lambda.getImplMethodName());
     }
+    public static <T> String getFieldType(PropertyFunction<T, ?> field){
+        Class<?> clazz = field.getClass();
+        String name = clazz.getName();
+        SerializedLambda lambda = Optional.ofNullable(functionMap.get(name)).map(Reference::get).orElseGet(() -> getLambdaSerialized(field));
+        String retClass=lambda.getImplMethodSignature();
+        String retType=Const.META_TYPE_STRING;
+
+        if("()Ljava/lang/Long;".equals(retClass)){
+            retType=Const.META_TYPE_BIGINT;
+        }else if("()Ljava/lang/Double;".equals(retClass) || "()Ljava/lang/BigDecimal;".equals(retClass)){
+            retType=Const.META_TYPE_DOUBLE;
+        }else if("()Ljava/lang/Short;".equals(retClass)){
+            retType=Const.META_TYPE_SHORT;
+        }else if("()Ljava/lang/byte;".equals(retClass)){
+            retType=Const.META_TYPE_CLOB;
+        }else if("()Ljava/sql/Date;".equals(retClass) || "()Ljava/util/Date;".equals(retClass) || "()Ljava/time/LocalDate;".equals(retClass)){
+            retType=Const.META_TYPE_DATE;
+        }else if("()Ljava/sql/Timestamp;".equals(retClass) || "()Ljava/time/LocalDateTime;".equals(retClass)){
+            retType=Const.META_TYPE_TIMESTAMP;
+        }
+        return retType;
+    }
 
     private static <T> SerializedLambda getLambdaSerialized(PropertyFunction<T, ?> field) {
         Class<?> clazz = field.getClass();
