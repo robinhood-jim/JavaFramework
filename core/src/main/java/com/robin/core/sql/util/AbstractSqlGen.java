@@ -71,7 +71,7 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
         StringBuilder buffer = new StringBuilder();
         String replaceStr=linkOper;
         for (FilterCondition param : paramList) {
-            if (ObjectUtils.isEmpty(param.getValue()) || CollectionUtils.isEmpty(param.getValues())) {
+            if (ObjectUtils.isEmpty(param.getValue()) || CollectionUtils.isEmpty(param.getConditions())) {
                 continue;
             }
             String prevoper = param.getPrefixOper();
@@ -108,7 +108,7 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
             if (i == paramList.size() - 1) {
                 linkOper = "";
             }
-            if (ObjectUtils.isEmpty(param.getValue()) && CollectionUtils.isEmpty(param.getValues())) {
+            if (ObjectUtils.isEmpty(param.getValue()) && CollectionUtils.isEmpty(param.getConditions())) {
                 break;
             }
             String queryPart=toSQLForGeneric(param);
@@ -128,7 +128,7 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
         StringBuilder buffer = new StringBuilder();
         buffer.append(" 1=1 and ");
         for (FilterCondition param : paramList) {
-            if (ObjectUtils.isEmpty(param.getValue()) && CollectionUtils.isEmpty(param.getValues())) {
+            if (ObjectUtils.isEmpty(param.getValue()) && CollectionUtils.isEmpty(param.getConditions())) {
                 break;
             }
             String queryPart=toSQLForGeneric(param);
@@ -143,12 +143,12 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
     @Override
     public String toSQLWithType(FilterCondition param) {
         StringBuilder builder=new StringBuilder();
-        if (ObjectUtils.isEmpty(param.getValue()) && CollectionUtils.isEmpty(param.getValues())) {
+        if (ObjectUtils.isEmpty(param.getValue()) && CollectionUtils.isEmpty(param.getConditions())) {
             return "";
         }
 
-        if(!CollectionUtils.isEmpty(param.getValues())){
-            for(FilterCondition condition:param.getValues()){
+        if(!CollectionUtils.isEmpty(param.getConditions())){
+            for(FilterCondition condition:param.getConditions()){
                 String queryPart=toSQLForGeneric(condition);
                 if(!ObjectUtils.isEmpty(queryPart)) {
                     builder.append(queryPart).append(param.getLinkOper());
@@ -308,8 +308,8 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
         StringBuilder sql = new StringBuilder();
         Const.OPERATOR nQueryModel = param.getOperator();
 
-        if(!CollectionUtils.isEmpty(param.getValues())){
-            List<FilterCondition> conditions=param.getValues();
+        if(!CollectionUtils.isEmpty(param.getConditions())){
+            List<FilterCondition> conditions=param.getConditions();
             for(int i=0;i<conditions.size();i++){
                 sql.append("(");
                 String queryPart=toSQLForGeneric(conditions.get(i));

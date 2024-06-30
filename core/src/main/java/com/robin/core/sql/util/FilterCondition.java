@@ -11,7 +11,6 @@ import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -23,9 +22,10 @@ public class FilterCondition {
     private Const.OPERATOR operator;
     private String columnCode;
     private Object value;
-    private List<FilterCondition> values;
+    private List<?> values;
+    private List<FilterCondition> conditions;
     private String columnType;
-    private String linkOper=Const.OPERATOR.LINK_AND.getSignal();
+    private String linkOper = Const.OPERATOR.LINK_AND.getSignal();
     private Class<? extends BaseObject> mappingClass;
 
 
@@ -39,6 +39,10 @@ public class FilterCondition {
         this.fieldMap = fieldMap;
     }
 
+    public FilterCondition(String columnCode,Const.OPERATOR operator){
+        this.columnCode=columnCode;
+        this.operator=operator;
+    }
     public FilterCondition(Const.OPERATOR operator, String value) {
         this.operator = operator;
         this.value = value;
@@ -50,11 +54,12 @@ public class FilterCondition {
         this.operator = operator;
         this.value = value;
     }
-    public FilterCondition(String columnCode,Const.OPERATOR operator, Object value,String columnType) {
+
+    public FilterCondition(String columnCode, Const.OPERATOR operator, Object value, String columnType) {
         this.columnCode = columnCode;
         this.operator = operator;
         this.value = value;
-        this.columnType=columnType;
+        this.columnType = columnType;
     }
 
     public <T extends BaseObject> FilterCondition(PropertyFunction<T, ?> function, Const.OPERATOR operator, Object value) {
@@ -64,47 +69,48 @@ public class FilterCondition {
         this.value = value;
     }
 
-    public FilterCondition(String columnCode, Const.OPERATOR operator, List<FilterCondition> values) {
+    public FilterCondition(String columnCode, Const.OPERATOR operator, List<FilterCondition> conditions) {
         this.columnCode = columnCode;
         this.operator = operator;
-        this.values = values;
+        this.conditions = conditions;
     }
+
 
     public <T extends BaseObject> FilterCondition(PropertyFunction<T, ?> function, Const.OPERATOR operator, List<FilterCondition> values) {
         String columnCode = AnnotationRetriever.getFieldName(function);
         this.columnCode = columnCode;
         this.operator = operator;
-        this.values = values;
+        this.conditions = values;
     }
-
 
 
     public FilterCondition(String columnCode, Const.OPERATOR operator, List<FilterCondition> values, String prefixOper, String suffixOper) {
         this.columnCode = columnCode;
         this.operator = operator;
-        this.values = values;
+        this.conditions = values;
         this.prefixOper = prefixOper;
         this.suffixOper = suffixOper;
     }
 
     public FilterCondition(Const.OPERATOR operator, List<FilterCondition> values, String prefixOper, String suffixOper) {
         this.operator = operator;
-        this.values = values;
+        this.conditions = values;
         this.prefixOper = prefixOper;
         this.suffixOper = suffixOper;
     }
 
     public FilterCondition(Const.OPERATOR operator, List<FilterCondition> values) {
         this.operator = operator;
-        this.values = values;
+        this.conditions = values;
     }
-    public FilterCondition(Const.OPERATOR operator, List<FilterCondition> values,Class<? extends BaseObject> mappingClass) {
+
+    public FilterCondition(Const.OPERATOR operator, List<FilterCondition> values, Class<? extends BaseObject> mappingClass) {
         this.operator = operator;
-        if(!CollectionUtils.isEmpty(values)){
-            values.forEach(f->f.setMappingClass(mappingClass));
+        if (!CollectionUtils.isEmpty(values)) {
+            values.forEach(f -> f.setMappingClass(mappingClass));
         }
-        this.values = values;
-        this.mappingClass=mappingClass;
+        this.conditions = values;
+        this.mappingClass = mappingClass;
     }
 
     public String toPreparedSQLPart() {
@@ -115,11 +121,10 @@ public class FilterCondition {
         }
         switch (operator) {
             case BETWEEN:
-                if (!CollectionUtils.isEmpty(values) && values.size() == 2) {
-                    sbSQLStr.append(" (");
-                    sbSQLStr.append(realColumn);
-                    sbSQLStr.append(" between ? and ?) ");
-                }
+                Assert.notNull(values, "");
+                sbSQLStr.append(" (");
+                sbSQLStr.append(realColumn);
+                sbSQLStr.append(" between ? and ?) ");
                 break;
             case LIKE:
             case RLIKE:
@@ -173,9 +178,9 @@ public class FilterCondition {
                 Assert.notNull(values, "");
                 sbSQLStr.append(" (");
                 sbSQLStr.append(realColumn);
-                if(Const.OPERATOR.IN.equals(operator)) {
+                if (Const.OPERATOR.IN.equals(operator)) {
                     sbSQLStr.append(" in (");
-                }else {
+                } else {
                     sbSQLStr.append(" not in (");
                 }
                 for (int i = 0; i < values.size(); i++) {
@@ -188,15 +193,14 @@ public class FilterCondition {
                 sbSQLStr.append(")) ");
                 break;
             case LINK_OR:
-                Assert.isTrue(!ObjectUtils.isEmpty(values), "");
-                if (!CollectionUtils.isEmpty(values)) {
-                    List<FilterCondition> filterConditions = (List<FilterCondition>) values;
+                Assert.isTrue(!ObjectUtils.isEmpty(conditions), "");
+                if (!CollectionUtils.isEmpty(conditions)) {
                     sbSQLStr.append("(");
-                    for (int i = 0; i < filterConditions.size(); i++) {
-                        filterConditions.get(i).setFieldMap(fieldMap);
-                        sbSQLStr.append(filterConditions.get(i).toPreparedSQLPart());
-                        if (i != filterConditions.size() - 1) {
-                            sbSQLStr.append(filterConditions.get(i).getSuffixOper());
+                    for (int i = 0; i < conditions.size(); i++) {
+                        conditions.get(i).setFieldMap(fieldMap);
+                        sbSQLStr.append(conditions.get(i).toPreparedSQLPart());
+                        if (i != conditions.size() - 1) {
+                            sbSQLStr.append(conditions.get(i).getSuffixOper());
                         }
                     }
                     sbSQLStr.append("(");
@@ -206,21 +210,17 @@ public class FilterCondition {
                 sbSQLStr.append(") ");
                 break;
             case LINK_AND:
-                Assert.notNull(value, "");
-                if (ArrayList.class.isAssignableFrom(value.getClass())) {
-                    sbSQLStr.append("(");
-                    List<FilterCondition> filterConditions1 = (List<FilterCondition>) value;
-                    for (int i = 0; i < filterConditions1.size(); i++) {
-                        filterConditions1.get(i).setFieldMap(fieldMap);
-                        sbSQLStr.append(filterConditions1.get(i).toPreparedSQLPart());
-                        if (i != filterConditions1.size() - 1) {
-                            sbSQLStr.append(filterConditions1.get(i).getSuffixOper());
-                        }
+                Assert.notNull(conditions, "");
+                sbSQLStr.append("(");
+                for (int i = 0; i < conditions.size(); i++) {
+                    conditions.get(i).setFieldMap(fieldMap);
+                    sbSQLStr.append(conditions.get(i).toPreparedSQLPart());
+                    if (i != conditions.size() - 1) {
+                        sbSQLStr.append(conditions.get(i).getSuffixOper());
                     }
-                    sbSQLStr.append(")");
-                } else {
-                    throw new ConfigurationIncorrectException(" AND operator must include list elements");
                 }
+                sbSQLStr.append(")");
+
                 break;
             case NOT:
                 if (!ObjectUtils.isEmpty(value)) {
@@ -288,8 +288,7 @@ public class FilterCondition {
                 break;
             case NOT:
             case EXISTS:
-                FilterCondition condition = (FilterCondition) value;
-                condition.fillValue(objList);
+
                 break;
             default:
                 objList.add(getValue());
