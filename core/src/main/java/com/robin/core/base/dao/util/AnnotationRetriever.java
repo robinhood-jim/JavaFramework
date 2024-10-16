@@ -98,12 +98,11 @@ public class AnnotationRetriever {
             for (int i = 0; i < fields.size(); i++) {
                 Field field = fields.get(i);
                 MappingField mapfield = field.getAnnotation(MappingField.class);
-                if (mapfield != null || !entity.explicit() && !Modifier.isStatic(field.getModifiers()) && !Modifier.isFinal(field.getModifiers())) {
+                if ((mapfield != null || !entity.explicit()) && !Modifier.isStatic(field.getModifiers()) && !Modifier.isFinal(field.getModifiers())) {
                     FieldContent content = retrieveField(field, fieldClasses.get(i));
                     if (content != null) {
                         list.add(content);
                     }
-
                 }
             }
         } else {
@@ -206,7 +205,7 @@ public class AnnotationRetriever {
             String schema = entity.schema();
             String jdbcDao = entity.jdbcDao();
             content = getEntityContent(tableName, schema, false, false);
-            if (!jdbcDao.isEmpty()) {
+            if (!ObjectUtils.isEmpty(jdbcDao)) {
                 content.setJdbcDao(jdbcDao);
             }
         } else {

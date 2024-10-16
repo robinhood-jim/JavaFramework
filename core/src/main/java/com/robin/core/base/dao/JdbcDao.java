@@ -515,7 +515,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
     @Override
     @SuppressWarnings("unchecked")
     public <T extends BaseObject, P extends Serializable> P createVO(T obj, Class<P> clazz) throws DAOException {
-        Long retval;
+        Long retval=null;
         P retObj = null;
         try {
             //function as mybatis-plus MetaObjectHandler
@@ -525,38 +525,35 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
                 handler.insertFill(new MetaObject(obj, fieldContentMap));
             }
             List<FieldContent> fields = AnnotationRetriever.getMappingFieldsCache(obj.getClass());
-            EntityMappingUtil.InsertSegment insertSegment = EntityMappingUtil.getInsertSegment(obj, sqlGen);
+            EntityMappingUtil.InsertSegment insertSegment = EntityMappingUtil.getInsertSegment(obj, sqlGen,this);
             String insertSql = insertSegment.getInsertSql();
             if (log.isDebugEnabled()) {
                 log.debug("insert sql={}", insertSql);
             }
-
-            if (insertSegment.isHasincrementPk()) {
-                if (sqlGen instanceof OracleSqlGen) {
-                    retval = executeOracleSqlWithReturn(fields, insertSql, insertSegment.getSeqField(), obj);
-                } else {
-                    retval = executeSqlWithReturn(fields, insertSql, obj);
-                }
+            FieldContent generateColumn=null;
+            if(insertSegment.isHasincrementPk()){
+                retval = executeSqlWithReturn(fields, insertSql, obj);
+                generateColumn=insertSegment.getIncrementColumn();
+            }else if(insertSegment.isHasSequencePk()){
+                retval = executeSqlSequenceWithReturn(fields, insertSql, insertSegment.getSeqColumn().getFieldName(), obj);
+                generateColumn=insertSegment.getSeqColumn();
+            }
+            if(!ObjectUtils.isEmpty(retval)){
                 //assign increment column
-                if (insertSegment.getIncrementColumn() != null) {
+                if (generateColumn != null) {
                     FieldContent pkColumn = AnnotationRetriever.getPrimaryField(fields);
                     if (pkColumn == null) {
                         throw new DAOException("model " + obj.getClass().getSimpleName() + " does not have primary key");
                     }
+                    Object targetVal = ReflectUtils.getIncrementValueBySetMethod(generateColumn.getSetMethod(), retval);
+                    generateColumn.getSetMethod().invoke(obj, targetVal);
                     if (pkColumn.getPrimaryKeys() == null) {
-                        Object targetVal = ReflectUtils.getIncrementValueBySetMethod(insertSegment.getIncrementColumn().getSetMethod(), retval);
-                        insertSegment.getIncrementColumn().getSetMethod().invoke(obj, targetVal);
                         retObj = (P) targetVal;
                     } else {
-                        for (FieldContent field : pkColumn.getPrimaryKeys()) {
-                            if (field.isIncrement() || field.isSequential()) {
-                                field.getSetMethod().invoke(insertSegment.getIncrementColumn().getGetMethod().invoke(obj), retval);
-                            }
-                        }
                         retObj = (P) pkColumn.getGetMethod().invoke(obj);
                     }
                 }
-            } else {
+            }else {
                 if (!insertSegment.isContainlob()) {
                     executeUpdate(insertSql, fields, obj);
                 } else {
@@ -564,7 +561,11 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
                     this.returnTemplate().execute(insertSql, back);
                 }
                 FieldContent pkColumn = AnnotationRetriever.getPrimaryField(fields);
-                retObj = (P) pkColumn.getGetMethod().invoke(obj);
+                if(pkColumn!=null) {
+                    retObj = (P) pkColumn.getGetMethod().invoke(obj);
+                }else{
+                    return null;
+                }
             }
 
         } catch (Exception ex) {
@@ -975,7 +976,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
     }
 
 
-    private long executeOracleSqlWithReturn(final List<FieldContent> fields, final String sql, final String seqfield, BaseObject object)
+    private long executeSqlSequenceWithReturn(final List<FieldContent> fields, final String sql, final String seqfield, BaseObject object)
             throws DAOException {
         KeyHolder keyHolder = new GeneratedKeyHolder();
         returnTemplate().update(conn -> {

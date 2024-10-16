@@ -36,12 +36,15 @@ import com.robin.core.test.service.*;
 import io.github.classgraph.*;
 import junit.framework.TestCase;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -78,10 +81,11 @@ public class JdbcDaoTest extends TestCase {
     public void testMyBatisInsert(){
         SysUserMybatisService service=SpringContextHolder.getBean(SysUserMybatisService.class);
         SysUserMybatis model=new SysUserMybatis();
-        model.setUserName("test1");
+        model.setUserName("test12344");
         model.setUserPassword("1111");
         model.setAccountType("1");
         Long id=service.saveEntity(model);
+        log.info("get id {}",id);
         assertNotNull(id);
     }
 
@@ -151,6 +155,29 @@ public class JdbcDaoTest extends TestCase {
         sysUserService.saveEntity(user);
         assertNotNull(user.getId());
     }
+    @Test
+    public void testInsertWithSequence() throws IOException {
+        TestSequenceService service=SpringContextHolder.getBean(TestSequenceService.class);
+        TestSequence model=new TestSequence();
+        model.setName("test");
+        model.setCode("test");
+        InputStream bytestream = getClass().getClassLoader().getResourceAsStream("pig.ico");
+        byte[] bytes = IOUtils.toByteArray(bytestream);
+        model.setPicture(bytes);
+        Long id=service.saveEntity(model);
+        Assert.assertNotNull(id);
+    }
+    @Test
+    public void testInsertNullPk(){
+        TestNullPkService service=SpringContextHolder.getBean(TestNullPkService.class);
+        TestNullPk model=new TestNullPk();
+        model.setId(1L);
+        model.setName("test");
+        model.setCode("test");
+        Long id=service.saveEntity(model);
+        Assert.assertNull(id);
+
+    }
 
 
     @Test
@@ -216,11 +243,18 @@ public class JdbcDaoTest extends TestCase {
     @Test
     public void testCondition() throws Exception{
         FilterConditionBuilder filterConditions=new FilterConditionBuilder();
-        SysUserService sysUserService=SpringContextHolder.getBean(SysUserService.class);
-        filterConditions.withCondition(new FilterCondition("userAccount", Const.OPERATOR.EQ,"admin"))
+        //SysUserService sysUserService=SpringContextHolder.getBean(SysUserService.class);
+        /*filterConditions.withCondition(new FilterCondition("userAccount", Const.OPERATOR.EQ,"admin"))
                 .withCondition(new FilterCondition("userPassword", Const.OPERATOR.EQ, StringUtils.getMd5Encry("123456")))
                 .withCondition(new FilterCondition("accountType", Const.OPERATOR.EQ,"1"));
-        List<SysUser> list=sysUserService.queryByCondition(filterConditions,new PageQuery());
+        List<SysUser> list=sysUserService.queryByCondition(filterConditions,new PageQuery());*/
+
+        FilterConditionBuilder builder=new FilterConditionBuilder();
+        builder.in(BsReceipt::getFeeNo, Arrays.asList(new String[]{"SF000010716388"})).eq(BsReceipt::getStatus,"8")
+                .eq(BsReceipt::getRpType,"3");
+        PageQuery pageQuery=new PageQuery();
+        pageQuery.setPageSize(0);
+        List<BsReceipt> bsReceipts = SpringContextHolder.getBean("jdbcDao", JdbcDao.class).queryByCondition(BsReceipt.class,builder.getConditions(),pageQuery);
     }
     @Test
     public void testQueryAndInsertMapper(){
@@ -264,13 +298,20 @@ public class JdbcDaoTest extends TestCase {
     }
     @Test
     public void testQueryCondition(){
-        FilterConditionBuilder builder=new FilterConditionBuilder();
+        /*FilterConditionBuilder builder=new FilterConditionBuilder();
         builder.filter(SysUser::getAccountType, Const.OPERATOR.IN, Arrays.asList(1,2))
                 .eq(SysUser::getUserStatus,Const.VALID);
         List<SysUser> users=SpringContextHolder.getBean(SysUserService.class).queryByCondition(builder.getConditions());
         List<SysUser> users1=SpringContextHolder.getBean(SysUserService.class).queryByField(SysUser::getAccountType, Const.OPERATOR.IN,1,2);
-        log.info("get user {}",users);
-
+        log.info("get user {}",users);*/
+        PageQuery query=new PageQuery();
+        FilterConditionBuilder builder=new FilterConditionBuilder();
+        builder.filter(BsReceipt::getPrintDate,Const.OPERATOR.GT,"2024-05-10").eq(BsReceipt::getStatus,Const.VALID,Const.META_TYPE_STRING).notNull(BsReceipt::getInvoNo);
+        FilterCondition condition=new FilterCondition(Const.OPERATOR.EQ,builder.getConditions(),BsReceipt.class);
+        query.getConditionMap().put(PageQuery.DEFAULTQUERYSTRING,condition);
+        query.setSelectParamId("GETBSRECEIPT");
+        SpringContextHolder.getBean("jdbcDao",JdbcDao.class).queryBySelectId(query);
+        log.info("{}",query.getRecordSet());
 
     }
     @Test

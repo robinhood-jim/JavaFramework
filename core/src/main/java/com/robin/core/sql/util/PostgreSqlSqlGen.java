@@ -92,7 +92,7 @@ public class PostgreSqlSqlGen extends AbstractSqlGen implements BaseSqlGen {
 	}
 	@Override
     public String getSequenceScript(String sequnceName) {
-		return sequnceName+".nextval";
+		return "nextval('"+sequnceName+"')";
 	}
 	@Override
     public String getSelectPart(String columnName, String aliasName) {

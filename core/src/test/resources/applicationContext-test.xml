@@ -51,12 +51,13 @@
     <bean id="jdbcDao" class="com.robin.core.base.dao.JdbcDao" autowire="byName" />
     <bean id="jdbcDao1" class="com.robin.core.base.dao.JdbcDao">
         <property name="dataSource" ref="dataSource1" />
-        <property name="sqlGen" ref="sqlGen" />
+        <property name="sqlGen" ref="sqlGen1" />
         <property name="lobHandler" ref="lobHandler" />
         <property name="queryFactory" ref="queryFactory" />
     </bean>
 
     <bean id="sqlGen" class="com.robin.core.sql.util.MysqlSqlGen" autowire="byName"></bean>
+    <bean id="sqlGen1" class="com.robin.core.sql.util.PostgreSqlSqlGen" autowire="byName"></bean>
     <bean id="queryFactory" class="com.robin.core.query.util.QueryFactory" autowire="byName">
     	<!--<property name="xmlConfigPath" value="classpath:query/queryConfig"></property>-->
     </bean>
