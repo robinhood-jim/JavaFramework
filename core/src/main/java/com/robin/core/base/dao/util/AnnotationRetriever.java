@@ -98,7 +98,7 @@ public class AnnotationRetriever {
             for (int i = 0; i < fields.size(); i++) {
                 Field field = fields.get(i);
                 MappingField mapfield = field.getAnnotation(MappingField.class);
-                if ((mapfield != null || !entity.explicit()) && !Modifier.isStatic(field.getModifiers()) && !Modifier.isFinal(field.getModifiers())) {
+                if (isFieldValid(entity,mapfield,field)) {
                     FieldContent content = retrieveField(field, fieldClasses.get(i));
                     if (content != null) {
                         list.add(content);
@@ -147,7 +147,7 @@ public class AnnotationRetriever {
             MappingEntity entity = clazz.getAnnotation(MappingEntity.class);
             for (Field field : fields) {
                 MappingField mapfield = field.getAnnotation(MappingField.class);
-                if (!Objects.isNull(mapfield) || !entity.explicit() && !Modifier.isStatic(field.getModifiers()) && !Modifier.isFinal(field.getModifiers())) {
+                if (isFieldValid(entity,mapfield,field)) {
                     FieldContent content = retrieveField(field, clazz);
                     if (content != null) {
                         map.put(field.getName(), content);
@@ -640,6 +640,10 @@ public class AnnotationRetriever {
                 content.setDataType(Const.META_TYPE_BLOB);
             }
         }
+    }
+    private static boolean isFieldValid(MappingEntity entity,MappingField mapfield,Field field){
+        return ((mapfield != null && !mapfield.exclude()) || !entity.explicit())
+                && !Modifier.isStatic(field.getModifiers()) && !Modifier.isFinal(field.getModifiers());
     }
 
     private static void adjustByType(FieldContent content, Type type) {
