@@ -126,7 +126,7 @@ public class AnnotationRetriever {
                     Field[] fields = clazz.getDeclaredFields();
                     for (Field field : fields) {
                         TableField mapfield = field.getAnnotation(TableField.class);
-                        if (!Objects.isNull(mapfield) || (!Modifier.isStatic(field.getModifiers()) && !Modifier.isFinal(field.getModifiers()))) {
+                        if ((!Objects.isNull(mapfield) && mapfield.exist()) || (!Modifier.isStatic(field.getModifiers()) && !Modifier.isFinal(field.getModifiers()))) {
                             FieldContent content = retrieveFieldByMyBatis(field, clazz);
                             if (!Objects.isNull(content)) {
                                 list.add(content);

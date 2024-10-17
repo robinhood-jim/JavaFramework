@@ -189,8 +189,11 @@ public class CipherUtil {
     }
 
     public static byte[] getKeyByClassPath(String keyFile) {
+        return getKeyByInputStream(CipherUtil.class.getClassLoader().getResourceAsStream(keyFile));
+    }
+    public static byte[] getKeyByInputStream(InputStream stream) {
         StringBuilder builder = new StringBuilder();
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(CipherUtil.class.getClassLoader().getResourceAsStream(keyFile)))) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream))) {
             String readLineStr = null;
             while ((readLineStr = reader.readLine()) != null) {
                 if (!readLineStr.startsWith("-")) {
@@ -203,38 +206,12 @@ public class CipherUtil {
         return Base64.getDecoder().decode(builder.toString());
     }
 
-    public static byte[] getKeyByPath(String keyFile) {
-        StringBuilder builder = new StringBuilder();
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(keyFile)))) {
-            String readLineStr = null;
-            while ((readLineStr = reader.readLine()) != null) {
-                if (!readLineStr.startsWith("-")) {
-                    builder.append(readLineStr);
-                }
-            }
-        } catch (IOException ex) {
-            log.error("{}", ex);
-        }
-        return Base64.getDecoder().decode(builder.toString());
+
+    public static byte[] getKeyBytesByPath(String keyFile) throws IOException {
+        return getKeyBytes(new FileInputStream(keyFile));
     }
 
-    public static byte[] getPublicKeyByPath(String keyFile) throws IOException {
-        StringBuilder builder = new StringBuilder();
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(keyFile)))) {
-            String readLineStr = null;
-            while ((readLineStr = reader.readLine()) != null) {
-                if (!readLineStr.startsWith("-")) {
-                    builder.append(readLineStr);
-                }
-            }
-            String[] arr = builder.toString().split(" ");
-            return Base64.getDecoder().decode(arr[1].toString());
-        } catch (IOException ex) {
-            throw ex;
-        }
-    }
-
-    public static byte[] getPublicKey(InputStream stream) throws IOException {
+    public static byte[] getKeyBytes(InputStream stream) throws IOException {
         StringBuilder builder = new StringBuilder();
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream))) {
             String readLineStr = null;

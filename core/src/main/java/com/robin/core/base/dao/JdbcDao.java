@@ -546,10 +546,15 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
                         throw new DAOException("model " + obj.getClass().getSimpleName() + " does not have primary key");
                     }
                     Object targetVal = ReflectUtils.getIncrementValueBySetMethod(generateColumn.getSetMethod(), retval);
-                    generateColumn.getSetMethod().invoke(obj, targetVal);
                     if (pkColumn.getPrimaryKeys() == null) {
+                        generateColumn.getSetMethod().invoke(obj, targetVal);
                         retObj = (P) targetVal;
                     } else {
+                        for (FieldContent field : pkColumn.getPrimaryKeys()) {
+                            if (field.isIncrement() || field.isSequential()) {
+                                field.getSetMethod().invoke(generateColumn.getGetMethod().invoke(obj), retval);
+                            }
+                        }
                         retObj = (P) pkColumn.getGetMethod().invoke(obj);
                     }
                 }
