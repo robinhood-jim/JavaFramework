@@ -254,6 +254,10 @@ public class AnnotationRetriever {
         }
         return pkField;
     }
+    public static FieldContent getPrimaryFieldByClass(Class<? extends BaseObject> clazz){
+        List<FieldContent> fields = AnnotationRetriever.getMappingFieldsCache(clazz);
+        return getPrimaryField(fields);
+    }
 
     public static void validateEntity(BaseObject object) throws DAOException {
         //check model must using Annotation MappingEntity or Jpa Entity
@@ -616,8 +620,8 @@ public class AnnotationRetriever {
                 stmt.setDouble(pos, Double.valueOf(obj.toString()));
             } else if (obj instanceof Date) {
                 stmt.setDate(pos, (Date) obj);
-            } else if (obj instanceof java.sql.Date) {
-                stmt.setDate(pos, new Date(((java.sql.Date) obj).getTime()));
+            } else if (obj instanceof Date) {
+                stmt.setDate(pos, new Date(((Date) obj).getTime()));
             } else if (obj instanceof Timestamp) {
                 stmt.setTimestamp(pos, (Timestamp) obj);
             } else if (obj instanceof String) {

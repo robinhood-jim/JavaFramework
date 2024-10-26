@@ -15,20 +15,19 @@
  */
 package com.robin.basis.controller.system;
 
+import com.robin.basis.model.system.SysResource;
+import com.robin.basis.model.user.SysUser;
+import com.robin.basis.service.system.SysOrgService;
+import com.robin.basis.service.system.SysResourceService;
+import com.robin.basis.service.user.SysUserService;
 import com.robin.core.base.exception.ServiceException;
 import com.robin.core.base.exception.WebException;
-import com.robin.core.base.model.BaseObject;
 import com.robin.core.base.util.Const;
 import com.robin.core.base.util.StringUtils;
 import com.robin.core.collection.util.CollectionBaseConvert;
 import com.robin.core.query.util.PageQuery;
 import com.robin.core.web.controller.AbstractCrudDhtmlxController;
 import com.robin.core.web.util.Session;
-import com.robin.basis.model.system.SysResource;
-import com.robin.basis.model.user.SysUser;
-import com.robin.basis.service.system.SysOrgService;
-import com.robin.basis.service.system.SysResourceService;
-import com.robin.basis.service.user.SysUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.stereotype.Controller;
@@ -138,7 +137,7 @@ public class SysUserCrudController extends AbstractCrudDhtmlxController<SysUser,
             PageQuery query = new PageQuery();
             query.setPageSize(0);
             query.setSelectParamId("GETUSER_ORG");
-            query.setParameterArr(new Object[]{session.getUserId()});
+            query.addQueryParameter(new Object[]{session.getUserId()});
             service.queryBySelectId(query);
             retMap.put("options", query.getRecordSet());
             constructRetMap(retMap);
@@ -282,7 +281,7 @@ public class SysUserCrudController extends AbstractCrudDhtmlxController<SysUser,
             }else{
                 query.setSelectParamId("GET_ORGRESOURCEBYRESP");
             }
-            query.setParameterArr(new Object[]{Long.parseLong(userId)});
+            query.addQueryParameter(new Object[]{Long.parseLong(userId)});
             service.queryBySelectId(query);
             List<Map<String, Object>> list = query.getRecordSet();
 
@@ -373,7 +372,7 @@ public class SysUserCrudController extends AbstractCrudDhtmlxController<SysUser,
             }else{
                 query.setSelectParamId("GET_ORGRESOURCEBYRESP");
             }
-            query.setParameterArr(new Object[]{Long.parseLong(userId)});
+            query.addQueryParameter(new Object[]{Long.parseLong(userId)});
             service.queryBySelectId(query);
             List<Map<String, Object>> list = query.getRecordSet();
             List<String> delList = new ArrayList<String>();

@@ -27,7 +27,10 @@ import com.robin.core.base.spring.DynamicBeanReader;
 import com.robin.core.base.spring.JdbcDaoDynamicBean;
 import com.robin.core.base.spring.SpringContextHolder;
 import com.robin.core.base.util.Const;
+import com.robin.core.base.util.StringUtils;
 import com.robin.core.query.util.PageQuery;
+import com.robin.core.sql.util.FilterCondition;
+import com.robin.core.sql.util.FilterConditionBuilder;
 import com.robin.core.test.model.*;
 import com.robin.core.test.service.*;
 import io.github.classgraph.*;
@@ -43,6 +46,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Timestamp;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -118,7 +122,7 @@ public class JdbcDaoTest extends TestCase {
         query.setPageSize(0);
         query.setSelectParamId("GET_TEST_PREPARE");
         query.getParameters().put("queryString", "and name like ? and cs_id=?");
-        query.setParameterArr(new Object[]{"%e%", 1});
+        query.addQueryParameter(new Object[]{"%e%", 1});
         query.setPageSize(2);
         jdbcDao.queryBySelectId(query);
         List<Map<String, Object>> fristPage = query.getRecordSet();
@@ -236,7 +240,22 @@ public class JdbcDaoTest extends TestCase {
         //user.setUserPassword("1222");
         //sysUserService.updateEntity(user);
     }
+    @Test
+    public void testCondition() throws Exception{
+        FilterConditionBuilder filterConditions=new FilterConditionBuilder();
+        //SysUserService sysUserService=SpringContextHolder.getBean(SysUserService.class);
+        /*filterConditions.withCondition(new FilterCondition("userAccount", Const.OPERATOR.EQ,"admin"))
+                .withCondition(new FilterCondition("userPassword", Const.OPERATOR.EQ, StringUtils.getMd5Encry("123456")))
+                .withCondition(new FilterCondition("accountType", Const.OPERATOR.EQ,"1"));
+        List<SysUser> list=sysUserService.queryByCondition(filterConditions,new PageQuery());*/
 
+        FilterConditionBuilder builder=new FilterConditionBuilder();
+        builder.in(BsReceipt::getFeeNo, Arrays.asList(new String[]{"SF000010716388"})).eq(BsReceipt::getStatus,"8")
+                .eq(BsReceipt::getRpType,"3");
+        PageQuery pageQuery=new PageQuery();
+        pageQuery.setPageSize(0);
+        List<BsReceipt> bsReceipts = SpringContextHolder.getBean("jdbcDao", JdbcDao.class).queryByCondition(BsReceipt.class,builder.getConditions(),pageQuery);
+    }
     @Test
     public void testQueryAndInsertMapper(){
         TestModel model=new TestModel();
@@ -277,7 +296,24 @@ public class JdbcDaoTest extends TestCase {
         user.setUserName("t1");
         SpringContextHolder.getBean(SysUserService.class).saveEntity(user);
     }
+    @Test
+    public void testQueryCondition(){
+        /*FilterConditionBuilder builder=new FilterConditionBuilder();
+        builder.filter(SysUser::getAccountType, Const.OPERATOR.IN, Arrays.asList(1,2))
+                .eq(SysUser::getUserStatus,Const.VALID);
+        List<SysUser> users=SpringContextHolder.getBean(SysUserService.class).queryByCondition(builder.getConditions());
+        List<SysUser> users1=SpringContextHolder.getBean(SysUserService.class).queryByField(SysUser::getAccountType, Const.OPERATOR.IN,1,2);
+        log.info("get user {}",users);*/
+        PageQuery query=new PageQuery();
+        FilterConditionBuilder builder=new FilterConditionBuilder();
+        builder.filter(BsReceipt::getPrintDate,Const.OPERATOR.GT,"2024-05-10").eq(BsReceipt::getStatus,Const.VALID,Const.META_TYPE_STRING).notNull(BsReceipt::getInvoNo);
+        FilterCondition condition=new FilterCondition(Const.OPERATOR.EQ,builder.getConditions(),BsReceipt.class);
+        query.getConditionMap().put(PageQuery.DEFAULTQUERYSTRING,condition);
+        query.setSelectParamId("GETBSRECEIPT");
+        SpringContextHolder.getBean("jdbcDao",JdbcDao.class).queryBySelectId(query);
+        log.info("{}",query.getRecordSet());
 
+    }
     @Test
     public void testGetFunctionName(){
         System.out.println(AnnotationRetriever.getFieldName(TestModel::getDescription));

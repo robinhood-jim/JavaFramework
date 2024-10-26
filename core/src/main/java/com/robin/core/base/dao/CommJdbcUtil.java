@@ -100,7 +100,7 @@ public class CommJdbcUtil {
         final String[] fields = sqlGen.getResultColName(qs);
         if (pageQuery.getNamedParameters().isEmpty()) {
             //Preparedstatment
-            return jdbcTemplate.query(pageSQL, pageQuery.getParameterArr(), getDefaultExtract(fields, lobHandler, pageQuery));
+            return jdbcTemplate.query(pageSQL, pageQuery.getQueryParameters().toArray(), getDefaultExtract(fields, lobHandler, pageQuery));
         } else {
             return namedParameterJdbcTemplate.query(pageSQL, pageQuery.getNamedParameters(), getDefaultExtract(fields, lobHandler, pageQuery));
         }
@@ -395,8 +395,8 @@ public class CommJdbcUtil {
                 }
 
                 Integer total;
-                if (pageQuery.getNamedParameters().isEmpty() && pageQuery.getParameterArr() != null) {
-                    total = jdbcTemplate.queryForObject(sumSQL, pageQuery.getParameterArr(), Integer.class);
+                if (CollectionUtils.isEmpty(pageQuery.getNamedParameters()) && !CollectionUtils.isEmpty(pageQuery.getQueryParameters())) {
+                    total = jdbcTemplate.queryForObject(sumSQL, pageQuery.getQueryParameters().toArray(), Integer.class);
                 } else {
                     total = namedParameterJdbcTemplate.queryForObject(sumSQL, pageQuery.getNamedParameters(), Integer.class);
                 }
@@ -785,8 +785,8 @@ public class CommJdbcUtil {
             if (logger.isInfoEnabled()) {
                 logger.info("executeSQL: {}",executeSQL);
             }
-            if (pageQuery.getNamedParameters().isEmpty()) {
-                return jdbcTemplate.update(executeSQL, pageQuery.getParameterArr());
+            if (CollectionUtils.isEmpty(pageQuery.getNamedParameters())) {
+                return jdbcTemplate.update(executeSQL, pageQuery.getQueryParameters().toArray());
             } else {
                 NamedParameterJdbcTemplate template = new NamedParameterJdbcTemplate(jdbcTemplate);
                 return template.update(executeSQL, pageQuery.getNamedParameters());

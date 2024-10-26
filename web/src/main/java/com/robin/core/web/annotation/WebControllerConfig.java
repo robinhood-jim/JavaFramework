@@ -12,9 +12,10 @@ public @interface WebControllerConfig {
     String insertPath() default "/create";
     String updatePath() default "/update";
     String deleteLogicPath() default "/deleteLogic";
+    String deletePath() default "/delete/{ids}";
     String listPath() default "/list";
     String viewPath() default "/view/{id}";
     String jdbcDaoName() default "jdbcDao";
     String transactionManagerName() default "transactionManager";
-    String serviceName();
+    String serviceName() default "";
 }

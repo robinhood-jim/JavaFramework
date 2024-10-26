@@ -10,12 +10,10 @@ import com.robin.basis.service.frameset.FieldMappingService;
 import com.robin.basis.service.frameset.ProjectInfoService;
 import com.robin.core.base.dao.JdbcDao;
 import com.robin.core.base.datameta.*;
-import com.robin.core.base.model.BaseObject;
 import com.robin.core.base.util.Const;
 import com.robin.core.collection.util.CollectionBaseConvert;
 import com.robin.core.compress.util.CompressUtils;
 import com.robin.core.convert.util.ConvertUtil;
-import com.robin.core.query.util.Condition;
 import com.robin.core.query.util.PageQuery;
 import com.robin.core.sql.util.FilterCondition;
 import com.robin.core.sql.util.FilterConditionBuilder;
@@ -87,6 +85,7 @@ public class DataMappingContoller extends AbstractCrudDhtmlxController<ProjectIn
 
     @RequestMapping("/listschema")
     @ResponseBody
+
     public String listSchema(HttpServletRequest request, HttpServletResponse response) {
         String id = request.getParameter(COL_PROJID);
         DataBaseUtil util = null;
@@ -173,8 +172,10 @@ public class DataMappingContoller extends AbstractCrudDhtmlxController<ProjectIn
                 list.add(map);
             }
             FilterConditionBuilder filterConditions = new FilterConditionBuilder();
-            filterConditions.withCondition(new FilterCondition("proj_id", Const.OPERATOR.EQ, info.getId())).withCondition(new FilterCondition("source_id", Const.OPERATOR.EQ, source.getId()))
-                    .withCondition(new FilterCondition("db_schema", Const.OPERATOR.EQ, schema)).withCondition(new FilterCondition("entity_code", Const.OPERATOR.EQ, table));
+            filterConditions.eq(EntityMapping::getProjId,info.getId()).eq(EntityMapping::getSourceId,source.getId())
+                            .eq(EntityMapping::getDbschema,schema).eq(EntityMapping::getEntityCode,table);
+           /* filterConditions.withCondition(new FilterCondition("proj_id", Const.OPERATOR.EQ, info.getId())).withCondition(new FilterCondition("source_id", Const.OPERATOR.EQ, source.getId()))
+                    .withCondition(new FilterCondition("db_schema", Const.OPERATOR.EQ, schema)).withCondition(new FilterCondition("entity_code", Const.OPERATOR.EQ, table));*/
 
             List<EntityMapping> mappinglist = entityMappingService.queryByCondition(filterConditions, new PageQuery());
             if (mappinglist != null && !mappinglist.isEmpty()) {

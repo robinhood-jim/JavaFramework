@@ -24,6 +24,7 @@ import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.util.ObjectUtils;
 
 @Slf4j
 public class SpringContextHolder implements ApplicationContextAware, DisposableBean, BeanFactoryAware {
@@ -57,15 +58,36 @@ public class SpringContextHolder implements ApplicationContextAware, DisposableB
     }
 
     public static <T> T getBean(Class<T> clazzName) {
+        T bean=null;
         try {
-            return context.getBean(clazzName);
+            try{
+                bean= context.getBean(clazzName);
+            }catch (BeansException ex){
+
+            }
+            if(ObjectUtils.isEmpty(bean)){
+                bean=beanFactory.getBean(clazzName);
+            }
         } catch (Exception ex) {
             return null;
         }
+        return bean;
     }
 
-    public static <T> T getBean(String beanName, Class<T> clazz) {
-        return context.getBean(beanName, clazz);
+    public static <T> T getBean(String beanName, Class<T> clazz) throws BeansException {
+        T bean=null;
+        try{
+            bean= context.getBean(beanName, clazz);
+        }catch (BeansException ex){
+        }
+        try {
+            if (ObjectUtils.isEmpty(bean)) {
+                bean = beanFactory.getBean(beanName, clazz);
+            }
+        }catch (BeansException ex1){
+
+        }
+        return bean;
     }
 
 

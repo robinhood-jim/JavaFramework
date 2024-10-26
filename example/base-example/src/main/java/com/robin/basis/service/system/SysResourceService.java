@@ -82,7 +82,7 @@ public class SysResourceService extends BaseAnnotationJdbcService<SysResource, L
 		PageQuery query=new PageQuery();
 		query.setPageSize(0);
 		query.setSelectParamId("GETUSER_ROLE");
-		query.setParameterArr(new Object[]{userId});
+		query.addQueryParameter(new Object[]{userId});
 		jdbcDao.queryBySelectId(query);
 		List<Long> roleIds=new ArrayList<>();
 		List<String> roleCodes=new ArrayList<>();

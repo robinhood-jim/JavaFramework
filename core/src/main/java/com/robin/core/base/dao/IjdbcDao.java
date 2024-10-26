@@ -33,7 +33,7 @@ import java.util.Map;
 
 public interface IjdbcDao {
     /**
-     * Return ResultSet frist Integer
+     * Return ResultSet with Integer
      *
      * @param querySQL
      * @return
@@ -175,7 +175,6 @@ public interface IjdbcDao {
     /**
      * Update Record by ORM
      *
-     * @param clazz
      * @param obj
      * @return
      * @throws DAOException

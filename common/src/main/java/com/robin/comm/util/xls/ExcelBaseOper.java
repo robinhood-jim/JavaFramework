@@ -241,7 +241,7 @@ public class ExcelBaseOper {
                     }
 
                     if (nums > totallength) {
-                        if (isColumnTheFristChild(collength, listabove, i, row, count)) {
+                        if (isColumnTheFirstChild(collength, listabove, i, row, count)) {
                             startColArr[row][pos] = startColArr[row - 1][i];
 
                         } else {
@@ -268,7 +268,7 @@ public class ExcelBaseOper {
 
     }
 
-    private static boolean isColumnTheFristChild(int[] collengtharr, List<ExcelHeaderColumn> listabove, int abovecol, int aboverow, int rowcount) {
+    private static boolean isColumnTheFirstChild(int[] collengtharr, List<ExcelHeaderColumn> listabove, int abovecol, int aboverow, int rowcount) {
         int nums = 0;
         boolean isfrist = false;
         int beforemaxnums = collengtharr[collengtharr.length - 1];

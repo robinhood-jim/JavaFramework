@@ -1,10 +1,13 @@
 package com.robin.basis.controller.frameset;
 
+import com.robin.basis.model.frameset.DataSource;
+import com.robin.basis.model.frameset.DbDriver;
+import com.robin.basis.model.frameset.ProjectInfo;
+import com.robin.basis.service.frameset.*;
 import com.robin.comm.subversion.util.GitUtil;
 import com.robin.comm.subversion.util.SvnUtil;
 import com.robin.core.base.dao.JdbcDao;
 import com.robin.core.base.exception.ServiceException;
-import com.robin.core.base.model.BaseObject;
 import com.robin.core.base.util.Const;
 import com.robin.core.collection.util.CollectionBaseConvert;
 import com.robin.core.compress.util.CompressUtils;
@@ -12,15 +15,12 @@ import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.query.util.PageQuery;
 import com.robin.core.template.util.FreeMarkerUtil;
 import com.robin.core.web.codeset.Code;
-import com.robin.core.web.controller.AbstractCrudDhtmlxController;
 import com.robin.core.web.codeset.CodeSetService;
-import com.robin.basis.model.frameset.DataSource;
-import com.robin.basis.model.frameset.DbDriver;
-import com.robin.basis.model.frameset.ProjectInfo;
-import com.robin.basis.service.frameset.*;
+import com.robin.core.web.controller.AbstractCrudDhtmlxController;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -156,7 +156,7 @@ public class ProjectInfoContorller extends AbstractCrudDhtmlxController<ProjectI
         if (log.isDebugEnabled()) {
             log.debug("Entering 'editProjectInfo' method");
         }
-        Map<String, Object> retmap = new HashMap<String, Object>();
+        Map<String, Object> retmap = new HashMap<>();
         try {
             ProjectInfo projectInfo = this.service.getEntity(id);
             retmap.put("success", true);
@@ -175,7 +175,7 @@ public class ProjectInfoContorller extends AbstractCrudDhtmlxController<ProjectI
         if (log.isDebugEnabled()) {
             log.debug("Entering 'updateProjectInfo' method");
         }
-        Map<String, Object> retmap = new HashMap<String, Object>();
+        Map<String, Object> retmap = new HashMap<>();
         try {
             ProjectInfo projectInfo = new ProjectInfo();
             ConvertUtil.mapToObject(projectInfo, wrapRequest(request));
@@ -194,10 +194,10 @@ public class ProjectInfoContorller extends AbstractCrudDhtmlxController<ProjectI
         if (log.isDebugEnabled()) {
             log.debug("Entering 'deleteProjectInfo' method");
         }
-        Map<String, Object> retmap = new HashMap<String, Object>();
+        Map<String, Object> retmap = new HashMap<>();
         try {
             String del_ids = request.getParameter("ids");
-            if (del_ids != null && del_ids.trim().length() > 0) {
+            if (!ObjectUtils.isEmpty(del_ids)) {
                 this.service.deleteEntity(parseId(del_ids));
             }
             retmap.put("success", true);

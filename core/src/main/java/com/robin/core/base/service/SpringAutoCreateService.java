@@ -17,8 +17,6 @@ import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
 import java.io.Serializable;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -38,9 +36,9 @@ public class SpringAutoCreateService<B extends BaseObject, P extends Serializabl
 
     protected Class<B> potype;
     protected Class<P> pkType;
-    public SpringAutoCreateService(Class<B> potype,Class<P> pkType){
-        this.potype=potype;
-        this.pkType=pkType;
+    private SpringAutoCreateService(Class<B> potype,Class<P> pkType){
+        this.potype = potype;
+        this.pkType = pkType;
     }
 
 
@@ -98,54 +96,41 @@ public class SpringAutoCreateService<B extends BaseObject, P extends Serializabl
         this.defaultTransactionId = defaultTransactionId;
     }
 
-    public static class Builder<B extends BaseObject, P extends BaseObject> {
+    public static class Builder<B extends BaseObject, P extends Serializable> {
         private SpringAutoCreateService<B,P> service;
-        protected Class<B> potype;
-        protected Class<P> pkType;
 
-        public Builder() {
-            Type genericSuperClass = getClass().getGenericSuperclass();
-            ParameterizedType parametrizedType;
-            if (genericSuperClass instanceof ParameterizedType) { // class
-                parametrizedType = (ParameterizedType) genericSuperClass;
-            } else if (genericSuperClass instanceof Class) { // in case of CGLIB proxy
-                parametrizedType = (ParameterizedType) ((Class<?>) genericSuperClass).getGenericSuperclass();
-            } else {
-                throw new IllegalStateException("class " + getClass() + " is not subtype of ParametrizedType.");
-            }
-            potype = (Class) parametrizedType.getActualTypeArguments()[0];
-            pkType = (Class) parametrizedType.getActualTypeArguments()[1];
+        public Builder(Class<B> potype,Class<P> pkType) {
             service=new SpringAutoCreateService<>(potype,pkType);
         }
-        public Builder withTransactionManager(String managerName){
+        public Builder<B,P> withTransactionManager(String managerName){
             service.setDefaultTransactionId(managerName);
             return this;
         }
 
-        public Builder withSaveFunction(Function<B, P> saveFunction) {
+        public Builder<B,P> withSaveFunction(Function<B, P> saveFunction) {
             constructSaveFunction(saveFunction);
             return this;
         }
 
-        public Builder withBeanName(String beanName) {
+        public Builder<B,P> withBeanName(String beanName) {
             service.setBeanName(beanName);
             return this;
         }
-        public Builder withJdbcDaoName(String jdbcDaoName){
+        public Builder<B,P> withJdbcDaoName(String jdbcDaoName){
             service.setJdbcDaoName(jdbcDaoName);
             return this;
         }
 
-        public Builder withUpdateFunction(Function<B, Integer> updateFunction) {
+        public Builder<B,P> withUpdateFunction(Function<B, Integer> updateFunction) {
             constructUpdateFunction(updateFunction);
             return this;
         }
 
-        public Builder withDeleteEntityFunction(Function<P[], Integer> deleteEntityFunction) {
+        public Builder<B,P> withDeleteEntityFunction(Function<P[], Integer> deleteEntityFunction) {
             constructDeleteEntityFunction(deleteEntityFunction);
             return this;
         }
-        public SpringAutoCreateService build(){
+        public SpringAutoCreateService<B,P> build(){
             if(ObjectUtils.isEmpty(service.getSaveFunction())){
                 constructSaveFunction(null);
             }
@@ -169,7 +154,7 @@ public class SpringAutoCreateService<B extends BaseObject, P extends Serializabl
                 P pobj = null;
                 try {
                     if (ObjectUtils.isEmpty(function)) {
-                        pobj = dao.createVO(obj, pkType);
+                        pobj = dao.createVO(obj, service.pkType);
                     } else {
                         pobj = function.apply(obj);
                     }
@@ -192,7 +177,7 @@ public class SpringAutoCreateService<B extends BaseObject, P extends Serializabl
                 int updateRow = -1;
                 try {
                     if (ObjectUtils.isEmpty(function)) {
-                        updateRow = dao.updateByKey(potype, obj);
+                        updateRow = dao.updateByKey(service.potype, obj);
                     } else {
                         updateRow = function.apply(obj);
                     }
@@ -215,7 +200,7 @@ public class SpringAutoCreateService<B extends BaseObject, P extends Serializabl
                 int updateRow = -1;
                 try {
                     if (ObjectUtils.isEmpty(function)) {
-                        updateRow = dao.deleteVO(potype, obj);
+                        updateRow = dao.deleteVO(service.potype, obj);
                     } else {
                         updateRow = function.apply(obj);
                     }
