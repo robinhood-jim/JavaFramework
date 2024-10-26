@@ -1,6 +1,5 @@
 package com.robin.core.web.controller;
 
-import com.robin.core.base.exception.ServiceException;
 import com.robin.core.base.model.BaseObject;
 import com.robin.core.base.service.SpringAutoCreateService;
 import com.robin.core.base.spring.SpringContextHolder;
@@ -9,6 +8,7 @@ import com.robin.core.web.annotation.WebControllerConfig;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.http.MediaType;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -25,7 +25,7 @@ import java.util.function.Function;
 public abstract class AbstractAutoServiceController<O extends BaseObject, P extends Serializable> extends AbstractController {
     protected ConfigurableBeanFactory beanFactory;
     protected RequestMappingHandlerMapping mappingHandlerMapping;
-    WebControllerConfig config;
+    protected WebControllerConfig config;
     protected SpringAutoCreateService<O,P> service;
 
     protected Function<?,?> doSaveFunction;
@@ -53,12 +53,16 @@ public abstract class AbstractAutoServiceController<O extends BaseObject, P exte
     protected void init(){
         try {
             if (!ObjectUtils.isEmpty(config)) {
-                service = SpringContextHolder.getBean(config.serviceName(), SpringAutoCreateService.class);
+                String serviceName=config.serviceName();
+                if(StringUtils.isEmpty(serviceName)){
+                    serviceName= potype.getSimpleName()+"Service";
+                }
+                service = SpringContextHolder.getBean(serviceName, SpringAutoCreateService.class);
                 if (ObjectUtils.isEmpty(service)) {
                     SpringAutoCreateService.Builder builder = new SpringAutoCreateService.Builder();
-                    builder.withSaveFunction(null).withUpdateFunction(null).withDeleteEntityFunction(null).withJdbcDaoName(config.jdbcDaoName()).withTransactionManager(config.transactionManagerName());
+                    builder.withJdbcDaoName(config.jdbcDaoName()).withTransactionManager(config.transactionManagerName());
                     service = builder.build();
-                    beanFactory.registerSingleton(config.serviceName(), service);
+                    beanFactory.registerSingleton(serviceName, service);
                 }
                 mappingHandlerMapping = SpringContextHolder.getBean(RequestMappingHandlerMapping.class);
                 RequestMappingInfo savePath = RequestMappingInfo.paths(config.mainPath() + config.insertPath())
@@ -69,6 +73,11 @@ public abstract class AbstractAutoServiceController<O extends BaseObject, P exte
                 RequestMappingInfo viewPath = RequestMappingInfo.paths(config.mainPath() + config.viewPath())
                         .methods(RequestMethod.GET).produces(MediaType.APPLICATION_JSON_VALUE).build();
                 mappingHandlerMapping.registerMapping(viewPath,this, getClass().getDeclaredMethod("doView",pkType));
+                //page
+                RequestMappingInfo pagePath = RequestMappingInfo.paths(config.mainPath() + config.listPath())
+                        .methods(RequestMethod.POST).produces(MediaType.APPLICATION_JSON_VALUE).build();
+                mappingHandlerMapping.registerMapping(pagePath,this, getClass().getDeclaredMethod("doPage",HashMap.class));
+                //update
 
             }
         }catch (NoSuchMethodException ex){
@@ -98,12 +107,8 @@ public abstract class AbstractAutoServiceController<O extends BaseObject, P exte
             return wrapError(ex);
         }
     }
-    public static class Builder<O extends BaseObject, P extends Serializable>{
-        public Builder(){
-
-        }
-
-    }
+    //queryPage,should override by child
+    protected abstract Map<String, Object> doPage(@RequestBody Map<String,String> paramMap);
 
 
 }

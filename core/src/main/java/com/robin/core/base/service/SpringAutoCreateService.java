@@ -146,6 +146,15 @@ public class SpringAutoCreateService<B extends BaseObject, P extends Serializabl
             return this;
         }
         public SpringAutoCreateService build(){
+            if(ObjectUtils.isEmpty(service.getSaveFunction())){
+                constructSaveFunction(null);
+            }
+            if(ObjectUtils.isEmpty(service.getUpdateEntityPredicate())){
+                constructUpdateFunction(null);
+            }
+            if(ObjectUtils.isEmpty(service.getDeleteEntityPredicate())){
+                constructDeleteEntityFunction(null);
+            }
             return service;
         }
 
