@@ -131,7 +131,8 @@ public abstract class AbstractAutoController<O extends BaseObject, P extends Ser
         Map<String, Object> retMap = new HashMap<>();
         O vo=null;
         try {
-            vo=service.getEntity(parseId(id)[0]);
+            P pkid=(P)valueOfMethod.invoke(null,id);
+            vo=service.getEntity(pkid);
             constructRetMap(retMap);
             retMap.put("data", vo);
             return retMap;
