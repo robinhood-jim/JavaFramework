@@ -19,6 +19,8 @@ import org.springframework.util.ObjectUtils;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -27,9 +29,18 @@ import java.util.function.Predicate;
 @Setter
 public class SpringAutoCreateService<B extends BaseObject, P extends Serializable> {
     protected Function<B, P> saveFunction;
+    protected Consumer<B> saveBeforeFunction;
+    protected BiConsumer<B,P> saveAfterFunction;
 
     protected Predicate<B> updateEntityPredicate;
+    protected Consumer<B> updateBeforeFunction;
+    protected Consumer<B> updateAfterFunction;
+
     protected Predicate<P[]> deleteEntityPredicate;
+
+    protected Consumer<P[]>deleteBeforeFunction;
+    protected Consumer<P[]> deleteAfterFunction;
+
     protected String beanName;
     protected String defaultTransactionId = "transactionManager";
     protected String jdbcDaoName = "jdbcDao";
@@ -125,6 +136,31 @@ public class SpringAutoCreateService<B extends BaseObject, P extends Serializabl
             constructUpdateFunction(updateFunction);
             return this;
         }
+        public Builder<B,P> withSaveBeforeFunction(Consumer<B> consumer){
+            service.setSaveBeforeFunction(consumer);
+            return this;
+        }
+        public Builder<B,P> withUpdateBeforeFunction(Consumer<B> consumer){
+            service.setUpdateBeforeFunction(consumer);
+            return this;
+        }
+        public Builder<B,P> withDeleteBeforeFunction(Consumer<P[]> consumer){
+            service.setDeleteBeforeFunction(consumer);
+            return this;
+        }
+        public Builder<B,P> withSaveAfterFunction(BiConsumer<B,P> consumer){
+            service.setSaveAfterFunction(consumer);
+            return this;
+        }
+        public Builder<B,P> withUpdateAfterFunction(Consumer<B> consumer){
+            service.setUpdateAfterFunction(consumer);
+            return this;
+        }
+        public Builder<B,P> withDeleteAfterFunction(Consumer<P[]> consumer){
+            service.setDeleteAfterFunction(consumer);
+            return this;
+        }
+
 
         public Builder<B,P> withDeleteEntityFunction(Function<P[], Integer> deleteEntityFunction) {
             constructDeleteEntityFunction(deleteEntityFunction);
@@ -154,7 +190,13 @@ public class SpringAutoCreateService<B extends BaseObject, P extends Serializabl
                 P pobj = null;
                 try {
                     if (ObjectUtils.isEmpty(function)) {
+                        if(!ObjectUtils.isEmpty(service.getSaveBeforeFunction())){
+                            service.getSaveBeforeFunction().accept(obj);
+                        }
                         pobj = dao.createVO(obj, service.pkType);
+                        if(!ObjectUtils.isEmpty(service.getSaveAfterFunction())){
+                            service.getSaveAfterFunction().accept(obj,pobj);
+                        }
                     } else {
                         pobj = function.apply(obj);
                     }
@@ -177,7 +219,13 @@ public class SpringAutoCreateService<B extends BaseObject, P extends Serializabl
                 int updateRow = -1;
                 try {
                     if (ObjectUtils.isEmpty(function)) {
+                        if(!ObjectUtils.isEmpty(service.getUpdateBeforeFunction())){
+                            service.getUpdateBeforeFunction().accept(obj);
+                        }
                         updateRow = dao.updateByKey(service.potype, obj);
+                        if(!ObjectUtils.isEmpty(service.getUpdateAfterFunction())){
+                            service.getUpdateAfterFunction().accept(obj);
+                        }
                     } else {
                         updateRow = function.apply(obj);
                     }
@@ -200,7 +248,13 @@ public class SpringAutoCreateService<B extends BaseObject, P extends Serializabl
                 int updateRow = -1;
                 try {
                     if (ObjectUtils.isEmpty(function)) {
+                        if(!ObjectUtils.isEmpty(service.getDeleteBeforeFunction())){
+                            service.getDeleteBeforeFunction().accept(obj);
+                        }
                         updateRow = dao.deleteVO(service.potype, obj);
+                        if(!ObjectUtils.isEmpty(service.getDeleteAfterFunction())){
+                            service.getDeleteAfterFunction().accept(obj);
+                        }
                     } else {
                         updateRow = function.apply(obj);
                     }
