@@ -55,8 +55,8 @@ public abstract class AbstractAutoController<O extends BaseObject, P extends Ser
         } else {
             throw new IllegalStateException("class " + getClass() + " is not subtype of ParametrizedType.");
         }
-        potype = (Class) parametrizedType.getActualTypeArguments()[0];
-        pkType = (Class) parametrizedType.getActualTypeArguments()[1];
+        potype = (Class<O>) parametrizedType.getActualTypeArguments()[0];
+        pkType = (Class<P>) parametrizedType.getActualTypeArguments()[1];
         try {
             if (!pkType.isAssignableFrom(String.class)) {
                 valueOfMethod = this.pkType.getMethod("valueOf", String.class);
