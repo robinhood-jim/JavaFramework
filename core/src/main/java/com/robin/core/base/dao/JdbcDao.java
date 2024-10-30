@@ -100,16 +100,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
                     log.debug("pageSQL: {}", pageSQL);
                 }
                 if (total > 0) {
-                    int pages = total / pageQuery.getPageSize();
-                    if (total % pageQuery.getPageSize() != 0) {
-                        pages++;
-                    }
-                    int pageNumber = pageQuery.getPageNumber();
-                    //Over Last pages
-                    if (pageNumber > pages) {
-                        pageQuery.setPageNumber(pages);
-                    }
-                    pageQuery.setPageCount(pages);
+                    CommJdbcUtil.setPageQueryParameter(pageQuery,total);
                     list = queryItemList(pageQuery, pageSQL);
                 } else {
                     list = new ArrayList<>();
@@ -592,19 +583,24 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
                 throw new DAOException("All column must be null,can not update!");
             }
             EntityMappingUtil.UpdateSegment updateSegment = EntityMappingUtil.getUpdateSegment(obj, conditions, sqlGen);
-            StringBuilder builder = new StringBuilder();
-            if (updateSegment.getFieldStr().length() != 0) {
-                builder.append(updateSegment.getFieldStr()).append(" where ").append(updateSegment.getWhereStr());
-                Object[] objs = updateSegment.getParams().toArray();
-                String updateSql = builder.toString();
-                if (log.isDebugEnabled()) {
-                    log.debug("update sql= {}", updateSql);
-                }
-                ret = executeUpdate(updateSql, objs);
-            }
+            ret = updateWithSegment(ret, updateSegment);
         } catch (Exception ex) {
             logError(ex);
             throw new DAOException(ex);
+        }
+        return ret;
+    }
+
+    private int updateWithSegment(int ret, EntityMappingUtil.UpdateSegment updateSegment) {
+        StringBuilder builder = new StringBuilder();
+        if (updateSegment.getFieldStr().length() != 0) {
+            builder.append(updateSegment.getFieldStr()).append(" where ").append(updateSegment.getWhereStr());
+            Object[] objs = updateSegment.getParams().toArray();
+            String updateSql = builder.toString();
+            if (log.isDebugEnabled()) {
+                log.debug("update sql= {}", updateSql);
+            }
+            ret = executeUpdate(updateSql, objs);
         }
         return ret;
     }
@@ -620,16 +616,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
                 handler.updateFill(new MetaObject(obj, fieldContentMap));
             }
             EntityMappingUtil.UpdateSegment updateSegment = EntityMappingUtil.getUpdateSegmentByKey(obj, sqlGen);
-            StringBuilder builder = new StringBuilder();
-            if (updateSegment.getFieldStr().length() != 0) {
-                builder.append(updateSegment.getFieldStr()).append(" where ").append(updateSegment.getWhereStr());
-                Object[] objs = updateSegment.getParams().toArray();
-                String updateSql = builder.toString();
-                if (log.isDebugEnabled()) {
-                    log.debug("update sql= {}", updateSql);
-                }
-                ret = executeUpdate(updateSql, objs);
-            }
+            ret = updateWithSegment(ret, updateSegment);
         } catch (Exception ex) {
             logError(ex);
             throw new DAOException(ex);
@@ -885,12 +872,16 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
             if (field.isPrimary()) {
                 field.getSetMethod().invoke(obj, pkObj);
             } else {
-                if (map.containsKey(field.getPropertyName())) {
-                    field.getSetMethod().invoke(obj, ConvertUtil.parseParameter(field.getGetMethod().getReturnType(), map.get(field.getPropertyName())));
-                } else if (map.containsKey(field.getPropertyName().toUpperCase())) {
-                    field.getSetMethod().invoke(obj, ConvertUtil.parseParameter(field.getGetMethod().getReturnType(), map.get(field.getPropertyName().toUpperCase())));
-                }
+                wrapValueWithPropNoCase(obj, map, field);
             }
+        }
+    }
+
+    private void wrapValueWithPropNoCase(BaseObject obj, Map<String, Object> map, FieldContent field) throws Exception {
+        if (map.containsKey(field.getPropertyName())) {
+            field.getSetMethod().invoke(obj, ConvertUtil.parseParameter(field.getGetMethod().getReturnType(), map.get(field.getPropertyName())));
+        } else if (map.containsKey(field.getPropertyName().toUpperCase())) {
+            field.getSetMethod().invoke(obj, ConvertUtil.parseParameter(field.getGetMethod().getReturnType(), map.get(field.getPropertyName().toUpperCase())));
         }
     }
 
@@ -911,11 +902,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
                     }
                 }
             } else {
-                if (map.containsKey(field.getPropertyName())) {
-                    field.getSetMethod().invoke(obj, ConvertUtil.parseParameter(field.getGetMethod().getReturnType(), map.get(field.getPropertyName())));
-                } else if (map.containsKey(field.getPropertyName().toUpperCase())) {
-                    field.getSetMethod().invoke(obj, ConvertUtil.parseParameter(field.getGetMethod().getReturnType(), map.get(field.getPropertyName().toUpperCase())));
-                }
+                wrapValueWithPropNoCase(obj, map, field);
             }
         }
     }

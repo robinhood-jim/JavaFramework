@@ -145,17 +145,7 @@ public class CommJdbcUtil {
             });
             pageQuery.setRecordCount(total);
             if (total > 0) {
-                int pages = total / pageQuery.getPageSize();
-                if (total % pageQuery.getPageSize() != 0) {
-                    pages++;
-                }
-                pageQuery.setPageCount(pages);
-                //adjust pageNumber
-                if (pageQuery.getPageNumber() > pages) {
-                    pageQuery.setPageNumber(pages);
-                } else if (pageQuery.getPageNumber() < 1) {
-                    pageQuery.setPageNumber(1);
-                }
+                setPageQueryParameter(pageQuery, total);
                 String pageSQL = sqlGen.generatePageSql(querySQL, pageQuery);
                 if (logger.isDebugEnabled()) {
                     logger.debug("sumSQL: {}",sumSQL);
@@ -174,6 +164,20 @@ public class CommJdbcUtil {
             pageQuery.setPageCount(1);
         }
         return list;
+    }
+
+    public static void setPageQueryParameter(PageQuery pageQuery, int total) {
+        int pages = total / pageQuery.getPageSize();
+        if (total % pageQuery.getPageSize() != 0) {
+            pages++;
+        }
+        pageQuery.setPageCount(pages);
+        //adjust pageNumber
+        if (pageQuery.getPageNumber() > pages) {
+            pageQuery.setPageNumber(pages);
+        } else if (pageQuery.getPageNumber() < 1) {
+            pageQuery.setPageNumber(1);
+        }
     }
 
     public static String getRealSql(BaseSqlGen sqlGen, QueryString qs, PageQuery pageQuery) throws DAOException {
