@@ -230,7 +230,7 @@ public class TestExcelOperation {
     }
     @Test
     public void doReadMergeCells(){
-        try(Workbook wb=new XSSFWorkbook(new FileInputStream(new File("e:/高频事项清单梳理对标广东浙江_0131(终版)(示范事项按条线排序) - v1.0--金信和紫光(luoming).xlsx")))){
+        try(Workbook wb=new XSSFWorkbook(new FileInputStream(new File("e:/1234.xlsx")))){
             List<Triple<Integer,Integer,List<Object>>> rList=ExcelBaseOper.getMergedCells(wb.getSheetAt(0),2,1,new int[]{2,3});
             log.info("",rList);
         }catch (IOException ex){
@@ -239,10 +239,10 @@ public class TestExcelOperation {
     }
     @Test
     public void doTestRead(){
-        try(Workbook wb = new XSSFWorkbook(new FileInputStream(new File("e:/高二年级考试成绩.xlsx")))){
+        try(Workbook wb = new XSSFWorkbook(new FileInputStream(new File("e:/test1.xlsx")))){
             DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd");
             ExcelProcessor.readExcel(wb,"xlsx",0,2,(w,r,ev)->{
-                for(int i=3;i<21;i++){
+                for(int i=0;i<3;i++){
                     Object obj=ExcelProcessor.readValue(r.getCell(i),Const.META_TYPE_DOUBLE,format,ev);
                     System.out.println(obj);
                 }
@@ -261,7 +261,7 @@ public class TestExcelOperation {
 
         ExcelSheetProp sheetProp = new ExcelSheetProp("xlsx");
         firstCols.add(new TableHeaderColumn("班级", "gradeNo", 2, 1));
-        firstCols.add(new TableHeaderColumn("考试名词", "name", 1, 3));
+        firstCols.add(new TableHeaderColumn("考试名次", "name", 1, 3));
         secondCols.add(new TableHeaderColumn("平级分", "avg", 1, 1));
         secondCols.add(new TableHeaderColumn("名次", "rank", 1, 1));
         secondCols.add(new TableHeaderColumn("均分差", "minus", 1, 1));
