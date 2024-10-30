@@ -17,10 +17,10 @@ package com.robin.core.collection.util;
 
 import com.robin.core.base.exception.MissingConfigException;
 import com.robin.core.base.reflect.ReflectUtils;
-import com.robin.core.base.spring.SpringContextHolder;
 import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.script.ScriptExecutor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
@@ -28,7 +28,10 @@ import javax.script.Bindings;
 import javax.script.CompiledScript;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -192,33 +195,10 @@ public class CollectionMapConvert {
         return retMap;
     }
 
-    public static <T, P> Map<String, List<P>> getValuesByParentKey(List<T> listobj, Function<T, ?> keyColumn, Function<T, ?> valueColumn, Class<P> clazz) {
+    public static <T, P> Map<String, List<P>> getValuesByParentKey(List<T> listobj, Function<T, String> keyColumn, Function<T, P> valueColumn, Class<P> clazz) {
         checkType(listobj);
-
-        Map<String, List<P>> retMap = new HashMap<>();
         Assert.isTrue(!CollectionUtils.isEmpty(listobj), "");
-        P targetValue;
-        String key;
-        for (T t : listobj) {
-            Object value = keyColumn.apply(t);
-            if (value == null) {
-                key = "NULL";
-            } else {
-                key = value.toString();
-            }
-            targetValue = (P) valueColumn.apply(t);
-
-            if (targetValue != null) {
-                if (retMap.get(key) == null) {
-                    List<P> list = new ArrayList<>();
-                    list.add(targetValue);
-                    retMap.put(key, list);
-                } else {
-                    retMap.get(key).add(targetValue);
-                }
-            }
-        }
-        return retMap;
+        return listobj.stream().collect(Collectors.groupingBy(keyColumn,Collectors.mapping(valueColumn,Collectors.toList())));
     }
 
     /**
@@ -263,40 +243,18 @@ public class CollectionMapConvert {
     }
 
 
-    public static <T> String getColumnValueAppendBySeparater(List<T> listobj, String colName, String separate) throws MissingConfigException,InvocationTargetException,IllegalAccessException {
+    public static <T> String getColumnValueAppendBySeparate(List<T> listobj, Function<T,?> column, String separate) throws MissingConfigException,InvocationTargetException,IllegalAccessException {
         checkType(listobj);
         StringBuilder buffer = new StringBuilder();
-        Method method = ReflectUtils.returnGetMethods(listobj.get(0).getClass()).get(colName);
-        if (method == null) {
-            throw new MissingConfigException("column not exist in object");
-        }
-
-        for (int i = 0; i < listobj.size(); i++) {
-            Object targerobj = listobj.get(i);
-            Object obj = method.invoke(targerobj, (Object) null);
-            String value = obj != null ? obj.toString() : "";
-            buffer.append(value);
-            if (i != listobj.size() - 1) {
-                buffer.append(separate);
-            }
-        }
-
-        return buffer.toString();
+        Assert.notNull(column,"");
+        List<?> values= listobj.stream().collect(Collectors.mapping(column,Collectors.toList()));
+        return StringUtils.join(values,separate);
     }
 
-    public static <T> List<String> getValueListBySeparater(List<T> listobj, String colName) throws MissingConfigException,InvocationTargetException,IllegalAccessException {
+    public static <T> List<?> getValueListBySeparate(List<T> listobj, Function<T,?> column) throws MissingConfigException,InvocationTargetException,IllegalAccessException {
         List<String> retList = new ArrayList<>();
         checkType(listobj);
-        Method method = ReflectUtils.returnGetMethods(listobj.get(0).getClass()).get(colName);
-        if (method == null) {
-            throw new MissingConfigException("column not exist in object");
-        }
-        for (T t : listobj) {
-            Object obj = method.invoke(t, (Object) null);
-            String value = obj.toString();
-            retList.add(value);
-        }
-        return retList;
+        return listobj.stream().collect(Collectors.mapping(column,Collectors.toList()));
     }
 
     public static <T> List<Map<String, Object>> getListMap(List<T> listobj) throws MissingConfigException,InvocationTargetException,IllegalAccessException {
