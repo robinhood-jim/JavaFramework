@@ -27,6 +27,7 @@ import java.util.function.Predicate;
 
 @Getter
 @Setter
+@SuppressWarnings("unused")
 public class SpringAutoCreateService<B extends BaseObject, P extends Serializable> {
     protected Function<B, P> saveFunction;
     protected Consumer<B> saveBeforeFunction;
@@ -73,9 +74,7 @@ public class SpringAutoCreateService<B extends BaseObject, P extends Serializabl
         try{
             obj= getJdbcDao(this).getByField(potype, fieldName, oper, fieldValues);
         }
-        catch(DAOException ex){
-            throw new ServiceException(ex);
-        }catch(Exception e){
+        catch(Exception e){
             throw new ServiceException(e);
         }
         return obj;
@@ -108,7 +107,7 @@ public class SpringAutoCreateService<B extends BaseObject, P extends Serializabl
     }
 
     public static class Builder<B extends BaseObject, P extends Serializable> {
-        private SpringAutoCreateService<B,P> service;
+        private final SpringAutoCreateService<B,P> service;
 
         public Builder(Class<B> potype,Class<P> pkType) {
             service=new SpringAutoCreateService<>(potype,pkType);
@@ -216,7 +215,7 @@ public class SpringAutoCreateService<B extends BaseObject, P extends Serializabl
                 definition.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRED);
                 TransactionStatus status = manager.getTransaction(definition);
                 JdbcDao dao = getJdbcDao(service);
-                int updateRow = -1;
+                int updateRow;
                 try {
                     if (ObjectUtils.isEmpty(function)) {
                         if(!ObjectUtils.isEmpty(service.getUpdateBeforeFunction())){
@@ -245,7 +244,7 @@ public class SpringAutoCreateService<B extends BaseObject, P extends Serializabl
                 definition.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRED);
                 TransactionStatus status = manager.getTransaction(definition);
                 JdbcDao dao = getJdbcDao(service);
-                int updateRow = -1;
+                int updateRow ;
                 try {
                     if (ObjectUtils.isEmpty(function)) {
                         if(!ObjectUtils.isEmpty(service.getDeleteBeforeFunction())){

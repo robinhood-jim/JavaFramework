@@ -78,7 +78,7 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 
 	@Override
 	public void afterPropertiesSet() {
-		//if use JPA,can not use dynamic DataSource Property,then use Default JdbcDao
+		//if you use JPA,can not use dynamic DataSource Property,then use Default JdbcDao
 		if(entityContent!=null && entityContent.getJdbcDao()!=null && !entityContent.getJdbcDao().isEmpty()){
 			jdbcDao= SpringContextHolder.getBean(entityContent.getJdbcDao(),JdbcDao.class);
 		}else{
@@ -203,9 +203,7 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 		try{	
 			retlist= jdbcDao.queryByField(type, fieldName, oper, fieldValues);
 		}
-		catch(DAOException ex){
-			throw new ServiceException(ex);
-		}catch(Exception e){
+		catch(Exception e){
 			throw new ServiceException(e);
 		}
 		return retlist;
@@ -217,9 +215,7 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 		try{
 			retlist= jdbcDao.queryByField(type, function, oper, fieldValues);
 		}
-		catch(DAOException ex){
-			throw new ServiceException(ex);
-		}catch(Exception e){
+		catch(Exception e){
 			throw new ServiceException(e);
 		}
 		return retlist;
@@ -231,9 +227,7 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 		try{
 			obj= jdbcDao.getByField(type, fieldName, oper, fieldValues);
 		}
-		catch(DAOException ex){
-			throw new ServiceException(ex);
-		}catch(Exception e){
+		catch(Exception e){
 			throw new ServiceException(e);
 		}
 		return obj;
@@ -245,13 +239,12 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 		try{
 			obj= jdbcDao.getByField(type, function, oper, fieldValues);
 		}
-		catch(DAOException ex){
-			throw new ServiceException(ex);
-		}catch(Exception e){
+		catch(Exception e){
 			throw new ServiceException(e);
 		}
 		return obj;
 	}
+
 	/**
 	 *
 	 * @param orderByStr
@@ -268,9 +261,7 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 		try{	
 			retlist= jdbcDao.queryByFieldOrderBy(type, fieldName, oper, orderByStr, fieldValues);
 		}
-		catch(DAOException ex){
-			throw new ServiceException(ex);
-		}catch(Exception e){
+		catch(Exception e){
 			throw new ServiceException(e);
 		}
 		return retlist;
@@ -282,9 +273,7 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 		try{
 			retlist= jdbcDao.queryByFieldOrderBy(type, function, oper, orderByStr, fieldValues);
 		}
-		catch(DAOException ex){
-			throw new ServiceException(ex);
-		}catch(Exception e){
+		catch(Exception e){
 			throw new ServiceException(e);
 		}
 		return retlist;
