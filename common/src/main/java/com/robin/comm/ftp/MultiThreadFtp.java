@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -208,7 +209,7 @@ public class MultiThreadFtp extends SimpleFtp {
     private void connect(FTPClient client) {
         try {
             client.connect(hostname, port);
-            client.setDataTimeout(20000);
+            client.setDataTimeout(Duration.ofSeconds(20L));
         } catch (IOException e) {
             logger.error("", e);
         }

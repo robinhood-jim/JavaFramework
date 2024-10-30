@@ -33,6 +33,7 @@ import java.util.Map;
 @Slf4j
 public class ESSchemaAwareUtil {
     private static final Gson gson= GsonUtil.getGson();
+    @SuppressWarnings("unchecked")
     public static Map<String,Object> getIndexs(String httpUrl,String... params){
         String url=httpUrl;
         if(!url.endsWith("/")){
@@ -71,7 +72,7 @@ public class ESSchemaAwareUtil {
             requestHeaders.put("Authorization", "Basic " + Base64Utils.encodeToString(builder.toString().getBytes()));
         }
     }
-
+    @SuppressWarnings("unchecked")
     private static void readMapping(Map<String, Object> indexCfgMap, LinkedTreeMap<String, Object> mapping, Map.Entry<String, Object> entry1) {
         String docType=entry1.getKey();
         indexCfgMap.put("doctype",docType);
@@ -92,7 +93,7 @@ public class ESSchemaAwareUtil {
         }
         indexCfgMap.put("props",propsMap);
     }
-
+    @SuppressWarnings("unchecked")
     public static Map<String,Object> getIndex(String httpUrl,String indexName,String... params){
         String url=httpUrl;
         if(!url.endsWith("/")){

@@ -14,11 +14,11 @@ public class TestModel extends BaseObject{
 	private Integer id;
 	@MappingField(required=true,field="name")
 	private String name;
-	@MappingField(field="code_desc",datatype="clob")
+	@MappingField(field="code_desc")
 	private String description;
 	@MappingField(field="cs_id")
 	private Long csId;
-	@MappingField(field = "createTime")
+	@MappingField
 	private Timestamp createTime;
 
 	

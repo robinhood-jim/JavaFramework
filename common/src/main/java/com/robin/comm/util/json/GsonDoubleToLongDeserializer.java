@@ -8,6 +8,7 @@ import java.util.*;
 public class GsonDoubleToLongDeserializer implements JsonDeserializer<Map<String,Object>> {
 
     @Override
+    @SuppressWarnings("unchecked")
     public Map<String, Object> deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
         return (Map<String, Object>) read(jsonElement);
     }
