@@ -92,11 +92,6 @@ public class TestExcelOperation {
         FileOutputStream out=new FileOutputStream("d:/test.xlsx");
         wb.write(out);
         out.close();
-        //List<Map<String, String>> list = new ArrayList<Map<String, String>>();
-
-
-        //prop.setColumnList(list);
-        //ExcelProcessor.generateExcelFileToLocal(prop, header, "d:/test1.xlsx");
 
     }
 
@@ -130,7 +125,7 @@ public class TestExcelOperation {
             //System.in.read();
             System.out.println("start");
             Long ts1 = System.currentTimeMillis();
-            DataBaseParam param = new DataBaseParam("172.16.200.218", 3388, "awardsys2", "awardsys", "MiCUWcYcJI2EcM1k");
+            DataBaseParam param = new DataBaseParam("127.0.0.1", 3388, "root", "root", "1234");
             BaseDataBaseMeta meta = DataBaseMetaFactory.getDataBaseMetaByType(BaseDataBaseMeta.TYPE_MYSQL, param);
             conn = SimpleJdbcDao.getConnection(meta);
             Workbook wb = ExcelProcessor.generateExcelFile(prop, header, conn, sql, null, new ExcelRsExtractor(prop, header));
@@ -221,7 +216,7 @@ public class TestExcelOperation {
         configProp.setTotalCol(10);
 
 
-        try(OutputStream outputStream=new FileOutputStream(new File("e:/test1.xlsx"));
+        try(OutputStream outputStream=new FileOutputStream(new File("e:/test2.xlsx"));
             Workbook wb=ExcelProcessor.generateExcelFile(prop,configProp)){
             wb.write(outputStream);
         }catch (Exception ex){

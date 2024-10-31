@@ -27,10 +27,7 @@ import com.robin.core.base.spring.DynamicBeanReader;
 import com.robin.core.base.spring.JdbcDaoDynamicBean;
 import com.robin.core.base.spring.SpringContextHolder;
 import com.robin.core.base.util.Const;
-import com.robin.core.base.util.StringUtils;
 import com.robin.core.query.util.PageQuery;
-import com.robin.core.sql.util.FilterCondition;
-import com.robin.core.sql.util.FilterConditionBuilder;
 import com.robin.core.test.model.*;
 import com.robin.core.test.service.*;
 import io.github.classgraph.*;
@@ -46,7 +43,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Timestamp;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -77,15 +73,16 @@ public class JdbcDaoTest extends TestCase {
         List<TestJPaModel> list = service.queryByField("csId", Const.OPERATOR.EQ, 1);
         Assert.assertNotNull(list);
     }
+
     @Test
-    public void testMyBatisInsert(){
-        SysUserMybatisService service=SpringContextHolder.getBean(SysUserMybatisService.class);
-        SysUserMybatis model=new SysUserMybatis();
+    public void testMyBatisInsert() {
+        SysUserMybatisService service = SpringContextHolder.getBean(SysUserMybatisService.class);
+        SysUserMybatis model = new SysUserMybatis();
         model.setUserName("test12344");
         model.setUserPassword("1111");
         model.setAccountType("1");
-        Long id=service.saveEntity(model);
-        log.info("get id {}",id);
+        Long id = service.saveEntity(model);
+        log.info("get id {}", id);
         assertNotNull(id);
     }
 
@@ -102,10 +99,11 @@ public class JdbcDaoTest extends TestCase {
         model.setCsId(2L);
         service.updateEntity(model);
     }
+
     @Test
-    public void testQuery(){
+    public void testQuery() {
         TestModelService service = (TestModelService) SpringContextHolder.getBean("modelService");
-        TestModel model=service.getEntity(1);
+        TestModel model = service.getEntity(1);
         System.out.println(model);
     }
 
@@ -139,13 +137,14 @@ public class JdbcDaoTest extends TestCase {
         assertNotNull(fristPage);
         assertNotNull(secondPage);
     }
+
     @Test
-    public void testPageQueryWithNamedParameter(){
+    public void testPageQueryWithNamedParameter() {
         JdbcDao jdbcDao = SpringContextHolder.getBean("jdbcDao", JdbcDao.class);
         PageQuery query = new PageQuery();
         query.setPageSize(0);
         query.setSelectParamId("GET_TEST_NAMEPARAM");
-        query.setNameParameterWithKey("name","%O%");
+        query.setNameParameterWithKey("name", "%O%");
         jdbcDao.queryBySelectId(query);
         assertNotNull(query.getRecordSet());
     }
@@ -162,26 +161,28 @@ public class JdbcDaoTest extends TestCase {
         sysUserService.saveEntity(user);
         assertNotNull(user.getId());
     }
+
     @Test
     public void testInsertWithSequence() throws IOException {
-        TestSequenceService service=SpringContextHolder.getBean(TestSequenceService.class);
-        TestSequence model=new TestSequence();
+        TestSequenceService service = SpringContextHolder.getBean(TestSequenceService.class);
+        TestSequence model = new TestSequence();
         model.setName("test");
         model.setCode("test");
         InputStream bytestream = getClass().getClassLoader().getResourceAsStream("pig.ico");
         byte[] bytes = IOUtils.toByteArray(bytestream);
         model.setPicture(bytes);
-        Long id=service.saveEntity(model);
+        Long id = service.saveEntity(model);
         Assert.assertNotNull(id);
     }
+
     @Test
-    public void testInsertNullPk(){
-        TestNullPkService service=SpringContextHolder.getBean(TestNullPkService.class);
-        TestNullPk model=new TestNullPk();
+    public void testInsertNullPk() {
+        TestNullPkService service = SpringContextHolder.getBean(TestNullPkService.class);
+        TestNullPk model = new TestNullPk();
         model.setId(1L);
         model.setName("test");
         model.setCode("test");
-        Long id=service.saveEntity(model);
+        Long id = service.saveEntity(model);
         Assert.assertNull(id);
 
     }
@@ -228,57 +229,61 @@ public class JdbcDaoTest extends TestCase {
         List<TestMutilPK> list1 = service.queryAll();
         assertNotNull(list);
     }
+
     @Test
-    public void testDynamicDataSource(){
-        DynamicBeanReader reader=SpringContextHolder.getBean(DynamicBeanReader.class);
-        JdbcDaoDynamicBean bean=new JdbcDaoDynamicBean("testSource");
-        BaseDataBaseMeta meta= DataBaseMetaFactory.getDataBaseMetaByType(BaseDataBaseMeta.TYPE_MYSQL,new DataBaseParam("172.16.102.107",3388,"frameset","test","test123"));
+    public void testDynamicDataSource() {
+        DynamicBeanReader reader = SpringContextHolder.getBean(DynamicBeanReader.class);
+        JdbcDaoDynamicBean bean = new JdbcDaoDynamicBean("testSource");
+        BaseDataBaseMeta meta = DataBaseMetaFactory.getDataBaseMetaByType(BaseDataBaseMeta.TYPE_MYSQL, new DataBaseParam("172.16.102.107", 3388, "frameset", "test", "test123"));
         bean.setMeta(meta);
         reader.loadBean(bean);
-        JdbcDao dao=SpringContextHolder.getBean("testSource",JdbcDao.class);
-        List<Map<String,Object>> list= dao.queryBySql("select * from t_base_jar");
+        JdbcDao dao = SpringContextHolder.getBean("testSource", JdbcDao.class);
+        List<Map<String, Object>> list = dao.queryBySql("select * from t_base_jar");
         assertNotNull(list);
     }
+
     @Test
-    public void testUpdate(){
-        SysUserService sysUserService=SpringContextHolder.getBean(SysUserService.class);
-        SysUser user=sysUserService.getEntity(25L);
+    public void testUpdate() {
+        SysUserService sysUserService = SpringContextHolder.getBean(SysUserService.class);
+        SysUser user = sysUserService.getEntity(25L);
         System.out.println(user);
         //user.setUserPassword("1222");
         //sysUserService.updateEntity(user);
     }
 
     @Test
-    public void testQueryAndInsertMapper(){
-        TestModel model=new TestModel();
+    public void testQueryAndInsertMapper() {
+        TestModel model = new TestModel();
         model.setName("test");
         model.setDescription("test");
         model.setCsId(2L);
         //model.setId(22L);
-        Map<String,Object> paramMap=new HashMap<>();
-        paramMap.put("name","%a%");
-        paramMap.put("description","%a%");
-        paramMap.put("csId",1L);
-        List list=SpringContextHolder.getBean(SqlMapperService.class).queryByMapper("com.robin.test.query1","select1",new PageQuery(),paramMap);
-        int row=SpringContextHolder.getBean(SqlMapperService.class).executeByMapper("com.robin.test.query1","insert1",model);
+        Map<String, Object> paramMap = new HashMap<>();
+        paramMap.put("name", "%a%");
+        paramMap.put("description", "%a%");
+        paramMap.put("csId", 1L);
+        List list = SpringContextHolder.getBean(SqlMapperService.class).queryByMapper("com.robin.test.query1", "select1", new PageQuery(), paramMap);
+        int row = SpringContextHolder.getBean(SqlMapperService.class).executeByMapper("com.robin.test.query1", "insert1", model);
         //int row=SpringContextHolder.getBean(SqlMapperService.class).executeByMapper("com.robin.test.query1","update1",model);
         System.out.println(model);
     }
-    @Test
-    public void testAnnotationAware(){
-        try(ScanResult scanResult=new ClassGraph().verbose().enableAllInfo().whitelistPackages("com.robin").scan()){
 
-            for(ClassInfo info:scanResult.getClassesWithAnnotation(MappingEntity.class.getCanonicalName())){
-                AnnotationInfo rinfo=info.getAnnotationInfo(MappingEntity.class.getCanonicalName());
-                FieldInfoList flist=info.getFieldInfo().filter(fieldInfo -> fieldInfo.hasAnnotation(MappingField.class.getCanonicalName()));
+    @Test
+    public void testAnnotationAware() {
+        try (ScanResult scanResult = new ClassGraph().verbose().enableAllInfo().whitelistPackages("com.robin").scan()) {
+
+            for (ClassInfo info : scanResult.getClassesWithAnnotation(MappingEntity.class.getCanonicalName())) {
+                AnnotationInfo rinfo = info.getAnnotationInfo(MappingEntity.class.getCanonicalName());
+                FieldInfoList flist = info.getFieldInfo().filter(fieldInfo -> fieldInfo.hasAnnotation(MappingField.class.getCanonicalName()));
                 System.out.println(flist);
-                System.out.println( info.getAnnotations());
+                System.out.println(info.getAnnotations());
             }
         }
     }
+
     @Test
-    public void testSysUserInsert(){
-        SysUser user=new SysUser();
+    public void testSysUserInsert() {
+        SysUser user = new SysUser();
         //user.setDeptId(1);
         user.setAccountType("1");
         user.setOrderNo(1);
@@ -290,7 +295,7 @@ public class JdbcDaoTest extends TestCase {
     }
 
     @Test
-    public void testGetFunctionName(){
+    public void testGetFunctionName() {
         System.out.println(AnnotationRetriever.getFieldName(TestModel::getDescription));
     }
 

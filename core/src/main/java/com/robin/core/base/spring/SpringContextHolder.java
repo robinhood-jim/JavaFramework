@@ -22,6 +22,7 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.beans.factory.config.InstantiationAwareBeanPostProcessorAdapter;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -89,6 +90,14 @@ public class SpringContextHolder extends InstantiationAwareBeanPostProcessorAdap
 
         }
         return bean;
+    }
+    public static boolean registerSingleton(String beanName,Object targetObj){
+        if(ConfigurableBeanFactory.class.isAssignableFrom(beanFactory.getClass())) {
+            ((ConfigurableBeanFactory) beanFactory).registerSingleton(beanName, targetObj);
+            return true;
+        }else{
+            return false;
+        }
     }
 
 

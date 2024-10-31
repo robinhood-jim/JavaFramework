@@ -747,7 +747,7 @@ public class CommJdbcUtil {
         }
 
         @Override
-        public void setValues(PreparedStatement ps, int i) throws SQLException {
+        public void setValues(PreparedStatement ps, int i)  {
             try {
                 hasRecord = true;
                 Map<String, String> resultMap = iterator.next();

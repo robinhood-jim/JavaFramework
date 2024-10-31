@@ -43,8 +43,8 @@ public class TestJsonGen {
 			ftpparam.put("hostName", "172.16.102.129");
 			ftpparam.put("protocol", "sftp");
 			ftpparam.put("port", 22);
-			ftpparam.put("userName", "luoming");
-			ftpparam.put("password", "zhcx668");
+			ftpparam.put("userName", "root");
+			ftpparam.put("password", "1234");
 			//ftpparam.put(Const.AVRO_SCHEMA_CONTENT_PARAM, "{\"namespace\":\"com.robin.avro\",\"name\":\"Content\",\"type\":\"record\",\"fields\":[{\"name\":\"id\",\"type\":\"long\"},{\"name\":\"url\",\"type\":\"string\"},{\"name\":\"title\",\"type\":\"string\"},{\"name\":\"content\",\"type\":\"string\"}]}");
 			colmeta.setResourceCfgMap(ftpparam);
 			colmeta.setPath("/tmp/robin/testdata/test1.avro.gz");

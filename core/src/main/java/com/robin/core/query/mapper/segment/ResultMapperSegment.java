@@ -1,6 +1,8 @@
 package com.robin.core.query.mapper.segment;
 
+import com.robin.core.base.exception.ConfigurationIncorrectException;
 import com.robin.core.base.util.Const;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.dom4j.Element;
 
@@ -9,8 +11,10 @@ import java.util.List;
 import java.util.Map;
 
 
-public class ResultMapperSegment extends AbstractSegment {
+@Slf4j
+public class  ResultMapperSegment extends AbstractSegment {
     private String className;
+    private Class<?> resultClass;
     private Map<String, ImmutablePair<String, String>> columnMapper = new HashMap<>();
 
     public ResultMapperSegment(String nameSpace, String id, String value) {
@@ -20,6 +24,11 @@ public class ResultMapperSegment extends AbstractSegment {
 
     public void parse(Element element) {
         className=element.attributeValue("resultType");
+        try{
+            resultClass=Class.forName(className);
+        }catch (ClassNotFoundException ex){
+            throw new ConfigurationIncorrectException("can not load resultMap class "+className);
+        }
         List<Element> elements = element.elements();
         for (Element ele : elements) {
             String column = ele.attributeValue("column");
@@ -63,6 +72,9 @@ public class ResultMapperSegment extends AbstractSegment {
 
     public String getClassName() {
         return className;
+    }
+    public Class<?> getResultClass(){
+        return resultClass;
     }
 
     @Override
