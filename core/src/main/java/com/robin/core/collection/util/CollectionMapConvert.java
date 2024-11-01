@@ -26,7 +26,6 @@ import org.springframework.util.CollectionUtils;
 
 import javax.script.Bindings;
 import javax.script.CompiledScript;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -36,6 +35,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Slf4j
+@SuppressWarnings("unused")
 public class CollectionMapConvert {
 
     private CollectionMapConvert() {
@@ -43,23 +43,22 @@ public class CollectionMapConvert {
     }
 
     /**
-     * Convert ArrayList to Map by identify Column
      *
-     * @param listobj     ArrayList must not Primitive and not HashMap
+     * @param listobj
      * @param identityCol
      * @return
-     * @throws Exception
+     * @param <T>
+     * @param <P>
+     * @throws MissingConfigException
      */
-    public static <T> Map<?, T> convertListToMap(List<T> listobj, Function<T, ?> identityCol) throws MissingConfigException, InvocationTargetException, IllegalAccessException {
+    public static <T, P> Map<P, T> convertListToMap(List<T> listobj, Function<T, P> identityCol) throws MissingConfigException {
         checkType(listobj);
         return listobj.stream().collect(Collectors.toMap(identityCol, Function.identity()));
     }
 
     public static <T> List<T> convertToList(Map<String, T> mapobj) {
         List<T> retList = new ArrayList<>();
-        for (T t : mapobj.values()) {
-            retList.add(t);
-        }
+        retList.addAll(mapobj.values());
         return retList;
     }
 
@@ -74,15 +73,12 @@ public class CollectionMapConvert {
     }
 
     /**
-     * Convert ArrayList to Map by identify Column
      *
-     * @param listobj   ArrayList must not Primitive,can input HashMap
+     * @param listobj
      * @param parentCol
-     * @return Map<Key, List < T>>
-     * @throws Exception
+     * @return
      */
-
-    public static Map<String, List<Map<String, Object>>> convertToMapByParentKey(List<Map<String, Object>> listobj, String parentCol) throws InvocationTargetException, IllegalAccessException {
+    public static Map<String, List<Map<String, Object>>> convertToMapByParentKey(List<Map<String, Object>> listobj, String parentCol) {
         return listobj.stream().collect(Collectors.groupingBy(f -> f.get(parentCol).toString()));
     }
 
@@ -101,15 +97,16 @@ public class CollectionMapConvert {
     }
 
     /**
-     * extract Key and List Value Map
      *
-     * @param listobj   ArrayList must not Primitive and not HashMap
+     * @param listobj
      * @param parentCol
      * @param valueCol
      * @return
-     * @throws Exception
+     * @param <T>
+     * @param <U>
+     * @param <P>
      */
-    public static <T, U, P> Map<U, List<P>> getValuesByParentKey(List<T> listobj, Function<T, U> parentCol, Function<T, P> valueCol) throws Exception {
+    public static <T, U, P> Map<U, List<P>> getValuesByParentKey(List<T> listobj, Function<T, U> parentCol, Function<T, P> valueCol) {
         checkType(listobj);
         return listobj.stream().collect(Collectors.groupingBy(parentCol, Collectors.mapping(valueCol, Collectors.toList())));
     }
@@ -121,13 +118,12 @@ public class CollectionMapConvert {
     }
 
     /**
-     * same function like select from where
      *
-     * @param listobj      ArrayList must not Primitive and not HashMap
-     * @param filterColumn select column function
-     * @param colvalue     select value
+     * @param listobj
+     * @param filterColumn
+     * @param colvalue
      * @return
-     * @throws Exception
+     * @param <T>
      */
     public static <T> List<T> filterListByColumnValue(List<T> listobj, Function<T, ?> filterColumn, Object colvalue) {
         checkType(listobj);
@@ -135,12 +131,12 @@ public class CollectionMapConvert {
     }
 
     /**
-     * select from using complex condition with script engine
      *
      * @param listobj
-     * @param scriptType      script type (js/groovy/jython)
-     * @param queryConditions script content return boolean
+     * @param scriptType
+     * @param queryConditions
      * @return
+     * @param <T>
      * @throws Exception
      */
     public static <T> List<T> filterListByColumnCondition(List<T> listobj, String scriptType, String queryConditions) throws Exception {
@@ -162,18 +158,18 @@ public class CollectionMapConvert {
     }
 
 
-    public static <T> String getColumnValueAppendBySeparate(List<T> listobj, Function<T, ?> column, String separate) throws MissingConfigException, InvocationTargetException, IllegalAccessException {
+    public static <T> String getColumnValueAppendBySeparate(List<T> listobj, Function<T, ?> column, String separate) throws MissingConfigException {
         checkType(listobj);
         StringBuilder buffer = new StringBuilder();
         Assert.notNull(column, "");
-        List<?> values = listobj.stream().collect(Collectors.mapping(column, Collectors.toList()));
+        List<?> values = listobj.stream().map(column).collect(Collectors.toList());
         return StringUtils.join(values, separate);
     }
 
-    public static <T> List<?> getValueListBySeparate(List<T> listobj, Function<T, ?> column) throws MissingConfigException, InvocationTargetException, IllegalAccessException {
+    public static <T, P> List<P> getValueListBySeparate(List<T> listobj, Function<T, P> column) throws MissingConfigException {
         List<String> retList = new ArrayList<>();
         checkType(listobj);
-        return listobj.stream().collect(Collectors.mapping(column, Collectors.toList()));
+        return listobj.stream().map(column).collect(Collectors.toList());
     }
 
     public static <T> List<Map<String, Object>> getListMap(List<T> listobj) throws MissingConfigException {
@@ -195,14 +191,12 @@ public class CollectionMapConvert {
 
     }
 
-    public static <T> void mergeListFromNew(List<T> orgList, List<T> newList, Function<T, ?> identifyCol) throws MissingConfigException, InvocationTargetException, IllegalAccessException {
+    public static <T, P> void mergeListFromNew(List<T> orgList, List<T> newList, Function<T, P> identifyCol) throws MissingConfigException {
         if (CollectionUtils.isEmpty(orgList) || CollectionUtils.isEmpty(newList)) {
             throw new MissingConfigException("Input ArrayList is Empty!");
         }
-        Map<?, T> map = convertListToMap(newList, identifyCol);
+        Map<P, T> map = convertListToMap(newList, identifyCol);
         orgList.stream().filter(f -> !map.containsKey(identifyCol.apply(f))).forEach(newList::add);
-
     }
-
 }
 
