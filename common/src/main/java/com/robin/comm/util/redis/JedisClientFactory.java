@@ -79,7 +79,7 @@ public class JedisClientFactory {
         private void putValue(Jedis jedis, String key, Object obj, Integer expireSecond) {
             if (obj instanceof Map) {
                 Map<String, Object> map = (Map<String, Object>) obj;
-                Map<String, String> map1 = new HashMap<String, String>();
+                Map<String, String> map1 = new HashMap<>();
                 Iterator<Map.Entry<String, Object>> iter = map.entrySet().iterator();
                 while (iter.hasNext()) {
                     Map.Entry<String, Object> entry = iter.next();
@@ -222,7 +222,7 @@ public class JedisClientFactory {
             close(jedis);
             return retSet;
         }
-
+        @SuppressWarnings("unchecked")
         public List getPlainSetWithObj(String key, Class<?> clazz) throws IOException,ClassNotFoundException {
             List list = new ArrayList();
             Jedis jedis = pool.getResource();
@@ -310,7 +310,7 @@ public class JedisClientFactory {
             jedis.rpush(key, value);
             close(jedis);
         }
-
+        @SuppressWarnings("unchecked")
         public void hmset(String key, Map<String, ?> map) {
             Jedis jedis = pool.getResource();
             try {
@@ -354,7 +354,7 @@ public class JedisClientFactory {
                 close(jedis);
             }
         }
-
+        @SuppressWarnings("unchecked")
         public List<?> hmget(String key, String[] fields, Class targetClass) throws IOException {
             Jedis jedis = pool.getResource();
             try {
@@ -485,7 +485,7 @@ public class JedisClientFactory {
             close(jedis);
         }
 
-
+        @SuppressWarnings("unchecked")
         public Object getValue(String key,
                                Class clazz, Class... targetClassArr) {
             Object retObj = null;

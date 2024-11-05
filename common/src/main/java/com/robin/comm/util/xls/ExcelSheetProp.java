@@ -32,10 +32,11 @@ public class ExcelSheetProp {
 	private int startCol=1;  
 	private Integer tableId;
 	// using SXSSFWorkbook with streamingWrite
-	private boolean streamInsert;
+	private boolean streamInsert=false;
 	private Integer streamRows=100;
 	private int sheetNum=0;
 	private boolean fillHeader=true;
+	private String templateFile;
 	public ExcelSheetProp(){
 
 	}

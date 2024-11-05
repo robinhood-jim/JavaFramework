@@ -714,4 +714,5 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>, T extends 
             log.error("{0}", ex);
         }
     }
+
 }

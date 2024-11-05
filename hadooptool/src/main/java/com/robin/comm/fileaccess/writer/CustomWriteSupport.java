@@ -40,6 +40,7 @@ public class CustomWriteSupport<T> extends WriteSupport<T> {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public void write(T obj) {
         if (Map.class.isAssignableFrom(obj.getClass())) {
             Map<String, Object> map = (Map<String, Object>) obj;

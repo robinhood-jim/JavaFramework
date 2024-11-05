@@ -94,7 +94,7 @@ public class DataBaseUtil {
         }
     }
 
-    public static List<String> getAllShcema(DataSource source) throws SQLException {
+    public static List<String> getAllSchema(DataSource source) throws SQLException {
         List<String> schemalist = new ArrayList<>();
         try (Connection conn = source.getConnection()) {
             DatabaseMetaData meta = conn.getMetaData();
@@ -422,7 +422,7 @@ public class DataBaseUtil {
                     break;
                 case Const.META_TYPE_DATE:
                 case Const.META_TYPE_TIMESTAMP:
-                    if (Date.class.isAssignableFrom(value.getClass()) || java.sql.Date.class.isAssignableFrom(value.getClass()) || Timestamp.class.isAssignableFrom(value.getClass())) {
+                    if (Date.class.isAssignableFrom(value.getClass()) || java.sql.Date.class.isAssignableFrom(value.getClass()) || Timestamp.class.isAssignableFrom(value.getClass()) || Long.class.isAssignableFrom(value.getClass())) {
                         validtag = true;
                     }
                     break;

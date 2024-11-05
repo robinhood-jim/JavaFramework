@@ -2,17 +2,18 @@ package com.robin.core.test.model;
 
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.robin.core.base.model.BaseObject;
 import lombok.Data;
 
 @Data
-@TableName("t_sys_user_info")
+@TableName(value = "t_sys_user_info",schema = "test")
 public class SysUserMybatis extends BaseObject {
     @TableId(type = IdType.AUTO)
     private Long id;
-
+    @TableField
     private Integer orgId;
 
     private String accountType;

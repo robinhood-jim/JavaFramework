@@ -32,7 +32,7 @@ public class SysOrgService extends BaseAnnotationJdbcService<SysOrg, Long> imple
     public String getSubIdByParentOrgId(Long orgId){
         SysOrg sysOrg=getEntity(orgId);
         String orgCode=sysOrg.getTreeCode();
-        List<SysOrg> list1=queryByField("treeCode", Const.OPERATOR.LLIKE,orgCode+"%");
+        List<SysOrg> list1=queryByField(SysOrg::getTreeCode, Const.OPERATOR.LLIKE,orgCode+"%");
         StringBuilder builder=new StringBuilder();
         if(!list1.isEmpty()){
             for(SysOrg org:list1) {

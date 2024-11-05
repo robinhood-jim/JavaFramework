@@ -37,6 +37,7 @@ import org.springframework.orm.hibernate5.HibernateCallback;
 import org.springframework.orm.hibernate5.HibernateTemplate;
 import org.springframework.orm.hibernate5.support.HibernateDaoSupport;
 import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.io.Serializable;
@@ -454,7 +455,7 @@ public class HibernateGenericDao extends HibernateDaoSupport implements IHiberna
                 throw new DAOException("query ID not found in config file!");
             }
 
-            if (pageQuery.getParameterArr() != null && pageQuery.getParameterArr().length > 0) {
+            if (!CollectionUtils.isEmpty(pageQuery.getQueryParameters())) {
                 return CommJdbcUtil.executeByPreparedParamter(jdbcTemplate, sqlGen, queryString1, pageQuery);
             }
 
@@ -487,7 +488,7 @@ public class HibernateGenericDao extends HibernateDaoSupport implements IHiberna
 
     @Override
     public void queryByParamter(QueryString qs, PageQuery pageQuery) throws DAOException {
-        if (pageQuery.getParameterArr() != null && pageQuery.getParameterArr().length > 0) {
+        if (!CollectionUtils.isEmpty(pageQuery.getQueryParameters())) {
             CommJdbcUtil.queryByPreparedParamter(jdbcTemplate, getNamedJdbcTemplate(), lobHandler, sqlGen, qs, pageQuery);
         } else {
             CommJdbcUtil.queryByReplaceParamter(jdbcTemplate, lobHandler, sqlGen, qs, pageQuery);
@@ -495,7 +496,7 @@ public class HibernateGenericDao extends HibernateDaoSupport implements IHiberna
     }
 
     public int executeByParamter(QueryString qs, PageQuery pageQuery) throws DAOException {
-        if (pageQuery.getParameterArr() != null && pageQuery.getParameterArr().length > 0) {
+        if (!CollectionUtils.isEmpty(pageQuery.getQueryParameters())) {
             return CommJdbcUtil.executeByPreparedParamter(jdbcTemplate, sqlGen, qs, pageQuery);
         }
         return -1;

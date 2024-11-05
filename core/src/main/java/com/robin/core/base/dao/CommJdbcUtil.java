@@ -100,7 +100,7 @@ public class CommJdbcUtil {
         final String[] fields = sqlGen.getResultColName(qs);
         if (pageQuery.getNamedParameters().isEmpty()) {
             //Preparedstatment
-            return jdbcTemplate.query(pageSQL, pageQuery.getParameterArr(), getDefaultExtract(fields, lobHandler, pageQuery));
+            return jdbcTemplate.query(pageSQL, pageQuery.getQueryParameters().toArray(), getDefaultExtract(fields, lobHandler, pageQuery));
         } else {
             return namedParameterJdbcTemplate.query(pageSQL, pageQuery.getNamedParameters(), getDefaultExtract(fields, lobHandler, pageQuery));
         }
@@ -145,17 +145,7 @@ public class CommJdbcUtil {
             });
             pageQuery.setRecordCount(total);
             if (total > 0) {
-                int pages = total / pageQuery.getPageSize();
-                if (total % pageQuery.getPageSize() != 0) {
-                    pages++;
-                }
-                pageQuery.setPageCount(pages);
-                //adjust pageNumber
-                if (pageQuery.getPageNumber() > pages) {
-                    pageQuery.setPageNumber(pages);
-                } else if (pageQuery.getPageNumber() < 1) {
-                    pageQuery.setPageNumber(1);
-                }
+                setPageQueryParameter(pageQuery, total);
                 String pageSQL = sqlGen.generatePageSql(querySQL, pageQuery);
                 if (logger.isDebugEnabled()) {
                     logger.debug("sumSQL: {}",sumSQL);
@@ -174,6 +164,20 @@ public class CommJdbcUtil {
             pageQuery.setPageCount(1);
         }
         return list;
+    }
+
+    public static void setPageQueryParameter(PageQuery pageQuery, int total) {
+        int pages = total / pageQuery.getPageSize();
+        if (total % pageQuery.getPageSize() != 0) {
+            pages++;
+        }
+        pageQuery.setPageCount(pages);
+        //adjust pageNumber
+        if (pageQuery.getPageNumber() > pages) {
+            pageQuery.setPageNumber(pages);
+        } else if (pageQuery.getPageNumber() < 1) {
+            pageQuery.setPageNumber(1);
+        }
     }
 
     public static String getRealSql(BaseSqlGen sqlGen, QueryString qs, PageQuery pageQuery) throws DAOException {
@@ -395,8 +399,8 @@ public class CommJdbcUtil {
                 }
 
                 Integer total;
-                if (pageQuery.getNamedParameters().isEmpty() && pageQuery.getParameterArr() != null) {
-                    total = jdbcTemplate.queryForObject(sumSQL, pageQuery.getParameterArr(), Integer.class);
+                if (CollectionUtils.isEmpty(pageQuery.getNamedParameters()) && !CollectionUtils.isEmpty(pageQuery.getQueryParameters())) {
+                    total = jdbcTemplate.queryForObject(sumSQL, pageQuery.getQueryParameters().toArray(), Integer.class);
                 } else {
                     total = namedParameterJdbcTemplate.queryForObject(sumSQL, pageQuery.getNamedParameters(), Integer.class);
                 }
@@ -743,7 +747,7 @@ public class CommJdbcUtil {
         }
 
         @Override
-        public void setValues(PreparedStatement ps, int i) throws SQLException {
+        public void setValues(PreparedStatement ps, int i)  {
             try {
                 hasRecord = true;
                 Map<String, String> resultMap = iterator.next();
@@ -785,8 +789,8 @@ public class CommJdbcUtil {
             if (logger.isInfoEnabled()) {
                 logger.info("executeSQL: {}",executeSQL);
             }
-            if (pageQuery.getNamedParameters().isEmpty()) {
-                return jdbcTemplate.update(executeSQL, pageQuery.getParameterArr());
+            if (CollectionUtils.isEmpty(pageQuery.getNamedParameters())) {
+                return jdbcTemplate.update(executeSQL, pageQuery.getQueryParameters().toArray());
             } else {
                 NamedParameterJdbcTemplate template = new NamedParameterJdbcTemplate(jdbcTemplate);
                 return template.update(executeSQL, pageQuery.getNamedParameters());

@@ -39,167 +39,172 @@ import org.tmatesoft.svn.core.wc.SVNWCUtil;
 
 
 public class SvnUtil {
-	private String svnUrl;
-	private SVNURL reposUrl=null;
-	private Logger logger=LoggerFactory.getLogger(getClass());
-	private  SVNClientManager clientManager=null;
-	public SvnUtil(String svnUrl){
-		this.svnUrl=svnUrl;
-		try{
-			reposUrl=SVNURL.parseURIEncoded(svnUrl);
-		}catch(Exception ex){
-			
-		}
-	}
-	public  void setupLibrary() { 
-        if(svnUrl.startsWith("svn:")) {
+    private String svnUrl;
+    private SVNURL reposUrl = null;
+    private Logger logger = LoggerFactory.getLogger(getClass());
+    private SVNClientManager clientManager = null;
+
+    public SvnUtil(String svnUrl) {
+        this.svnUrl = svnUrl;
+        try {
+            reposUrl = SVNURL.parseURIEncoded(svnUrl);
+        } catch (Exception ex) {
+
+        }
+    }
+
+    public void setupLibrary() {
+        if (svnUrl.startsWith("svn:")) {
             SVNRepositoryFactoryImpl.setup();
         } else {
             DAVRepositoryFactory.setup();
         }
-        FSRepositoryFactory.setup();  
-    }  
-	 public  void authSvn(String username,  
-	            String password) {  
-		 	setupLibrary();
-	        SVNRepository repository = null;  
-	        try {  
-	            repository = SVNRepositoryFactory.create(reposUrl);
-				ISVNAuthenticationManager authManager = SVNWCUtil.createDefaultAuthenticationManager(username, password);
-				repository.setAuthenticationManager(authManager);
+        FSRepositoryFactory.setup();
+    }
 
-				DefaultSVNOptions options = SVNWCUtil.createDefaultOptions(true);
-				clientManager = SVNClientManager.newInstance(options,
-						authManager);
-			} catch (SVNException e) {
-	            logger.error(e.getMessage(),e.getErrorMessage());  
-	        }  
+    @SuppressWarnings("deprecation")
+    public void authSvn(String username, String password) {
+        setupLibrary();
+        SVNRepository repository = null;
+        try {
+            repository = SVNRepositoryFactory.create(reposUrl);
+            ISVNAuthenticationManager authManager = SVNWCUtil.createDefaultAuthenticationManager(username, password);
+            repository.setAuthenticationManager(authManager);
 
-	    }  
+            DefaultSVNOptions options = SVNWCUtil.createDefaultOptions(true);
+            clientManager = SVNClientManager.newInstance(options,
+                    authManager);
+        } catch (SVNException e) {
+            logger.error(e.getMessage(), e.getErrorMessage());
+        }
 
-	    public  SVNCommitInfo makeDirectory(SVNURL url, String commitMessage) {  
-	        try {  
-	            return clientManager.getCommitClient().doMkDir(  
-	                    new SVNURL[] { url }, commitMessage);  
-	        } catch (SVNException e) {  
-	            logger.error(e.getMessage(),e.getErrorMessage());  
-	        }  
-	        return null;  
-	    }  
+    }
 
-	    public SVNCommitInfo importDirectory(File localPath, String commitMessage,  
-	            boolean isRecursive) {  
-	        try {  
-	            return clientManager.getCommitClient().doImport(localPath, reposUrl,  
-	                    commitMessage, null, true, true,  
-	                    SVNDepth.fromRecurse(isRecursive));  
-	        } catch (SVNException e) {  
-	            logger.error(e.getMessage(),e.getErrorMessage());  
-	        }  
-	        return null;  
-	    }  
+    public SVNCommitInfo makeDirectory(SVNURL url, String commitMessage) {
+        try {
+            return clientManager.getCommitClient().doMkDir(
+                    new SVNURL[]{url}, commitMessage);
+        } catch (SVNException e) {
+            logger.error(e.getMessage(), e.getErrorMessage());
+        }
+        return null;
+    }
 
-	    public void addEntry(File wcPath) {  
-	        try {  
-	            clientManager.getWCClient().doAdd(new File[] { wcPath },true,false, false, SVNDepth.INFINITY, false, false,true);  
-	        } catch (SVNException e) {  
-	            logger.error(e.getMessage(),e.getErrorMessage());  
-	        }  
-	    }  
+    public SVNCommitInfo importDirectory(File localPath, String commitMessage,
+                                         boolean isRecursive) {
+        try {
+            return clientManager.getCommitClient().doImport(localPath, reposUrl,
+                    commitMessage, null, true, true,
+                    SVNDepth.fromRecurse(isRecursive));
+        } catch (SVNException e) {
+            logger.error(e.getMessage(), e.getErrorMessage());
+        }
+        return null;
+    }
 
-	    public SVNStatus showStatus(File wcPath, boolean remote) {  
-	        SVNStatus status = null;  
-	        try {  
-	            status = clientManager.getStatusClient().doStatus(wcPath, remote);  
-	        } catch (SVNException e) {  
-	            logger.error(e.getMessage(),e.getErrorMessage());  
-	        }  
-	        return status;  
-	    }  
+    public void addEntry(File wcPath) {
+        try {
+            clientManager.getWCClient().doAdd(new File[]{wcPath}, true, false, false, SVNDepth.INFINITY, false, false, true);
+        } catch (SVNException e) {
+            logger.error(e.getMessage(), e.getErrorMessage());
+        }
+    }
 
-	    public SVNCommitInfo commit(File wcPath, boolean keepLocks, String commitMessage) {  
-	        try {  
-	            return clientManager.getCommitClient().doCommit(  
-	                    new File[] { wcPath }, keepLocks, commitMessage, null,  
-	                    null, false, false, SVNDepth.INFINITY);  
-	        } catch (SVNException e) {  
-	            logger.error(e.getMessage(),e.getErrorMessage());  
-	        }  
-	        return null;  
-	    }
-		public SVNURL getReposUrl() {
-			return reposUrl;
-		}
-		public void setReposUrl(SVNURL reposUrl) {
-			this.reposUrl = reposUrl;
-		}  
+    public SVNStatus showStatus(File wcPath, boolean remote) {
+        SVNStatus status = null;
+        try {
+            status = clientManager.getStatusClient().doStatus(wcPath, remote);
+        } catch (SVNException e) {
+            logger.error(e.getMessage(), e.getErrorMessage());
+        }
+        return status;
+    }
 
-	    public long update(File wcPath,SVNRevision updateToRevision, SVNDepth depth) {  
-	        SVNUpdateClient updateClient = clientManager.getUpdateClient();  
-	  
-	        /* 
-	         * sets externals not to be ignored during the update 
-	         */  
-	        updateClient.setIgnoreExternals(false);  
-	  
-	        /* 
-	         * returns the number of the revision wcPath was updated to 
-	         */  
-	        try {  
-	            return updateClient.doUpdate(wcPath, updateToRevision,depth, false, false);  
-	        } catch (SVNException e) {  
-	            logger.error(e.getErrorMessage().toString());  
-	        }  
-	        return 0;  
-	    }  
-	      
+    public SVNCommitInfo commit(File wcPath, boolean keepLocks, String commitMessage) {
+        try {
+            return clientManager.getCommitClient().doCommit(
+                    new File[]{wcPath}, keepLocks, commitMessage, null,
+                    null, false, false, SVNDepth.INFINITY);
+        } catch (SVNException e) {
+            logger.error(e.getMessage(), e.getErrorMessage());
+        }
+        return null;
+    }
 
-	    public long checkout(SVNURL url,SVNRevision revision, File destPath, SVNDepth depth) {  
-	  
-	        SVNUpdateClient updateClient = clientManager.getUpdateClient();  
-	        /* 
-	         * sets externals not to be ignored during the checkout 
-	         */  
-	        updateClient.setIgnoreExternals(false);  
-	        /* 
-	         * returns the number of the revision at which the working copy is 
-	         */  
-	        try {  
-	            return updateClient.doCheckout(url, destPath, revision, revision,depth, false);  
-	        } catch (SVNException e) {  
-	            logger.error(e.getErrorMessage().toString());  
-	        }  
-	        return 0;  
-	    }  
-	      
+    public SVNURL getReposUrl() {
+        return reposUrl;
+    }
 
-	    public boolean isWorkingCopy(File path){  
-	        if(!path.exists()){  
-	            logger.warn("'" + path + "' not exist!");  
-	            return false;  
-	        }  
-	        try {  
-	            if(null == SVNWCUtil.getWorkingCopyRoot(path, false)){  
-	                return false;  
-	            }  
-	        } catch (SVNException e) {  
-	            logger.error(e.getErrorMessage().toString());  
-	        }  
-	        return true;  
-	    }  
-	      
+    public void setReposUrl(SVNURL reposUrl) {
+        this.reposUrl = reposUrl;
+    }
 
-	    public static boolean isURLExist(SVNURL url,String username,String password){  
-	        try {  
-	            SVNRepository svnRepository = SVNRepositoryFactory.create(url);  
-	            ISVNAuthenticationManager authManager = SVNWCUtil.createDefaultAuthenticationManager(username, password);  
-	            svnRepository.setAuthenticationManager(authManager);  
-	            SVNNodeKind nodeKind = svnRepository.checkPath("", -1);  
-	            return nodeKind == SVNNodeKind.NONE ? false : true;   
-	        } catch (SVNException e) {  
-	            e.printStackTrace();  
-	        }  
-	        return false;  
-	    }  
-	    
+    public long update(File wcPath, SVNRevision updateToRevision, SVNDepth depth) {
+        SVNUpdateClient updateClient = clientManager.getUpdateClient();
+
+        /*
+         * sets externals not to be ignored during the update
+         */
+        updateClient.setIgnoreExternals(false);
+
+        /*
+         * returns the number of the revision wcPath was updated to
+         */
+        try {
+            return updateClient.doUpdate(wcPath, updateToRevision, depth, false, false);
+        } catch (SVNException e) {
+            logger.error(e.getErrorMessage().toString());
+        }
+        return 0;
+    }
+
+
+    public long checkout(SVNURL url, SVNRevision revision, File destPath, SVNDepth depth) {
+
+        SVNUpdateClient updateClient = clientManager.getUpdateClient();
+        /*
+         * sets externals not to be ignored during the checkout
+         */
+        updateClient.setIgnoreExternals(false);
+        /*
+         * returns the number of the revision at which the working copy is
+         */
+        try {
+            return updateClient.doCheckout(url, destPath, revision, revision, depth, false);
+        } catch (SVNException e) {
+            logger.error(e.getErrorMessage().toString());
+        }
+        return 0;
+    }
+
+
+    public boolean isWorkingCopy(File path) {
+        if (!path.exists()) {
+            logger.warn("'" + path + "' not exist!");
+            return false;
+        }
+        try {
+            if (null == SVNWCUtil.getWorkingCopyRoot(path, false)) {
+                return false;
+            }
+        } catch (SVNException e) {
+            logger.error(e.getErrorMessage().toString());
+        }
+        return true;
+    }
+
+    @SuppressWarnings("deprecation")
+    public static boolean isURLExist(SVNURL url, String username, String password) {
+        try {
+            SVNRepository svnRepository = SVNRepositoryFactory.create(url);
+            ISVNAuthenticationManager authManager = SVNWCUtil.createDefaultAuthenticationManager(username, password);
+            svnRepository.setAuthenticationManager(authManager);
+            SVNNodeKind nodeKind = svnRepository.checkPath("", -1);
+            return nodeKind == SVNNodeKind.NONE ? false : true;
+        } catch (SVNException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
 }

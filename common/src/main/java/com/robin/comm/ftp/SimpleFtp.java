@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.time.Duration;
 import java.util.*;
 
 public class SimpleFtp {
@@ -53,7 +54,7 @@ public class SimpleFtp {
         try {
             log.info("login to {} {} using {} {}", host, port, username, password);
             ftpClient.connect(host, port);
-            ftpClient.setDataTimeout(20000);
+            ftpClient.setDataTimeout(Duration.ofSeconds(20L));
             ftpClient.login(username, password);
             ftpClient.enterLocalPassiveMode();//Enter PassiveMode
             ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
@@ -281,7 +282,7 @@ public class SimpleFtp {
                 retrynum++;
             }
         }
-        if (retrynum >= retrys) {
+        if (retrys >= retrynum) {
             throw new IOException(ex);
         }
         return retflag;

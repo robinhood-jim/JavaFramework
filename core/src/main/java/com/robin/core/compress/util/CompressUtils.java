@@ -89,6 +89,10 @@ public class CompressUtils {
                     continue;
                 }
                 File file = new File(destDir, entry.getName());
+
+                if (!file.toPath().normalize().startsWith(destDir.toPath())) {
+                    throw new IOException("Bad zip entry");
+                }
                 if (!file.getParentFile().exists()) {
                     file.getParentFile().mkdirs();
                 }
@@ -120,6 +124,9 @@ public class CompressUtils {
             ArchiveEntry entry = in.getNextEntry();
             while (entry != null) {
                 File destPath = new File(destDir, entry.getName());
+                if (!destPath.toPath().normalize().startsWith(destDir.toPath())) {
+                    throw new IOException("Bad zip entry");
+                }
                 if (entry.isDirectory()) {
                     checkPathExist(destPath);
                 }

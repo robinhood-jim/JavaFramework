@@ -44,7 +44,7 @@ public class LicenseUtils {
                 try {
                     File rsaPath=new File(userPath + File.separator + ".ssh" + File.separator + "id_rsa.pub");
                     if (rsaPath.exists()) {
-                        publicKey = CipherUtil.readPublicKey(CipherUtil.getPublicKeyByPath(userPath + File.separator + ".ssh" + File.separator + "id_rsa.pub"));
+                        publicKey = CipherUtil.readPublicKey(CipherUtil.getKeyBytesByPath(userPath + File.separator + ".ssh" + File.separator + "id_rsa.pub"));
                         if (publicKey.getEncoded().length <= 300) {
                             valid = true;
                         }
@@ -113,6 +113,7 @@ public class LicenseUtils {
                 logger.error("license invalid!");
                 System.exit(1);
             }
+
             byte[] decryptbyte = CipherUtil.decryptByte(encryptBytes, machineStr.getBytes());
             String decryptStr = new String(decryptbyte, "UTF-8");
             String[] arr = decryptStr.split(";");
@@ -181,7 +182,7 @@ public class LicenseUtils {
         if (rsaFile.exists()) {
             System.out.println("--- generate using ssh key ");
             try {
-                key = CipherUtil.readPrivateKey(CipherUtil.getKeyByPath(userPath + File.separator + ".ssh" + File.separator + "id_rsa"));
+                key = CipherUtil.readPrivateKey(CipherUtil.getKeyBytesByPath(userPath + File.separator + ".ssh" + File.separator + "id_rsa"));
                 ifGetKey = true;
             } catch (Exception ex1) {
                 ex1.printStackTrace();

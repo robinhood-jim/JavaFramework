@@ -1,5 +1,8 @@
 package com.robin.core.base.dao.util;
 
+import com.robin.core.base.dao.JdbcDao;
+import com.robin.core.base.datameta.DataBaseColumnMeta;
+import com.robin.core.base.datameta.DataBaseUtil;
 import com.robin.core.base.exception.DAOException;
 import com.robin.core.base.model.BaseObject;
 import com.robin.core.base.model.BasePrimaryObject;
@@ -7,21 +10,30 @@ import com.robin.core.base.util.Const;
 import com.robin.core.sql.util.BaseSqlGen;
 import com.robin.core.sql.util.FilterCondition;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 
 import java.io.Serializable;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 
+@Slf4j
+@SuppressWarnings("unchecked")
 public class EntityMappingUtil {
+    private static final Map<Class<? extends BaseObject>, Map<String,DataBaseColumnMeta>> metaCache = new HashMap<>();
+
     private EntityMappingUtil(){
 
     }
-    public static InsertSegment getInsertSegment(BaseObject obj, BaseSqlGen sqlGen) throws DAOException {
+    public static InsertSegment getInsertSegment(BaseObject obj, BaseSqlGen sqlGen, JdbcDao jdbcDao) throws DAOException {
+
         AnnotationRetriever.EntityContent tableDef = AnnotationRetriever.getMappingTableByCache(obj.getClass());
         List<FieldContent> fields = AnnotationRetriever.getMappingFieldsCache(obj.getClass());
         AnnotationRetriever.validateEntity(obj);
@@ -33,16 +45,22 @@ public class EntityMappingUtil {
         buffer.append(tableDef.getTableName());
         StringBuilder fieldBuffer = new StringBuilder();
         StringBuilder valuebuBuffer = new StringBuilder();
-        boolean hasincrementPk = false;
-        boolean containlob = false;
-        String seqfield = "";
+
         InsertSegment insertSegment = new EntityMappingUtil.InsertSegment();
-        FieldContent incrementcolumn = null;
+
         try {
+            String schema= ObjectUtils.isEmpty(tableDef.getSchema())?null: tableDef.getSchema();
+            //get database table metadata adjust column must exist
+            Map<String, DataBaseColumnMeta> columnMetaMap = returnMetaMap(obj.getClass(), sqlGen, jdbcDao, tableDef, schema);
+
             for (FieldContent content : fields) {
                 Object value = content.getGetMethod().invoke(obj);
+                if(!columnMetaMap.containsKey(content.getFieldName().toLowerCase()) && !columnMetaMap.containsKey(content.getFieldName().toUpperCase()) ){
+                    log.warn("field {} not included in table {},insert column ignore!",content.getFieldName(),tableDef.getTableName());
+                    continue;
+                }
                 if (content.getDataType().equals(Const.META_TYPE_BLOB) || content.getDataType().equals(Const.META_TYPE_CLOB)) {
-                    containlob = true;
+                    insertSegment.setContainlob(true);
                 }
                 if (!content.isIncrement() && !content.isSequential()) {
                     if (value != null) {
@@ -51,17 +69,18 @@ public class EntityMappingUtil {
                             valuebuBuffer.append("?,");
                         } else {
                             List<FieldContent> pkList = content.getPrimaryKeys();
-                            incrementcolumn = content;
                             if (pkList != null) {
                                 //Composite Primary Key
                                 for (FieldContent field : pkList) {
                                     if (field.isIncrement()) {
-                                        hasincrementPk = true;
+                                        insertSegment.setHasincrementPk(true);
+                                        insertSegment.setIncrementColumn(content);
                                     } else {
                                         if (field.isSequential()) {
-                                            hasincrementPk = true;
-                                            seqfield = content.getFieldName();
+                                            insertSegment.setHasSequencePk(true);
+                                            insertSegment.setSeqField(content.getSequenceName());
                                             valuebuBuffer.append(sqlGen.getSequenceScript(field.getSequenceName())).append(",");
+                                            insertSegment.setSeqColumn(content);
                                         } else {
                                             valuebuBuffer.append("?,");
                                         }
@@ -75,33 +94,53 @@ public class EntityMappingUtil {
                         }
                     }
                 } else {
-                    hasincrementPk = true;
                     if (content.isIncrement()) {
-                        hasincrementPk = true;
-                        incrementcolumn = content;
+                        insertSegment.setHasincrementPk(true);
+                        insertSegment.setIncrementColumn(content);
                     }
-                    //Oracle Sequence
+                    //Sequence
                     if (content.isSequential()) {
+                        insertSegment.setHasSequencePk(true);
+                        insertSegment.setSeqField(content.getSequenceName());
                         valuebuBuffer.append(sqlGen.getSequenceScript(content.getSequenceName())).append(",");
-                        seqfield = content.getFieldName();
-                        fieldBuffer.append(seqfield).append(",");
+                        insertSegment.setSeqColumn(content);
+                        fieldBuffer.append(content.getFieldName()).append(",");
                     }
                 }
 
             }
             buffer.append("(").append(fieldBuffer.substring(0, fieldBuffer.length() - 1)).append(") values (").append(valuebuBuffer.substring(0, valuebuBuffer.length() - 1)).append(")");
             insertSegment.setInsertSql(buffer.toString());
-            insertSegment.setHasincrementPk(hasincrementPk);
-            insertSegment.setContainlob(containlob);
-            insertSegment.setIncrementColumn(incrementcolumn);
-            insertSegment.setSeqField(seqfield);
         } catch (Exception ex) {
             throw new DAOException(ex);
         }
         return insertSegment;
     }
 
+    private static Map<String, DataBaseColumnMeta> returnMetaMap(Class<? extends BaseObject> clazz, BaseSqlGen sqlGen, JdbcDao jdbcDao, AnnotationRetriever.EntityContent tableDef, String schema) throws SQLException {
+        Map<String,DataBaseColumnMeta> columnMetaMap;
+        if(metaCache.containsKey(clazz)){
+            columnMetaMap=metaCache.get(clazz);
+        }else {
+            List<DataBaseColumnMeta> columnMetas=DataBaseUtil.getTableMetaByTableName(jdbcDao, tableDef.getTableName(), schema, sqlGen.getDbType());
+            columnMetaMap=columnMetas.stream().collect(Collectors.toMap(DataBaseColumnMeta::getColumnName,f->f));
+            metaCache.put(clazz,columnMetaMap);
+        }
+        return columnMetaMap;
+    }
+    public static List<FieldContent> returnAvailableFields(Class<? extends BaseObject> clazz, BaseSqlGen sqlGen, JdbcDao jdbcDao, AnnotationRetriever.EntityContent tableDef, String schema,List<FieldContent> fields) throws SQLException {
+        Map<String, DataBaseColumnMeta> metaMap=returnMetaMap(clazz,sqlGen,jdbcDao,tableDef,schema);
+        List<FieldContent> contents=new ArrayList<>();
+        for(FieldContent content:fields){
+            if(metaMap.containsKey(content.getFieldName().toLowerCase()) || metaMap.containsKey(content.getFieldName().toUpperCase()) ){
+                contents.add(content);
+            }
+        }
+        return contents;
+    }
+
     public static UpdateSegment getUpdateSegment(BaseObject obj, List<FilterCondition> conditions, BaseSqlGen sqlGen) throws SQLException {
+
         AnnotationRetriever.EntityContent tableDef = AnnotationRetriever.getMappingTableByCache(obj.getClass());
         List<FieldContent> fields = AnnotationRetriever.getMappingFieldsCache(obj.getClass());
         Map<String, FieldContent> fieldContentMap=AnnotationRetriever.getMappingFieldsMapCache(obj.getClass());
@@ -209,7 +248,7 @@ public class EntityMappingUtil {
         return updateSegment;
     }
 
-    public static SelectSegment getSelectPkSegment(Class<? extends BaseObject> clazz, Serializable id, BaseSqlGen sqlGen) throws Exception {
+    public static SelectSegment getSelectPkSegment(Class<? extends BaseObject> clazz, Serializable id,BaseSqlGen sqlGen,JdbcDao jdbcDao) throws Exception {
         AnnotationRetriever.isBaseObjectClassValid(clazz);
         AnnotationRetriever.EntityContent tableDef = AnnotationRetriever.getMappingTableByCache(clazz);
         List<FieldContent> fields = AnnotationRetriever.getMappingFieldsCache(clazz);
@@ -217,7 +256,10 @@ public class EntityMappingUtil {
         StringBuilder wherebuffer = new StringBuilder();
         SelectSegment segment = new SelectSegment();
         List<Object> selectObjs = new ArrayList<>();
+        String schema= ObjectUtils.isEmpty(tableDef.getSchema())?null: tableDef.getSchema();
+
         for (FieldContent field : fields) {
+            Map<String, DataBaseColumnMeta> columnMetaMap = returnMetaMap(clazz, sqlGen, jdbcDao, tableDef, schema);
             if (field.isPrimary()) {
                 if (field.getPrimaryKeys() != null) {
                     for (FieldContent fieldContent : field.getPrimaryKeys()) {
@@ -225,14 +267,21 @@ public class EntityMappingUtil {
                         wherebuffer.append(fieldContent.getFieldName()).append("=? and ");
                         selectObjs.add(tval);
                         sqlbuffer.append(fieldContent.getFieldName()).append(" as ").append(fieldContent.getPropertyName()).append(",");
+                        segment.getAvailableFields().add(fieldContent);
                     }
                 } else {
                     wherebuffer.append(field.getFieldName()).append("=? and ");
                     selectObjs.add(id);
+                    segment.getAvailableFields().add(field);
                     sqlbuffer.append(field.getFieldName()).append(Const.SQL_AS).append(field.getPropertyName()).append(",");
                 }
 
             } else {
+                if(!columnMetaMap.containsKey(field.getFieldName().toLowerCase()) && !columnMetaMap.containsKey(field.getFieldName().toUpperCase()) ){
+                    log.warn("field {} not included in table {},select column ignore!",field.getFieldName(),tableDef.getTableName());
+                    continue;
+                }
+                segment.getAvailableFields().add(field);
                 sqlbuffer.append(field.getFieldName()).append(Const.SQL_AS).append(field.getPropertyName()).append(",");
             }
 
@@ -325,16 +374,19 @@ public class EntityMappingUtil {
     public static class SelectSegment {
         private String selectSql;
         private List<Object> values;
+        private List<FieldContent> availableFields=new ArrayList<>();
 
     }
 
     @Data
     public static class InsertSegment {
         boolean hasincrementPk = false;
+        boolean hasSequencePk=false;
         boolean containlob = false;
         private String insertSql;
         private String seqField;
         private FieldContent incrementColumn;
+        private FieldContent seqColumn;
     }
 
     @Data

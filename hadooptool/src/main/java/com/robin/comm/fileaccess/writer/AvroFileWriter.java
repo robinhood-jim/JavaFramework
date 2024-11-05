@@ -42,23 +42,25 @@ public class AvroFileWriter extends AbstractFileWriter {
 	private DatumWriter<GenericRecord> dwriter;
 	private DataFileWriter<GenericRecord> fileWriter;
 
-	
+	public AvroFileWriter(){
+		this.identifier= Const.FILEFORMATSTR.AVRO.getValue();
+	}
 	public AvroFileWriter(DataCollectionMeta colmeta) {
 		super(colmeta);
 		schema = AvroUtils.getSchemaFromMeta(colmeta);
+		this.identifier= Const.FILEFORMATSTR.AVRO.getValue();
 	}
 
 	
 	@Override
 	public void beginWrite() throws IOException {
-		checkAccessUtil(colmeta.getPath());
 		out = accessUtil.getRawOutputStream(colmeta, ResourceUtil.getProcessPath(colmeta.getPath()));
 		dwriter=new GenericDatumWriter<>(schema);
 		fileWriter=new DataFileWriter<>(dwriter);
 		Const.CompressType type= getCompressType();
 		switch (type){
 			case COMPRESS_TYPE_GZ:
-				throw new IOException("avro does not support bzip2 compression");
+				throw new IOException("avro does not support gz compression");
 			case COMPRESS_TYPE_BZ2:
 				fileWriter.setCodec(CodecFactory.bzip2Codec());
 			case COMPRESS_TYPE_LZO:

@@ -11,6 +11,7 @@ import com.robin.comm.dal.holder.fs.OutputStreamHolder;
 import com.robin.core.base.datameta.BaseDataBaseMeta;
 import com.robin.core.base.spring.SpringContextHolder;
 import com.robin.core.fileaccess.fs.AbstractFileSystemAccessor;
+import com.robin.core.fileaccess.fs.FileSystemAccessorFactory;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.zaxxer.hikari.HikariConfig;
 import org.apache.commons.pool2.impl.GenericObjectPool;
@@ -51,27 +52,12 @@ public class ResourceAccessHolder implements InitializingBean {
 
 	}
 
-	private static AbstractFileSystemAccessor loadResourceUtil(String type){
-		AbstractFileSystemAccessor util=null;
-		try{
-			int pos=prefixList.indexOf(type.toLowerCase());
-			if(pos!=-1) {
-				String className = "com.robin.core.fileaccess.util." + processClassList.get(pos) + "ResourceAccessUtil";
-				Class<?> clazz = Class.forName(className);
-				Constructor<?> construct = clazz.getDeclaredConstructor(new Class[]{});
-				util = (AbstractFileSystemAccessor) construct.newInstance(new Object[]{});
-			}
-		}catch(Exception ex){
-			ex.printStackTrace();
-		}
-		return util;
-	}
 
 	public static AbstractFileSystemAccessor getAccessUtilByProtocol(String protocol){
 		if(resouceAccessUtilMap.containsKey(protocol)){
 			return resouceAccessUtilMap.get(protocol);
 		}else{
-			AbstractFileSystemAccessor util=loadResourceUtil(protocol);
+			AbstractFileSystemAccessor util= FileSystemAccessorFactory.getResourceAccessorByType(protocol);
 			if(util!=null) {
                 resouceAccessUtilMap.put(protocol,util);
             }

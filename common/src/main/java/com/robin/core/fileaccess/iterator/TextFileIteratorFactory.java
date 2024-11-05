@@ -100,7 +100,7 @@ public class TextFileIteratorFactory {
 	}
 	private static void discoverIterator(Map<String,Class<? extends IResourceIterator>> fileIterMap){
 		ServiceLoader.load(IResourceIterator.class).iterator().forEachRemaining(i->{
-			if(i.getClass().isAssignableFrom(AbstractFileIterator.class))
+			if(AbstractFileIterator.class.isAssignableFrom(i.getClass()))
 				fileIterMap.put(i.getIdentifier(),i.getClass());});
 	}
 	

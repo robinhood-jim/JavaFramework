@@ -6,11 +6,13 @@ import com.robin.core.base.spring.SpringContextHolder;
 import com.robin.core.query.util.PageQuery;
 import com.robin.core.query.util.QueryFactory;
 import org.apache.commons.beanutils.BeanUtils;
-import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 @Component
 public class CodeSetService {
@@ -29,7 +31,7 @@ public class CodeSetService {
             PageQuery query = new PageQuery();
             query.setPageSize(0);
             query.setSelectParamId("$_GETCODESET");
-            query.setParameterArr(new Object[]{codeSetNo});
+            query.addQueryParameter(new Object[]{codeSetNo});
             jdbcDao.queryBySelectId(query);
             if (!query.getRecordSet().isEmpty()) {
                 for (Map<String, Object> map : query.getRecordSet()) {

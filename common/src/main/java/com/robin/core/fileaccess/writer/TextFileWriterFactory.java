@@ -54,7 +54,7 @@ public class TextFileWriterFactory {
         return fileWriter;
     }
 
-    private static IResourceWriter getWriterByType(DataCollectionMeta colmeta) throws IOException {
+    public static IResourceWriter getWriterByType(DataCollectionMeta colmeta) throws IOException {
         IResourceWriter fileWriter = null;
         try {
 
@@ -62,6 +62,7 @@ public class TextFileWriterFactory {
             Class<? extends IResourceWriter> writerClass=fileWriterMap.get(fileSuffix);
             if (!ObjectUtils.isEmpty(writerClass)) {
                 fileWriter =  writerClass.getConstructor(DataCollectionMeta.class).newInstance(colmeta);
+                logger.info("using resource writer {}",writerClass.getCanonicalName());
             }
 
         } catch (Exception ex) {
@@ -70,7 +71,8 @@ public class TextFileWriterFactory {
         return fileWriter;
     }
     private static void discoverIterator(Map<String,Class<? extends IResourceWriter>> fileIterMap){
-        ServiceLoader.load(IResourceWriter.class).iterator().forEachRemaining(i->{if(i.getClass().isAssignableFrom(AbstractFileWriter.class))
+        ServiceLoader.load(IResourceWriter.class).iterator().forEachRemaining(i->{
+            if(AbstractFileWriter.class.isAssignableFrom(i.getClass()))
                 fileIterMap.put(i.getIdentifier(),i.getClass());});
     }
 

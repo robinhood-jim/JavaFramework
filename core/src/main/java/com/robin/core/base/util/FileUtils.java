@@ -1,12 +1,21 @@
 package com.robin.core.base.util;
 
+import cn.hutool.core.io.FileUtil;
 import com.google.common.collect.Lists;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.io.IOException;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.PosixFileAttributeView;
+import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.UserPrincipalLookupService;
+import java.util.*;
 
+@Slf4j
 public class FileUtils {
     public static final List<String> avaiableCompressSuffixs = Collections.unmodifiableList(Lists.newArrayList(Const.CompressType.COMPRESS_TYPE_GZ.toString(),
             Const.CompressType.COMPRESS_TYPE_LZO.toString(), Const.CompressType.COMPRESS_TYPE_BZ2.toString(), Const.CompressType.COMPRESS_TYPE_SNAPPY.toString(),
@@ -53,5 +62,46 @@ public class FileUtils {
             type = compressTypeEnum.get(avaiableCompressSuffixs.indexOf(suffix.toLowerCase()));
         }
         return type;
+    }
+    public static boolean mkDirWithGroupAndUser(String path,String group,String user) {
+        FileUtil.mkdir(path);
+        Path filePath= Paths.get(path);
+        Set<PosixFilePermission> userPermission=new HashSet<>();
+        userPermission.add(PosixFilePermission.OWNER_READ);
+        userPermission.add(PosixFilePermission.OWNER_WRITE);
+        Set<PosixFilePermission> groupPermission=new HashSet<>();
+        groupPermission.add(PosixFilePermission.GROUP_READ);
+        groupPermission.add(PosixFilePermission.GROUP_WRITE);
+        try {
+            Files.setPosixFilePermissions(filePath, userPermission);
+            UserPrincipalLookupService lookupService = FileSystems.getDefault().getUserPrincipalLookupService();
+            Files.getFileAttributeView(filePath, PosixFileAttributeView.class).setOwner(lookupService.lookupPrincipalByName(user));
+            Files.getFileAttributeView(filePath, PosixFileAttributeView.class).setGroup(lookupService.lookupPrincipalByGroupName(group));
+            Files.setPosixFilePermissions(filePath, groupPermission);
+        }catch (IOException ex){
+            log.error("{}",ex);
+            return false;
+        }
+        return true;
+    }
+    public static boolean setWithGroupAndUser(File file,String group,String user){
+        Path filePath= Paths.get(file.getPath());
+        Set<PosixFilePermission> userPermission=new HashSet<>();
+        userPermission.add(PosixFilePermission.OWNER_READ);
+        userPermission.add(PosixFilePermission.OWNER_WRITE);
+        Set<PosixFilePermission> groupPermission=new HashSet<>();
+        groupPermission.add(PosixFilePermission.GROUP_READ);
+        groupPermission.add(PosixFilePermission.GROUP_WRITE);
+        try {
+            Files.setPosixFilePermissions(filePath, userPermission);
+            UserPrincipalLookupService lookupService = FileSystems.getDefault().getUserPrincipalLookupService();
+            Files.getFileAttributeView(filePath, PosixFileAttributeView.class).setOwner(lookupService.lookupPrincipalByName(user));
+            Files.getFileAttributeView(filePath, PosixFileAttributeView.class).setGroup(lookupService.lookupPrincipalByGroupName(group));
+            Files.setPosixFilePermissions(filePath, groupPermission);
+        }catch (IOException ex){
+            log.error("{}",ex);
+            return false;
+        }
+        return true;
     }
 }

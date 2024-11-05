@@ -60,12 +60,12 @@ public class Hive2SqlGen extends AbstractSqlGen implements BaseSqlGen{
 
     @Override
     public String getSequenceScript(String sequnceName) throws DAOException {
-        throw new DAOException("sequence not support in MySql");
+        throw new DAOException("sequence not support in Hive2");
     }
 
     @Override
     public boolean supportIncrement() throws DAOException {
-        throw new DAOException("increment not support in MySql");
+        throw new DAOException("increment not support in Hive2");
     }
 
     @Override

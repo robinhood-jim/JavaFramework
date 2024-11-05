@@ -18,6 +18,7 @@ package com.robin.comm.util.xls;
 import com.robin.core.base.dao.SimpleJdbcDao;
 import com.robin.core.base.util.Const;
 import com.robin.core.convert.util.DataTypeEnum;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFDataFormat;
@@ -27,8 +28,6 @@ import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.streaming.SXSSFSheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
@@ -42,12 +41,13 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.regex.Pattern;
 
+@Slf4j
 public class ExcelProcessor {
-    private static final Logger log = LoggerFactory.getLogger(ExcelProcessor.class);
     private static final DateTimeFormatter localformat = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
+
     public static void readExcelFile(String filename, ExcelSheetProp prop) throws FileNotFoundException {
-        try(InputStream myxls = new FileInputStream(filename)) {
+        try (InputStream myxls = new FileInputStream(filename)) {
             readExcelFile(myxls, prop, null, null);
         } catch (Exception e) {
             log.error("{}", e.getMessage());
@@ -58,14 +58,15 @@ public class ExcelProcessor {
 
     public static void readExcelFile(InputStream myxls, ExcelSheetProp prop, IExcelAfterProcessor processor, DateTimeFormatter formatter) throws IOException {
         boolean is2007 = ExcelBaseOper.TYPE_EXCEL2007.equalsIgnoreCase(prop.getFileExt());
-        Workbook wb ;
+        Workbook wb;
         if (is2007) {
             wb = new XSSFWorkbook(myxls);
         } else {
             wb = new HSSFWorkbook(myxls);
         }
-        readExcelFile(wb,prop,processor,formatter);
+        readExcelFile(wb, prop, processor, formatter);
     }
+
     public static void readExcelFile(Workbook wb, ExcelSheetProp prop, IExcelAfterProcessor processor, DateTimeFormatter formatter) {
         Sheet sheet = wb.getSheetAt(prop.getSheetNum());
         List<Map<String, Object>> columnValueList = new ArrayList<>();
@@ -124,7 +125,7 @@ public class ExcelProcessor {
             List<DataTypeEnum> columnList = new ArrayList<>();
             List<Integer> collist = new ArrayList<>();
             int[] excelPos = getExcelPosition(startPos, endPos);
-            log.debug("{} {}",excelPos[2], excelPos[3]);
+            log.debug("{} {}", excelPos[2], excelPos[3]);
             int startCol = excelPos[0];
             int endCol = excelPos[1];
             int startRow = excelPos[2];
@@ -176,7 +177,7 @@ public class ExcelProcessor {
                 }
             }
         } catch (Exception e) {
-            log.error("encounter error!pos={} column size={}" ,pos, columnValueList.size());
+            log.error("encounter error!pos={} column size={}", pos, columnValueList.size());
             log.error("{}", e.getMessage());
         }
 
@@ -185,7 +186,7 @@ public class ExcelProcessor {
     }
 
     public static Object readValue(Cell cell, String type, DateTimeFormatter format, FormulaEvaluator evaluator) {
-        Object strCell ;
+        Object strCell;
         if (cell != null) {
             switch (cell.getCellType()) {
                 case NUMERIC:
@@ -276,8 +277,8 @@ public class ExcelProcessor {
                     strCell = getDefaultValue(type);
                     break;
             }
-        }else{
-            strCell= getDefaultValue(type);
+        } else {
+            strCell = getDefaultValue(type);
         }
         return strCell;
     }
@@ -313,13 +314,14 @@ public class ExcelProcessor {
     public static void readExcel(InputStream stream, String filePrefix, int sheetIndex, int startRow, IExcelReadProcessor processor) throws IOException {
         boolean is2007 = ExcelBaseOper.TYPE_EXCEL2007.equalsIgnoreCase(filePrefix);
         try (Workbook wb = is2007 ? new XSSFWorkbook(stream) : new HSSFWorkbook(stream)) {
-            readExcel(wb,filePrefix,sheetIndex,startRow,processor);
+            readExcel(wb, filePrefix, sheetIndex, startRow, processor);
         } catch (Exception ex) {
             throw ex;
         }
     }
-    public static void readExcel(Workbook wb,String fileSuffix, int sheetIndex, int startRow, IExcelReadProcessor processor) {
-        try  {
+
+    public static void readExcel(Workbook wb, String fileSuffix, int sheetIndex, int startRow, IExcelReadProcessor processor) {
+        try {
             Sheet sheet = wb.getSheetAt(sheetIndex);
             FormulaEvaluator evaluator = wb.getCreationHelper().createFormulaEvaluator();
             int pos = 0;
@@ -352,33 +354,26 @@ public class ExcelProcessor {
      */
 
     public static Workbook generateExcelFile(ExcelSheetProp prop) {
-        boolean is2007 = ExcelBaseOper.TYPE_EXCEL2007.equalsIgnoreCase(prop.getFileExt());
-        Workbook wb;
-        if (!is2007) {
-            wb = new HSSFWorkbook();
-        } else {
-            if (!prop.isStreamInsert()) {
-                wb = new XSSFWorkbook();
-            } else {
-                wb = new SXSSFWorkbook(prop.getStreamRows());
-            }
-        }
+        Workbook wb = ExcelBaseOper.createWorkBook(prop);
         String sheetname = prop.getSheetName();
         Sheet sheet = wb.createSheet(sheetname);
-        generateHeader(sheet, wb, prop);
-
+        if(ObjectUtils.isEmpty(prop.getTemplateFile())) {
+            generateHeader(sheet, wb, prop);
+        }
         fillColumns(wb, sheet, prop);
         autoSizeSheet(prop, sheet, prop.getColumnPropList().size());
         return wb;
     }
 
-    public static void fillSheet(Sheet sheet, ExcelSheetProp prop,TableConfigProp configProp) throws IOException {
+
+
+    public static void fillSheet(Sheet sheet, ExcelSheetProp prop, TableConfigProp configProp) throws IOException {
         if (prop.isFillHeader()) {
-            if(configProp==null) {
+            if (configProp == null) {
                 generateHeader(sheet, sheet.getWorkbook(), prop);
                 fillColumns(sheet.getWorkbook(), sheet, prop);
-            }else{
-                generateHeader(sheet,sheet.getWorkbook(),prop,configProp,sheet.getWorkbook().getCreationHelper());
+            } else {
+                generateHeader(sheet, sheet.getWorkbook(), prop, configProp, sheet.getWorkbook().getCreationHelper());
                 fillColumns(sheet.getWorkbook(), sheet, prop, configProp, sheet.getWorkbook().getCreationHelper());
             }
         }
@@ -416,10 +411,12 @@ public class ExcelProcessor {
         }
         CreationHelper helper = wb.getCreationHelper();
         int count = 0;
-        if(!CollectionUtils.isEmpty(header.getHeaderColumnList()) ||!CollectionUtils.isEmpty(header.getHeaderList())){
+        if (!CollectionUtils.isEmpty(header.getHeaderColumnList()) || !CollectionUtils.isEmpty(header.getHeaderList())) {
             count = generateHeader(sheet, wb, prop, header, helper);
-        }else if (!prop.getColumnPropList().isEmpty()) {
-            generateHeader(sheet, wb, prop, header);
+        } else if (!prop.getColumnPropList().isEmpty()) {
+            if(ObjectUtils.isEmpty(prop.getTemplateFile())) {
+                generateHeader(sheet, wb, prop, header);
+            }
             count = prop.getColumnPropList().size();
         }
         fillColumns(wb, sheet, prop, header, helper);
@@ -437,7 +434,7 @@ public class ExcelProcessor {
         }
     }
 
-    public static Workbook generateExcelFile(ExcelSheetProp prop, TableConfigProp header, Connection conn, String querySql, Object[] queryParam, ExcelRsExtractor extractor){
+    public static Workbook generateExcelFile(ExcelSheetProp prop, TableConfigProp header, Connection conn, String querySql, Object[] queryParam, ExcelRsExtractor extractor) {
         Object[] objects = generateHeaderWithProp(prop, header);
         Workbook wb = (Workbook) objects[0];
         Sheet sheet = (Sheet) objects[1];
@@ -468,7 +465,7 @@ public class ExcelProcessor {
         try {
             while (iterator.hasNext()) {
                 Map<String, Object> map = iterator.next();
-                processSingleLine(map, wb, sheet, row , prop, header, helper, cellMap);
+                processSingleLine(map, wb, sheet, row, prop, header, helper, cellMap);
                 if (prop.isStreamInsert() && (row + 1) % prop.getStreamRows() == 0) {
                     ((SXSSFSheet) sheet).flushRows(prop.getStreamRows());
                 }
@@ -492,7 +489,9 @@ public class ExcelProcessor {
             generateHeader(sheet, wb, prop, header);
             count = prop.getColumnList().size();
         } else {
-            generateHeader(sheet, wb, prop, header);
+            if(ObjectUtils.isEmpty(prop.getTemplateFile())) {
+                generateHeader(sheet, wb, prop, header);
+            }
         }
         return new Object[]{wb, sheet, helper, count};
     }
@@ -595,7 +594,7 @@ public class ExcelProcessor {
                     createHeaderCellRegion(targetsheet, wb, header, header.getHeaderColumnList().get(i).get(j), headerRow, helper);
                 }
             }
-        }else if (!CollectionUtils.isEmpty(header.getHeaderList())) {
+        } else if (!CollectionUtils.isEmpty(header.getHeaderList())) {
             for (int i = 0; i < header.getHeaderList().size(); i++) {
                 TableMergeRegion region = header.getHeaderList().get(i);
                 String name = region.getName();
@@ -633,7 +632,7 @@ public class ExcelProcessor {
                 }
             } else {
                 CellStyle style = ExcelBaseOper.getHeaderStyle(wb, 3, HorizontalAlignment.CENTER, region, header);
-                ExcelBaseOper.merged(targetsheet,Const.META_TYPE_STRING, baseRow, startcol, baseRow + region.getColheigth() - 1, startcol + region.getCollength() - 1, style, value, helper);
+                ExcelBaseOper.merged(targetsheet, Const.META_TYPE_STRING, baseRow, startcol, baseRow + region.getColheigth() - 1, startcol + region.getCollength() - 1, style, value, helper);
             }
         }
         int tmpcol = startcol;
@@ -648,7 +647,7 @@ public class ExcelProcessor {
 
 
     private static void createHeaderCellRegion(Sheet targetsheet, Workbook wb, TableConfigProp prop, TableHeaderColumn column, Row[] headerRows, CreationHelper helper) {
-        CellStyle style ;
+        CellStyle style;
         Row baseRow = headerRows[column.getStartrow()];
         if (column.getRowspan() > 1 || column.getColspan() > 1) {
             style = ExcelBaseOper.getHeaderStyle(wb, 3, HorizontalAlignment.CENTER, prop);
@@ -691,7 +690,7 @@ public class ExcelProcessor {
     }
 
     public static void processSingleLine(Map<String, ?> map, Workbook wb, Sheet targetsheet, int i, ExcelSheetProp prop, TableConfigProp header, CreationHelper helper, Map<String, CellStyle> cellMap) {
-        int startRow = header!=null && 0!=header.getContainrow()? header.getContainrow():prop.getStartRow()-1 ;
+        int startRow = header != null && 0 != header.getContainrow() ? header.getContainrow() : prop.getStartRow() - 1;
         int startCol = prop.getStartCol() - 1;
         int fieldCount = prop.getColumnPropList().size();
         List<Map<String, Object>> list = prop.getColumnList();
@@ -708,18 +707,18 @@ public class ExcelProcessor {
             String columnCode = excelprop.getColumnCode();
             String columnType = excelprop.getColumnType();
             boolean needMerge = excelprop.isNeedMerge();
-            Object valObj=map.get(columnCode);
-            String valueobj ;
+            Object valObj = map.get(columnCode);
+            String valueobj;
             if (!StringUtils.isEmpty(map.get(columnCode.toUpperCase()))) {
                 valObj = map.get(columnCode.toUpperCase());
             }
             if (valObj == null && !StringUtils.isEmpty(map.get(columnCode.toLowerCase()))) {
                 valObj = map.get(columnCode.toLowerCase());
             }
-            if(!ObjectUtils.isEmpty(valObj)){
-                valueobj=valObj.toString();
-            }else{
-                valueobj="";
+            if (!ObjectUtils.isEmpty(valObj)) {
+                valueobj = valObj.toString();
+            } else {
+                valueobj = "";
             }
             CellStyle stylesingle = ExcelCellStyleUtil.getCellStyle(wb, 1, 1, columnType, header, cellMap);
             CellStyle stylemutil = ExcelCellStyleUtil.getCellStyle(wb, 1, 2, columnType, header, cellMap);
@@ -731,7 +730,7 @@ public class ExcelProcessor {
                     }
                 } else if (valueArr[j] != null && !"".equalsIgnoreCase(valueArr[j].trim())) {
                     if (fromPos[j] != -1) {
-                        ExcelBaseOper.merged(targetsheet,  columnType, fromPos[j] + startRow, startCol + j, i + startRow, startCol + j, stylemutil, valueobj, helper);
+                        ExcelBaseOper.merged(targetsheet, columnType, fromPos[j] + startRow, startCol + j, i + startRow, startCol + j, stylemutil, valueobj, helper);
                         fromPos[j] = -1;
                         valueArr[j] = "";
                         shallMergin[j] = true;
@@ -742,6 +741,9 @@ public class ExcelProcessor {
                     ExcelBaseOper.createCell(row, j, valueobj, columnType, stylesingle, helper);
                 }
             } else {
+                if(Const.META_TYPE_FORMULA.equals(excelprop.getColumnType())){
+                    valueobj=ExcelBaseOper.returnFormulaWithPos(excelprop.getFormula(),i+prop.getStartRow()+1);
+                }
                 ExcelBaseOper.createCell(row, j, valueobj, columnType, stylesingle, helper);
             }
 
@@ -759,7 +761,7 @@ public class ExcelProcessor {
                         boolean subMerge = prop.getColumnPropList().get(p).isNeedMerge();
                         if (subMerge && valueArr[p] != null && !"".equals(valueArr[p].trim()) && fromPos[p] != -1) {
                             if (fromPos[p] != i) {
-                                ExcelBaseOper.merged(targetsheet,  columnType, fromPos[p] + startRow, startCol + k, i + startRow, startCol + k, stylemutil, valueArr[p], helper);
+                                ExcelBaseOper.merged(targetsheet, columnType, fromPos[p] + startRow, startCol + k, i + startRow, startCol + k, stylemutil, valueArr[p], helper);
                             } else {
                                 ExcelBaseOper.createCell(ExcelBaseOper.getRow(targetsheet, fromPos[p] + startRow), p, valueArr[p], columnType, stylesingle, helper);
                             }
@@ -779,12 +781,12 @@ public class ExcelProcessor {
                 if (needMerge) {
                     if (fromPos[d] != -1 && !"".equals(valueArr[d])) {
                         CellStyle stylemutil = ExcelCellStyleUtil.getCellStyle(wb, 1, 2, prop.getColumnPropList().get(d).getColumnType(), header, cellMap);
-                        ExcelBaseOper.merged(targetsheet,  prop.getColumnPropList().get(d).getColumnType(), fromPos[d] + startRow, startCol + i, i + startRow, startCol + i, stylemutil, valueArr[d], helper);
+                        ExcelBaseOper.merged(targetsheet, prop.getColumnPropList().get(d).getColumnType(), fromPos[d] + startRow, startCol + i, i + startRow, startCol + i, stylemutil, valueArr[d], helper);
                     } else {
                         String columnCode = prop.getColumnPropList().get(d).getColumnCode();
                         String columnType = prop.getColumnPropList().get(d).getColumnType();
                         CellStyle stylesingle = ExcelCellStyleUtil.getCellStyle(wb, 1, 1, columnType, header, cellMap);
-                        Object valObj=map.get(columnCode);
+                        Object valObj = map.get(columnCode);
                         String valueobj;
 
                         if (valObj == null) {
@@ -793,10 +795,10 @@ public class ExcelProcessor {
                         if (valObj == null) {
                             valObj = map.get(columnCode.toLowerCase());
                         }
-                        if(valObj==null){
-                            valueobj="";
-                        }else{
-                            valueobj=valObj.toString();
+                        if (valObj == null) {
+                            valueobj = "";
+                        } else {
+                            valueobj = valObj.toString();
                         }
                         ExcelBaseOper.createCell(ExcelBaseOper.getRow(targetsheet, startRow + i), d, valueobj, columnType, stylesingle, helper);
                     }
@@ -838,7 +840,8 @@ public class ExcelProcessor {
                 Row row1 = targetsheet.createRow(i - 1);
 
                 for (int j = 0; j < prop.getColumnPropList().size(); j++) {
-                    String columname = prop.getColumnPropList().get(j).getColumnCode();
+                    ExcelColumnProp columnProp=prop.getColumnPropList().get(j);
+                    String columname = columnProp.getColumnCode();
 
                     Object valueobj = map.get(columname);
                     if (valueobj == null) {
@@ -851,10 +854,10 @@ public class ExcelProcessor {
                     if (valueobj != null) {
                         value = valueobj.toString();
                     }
-                    String colType = prop.getColumnPropList().get(j).getColumnType();
+                    String colType = columnProp.getColumnType();
 
                     if (columname != null && !"".equals(columname)) {
-                        CellStyle cellStyle =  ExcelCellStyleUtil.getCellStyle(wb, 1, 1, colType, null, cellMap);
+                        CellStyle cellStyle = ExcelCellStyleUtil.getCellStyle(wb, 1, 1, colType, null, cellMap);
                         createCell(colType, cellStyle, row1, j, value);
                     }
                 }
@@ -905,7 +908,8 @@ public class ExcelProcessor {
         }
         cell.setCellValue(value);
     }
-    private static void createNullCell(CellStyle cellStyle,Row row,int column){
+
+    private static void createNullCell(CellStyle cellStyle, Row row, int column) {
         Cell cell = row.createCell(column);
         cell.setCellStyle(cellStyle);
     }
@@ -913,13 +917,13 @@ public class ExcelProcessor {
     private static void createCell(CellStyle cellStyle, Row row, int column, Object value) {
         Cell cell = row.createCell(column);
         cell.setCellStyle(cellStyle);
-        Assert.notNull(value,"");
-        if(Double.class.isAssignableFrom(value.getClass())) {
-            cell.setCellValue((Double)value);
-        }else if(Long.class.isAssignableFrom(value.getClass())){
-            cell.setCellValue((Long)value);
-        }else if(Integer.class.isAssignableFrom(value.getClass())){
-            cell.setCellValue((Integer)value);
+        Assert.notNull(value, "");
+        if (Double.class.isAssignableFrom(value.getClass())) {
+            cell.setCellValue((Double) value);
+        } else if (Long.class.isAssignableFrom(value.getClass())) {
+            cell.setCellValue((Long) value);
+        } else if (Integer.class.isAssignableFrom(value.getClass())) {
+            cell.setCellValue((Integer) value);
         }
 
     }
@@ -967,8 +971,9 @@ public class ExcelProcessor {
     }
 
     private static int getDigintalByChar(char str) {
-        int startChar =  'A';
+        int startChar = 'A';
         return str - startChar + 1;
     }
+
 
 }

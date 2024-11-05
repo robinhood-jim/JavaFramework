@@ -16,6 +16,7 @@
 package com.robin.comm.util.xls;
 
 import com.robin.core.base.util.Const;
+import lombok.extern.slf4j.Slf4j;
 import net.sf.json.JSONArray;
 import net.sf.json.JsonConfig;
 import org.apache.commons.lang3.StringUtils;
@@ -31,62 +32,90 @@ import org.apache.poi.xssf.usermodel.XSSFColor;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
 import java.awt.Color;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+@Slf4j
 public class ExcelBaseOper {
 
-    private ExcelBaseOper(){
+    private ExcelBaseOper() {
 
     }
 
     public static final String TYPE_EXCEL2003 = "xls";
     public static final String TYPE_EXCEL2007 = "xlsx";
-    public static final String defaultFontName = Locale.CHINA.equals(Locale.getDefault()) || Locale.SIMPLIFIED_CHINESE.equals(Locale.getDefault())?"宋体":java.awt.Font.SANS_SERIF;
+    public static final String defaultFontName = Locale.CHINA.equals(Locale.getDefault()) || Locale.SIMPLIFIED_CHINESE.equals(Locale.getDefault()) ? "宋体" : java.awt.Font.SANS_SERIF;
     private static final Logger logger = LoggerFactory.getLogger(ExcelBaseOper.class);
+    private static final Pattern paramPattern=Pattern.compile("\\w+(\\{P([\\+|-]?[\\d+])?\\})");
 
 
-    public static Sheet createSheet(Workbook wb, String sheetName, ExcelSheetProp prop) {
-        return wb.createSheet(sheetName);
-    }
-    public static Workbook createWorkBook(ExcelSheetProp prop){
-        return createWorkBook(prop.getFileExt(),prop.isStreamInsert(),prop.getStreamRows());
-    }
+    public final static Workbook createWorkBook(ExcelSheetProp prop) {
+        boolean is2007 = ExcelBaseOper.TYPE_EXCEL2007.equalsIgnoreCase(prop.getFileExt());
+        Workbook wb;
 
-    public static Workbook createWorkBook(String fileExt,boolean isStreamInsert,int streamRows) {
-        Workbook wb = null;
-
-        if (TYPE_EXCEL2003.equalsIgnoreCase(fileExt)) {
-            wb = new HSSFWorkbook();
-        } else if (TYPE_EXCEL2007.equalsIgnoreCase(fileExt)) {
-            if (!isStreamInsert) {
-                wb = new XSSFWorkbook();
-            } else {
-                wb = new SXSSFWorkbook(streamRows);
-                ((SXSSFWorkbook) wb).setCompressTempFiles(true);
-            }
+        if (!is2007) {
+            wb = Optional.ofNullable(prop.getTemplateFile()).map(f -> {
+                        try {
+                            return new HSSFWorkbook(getTemplateInputStream(prop));
+                        } catch (IOException ex) {
+                            return null;
+                        }
+                    })
+                    .orElseGet(() ->
+                            new HSSFWorkbook());
+        } else {
+            wb = Optional.of(prop.isStreamInsert()).map(f -> {
+                Workbook wb1 = Optional.ofNullable(prop.getTemplateFile()).map(p1 -> {
+                    try {
+                        SXSSFWorkbook wb3 = new SXSSFWorkbook(new XSSFWorkbook(getTemplateInputStream(prop)), prop.getStreamRows());
+                        wb3.setCompressTempFiles(true);
+                        return wb3;
+                    } catch (IOException ex) {
+                        log.error("{}", ex);
+                        return null;
+                    }
+                }).orElseGet(() -> {
+                    SXSSFWorkbook tmpwb = new SXSSFWorkbook(prop.getStreamRows());
+                    tmpwb.setCompressTempFiles(true);
+                    return tmpwb;
+                });
+                return wb1;
+            }).orElseGet(() -> {
+                Workbook wb2 = Optional.ofNullable(prop.getTemplateFile()).map(p -> {
+                    try {
+                        return new XSSFWorkbook(getTemplateInputStream(prop));
+                    } catch (IOException ex) {
+                        log.error("{}", ex);
+                        return null;
+                    }
+                }).orElseGet(() -> new XSSFWorkbook());
+                return wb2;
+            });
         }
         return wb;
     }
 
-    public static Workbook getWorkBook(ExcelSheetProp prop, InputStream stream) throws IOException {
-        Workbook wb = null;
-        String fileext = prop.getFileExt();
-        if (TYPE_EXCEL2003.equalsIgnoreCase(fileext)) {
-            wb = new HSSFWorkbook(stream);
-        } else if (TYPE_EXCEL2007.equalsIgnoreCase(fileext)) {
-            wb = new XSSFWorkbook(stream);
+    private static InputStream getTemplateInputStream(ExcelSheetProp prop) throws IOException {
+        Assert.notNull(prop.getTemplateFile(), "");
+        if (prop.getTemplateFile().startsWith("classpath:")) {
+            return ExcelProcessor.class.getClassLoader().getResourceAsStream(prop.getTemplateFile().substring(10, prop.getTemplateFile().length()));
+        } else {
+            return new FileInputStream(prop.getTemplateFile());
         }
-        return wb;
     }
-    public static Workbook getWorkBook(String filePrefix, InputStream stream) throws IOException {
+
+    public static Workbook createWorkBook(String filePrefix, InputStream stream) throws IOException {
         Workbook wb = null;
         if (TYPE_EXCEL2003.equalsIgnoreCase(filePrefix)) {
             wb = new HSSFWorkbook(stream);
@@ -119,7 +148,7 @@ public class ExcelBaseOper {
         String color = region.getForegroundcolor();
         if (color != null && !"".equals(color.trim())) {
             int[] rgb = hex2rgb(color);
-            cs.setFillForegroundColor(new XSSFColor(new Color(rgb[0], rgb[1], rgb[2]),new DefaultIndexedColorMap()).getIndexed());
+            cs.setFillForegroundColor(new XSSFColor(new Color(rgb[0], rgb[1], rgb[2]), new DefaultIndexedColorMap()).getIndexed());
         } else {
             cs.setFillForegroundColor(IndexedColors.WHITE.getIndex());
         }
@@ -171,12 +200,12 @@ public class ExcelBaseOper {
         return cs;
     }
 
-    public static Cell merged(Sheet sheet, String colType, int startRow, int startCell, int endRow, int endCell, CellStyle cs, String value, CreationHelper helper) {
-        Cell cell ;
-        CellRangeAddress cellRangeAddress = new CellRangeAddress(startRow, endRow,  startCell, endCell);
+    public static Cell merged(Sheet sheet,String colType, int startRow, int startCell, int endRow, int endCell, CellStyle cs, String value, CreationHelper helper) {
+        Cell cell;
+        CellRangeAddress cellRangeAddress = new CellRangeAddress(startRow, endRow, startCell, endCell);
         sheet.addMergedRegion(cellRangeAddress);
         setRegionStyle(sheet, cellRangeAddress, cs);
-        Row row1=getRow(sheet,startRow);
+        Row row1 = getRow(sheet, startRow);
         cell = createCell(row1, startCell, value, colType, cs, helper);
         return cell;
     }
@@ -190,7 +219,6 @@ public class ExcelBaseOper {
             }
         }
     }
-
 
 
     private static void calculateStartColumnofRow(int row, int pos, ExcelHeaderProp header, int[][] startColArr) {
@@ -241,7 +269,7 @@ public class ExcelBaseOper {
                     }
 
                     if (nums > totallength) {
-                        if (isColumnTheFristChild(collength, listabove, i, row, count)) {
+                        if (isColumnTheFirstChild(collength, listabove, i, row, count)) {
                             startColArr[row][pos] = startColArr[row - 1][i];
 
                         } else {
@@ -268,7 +296,7 @@ public class ExcelBaseOper {
 
     }
 
-    private static boolean isColumnTheFristChild(int[] collengtharr, List<ExcelHeaderColumn> listabove, int abovecol, int aboverow, int rowcount) {
+    private static boolean isColumnTheFirstChild(int[] collengtharr, List<ExcelHeaderColumn> listabove, int abovecol, int aboverow, int rowcount) {
         int nums = 0;
         boolean isfrist = false;
         int beforemaxnums = collengtharr[collengtharr.length - 1];
@@ -293,9 +321,9 @@ public class ExcelBaseOper {
     }
 
     public static Row getRow(Sheet sheet, int i) {
-        Row row=sheet.getRow(i);
-        if(row==null){
-            row=sheet.createRow(i);
+        Row row = sheet.getRow(i);
+        if (row == null) {
+            row = sheet.createRow(i);
         }
         return row;
     }
@@ -304,36 +332,31 @@ public class ExcelBaseOper {
         return (short) align;
     }
 
-    public static Cell createCell(Row row1, int j, String value, String colType, CellStyle cellStyle, CreationHelper helper) {
-        Cell cell ;
+    public static Cell createCell(Row row1,int j, String value, String colType, CellStyle cellStyle, CreationHelper helper) {
+        Cell cell;
         if (colType.equals(Const.META_TYPE_STRING)) {
             cell = createCell(row1, j, cellStyle, helper, value);
         } else if (colType.equals(Const.META_TYPE_NUMERIC) || colType.equals(Const.META_TYPE_DOUBLE)) {
             if (!StringUtils.isEmpty(value)) {
                 cell = createCell(row1, j, cellStyle, helper, Double.parseDouble(value));
-            }else{
-                cell=createCell(row1,j,cellStyle,helper,"");
+            } else {
+                cell = createCell(row1, j, cellStyle, helper, "");
             }
         } else if (colType.equals(Const.META_TYPE_INTEGER)) {
             if (!StringUtils.isEmpty(value)) {
                 cell = createCell(row1, j, cellStyle, helper, Integer.parseInt(value));
-            }else {
-                cell=createCell(row1,j,cellStyle,helper,"");
+            } else {
+                cell = createCell(row1, j, cellStyle, helper, "");
             }
         } else if (colType.equals(Const.META_TYPE_DATE) || colType.equals(Const.META_TYPE_TIMESTAMP)) {
             if (!StringUtils.isEmpty(value)) {
                 cell = createCellDate(row1, j, cellStyle, helper, value);
-            }else{
-                cell=createCell(row1,j,cellStyle,helper,"");
+            } else {
+                cell = createCell(row1, j, cellStyle, helper, "");
             }
-        }else if(colType.equalsIgnoreCase(Const.META_TYPE_FORMULA)){
-            if(!StringUtils.isEmpty(value)){
-                cell=createFormulaCell(row1,j,cellStyle,helper,value);
-            }else{
-                cell=createCell(row1,j,cellStyle,helper,"");
-            }
-        }
-        else {
+        } else if (colType.equalsIgnoreCase(Const.META_TYPE_FORMULA)) {
+            cell = createFormulaCell(row1, j, cellStyle, value);
+        } else {
             cell = createCell(row1, j, cellStyle, helper, value);
         }
         return cell;
@@ -356,7 +379,8 @@ public class ExcelBaseOper {
         cell.setCellStyle(cellStyle);
         return cell;
     }
-    private static Cell createFormulaCell(Row row,int column,CellStyle cellStyle,CreationHelper helper,String formula){
+
+    private static Cell createFormulaCell(Row row, int column, CellStyle cellStyle, String formula) {
         Cell cell = row.createCell(column);
         cell.setCellFormula(formula);
         cell.setCellStyle(cellStyle);
@@ -387,16 +411,17 @@ public class ExcelBaseOper {
         JSONArray array = JSONArray.fromObject(jsonStr);
         JsonConfig config = new JsonConfig();
         config.setRootClass(ExcelMergeRegion.class);
-        Map<String,Class> map = new HashMap<>();
+        Map<String, Class> map = new HashMap<>();
         map.put("subRegions", ExcelMergeRegion.class);
         config.setClassMap(map);
         Collection<ExcelMergeRegion> col = JSONArray.toCollection(array, config);
         prop.setHeaderList((List) col);
         return prop;
     }
-    public static List<Triple<Integer,Integer,List<Object>>> getMergedCells(Sheet sheet, int startRow, int mergeColumn,int[] additionSingleColumns) {
+
+    public static List<Triple<Integer, Integer, List<Object>>> getMergedCells(Sheet sheet, int startRow, int mergeColumn, int[] additionSingleColumns) {
         int sheetMergeCount = sheet.getNumMergedRegions();
-        List<Triple<Integer,Integer,List<Object>>> retList=new ArrayList<>();
+        List<Triple<Integer, Integer, List<Object>>> retList = new ArrayList<>();
 
         for (int i = 0; i < sheetMergeCount; i++) {
             CellRangeAddress ca = sheet.getMergedRegion(i);
@@ -404,55 +429,57 @@ public class ExcelBaseOper {
             int lastColumn = ca.getLastColumn();
             int firstRow = ca.getFirstRow();
             int lastRow = ca.getLastRow();
-            if(firstRow>=startRow){
-                if(firstColumn<=mergeColumn && lastColumn>=mergeColumn){
-                    Row row=sheet.getRow(firstRow);
-                    Object value=getCellValue(row.getCell(firstColumn));
-                    List<Object> rList1=new ArrayList<>(Arrays.asList(value));
-                    if(additionSingleColumns!=null){
-                        for(Integer col:additionSingleColumns){
+            if (firstRow >= startRow) {
+                if (firstColumn <= mergeColumn && lastColumn >= mergeColumn) {
+                    Row row = sheet.getRow(firstRow);
+                    Object value = getCellValue(row.getCell(firstColumn));
+                    List<Object> rList1 = new ArrayList<>(Arrays.asList(value));
+                    if (additionSingleColumns != null) {
+                        for (Integer col : additionSingleColumns) {
                             rList1.add(getCellValue(row.getCell(col)));
                         }
                     }
-                    retList.add(Triple.of(firstRow,lastRow,rList1));
+                    retList.add(Triple.of(firstRow, lastRow, rList1));
                 }
             }
         }
-        if(!CollectionUtils.isEmpty(retList)){
-           return retList.stream().sorted(Comparator.comparing(Triple::getLeft)).collect(Collectors.toList());
+        if (!CollectionUtils.isEmpty(retList)) {
+            return retList.stream().sorted(Comparator.comparing(Triple::getLeft)).collect(Collectors.toList());
         }
         return retList;
     }
-    public static Object getCellValue(Cell cell){
-        if(cell==null){
+
+    public static Object getCellValue(Cell cell) {
+        if (cell == null) {
             return null;
         }
         Object cellValue;
         FormulaEvaluator evaluator = cell.getSheet().getWorkbook().getCreationHelper().createFormulaEvaluator();
-        switch (cell.getCellType()){
+        switch (cell.getCellType()) {
             case STRING:
-                cellValue=cell.getStringCellValue();
+                cellValue = cell.getStringCellValue();
                 break;
             case BOOLEAN:
-                cellValue=String.valueOf(cell.getBooleanCellValue());
+                cellValue = String.valueOf(cell.getBooleanCellValue());
                 break;
             case FORMULA:
-                cellValue=evaluator.evaluate(cell).getStringValue();
+                cellValue = evaluator.evaluate(cell).getStringValue();
                 break;
             case NUMERIC:
-                if (DateUtil.isCellDateFormatted(cell)){
+                if (DateUtil.isCellDateFormatted(cell)) {
                     double d = cell.getNumericCellValue();
                     Date date = DateUtil.getJavaDate(d);
                     cellValue = new Timestamp(date.getTime());
-                }else{
+                } else {
                     cellValue = cell.getNumericCellValue();
                 }
                 break;
             default:
-                cellValue=cell.getStringCellValue();
+                cellValue = cell.getStringCellValue();
         }
         return cellValue;
     }
+
     private static int[] hex2rgb(String colorstr) {
         int[] colorset = new int[3];
         String sr, sg, sb, sHex;
@@ -478,6 +505,23 @@ public class ExcelBaseOper {
             logger.error("Encounter Error ", e);
         }
         return colorset;
+    }
+    public final static String returnFormulaWithPos(String formula,int linePos){
+        Matcher matcher=paramPattern.matcher(formula);
+        StringBuffer buffer=new StringBuffer();
+        while(matcher.find()){
+            String groupStr=matcher.group();
+            int pos=groupStr.indexOf("{P");
+            String columnName=groupStr.substring(0,pos);
+            Integer stepNum=linePos;
+            if(pos+3<groupStr.length()) {
+                String addPlustag = groupStr.substring(pos+2 , pos+3);
+                stepNum = "+".equals(addPlustag) ? stepNum + Integer.valueOf(groupStr.substring(pos + 3, groupStr.length()-1)) : stepNum - Integer.valueOf(groupStr.substring(pos + 3, groupStr.length()-1));
+            }
+            matcher.appendReplacement(buffer,columnName+stepNum);
+        }
+        matcher.appendTail(buffer);
+        return buffer.toString();
     }
 
 }

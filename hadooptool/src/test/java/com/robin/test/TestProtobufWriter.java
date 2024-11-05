@@ -6,7 +6,6 @@ import com.robin.core.base.datameta.BaseDataBaseMeta;
 import com.robin.core.base.datameta.DataBaseMetaFactory;
 import com.robin.core.base.datameta.DataBaseParam;
 import com.robin.core.base.util.Const;
-import com.robin.core.base.util.ResourceConst;
 import com.robin.core.fileaccess.iterator.IResourceIterator;
 import com.robin.core.fileaccess.iterator.TextFileIteratorFactory;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
@@ -43,9 +42,9 @@ public class TestProtobufWriter extends TestCase {
             colmeta.addColumnMeta("item_value",Const.META_TYPE_STRING,null);
             colmeta.setEncode("UTF-8");
             colmeta.setFileFormat(Const.FILESUFFIX_PROTOBUF);
-            colmeta.setResType(ResourceConst.IngestType.TYPE_LOCAL.getValue());
+
             colmeta.setPath("d:/tmp/luoming/1.proto.gz");
-            AbstractFileSystemAccessor util= FileSystemAccessorFactory.getResourceAccessorByType(colmeta.getResType());
+            AbstractFileSystemAccessor util= FileSystemAccessorFactory.getResourceAccessorByType(Const.FILESYSTEM.LOCAL.getValue());
 
             final AbstractFileWriter jwriter= (AbstractFileWriter) TextFileWriterFactory.getOutputStreamByType(colmeta,util.getOutResourceByStream(colmeta,colmeta.getPath()));
             jwriter.beginWrite();

@@ -45,6 +45,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 
+@SuppressWarnings("unused")
 public class SimpleJdbcDao {
     private final String driverName;
     private final String jdbcUrl;
@@ -428,7 +429,7 @@ public class SimpleJdbcDao {
                 if (params[i] != null) {
                     stmt.setObject(i + 1, params[i]);
                 } else {
-                    stmt.setNull(i + 1, java.sql.Types.VARCHAR);
+                    stmt.setNull(i + 1, Types.VARCHAR);
                 }
             }
             ResultSet rs = stmt.executeQuery();
@@ -819,22 +820,25 @@ public class SimpleJdbcDao {
         if (value == null) {
             value = resultMap.get(poolobj.get("name").toLowerCase());
         }
-        if (poolobj.get(DATATYPE).equals(Const.META_TYPE_STRING)) {
-            objArr[row][pos]= Optional.ofNullable(value);
-        } else if (poolobj.get(DATATYPE).equals(Const.META_TYPE_NUMERIC)) {
-            objArr[row][pos] =Optional.ofNullable(value).map(Double::valueOf);
-        } else if (poolobj.get(DATATYPE).equals(Const.META_TYPE_INTEGER)) {
-            objArr[row][pos] =Optional.ofNullable(value).map(Integer::valueOf);
-        } else if (poolobj.get(DATATYPE).equals(Const.META_TYPE_DOUBLE)) {
-            objArr[row][pos] =Optional.ofNullable(value).map(Double::valueOf);
-        } else if (poolobj.get(DATATYPE).equals(Const.META_TYPE_DATE)) {
-            Optional<String> optional= Optional.ofNullable(value);
-            objArr[row][pos] =optional.isPresent()?new Date(DateUtils.parseDate(optional.get(), dateFormat, dayFormat).getTime()):null;
-        } else if (poolobj.get(DATATYPE).equals(Const.META_TYPE_TIMESTAMP)) {
-            Optional<String> optional= Optional.ofNullable(value);
-            objArr[row][pos] =optional.isPresent()?new Timestamp(DateUtils.parseDate(optional.get(), dayFormat, dayFormat).getTime()):null;
-        } else {
-            objArr[row][pos] =Optional.ofNullable(value);
+        String dataType=poolobj.get(DATATYPE);
+        switch (dataType){
+            case Const.META_TYPE_NUMERIC:
+            case Const.META_TYPE_DOUBLE:
+                objArr[row][pos] =Optional.ofNullable(value).map(Double::valueOf);
+                break;
+            case Const.META_TYPE_INTEGER:
+                objArr[row][pos] =Optional.ofNullable(value).map(Integer::valueOf);
+                break;
+            case Const.META_TYPE_DATE:
+                Optional<String> optional= Optional.ofNullable(value);
+                objArr[row][pos] =optional.isPresent()?new Date(DateUtils.parseDate(optional.get(), dateFormat, dayFormat).getTime()):null;
+                break;
+            case Const.META_TYPE_TIMESTAMP:
+                Optional<String> optional1= Optional.ofNullable(value);
+                objArr[row][pos] =optional1.isPresent()?new Timestamp(DateUtils.parseDate(optional1.get(), dayFormat, dayFormat).getTime()):null;
+                break;
+            default:
+                objArr[row][pos]= Optional.ofNullable(value);
         }
     }
 

@@ -29,10 +29,14 @@ public class ParquetFileWriter extends AbstractFileWriter {
     private ParquetWriter pwriter;
     private MessageType schema;
     private boolean useAvroEncode=false;
+    public ParquetFileWriter(){
+        this.identifier= Const.FILEFORMATSTR.PARQUET.getValue();
+    }
     public ParquetFileWriter(DataCollectionMeta colmeta) {
         super(colmeta);
         avroSchema= AvroUtils.getSchemaFromMeta(colmeta);
         schema=ParquetUtil.genSchema(colmeta);
+        this.identifier= Const.FILEFORMATSTR.PARQUET.getValue();
     }
 
     @Override

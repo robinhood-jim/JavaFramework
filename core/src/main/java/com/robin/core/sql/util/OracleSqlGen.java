@@ -94,39 +94,7 @@ public class OracleSqlGen extends AbstractSqlGen implements BaseSqlGen {
 		return super.wrapValue(condition);
 	}
 
-	/*@Override
-    protected String toSQLForDate(FilterCondition param) {
-		StringBuilder sql = new StringBuilder();
-		String nQueryModel = param.getQueryMode();
-		if (param.getQueryValue() == null || "".equals(param.getQueryValue().trim())) {
-            return "";
-        }
-		String key = param.getColumnName();
-		if (param.getAliasName() != null && !"".equals(param.getAliasName())) {
-            key = param.getAliasName() + "." + key;
-        }
-		String value = param.getQueryValue();
-		if (Const.OPERATOR.GT.getValue().equals(nQueryModel)) {
-            sql.append(key + ">" + "to_date('" + value + "','YYYY-MM-DD')");
-        } else if (nQueryModel.equals(QueryParam.QUERYMODE_GTANDEQUAL)) {
-            sql.append(key + ">=" + "to_date('" + value + "','YYYY-MM-DD')");
-        } else if (nQueryModel.equals(QueryParam.QUERYMODE_LTANDEQUAL)) {
-            sql.append(key + "<=" + "to_date('" + value + "','YYYY-MM-DD')");
-        } else if (nQueryModel.equals(QueryParam.QUERYMODE_BETWEEN) && !"".equals(value) && !";".equals(value)) {
-			String begindate = value.substring(0, value.indexOf(";"));
-			String enddate = value.substring(value.indexOf(";") + 1);
-			if(!"".equals(begindate)){
-				if(!"".equals(enddate)) {
-                    sql.append("(" + key + " between to_date('" + begindate + "','YYYY-MM-DD') and to_date('" + enddate + "','YYYY-MM-DD'))");
-                } else {
-                    sql.append("(" + key + ">=to_date('" + begindate + "','YYYY-MM-DD'))");
-                }
-			}else if(!"".equals(enddate)) {
-                sql.append("(" + key + "<=to_date('" + enddate + "','YYYY-MM-DD'))");
-            }
-		}
-		return sql.toString();
-	}*/
+
 
 	@Override
     public String generateSingleRowSql(String querySql) {

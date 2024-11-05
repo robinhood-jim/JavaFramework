@@ -20,9 +20,7 @@ import lombok.Data;
 
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Data
 public class PageQuery implements Serializable {
@@ -50,7 +48,7 @@ public class PageQuery implements Serializable {
 
 	private Map<String, String>		parameters=new HashMap<>();
 	private Map<String,Object> namedParameters =new HashMap<>();
-	private Object[] 	parameterArr;
+	private List<Object> queryParameters=new ArrayList<>();
 	private Map<String, String>			columnTypes;
 
 	private List<Condition>				conditions;
@@ -78,11 +76,11 @@ public class PageQuery implements Serializable {
 		pageNumber = 1;
 		pageSize = 10;
 	}
-	public PageQuery(String order,String orderDirection){
+	public PageQuery(String order, String orderDirection){
 		this.order=order;
 		this.orderDirection=orderDirection;
 	}
-	public PageQuery(Integer pageSize,Integer pageNumber,String order,String orderDirection){
+	public PageQuery(Integer pageSize, Integer pageNumber, String order, String orderDirection){
 		this.order=order;
 		this.orderDirection=orderDirection;
 		this.pageSize=pageSize;
@@ -108,6 +106,12 @@ public class PageQuery implements Serializable {
 			timestampFormater=new SimpleDateFormat(timestampFormatString);
 		}
 		return timestampFormater;
+	}
+	public void addQueryParameter(Object value){
+		queryParameters.add(value);
+	}
+	public void addQueryParameter(Collection<Object> values){
+		queryParameters.addAll(values);
 	}
 	public static class Builder{
 		private PageQuery pageQuery=new PageQuery();
@@ -135,10 +139,19 @@ public class PageQuery implements Serializable {
 			pageQuery.setOrderDirection(orderDir);
 			return this;
 		}
-		public Builder setParameterArr(Object[] objects){
-			pageQuery.setParameterArr(objects);
+		public Builder addQueryParameterArr(Object[] objects){
+			pageQuery.addQueryParameter(objects);
 			return this;
 		}
+		public Builder addQueryParameter(Collection<Object> collection){
+			pageQuery.addQueryParameter(collection);
+			return this;
+		}
+		public Builder addQueryParameter(Object obj){
+			pageQuery.addQueryParameter(obj);
+			return this;
+		}
+
 		public Builder putNamedParameter(String key,Object value){
 			pageQuery.getNamedParameters().put(key,value);
 			return this;

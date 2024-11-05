@@ -1,14 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
-	xmlns:tx="http://www.springframework.org/schema/tx"
-	xmlns:context="http://www.springframework.org/schema/context"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
            http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
            http://www.springframework.org/schema/context  http://www.springframework.org/schema/context/spring-context-3.0.xsd
-           http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd" default-lazy-init="false">                      
-               
-   
+           http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd"
+       default-lazy-init="false">
+
+
     <bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
         <property name="locations">
             <list>
@@ -17,11 +18,11 @@
         </property>
     </bean>
 
-      
+
     <!-- JDBC DataSource -->
     <bean id="dataSource" class="com.zaxxer.hikari.HikariDataSource">
         <property name="driverClassName" value="${jdbc.driver}"/>
-      <property name="jdbcUrl" value="${jdbc.url}"/>
+        <property name="jdbcUrl" value="${jdbc.url}"/>
         <property name="username" value="${jdbc.username}"/>
         <property name="password" value="${jdbc.password}"/>
 
@@ -34,40 +35,41 @@
         <property name="autoCommit" value="false"/>
     </bean>
 
-    <context:annotation-config /> 
-   <bean id="lobHandler" class="org.springframework.jdbc.support.lob.DefaultLobHandler" lazy-init="false" />                                        
-	                                       
+    <context:annotation-config/>
+    <bean id="lobHandler" class="org.springframework.jdbc.support.lob.DefaultLobHandler" lazy-init="false"/>
+
     <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
-        <property name="dataSource" ref="dataSource"/>                                        
+        <property name="dataSource" ref="dataSource"/>
     </bean>
     <!-- transaction in another dataSource -->
     <bean id="transactionManager1" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
         <property name="dataSource" ref="dataSource1"/>
-        <qualifier value="another" />
+        <qualifier value="another"/>
     </bean>
     <tx:annotation-driven transaction-manager="transactionManager" proxy-target-class="true"/>
 
 
-    <bean id="jdbcDao" class="com.robin.core.base.dao.JdbcDao" autowire="byName" />
+    <bean id="jdbcDao" class="com.robin.core.base.dao.JdbcDao" autowire="byName"/>
     <bean id="jdbcDao1" class="com.robin.core.base.dao.JdbcDao">
-        <property name="dataSource" ref="dataSource1" />
-        <property name="sqlGen" ref="sqlGen" />
-        <property name="lobHandler" ref="lobHandler" />
-        <property name="queryFactory" ref="queryFactory" />
+        <property name="dataSource" ref="dataSource1"/>
+        <property name="sqlGen" ref="sqlGen1"/>
+        <property name="lobHandler" ref="lobHandler"/>
+        <property name="queryFactory" ref="queryFactory"/>
     </bean>
 
     <bean id="sqlGen" class="com.robin.core.sql.util.MysqlSqlGen" autowire="byName"></bean>
+    <bean id="sqlGen1" class="com.robin.core.sql.util.PostgreSqlSqlGen" autowire="byName"></bean>
     <bean id="queryFactory" class="com.robin.core.query.util.QueryFactory" autowire="byName">
-    	<!--<property name="xmlConfigPath" value="classpath:query/queryConfig"></property>-->
+        <!--<property name="xmlConfigPath" value="classpath:query/queryConfig"></property>-->
     </bean>
-	<bean id="springContextHolder" class="com.robin.core.base.spring.SpringContextHolder" lazy-init="false"></bean>
-	<bean id="dynamicBeanLoader" class="com.robin.core.base.spring.DynamicBeanReaderImpl" />
-    <bean id="scriptExecutor" class="com.robin.core.script.ScriptExecutor" />
-    <bean id="sqlMapperConfigure" class="com.robin.core.query.mapper.SqlMapperConfigure" autowire="byName" />
-    <bean id="sqlMapperDao" class="com.robin.core.base.dao.SqlMapperDao" autowire="byName" />
-    <bean id="sqlMapperService" class="com.robin.core.base.service.SqlMapperService" autowire="byName" />
+    <bean id="springContextHolder" class="com.robin.core.base.spring.SpringContextHolder" lazy-init="false"></bean>
+    <bean id="dynamicBeanLoader" class="com.robin.core.base.spring.DynamicBeanReaderImpl"/>
+    <bean id="scriptExecutor" class="com.robin.core.script.ScriptExecutor"/>
+    <bean id="sqlMapperConfigure" class="com.robin.core.query.mapper.SqlMapperConfigure" autowire="byName"/>
+    <bean id="sqlMapperDao" class="com.robin.core.base.dao.SqlMapperDao" autowire="byName"/>
+    <bean id="sqlMapperService" class="com.robin.core.base.service.SqlMapperService" autowire="byName"/>
     <!--<bean id="classGraphReflector" class="com.robin.core.base.reflect.ClassGraphReflector" />-->
-	<context:component-scan base-package="com.robin"  />
-	
+    <context:component-scan base-package="com.robin"/>
+
 </beans>
  

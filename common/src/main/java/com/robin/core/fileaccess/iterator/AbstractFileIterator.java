@@ -25,6 +25,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import java.io.*;
@@ -55,6 +56,7 @@ public abstract class AbstractFileIterator implements IResourceIterator {
             columnList.add(meta.getColumnName());
             columnMap.put(meta.getColumnName(), meta);
         }
+        checkAccessUtil(colmeta.getPath());
     }
 
     public AbstractFileIterator(DataCollectionMeta colmeta, AbstractFileSystemAccessor accessUtil) {
@@ -96,7 +98,7 @@ public abstract class AbstractFileIterator implements IResourceIterator {
         try {
             if (accessUtil == null) {
                 URI uri = new URI(StringUtils.isEmpty(inputPath) ? colmeta.getPath() : inputPath);
-                String schema = uri.getScheme();
+                String schema = !ObjectUtils.isEmpty(colmeta.getFsType())?colmeta.getFsType():uri.getScheme();
                 accessUtil = ResourceAccessHolder.getAccessUtilByProtocol(schema.toLowerCase());
             }
         } catch (Exception ex) {

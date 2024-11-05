@@ -251,7 +251,7 @@ public class FilterCondition {
 
         return sbSQLStr.toString();
     }
-
+    @SuppressWarnings("unchecked")
     public void fillValue(List<Object> objList) {
         switch (getOperator()) {
             case LIKE:

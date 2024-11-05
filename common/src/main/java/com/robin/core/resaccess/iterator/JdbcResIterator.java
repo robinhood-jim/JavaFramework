@@ -31,6 +31,10 @@ public class  JdbcResIterator extends AbstractResIterator {
     private Statement statement;
     private PreparedStatement preparedStatement;
 
+    public JdbcResIterator(){
+        
+    }
+
     public JdbcResIterator(DataCollectionMeta colmeta) {
         super(colmeta);
     }

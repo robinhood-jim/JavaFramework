@@ -202,7 +202,7 @@ public class SqlMapperDao extends JdbcDaoSupport {
                             }
                         } else {
                             try {
-                                Object targetObject = Class.forName(segment1.getClassName()).newInstance();
+                                Object targetObject = segment1.getResultClass().newInstance();
                                 for (int i = 0; i < count; i++) {
                                     String columnName = rsmd.getColumnName(i + 1);
                                     if (!segment1.getColumnMapper().containsKey(columnName)) {
@@ -211,8 +211,6 @@ public class SqlMapperDao extends JdbcDaoSupport {
                                     CommJdbcUtil.setTargetValue(targetObject, resultSet.getObject(i + 1), segment1.getColumnMapper().get(columnName).left, segment1.getColumnMapper().get(columnName).right, lobHandler, pageQuery);
                                 }
                                 retList.add(targetObject);
-                            } catch (ClassNotFoundException ex) {
-                                throw new SQLException("target Type not found in classpath");
                             } catch (IllegalAccessException|InstantiationException ex1) {
                                 throw new SQLException("target Type can not initialize");
                             }
