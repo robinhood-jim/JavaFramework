@@ -18,6 +18,9 @@ public class RabbitMQResourceWriter extends AbstractQueueWriter {
     private CachingConnectionFactory connectionFactory;
     private RabbitTemplate rabbitTemplate;
     private String queueName;
+    public RabbitMQResourceWriter(){
+
+    }
     public RabbitMQResourceWriter(DataCollectionMeta collectionMeta){
         super(collectionMeta);
         connectionFactory=new CachingConnectionFactory();

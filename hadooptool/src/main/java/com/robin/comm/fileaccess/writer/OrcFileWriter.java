@@ -31,8 +31,12 @@ public class OrcFileWriter extends AbstractFileWriter {
     private TypeDescription schema;
     private Writer owriter;
     private VectorizedRowBatch batch;
+    public OrcFileWriter(){
+        this.identifier= Const.FILEFORMATSTR.ORC.getValue();
+    }
     public OrcFileWriter(DataCollectionMeta colmeta) {
         super(colmeta);
+        this.identifier= Const.FILEFORMATSTR.ORC.getValue();
     }
 
     @Override

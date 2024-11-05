@@ -739,11 +739,11 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
     public <T extends BaseObject> T getEntity(Class<T> clazz, Serializable id) throws DAOException {
         try {
             T obj = clazz.newInstance();
-            List<FieldContent> fields = AnnotationRetriever.getMappingFieldsCache(clazz);
-            EntityMappingUtil.SelectSegment segment = EntityMappingUtil.getSelectPkSegment(clazz, id, sqlGen);
-            List<Map<String, Object>> list1 = queryBySql(segment.getSelectSql(), fields, segment.getValues().toArray());
+            //List<FieldContent> fields = AnnotationRetriever.getMappingFieldsCache(clazz);
+            EntityMappingUtil.SelectSegment segment = EntityMappingUtil.getSelectPkSegment(clazz, id, sqlGen,this);
+            List<Map<String, Object>> list1 = queryBySql(segment.getSelectSql(), segment.getAvailableFields(), segment.getValues().toArray());
             if (!CollectionUtils.isEmpty(list1)) {
-                wrapResultToModelWithKey(obj, list1.get(0), fields, id);
+                wrapResultToModelWithKey(obj, list1.get(0), segment.getAvailableFields(), id);
             } else {
                 throw new DAOException("id not exists!");
             }

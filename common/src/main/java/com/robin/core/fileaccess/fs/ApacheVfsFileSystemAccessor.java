@@ -168,7 +168,7 @@ public class ApacheVfsFileSystemAccessor extends AbstractFileSystemAccessor {
             if (!fo.getParent().exists()) {
                 fo.getParent().createFolder();
             }
-            fo.createFile();
+            //fo.createFile();
         }
         return fo;
     }

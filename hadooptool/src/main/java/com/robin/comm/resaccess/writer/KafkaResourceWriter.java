@@ -18,6 +18,9 @@ import java.util.Properties;
 public class KafkaResourceWriter extends AbstractQueueWriter {
     KafkaProducerConfig config=new KafkaProducerConfig();
     private KafkaProducer<String, byte[]> producer;
+    public KafkaResourceWriter(){
+
+    }
     public KafkaResourceWriter(DataCollectionMeta colmeta) {
         super(colmeta);
         if(!CollectionUtils.isEmpty(cfgMap)) {

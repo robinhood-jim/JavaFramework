@@ -175,6 +175,13 @@ public class JdbcDaoTest extends TestCase {
         Assert.assertNotNull(id);
     }
     @Test
+    public void testGetWithSequence(){
+        TestSequenceService service=SpringContextHolder.getBean(TestSequenceService.class);
+        TestSequence sequence=service.getEntity(12L);
+        //log.info("{}",sequence);
+        Assert.assertNotNull(sequence);
+    }
+    @Test
     public void testInsertNullPk(){
         TestNullPkService service=SpringContextHolder.getBean(TestNullPkService.class);
         TestNullPk model=new TestNullPk();

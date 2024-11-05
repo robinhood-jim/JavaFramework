@@ -23,6 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 
 import javax.script.Bindings;
 import javax.script.CompiledScript;
@@ -96,35 +97,23 @@ public class CollectionMapConvert {
      * Convert ArrayList to Map by identify Column
      *
      * @param listobj   ArrayList must not Primitive,can input HashMap
+     * @param function
      * @param parentCol
      * @return Map<Key, List < T>>
      * @throws Exception
      */
 
-    public static <T> Map<String, List<T>> convertToMapByParentKey(List<T> listobj, String parentCol) throws InvocationTargetException,IllegalAccessException {
+    public static <T> Map<String, List<T>> convertToMapByParentKey(List<T> listobj,Function<T,String> function,String parentCol) throws InvocationTargetException,IllegalAccessException {
         checkType(listobj);
-        Method method = null;
+        Assert.isTrue(!ObjectUtils.isEmpty(function) || !ObjectUtils.isEmpty(parentCol));
 
-        Map<String, List<T>> retMap = new HashMap<>();
-        for (T t : listobj) {
-            Object targerobj = t;
-            Object obj;
-            if (Map.class.isAssignableFrom(t.getClass())) {
-                obj = ((Map) t).get(parentCol);
-            } else {
-                if(method==null){
-                    method = ReflectUtils.returnGetMethods(t.getClass()).get(parentCol);
-                    Assert.notNull(method,"parent column not exists in object!");
-                }
-                obj = method.invoke(targerobj, (Object) null);
+        return listobj.stream().collect(Collectors.groupingBy(f->{
+            if(f.getClass().isAssignableFrom(Map.class)){
+                return ((Map)f).get(parentCol).toString();
+            }else{
+                return function.apply(f);
             }
-            if (obj == null) {
-                addMapToList(retMap, "NULL", t);
-            } else {
-                addMapToList(retMap, obj.toString(), t);
-            }
-        }
-        return retMap;
+        }));
     }
 
     private static <T> void addMapToList(Map<String, List<T>> retMap, String key, T t) {
@@ -146,59 +135,10 @@ public class CollectionMapConvert {
      * @return
      * @throws Exception
      */
-    public static <T, P> Map<String, List<P>> getValuesByParentKey(List<T> listobj, String parentCol, String valueCol, Class<P> keyClazz) throws Exception {
-        checkType(listobj);
-
-        Map<String, List<P>> retMap = new HashMap<>();
-        Assert.isTrue(!CollectionUtils.isEmpty(listobj), "");
-        P targetValue;
-        Method method = null;
-        Method method1 = null;
-        String key;
-
-        if (!Map.class.isAssignableFrom(listobj.get(0).getClass())) {
-            Map<String, Method> getMetholds = ReflectUtils.returnGetMethods(listobj.get(0).getClass());
-            method = getMetholds.get(parentCol);
-            method1 = getMetholds.get(valueCol);
-        }
-
-
-        for (T t : listobj) {
-            if (method != null && method1 != null) {
-                Object value = method.invoke(t, null);
-                if (value == null) {
-                    key = "NULL";
-                } else {
-                    key = value.toString();
-                }
-                targetValue = (P) method1.invoke(t, null);
-            } else {
-                Map<String, Object> map = (Map) t;
-                Object value = map.get(parentCol);
-                if (value == null) {
-                    key = "NULL";
-                } else {
-                    key = value.toString();
-                }
-                targetValue = (P) map.get(valueCol);
-            }
-            if (targetValue != null) {
-                if (retMap.get(key) == null) {
-                    List<P> list = new ArrayList<>();
-                    list.add(targetValue);
-                    retMap.put(key, list);
-                } else {
-                    retMap.get(key).add(targetValue);
-                }
-            }
-        }
-        return retMap;
-    }
-
-    public static <T, P> Map<String, List<P>> getValuesByParentKey(List<T> listobj, Function<T, String> keyColumn, Function<T, P> valueColumn, Class<P> clazz) {
+    public static <T, P, V> Map<P, List<V>> getValuesByParentKey(List<T> listobj, Function<T,P> parentCol, Function<T,V> valueCol) throws Exception {
         checkType(listobj);
         Assert.isTrue(!CollectionUtils.isEmpty(listobj), "");
-        return listobj.stream().collect(Collectors.groupingBy(keyColumn,Collectors.mapping(valueColumn,Collectors.toList())));
+        return listobj.stream().collect(Collectors.groupingBy(parentCol,Collectors.mapping(valueCol,Collectors.toList())));
     }
 
     /**
@@ -251,7 +191,7 @@ public class CollectionMapConvert {
         return StringUtils.join(values,separate);
     }
 
-    public static <T> List<?> getValueListBySeparate(List<T> listobj, Function<T,?> column) throws MissingConfigException,InvocationTargetException,IllegalAccessException {
+    public static <T,P> List<P> getValueListBySeparate(List<T> listobj, Function<T,P> column) throws MissingConfigException,InvocationTargetException,IllegalAccessException {
         List<String> retList = new ArrayList<>();
         checkType(listobj);
         return listobj.stream().collect(Collectors.mapping(column,Collectors.toList()));

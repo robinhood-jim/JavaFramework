@@ -8,8 +8,8 @@ import java.io.*;
 public interface IFileSystemAccessor {
     Pair<BufferedReader,InputStream> getInResourceByReader(DataCollectionMeta meta, String resourcePath) throws IOException;
     Pair<BufferedWriter,OutputStream> getOutResourceByWriter(DataCollectionMeta meta, String resourcePath) throws IOException;
-    OutputStream getOutResourceByStream(DataCollectionMeta meta, String resourcePath) throws IOException;
     OutputStream getRawOutputStream(DataCollectionMeta meta, String resourcePath) throws IOException;
+    OutputStream getOutResourceByStream(DataCollectionMeta meta, String resourcePath) throws IOException;
     InputStream getInResourceByStream(DataCollectionMeta meta, String resourcePath) throws IOException;
     InputStream getRawInputStream(DataCollectionMeta meta, String resourcePath) throws IOException;
     boolean exists(DataCollectionMeta meta, String resourcePath) throws IOException;

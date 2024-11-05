@@ -50,11 +50,11 @@ public class EntityMappingUtil {
         try {
             String schema= ObjectUtils.isEmpty(tableDef.getSchema())?null: tableDef.getSchema();
             //get database table metadata adjust column must exist
-            Map<String, DataBaseColumnMeta> columnMetaMap = returnMetaMap(obj, sqlGen, jdbcDao, tableDef, schema);
+            Map<String, DataBaseColumnMeta> columnMetaMap = returnMetaMap(obj.getClass(), sqlGen, jdbcDao, tableDef, schema);
 
             for (FieldContent content : fields) {
                 Object value = content.getGetMethod().invoke(obj);
-                if(!columnMetaMap.containsKey(content.getFieldName().toLowerCase()) || columnMetaMap.containsKey(content.getFieldName().toUpperCase()) ){
+                if(!columnMetaMap.containsKey(content.getFieldName().toLowerCase()) && !columnMetaMap.containsKey(content.getFieldName().toUpperCase()) ){
                     log.warn("field {} not included in table {},insert column ignore!",content.getFieldName(),tableDef.getTableName());
                     continue;
                 }
@@ -116,16 +116,26 @@ public class EntityMappingUtil {
         return insertSegment;
     }
 
-    private static Map<String, DataBaseColumnMeta> returnMetaMap(BaseObject obj, BaseSqlGen sqlGen, JdbcDao jdbcDao, AnnotationRetriever.EntityContent tableDef, String schema) throws SQLException {
+    private static Map<String, DataBaseColumnMeta> returnMetaMap(Class<? extends BaseObject> clazz, BaseSqlGen sqlGen, JdbcDao jdbcDao, AnnotationRetriever.EntityContent tableDef, String schema) throws SQLException {
         Map<String,DataBaseColumnMeta> columnMetaMap;
-        if(metaCache.containsKey(obj.getClass())){
-            columnMetaMap=metaCache.get(obj.getClass());
+        if(metaCache.containsKey(clazz)){
+            columnMetaMap=metaCache.get(clazz);
         }else {
             List<DataBaseColumnMeta> columnMetas=DataBaseUtil.getTableMetaByTableName(jdbcDao, tableDef.getTableName(), schema, sqlGen.getDbType());
             columnMetaMap=columnMetas.stream().collect(Collectors.toMap(DataBaseColumnMeta::getColumnName,f->f));
-            metaCache.put(obj.getClass(),columnMetaMap);
+            metaCache.put(clazz,columnMetaMap);
         }
         return columnMetaMap;
+    }
+    public static List<FieldContent> returnAvailableFields(Class<? extends BaseObject> clazz, BaseSqlGen sqlGen, JdbcDao jdbcDao, AnnotationRetriever.EntityContent tableDef, String schema,List<FieldContent> fields) throws SQLException {
+        Map<String, DataBaseColumnMeta> metaMap=returnMetaMap(clazz,sqlGen,jdbcDao,tableDef,schema);
+        List<FieldContent> contents=new ArrayList<>();
+        for(FieldContent content:fields){
+            if(metaMap.containsKey(content.getFieldName().toLowerCase()) || metaMap.containsKey(content.getFieldName().toUpperCase()) ){
+                contents.add(content);
+            }
+        }
+        return contents;
     }
 
     public static UpdateSegment getUpdateSegment(BaseObject obj, List<FilterCondition> conditions, BaseSqlGen sqlGen) throws SQLException {
@@ -237,7 +247,7 @@ public class EntityMappingUtil {
         return updateSegment;
     }
 
-    public static SelectSegment getSelectPkSegment(Class<? extends BaseObject> clazz, Serializable id, BaseSqlGen sqlGen) throws Exception {
+    public static SelectSegment getSelectPkSegment(Class<? extends BaseObject> clazz, Serializable id,BaseSqlGen sqlGen,JdbcDao jdbcDao) throws Exception {
         AnnotationRetriever.isBaseObjectClassValid(clazz);
         AnnotationRetriever.EntityContent tableDef = AnnotationRetriever.getMappingTableByCache(clazz);
         List<FieldContent> fields = AnnotationRetriever.getMappingFieldsCache(clazz);
@@ -245,7 +255,10 @@ public class EntityMappingUtil {
         StringBuilder wherebuffer = new StringBuilder();
         SelectSegment segment = new SelectSegment();
         List<Object> selectObjs = new ArrayList<>();
+        String schema= ObjectUtils.isEmpty(tableDef.getSchema())?null: tableDef.getSchema();
+
         for (FieldContent field : fields) {
+            Map<String, DataBaseColumnMeta> columnMetaMap = returnMetaMap(clazz, sqlGen, jdbcDao, tableDef, schema);
             if (field.isPrimary()) {
                 if (field.getPrimaryKeys() != null) {
                     for (FieldContent fieldContent : field.getPrimaryKeys()) {
@@ -253,14 +266,21 @@ public class EntityMappingUtil {
                         wherebuffer.append(fieldContent.getFieldName()).append("=? and ");
                         selectObjs.add(tval);
                         sqlbuffer.append(fieldContent.getFieldName()).append(" as ").append(fieldContent.getPropertyName()).append(",");
+                        segment.getAvailableFields().add(fieldContent);
                     }
                 } else {
                     wherebuffer.append(field.getFieldName()).append("=? and ");
                     selectObjs.add(id);
+                    segment.getAvailableFields().add(field);
                     sqlbuffer.append(field.getFieldName()).append(Const.SQL_AS).append(field.getPropertyName()).append(",");
                 }
 
             } else {
+                if(!columnMetaMap.containsKey(field.getFieldName().toLowerCase()) && !columnMetaMap.containsKey(field.getFieldName().toUpperCase()) ){
+                    log.warn("field {} not included in table {},select column ignore!",field.getFieldName(),tableDef.getTableName());
+                    continue;
+                }
+                segment.getAvailableFields().add(field);
                 sqlbuffer.append(field.getFieldName()).append(Const.SQL_AS).append(field.getPropertyName()).append(",");
             }
 
@@ -353,6 +373,7 @@ public class EntityMappingUtil {
     public static class SelectSegment {
         private String selectSql;
         private List<Object> values;
+        private List<FieldContent> availableFields=new ArrayList<>();
 
     }
 

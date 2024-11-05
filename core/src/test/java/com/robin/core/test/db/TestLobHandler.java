@@ -65,13 +65,11 @@ public class TestLobHandler extends TestCase {
     public void testQueryVO() {
         TestLobService service = (TestLobService) SpringContextHolder.getBean("lobService");
         TestLob obj = service.getEntity(1L);
-        try {
+        String path = "E:/tmp/pig.ico";
+        try(OutputStream out = new FileOutputStream(path)) {
             ByteArrayInputStream in = new ByteArrayInputStream(obj.getLob2());
-            String path = "E:/tmp/pig.ico";
             System.out.println(path);
-            OutputStream out = new FileOutputStream(new File(path));
             IOUtils.copy(in, out);
-            out.close();
         } catch (Exception ex) {
             ex.printStackTrace();
         }

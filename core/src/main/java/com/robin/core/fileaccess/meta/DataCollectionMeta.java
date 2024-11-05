@@ -59,6 +59,7 @@ public class DataCollectionMeta implements Serializable {
 	private DataBaseParam param;
 	private String dbType;
 	private String tableName;
+	private String protocol;
 	public void setAvroSchema(Class<?> clazz){
 		String fullClassName=clazz.getClass().getCanonicalName();
 		int pos=fullClassName.lastIndexOf(".");
@@ -117,6 +118,10 @@ public class DataCollectionMeta implements Serializable {
 			meta.addColumnMeta(name,columnType,null);
 			return this;
 		}
+		public DataCollectionMeta.Builder addColumn(String columnName,String columnType,String defaultNullValue){
+			meta.addColumnMeta(columnName,columnType,defaultNullValue);
+			return this;
+		}
 		public DataCollectionMeta.Builder dateFormatter(String formatter){
 			meta.setDefaultTimestampFormat(formatter);
 			return this;
@@ -137,7 +142,7 @@ public class DataCollectionMeta implements Serializable {
 			meta.setColumnList(columnMetas);
 			return this;
 		}
-		public DataCollectionMeta.Builder resourceCfg(String key,String value){
+		public DataCollectionMeta.Builder resourceCfg(String key,Object value){
 			meta.getResourceCfgMap().put(key,value);
 			return this;
 		}
@@ -147,6 +152,14 @@ public class DataCollectionMeta implements Serializable {
 		}
 		public DataCollectionMeta.Builder resPath(String resPath){
 			meta.setPath(resPath);
+			return this;
+		}
+		public DataCollectionMeta.Builder protocol(String protocol){
+			meta.setProtocol(protocol);
+			return this;
+		}
+		public DataCollectionMeta.Builder encode(String encode){
+			meta.setEncode(encode);
 			return this;
 		}
 

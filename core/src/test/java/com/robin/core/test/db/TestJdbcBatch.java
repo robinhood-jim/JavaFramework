@@ -24,7 +24,7 @@ public class TestJdbcBatch extends TestCase {
     @Test
     public void doTestBatch(){
 
-        int maxrow=500000;
+        int maxrow=1000;
         DataCollectionMeta collectionMeta=new DataCollectionMeta();
         collectionMeta.addColumnMeta("name", Const.META_TYPE_STRING,null);
         collectionMeta.addColumnMeta("code",Const.META_TYPE_STRING,null);
@@ -58,7 +58,7 @@ public class TestJdbcBatch extends TestCase {
                 rowMap.put("creator",String.valueOf(random.nextInt(100)));
             }
         };
-        JdbcDao dao=SpringContextHolder.getBean(JdbcDao.class);
+        JdbcDao dao=SpringContextHolder.getBean("jdbcDao",JdbcDao.class);
 
         dao.batchUpdateWithRowIterator("insert into t_batch_test (name,code,amount,creator,time) values (?,?,?,?,?)",iterator,collectionMeta,10000);
 

@@ -16,7 +16,7 @@ public class FileSystemAccessorFactory {
     static {
         discoverAccessor(accessorMap);
     }
-    public static AbstractFileSystemAccessor getResourceAccessorByType(Long resType) throws MissingConfigException {
+    public static AbstractFileSystemAccessor getResourceAccessorByType(String resType) throws MissingConfigException {
         AbstractFileSystemAccessor accessor=null;
         Class<? extends IFileSystemAccessor> clazz=accessorMap.get(resType);
         try {

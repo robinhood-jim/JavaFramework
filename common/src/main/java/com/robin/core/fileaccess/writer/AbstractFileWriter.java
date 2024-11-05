@@ -25,6 +25,7 @@ import com.robin.core.fileaccess.fs.AbstractFileSystemAccessor;
 import com.robin.core.fileaccess.util.ResourceUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import javax.naming.OperationNotSupportedException;
@@ -59,6 +60,7 @@ public abstract class AbstractFileWriter implements IResourceWriter {
 			columnList.add(meta.getColumnName());
 			columnMap.put(meta.getColumnName(), meta.getColumnType());
 		}
+		checkAccessUtil(colmeta.getPath());
 	}
 	public void setWriter(BufferedWriter writer){
 		this.writer=writer;
@@ -137,7 +139,7 @@ public abstract class AbstractFileWriter implements IResourceWriter {
 		try {
 			if (accessUtil == null) {
 				URI uri = new URI(StringUtils.isEmpty(outputPath)?colmeta.getPath():outputPath);
-				String schema = uri.getScheme();
+				String schema = !ObjectUtils.isEmpty(colmeta.getFsType())?colmeta.getFsType():uri.getScheme();
 				accessUtil = ResourceAccessHolder.getAccessUtilByProtocol(schema.toLowerCase());
 			}
 		}catch (Exception ex){
@@ -162,5 +164,9 @@ public abstract class AbstractFileWriter implements IResourceWriter {
 	@Override
 	public String getIdentifier() {
 		return identifier;
+	}
+
+	public void setAccessUtil(AbstractFileSystemAccessor accessUtil) {
+		this.accessUtil = accessUtil;
 	}
 }
