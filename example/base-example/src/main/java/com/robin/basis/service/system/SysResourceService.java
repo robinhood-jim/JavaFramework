@@ -107,7 +107,7 @@ public class SysResourceService extends BaseAnnotationJdbcService<SysResource, L
 		jdbcDao.queryBySelectId(query1);
 		if(!query1.getRecordSet().isEmpty()){
 			try {
-				Map<String,List<Map<String,Object>>> resTypeMap= CollectionMapConvert.convertToMapByParentKey(query1.getRecordSet(), "assignType");
+				Map<String,List<Map<String,Object>>> resTypeMap= CollectionMapConvert.convertToMapByParentMapKey(query1.getRecordSet(), "assignType");
 				Map<String,Map<String,Object>> accessResMap=resTypeMap.get("NULL").stream().collect(Collectors.toMap(f->f.get("id").toString(),f->f));
 				if(!CollectionUtils.isEmpty(resTypeMap.get(Const.RESOURCE_ASSIGN_ACCESS))) {
 					accessResMap.putAll(resTypeMap.get(Const.RESOURCE_ASSIGN_ACCESS).stream().collect(Collectors.toMap(f->f.get("id").toString(),f->f)));

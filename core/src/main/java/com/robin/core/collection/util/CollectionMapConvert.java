@@ -115,6 +115,11 @@ public class CollectionMapConvert {
             }
         }));
     }
+    public static  Map<String, List<Map<String,Object>>> convertToMapByParentMapKey(List<Map<String,Object>> listobj,String parentCol) throws InvocationTargetException,IllegalAccessException {
+        checkType(listobj);
+        return listobj.stream().collect(Collectors.groupingBy(f-> f.get(parentCol).toString()));
+    }
+
 
     private static <T> void addMapToList(Map<String, List<T>> retMap, String key, T t) {
         if (!retMap.containsKey(key)) {
