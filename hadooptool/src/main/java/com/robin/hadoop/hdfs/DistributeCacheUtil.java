@@ -12,7 +12,9 @@ import org.apache.hadoop.filecache.DistributedCache;
 
 import org.apache.hadoop.fs.Path;
 
+
 public class DistributeCacheUtil {
+	@SuppressWarnings("deprecation")
 	public static List<Map<String, String>> getConfigByCache(Configuration conf, String columnArr, String fileNamePrefix,String sep) {
 		List<Map<String, String>> list = new ArrayList<Map<String, String>>();
 		try {

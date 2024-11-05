@@ -45,6 +45,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 
+@SuppressWarnings("unused")
 public class SimpleJdbcDao {
     private final String driverName;
     private final String jdbcUrl;

@@ -30,10 +30,10 @@ public class Session implements Serializable {
     private Date loginTime;
     private String cityCode;
     private String accountType;
-    private Map<Integer, String> roles = new HashMap();
+    private Map<Integer, String> roles = new HashMap<>();
     private List<Long> responsiblitys = new ArrayList<>();
-    private Map<Integer, String> modules = new HashMap();
-    private Map<String, List<Map<String, Object>>> privileges = new HashMap();
+    private Map<Integer, String> modules = new HashMap<>();
+    private Map<String, List<Map<String, Object>>> privileges = new HashMap<>();
     public boolean hasRole(String key)
     {
         if (key != null) {

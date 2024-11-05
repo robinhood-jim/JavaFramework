@@ -40,19 +40,20 @@ import java.sql.Date;
 import java.sql.*;
 import java.util.*;
 
+@SuppressWarnings("unchecked")
 public class AnnotationRetriever {
-    private static Map<Class<? extends BaseObject>, Map<String, String>> tableCfgMap = new HashMap<>();
-    private static Map<Class<? extends BaseObject>, EntityContent> entityCfgMap = new HashMap<>();
-    private static Map<Class<? extends BaseObject>, Map<String, FieldContent>> fieldCfgMap = new HashMap<>();
-    private static Map<Class<? extends BaseObject>, List<FieldContent>> fieldListMap = new HashMap<>();
-    private static Map<String, WeakReference<SerializedLambda>> functionMap = new HashMap<>();
+    private static final Map<Class<? extends BaseObject>, Map<String, String>> tableCfgMap = new HashMap<>();
+    private static final Map<Class<? extends BaseObject>, EntityContent> entityCfgMap = new HashMap<>();
+    private static final Map<Class<? extends BaseObject>, Map<String, FieldContent>> fieldCfgMap = new HashMap<>();
+    private static final Map<Class<? extends BaseObject>, List<FieldContent>> fieldListMap = new HashMap<>();
+    private static final Map<String, WeakReference<SerializedLambda>> functionMap = new HashMap<>();
 
     private AnnotationRetriever() {
 
     }
 
     public static List<FieldContent> getMappingFieldsCache(Class<? extends BaseObject> clazz) throws DAOException {
-        List<FieldContent> list = null;
+        List<FieldContent> list;
         if (!fieldListMap.containsKey(clazz)) {
             list = getMappingFields(clazz);
             fieldListMap.put(clazz, list);
@@ -63,7 +64,7 @@ public class AnnotationRetriever {
     }
 
     public static Map<String, FieldContent> getMappingFieldsMapCache(Class<? extends BaseObject> clazz) throws DAOException {
-        Map<String, FieldContent> map = null;
+        Map<String, FieldContent> map ;
         if (!fieldCfgMap.containsKey(clazz)) {
             map = getMappingFieldsMap(clazz);
             fieldCfgMap.put(clazz, map);
@@ -302,7 +303,7 @@ public class AnnotationRetriever {
     }
 
     private static FieldContent retrieveFieldByMyBatis(Field field, Class<? extends BaseObject> clazz) throws DAOException {
-        FieldContent content = null;
+        FieldContent content ;
         try {
             String tmpName = org.springframework.util.StringUtils.capitalize(field.getName());
             Method getMethod = clazz.getMethod("get" + tmpName);
@@ -310,7 +311,7 @@ public class AnnotationRetriever {
             Method setMethod = clazz.getMethod("set" + tmpName, field.getType());
             TableField mapfield = field.getAnnotation(TableField.class);
             TableId idfield = field.getAnnotation(TableId.class);
-            String fieldName = null;
+            String fieldName ;
             FieldContent.Builder builder=new FieldContent.Builder();
             builder.setGetMethod(getMethod).setSetMethod(setMethod).setField(field).setPropertyName(field.getName());
             if (!Objects.isNull(mapfield)) {
@@ -362,7 +363,7 @@ public class AnnotationRetriever {
         try {
 
             String tmpName = org.springframework.util.StringUtils.capitalize(field.getName());
-            Method getMethod = clazz.getMethod("get" + tmpName, null);
+            Method getMethod = clazz.getMethod("get" + tmpName);
             Type type = getMethod.getReturnType();
             Method setMethod = clazz.getMethod("set" + tmpName, field.getType());
 
@@ -420,7 +421,7 @@ public class AnnotationRetriever {
             MappingField mapfield = field.getAnnotation(MappingField.class);
             String name = field.getName();
             String colname = name.substring(0, 1).toUpperCase() + name.substring(1);
-            Method getMethod = clazz.getDeclaredMethod("get" + colname, null);
+            Method getMethod = clazz.getDeclaredMethod("get" + colname);
             Type type = getMethod.getReturnType();
             Method setMethod = clazz.getDeclaredMethod("set" + colname, field.getType());
             String fieldName = null;
@@ -614,20 +615,21 @@ public class AnnotationRetriever {
                 if (pos != 0) {
                     stmt.setNull(pos, Types.VARCHAR);
                 }
-            } else if (obj instanceof Integer) {
+            } else if (Integer.class.isAssignableFrom(obj.getClass())) {
                 stmt.setInt(pos, Integer.parseInt(obj.toString()));
-            } else if (obj instanceof Double) {
+            } else if (Double.class.isAssignableFrom(obj.getClass())) {
                 stmt.setDouble(pos, Double.valueOf(obj.toString()));
-            } else if (obj instanceof Date) {
+            } else if (Date.class.isAssignableFrom(obj.getClass())) {
                 stmt.setDate(pos, (Date) obj);
-            } else if (obj instanceof Date) {
-                stmt.setDate(pos, new Date(((Date) obj).getTime()));
-            } else if (obj instanceof Timestamp) {
+            } else if (java.util.Date.class.isAssignableFrom(obj.getClass())) {
+                stmt.setDate(pos, new Date(((java.util.Date) obj).getTime()));
+            } else if (Timestamp.class.isAssignableFrom(obj.getClass())) {
                 stmt.setTimestamp(pos, (Timestamp) obj);
-            } else if (obj instanceof String) {
-                stmt.setString(pos, obj.toString());
-            } else if (obj instanceof Long) {
+            }else if (Long.class.isAssignableFrom(obj.getClass())) {
                 stmt.setLong(pos, Long.parseLong(obj.toString()));
+            }
+            else{
+                stmt.setString(pos, obj.toString());
             }
         } catch (Exception ex) {
             ex.printStackTrace();

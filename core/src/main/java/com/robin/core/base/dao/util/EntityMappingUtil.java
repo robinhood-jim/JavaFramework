@@ -25,8 +25,9 @@ import java.util.stream.Collectors;
 
 
 @Slf4j
+@SuppressWarnings("unchecked")
 public class EntityMappingUtil {
-    private static Map<Class<? extends BaseObject>, Map<String,DataBaseColumnMeta>> metaCache = new HashMap<>();
+    private static final Map<Class<? extends BaseObject>, Map<String,DataBaseColumnMeta>> metaCache = new HashMap<>();
 
     private EntityMappingUtil(){
 

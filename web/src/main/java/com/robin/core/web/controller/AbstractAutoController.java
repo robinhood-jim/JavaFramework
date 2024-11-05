@@ -33,7 +33,6 @@ import java.util.function.BiConsumer;
 
 @Slf4j
 public abstract class AbstractAutoController<O extends BaseObject, P extends Serializable> extends AbstractController {
-    protected ConfigurableBeanFactory beanFactory;
     protected RequestMappingHandlerMapping mappingHandlerMapping;
     protected WebControllerConfig config;
     protected SpringAutoCreateService<O, P> service;
@@ -64,7 +63,6 @@ public abstract class AbstractAutoController<O extends BaseObject, P extends Ser
         } catch (Exception ex) {
             log.error("{}", ex);
         }
-        beanFactory = (ConfigurableBeanFactory) SpringContextHolder.getBeanFactory();
         config = getClass().getAnnotation(WebControllerConfig.class);
         primaryField = AnnotationRetriever.getPrimaryFieldByClass(potype);
     }
@@ -84,7 +82,7 @@ public abstract class AbstractAutoController<O extends BaseObject, P extends Ser
                 }
                 if (ObjectUtils.isEmpty(service)) {
                     service = wrapAutoService();
-                    beanFactory.registerSingleton(serviceName, service);
+                    SpringContextHolder.registerSingleton(serviceName, service);
                     mappingHandlerMapping = SpringContextHolder.getBean(RequestMappingHandlerMapping.class);
                     RequestMappingInfo savePath = RequestMappingInfo.paths(config.mainPath() + config.insertPath())
                             .methods(RequestMethod.POST).produces(MediaType.APPLICATION_JSON_VALUE).build();

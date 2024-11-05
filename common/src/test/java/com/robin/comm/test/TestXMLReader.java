@@ -1,12 +1,9 @@
 package com.robin.comm.test;
 
 import com.google.gson.Gson;
-
-
 import com.robin.comm.util.redis.JedisClientFactory;
 import com.robin.core.base.util.Const;
 import com.robin.core.fileaccess.fs.LocalFileSystemAccessor;
-import com.robin.core.fileaccess.iterator.AbstractFileIterator;
 import com.robin.core.fileaccess.iterator.IResourceIterator;
 import com.robin.core.fileaccess.iterator.TextFileIteratorFactory;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
@@ -26,70 +23,71 @@ import java.util.List;
 
 
 public class TestXMLReader {
-    public static void main(String[] args){
-        DataCollectionMeta colmeta=new DataCollectionMeta();
-        colmeta.addColumnMeta("col1",Const.META_TYPE_BIGINT,null);
-        colmeta.addColumnMeta("col2",Const.META_TYPE_STRING,null);
-        colmeta.addColumnMeta("id",Const.META_TYPE_STRING,null);
-        colmeta.addColumnMeta("key",Const.META_TYPE_STRING,null);
+    public static void main(String[] args) {
+        DataCollectionMeta colmeta = new DataCollectionMeta();
+        colmeta.addColumnMeta("col1", Const.META_TYPE_BIGINT, null);
+        colmeta.addColumnMeta("col2", Const.META_TYPE_STRING, null);
+        colmeta.addColumnMeta("id", Const.META_TYPE_STRING, null);
+        colmeta.addColumnMeta("key", Const.META_TYPE_STRING, null);
         colmeta.setEncode("UTF-8");
         colmeta.setPath("f:/test.xml");
         colmeta.setFileFormat(Const.FILETYPE_XML);
-        BufferedReader reader=null;
+        BufferedReader reader = null;
         try {
             LocalFileSystemAccessor utils = new LocalFileSystemAccessor();
-            IResourceIterator iter= TextFileIteratorFactory.getProcessIteratorByType(colmeta);
+            IResourceIterator iter = TextFileIteratorFactory.getProcessIteratorByType(colmeta);
             //iter.beforeProcess(colmeta.getPath());
-            while(iter.hasNext()){
+            while (iter.hasNext()) {
                 System.out.println(iter.next());
             }
             iter.afterProcess();
-        }catch (Exception ex){
+        } catch (Exception ex) {
             ex.printStackTrace();
-        }finally {
+        } finally {
             try {
                 if (reader != null) {
                     reader.close();
                 }
-            }catch (Exception ex){
+            } catch (Exception ex) {
                 ex.printStackTrace();
             }
         }
     }
+
     @Test
-    public void test1() throws Exception{
+    public void test1() throws Exception {
         //Schema schema= AvroUtils.getSchemaFromModel(TestCompondObj.class);
-        List<TestCompondObj> compondObjs=new ArrayList<>();
-        Gson gson=new Gson();
-        TestCompondObj t1=new TestCompondObj();
+        List<TestCompondObj> compondObjs = new ArrayList<>();
+        Gson gson = new Gson();
+        TestCompondObj t1 = new TestCompondObj();
         t1.setId(1L);
         t1.setSqlDate(new Date());
         t1.setTname("t1");
-        InnerClass in1=new InnerClass();
+        InnerClass in1 = new InnerClass();
         in1.setId(1111L);
         in1.setName("inner1");
         in1.setDate(new Timestamp(System.currentTimeMillis()));
-        List<InnerClass> innerClasses=new ArrayList<>();
+        List<InnerClass> innerClasses = new ArrayList<>();
         innerClasses.add(in1);
         t1.setInner(innerClasses);
         compondObjs.add(t1);
-        JedisClientFactory.JedisClient client=JedisClientFactory.getInstance();
+        JedisClientFactory.JedisClient client = JedisClientFactory.getInstance();
         ByteArrayOutputStream arrayOutputStream = new ByteArrayOutputStream();
         ObjectOutputStream outputStream = new ObjectOutputStream(arrayOutputStream);
         outputStream.writeObject(compondObjs);
         System.out.println(arrayOutputStream.toByteArray().length);
         System.out.println(gson.toJson(compondObjs).length());
-        Schema schema= AvroUtils.getSchemaFromModel(TestCompondObj.class);
+        Schema schema = AvroUtils.getSchemaFromModel(TestCompondObj.class);
 
-        SchemaBuilder.FieldAssembler<Schema> assembler= SchemaBuilder.record("nested").fields();
+        SchemaBuilder.FieldAssembler<Schema> assembler = SchemaBuilder.record("nested").fields();
         assembler.name("list").type().nullable().array().items(schema).noDefault();
-        Schema nestedSchema=assembler.endRecord();
-        byte[] bytes= client.putSetWithSchema(schema,nestedSchema,compondObjs);
+        Schema nestedSchema = assembler.endRecord();
+        byte[] bytes = client.putSetWithSchema(schema, nestedSchema, compondObjs);
 
-        GenericRecord record=AvroUtils.parse(nestedSchema,bytes);
-        List<GenericRecord> list=(List<GenericRecord>)record.get(0);
-        for(GenericRecord rec:list) {
-            TestCompondObj v=new TestCompondObj();
+        GenericRecord record = AvroUtils.parse(nestedSchema, bytes);
+        List<GenericRecord> list = (List<GenericRecord>) record.get(0);
+        for (GenericRecord rec : list) {
+            TestCompondObj v = new TestCompondObj();
             AvroUtils.acquireModel(rec, v);
         }
         System.out.println(list);
