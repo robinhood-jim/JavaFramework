@@ -9,8 +9,7 @@ import com.robin.core.base.util.Const;
 import com.robin.core.base.util.StringUtils;
 import com.robin.core.fileaccess.iterator.AbstractResIterator;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.dbutils.DbUtils;
-import org.apache.commons.lang3.tuple.Triple;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
@@ -19,7 +18,9 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.sql.Connection;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -27,11 +28,11 @@ import java.util.*;
 
 @Slf4j
 public class TestExcelOperation {
-    private Logger logger= LoggerFactory.getLogger(TestExcelOperation.class);
+    private Logger logger = LoggerFactory.getLogger(TestExcelOperation.class);
+
     @Test
     public void testGenerate() throws Exception {
         Long startTs = System.currentTimeMillis() - 3600 * 24 * 1000;
-        String str = StringUtils.generateRandomChar(32);
         ExcelSheetProp prop = new ExcelSheetProp();
         prop.setFileExt("xlsx");
         prop.setStartCol(1);
@@ -42,14 +43,15 @@ public class TestExcelOperation {
         prop.addColumnProp(new ExcelColumnProp("time", "time", Const.META_TYPE_TIMESTAMP, false));
         prop.addColumnProp(new ExcelColumnProp("intcol", "intcol", Const.META_TYPE_INTEGER, false));
         prop.addColumnProp(new ExcelColumnProp("dval", "dval", Const.META_TYPE_DOUBLE, false));
-        prop.addColumnProp(new ExcelColumnProp("差距1","sep1",Const.META_TYPE_FORMULA,"D{P+1}-D{P}"));
-        prop.addColumnProp(new ExcelColumnProp("差距2","sep2",Const.META_TYPE_FORMULA,"D{P-1}-D{P}"));
+        prop.addColumnProp(new ExcelColumnProp("差距1", "sep1", Const.META_TYPE_FORMULA, "D{P+1}-D{P}"));
+        prop.addColumnProp(new ExcelColumnProp("差距2", "sep2", Const.META_TYPE_FORMULA, "D{P-1}-D{P}"));
         TableConfigProp header = new TableConfigProp();
         header.setContainrow(1);
         Random random = new Random(12312321321312L);
         AbstractResIterator iterator = new AbstractResIterator() {
             Map<String, Object> map = new HashMap<>();
             int row = 0;
+
             @Override
             public void init() {
 
@@ -64,16 +66,19 @@ public class TestExcelOperation {
             public void afterProcess() {
 
             }
+
             @Override
             public void close() throws IOException {
 
             }
+
             @Override
             public boolean hasNext() {
                 if (row < 5000)
                     return true;
                 return false;
             }
+
             @Override
             public Map<String, Object> next() {
                 map.clear();
@@ -90,11 +95,31 @@ public class TestExcelOperation {
                 return "test";
             }
         };
-        Workbook wb=ExcelProcessor.generateExcelFile(prop,header,iterator);
-        FileOutputStream out=new FileOutputStream("d:/test.xlsx");
+        Workbook wb = ExcelProcessor.generateExcelFile(prop, header, iterator);
+        FileOutputStream out = new FileOutputStream("d:/test.xlsx");
         wb.write(out);
         out.close();
 
+    }
+
+    @Test
+    public void testRead() throws IOException {
+        ExcelSheetProp prop = new ExcelSheetProp();
+        prop.setFileExt("xlsx");
+        prop.setStartCol(1);
+        prop.setStartRow(1);
+        prop.setSheetName("test");
+        prop.setStreamInsert(true);
+        prop.addColumnProp(new ExcelColumnProp("name", "name", Const.META_TYPE_STRING, false));
+        prop.addColumnProp(new ExcelColumnProp("time", "time", Const.META_TYPE_TIMESTAMP, false));
+        prop.addColumnProp(new ExcelColumnProp("intcol", "intcol", Const.META_TYPE_INTEGER, false));
+        prop.addColumnProp(new ExcelColumnProp("dval", "dval", Const.META_TYPE_DOUBLE, false));
+        prop.addColumnProp(new ExcelColumnProp("差距1", "sep1", Const.META_TYPE_FORMULA, "D{P+1}-D{P}"));
+        prop.addColumnProp(new ExcelColumnProp("差距2", "sep2", Const.META_TYPE_FORMULA, "D{P-1}-D{P}"));
+        ExcelProcessor.readExcelFile("d:/test.xlsx", prop);
+        if (!CollectionUtils.isEmpty(prop.getColumnList())) {
+            prop.getColumnList().forEach(f -> System.out.println(f));
+        }
     }
 
     @Test
@@ -121,37 +146,38 @@ public class TestExcelOperation {
         header.setContainrow(1);
         header.setContentFontName("微软雅黑");
 
-        Connection conn = null;
-        String sql = "select uuid,corp_id as corpId,car_num as carNum,vin,car_brand as brand,time_modified as modifier,car_color as color,manufacturer as maufactor,car_model as model,engine_type as engine,registcert_img1 as img from t_zhcx_car_vehiclelicence";
-        try {
-            //System.in.read();
-            System.out.println("start");
-            Long ts1 = System.currentTimeMillis();
-            DataBaseParam param = new DataBaseParam("127.0.0.1", 3306, "test", "test", "test");
-            BaseDataBaseMeta meta = DataBaseMetaFactory.getDataBaseMetaByType(BaseDataBaseMeta.TYPE_MYSQL, param);
-            conn = SimpleJdbcDao.getConnection(meta);
+
+        String sql = "select uuid,corp_id as corpId,car_num as carNum,vin,car_brand as brand,time_modified as modifier,car_color as color,manufacturer as maufactor,car_model as model,engine_type as engine,registcert_img1 as img from t_licence";
+        DataBaseParam param = new DataBaseParam("127.0.0.1", 3316, "test", "test", "test");
+        BaseDataBaseMeta meta = DataBaseMetaFactory.getDataBaseMetaByType(BaseDataBaseMeta.TYPE_MYSQL, param);
+        try (Connection conn = SimpleJdbcDao.getConnection(meta)) {
             Workbook wb = ExcelProcessor.generateExcelFile(prop, header, conn, sql, null, new ExcelRsExtractor(prop, header));
             FileOutputStream out = new FileOutputStream("d:/test.xlsx");
             wb.write(out);
             out.close();
             ((SXSSFWorkbook) wb).dispose();
-            System.out.println("--finish--" + String.valueOf(System.currentTimeMillis() - ts1));
 
         } catch (Exception ex) {
             ex.printStackTrace();
-        } finally {
-            if (conn != null) {
-                DbUtils.closeQuietly(conn);
-            }
         }
+    }
 
+    @Test
+    public void doTestRead() {
+        try (Workbook wb = new XSSFWorkbook(new FileInputStream("e:/1234.xlsx"))) {
+            DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            ExcelProcessor.readExcel(wb, 0, 2, (w, r, ev) -> {
+                Object obj = ExcelProcessor.readValue(r.getCell(1), Const.META_TYPE_DOUBLE, format, ev);
+                System.out.println(obj);
+            });
+        } catch (Exception ex) {
+
+        }
     }
 
 
-
-
     @Test
-    public void doGen1(){
+    public void doGenMergeHeader() {
         List<List<TableHeaderColumn>> headList = new ArrayList<>();
         List<TableHeaderColumn> firstCols = new ArrayList<>();
         List<TableHeaderColumn> secondCols = new ArrayList<>();
@@ -171,20 +197,20 @@ public class TestExcelOperation {
         sheetProp.addColumnProp(new ExcelColumnProp("平级分", "avg", Const.META_TYPE_DOUBLE));
         sheetProp.addColumnProp(new ExcelColumnProp("名次", "rank", Const.META_TYPE_INTEGER));
         sheetProp.addColumnProp(new ExcelColumnProp("均分差", "minus", Const.META_TYPE_DOUBLE));
-        List<Map<String,Object>> rsList=new ArrayList<>();
-        Map<String,Object> tmap=new HashMap<>();
-        tmap.put("avg",85.0);
-        tmap.put("rank",1);
-        tmap.put("minus",-0.9);
-        tmap.put("className","test123");
+        List<Map<String, Object>> rsList = new ArrayList<>();
+        Map<String, Object> tmap = new HashMap<>();
+        tmap.put("avg", 85.0);
+        tmap.put("rank", 1);
+        tmap.put("minus", -0.9);
+        tmap.put("className", "test123");
         rsList.add(tmap);
         sheetProp.setColumnList(rsList);
-        try(Workbook wb=new XSSFWorkbook();
-            FileOutputStream outputStream=new FileOutputStream("e:/1234.xlsx")){
-            Sheet fSheet=wb.createSheet("test");
-            ExcelProcessor.fillSheet(fSheet,sheetProp,tableConfigProp);
+        try (Workbook wb = new XSSFWorkbook();
+             FileOutputStream outputStream = new FileOutputStream("e:/1234.xlsx")) {
+            Sheet fSheet = wb.createSheet("test");
+            ExcelProcessor.fillSheet(fSheet, sheetProp, tableConfigProp);
             wb.write(outputStream);
-        }catch (Exception ex){
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
 

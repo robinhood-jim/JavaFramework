@@ -17,7 +17,7 @@ import java.util.Map;
 
 
 public class HDFSUtil {
-	private final Configuration config;
+	private Configuration config;
 	private final Logger logger=LoggerFactory.getLogger(getClass());
 	private boolean useSecurity=false;
 
@@ -58,8 +58,11 @@ public class HDFSUtil {
 		initSecurity();
 	}
 
-	public Configuration getConfigration(){
-		return this.config;
+	private void setConfig(Configuration config){
+		this.config=config;
+	}
+	public Configuration getConfig() {
+		return config;
 	}
 
 	public HDFSUtil(Configuration config){
@@ -434,8 +437,25 @@ public class HDFSUtil {
 		}
 	}
 
-	public Configuration getConfig() {
-		return config;
+
+	public static class Builder{
+		private HDFSUtil utils;
+		public Builder(){
+			utils.setConfig(new Configuration(false));
+		}
+		public Builder addResource(String xmlFilePath){
+			utils.getConfig().addResource(xmlFilePath);
+			return this;
+		}
+		public Builder set(String key,String value){
+			utils.getConfig().set(key,value);
+			return this;
+		}
+		public HDFSUtil build(){
+			return utils;
+		}
+
+
 	}
 
 }

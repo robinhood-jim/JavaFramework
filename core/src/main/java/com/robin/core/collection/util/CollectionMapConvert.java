@@ -105,7 +105,7 @@ public class CollectionMapConvert {
 
     public static <T> Map<String, List<T>> convertToMapByParentKey(List<T> listobj,Function<T,String> function,String parentCol) throws InvocationTargetException,IllegalAccessException {
         checkType(listobj);
-        Assert.isTrue(!ObjectUtils.isEmpty(function) || !ObjectUtils.isEmpty(parentCol));
+        Assert.isTrue(!ObjectUtils.isEmpty(function) || !ObjectUtils.isEmpty(parentCol),"");
 
         return listobj.stream().collect(Collectors.groupingBy(f->{
             if(f.getClass().isAssignableFrom(Map.class)){

@@ -45,7 +45,7 @@ public class ParquetStreamIterator extends AbstractFileIterator {
 
     @Override
     public void init()  {
-        conf=new HDFSUtil(colmeta).getConfigration();
+        conf=new HDFSUtil(colmeta).getConfig();
         try {
             if (colmeta.getColumnList().isEmpty()) {
                 ParquetMetadata meta = ParquetFileReader.readFooter(conf, new Path(colmeta.getPath()), ParquetMetadataConverter.NO_FILTER);

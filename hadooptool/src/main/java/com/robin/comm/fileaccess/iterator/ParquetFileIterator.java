@@ -72,7 +72,7 @@ public class ParquetFileIterator extends AbstractFileIterator {
                 useAvroEncode = true;
             }
             if (colmeta.getSourceType().equals(ResourceConst.IngestType.TYPE_HDFS.getValue())) {
-                conf = new HDFSUtil(colmeta).getConfigration();
+                conf = new HDFSUtil(colmeta).getConfig();
                 if (colmeta.getColumnList().isEmpty()) {
                     ParquetMetadata meta = ParquetFileReader.readFooter(conf, new Path(colmeta.getPath()), ParquetMetadataConverter.NO_FILTER);
                     msgtype = meta.getFileMetaData().getSchema();
