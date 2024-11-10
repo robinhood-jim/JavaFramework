@@ -98,7 +98,7 @@ public class DataMappingContoller extends AbstractCrudDhtmlxController<ProjectIn
             BaseDataBaseMeta meta = DataBaseMetaFactory.getDataBaseMetaByType(type, param);
             util = new DataBaseUtil();
             util.connect(meta);
-            List<String> list = util.getAllShcema();
+            List<String> list = util.getAllSchema();
             ret = DhtmxTreeWrapper.WrappSingleTreeXml(list);
         } catch (Exception ex) {
             if (util != null) {

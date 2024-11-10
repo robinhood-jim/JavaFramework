@@ -16,15 +16,15 @@ public class DataSourceAspect implements ApplicationContextAware {
     private ApplicationContext applicationContext;
     private Tracing tracing;
 
-    @Around("execution(* org.springframework.boot.jdbc.DataSourceBuilder.build())")
+    @Around("execution(* org.springframework.boot.jdbc.DataSourceBuilder+.build())")
     public Object getProxyDataSource(ProceedingJoinPoint joinPoint) throws Throwable {
         return new ProxyDataSource((DataSource) joinPoint.proceed(),applicationContext.getEnvironment(),tracing);
     }
-    @Around("execution(* org.springframework.jdbc.datasource.lookup.AbstractRoutingDataSource.getConnection())")
+    @Around("execution(* org.springframework.jdbc.datasource.lookup.AbstractRoutingDataSource+.getConnection()) && target(bean)")
     public Object getRoutingConnection(ProceedingJoinPoint joinPoint) throws Throwable {
         return new ProxyConnection((Connection) joinPoint.proceed(),applicationContext.getEnvironment(),tracing);
     }
-    @Around("execution(* org.springframework.jdbc.datasource.lookup.AbstractRoutingDataSource.getConnection(..))")
+    @Around("execution(* org.springframework.jdbc.datasource.lookup.AbstractRoutingDataSource+.getConnection(..)) && target(bean)")
     public Object getRoutingConnectionByParam(ProceedingJoinPoint joinPoint) throws Throwable {
         return new ProxyConnection((Connection) joinPoint.proceed(),applicationContext.getEnvironment(),tracing);
     }

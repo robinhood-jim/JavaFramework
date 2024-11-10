@@ -32,7 +32,6 @@ public abstract class AbstractFileSystemAccessor implements IFileSystemAccessor 
 
 	public static String[] retrieveResource(String path){
 		String[] ret=new String[2];
-
 		ret[1]=getFileSuffix(path);
 		ret[0]=getFilePrefix(path);
 		return ret;
