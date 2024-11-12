@@ -19,7 +19,7 @@ import java.sql.Timestamp;
  * @author robinjim
  * @version 1.0
  */
-@MappingEntity(table = "t_test_mutilkey")
+@MappingEntity("t_test_mutilkey")
 @Data
 public class TestMutilPK extends BaseObject {
     @MappingField(primary = true)

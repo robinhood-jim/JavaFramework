@@ -74,7 +74,7 @@ public class DataBaseUtil {
     }
 
 
-    public List<String> getAllShcema() throws SQLException {
+    public List<String> getAllSchema() throws SQLException {
         List<String> schemalist = new ArrayList<>();
         DatabaseMetaData meta = connection.getMetaData();
         try (ResultSet rs1 = meta.getSchemas()) {

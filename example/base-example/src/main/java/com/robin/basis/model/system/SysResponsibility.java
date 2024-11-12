@@ -8,19 +8,19 @@ import lombok.Data;
 import java.util.Date;
 
 @Data
-@MappingEntity(table = "t_sys_responsibility")
+@MappingEntity(value = "t_sys_responsibility")
 public class SysResponsibility extends BaseObject {
     @MappingField(increment = true,primary = true)
     private Long id;
     @MappingField
     private String name;
-    @MappingField(field = "create_time")
+    @MappingField(value = "create_time")
     private Date createTime;
-    @MappingField(field = "update_time")
+    @MappingField(value = "update_time")
     private Date updateTime;
-    @MappingField(field = "create_user")
+    @MappingField(value = "create_user")
     private Long createUser;
-    @MappingField(field = "update_user")
+    @MappingField(value = "update_user")
     private Long updateUser;
     @MappingField
     private String status;

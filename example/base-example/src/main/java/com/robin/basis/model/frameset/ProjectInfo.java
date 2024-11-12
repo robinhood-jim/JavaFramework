@@ -20,58 +20,58 @@ import com.robin.core.base.annotation.MappingField;
 import com.robin.core.base.model.BaseObject;
 import lombok.Data;
 
-@MappingEntity(table="t_base_projectinfo")
+@MappingEntity(value ="t_base_projectinfo")
 @Data
 public class ProjectInfo extends BaseObject {
 	@MappingField(increment=true,primary=true)
 	private Long id;
-	@MappingField(field="proj_name")
+	@MappingField(value ="proj_name")
 	private String  projName;
-	@MappingField(field="proj_code")
+	@MappingField(value ="proj_code")
 	private String projCode;
 	@MappingField()
 	private String description;
 	@MappingField()
 	private String company;
-	@MappingField(field="use_springmvc")
+	@MappingField(value ="use_springmvc")
 	private String useMvc;
-	@MappingField(field="struts_version")
+	@MappingField(value ="struts_version")
 	private String strutsVersion;
-	@MappingField(field="spring_version")
+	@MappingField(value ="spring_version")
 	private String springVersion;
-	@MappingField(field="presist_type")
-	private String presistType;
-	@MappingField(field="project_basepath")
+	@MappingField(value ="persist_type")
+	private String persistType;
+	@MappingField(value ="project_basepath")
 	private String projBasePath;
-	@MappingField(field="src_basepath")
+	@MappingField(value ="src_basepath")
 	private String srcBasePath;
-	@MappingField(field="dao_configfile")
+	@MappingField(value ="dao_configfile")
 	private String daoConfigFile;
-	@MappingField(field="service_configfile")
+	@MappingField(value ="service_configfile")
 	private String serviceConfigPath;
-	@MappingField(field="web_basepath")
+	@MappingField(value ="web_basepath")
 	private String webBasePath;
-	@MappingField(field="use_annotation")
+	@MappingField(value ="use_annotation")
 	private String useAnnotation;
-	@MappingField(field="use_maven")
+	@MappingField(value ="use_maven")
 	private String useMaven;
-	@MappingField(field="webframe_id")
+	@MappingField(value ="webframe_id")
 	private Long webFrameId;
-	@MappingField(field="datasource_id")
+	@MappingField(value ="datasource_id")
 	private Long dataSourceId;
-	@MappingField(field="proj_type")
+	@MappingField(value ="proj_type")
 	private Long projType;
 	@MappingField
 	private String author;
-	@MappingField(field="annotation_package")
+	@MappingField(value ="annotation_package")
 	private String annotationPackage;
-	@MappingField(field="team_type")
+	@MappingField(value ="team_type")
 	private String teamType;
-	@MappingField(field="team_url")
+	@MappingField(value ="team_url")
 	private String teamUrl;
-	@MappingField(field = "jar_man_type")
+	@MappingField(value = "jar_man_type")
 	private String jarmanType;
-	@MappingField(field = "credential_id")
+	@MappingField(value = "credential_id")
 	private Long credentialId;
 
 }

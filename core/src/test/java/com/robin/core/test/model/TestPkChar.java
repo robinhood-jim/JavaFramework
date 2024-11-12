@@ -22,7 +22,7 @@ import lombok.Data;
 
 import java.sql.Timestamp;
 
-@MappingEntity(table = "t_test_pkvarchar")
+@MappingEntity("t_test_pkvarchar")
 @Data
 public class TestPkChar extends BaseObject {
     @MappingField(primary = true)

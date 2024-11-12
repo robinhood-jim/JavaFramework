@@ -161,7 +161,7 @@ public class HbaseBaseDao {
 
     }
 
-    public boolean isKeyexistes(String tableName, String key) throws HbaseException {
+    public boolean isKeyExists(String tableName, String key) throws HbaseException {
         boolean isexists = false;
         try (Connection conn = getConnection(); Table table = conn.getTable(TableName.valueOf(tableName))) {
             Scan scan = new Scan();
@@ -310,45 +310,16 @@ public class HbaseBaseDao {
             List<String> keyList = new ArrayList<>();
             List<String> fnameList = new ArrayList<>();
             for (Result rs : scanner) {
-                Cell[] kv1 = rs.rawCells();
-                for (Cell cell : kv1) {
-                    String key = new String(cell.getQualifierArray());
-                    String value = new String(cell.getValueArray());
-                    String fname = new String(cell.getFamilyArray());
-                    if (!tmpmap1.containsKey(fname)) {
-                        Map<String, List<String>> map1 = new HashMap<>();
-                        List<String> list = new ArrayList<>();
-                        list.add(value);
-                        map1.put(key, list);
-                        tmpmap1.put(fname, map1);
-                        if (!keyList.contains(key)) {
-                            keyList.add(key);
-                        }
-                        if (!fnameList.contains(fname)) {
-                            fnameList.add(fname);
-                        }
-                    } else {
-                        if (!tmpmap1.get(fname).containsKey(key)) {
-                            List<String> list = new ArrayList<>();
-                            list.add(value);
-                            tmpmap1.get(fname).put(key, list);
-                        } else {
-                            tmpmap1.get(fname).get(key).add(value);
-                        }
-                        if (!keyList.contains(key)) {
-                            keyList.add(key);
-                        }
-                    }
-                }
+                extract(tmpmap1, keyList, fnameList, rs);
                 for (String key : keyList) {
-                    String fristName = fnameList.get(0);
+                    String firstName = fnameList.get(0);
 
-                    List<String> valueList = tmpmap1.get(fristName).get(key);
+                    List<String> valueList = tmpmap1.get(firstName).get(key);
 
                     for (int j = 0; j < valueList.size(); j++) {
 
                         Map<String, String> tmpmap = new HashMap<>();
-                        tmpmap.put(fristName, valueList.get(j));
+                        tmpmap.put(firstName, valueList.get(j));
                         for (int k = 1; k < fnameList.size(); k++) {
                             List<String> list2 = tmpmap1.get(fnameList.get(k)).get(key);
                             if (!list2.isEmpty() && list2.size() > j) {
@@ -366,6 +337,39 @@ public class HbaseBaseDao {
 
     }
 
+    private void extract(Map<String, Map<String, List<String>>> tmpmap1, List<String> keyList, List<String> fnameList, Result rs) {
+        Cell[] kv1 = rs.rawCells();
+        for (Cell cell : kv1) {
+            String key = new String(cell.getQualifierArray());
+            String value = new String(cell.getValueArray());
+            String fname = new String(cell.getFamilyArray());
+            if (!tmpmap1.containsKey(fname)) {
+                Map<String, List<String>> map1 = new HashMap<>();
+                List<String> list = new ArrayList<>();
+                list.add(value);
+                map1.put(key, list);
+                tmpmap1.put(fname, map1);
+                if (!keyList.contains(key)) {
+                    keyList.add(key);
+                }
+                if (!fnameList.contains(fname)) {
+                    fnameList.add(fname);
+                }
+            } else {
+                if (!tmpmap1.get(fname).containsKey(key)) {
+                    List<String> list = new ArrayList<>();
+                    list.add(value);
+                    tmpmap1.get(fname).put(key, list);
+                } else {
+                    tmpmap1.get(fname).get(key).add(value);
+                }
+                if (!keyList.contains(key)) {
+                    keyList.add(key);
+                }
+            }
+        }
+    }
+
     public List<Map<String, String>> getRecordByColumn(String tableName, Map<String, String> valueFilterMap) throws HbaseException {
         List<Map<String, String>> retMapList = new ArrayList<>();
         Scan scan = new Scan();
@@ -379,36 +383,7 @@ public class HbaseBaseDao {
             List<String> fnameList = new ArrayList<>();
             for (Result rs : scanner) {
                 tmpmap1.clear();
-                Cell[] kv1 = rs.rawCells();
-                for (Cell cell : kv1) {
-                    String key = new String(cell.getQualifierArray());
-                    String value = new String(cell.getValueArray());
-                    String fname = new String(cell.getFamilyArray());
-                    if (!tmpmap1.containsKey(fname)) {
-                        Map<String, List<String>> map1 = new HashMap<>();
-                        List<String> list = new ArrayList<>();
-                        list.add(value);
-                        map1.put(key, list);
-                        tmpmap1.put(fname, map1);
-                        if (!keyList.contains(key)) {
-                            keyList.add(key);
-                        }
-                        if (!fnameList.contains(fname)) {
-                            fnameList.add(fname);
-                        }
-                    } else {
-                        if (!tmpmap1.get(fname).containsKey(key)) {
-                            List<String> list = new ArrayList<>();
-                            list.add(value);
-                            tmpmap1.get(fname).put(key, list);
-                        } else {
-                            tmpmap1.get(fname).get(key).add(value);
-                        }
-                        if (!keyList.contains(key)) {
-                            keyList.add(key);
-                        }
-                    }
-                }
+                extract(tmpmap1, keyList, fnameList, rs);
                 for (int i = 0; i < keyList.size(); i++) {
                     String key = keyList.get(i);
                     String fristName = fnameList.get(i);
@@ -465,23 +440,7 @@ public class HbaseBaseDao {
         return filterlist;
     }
 
-   /* public List<Map<String,Object>> queryBySql(SelectPart part, Map<String, DataBaseColumnMeta> metaMap){
-        try(Connection connection=getConnection();Table table=connection.getTable(TableName.valueOf(part.getTableName()))){
-            FilterList filterList=new FilterList();
-            Assert.notNull(part.getConditions(),"");
-            for(ConditionCollection collection:part.getConditions()){
-                if(!CollectionUtils.isEmpty(collection.getConditions())){
-                    for(ConditionNode node:collection.getConditions()){
-                        Filter filter=null;
 
-                    }
-                }
-            }
-        }catch (Exception ex){
-
-        }
-        return null;
-    }*/
 
 
     public Map<String, Map<String, String>> getRegionResult(String tableName, byte[] startKey, byte[] endKey, String fieldArr, List<String> keyList) throws HbaseException {

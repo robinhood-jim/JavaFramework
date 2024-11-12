@@ -107,7 +107,7 @@ public class CommJdbcUtil {
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    public static PageQuery queryByReplaceParamter(JdbcTemplate jdbcTemplate, LobHandler lobHandler, BaseSqlGen sqlGen, QueryString qs, PageQuery pageQuery) throws DAOException {
+    static PageQuery queryByReplaceParamter(JdbcTemplate jdbcTemplate, LobHandler lobHandler, BaseSqlGen sqlGen, QueryString qs, PageQuery pageQuery) throws DAOException {
         List list ;
         String querySQL = getReplacementSql(sqlGen, qs, pageQuery);
 
@@ -320,7 +320,7 @@ public class CommJdbcUtil {
         return retObj;
     }
 
-    public static void setTargetValue(Object target, Object value, String columnName, String columnType, LobHandler handler, PageQuery pageQuery) throws DAOException {
+    static void setTargetValue(Object target, Object value, String columnName, String columnType, LobHandler handler, PageQuery pageQuery) throws DAOException {
         try {
             if (value != null) {
                 Object targetValue = null;
@@ -386,7 +386,7 @@ public class CommJdbcUtil {
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    public static void queryByPreparedParamter(JdbcTemplate jdbcTemplate, NamedParameterJdbcTemplate namedParameterJdbcTemplate, LobHandler lobHandler, BaseSqlGen sqlGen, QueryString qs, PageQuery pageQuery) throws DAOException {
+    static void queryByPreparedParamter(JdbcTemplate jdbcTemplate, NamedParameterJdbcTemplate namedParameterJdbcTemplate, LobHandler lobHandler, BaseSqlGen sqlGen, QueryString qs, PageQuery pageQuery) throws DAOException {
         List list;
         try {
             String querySQL = getReplacementSql(sqlGen, qs, pageQuery);
@@ -440,7 +440,7 @@ public class CommJdbcUtil {
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    public static PageQuery queryBySql(JdbcTemplate jdbcTemplate, LobHandler lobHandler, BaseSqlGen sqlGen, String querySQL, String countSql, String[] displayname, PageQuery pageQuery) throws DAOException {
+    static PageQuery queryBySql(JdbcTemplate jdbcTemplate, LobHandler lobHandler, BaseSqlGen sqlGen, String querySQL, String countSql, String[] displayname, PageQuery pageQuery) throws DAOException {
         String sumSQL;
         if (countSql == null || "".equals(countSql.trim())) {
             sumSQL = sqlGen.generateCountSql(querySQL);
@@ -481,7 +481,7 @@ public class CommJdbcUtil {
         pageQuery.setRecordSet(list);
         return pageQuery;
     }
-    public static void batchUpdate(JdbcTemplate jdbcTemplate,String sql,final List<Object[]> valueList){
+     static void batchUpdate(JdbcTemplate jdbcTemplate,String sql,final List<Object[]> valueList){
         BatchPreparedStatementSetter setter=new BatchPreparedStatementSetter() {
             @Override
             public void setValues(PreparedStatement ps, int i) throws SQLException {
@@ -499,7 +499,7 @@ public class CommJdbcUtil {
         doBatch(jdbcTemplate, sql, setter);
     }
 
-    public static void batchUpdate(JdbcTemplate jdbcTemplate, String sql, final List<Map<String, String>> resultList, List<Map<String, String>> columnTypeMapList) throws DAOException {
+     static void batchUpdate(JdbcTemplate jdbcTemplate, String sql, final List<Map<String, String>> resultList, List<Map<String, String>> columnTypeMapList) throws DAOException {
         final List<Map<String, String>> list = resultList;
         final List<Map<String, String>> colList = columnTypeMapList;
         BatchPreparedStatementSetter setter = new BatchPreparedStatementSetter() {
@@ -703,7 +703,7 @@ public class CommJdbcUtil {
      * @param batchsize      batch Size
      * @throws DAOException
      */
-    public static void batchUpdate(JdbcTemplate jdbcTemplate, String sql, List<Map<String, String>> resultList, List<Map<String, String>> columnpoolList, final int batchsize) throws DAOException {
+    static void batchUpdate(JdbcTemplate jdbcTemplate, String sql, List<Map<String, String>> resultList, List<Map<String, String>> columnpoolList, final int batchsize) throws DAOException {
         final List<Map<String, String>> list = resultList;
         final List<Map<String, String>> colList = columnpoolList;
         BatchPreparedStatementSetter setter = new BatchPreparedStatementSetter() {
@@ -729,7 +729,7 @@ public class CommJdbcUtil {
         doBatch(jdbcTemplate, sql, setter);
     }
 
-    public static int batchUpdateWithIterator(JdbcTemplate template, String sql, Iterator<Map<String, String>> iterator, DataCollectionMeta collectionMeta, final int batchsize) {
+    static int batchUpdateWithIterator(JdbcTemplate template, String sql, Iterator<Map<String, String>> iterator, DataCollectionMeta collectionMeta, final int batchsize) {
         return doBatchWithSize(template, sql, new BoundedPreparedStatementSetter(batchsize, iterator, collectionMeta), batchsize);
     }
 

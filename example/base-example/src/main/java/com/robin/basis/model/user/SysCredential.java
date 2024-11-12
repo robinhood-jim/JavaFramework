@@ -17,14 +17,14 @@ import lombok.Data;
  * @author robinjim
  * @version 1.0
  */
-@MappingEntity(table = "t_user_credential")
+@MappingEntity(value = "t_user_credential")
 @Data
 public class SysCredential extends BaseObject {
     @MappingField(primary = true,increment = true)
     private Long id;
     @MappingField(required = true)
     private String code;
-    @MappingField(field = "user_name")
+    @MappingField(value = "user_name")
     private String userName;
     @MappingField
     private String password;
@@ -32,7 +32,7 @@ public class SysCredential extends BaseObject {
     private Integer status;
     @MappingField
     private String token;
-    @MappingField(field = "ssl_path")
+    @MappingField(value = "ssl_path")
     private String sslConfigPath;
     //1-public  2-require authorize
     private Integer type;

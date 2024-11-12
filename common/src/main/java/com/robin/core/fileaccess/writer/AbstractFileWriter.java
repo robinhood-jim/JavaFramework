@@ -95,6 +95,7 @@ public abstract class AbstractFileWriter implements IResourceWriter {
 			out = accessUtil.getOutResourceByStream(colmeta, ResourceUtil.getProcessPath(colmeta.getPath()));
 			writer=new BufferedWriter(new OutputStreamWriter(out));
 		}
+		logger.info("using Writer {}",getClass().getCanonicalName());
 	}
 
 

@@ -235,7 +235,13 @@ public class EntityMappingUtil {
                     }
                 }
             } else {
-                if (field.isPrimary()) {
+                if(!CollectionUtils.isEmpty(field.getPrimaryKeys())) {
+                    for(FieldContent pkFields:field.getPrimaryKeys()){
+                        Object tobj = AnnotationRetriever.getValueFromVO(pkFields, obj);
+                        wherebuffer.append(pkFields.getFieldName()).append("=?,");
+                        whereObjects.add(tobj);
+                    }
+                } else if (field.isPrimary()) {
                     wherebuffer.append(field.getFieldName()).append("=?,");
                     whereObjects.add(object);
                 }

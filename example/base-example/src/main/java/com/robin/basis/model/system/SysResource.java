@@ -21,23 +21,23 @@ import com.robin.core.base.model.BaseObject;
 import lombok.Data;
 
 @Data
-@MappingEntity(table="t_sys_resource_info")
+@MappingEntity(value ="t_sys_resource_info")
 public class SysResource extends BaseObject {
 	@MappingField(primary=true,increment=true)
 	private Long id;
-	@MappingField(field="res_name")
+	@MappingField(value ="res_name")
 	private String name;
-	@MappingField(field="res_type")
+	@MappingField(value ="res_type")
 	private String type;
 	@MappingField
 	private String url;
 	@MappingField
 	private Long powerId;
-	@MappingField(field = "is_leaf")
+	@MappingField(value = "is_leaf")
 	private Integer leafTag;
 	@MappingField
 	private String status;
-	@MappingField(field="res_code")
+	@MappingField(value ="res_code")
 	private String code;
 	@MappingField
 	private String resId;

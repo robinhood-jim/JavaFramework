@@ -356,26 +356,20 @@ public class YarnJobInfoUtil extends AbstractJobInfoUtil{
 		return id;
 	}
 	public static void main(String[] args){
-		DataBaseParam param=new DataBaseParam("192.168.147.12",0,"etlcloud_test","root","123456");
+		DataBaseParam param=new DataBaseParam("192.168.147.12",0,"test","root","123456");
 		BaseDataBaseMeta meta=DataBaseMetaFactory.getDataBaseMetaByType("MySql", param);
-		Connection conn=null;
-		
+
 		HDFSProperty property=new HDFSProperty();
-		try{
-			conn=SimpleJdbcDao.getConnection(meta);
-			List<Map<String, Object>> list=SimpleJdbcDao.queryString(conn, "select config_name as name,config_value as value from etlcloud_test.t_hadoop_cluster_config where cluster_id=4");
+		try(Connection conn=SimpleJdbcDao.getConnection(meta)){
+			List<Map<String, Object>> list=SimpleJdbcDao.queryString(conn, "select config_name as name,config_value as value from t_hadoop_cluster_config where cluster_id=4");
 			for (Map<String, Object> map:list)  {
 				property.getHaConfig().put(map.get("name").toString(), map.get("value").toString());
 			}
-			YarnJobInfoUtil util=new YarnJobInfoUtil();
+			YarnJobInfoUtil util=new YarnJobInfoUtil(property);
 			YarnJobDetail detail=util.getJobDetailByRunner("1447208692103_312");
 			log.info("{}",detail);
 		}catch(Exception ex){
 			ex.printStackTrace();
-		}finally{
-			if(conn!=null){
-				DbUtils.closeQuietly(conn);
-			}
 		}
 	}
 

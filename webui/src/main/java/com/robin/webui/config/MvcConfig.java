@@ -45,7 +45,7 @@ public class MvcConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         //registry.addInterceptor(getLoginInterceptor()).addPathPatterns("/**");
-        registry.addInterceptor(new SsoInterceptor(ignoreUrls,ignoreResources,oauthUrl)).addPathPatterns("/**");
+        //registry.addInterceptor(new SsoInterceptor(ignoreUrls,ignoreResources,oauthUrl)).addPathPatterns("/**");
         registry.addInterceptor(localeChangeInterceptor());
 
     }

@@ -23,7 +23,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface MappingField {
-	String field() default "";
+	String value() default "";
 	boolean primary() default false;
 	boolean increment() default false;
 	String sequenceName() default "";

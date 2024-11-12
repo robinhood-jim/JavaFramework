@@ -75,7 +75,7 @@ public class ExcelProcessor {
         int pos = 0;
         for (Iterator<Row> rit = sheet.rowIterator(); rit.hasNext(); ) {
             pos++;
-            if (pos < prop.getStartRow()) {
+            if (pos <= prop.getStartRow()) {
                 rit.next();
                 continue;
             }
@@ -271,7 +271,13 @@ public class ExcelProcessor {
                     strCell = String.valueOf(cell.getBooleanCellValue());
                     break;
                 case FORMULA:
-                    strCell = evaluator.evaluate(cell).getStringValue();
+                    CellValue formulaValue = evaluator.evaluate(cell);
+                    CellType type1=formulaValue.getCellType();
+                    if(CellType.NUMERIC.equals(type1)){
+                        strCell=formulaValue.getNumberValue();
+                    }else{
+                        strCell=formulaValue.getStringValue();
+                    }
                     break;
                 default:
                     strCell = getDefaultValue(type);
@@ -314,13 +320,13 @@ public class ExcelProcessor {
     public static void readExcel(InputStream stream, String filePrefix, int sheetIndex, int startRow, IExcelReadProcessor processor) throws IOException {
         boolean is2007 = ExcelBaseOper.TYPE_EXCEL2007.equalsIgnoreCase(filePrefix);
         try (Workbook wb = is2007 ? new XSSFWorkbook(stream) : new HSSFWorkbook(stream)) {
-            readExcel(wb, filePrefix, sheetIndex, startRow, processor);
+            readExcel(wb, sheetIndex, startRow, processor);
         } catch (Exception ex) {
             throw ex;
         }
     }
 
-    public static void readExcel(Workbook wb, String fileSuffix, int sheetIndex, int startRow, IExcelReadProcessor processor) {
+    public static void readExcel(Workbook wb,int sheetIndex, int startRow, IExcelReadProcessor processor) {
         try {
             Sheet sheet = wb.getSheetAt(sheetIndex);
             FormulaEvaluator evaluator = wb.getCreationHelper().createFormulaEvaluator();
@@ -328,7 +334,7 @@ public class ExcelProcessor {
             for (Iterator<Row> rit = sheet.rowIterator(); rit.hasNext(); ) {
                 pos++;
                 Row row = rit.next();
-                if (pos >= startRow) {
+                if (pos > startRow) {
                     processor.doRead(wb, row, evaluator);
                 }
             }
@@ -426,11 +432,14 @@ public class ExcelProcessor {
 
     public static void generateExcelFileToLocal(ExcelSheetProp prop, TableConfigProp header, String localPath) throws Exception {
         Workbook wb = generateExcelFile(prop, header);
-        FileOutputStream out = new FileOutputStream(localPath);
-        wb.write(out);
-        out.close();
-        if (wb instanceof SXSSFWorkbook) {
-            ((SXSSFWorkbook) wb).dispose();
+        try(FileOutputStream out = new FileOutputStream(localPath)) {
+            wb.write(out);
+            out.close();
+            if (wb instanceof SXSSFWorkbook) {
+                ((SXSSFWorkbook) wb).dispose();
+            }
+        }catch (IOException ex){
+            log.error("{}",ex);
         }
     }
 

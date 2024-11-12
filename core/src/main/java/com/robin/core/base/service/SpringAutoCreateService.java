@@ -186,7 +186,7 @@ public class SpringAutoCreateService<B extends BaseObject, P extends Serializabl
                 definition.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRED);
                 TransactionStatus status = manager.getTransaction(definition);
                 JdbcDao dao = getJdbcDao(service);
-                P pobj = null;
+                P pobj ;
                 try {
                     if (ObjectUtils.isEmpty(function)) {
                         if(!ObjectUtils.isEmpty(service.getSaveBeforeFunction())){

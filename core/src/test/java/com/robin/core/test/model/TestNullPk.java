@@ -5,7 +5,7 @@ import com.robin.core.base.annotation.MappingField;
 import com.robin.core.base.model.BaseObject;
 import lombok.Data;
 
-@MappingEntity(table = "t_test_nullpk")
+@MappingEntity("t_test_nullpk")
 @Data
 public class TestNullPk extends BaseObject {
     @MappingField

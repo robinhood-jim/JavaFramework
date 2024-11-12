@@ -65,8 +65,8 @@ Slightly Framework design to  support Spring based java or Bigdata program.
                 ----------------------------------------------------------------------------------------
                 |parameter           |reference                                                         |
                 |field               |DB column name,if java param same as columnName,can unsign        |
-                |primary             |if column is primary,set "1"                                      |
-                |increment           |if column is autoincrement,set "1"(MySql/SqlServcer/Postgre/DB2)  |
+                |primary             |if column is primary,set true                                     |
+                |increment           |if column is autoincrement,set true                               |
                 |sequenceName        |column insert with sequence,set sequenceName                      |
                 |required            |column is not null                                                |
                 |datatype            |if column is clob or blob,set "clob" or "blob"                    |

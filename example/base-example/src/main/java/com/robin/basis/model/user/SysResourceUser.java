@@ -19,7 +19,7 @@ import com.robin.core.base.annotation.MappingEntity;
 import com.robin.core.base.annotation.MappingField;
 import com.robin.core.base.model.BaseObject;
 
-@MappingEntity(table = "t_sys_resource_user_r")
+@MappingEntity(value = "t_sys_resource_user_r")
 public class SysResourceUser extends BaseObject {
 
 	// primary key
@@ -29,11 +29,11 @@ public class SysResourceUser extends BaseObject {
 	// fields
 	@MappingField
 	private String status;
-	@MappingField(field = "res_id")
+	@MappingField(value = "res_id")
 	private Integer resId;
-	@MappingField(field = "user_id")
+	@MappingField(value = "user_id")
 	private Integer userId;
-	@MappingField(field="assign_type")
+	@MappingField(value ="assign_type")
 	private Integer assignType;
 
 	public static final int ASSIGN_ADD = 1;

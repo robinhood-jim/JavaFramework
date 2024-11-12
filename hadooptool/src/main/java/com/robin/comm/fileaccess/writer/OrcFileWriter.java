@@ -17,6 +17,7 @@ import org.apache.orc.OrcFile;
 import org.apache.orc.TypeDescription;
 import org.apache.orc.Writer;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import javax.naming.OperationNotSupportedException;
@@ -73,7 +74,7 @@ public class OrcFileWriter extends AbstractFileWriter {
                 compressionKind=CompressionKind.ZLIB;
         }
 
-        if(colmeta.getSourceType().equals(ResourceConst.IngestType.TYPE_HDFS.getValue())){
+        if(!ObjectUtils.isEmpty(colmeta.getSourceType()) && colmeta.getSourceType().equals(ResourceConst.IngestType.TYPE_HDFS.getValue())){
             HDFSUtil util=new HDFSUtil(colmeta);
             conf=util.getConfig();
             fs= FileSystem.get(conf);

@@ -20,7 +20,7 @@ import com.robin.core.base.annotation.MappingField;
 import com.robin.core.base.model.BaseObject;
 
 
-@MappingEntity(table = "t_sys_resource_role_r")
+@MappingEntity(value = "t_sys_resource_role_r")
 public class SysResourceRole extends BaseObject {
 
     // primary key
@@ -28,11 +28,11 @@ public class SysResourceRole extends BaseObject {
     private Long id;   //
 
     // fields
-    @MappingField(field = "role_id")
+    @MappingField(value = "role_id")
     private Integer roleId;
-    @MappingField(field = "status")
+    @MappingField(value = "status")
     private String status;
-    @MappingField(field = "res_id")
+    @MappingField(value = "res_id")
     private Integer resId;
 
 

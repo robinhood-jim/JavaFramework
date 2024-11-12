@@ -31,7 +31,7 @@ public class DownloadUtils {
     }
 
     /**
-     * using Apache VFS to  multi thread asynchronized download to Local path
+     * using Apache VFS to  multi thread asynchronous download to Local path
      * @param collectionMeta  remote configuration
      * @param resPath         remote path
      * @param targetPath      target Local Path

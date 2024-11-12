@@ -39,6 +39,8 @@ import java.awt.Color;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.*;
@@ -60,7 +62,7 @@ public class ExcelBaseOper {
     private static final Pattern paramPattern=Pattern.compile("\\w+(\\{P([\\+|-]?[\\d+])?\\})");
 
 
-    public final static Workbook createWorkBook(ExcelSheetProp prop) {
+    public static Workbook createWorkBook(ExcelSheetProp prop) {
         boolean is2007 = ExcelBaseOper.TYPE_EXCEL2007.equalsIgnoreCase(prop.getFileExt());
         Workbook wb;
 
@@ -72,8 +74,7 @@ public class ExcelBaseOper {
                             return null;
                         }
                     })
-                    .orElseGet(() ->
-                            new HSSFWorkbook());
+                    .orElseGet(HSSFWorkbook::new);
         } else {
             wb = Optional.of(prop.isStreamInsert()).map(f -> {
                 Workbook wb1 = Optional.ofNullable(prop.getTemplateFile()).map(p1 -> {
@@ -82,7 +83,7 @@ public class ExcelBaseOper {
                         wb3.setCompressTempFiles(true);
                         return wb3;
                     } catch (IOException ex) {
-                        log.error("{}", ex);
+                        log.error("{}", ex.getMessage());
                         return null;
                     }
                 }).orElseGet(() -> {
@@ -96,10 +97,10 @@ public class ExcelBaseOper {
                     try {
                         return new XSSFWorkbook(getTemplateInputStream(prop));
                     } catch (IOException ex) {
-                        log.error("{}", ex);
+                        log.error("{}", ex.getMessage());
                         return null;
                     }
-                }).orElseGet(() -> new XSSFWorkbook());
+                }).orElseGet(XSSFWorkbook::new);
                 return wb2;
             });
         }
@@ -109,9 +110,9 @@ public class ExcelBaseOper {
     private static InputStream getTemplateInputStream(ExcelSheetProp prop) throws IOException {
         Assert.notNull(prop.getTemplateFile(), "");
         if (prop.getTemplateFile().startsWith("classpath:")) {
-            return ExcelProcessor.class.getClassLoader().getResourceAsStream(prop.getTemplateFile().substring(10, prop.getTemplateFile().length()));
+            return ExcelProcessor.class.getClassLoader().getResourceAsStream(prop.getTemplateFile().substring(10));
         } else {
-            return new FileInputStream(prop.getTemplateFile());
+            return Files.newInputStream(Paths.get(prop.getTemplateFile()));
         }
     }
 

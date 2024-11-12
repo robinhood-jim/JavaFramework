@@ -17,6 +17,7 @@ import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.*;
@@ -53,7 +54,8 @@ public class RobinCoreConfig implements TransactionManagementConfigurer, BeanFac
         try {
             DataSourceConfig.DataSourceCfg config=dataSourceConfig.getDatasources().get("main");
             if(config!=null) {
-                return DataSourceBuilder.create().type((Class<? extends DataSource>) Class.forName(config.getType())).url(config.getJdbcUrl()).driverClassName(config.getDriverClassName()).username(config.getUsername()).password(config.getPassword()).build();
+                return DataSourceBuilder.create().type((Class<? extends DataSource>) Class.forName(config.getType()))
+                        .url(config.getJdbcUrl()).driverClassName(config.getDriverClassName()).username(config.getUsername()).password(config.getPassword()).build();
             } else{
                 throw new ConfigurationIncorrectException("datasource main is missing");
             }

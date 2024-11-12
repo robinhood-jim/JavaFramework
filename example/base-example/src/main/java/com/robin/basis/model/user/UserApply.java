@@ -8,7 +8,7 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 
-@MappingEntity(table = "t_user_apply")
+@MappingEntity(value = "t_user_apply")
 @Data
 public class UserApply extends BaseObject {
     @MappingField(increment = true,primary = true)

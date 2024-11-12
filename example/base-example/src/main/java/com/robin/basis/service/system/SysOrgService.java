@@ -25,7 +25,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-@Component(value="sysOrgService")
+@Component("sysOrgService")
 @Scope(value="singleton")
 public class SysOrgService extends BaseAnnotationJdbcService<SysOrg, Long> implements IBaseAnnotationJdbcService<SysOrg, Long> {
 

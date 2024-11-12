@@ -41,21 +41,21 @@ public abstract class AbstractCassandraOperation {
         Object value = null;
 
         try {
-            if (type == DataType.bigint()) {
+            if (DataType.bigint().equals(type)) {
                 value = row.getLong(columnName);
-            } else if (type == DataType.cboolean()) {
+            } else if (DataType.cboolean().equals(type)) {
                 value = row.getBool(columnName);
-            } else if (type == DataType.blob()) {
+            } else if (DataType.blob().equals(type)) {
                 value = row.getBytes(columnName);
-            } else if (type == DataType.timestamp()) {
+            } else if (DataType.timestamp().equals(type)) {
                 value = row.getDate(columnName);
-            } else if (type == DataType.decimal()) {
+            } else if (DataType.decimal().equals(type)) {
                 value = row.getDecimal(columnName);
-            } else if (type == DataType.cfloat()) {
+            } else if (DataType.cfloat().equals(type)) {
                 value = row.getFloat(columnName);
-            } else if (type == DataType.inet()) {
+            } else if (DataType.inet().equals(type)) {
                 value = row.getInet(columnName);
-            } else if (type == DataType.cint()) {
+            } else if (DataType.cint().equals(type)) {
                 value = row.getInt(columnName);
             }
             /*else if (type.isCollection() && type.asJavaClass() == List.class) {
@@ -65,15 +65,15 @@ public abstract class AbstractCassandraOperation {
             } else if (type.isCollection() && type.asJavaClass() == Map.class) {
                 value = getCollectionData(row, type, columnName, valClass, keyClass);
             } */
-            else if (type == DataType.varchar()) {
+            else if (DataType.varchar().equals(type)) {
                 value = row.getString(columnName);
-            } else if (type == DataType.uuid() || type == DataType.timeuuid()) {
+            } else if (DataType.uuid().equals(type) || DataType.timeuuid().equals(type)) {
                 value = row.getUUID(columnName);
-            } else if (type == DataType.varint()) {
+            } else if (DataType.varint().equals(type)) {
                 value = row.getVarint(columnName);
-            } else if (type == DataType.cdouble()) {
+            } else if (DataType.cdouble().equals(type)) {
                 value = row.getDouble(columnName);
-            } else if (type == DataType.text()) {
+            } else if (DataType.text().equals(type)) {
                 value = row.getString(columnName);
             }
 

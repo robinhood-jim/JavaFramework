@@ -22,46 +22,46 @@ import lombok.Data;
 
 
 @SuppressWarnings("serial")
-@MappingEntity(table="t_meta_global_resource")
+@MappingEntity(value ="t_meta_global_resource")
 @Data
 public class GlobalResource extends BaseObject {
 	@MappingField(increment=true,primary=true)
 	private Long id;
-	@MappingField(field="res_type")
+	@MappingField(value ="res_type")
 	private Long resType;
-	@MappingField(field="res_name")
+	@MappingField(value ="res_name")
 	private String resName;
 	@MappingField
 	private String protocol;
-	@MappingField(field="db_type")
+	@MappingField(value ="db_type")
 	private String dbType;
-	@MappingField(field="ip_address")
+	@MappingField(value ="ip_address")
 	private String hostName;
 	@MappingField
 	private Integer port;
-	@MappingField(field="db_schema")
+	@MappingField(value ="db_schema")
 	private String dbSchema;
-	@MappingField(field="username")
+	@MappingField(value ="username")
 	private String userName;
 	@MappingField
 	private String password;
-	@MappingField(field="jdbc_url")
+	@MappingField(value ="jdbc_url")
 	private String jdbcUrl;
-	@MappingField(field="is_pool")
+	@MappingField(value ="is_pool")
 	private String poolTag;
-	@MappingField(field="max_active")
+	@MappingField(value ="max_active")
 	private Integer maxActive;
-	@MappingField(field="max_idle")
+	@MappingField(value ="max_idle")
 	private Integer maxIdle;
-	@MappingField(field="file_path")
+	@MappingField(value ="file_path")
 	private String filePath;
-	@MappingField(field = "file_format")
+	@MappingField(value = "file_format")
 	private String fileFormat;
-	@MappingField(field="cluster_code")
+	@MappingField(value ="cluster_code")
 	private String clusterCode;
-	@MappingField(field = "record_content")
+	@MappingField(value = "record_content")
 	private String recordContent;
-	@MappingField(field = "authorize_type")
+	@MappingField(value = "authorize_type")
 	private Integer authType;
 
 	public static enum AuthorizeType{
