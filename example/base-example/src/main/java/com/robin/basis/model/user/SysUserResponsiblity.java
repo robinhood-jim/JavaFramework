@@ -5,14 +5,14 @@ import com.robin.core.base.annotation.MappingField;
 import com.robin.core.base.model.BaseObject;
 import lombok.Data;
 
-@MappingEntity(table = "t_sys_user_resp_r")
+@MappingEntity(value = "t_sys_user_resp_r")
 @Data
 public class SysUserResponsiblity extends BaseObject {
     @MappingField(increment = true,primary = true)
     private Long id;
-    @MappingField(field = "resp_id")
+    @MappingField(value = "resp_id")
     private Long respId;
-    @MappingField(field = "user_id")
+    @MappingField(value = "user_id")
     private Long userId;
     @MappingField
     private String status;

@@ -6,16 +6,16 @@ import com.robin.core.base.model.BaseObject;
 import lombok.Data;
 
 
-@MappingEntity(table="t_base_datasource")
+@MappingEntity(value ="t_base_datasource")
 @Data
 public class DataSource extends BaseObject {
 	@MappingField(increment=true,primary=true)
 	private Long id;
 	@MappingField
 	private String name;
-	@MappingField(field="db_type")
+	@MappingField(value ="db_type")
 	private String dbType;
-	@MappingField(field="driver_id")
+	@MappingField(value ="driver_id")
 	private Long driverId;
 	@MappingField
 	private String hostIp;

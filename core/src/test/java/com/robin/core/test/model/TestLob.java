@@ -20,7 +20,7 @@ import com.robin.core.base.annotation.MappingField;
 import com.robin.core.base.model.BaseObject;
 import lombok.Data;
 
-@MappingEntity(table="testtablob",schema = "test")
+@MappingEntity(value ="testtablob",schema = "test")
 @Data
 public class TestLob extends BaseObject {
 	@MappingField(primary=true,increment=true)

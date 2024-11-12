@@ -5,14 +5,14 @@ import com.robin.core.base.annotation.MappingField;
 import com.robin.core.base.model.BaseObject;
 import lombok.Data;
 
-@MappingEntity(table="t_base_projrelay")
+@MappingEntity(value ="t_base_projrelay")
 @Data
 public class JavaProjectRelay extends BaseObject {
 	@MappingField(increment=true,primary=true)
 	private Long id;
-	@MappingField(field="proj_id")
+	@MappingField(value ="proj_id")
 	private Long projId;
-	@MappingField(field="library_id")
+	@MappingField(value ="library_id")
 	private Long libraryId;
 	public Long getId() {
 		return id;

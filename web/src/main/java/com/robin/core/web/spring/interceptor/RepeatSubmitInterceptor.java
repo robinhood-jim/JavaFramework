@@ -17,6 +17,7 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.lang.reflect.Method;
@@ -35,9 +36,9 @@ public class RepeatSubmitInterceptor extends HandlerInterceptorAdapter implement
 
     //禁止的ip缓存，指定时间段内，请求超限的ip添加
     private Cache<String, Integer> bannedIpCache;
-    @Autowired
+    @Resource
     private RedisTemplate redisTemplate;
-    @Autowired
+    @Resource
     private Environment environment;
     private int bannedHours = 1;
 

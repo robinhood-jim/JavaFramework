@@ -4,6 +4,8 @@ import java.lang.reflect.Method;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -67,11 +69,11 @@ public class HDFSSecurityUtil {
 		}
 		return ret;
 	}
-	public static Object executeSecurityWithProxy(final Configuration config,final HDFSSecurityProxy proxy){
+	public static Object executeSecurityWithProxy(final Configuration config, final Function<Configuration,Object> consumer){
 		Object ret = null;
 		try {
 			UserGroupInformation.getCurrentUser().checkTGTAndReloginFromKeytab();
-			UserGroupInformation.getCurrentUser().doAs((PrivilegedAction<Object>) () -> proxy.run(config));
+			UserGroupInformation.getCurrentUser().doAs((PrivilegedAction<Object>) () -> consumer.apply(config));
 			
 		}catch(Exception ex){
 			ex.printStackTrace();

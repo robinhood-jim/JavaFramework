@@ -22,42 +22,42 @@ import lombok.Data;
 
 
 @SuppressWarnings("serial")
-@MappingEntity(table="t_meta_hadoop_cfg")
+@MappingEntity(value ="t_meta_hadoop_cfg")
 @Data
 public class HadoopClusterDef extends BaseObject{
 	@MappingField(increment=true,primary=true)
 	private Long id;
 	@MappingField
 	private String name;
-	@MappingField(field="zk_ips")
+	@MappingField(value ="zk_ips")
 	private String zkIps;
-	@MappingField(field="zk_port")
+	@MappingField(value ="zk_port")
 	private Integer zkPort;
-	@MappingField(field="hive_server_ip")
+	@MappingField(value ="hive_server_ip")
 	private String hiveServerIp;
-	@MappingField(field="hive_server_port")
+	@MappingField(value ="hive_server_port")
 	private Integer hiveServerPort;
-	@MappingField(field="hive_server_user")
+	@MappingField(value ="hive_server_user")
 	private String hiveServerUser;
-	@MappingField(field="hive_server_pwd")
+	@MappingField(value ="hive_server_pwd")
 	private String hiveServerPwd;
-	@MappingField(field="hdfs_server_ip")
+	@MappingField(value ="hdfs_server_ip")
 	private String hdfsServerIp;
-	@MappingField(field="hdfs_server_port")
+	@MappingField(value ="hdfs_server_port")
 	private Integer hdfsServerPort;
-	@MappingField(field="is_ha")
+	@MappingField(value ="is_ha")
 	private String haTag;
-	@MappingField(field="ha_nameserver")
+	@MappingField(value ="ha_nameserver")
 	private String haNameServer;
-	@MappingField(field="standby_server")
+	@MappingField(value ="standby_server")
 	private String standByServer;
-	@MappingField(field="mr_frame")
+	@MappingField(value ="mr_frame")
 	private String mrFrame;
-	@MappingField(field="yarn_resource_ips")
+	@MappingField(value ="yarn_resource_ips")
 	private String yarnResIps;
-	@MappingField(field="yarn_resource_port")
+	@MappingField(value ="yarn_resource_port")
 	private Integer yarnResPort;
-	@MappingField(field = "resource_id")
+	@MappingField(value = "resource_id")
 	private Long resId;
 
 }

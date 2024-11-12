@@ -17,7 +17,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
-@SuppressWarnings("UnstableApiUsage")
+@SuppressWarnings({"unused"})
 public class CassandraUtils {
     private final String clusterNames;
     private final String userName;
@@ -104,15 +104,15 @@ public class CassandraUtils {
 
     public static void bindValueByRowType(@NonNull BoundStatement statement,int pos,Object value){
         if(value!=null){
-            if(value instanceof Long){
+            if(Long.class.isAssignableFrom(value.getClass())){
                 statement.setLong(pos,(Long)value);
-            }else if(value instanceof  Integer){
+            }else if(Integer.class.isAssignableFrom(value.getClass())){
                 statement.setInt(pos,(Integer)value);
-            }else if(value instanceof  Double){
+            }else if(Double.class.isAssignableFrom(value.getClass())){
                 statement.setDouble(pos,(Double)value);
-            }else if(value instanceof Timestamp){
+            }else if(Timestamp.class.isAssignableFrom(value.getClass())){
                 statement.setTimestamp(pos,(Timestamp)value);
-            }else if(value instanceof String){
+            }else if(String.class.isAssignableFrom(value.getClass())){
                 statement.setString(pos,value.toString());
             }
         }else{

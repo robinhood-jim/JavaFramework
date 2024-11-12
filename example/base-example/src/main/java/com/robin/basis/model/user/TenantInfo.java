@@ -7,7 +7,7 @@ import lombok.Data;
 
 import java.time.LocalDateTime;
 
-@MappingEntity(table = "t_tenant_info")
+@MappingEntity(value = "t_tenant_info")
 @Data
 public class TenantInfo extends AbstractModel {
     @MappingField(increment = true,primary = true)

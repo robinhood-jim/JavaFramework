@@ -6,7 +6,7 @@ import com.robin.core.base.annotation.MappingField;
 import com.robin.basis.model.AbstractModel;
 import lombok.Data;
 
-@MappingEntity(table = "t_customer_info")
+@MappingEntity(value = "t_customer_info")
 @Data
 public class Customer extends AbstractModel {
     @MappingField(increment = true,primary = true)

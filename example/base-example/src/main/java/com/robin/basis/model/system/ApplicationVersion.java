@@ -8,7 +8,7 @@ import lombok.Data;
 
 import java.time.LocalDateTime;
 
-@MappingEntity(table = "t_application_version")
+@MappingEntity(value = "t_application_version")
 @Data
 public class ApplicationVersion extends AbstractModel {
     @MappingField(primary = true,increment = true)

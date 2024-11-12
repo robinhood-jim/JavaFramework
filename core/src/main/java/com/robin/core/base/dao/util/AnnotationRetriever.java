@@ -202,7 +202,7 @@ public class AnnotationRetriever {
         boolean flag = clazz.isAnnotationPresent(MappingEntity.class);
         if (flag) {
             MappingEntity entity = clazz.getAnnotation(MappingEntity.class);
-            String tableName = entity.table();
+            String tableName = entity.value();
             String schema = entity.schema();
             String jdbcDao = entity.jdbcDao();
             content = getEntityContent(tableName, schema, false, false);
@@ -429,7 +429,7 @@ public class AnnotationRetriever {
             FieldContent.Builder builder = new FieldContent.Builder();
             builder.setGetMethod(getMethod).setSetMethod(setMethod).setField(field).setPropertyName(field.getName());
             if (mapfield != null) {
-                String colfield = mapfield.field();
+                String colfield = mapfield.value();
                 datatype = mapfield.datatype();
                 if (!ObjectUtils.isEmpty(colfield)) {
                     fieldName = colfield;

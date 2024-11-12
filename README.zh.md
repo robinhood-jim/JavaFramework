@@ -57,15 +57,15 @@ core与common工程由ProGuard进行混淆保护
             @MappingField
                 ----------------------------------------------------------------------------------------
                 |parameter           |reference                                                         |
-                |field               |DB column name,if java param same as columnName,can unsign        |
-                |primary             |if column is primary,set "1"                                      |
-                |increment           |if column is autoincrement,set "1"(MySql/SqlServcer/Postgre/DB2)  |
-                |sequenceName        |column insert with sequence,set sequenceName                      |
-                |required            |column is not null                                                |
-                |datatype            |if column is clob or blob,set "clob" or "blob"                    |
-                |precise             |precise                                                           |
+                |field               |数据库字段名，确实驼峰命名                                             |
+                |primary             |主键设为true                                                        |
+                |increment           |自增长设为true                                                      |
+                |sequenceName        |支持sequence得数据库设为true                                         |
+                |required            |字段不允许为空                                                       |
+                |datatype            |clob或blob类型,设为"clob" 或 "blob"                                 |
+                |precise             |精度                                                               |
                 |scale               |scale                                                             |
-                |length              |length                                                            |
+                |length              |长度                                                               |
                 ----------------------------------------------------------------------------------------
              在新增和修改的时候，实体会根据以上的类型和required标识进行验证
              

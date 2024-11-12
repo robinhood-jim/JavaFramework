@@ -33,11 +33,11 @@ public class ProjectInfoService extends BaseAnnotationJdbcService<ProjectInfo,Lo
         }
         map.put("webFramePrefix", webpagePrefix);
         String modelconfigPrefix="";
-        if("1".equals(info.getPresistType())){
+        if("1".equals(info.getPersistType())){
             modelconfigPrefix="hibernate";
-        }else if("2".equals(info.getPresistType())){
+        }else if("2".equals(info.getPersistType())){
             modelconfigPrefix="jpa";
-        }else if("3".equals(info.getPresistType())){
+        }else if("3".equals(info.getPersistType())){
             modelconfigPrefix="custom";
         }
         boolean usemvc=info.getUseMvc()!=null && "1".equals(info.getUseMvc());

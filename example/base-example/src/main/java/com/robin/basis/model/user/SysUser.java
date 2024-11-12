@@ -20,26 +20,26 @@ import com.robin.core.base.annotation.MappingField;
 import com.robin.core.base.model.BaseObject;
 import lombok.Data;
 
-@MappingEntity(table = "t_sys_user_info")
+@MappingEntity(value = "t_sys_user_info")
 @Data
 public class SysUser extends BaseObject {
     @MappingField(primary=true, increment=true)
     private Long id;
-    @MappingField(field="org_id")
+    @MappingField(value ="org_id")
     private Long orgId;
-    @MappingField(field="account_type")
+    @MappingField(value ="account_type")
     private String accountType;
-    @MappingField(field="user_status")
+    @MappingField(value ="user_status")
     private String userStatus;
-    @MappingField(field="user_account")
+    @MappingField(value ="user_account")
     private String userAccount;
-    @MappingField(field="user_name")
+    @MappingField(value ="user_name")
     private String userName;
-    @MappingField(field="remark")
+    @MappingField(value ="remark")
     private String remark;
-    @MappingField(field="order_no")
+    @MappingField(value ="order_no")
     private Integer orderNo;
-    @MappingField(field="user_password")
+    @MappingField(value ="user_password")
     private String userPassword;
     @MappingField
     private String email;

@@ -5,48 +5,48 @@ import com.robin.core.base.annotation.MappingField;
 import com.robin.core.base.model.BaseObject;
 import lombok.Data;
 
-@MappingEntity(table="t_base_entitymapping")
+@MappingEntity("t_base_entitymapping")
 @Data
 public class EntityMapping extends BaseObject {
 	@MappingField(increment=true,primary=true)
 	private Long id;
-	@MappingField(field="proj_id")
+	@MappingField
 	private Long projId;
-	@MappingField(field="source_id")
+	@MappingField
 	private Long sourceId;
-	@MappingField(field="db_schema")
-	private String dbschema;
-	@MappingField(field="entity_code")
+	@MappingField
+	private String dbSchema;
+	@MappingField
 	private String entityCode;
-	@MappingField()
+	@MappingField
 	private String description;
-	@MappingField(field="java_class")
+	@MappingField
 	private String javaClass;
-	@MappingField(field="spring_name")
+	@MappingField
 	private String springName;
-	@MappingField(field="dao_packagename")
+	@MappingField("dao_packagename")
 	private String daoPackage;
-	@MappingField(field="model_packagename")
+	@MappingField("model_packagename")
 	private String modelPackage;
-	@MappingField(field="service_packagename")
+	@MappingField("service_packagename")
 	private String servicePackage;
-	@MappingField(field="web_packagename")
+	@MappingField("web_packagename")
 	private String webPackage;
-	@MappingField(field="dao_configpath")
-	private String daoconfigPath;
-	@MappingField(field="service_configpath")
+	@MappingField
+	private String daoConfigPath;
+	@MappingField("service_configpath")
 	private String serviceconfigPath;
-	@MappingField(field="web_configpath")
+	@MappingField("web_configpath")
 	private String webconfigPath;
-	@MappingField(field="web_path")
+	@MappingField("web_path")
 	private String webPath;
-	@MappingField(field="page_path")
+	@MappingField("page_path")
 	private String pagePath;
-	@MappingField(field="pk_type")
+	@MappingField
 	private String pkType;
-	@MappingField(field="gen_type")
+	@MappingField
 	private String genType;
-	@MappingField(field="sequence_name")
+	@MappingField("sequence_name")
 	private String seqName;
 	@MappingField
 	private String name;

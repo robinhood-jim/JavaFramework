@@ -5,7 +5,7 @@ import com.robin.core.base.annotation.MappingField;
 import com.robin.basis.model.AbstractModel;
 import lombok.Data;
 
-@MappingEntity(table = "t_sys_role_resp_r")
+@MappingEntity(value = "t_sys_role_resp_r")
 @Data
 public class SysRoleResponsibility extends AbstractModel {
     @MappingField(primary =true,increment = true)

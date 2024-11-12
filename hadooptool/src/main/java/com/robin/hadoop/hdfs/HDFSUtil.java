@@ -426,10 +426,10 @@ public class HDFSUtil {
 		return suffix;
 	}
 
-	public void createAndinsert(String hdfsUrl,String txt,String encode,boolean overWriteOrgion) throws HdfsException{
+	public void createAndInsert(String hdfsUrl,String txt,String encode,boolean overWriteOrigion) throws HdfsException{
 		FSDataOutputStream stream=null;
 		try{
-			stream=createFile(hdfsUrl,overWriteOrgion);
+			stream=createFile(hdfsUrl,overWriteOrigion);
 			stream.write(txt.getBytes(encode));
 			stream.close();
 		}catch (Exception e) {

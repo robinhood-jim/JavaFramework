@@ -6,24 +6,24 @@ import com.robin.core.base.model.BaseObject;
 import lombok.Data;
 
 
-@MappingEntity(table="t_base_dbdriver")
+@MappingEntity(value ="t_base_dbdriver")
 @Data
 public class DbDriver extends BaseObject {
 	@MappingField(increment=true,primary=true)
 	private Long id;
-	@MappingField(field="db_type")
+	@MappingField(value ="db_type")
 	private Long dbType;
 	@MappingField
 	private String connUrl;
 	@MappingField
 	private String jars;
-	@MappingField(field="default_port")
+	@MappingField(value ="default_port")
 	private Integer defaultPort;
-	@MappingField(field="driver_name")
+	@MappingField(value ="driver_name")
 	private String driverName;
-	@MappingField(field="maven_tag")
+	@MappingField(value ="maven_tag")
 	private String mavenTag;
-	@MappingField(field="maven_version")
+	@MappingField(value ="maven_version")
 	private String mavenVersion;
 	
 	

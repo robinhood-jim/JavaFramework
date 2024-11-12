@@ -7,16 +7,16 @@ import lombok.Data;
 
 import java.sql.Timestamp;
 
-@MappingEntity(table="t_test")
+@MappingEntity("t_test")
 @Data
 public class TestModel extends BaseObject{
 	@MappingField(primary=true,increment=true)
 	private Integer id;
-	@MappingField(required=true,field="name")
+	@MappingField(required=true, value ="name")
 	private String name;
-	@MappingField(field="code_desc")
+	@MappingField("code_desc")
 	private String description;
-	@MappingField(field="cs_id")
+	@MappingField("cs_id")
 	private Long csId;
 	@MappingField
 	private Timestamp createTime;

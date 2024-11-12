@@ -21,19 +21,19 @@ import com.robin.core.base.model.BaseObject;
 import lombok.Data;
 
 
-@MappingEntity(table="t_sys_user_role_r")
+@MappingEntity(value ="t_sys_user_role_r")
 @Data
 public class SysUserRole extends BaseObject
 {
     @MappingField(increment=true, primary=true)
     private Long id;
-    @MappingField(field="role_id")
+    @MappingField(value ="role_id")
     private Long roleId;
-    @MappingField(field="status")
+    @MappingField(value ="status")
     private String status;
-    @MappingField(field="user_id")
+    @MappingField(value ="user_id")
     private Long userId;
-    @MappingField(field="oper")
+    @MappingField(value ="oper")
     private String oper;
 
     public static final String REF_CLASS = "SysUserRole";

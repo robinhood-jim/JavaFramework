@@ -7,23 +7,23 @@ import lombok.Data;
 
 import java.util.Date;
 
-@MappingEntity(table = "t_org_responsibility")
+@MappingEntity(value = "t_org_responsibility")
 @Data
 public class OrgResponsibility extends BaseObject {
     @MappingField(increment = true,primary = true)
     private Long id;
     @MappingField
     private String name;
-    @MappingField(field = "create_time")
+    @MappingField(value = "create_time")
     private Date createTime;
-    @MappingField(field = "update_time")
+    @MappingField(value = "update_time")
     private Date updateTime;
-    @MappingField(field = "create_user")
+    @MappingField(value = "create_user")
     private Long createUser;
-    @MappingField(field = "update_user")
+    @MappingField(value = "update_user")
     private Long updateUser;
     @MappingField
     private String status;
-    @MappingField(field = "org_id")
+    @MappingField(value = "org_id")
     private Long orgId;
 }

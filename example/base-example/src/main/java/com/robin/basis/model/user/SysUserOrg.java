@@ -7,13 +7,13 @@ import lombok.Data;
 
 
 @Data
-@MappingEntity(table = "t_sys_user_org_r")
+@MappingEntity(value = "t_sys_user_org_r")
 public class SysUserOrg extends BaseObject {
     @MappingField(primary = true,increment = true)
     private Long id;
-    @MappingField(field = "user_id")
+    @MappingField(value = "user_id")
     private Long userId;
-    @MappingField(field = "org_id")
+    @MappingField(value = "org_id")
     private Long orgId;
     @MappingField
     private String status;

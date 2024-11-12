@@ -23,7 +23,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface MappingEntity {
-	String table() default "";
+	String value() default "";
 	String schema() default "";
 	String jdbcDao() default "jdbcDao";
 	//Does all field must declare explicit?

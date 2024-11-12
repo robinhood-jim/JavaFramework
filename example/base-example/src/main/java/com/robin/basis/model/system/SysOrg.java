@@ -21,31 +21,31 @@ import com.robin.core.base.model.BaseObject;
 import lombok.Data;
 
 
-@MappingEntity(table="t_sys_org_info")
+@MappingEntity(value ="t_sys_org_info")
 @Data
 public class SysOrg extends BaseObject
 {
     @MappingField(increment=true, primary=true)
     private Long id;
-    @MappingField(field="tree_level")
+    @MappingField(value ="tree_level")
     private Integer treeLevel;
-    @MappingField(field="org_status")
+    @MappingField(value ="org_status")
     private String orgStatus;
-    @MappingField(field="up_org_id")
+    @MappingField(value ="up_org_id")
     private Long upOrgId;
-    @MappingField(field="org_code")
+    @MappingField(value ="org_code")
     private String orgCode;
-    @MappingField(field="org_name")
+    @MappingField(value ="org_name")
     private String orgName;
-    @MappingField(field="tree_code")
+    @MappingField(value ="tree_code")
     private String treeCode;
-    @MappingField(field="org_abbr")
+    @MappingField(value ="org_abbr")
     private String orgAbbr;
-    @MappingField(field="remark")
+    @MappingField(value ="remark")
     private String remark;
-    @MappingField(field="order_no")
+    @MappingField(value ="order_no")
     private String orderNo;
-    @MappingField(field="org_type")
+    @MappingField(value ="org_type")
     private String orgType;
     @MappingField
     private Long tenantId;
