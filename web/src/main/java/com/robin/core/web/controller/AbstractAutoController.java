@@ -115,13 +115,13 @@ public abstract class AbstractAutoController<O extends BaseObject, P extends Ser
         }
     }
 
-    protected SpringAutoCreateService<O, P> wrapAutoService() {
+    protected final SpringAutoCreateService<O, P> wrapAutoService() {
         SpringAutoCreateService.Builder<O, P> builder = new SpringAutoCreateService.Builder<>(potype, pkType);
         builder.withJdbcDaoName(config.jdbcDaoName()).withTransactionManager(config.transactionManagerName());
         return builder.build();
     }
 
-    protected Map<String, Object> doSave(@RequestBody Map<String, String> reqMap) {
+    protected final Map<String, Object> doSave(@RequestBody Map<String, String> reqMap) {
         Map<String, Object> retMap = new HashMap<>();
         try {
             O vo = potype.newInstance();
@@ -135,7 +135,7 @@ public abstract class AbstractAutoController<O extends BaseObject, P extends Ser
         return retMap;
     }
 
-    protected Map<String, Object> doView(@PathVariable String id) {
+    protected final Map<String, Object> doView(@PathVariable String id) {
         Map<String, Object> retMap = new HashMap<>();
         O vo = null;
         try {
@@ -149,7 +149,7 @@ public abstract class AbstractAutoController<O extends BaseObject, P extends Ser
         }
     }
 
-    protected Map<String, Object> doUpdate(@RequestBody Map<String, String> reqMap) {
+    protected final Map<String, Object> doUpdate(@RequestBody Map<String, String> reqMap) {
         Map<String, Object> retmap = new HashMap<>();
         try {
             O vo = potype.newInstance();
