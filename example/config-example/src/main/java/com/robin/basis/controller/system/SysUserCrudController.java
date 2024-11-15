@@ -379,7 +379,7 @@ public class SysUserCrudController extends AbstractCrudDhtmlxController<SysUser,
             SysResource queryVO=new SysResource();
             queryVO.setOrgId(session.getOrgId()==null?0L:session.getOrgId());
             queryVO.setStatus(Const.VALID);
-            List<SysResource> avaiableList = sysResourceService.queryByVO(queryVO,null,null);
+            List<SysResource> avaiableList = sysResourceService.queryByVO(queryVO,null);
             Map<String, SysResource> resMap = new HashMap<String, SysResource>();
             for (SysResource res : avaiableList) {
                 if (res.getPid() != -1) {

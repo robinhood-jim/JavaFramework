@@ -18,6 +18,7 @@ package com.robin.core.sql.util;
 import com.robin.core.base.dao.util.AnnotationRetriever;
 import com.robin.core.base.dao.util.FieldContent;
 import com.robin.core.base.datameta.DataBaseColumnMeta;
+import com.robin.core.base.model.BaseObject;
 import com.robin.core.base.util.Const;
 import com.robin.core.base.util.StringUtils;
 import com.robin.core.query.util.PageQuery;
@@ -151,14 +152,14 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
             for(FilterCondition condition:param.getConditions()){
                 String queryPart=toSQLForGeneric(condition);
                 if(!ObjectUtils.isEmpty(queryPart)) {
-                    builder.append(queryPart).append(param.getLinkOper());
+                    builder.append(queryPart).append(param.getLinkOper().getSignal());
                 }
             }
-            builder.delete(builder.length()-param.getLinkOper().length(),builder.length());
+            builder.delete(builder.length()-param.getLinkOper().getSignal().length(),builder.length());
         }else {
             String queryPart=toSQLForGeneric(param);
             if(!ObjectUtils.isEmpty(queryPart)) {
-                builder.append(queryPart).append(param.getLinkOper());
+                builder.append(queryPart).append(param.getLinkOper().getSignal());
             }
         }
         return builder.toString();
@@ -411,9 +412,13 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
         if(ObjectUtils.isEmpty(condition.getMappingClass())) {
             return condition.getColumnCode();
         }else{
-            Map<String, FieldContent> map1 = AnnotationRetriever.getMappingFieldsMapCache(condition.getMappingClass());
-            if(map1.containsKey(condition.getColumnCode())){
-                return map1.get(condition.getColumnCode()).getFieldName();
+            if(BaseObject.class.isAssignableFrom(condition.getMappingClass())) {
+                Map<String, FieldContent> map1 = AnnotationRetriever.getMappingFieldsMapCache((Class<? extends BaseObject>)condition.getMappingClass());
+                if (map1.containsKey(condition.getColumnCode())) {
+                    return map1.get(condition.getColumnCode()).getFieldName();
+                } else {
+                    return condition.getColumnCode();
+                }
             }else{
                 return condition.getColumnCode();
             }

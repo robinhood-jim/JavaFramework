@@ -324,8 +324,11 @@ public class AnnotationRetriever {
                 if(!ObjectUtils.isEmpty(mapfield.numericScale())){
                     builder.setScale(Integer.parseInt(mapfield.numericScale()));
                 }
-                fieldName = mapfield.value();
-
+                if(!ObjectUtils.isEmpty(mapfield.value())) {
+                    fieldName = mapfield.value();
+                }else{
+                    fieldName = StringUtils.getFieldNameByCamelCase(field.getName());
+                }
             } else {
                 if (!Objects.isNull(idfield) && !StringUtils.isEmpty(idfield.value())) {
                     fieldName = idfield.value();

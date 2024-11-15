@@ -11,8 +11,10 @@ jobs:
     - name: Cache
       uses: actions/cache@v1.0.2
       with:
-          path: JavaFrame
-          key: ${{ runner.os }}-JavaFrame
+        path: ~/.m2/repository
+        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+        restore-keys: |
+            ${{ runner.os }}-maven-
   
     - uses: actions/checkout@v1
     - name: Set up JDK 1.8

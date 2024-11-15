@@ -9,7 +9,7 @@ import com.robin.core.base.model.BaseObject;
 import lombok.Data;
 
 @Data
-@TableName(value = "t_sys_user_info",schema = "test")
+@TableName(value = "t_sys_user_info",schema = "frameset")
 public class SysUserMybatis extends BaseObject {
     @TableId(type = IdType.AUTO)
     private Long id;

@@ -69,12 +69,12 @@ public class SysResourceService extends BaseAnnotationJdbcService<SysResource, L
 		SysResource queryVO=new SysResource();
 		queryVO.setStatus(Const.VALID);
 		queryVO.setOrgId(orgId);
-		return queryByVO(queryVO,null,null);
+		return queryByVO(queryVO,null);
 	}
 	public List<SysResource> getAllValidate(){
 		SysResource queryVO=new SysResource();
 		queryVO.setStatus(Const.VALID);
-		return queryByVO(queryVO,null,null);
+		return queryByVO(queryVO,null);
 	}
 	public Map<String,Object> getUserRights(Long userId){
 		Map<String,Object> retMap=new HashMap<>();

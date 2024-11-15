@@ -5,6 +5,7 @@ import com.robin.core.base.util.Const;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.dom4j.Element;
+import org.springframework.util.ObjectUtils;
 
 import java.util.HashMap;
 import java.util.List;
@@ -24,10 +25,12 @@ public class  ResultMapperSegment extends AbstractSegment {
 
     public void parse(Element element) {
         className=element.attributeValue("resultType");
-        try{
-            resultClass=Class.forName(className);
-        }catch (ClassNotFoundException ex){
-            throw new ConfigurationIncorrectException("can not load resultMap class "+className);
+        if(!ObjectUtils.isEmpty(className)) {
+            try {
+                resultClass = Class.forName(className);
+            } catch (ClassNotFoundException ex) {
+                throw new ConfigurationIncorrectException("can not load resultMap class " + className);
+            }
         }
         List<Element> elements = element.elements();
         for (Element ele : elements) {

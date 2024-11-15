@@ -1,6 +1,7 @@
 package com.robin.core.base.service;
 
 import com.robin.core.base.dao.JdbcDao;
+import com.robin.core.base.dao.util.PropertyFunction;
 import com.robin.core.base.exception.DAOException;
 import com.robin.core.base.exception.ServiceException;
 import com.robin.core.base.model.BaseObject;
@@ -69,15 +70,21 @@ public class SpringAutoCreateService<B extends BaseObject, P extends Serializabl
             throw new ServiceException(e);
         }
     }
-    public B getByField(String fieldName, Const.OPERATOR oper, Object... fieldValues) throws ServiceException{
-        B obj;
+    public B getByField(PropertyFunction<B,?> function, Const.OPERATOR oper, Object... fieldValues) throws ServiceException{
         try{
-            obj= getJdbcDao(this).getByField(potype, fieldName, oper, fieldValues);
+            return getJdbcDao(this).getByField(potype, function, oper, fieldValues);
         }
         catch(Exception e){
             throw new ServiceException(e);
         }
-        return obj;
+    }
+    public List<B> queryByField(PropertyFunction<B,?> function, Const.OPERATOR oper, Object... fieldValues){
+        try{
+            return getJdbcDao(this).queryByField(potype, function, oper, fieldValues);
+        }
+        catch(Exception e){
+            throw new ServiceException(e);
+        }
     }
 
     public void queryBySelectId(PageQuery query) throws ServiceException {

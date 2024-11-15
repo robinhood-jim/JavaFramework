@@ -100,7 +100,7 @@ public class LoginService implements ILoginService {
         SysUser user = new SysUser();
         user.setUserAccount(userName);
         user.setUserStatus(Const.VALID);
-        List<SysUser> users = sysUserService.queryByVO(user, null, null);
+        List<SysUser> users = sysUserService.queryByVO(user, null);
         if (users.isEmpty()) {
             throw new ServiceException("AccountName or password incorrect or Account is locked!Please retry");
         }
@@ -128,7 +128,7 @@ public class LoginService implements ILoginService {
         SysUser user = new SysUser();
         user.setUserAccount(userName);
         user.setUserStatus(Const.VALID);
-        List<SysUser> users = sysUserService.queryByVO(user, null, null);
+        List<SysUser> users = sysUserService.queryByVO(user, null);
         if (users.isEmpty()) {
             throw new ServiceException("AccountName or password incorrect or Account is locked!Please retry");
         }
@@ -136,9 +136,9 @@ public class LoginService implements ILoginService {
     }
 
     public List<Long> getUserOrgs(Long userId) {
-        FilterConditionBuilder builder = new FilterConditionBuilder();
-        builder.eq(SysUserRole::getUserId, userId).eq(SysUserRole::getStatus, Const.VALID);
-        List<SysUserRole> roles = sysUserRoleService.queryByCondition(builder.getConditions());
+        FilterConditionBuilder builder = new FilterConditionBuilder(SysUserRole.class);
+        builder.addEq(SysUserRole::getUserId, userId).addEq(SysUserRole::getStatus, Const.VALID);
+        List<SysUserRole> roles = sysUserRoleService.queryByCondition(builder.build());
         if (CollectionUtils.isEmpty(roles)) {
             return roles.stream().map(SysUserRole::getRoleId).collect(Collectors.toList());
         } else {
@@ -169,18 +169,18 @@ public class LoginService implements ILoginService {
         }
         retMap.put("roles", roleCodes);
         //get user org info
-        /*PageQuery.Builder builder=new PageQuery.Builder();
-        builder.setPageSize(0).setSelectedId("GETUSERORGINFO").setParameterArr(new Object[]{session.getUserId()});
+        PageQuery.Builder builder=new PageQuery.Builder();
+        builder.setPageSize(0).setSelectedId("GETUSERORGINFO").addQueryParameterArr(new Object[]{session.getUserId()});
         PageQuery orgQuery=builder.build();
         jdbcDao.queryBySelectId(orgQuery);
         //未配置使用缺省企业
         if(!CollectionUtils.isEmpty(orgQuery.getRecordSet())){
             session.setOrgId(Long.valueOf(orgQuery.getRecordSet().get(0).get("orgId").toString()));
             session.setOrgName(orgQuery.getRecordSet().get(0).get("orgName").toString());
-        }else{*/
-        session.setOrgId(1L);
-        session.setOrgName("缺省企业");
-        //}
+        }else{
+            session.setOrgId(1L);
+            session.setOrgName("缺省企业");
+        }
         //get user access resources
         PageQuery.Builder resourceBuilder = new PageQuery.Builder();
         resourceBuilder.setPageSize(0).setSelectedId("GET_RESOURCEINFO")
@@ -211,7 +211,7 @@ public class LoginService implements ILoginService {
         SysUser user = new SysUser();
         user.setUserAccount(userName);
         user.setUserStatus(Const.VALID);
-        List<SysUser> users = sysUserService.queryByVO(user, null, null);
+        List<SysUser> users = sysUserService.queryByVO(user,null);
         if (users.isEmpty()) {
             throw new ServiceException("AccountName or password incorrect or Account is locked!Please retry");
         }
@@ -236,7 +236,7 @@ public class LoginService implements ILoginService {
         user.setUserAccount(accountName);
         //user.setUserPassword(password);
         user.setUserStatus(Const.VALID);
-        List<SysUser> users = sysUserService.queryByVO(user, null, null);
+        List<SysUser> users = sysUserService.queryByVO(user, null);
         if (users.isEmpty()) {
             throw new ServiceException("AccountName does not exist or account is Locked!Please retry");
         }
@@ -257,7 +257,7 @@ public class LoginService implements ILoginService {
             SysUserOrg org = new SysUserOrg();
             org.setStatus(Const.VALID);
             org.setUserId(session.getUserId());
-            List<SysUserOrg> sysOrgs = sysUserOrgService.queryByVO(org, null, null);
+            List<SysUserOrg> sysOrgs = sysUserOrgService.queryByVO(org, null);
             if (sysOrgs.size() == 1) {
                 session.setOrgId(sysOrgs.get(0).getOrgId());
                 getRights(session);
@@ -304,7 +304,7 @@ public class LoginService implements ILoginService {
         SysUserResponsiblity queryVO = new SysUserResponsiblity();
         queryVO.setUserId(session.getUserId());
         queryVO.setStatus(Const.VALID);
-        List resps = this.jdbcDao.queryByVO(SysUserResponsiblity.class, queryVO, null, null);
+        List resps = this.jdbcDao.queryByVO(SysUserResponsiblity.class, queryVO, null);
         List<Long> respsList = new ArrayList();
         if (resps != null && !resps.isEmpty()) {
             for (int i = 0; i < resps.size(); i++) {
