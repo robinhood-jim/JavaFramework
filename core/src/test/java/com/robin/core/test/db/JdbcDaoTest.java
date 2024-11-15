@@ -299,19 +299,39 @@ public class JdbcDaoTest extends TestCase {
     }
     @Test
     public void testQueryCondition(){
+        /*SELECT id AS id,org_id AS orgId,account_type AS accountType,user_status AS userStatus,user_account AS userAccount,user_name AS userName,remark AS remark,order_no AS orderNo,user_password AS userPassword
+                from frameset.t_sys_user_info
+                where account_type=?
+                OR (org_id=? AND user_status>?
+                    OR ((account_type=? OR order_no=?)
+                        AND order_no=?))
+                        AND id in (SELECT user_id FROM t_sys_user_role_r WHERE status=?)
+        */
         FilterConditionBuilder builder=new FilterConditionBuilder(SysUser.class);
+        //account_type=?
         builder.addEq(SysUser::getAccountType, "1");
-        FilterCondition condition1=new FilterCondition(SysUser::getOrgId,SysUser.class, Const.OPERATOR.EQ,1L);
-        FilterCondition condition2=new FilterCondition(SysUser::getUserStatus,SysUser.class, Const.OPERATOR.EQ,1);
+        //(org_id=? AND user_status>?)
+        FilterCondition condition1=builder.eq(SysUser::getOrgId,1L);
+        FilterCondition condition2=builder.filter(SysUser::getUserStatus,Const.OPERATOR.GT,1);
         FilterCondition tcond=new FilterCondition(SysUser.class,Const.LINKOPERATOR.LINK_AND,Arrays.stream(new FilterCondition[]{condition1,condition2}).collect(Collectors.toList()));
-        FilterCondition condition3=new FilterCondition(SysUser::getAccountType,SysUser.class, Const.OPERATOR.EQ,1);
-        FilterCondition condition4=new FilterCondition(SysUser::getOrderNo,SysUser.class, Const.OPERATOR.EQ,1);
+
+        //(account_type=? OR order_no=?)
+        FilterCondition condition3=builder.eq(SysUser::getAccountType,1);
+        FilterCondition condition4=builder.eq(SysUser::getOrderNo,1);
         condition4.setLinkOper(Const.LINKOPERATOR.LINK_OR);
         FilterCondition tcond2=new FilterCondition(SysUser.class,Const.LINKOPERATOR.LINK_OR,Arrays.stream(new FilterCondition[]{condition3,condition4}).collect(Collectors.toList()));
-        FilterCondition orcond1=new FilterCondition(SysUser::getOrderNo,SysUser.class, Const.OPERATOR.EQ,1);
+        //AND order_no=?
+        FilterCondition orcond1=builder.eq(SysUser::getOrderNo,1);
+        //OR ((account_type=? OR order_no=?) AND order_no=?))
         FilterCondition tcond3=new FilterCondition(SysUser.class,Const.LINKOPERATOR.LINK_OR,Arrays.stream(new FilterCondition[]{tcond2,orcond1}).collect(Collectors.toList()));
+
         builder.or(Arrays.stream(new FilterCondition[]{tcond,tcond3}).collect(Collectors.toList()));
-        SpringContextHolder.getBean(SysUserMybatisService.class).queryByCondition(builder.build());
+        FilterCondition inWhereCondition=new FilterCondition(SysUserRole::getStatus, SysUserRole.class, Const.OPERATOR.EQ,"1");
+        FilterCondition inClause=new FilterCondition(SysUserRole::getUserId, SysUserRole.class,inWhereCondition);
+        builder.addIn(SysUser::getId,inClause);
+
+        List<SysUserMybatis> list= SpringContextHolder.getBean(SysUserMybatisService.class).queryByCondition(builder.build());
+        log.info("get {}",list);
     }
 
     @Test

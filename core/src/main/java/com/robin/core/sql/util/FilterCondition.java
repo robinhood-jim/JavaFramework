@@ -11,6 +11,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Data
 public class FilterCondition {
@@ -21,6 +22,7 @@ public class FilterCondition {
     private Object value;
     private List<?> values;
     private List<FilterCondition> conditions;
+    private FilterCondition condition;
     private String columnType;
     private Const.LINKOPERATOR linkOper = Const.LINKOPERATOR.LINK_AND;
     private Class<? extends BaseObject> mappingClass;
@@ -90,6 +92,14 @@ public class FilterCondition {
         this.operator = operator;
         this.conditions = values;
     }
+    public <T extends BaseObject> FilterCondition(PropertyFunction<T, ?> function,Class<T> clazz, FilterCondition condition) {
+        String columnCode = AnnotationRetriever.getFieldName(function);
+        Map<String,FieldContent> map= AnnotationRetriever.getMappingFieldsMapCache(clazz);
+        Assert.notNull(map.get(columnCode),"columnCode "+columnCode+" not have mapping");
+        this.columnCode = map.get(columnCode).getFieldName();
+        this.mappingClass=clazz;
+        this.setCondition(condition);
+    }
 
 
 
@@ -125,7 +135,7 @@ public class FilterCondition {
     public String toPreparedSQLPart(List<Object> params) {
         StringBuilder sbSQLStr = new StringBuilder();
         String realColumn = columnCode;
-        if (!CollectionUtils.isEmpty(getConditions())) {
+        if (ObjectUtils.isEmpty(value) && ObjectUtils.isEmpty(values) && !CollectionUtils.isEmpty(getConditions())) {
             if (Const.LINKOPERATOR.LINK_OR.equals(getLinkOper())) {
                 sbSQLStr.append("(");
             }
@@ -182,21 +192,24 @@ public class FilterCondition {
                     break;
                 case IN:
                 case NOTIN:
-                    Assert.notNull(values, "");
                     sbSQLStr.append(realColumn);
                     if (Const.OPERATOR.IN.equals(operator)) {
                         sbSQLStr.append(" in (");
                     } else {
                         sbSQLStr.append(" not in (");
                     }
-                    for (int i = 0; i < values.size(); i++) {
-                        if (i != 0) {
-                            sbSQLStr.append(",");
+                    if(!ObjectUtils.isEmpty(values)) {
+                        for (int i = 0; i < values.size(); i++) {
+                            if (i != 0) {
+                                sbSQLStr.append(",");
+                            }
+                            sbSQLStr.append("?");
                         }
-                        sbSQLStr.append("?");
+                        params.add(values);
+                    }else if(!ObjectUtils.isEmpty(getCondition())){
+                        parseConditions(sbSQLStr,params);
                     }
                     sbSQLStr.append(")");
-                    params.add(values);
                     break;
                 case NOT:
                     if (!ObjectUtils.isEmpty(value)) {
@@ -242,51 +255,13 @@ public class FilterCondition {
                     sbSQLStr.append("(");
                 }
             }
+        }else if(!ObjectUtils.isEmpty(getCondition()) && !ObjectUtils.isEmpty(getCondition().getCondition())){
+            sbSQLStr.append(Const.SQL_SELECT).append(getCondition().getColumnCode()).append(Const.SQL_FROM);
+            AnnotationRetriever.EntityContent tableDef = AnnotationRetriever.getMappingTableByCache(getCondition().getMappingClass());
+            sbSQLStr.append(tableDef.getTableName()).append(Const.SQL_WHERE);
+            sbSQLStr.append(getCondition().getCondition().toPreparedSQLPart(params));
         }
     }
 
-    /*@SuppressWarnings("unchecked")
-    public void fillValue(List<Object> objList) {
-        switch (getOperator()) {
-            case LIKE:
-                objList.add("%" + getValue() + "%");
-                break;
-            case LLIKE:
-                objList.add("%" + getValue());
-                break;
-            case RLIKE:
-                objList.add(getValue() + "%");
-                break;
-            case BETWEEN:
-                if (!CollectionUtils.isEmpty(values) && values.size() == 2) {
-                    objList.add(values.get(0));
-                    objList.add(values.get(1));
-                }
-                break;
-            case EQ:
-            case GT:
-            case LT:
-            case NE:
-            case LE:
-            case GE:
-                objList.add(getValue());
-                break;
-            case IN:
-            case NOTIN:
-                Optional.ofNullable(getValues()).get().forEach(o -> objList.add(o));
-                break;
-            case LINK_AND:
-            case LINK_OR:
-                List<FilterCondition> filterConditions = (List<FilterCondition>) value;
-                filterConditions.forEach(f -> f.fillValue(objList));
-                break;
-            case NOT:
-            case EXISTS:
-
-                break;
-            default:
-                objList.add(getValue());
-        }
-    }*/
 
 }

@@ -264,18 +264,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
             List<FieldContent> fields = AnnotationRetriever.getMappingFieldsCache(type);
             List<Object> objList = new ArrayList<>();
             buffer.append(condition.toPreparedSQLPart(objList));
-            /*for (int i = 0; i < conditions.size(); i++) {
-                conditions.get(i).setFieldMap(fieldMap);
-                buffer.append(conditions.get(i).toPreparedSQLPart(objList));
-                if (i != conditions.size() - 1) {
-                    if (!Const.OPERATOR.LINK_OR.getValue().equalsIgnoreCase(conditions.get(i + 1).getSuffixOper())) {
-                        buffer.append(" and ");
-                    } else {
-                        buffer.append(" or ");
-                    }
-                }
-                //getConditionParam(conditions.get(i), objList);
-            }*/
+
             String sql = buffer.toString();
             sql = sqlGen.generatePageSql(sql, pageQuery);
 
@@ -982,13 +971,6 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
         return keyHolder.getKey().longValue();
     }
 
-    /*private void getConditionParam(FilterCondition condition, List<Object> objList) {
-        if (CollectionUtils.isEmpty(condition.getConditions())) {
-            condition.fillValue(objList);
-        } else {
-            condition.getConditions().forEach(f -> f.fillValue(objList));
-        }
-    }*/
 
     private NamedParameterJdbcTemplate getNamedJdbcTemplate() {
         if (namedParameterJdbcTemplate == null) {

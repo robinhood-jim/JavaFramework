@@ -16,9 +16,9 @@
 package com.robin.core.convert.util;
 
 import com.robin.core.base.datameta.DataBaseColumnMeta;
+import com.robin.core.base.exception.GenericException;
 import com.robin.core.base.model.BaseObject;
 import com.robin.core.base.reflect.ReflectUtils;
-
 import com.robin.core.base.service.IModelConvert;
 import com.robin.core.base.util.Const;
 import com.robin.core.fileaccess.meta.DataSetColumnMeta;
@@ -29,11 +29,11 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.sql.Types;
-import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
@@ -69,27 +69,29 @@ public class ConvertUtil {
         }
     }
 
-    public static void objectToMap(Map<String, String> target, Object src) throws Exception {
+    public static void objectToMap(Map<String, String> target, Object src) throws IllegalAccessException, IllegalArgumentException,
+            InvocationTargetException {
         if (src == null || target == null) {
             return;
         }
         Map<String, Method> getMethods = ReflectUtils.returnGetMethods(src.getClass());
         for (Map.Entry<String, Method> entry : getMethods.entrySet()) {
             if (entry.getValue().getParameterTypes().length == 0) {
-                Object value = entry.getValue().invoke(src, (Object[]) null);
+                Object value = entry.getValue().invoke(src);
                 target.put(entry.getKey(), value == null ? "" : value.toString().trim());
             }
         }
     }
 
-    public static void objectToMapObj(Map<String, Object> target, Object src) throws Exception {
+    public static void objectToMapObj(Map<String, Object> target, Object src) throws IllegalAccessException, IllegalArgumentException,
+            InvocationTargetException {
         if (ObjectUtils.isEmpty(src)) {
             return;
         }
         Map<String, Method> getMetholds = ReflectUtils.returnGetMethods(src.getClass());
         for (Map.Entry<String, Method> entry : getMetholds.entrySet()) {
             if (entry.getValue().getParameterTypes().length == 0) {
-                Object value = entry.getValue().invoke(src, (Object[]) null);
+                Object value = entry.getValue().invoke(src);
                 target.put(entry.getKey(), value);
             }
         }
@@ -154,7 +156,7 @@ public class ConvertUtil {
             return;
         }
         if (!target.getClass().equals(src.getClass())) {
-            throw new RuntimeException("source and target class mismatch");
+            throw new GenericException("source and target class mismatch");
         }
         Map<String, Method> srcmap = ReflectUtils.returnGetMethods(src.getClass());
         for (Map.Entry<String, Method> entry : srcmap.entrySet()) {
@@ -233,14 +235,14 @@ public class ConvertUtil {
             }
         }
     }
-
+    @SuppressWarnings("unchecked")
     public static void convertToTarget(Object target, Object src, String... defaultDateTimeFormatter) throws Exception {
         if (target == null || src == null) {
             return;
         }
         Map<String, Method> targetMethodMap = ReflectUtils.returnSetMethods(target.getClass());
         Map<String, Method> sourceMethodMap = ReflectUtils.returnGetMethods(src.getClass());
-        if (src instanceof Map) {
+        if (Map.class.isAssignableFrom(src.getClass())) {
             Map<String, Object> vMap = (Map<String, Object>) src;
             for (Map.Entry<String, Object> entry : vMap.entrySet()) {
                 String field = entry.getKey();
@@ -259,11 +261,9 @@ public class ConvertUtil {
                 }
             }
         } else {
-            Iterator<Map.Entry<String, Method>> iter = sourceMethodMap.entrySet().iterator();
-            while (iter.hasNext()) {
-                Map.Entry<String, Method> entry = iter.next();
+            for (Map.Entry<String, Method> entry : sourceMethodMap.entrySet()) {
                 if (targetMethodMap.containsKey(entry.getKey()) && entry.getValue().getParameterTypes().length == 0) {
-                    Object retValue = parseParameter(targetMethodMap.get(entry.getKey()).getParameterTypes()[0], entry.getValue().invoke(src, new Object[]{}), defaultDateTimeFormatter);
+                    Object retValue = parseParameter(targetMethodMap.get(entry.getKey()).getParameterTypes()[0], entry.getValue().invoke(src), defaultDateTimeFormatter);
                     if (null != retValue) {
                         setObjectValue(targetMethodMap.get(entry.getKey()), target, retValue);
                     }
@@ -378,7 +378,7 @@ public class ConvertUtil {
             } else if (Short.class.isAssignableFrom(type)) {
                 ret = Short.valueOf(strValue.toString());
             } else if (BigDecimal.class.isAssignableFrom(type)) {
-                ret = BigDecimal.valueOf(Double.valueOf(strValue.toString()));
+                ret = BigDecimal.valueOf(Double.parseDouble(strValue.toString()));
             } else if (Boolean.class.isAssignableFrom(type)) {
                 if (NumberUtils.isNumber(strValue.toString())) {
                     ret = strValue.toString().equals(Const.VALID);
@@ -471,7 +471,7 @@ public class ConvertUtil {
 
     public static Object convertStringToTargetObject(String value, DataSetColumnMeta meta){
         Object retObj;
-        DateTimeFormatter dateformat = null;
+        DateTimeFormatter dateformat ;
         String dateformatstr = meta.getDateFormat();
         if (dateformatstr == null || StringUtils.isEmpty(dateformatstr)) {
             dateformatstr = Const.DEFAULT_DATETIME_FORMAT;
