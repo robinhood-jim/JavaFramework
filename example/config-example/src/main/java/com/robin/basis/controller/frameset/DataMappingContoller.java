@@ -172,8 +172,8 @@ public class DataMappingContoller extends AbstractCrudDhtmlxController<ProjectIn
                 list.add(map);
             }
             FilterConditionBuilder filterConditions = new FilterConditionBuilder();
-            filterConditions.eq(EntityMapping::getProjId,info.getId()).eq(EntityMapping::getSourceId,source.getId())
-                            .eq(EntityMapping::getDbSchema,schema).eq(EntityMapping::getEntityCode,table);
+            filterConditions.addEq(EntityMapping::getProjId,info.getId()).addEq(EntityMapping::getSourceId,source.getId())
+                            .addEq(EntityMapping::getDbSchema,schema).addEq(EntityMapping::getEntityCode,table);
            /* filterConditions.withCondition(new FilterCondition("proj_id", Const.OPERATOR.EQ, info.getId())).withCondition(new FilterCondition("source_id", Const.OPERATOR.EQ, source.getId()))
                     .withCondition(new FilterCondition("db_schema", Const.OPERATOR.EQ, schema)).withCondition(new FilterCondition("entity_code", Const.OPERATOR.EQ, table));*/
 

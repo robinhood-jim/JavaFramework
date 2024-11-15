@@ -17,7 +17,9 @@ public class FilterConditionBuilder {
     private Const.LINKOPERATOR linkOper = Const.LINKOPERATOR.LINK_AND;
 
     private Class<? extends BaseObject> mappingClass;
+    public FilterConditionBuilder(){
 
+    }
     public FilterConditionBuilder(Class<? extends BaseObject> mappingClass) {
         this.mappingClass = mappingClass;
     }
