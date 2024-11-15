@@ -212,7 +212,7 @@ public class CommJdbcUtil {
                 String replacestr = "\\$\\{" + key + "\\}";
                 String value = sqlGen.toSQLWithType(entry.getValue());
                 if (value != null) {
-                    querySQL = querySQL.replaceAll(replacestr, entry.getValue().getLinkOper()+value);
+                    querySQL = querySQL.replaceAll(replacestr, entry.getValue().getLinkOper().getSignal()+value);
                 } else {
                     querySQL = querySQL.replaceAll(replacestr, "");
                 }

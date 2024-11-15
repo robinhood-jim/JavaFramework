@@ -294,23 +294,23 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 	@Override
     @SuppressWarnings("unchecked")
 	@Transactional(readOnly=true)
-	public List<V> queryByVO(V vo,Map<String, Object> additonMap, String orderByStr)
+	public List<V> queryByVO(V vo, String orderByStr)
 			throws ServiceException {
-		List<V> retlist;
 		try {
-			retlist= jdbcDao.queryByVO(type, vo, additonMap, orderByStr);
+			return jdbcDao.queryByVO(type, vo, orderByStr);
 		} catch (DAOException ex) {
 			throw new ServiceException(ex);
 		}
-		return retlist;
 	}
+
+
 	@Override
     @Transactional(readOnly=true)
-	public List<V> queryByCondition(List<FilterCondition> conditions,PageQuery pageQuery)
+	public List<V> queryByCondition(FilterCondition condition,PageQuery pageQuery)
 			throws ServiceException {
 		List<V> retlist ;
 		try{
-			retlist= jdbcDao.queryByCondition(type, conditions, pageQuery);
+			retlist= jdbcDao.queryByCondition(type, condition, pageQuery);
 		}catch (DAOException e) {
 			throw new ServiceException(e);
 		}
@@ -321,7 +321,7 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 	public List<V> queryByCondition(FilterConditionBuilder filterConditions, PageQuery pageQuery){
 		List<V> retlist ;
 		try{
-			retlist= jdbcDao.queryByCondition(type, filterConditions.getConditions(), pageQuery);
+			retlist= jdbcDao.queryByCondition(type, filterConditions.build(), pageQuery);
 		}catch (DAOException e) {
 			throw new ServiceException(e);
 		}
@@ -329,7 +329,7 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 	}
 	@Override
 	@Transactional(readOnly = true)
-	public List<V> queryByCondition(List<FilterCondition> filterConditions){
+	public List<V> queryByCondition(FilterCondition filterConditions){
 		List<V> retlist ;
 		try{
 			PageQuery pageQuery=new PageQuery();

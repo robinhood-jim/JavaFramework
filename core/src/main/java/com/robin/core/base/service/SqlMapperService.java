@@ -15,7 +15,7 @@ import java.util.List;
 public class SqlMapperService implements InitializingBean {
     private SqlMapperDao sqlMapperDao;
     public SqlMapperService(){
-        LicenseUtils.getInstance();
+        //LicenseUtils.getInstance();
     }
     public SqlMapperService(SqlMapperDao sqlMapperDao){
         this.sqlMapperDao=sqlMapperDao;

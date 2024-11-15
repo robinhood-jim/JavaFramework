@@ -44,7 +44,7 @@ public class SysUserService extends BaseAnnotationJdbcService<SysUser, Long> imp
         List<FilterCondition> conditionList=new ArrayList<>();
         conditionList.add(new FilterCondition("checkCode", Const.OPERATOR.EQ,checkCode));
         conditionList.add(new FilterCondition("applyTm", Const.OPERATOR.EQ,new Timestamp(System.currentTimeMillis()-3600*24*1000)));
-        List<UserApply> applyList=jdbcDao.queryByCondition(UserApply.class,conditionList,null);
+        List<UserApply> applyList=jdbcDao.queryByCondition(UserApply.class,new FilterCondition(Const.LINKOPERATOR.LINK_AND,conditionList),null);
         return false;
     }
 }

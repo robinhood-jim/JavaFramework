@@ -328,8 +328,6 @@ public class Const {
         NOTLIKE("NOTLIKE"," NOT LIKE"),
         LLIKE("LL"," LIKE "),
         RLIKE("RL", " LIKE "),
-        LINK_AND("AND"," AND "),
-        LINK_OR("OR"," OR "),
         HAVING("HAVING"," HAVING ");
 
         private String value;
@@ -347,8 +345,28 @@ public class Const {
         public String getSignal(){
             return signal;
         }
+    }
+    public enum LINKOPERATOR {
+        LINK_AND("AND"," AND "),
+        LINK_OR("OR"," OR ");
+        private String value;
+        private String signal;
+
+        LINKOPERATOR(String value,String signal) {
+            this.value = value;
+            this.signal=signal;
+        }
+
+
+        public String getValue() {
+            return String.valueOf(this.value);
+        }
+        public String getSignal(){
+            return signal;
+        }
 
     }
+
     public enum HTTPRESPONSECODE{
         OK(200),
         NOTFOUND(404),

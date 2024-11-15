@@ -27,11 +27,12 @@ import java.util.stream.Collectors;
 @Slf4j
 @SuppressWarnings("unchecked")
 public class EntityMappingUtil {
-    private static final Map<Class<? extends BaseObject>, Map<String,DataBaseColumnMeta>> metaCache = new HashMap<>();
+    private static final Map<Class<? extends BaseObject>, Map<String, DataBaseColumnMeta>> metaCache = new HashMap<>();
 
-    private EntityMappingUtil(){
+    private EntityMappingUtil() {
 
     }
+
     public static InsertSegment getInsertSegment(BaseObject obj, BaseSqlGen sqlGen, JdbcDao jdbcDao) throws DAOException {
 
         AnnotationRetriever.EntityContent tableDef = AnnotationRetriever.getMappingTableByCache(obj.getClass());
@@ -49,14 +50,14 @@ public class EntityMappingUtil {
         InsertSegment insertSegment = new EntityMappingUtil.InsertSegment();
 
         try {
-            String schema= ObjectUtils.isEmpty(tableDef.getSchema())?null: tableDef.getSchema();
+            String schema = ObjectUtils.isEmpty(tableDef.getSchema()) ? null : tableDef.getSchema();
             //get database table metadata adjust column must exist
             Map<String, DataBaseColumnMeta> columnMetaMap = returnMetaMap(obj.getClass(), sqlGen, jdbcDao, tableDef, schema);
 
             for (FieldContent content : fields) {
                 Object value = content.getGetMethod().invoke(obj);
-                if(!columnMetaMap.containsKey(content.getFieldName().toLowerCase()) && !columnMetaMap.containsKey(content.getFieldName().toUpperCase()) ){
-                    log.warn("field {} not included in table {},insert column ignore!",content.getFieldName(),tableDef.getTableName());
+                if (!columnMetaMap.containsKey(content.getFieldName().toLowerCase()) && !columnMetaMap.containsKey(content.getFieldName().toUpperCase())) {
+                    log.warn("field {} not included in table {},insert column ignore!", content.getFieldName(), tableDef.getTableName());
                     continue;
                 }
                 if (content.getDataType().equals(Const.META_TYPE_BLOB) || content.getDataType().equals(Const.META_TYPE_CLOB)) {
@@ -118,21 +119,22 @@ public class EntityMappingUtil {
     }
 
     private static Map<String, DataBaseColumnMeta> returnMetaMap(Class<? extends BaseObject> clazz, BaseSqlGen sqlGen, JdbcDao jdbcDao, AnnotationRetriever.EntityContent tableDef, String schema) throws SQLException {
-        Map<String,DataBaseColumnMeta> columnMetaMap;
-        if(metaCache.containsKey(clazz)){
-            columnMetaMap=metaCache.get(clazz);
-        }else {
-            List<DataBaseColumnMeta> columnMetas=DataBaseUtil.getTableMetaByTableName(jdbcDao, tableDef.getTableName(), schema, sqlGen.getDbType());
-            columnMetaMap=columnMetas.stream().collect(Collectors.toMap(DataBaseColumnMeta::getColumnName,f->f));
-            metaCache.put(clazz,columnMetaMap);
+        Map<String, DataBaseColumnMeta> columnMetaMap;
+        if (metaCache.containsKey(clazz)) {
+            columnMetaMap = metaCache.get(clazz);
+        } else {
+            List<DataBaseColumnMeta> columnMetas = DataBaseUtil.getTableMetaByTableName(jdbcDao, tableDef.getTableName(), schema, sqlGen.getDbType());
+            columnMetaMap = columnMetas.stream().collect(Collectors.toMap(DataBaseColumnMeta::getColumnName, f -> f));
+            metaCache.put(clazz, columnMetaMap);
         }
         return columnMetaMap;
     }
-    public static List<FieldContent> returnAvailableFields(Class<? extends BaseObject> clazz, BaseSqlGen sqlGen, JdbcDao jdbcDao, AnnotationRetriever.EntityContent tableDef, String schema,List<FieldContent> fields) throws SQLException {
-        Map<String, DataBaseColumnMeta> metaMap=returnMetaMap(clazz,sqlGen,jdbcDao,tableDef,schema);
-        List<FieldContent> contents=new ArrayList<>();
-        for(FieldContent content:fields){
-            if(metaMap.containsKey(content.getFieldName().toLowerCase()) || metaMap.containsKey(content.getFieldName().toUpperCase()) ){
+
+    public static List<FieldContent> returnAvailableFields(Class<? extends BaseObject> clazz, BaseSqlGen sqlGen, JdbcDao jdbcDao, AnnotationRetriever.EntityContent tableDef, String schema, List<FieldContent> fields) throws SQLException {
+        Map<String, DataBaseColumnMeta> metaMap = returnMetaMap(clazz, sqlGen, jdbcDao, tableDef, schema);
+        List<FieldContent> contents = new ArrayList<>();
+        for (FieldContent content : fields) {
+            if (metaMap.containsKey(content.getFieldName().toLowerCase()) || metaMap.containsKey(content.getFieldName().toUpperCase())) {
                 contents.add(content);
             }
         }
@@ -143,7 +145,7 @@ public class EntityMappingUtil {
 
         AnnotationRetriever.EntityContent tableDef = AnnotationRetriever.getMappingTableByCache(obj.getClass());
         List<FieldContent> fields = AnnotationRetriever.getMappingFieldsCache(obj.getClass());
-        Map<String, FieldContent> fieldContentMap=AnnotationRetriever.getMappingFieldsMapCache(obj.getClass());
+        Map<String, FieldContent> fieldContentMap = AnnotationRetriever.getMappingFieldsMapCache(obj.getClass());
 
         //AnnotationRetriever.validateEntity(obj);
 
@@ -172,19 +174,19 @@ public class EntityMappingUtil {
                 objList.add(object);
             }
         }
-        Assert.isTrue(!CollectionUtils.isEmpty(conditions),"");
-        for(FilterCondition condition:conditions){
-            String fieldName=condition.getColumnCode();
-            if(!fieldContentMap.containsKey(fieldName)){
-                if(fieldContentMap.containsKey(fieldName.toLowerCase())){
-                    fieldName=fieldName.toLowerCase();
-                }else if(fieldContentMap.containsKey(fieldName.toUpperCase())){
-                    fieldName=fieldName.toUpperCase();
+        Assert.isTrue(!CollectionUtils.isEmpty(conditions), "");
+        for (FilterCondition condition : conditions) {
+            String fieldName = condition.getColumnCode();
+            if (!fieldContentMap.containsKey(fieldName)) {
+                if (fieldContentMap.containsKey(fieldName.toLowerCase())) {
+                    fieldName = fieldName.toLowerCase();
+                } else if (fieldContentMap.containsKey(fieldName.toUpperCase())) {
+                    fieldName = fieldName.toUpperCase();
                 }
             }
-            if(fieldContentMap.containsKey(fieldName)){
-                wherebuffer.append(condition.toPreparedSQLPart());
-                condition.fillValue(whereObjects);
+            if (fieldContentMap.containsKey(fieldName)) {
+                wherebuffer.append(condition.toPreparedSQLPart(whereObjects));
+                //condition.fillValue(whereObjects);
             }
         }
         objList.addAll(whereObjects);
@@ -193,6 +195,7 @@ public class EntityMappingUtil {
         updateSegment.setParams(objList);
         return updateSegment;
     }
+
     public static UpdateSegment getUpdateSegmentByKey(BaseObject obj, BaseSqlGen sqlGen) throws SQLException {
         AnnotationRetriever.EntityContent tableDef = AnnotationRetriever.getMappingTableByCache(obj.getClass());
         List<FieldContent> fields = AnnotationRetriever.getMappingFieldsCache(obj.getClass());
@@ -235,8 +238,8 @@ public class EntityMappingUtil {
                     }
                 }
             } else {
-                if(!CollectionUtils.isEmpty(field.getPrimaryKeys())) {
-                    for(FieldContent pkFields:field.getPrimaryKeys()){
+                if (!CollectionUtils.isEmpty(field.getPrimaryKeys())) {
+                    for (FieldContent pkFields : field.getPrimaryKeys()) {
                         Object tobj = AnnotationRetriever.getValueFromVO(pkFields, obj);
                         wherebuffer.append(pkFields.getFieldName()).append("=?,");
                         whereObjects.add(tobj);
@@ -254,7 +257,7 @@ public class EntityMappingUtil {
         return updateSegment;
     }
 
-    public static SelectSegment getSelectPkSegment(Class<? extends BaseObject> clazz, Serializable id,BaseSqlGen sqlGen,JdbcDao jdbcDao) throws Exception {
+    public static SelectSegment getSelectPkSegment(Class<? extends BaseObject> clazz, Serializable id, BaseSqlGen sqlGen, JdbcDao jdbcDao) throws Exception {
         AnnotationRetriever.isBaseObjectClassValid(clazz);
         AnnotationRetriever.EntityContent tableDef = AnnotationRetriever.getMappingTableByCache(clazz);
         List<FieldContent> fields = AnnotationRetriever.getMappingFieldsCache(clazz);
@@ -262,7 +265,7 @@ public class EntityMappingUtil {
         StringBuilder wherebuffer = new StringBuilder();
         SelectSegment segment = new SelectSegment();
         List<Object> selectObjs = new ArrayList<>();
-        String schema= ObjectUtils.isEmpty(tableDef.getSchema())?null: tableDef.getSchema();
+        String schema = ObjectUtils.isEmpty(tableDef.getSchema()) ? null : tableDef.getSchema();
 
         for (FieldContent field : fields) {
             Map<String, DataBaseColumnMeta> columnMetaMap = returnMetaMap(clazz, sqlGen, jdbcDao, tableDef, schema);
@@ -283,8 +286,8 @@ public class EntityMappingUtil {
                 }
 
             } else {
-                if(!columnMetaMap.containsKey(field.getFieldName().toLowerCase()) && !columnMetaMap.containsKey(field.getFieldName().toUpperCase()) ){
-                    log.warn("field {} not included in table {},select column ignore!",field.getFieldName(),tableDef.getTableName());
+                if (!columnMetaMap.containsKey(field.getFieldName().toLowerCase()) && !columnMetaMap.containsKey(field.getFieldName().toUpperCase())) {
+                    log.warn("field {} not included in table {},select column ignore!", field.getFieldName(), tableDef.getTableName());
                     continue;
                 }
                 segment.getAvailableFields().add(field);
@@ -301,59 +304,20 @@ public class EntityMappingUtil {
         return segment;
     }
 
-    public static SelectSegment getSelectByVOSegment(Class<? extends BaseObject> type, BaseSqlGen sqlGen, BaseObject vo, Map<String, Object> additonMap, String orderByStr, String wholeSelectSql) throws Exception {
+    public static SelectSegment getSelectByVOSegment(Class<? extends BaseObject> type, BaseObject vo, String orderByStr, String wholeSelectSql) throws Exception {
         AnnotationRetriever.isBaseObjectClassValid(type);
         List<Object> params = new ArrayList<>();
-        StringBuilder builder=new StringBuilder();
+        StringBuilder builder = new StringBuilder();
         builder.append(wholeSelectSql).append(Const.SQL_WHERE);
         List<FieldContent> fields = AnnotationRetriever.getMappingFieldsCache(type);
-        SelectSegment selectSegment=new SelectSegment();
+        SelectSegment selectSegment = new SelectSegment();
         for (FieldContent field : fields) {
             Object obj = field.getGetMethod().invoke(vo);
             if (obj != null) {
-                if (additonMap == null) {
-                    builder.append(field.getFieldName()).append("=?");
-                    params.add(obj);
-                } else {
-                    if (additonMap.containsKey(field.getFieldName() + "_oper")) {
-                        String oper = additonMap.get(field.getFieldName() + "_oper").toString();
-                        Const.OPERATOR operator= Const.OPERATOR.valueOf(oper);
-                        switch (operator){
-                            case EQ:
-                            case NE:
-                            case LE:
-                            case GE:
-                            case GT:
-                            case LT:
-                                builder.append(field.getFieldName()).append(operator.getSignal()).append("?");
-                                params.add(obj);
-                                break;
-                            case BETWEEN:
-                                builder.append(field.getFieldName()).append(" between ? and ?");
-                                params.add(additonMap.get(field.getFieldName() + "_from"));
-                                params.add(additonMap.get(field.getFieldName() + "_to"));
-                                break;
-                            case IN:
-                                StringBuilder tmpbuffer = new StringBuilder();
-                                List<Object> inobj = (List<Object>) additonMap.get(field.getFieldName());
-                                for (int i = 0; i < inobj.size(); i++) {
-                                    if (i < inobj.size() - 1) {
-                                        tmpbuffer.append("?,");
-                                    } else {
-                                        tmpbuffer.append("?");
-                                    }
-                                }
-                                builder.append(field.getFieldName() + " in (" + tmpbuffer + ")");
-                                params.addAll(inobj);
-                                break;
-                            default:
-                                builder.append(field.getFieldName()).append("=?");
-                                params.add(obj);
-                        }
-                    }
-                }
-                builder.append(" and ");
+                builder.append(field.getFieldName()).append("=?");
+                params.add(obj);
             }
+            builder.append(" and ");
         }
         String sql = builder.toString().substring(0, builder.length() - 5);
         if (orderByStr != null && !orderByStr.isEmpty()) {
@@ -368,6 +332,81 @@ public class EntityMappingUtil {
         return selectSegment;
     }
 
+    public static SelectSegment getSelectByVOSegment(Class<? extends BaseObject> type, FilterCondition condition, String wholeSelectSql) throws Exception {
+        AnnotationRetriever.isBaseObjectClassValid(type);
+        List<Object> params = new ArrayList<>();
+        StringBuilder builder = new StringBuilder();
+        builder.append(wholeSelectSql).append(Const.SQL_WHERE);
+        SelectSegment selectSegment = new SelectSegment();
+        builder.append(condition.toPreparedSQLPart(params));
+        parseParameter(condition, builder, params);
+        selectSegment.setSelectSql(builder.toString());
+        selectSegment.setValues(params);
+        return selectSegment;
+    }
+
+    private static void parseParameter(FilterCondition condition, StringBuilder builder, List<Object> params) {
+        if (!CollectionUtils.isEmpty(condition.getConditions())) {
+            if (Const.LINKOPERATOR.LINK_OR.equals(condition.getLinkOper())) {
+                builder.append("(");
+            }
+            for (int i = 0; i < condition.getConditions().size(); i++) {
+                FilterCondition condition1 = condition.getConditions().get(i);
+                if (Const.LINKOPERATOR.LINK_OR.equals(condition1.getLinkOper())) {
+                    builder.append("(");
+                }
+                parseParameter(condition1, builder, params);
+                if (Const.LINKOPERATOR.LINK_OR.equals(condition1.getLinkOper())) {
+                    builder.append(")");
+                }
+                if (i < condition.getConditions().size() - 1) {
+                    builder.append(condition1.getLinkOper());
+                }
+            }
+            if (Const.LINKOPERATOR.LINK_OR.equals(condition.getLinkOper())) {
+                builder.append(")");
+            }
+        } else {
+            switch (condition.getOperator()) {
+                case EQ:
+                case NE:
+                case LE:
+                case GE:
+                case GT:
+                case LT:
+                    builder.append(condition.getColumnCode()).append(condition.getOperator().getSignal()).append("?");
+                    params.add(condition.getValue());
+                    break;
+                case BETWEEN:
+                    Assert.notNull(condition.getValues(), "");
+                    Assert.isTrue(condition.getValues().size() >= 2, "between operator must be two parameters");
+                    builder.append(condition.getColumnCode()).append(" between ? and ?");
+                    params.add(condition.getValues().get(0));
+                    params.add(condition.getValues().get(1));
+                    break;
+                case IN:
+                    Assert.isTrue(!ObjectUtils.isEmpty(condition.getValues()), "in operator must be less than one values");
+                    StringBuilder tmpbuffer = new StringBuilder();
+                    for (int i = 0; i < condition.getValues().size(); i++) {
+                        if (i < condition.getValues().size() - 1) {
+                            tmpbuffer.append("?,");
+                        } else {
+                            tmpbuffer.append("?");
+                        }
+                    }
+                    builder.append(condition.getColumnCode() + " in (" + tmpbuffer + ")");
+                    params.addAll(condition.getValues());
+                    break;
+                default:
+                    builder.append(condition).append("=?");
+                    params.add(condition.getValue());
+            }
+        }
+        if (!ObjectUtils.isEmpty(condition.getOrderByStr())) {
+            builder.append(condition.getOrderByStr());
+        }
+    }
+
     private static void appendSchemaAndTable(AnnotationRetriever.EntityContent entityContent, StringBuilder builder, BaseSqlGen sqlGen) {
         if (entityContent.getSchema() != null && !entityContent.getSchema().isEmpty()) {
             builder.append(sqlGen.getSchemaName(entityContent.getSchema())).append(".");
@@ -380,14 +419,14 @@ public class EntityMappingUtil {
     public static class SelectSegment {
         private String selectSql;
         private List<Object> values;
-        private List<FieldContent> availableFields=new ArrayList<>();
+        private List<FieldContent> availableFields = new ArrayList<>();
 
     }
 
     @Data
     public static class InsertSegment {
         boolean hasincrementPk = false;
-        boolean hasSequencePk=false;
+        boolean hasSequencePk = false;
         boolean containlob = false;
         private String insertSql;
         private String seqField;

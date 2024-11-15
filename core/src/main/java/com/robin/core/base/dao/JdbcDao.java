@@ -235,7 +235,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
     }
 
     @Override
-    public <T extends BaseObject> List<T> queryByVO(Class<T> type, BaseObject vo, Map<String, Object> additonMap, String orderByStr)
+    public <T extends BaseObject> List<T> queryByVO(Class<T> type, BaseObject vo, String orderByStr)
             throws DAOException {
         List<T> retlist = new ArrayList<>();
         if (!vo.getClass().equals(type)) {
@@ -244,7 +244,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
         try {
             List<FieldContent> fields = AnnotationRetriever.getMappingFieldsCache(type);
             String wholeSelectSql = getWholeSelectSql(type);
-            EntityMappingUtil.SelectSegment segment = EntityMappingUtil.getSelectByVOSegment(type, sqlGen, vo, additonMap, orderByStr, wholeSelectSql);
+            EntityMappingUtil.SelectSegment segment = EntityMappingUtil.getSelectByVOSegment(type, vo, orderByStr, wholeSelectSql);
             List<Map<String, Object>> rsList = queryBySql(segment.getSelectSql(), segment.getValues().toArray());
             wrapList(type, retlist, fields, rsList);
         } catch (Exception ex) {
@@ -253,19 +253,20 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
         return retlist;
     }
 
+
     @Override
-    public <T extends BaseObject> List<T> queryByCondition(Class<T> type, List<FilterCondition> conditions, PageQuery pageQuery)
+    public <T extends BaseObject> List<T> queryByCondition(Class<T> type,FilterCondition condition, PageQuery pageQuery)
             throws DAOException {
         List<T> retlist = new ArrayList<>();
         try {
             StringBuilder buffer = new StringBuilder();
             buffer.append(getWholeSelectSql(type)).append(" where ");
-            Map<String, FieldContent> fieldMap = AnnotationRetriever.getMappingFieldsMapCache(type);
             List<FieldContent> fields = AnnotationRetriever.getMappingFieldsCache(type);
             List<Object> objList = new ArrayList<>();
-            for (int i = 0; i < conditions.size(); i++) {
+            buffer.append(condition.toPreparedSQLPart(objList));
+            /*for (int i = 0; i < conditions.size(); i++) {
                 conditions.get(i).setFieldMap(fieldMap);
-                buffer.append(conditions.get(i).toPreparedSQLPart());
+                buffer.append(conditions.get(i).toPreparedSQLPart(objList));
                 if (i != conditions.size() - 1) {
                     if (!Const.OPERATOR.LINK_OR.getValue().equalsIgnoreCase(conditions.get(i + 1).getSuffixOper())) {
                         buffer.append(" and ");
@@ -273,8 +274,8 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
                         buffer.append(" or ");
                     }
                 }
-                getConditionParam(conditions.get(i), objList);
-            }
+                //getConditionParam(conditions.get(i), objList);
+            }*/
             String sql = buffer.toString();
             sql = sqlGen.generatePageSql(sql, pageQuery);
 
@@ -981,13 +982,13 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
         return keyHolder.getKey().longValue();
     }
 
-    private void getConditionParam(FilterCondition condition, List<Object> objList) {
+    /*private void getConditionParam(FilterCondition condition, List<Object> objList) {
         if (CollectionUtils.isEmpty(condition.getConditions())) {
             condition.fillValue(objList);
         } else {
             condition.getConditions().forEach(f -> f.fillValue(objList));
         }
-    }
+    }*/
 
     private NamedParameterJdbcTemplate getNamedJdbcTemplate() {
         if (namedParameterJdbcTemplate == null) {
