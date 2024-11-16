@@ -85,6 +85,11 @@ public class FilterCondition {
         this.conditions = conditions;
         this.mappingClass = clazz;
     }
+    public FilterCondition(Const.LINKOPERATOR linkOper, List<FilterCondition> conditions) {
+        this.linkOper = linkOper;
+        this.conditions = conditions;
+    }
+
 
 
     public <T extends BaseObject> FilterCondition(PropertyFunction<T, ?> function, Class<T> clazz, Const.OPERATOR operator, List<FilterCondition> values) {

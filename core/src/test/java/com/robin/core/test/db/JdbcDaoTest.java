@@ -307,7 +307,7 @@ public class JdbcDaoTest extends TestCase {
                         AND order_no=?))
                         AND id in (SELECT user_id FROM t_sys_user_role_r WHERE status=?)
         */
-        FilterConditionBuilder builder=new FilterConditionBuilder(SysUser.class);
+        FilterConditionBuilder builder=new FilterConditionBuilder();
         //account_type=?
         builder.addEq(SysUser::getAccountType, "1");
         //(org_id=? AND user_status>?)
@@ -325,7 +325,7 @@ public class JdbcDaoTest extends TestCase {
         //OR ((account_type=? OR order_no=?) AND order_no=?))
         FilterCondition tcond3=new FilterCondition(SysUser.class,Const.LINKOPERATOR.LINK_OR,Arrays.stream(new FilterCondition[]{tcond2,orcond1}).collect(Collectors.toList()));
 
-        builder.or(Arrays.stream(new FilterCondition[]{tcond,tcond3}).collect(Collectors.toList()));
+        builder.or(SysUser.class,Arrays.stream(new FilterCondition[]{tcond,tcond3}).collect(Collectors.toList()));
         FilterCondition inWhereCondition=new FilterCondition(SysUserRole::getStatus, SysUserRole.class, Const.OPERATOR.EQ,"1");
         FilterCondition inClause=new FilterCondition(SysUserRole::getUserId, SysUserRole.class,inWhereCondition);
         builder.addIn(SysUser::getId,inClause);

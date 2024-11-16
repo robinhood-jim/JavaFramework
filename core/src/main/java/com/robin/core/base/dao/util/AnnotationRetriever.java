@@ -25,6 +25,7 @@ import com.robin.core.base.reflect.ReflectUtils;
 import com.robin.core.base.util.Const;
 import com.robin.core.base.util.StringUtils;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.support.lob.LobHandler;
 import org.springframework.util.ObjectUtils;
 
@@ -40,6 +41,7 @@ import java.sql.Date;
 import java.sql.*;
 import java.util.*;
 
+@Slf4j
 @SuppressWarnings("unchecked")
 public class AnnotationRetriever {
     private static final Map<Class<? extends BaseObject>, Map<String, String>> tableCfgMap = new HashMap<>();
@@ -543,6 +545,17 @@ public class AnnotationRetriever {
         String name = clazz.getName();
         SerializedLambda lambda = Optional.ofNullable(functionMap.get(name)).map(Reference::get).orElseGet(() -> getLambdaSerialized(field));
         return uncapitalize(lambda.getImplMethodName());
+    }
+    public static <T> Class<T> getFieldOwnedClass(PropertyFunction<T, ?> field) {
+        Class<?> clazz = field.getClass();
+        String name = clazz.getName();
+        SerializedLambda lambda = Optional.ofNullable(functionMap.get(name)).map(Reference::get).orElseGet(() -> getLambdaSerialized(field));
+        try{
+            return (Class<T>)Class.forName(lambda.getImplClass().replace("/","."));
+        }catch (ClassNotFoundException ex){
+            log.error("{}",ex.getMessage());
+            return null;
+        }
     }
     public static <T> String getFieldType(PropertyFunction<T, ?> field){
         Class<?> clazz = field.getClass();

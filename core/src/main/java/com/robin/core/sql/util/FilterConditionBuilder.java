@@ -17,12 +17,9 @@ public class FilterConditionBuilder {
 
     private Const.LINKOPERATOR linkOper = Const.LINKOPERATOR.LINK_AND;
 
-    private Class<? extends BaseObject> mappingClass;
+    //private Class<? extends BaseObject> mappingClass;
     public FilterConditionBuilder(){
 
-    }
-    public FilterConditionBuilder(Class<? extends BaseObject> mappingClass) {
-        this.mappingClass = mappingClass;
     }
 
     public FilterConditionBuilder linkOper(Const.LINKOPERATOR linkOper) {
@@ -47,6 +44,7 @@ public class FilterConditionBuilder {
 
     public <T extends BaseObject> FilterCondition eq(PropertyFunction<T, ?> function, Object object) {
         String fieldName = AnnotationRetriever.getFieldName(function);
+        Class<T> mappingClass=AnnotationRetriever.getFieldOwnedClass(function);
         Map<String, FieldContent> map1 = AnnotationRetriever.getMappingFieldsMapCache(mappingClass);
         String columnType = AnnotationRetriever.getFieldType(function);
         return Optional.ofNullable(map1.get(fieldName)).map(f -> {
@@ -60,6 +58,7 @@ public class FilterConditionBuilder {
 
     public <T extends BaseObject> FilterConditionBuilder addEq(PropertyFunction<T, ?> function, Object object) {
         String fieldName = AnnotationRetriever.getFieldName(function);
+        Class<T> mappingClass=AnnotationRetriever.getFieldOwnedClass(function);
         Map<String, FieldContent> map1 = AnnotationRetriever.getMappingFieldsMapCache(mappingClass);
         String columnType = AnnotationRetriever.getFieldType(function);
         Optional.ofNullable(map1.get(fieldName)).map(f -> {
@@ -125,6 +124,7 @@ public class FilterConditionBuilder {
     public <T extends BaseObject> FilterConditionBuilder addIn(PropertyFunction<T, ?> function,FilterCondition inClause){
         String fieldName = AnnotationRetriever.getFieldName(function);
         String columnType = AnnotationRetriever.getFieldType(function);
+        Class<T> mappingClass=AnnotationRetriever.getFieldOwnedClass(function);
         Map<String, FieldContent> map1 = AnnotationRetriever.getMappingFieldsMapCache(mappingClass);
         Optional.ofNullable(map1.get(fieldName)).map(f -> {
             conditions.add(in(f.getFieldName(), inClause));
@@ -135,6 +135,7 @@ public class FilterConditionBuilder {
     }
     public <T extends BaseObject> FilterConditionBuilder addNotIn(PropertyFunction<T, ?> function,FilterCondition inClause){
         String fieldName = AnnotationRetriever.getFieldName(function);
+        Class<T> mappingClass=AnnotationRetriever.getFieldOwnedClass(function);
         Map<String, FieldContent> map1 = AnnotationRetriever.getMappingFieldsMapCache(mappingClass);
         Optional.ofNullable(map1.get(fieldName)).map(f -> {
             conditions.add(notIn(f.getFieldName(), inClause));
@@ -152,6 +153,7 @@ public class FilterConditionBuilder {
     public <T extends BaseObject> FilterConditionBuilder addNotIn(PropertyFunction<T, ?> function, List<?> objects) {
         String fieldName = AnnotationRetriever.getFieldName(function);
         String columnType = AnnotationRetriever.getFieldType(function);
+        Class<T> mappingClass=AnnotationRetriever.getFieldOwnedClass(function);
         Map<String, FieldContent> map1 = AnnotationRetriever.getMappingFieldsMapCache(mappingClass);
         Optional.ofNullable(map1.get(fieldName)).map(f -> {
             conditions.add(notIn(f.getFieldName(), columnType, objects));
@@ -175,6 +177,7 @@ public class FilterConditionBuilder {
     public <T extends BaseObject> FilterConditionBuilder addBetween(PropertyFunction<T, ?> function, List<?> objects) {
         String fieldName = AnnotationRetriever.getFieldName(function);
         String columnType = AnnotationRetriever.getFieldType(function);
+        Class<T> mappingClass=AnnotationRetriever.getFieldOwnedClass(function);
         Map<String, FieldContent> map1 = AnnotationRetriever.getMappingFieldsMapCache(mappingClass);
         Optional.ofNullable(map1.get(fieldName)).map(f -> {
             conditions.add(between(f.getFieldName(), columnType, objects));
@@ -188,9 +191,10 @@ public class FilterConditionBuilder {
         return new FilterCondition(columnName, columnType, operator, object);
     }
 
-    public <T> FilterCondition filter(PropertyFunction<T, ?> function, Const.OPERATOR operator, Object object) {
+    public <T extends BaseObject> FilterCondition filter(PropertyFunction<T, ?> function, Const.OPERATOR operator, Object object) {
         String fieldName = AnnotationRetriever.getFieldName(function);
         String columnType = AnnotationRetriever.getFieldType(function);
+        Class<T> mappingClass=AnnotationRetriever.getFieldOwnedClass(function);
         Map<String, FieldContent> map1 = AnnotationRetriever.getMappingFieldsMapCache(mappingClass);
         return Optional.ofNullable(map1.get(fieldName)).map(f ->
                 filter(f.getFieldName(), columnType, operator, object)
@@ -220,6 +224,7 @@ public class FilterConditionBuilder {
     public <T extends BaseObject> FilterConditionBuilder addFilter(PropertyFunction<T, ?> function, Const.OPERATOR operator, Object value) {
         String fieldName = AnnotationRetriever.getFieldName(function);
         String columnType = AnnotationRetriever.getFieldType(function);
+        Class<T> mappingClass=AnnotationRetriever.getFieldOwnedClass(function);
         Map<String, FieldContent> map1 = AnnotationRetriever.getMappingFieldsMapCache(mappingClass);
         Optional.ofNullable(map1.get(fieldName)).map(f -> {
             FilterCondition condition = new FilterCondition(f.getFieldName(), operator);
@@ -235,6 +240,7 @@ public class FilterConditionBuilder {
     public <T extends BaseObject> FilterConditionBuilder addFilter(PropertyFunction<T, ?> function, Const.OPERATOR operator, List<?> value) {
         String fieldName = AnnotationRetriever.getFieldName(function);
         String columnType = AnnotationRetriever.getFieldType(function);
+        Class<T> mappingClass=AnnotationRetriever.getFieldOwnedClass(function);
         Map<String, FieldContent> map1 = AnnotationRetriever.getMappingFieldsMapCache(mappingClass);
         Optional.ofNullable(map1.get(fieldName)).map(f -> {
             FilterCondition condition = new FilterCondition(f.getFieldName(), operator);
@@ -249,6 +255,7 @@ public class FilterConditionBuilder {
 
     public <T extends BaseObject> FilterConditionBuilder notNull(PropertyFunction<T, ?> function) {
         String fieldName = AnnotationRetriever.getFieldName(function);
+        Class<T> mappingClass=AnnotationRetriever.getFieldOwnedClass(function);
         Map<String, FieldContent> map1 = AnnotationRetriever.getMappingFieldsMapCache(mappingClass);
         Optional.ofNullable(map1.get(fieldName)).map(f -> {
             FilterCondition condition = new FilterCondition(f.getFieldName(), Const.OPERATOR.NOTNULL);
@@ -266,6 +273,7 @@ public class FilterConditionBuilder {
 
     public <T extends BaseObject> FilterConditionBuilder isNull(PropertyFunction<T, ?> function) {
         String fieldName = AnnotationRetriever.getFieldName(function);
+        Class<T> mappingClass=AnnotationRetriever.getFieldOwnedClass(function);
         Map<String, FieldContent> map1 = AnnotationRetriever.getMappingFieldsMapCache(mappingClass);
         Optional.ofNullable(map1.get(fieldName)).map(f -> {
             FilterCondition condition = new FilterCondition(f.getFieldName(), Const.OPERATOR.NULL);
@@ -303,7 +311,7 @@ public class FilterConditionBuilder {
     }
 
 
-    public FilterConditionBuilder or(List<FilterCondition> objects) {
+    public FilterConditionBuilder or(Class<? extends BaseObject> mappingClass,List<FilterCondition> objects) {
         conditions.add(new FilterCondition(mappingClass, Const.LINKOPERATOR.LINK_OR, objects));
         return this;
     }
@@ -314,10 +322,7 @@ public class FilterConditionBuilder {
     }
 
     public FilterCondition build() {
-        FilterCondition condition = new FilterCondition(mappingClass, linkOper, conditions);
-        if (!ObjectUtils.isEmpty(mappingClass)) {
-            condition.setMappingClass(mappingClass);
-        }
+        FilterCondition condition = new FilterCondition(linkOper, conditions);
         return condition;
     }
 
