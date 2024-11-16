@@ -11,6 +11,7 @@ import org.springframework.util.ObjectUtils;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@SuppressWarnings("unused")
 public class FilterConditionBuilder {
     private List<FilterCondition> conditions = new ArrayList<>();
 
@@ -54,7 +55,7 @@ public class FilterConditionBuilder {
             condition.setValue(object);
             condition.setColumnType(columnType);
             return condition;
-        }).orElseGet(() -> {
+        }).orElseThrow(() -> {
             throw new ConfigurationIncorrectException("class " + mappingClass.getCanonicalName() + " can not parse");
         });
     }
@@ -70,7 +71,7 @@ public class FilterConditionBuilder {
             condition.setColumnType(columnType);
             conditions.add(condition);
             return f;
-        }).orElseGet(() -> {
+        }).orElseThrow(() -> {
             throw new ConfigurationIncorrectException("class " + mappingClass.getCanonicalName() + " can not parse");
         });
         return this;
@@ -108,9 +109,8 @@ public class FilterConditionBuilder {
         Optional.ofNullable(map1.get(fieldName)).map(f -> {
             conditions.add(in(f.getFieldName(), columnType, objects));
             return f;
-        }).orElseGet(() -> {
-            throw new ConfigurationIncorrectException("class " + clazz.getCanonicalName() + " can not parse");
-        });
+        }).orElseThrow(() ->
+                new ConfigurationIncorrectException("class " + clazz.getCanonicalName() + " can not parse"));
         return this;
     }
 
@@ -133,9 +133,8 @@ public class FilterConditionBuilder {
         Optional.ofNullable(map1.get(fieldName)).map(f -> {
             conditions.add(in(f.getFieldName(), inClause));
             return f;
-        }).orElseGet(() -> {
-            throw new ConfigurationIncorrectException("class " + mappingClass.getCanonicalName() + " can not parse");
-        });
+        }).orElseThrow(() ->
+            new ConfigurationIncorrectException("class " + mappingClass.getCanonicalName() + " can not parse"));
         return this;
     }
     public <T extends BaseObject> FilterConditionBuilder addNotIn(PropertyFunction<T, ?> function,FilterCondition inClause){
@@ -144,9 +143,8 @@ public class FilterConditionBuilder {
         Optional.ofNullable(map1.get(fieldName)).map(f -> {
             conditions.add(notIn(f.getFieldName(), inClause));
             return f;
-        }).orElseGet(() -> {
-            throw new ConfigurationIncorrectException("class " + mappingClass.getCanonicalName() + " can not parse");
-        });
+        }).orElseThrow(() ->
+            new ConfigurationIncorrectException("class " + mappingClass.getCanonicalName() + " can not parse"));
         return this;
     }
 
@@ -162,9 +160,8 @@ public class FilterConditionBuilder {
         Optional.ofNullable(map1.get(fieldName)).map(f -> {
             conditions.add(notIn(f.getFieldName(), columnType, objects));
             return f;
-        }).orElseGet(() -> {
-            throw new ConfigurationIncorrectException("class " + mappingClass.getCanonicalName() + " can not parse");
-        });
+        }).orElseThrow(() ->
+             new ConfigurationIncorrectException("class " + mappingClass.getCanonicalName() + " can not parse"));
         return this;
     }
 
@@ -186,9 +183,8 @@ public class FilterConditionBuilder {
         Optional.ofNullable(map1.get(fieldName)).map(f -> {
             conditions.add(between(f.getFieldName(), columnType, objects));
             return f;
-        }).orElseGet(() -> {
-            throw new ConfigurationIncorrectException("class " + mappingClass.getCanonicalName() + " can not parse");
-        });
+        }).orElseThrow(() ->
+                new ConfigurationIncorrectException("class " + mappingClass.getCanonicalName() + " can not parse"));
         return this;
     }
 
@@ -202,9 +198,8 @@ public class FilterConditionBuilder {
         Map<String, FieldContent> map1 = AnnotationRetriever.getMappingFieldsMapCache(mappingClass);
         return Optional.ofNullable(map1.get(fieldName)).map(f ->
                 filter(f.getFieldName(), columnType, operator, object)
-        ).orElseGet(() -> {
-            throw new ConfigurationIncorrectException("class " + mappingClass.getCanonicalName() + " can not parse");
-        });
+        ).orElseThrow(() ->
+                new ConfigurationIncorrectException("class " + mappingClass.getCanonicalName() + " can not parse"));
     }
 
     public FilterConditionBuilder addFilter(String columnName, String columnType, Const.OPERATOR operator, Object object) {
@@ -236,9 +231,8 @@ public class FilterConditionBuilder {
             condition.setColumnType(columnType);
             conditions.add(condition);
             return f;
-        }).orElseGet(() -> {
-            throw new ConfigurationIncorrectException("class " + mappingClass.getCanonicalName() + " can not parse");
-        });
+        }).orElseThrow(() ->
+                new ConfigurationIncorrectException("class " + mappingClass.getCanonicalName() + " can not parse"));
         return this;
     }
 
@@ -252,9 +246,8 @@ public class FilterConditionBuilder {
             condition.setColumnType(columnType);
             conditions.add(condition);
             return f;
-        }).orElseGet(() -> {
-            throw new ConfigurationIncorrectException("class " + mappingClass.getCanonicalName() + " can not parse");
-        });
+        }).orElseThrow(() ->
+                new ConfigurationIncorrectException("class " + mappingClass.getCanonicalName() + " can not parse"));
         return this;
     }
 
@@ -265,9 +258,8 @@ public class FilterConditionBuilder {
             FilterCondition condition = new FilterCondition(f.getFieldName(), Const.OPERATOR.NOTNULL);
             conditions.add(condition);
             return f;
-        }).orElseGet(() -> {
-            throw new ConfigurationIncorrectException("class " + mappingClass.getCanonicalName() + " can not parse");
-        });
+        }).orElseThrow(() ->
+                new ConfigurationIncorrectException("class " + mappingClass.getCanonicalName() + " can not parse"));
         return this;
     }
 
@@ -283,9 +275,8 @@ public class FilterConditionBuilder {
             FilterCondition condition = new FilterCondition(f.getFieldName(), Const.OPERATOR.NULL);
             conditions.add(condition);
             return f;
-        }).orElseGet(() -> {
-            throw new ConfigurationIncorrectException("class " + mappingClass.getCanonicalName() + " can not parse");
-        });
+        }).orElseThrow(() ->
+                new ConfigurationIncorrectException("class " + mappingClass.getCanonicalName() + " can not parse"));
         return this;
     }
 

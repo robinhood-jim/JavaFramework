@@ -10,8 +10,9 @@ import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 @Data
 public class FilterCondition {
@@ -29,15 +30,17 @@ public class FilterCondition {
     private String orderByStr;
 
 
-    public FilterCondition(String columnCode,Const.OPERATOR operator){
-        this.columnCode=columnCode;
-        this.operator=operator;
+    public FilterCondition(String columnCode, Const.OPERATOR operator) {
+        this.columnCode = columnCode;
+        this.operator = operator;
     }
-    public FilterCondition(String columnCode,String columnType,Const.OPERATOR operator){
-        this.columnCode=columnCode;
-        this.columnType=columnType;
-        this.operator=operator;
+
+    public FilterCondition(String columnCode, String columnType, Const.OPERATOR operator) {
+        this.columnCode = columnCode;
+        this.columnType = columnType;
+        this.operator = operator;
     }
+
     public FilterCondition(Const.OPERATOR operator, String value) {
         this.operator = operator;
         this.value = value;
@@ -57,50 +60,51 @@ public class FilterCondition {
         this.columnType = columnType;
     }
 
-    public <T extends BaseObject> FilterCondition(PropertyFunction<T, ?> function,Class<T> clazz,Const.OPERATOR operator, Object value) {
+    public <T extends BaseObject> FilterCondition(PropertyFunction<T, ?> function, Class<T> clazz, Const.OPERATOR operator, Object value) {
         String columnCode = AnnotationRetriever.getFieldName(function);
-        Map<String,FieldContent> map= AnnotationRetriever.getMappingFieldsMapCache(clazz);
-        Assert.notNull(map.get(columnCode),"columnCode "+columnCode+" not have mapping");
+        Map<String, FieldContent> map = AnnotationRetriever.getMappingFieldsMapCache(clazz);
+        Assert.notNull(map.get(columnCode), "columnCode " + columnCode + " not have mapping");
         this.columnCode = map.get(columnCode).getFieldName();
         this.operator = operator;
-        this.mappingClass=clazz;
-        if(Collection.class.isAssignableFrom(value.getClass())){
-            this.values=(List<?>)value;
-        }else {
+        this.mappingClass = clazz;
+        if (Collection.class.isAssignableFrom(value.getClass())) {
+            this.values = (List<?>) value;
+        } else {
             this.value = value;
         }
     }
 
-    public FilterCondition(String columnCode,Const.OPERATOR operator, List<FilterCondition> conditions) {
+    public FilterCondition(String columnCode, Const.OPERATOR operator, List<FilterCondition> conditions) {
         this.columnCode = columnCode;
         this.operator = operator;
         this.conditions = conditions;
     }
-    public FilterCondition(Class<? extends BaseObject> clazz,Const.LINKOPERATOR linkOper,List<FilterCondition> conditions){
-        this.linkOper=linkOper;
-        this.conditions=conditions;
-        this.mappingClass=clazz;
+
+    public FilterCondition(Class<? extends BaseObject> clazz, Const.LINKOPERATOR linkOper, List<FilterCondition> conditions) {
+        this.linkOper = linkOper;
+        this.conditions = conditions;
+        this.mappingClass = clazz;
     }
 
 
-    public <T extends BaseObject> FilterCondition(PropertyFunction<T, ?> function,Class<T> clazz, Const.OPERATOR operator, List<FilterCondition> values) {
+    public <T extends BaseObject> FilterCondition(PropertyFunction<T, ?> function, Class<T> clazz, Const.OPERATOR operator, List<FilterCondition> values) {
         String columnCode = AnnotationRetriever.getFieldName(function);
-        Map<String,FieldContent> map= AnnotationRetriever.getMappingFieldsMapCache(clazz);
-        Assert.notNull(map.get(columnCode),"columnCode "+columnCode+" not have mapping");
+        Map<String, FieldContent> map = AnnotationRetriever.getMappingFieldsMapCache(clazz);
+        Assert.notNull(map.get(columnCode), "columnCode " + columnCode + " not have mapping");
         this.columnCode = map.get(columnCode).getFieldName();
-        this.mappingClass=clazz;
+        this.mappingClass = clazz;
         this.operator = operator;
         this.conditions = values;
     }
-    public <T extends BaseObject> FilterCondition(PropertyFunction<T, ?> function,Class<T> clazz, FilterCondition condition) {
+
+    public <T extends BaseObject> FilterCondition(PropertyFunction<T, ?> function, Class<T> clazz, FilterCondition condition) {
         String columnCode = AnnotationRetriever.getFieldName(function);
-        Map<String,FieldContent> map= AnnotationRetriever.getMappingFieldsMapCache(clazz);
-        Assert.notNull(map.get(columnCode),"columnCode "+columnCode+" not have mapping");
+        Map<String, FieldContent> map = AnnotationRetriever.getMappingFieldsMapCache(clazz);
+        Assert.notNull(map.get(columnCode), "columnCode " + columnCode + " not have mapping");
         this.columnCode = map.get(columnCode).getFieldName();
-        this.mappingClass=clazz;
+        this.mappingClass = clazz;
         this.setCondition(condition);
     }
-
 
 
     public FilterCondition(String columnCode, Const.OPERATOR operator, List<FilterCondition> values, String prefixOper, String suffixOper) {
@@ -142,13 +146,13 @@ public class FilterCondition {
             for (int i = 0; i < getConditions().size(); i++) {
                 sbSQLStr.append(getConditions().get(i).toPreparedSQLPart(params));
                 if (i < getConditions().size() - 1) {
-                    sbSQLStr.append(getConditions().get(i+1).getLinkOper().getSignal());
+                    sbSQLStr.append(getConditions().get(i + 1).getLinkOper().getSignal());
                 }
             }
             if (Const.LINKOPERATOR.LINK_OR.equals(getLinkOper())) {
                 sbSQLStr.append(")");
             }
-        }else {
+        } else {
             switch (operator) {
                 case BETWEEN:
                     Assert.notNull(values, "");
@@ -198,7 +202,7 @@ public class FilterCondition {
                     } else {
                         sbSQLStr.append(" not in (");
                     }
-                    if(!ObjectUtils.isEmpty(values)) {
+                    if (!ObjectUtils.isEmpty(values)) {
                         for (int i = 0; i < values.size(); i++) {
                             if (i != 0) {
                                 sbSQLStr.append(",");
@@ -206,8 +210,8 @@ public class FilterCondition {
                             sbSQLStr.append("?");
                         }
                         params.add(values);
-                    }else if(!ObjectUtils.isEmpty(getCondition())){
-                        parseConditions(sbSQLStr,params);
+                    } else if (!ObjectUtils.isEmpty(getCondition())) {
+                        parseConditions(sbSQLStr, params);
                     }
                     sbSQLStr.append(")");
                     break;
@@ -241,21 +245,21 @@ public class FilterCondition {
         return sbSQLStr.toString();
     }
 
-    private void parseConditions(StringBuilder sbSQLStr,List<Object> params) {
-        if(!CollectionUtils.isEmpty(getConditions())){
-            for(int i=0;i<getConditions().size();i++) {
-                if(Const.LINKOPERATOR.LINK_OR.equals(getConditions().get(i).getLinkOper())){
+    private void parseConditions(StringBuilder sbSQLStr, List<Object> params) {
+        if (!CollectionUtils.isEmpty(getConditions())) {
+            for (int i = 0; i < getConditions().size(); i++) {
+                if (Const.LINKOPERATOR.LINK_OR.equals(getConditions().get(i).getLinkOper())) {
                     sbSQLStr.append(" OR (");
                 }
                 sbSQLStr.append(getConditions().get(i).toPreparedSQLPart(params));
-                if(i<=getConditions().size()-1){
+                if (i <= getConditions().size() - 1) {
                     sbSQLStr.append(getConditions().get(i).getLinkOper().getSignal());
                 }
-                if(Const.LINKOPERATOR.LINK_OR.equals(getConditions().get(i).getLinkOper())){
+                if (Const.LINKOPERATOR.LINK_OR.equals(getConditions().get(i).getLinkOper())) {
                     sbSQLStr.append("(");
                 }
             }
-        }else if(!ObjectUtils.isEmpty(getCondition()) && !ObjectUtils.isEmpty(getCondition().getCondition())){
+        } else if (!ObjectUtils.isEmpty(getCondition()) && !ObjectUtils.isEmpty(getCondition().getCondition())) {
             sbSQLStr.append(Const.SQL_SELECT).append(getCondition().getColumnCode()).append(Const.SQL_FROM);
             AnnotationRetriever.EntityContent tableDef = AnnotationRetriever.getMappingTableByCache(getCondition().getMappingClass());
             sbSQLStr.append(tableDef.getTableName()).append(Const.SQL_WHERE);

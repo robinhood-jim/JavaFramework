@@ -107,7 +107,7 @@ public class CommJdbcUtil {
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    static PageQuery queryByReplaceParamter(JdbcTemplate jdbcTemplate, LobHandler lobHandler, BaseSqlGen sqlGen, QueryString qs, PageQuery pageQuery) throws DAOException {
+    static void queryByReplaceParamter(JdbcTemplate jdbcTemplate, LobHandler lobHandler, BaseSqlGen sqlGen, QueryString qs, PageQuery pageQuery) throws DAOException {
         List list ;
         String querySQL = getReplacementSql(sqlGen, qs, pageQuery);
 
@@ -127,7 +127,6 @@ public class CommJdbcUtil {
         }
         list = getResultList(jdbcTemplate, lobHandler, sqlGen, qs, pageQuery, querySQL, sumSQL, pageSize);
         pageQuery.setRecordSet(list);
-        return pageQuery;
     }
 
     private static List<?> getResultList(JdbcTemplate jdbcTemplate, LobHandler lobHandler, BaseSqlGen sqlGen, QueryString qs, PageQuery pageQuery, String querySQL, String sumSQL, int pageSize) throws DAOException {
@@ -651,7 +650,7 @@ public class CommJdbcUtil {
                 if (value == null || "".equals(value)) {
                     ps.setNull(pos + 1, Types.DOUBLE);
                 } else {
-                    ps.setDouble(pos + 1, Double.valueOf(value));
+                    ps.setDouble(pos + 1, Double.parseDouble(value));
                 }
             } else if (Const.META_TYPE_INTEGER.equals(typeMap.get("dataType"))) {
                 if (StringUtils.isEmpty(value)) {
@@ -663,7 +662,7 @@ public class CommJdbcUtil {
                 if (StringUtils.isEmpty(value)) {
                     ps.setNull(pos + 1, Types.DOUBLE);
                 } else {
-                    ps.setDouble(pos + 1, Double.valueOf(value));
+                    ps.setDouble(pos + 1, Double.parseDouble(value));
                 }
             } else if (Const.META_TYPE_DATE.equals(typeMap.get("dataType")) ||Const.META_TYPE_TIMESTAMP.equals(typeMap.get("dataType"))) {
 
