@@ -55,9 +55,7 @@ public class FilterConditionBuilder {
             condition.setValue(object);
             condition.setColumnType(columnType);
             return condition;
-        }).orElseThrow(() -> {
-            throw new ConfigurationIncorrectException("class " + mappingClass.getCanonicalName() + " can not parse");
-        });
+        }).orElseThrow(() -> new ConfigurationIncorrectException("class " + mappingClass.getCanonicalName() + " can not parse"));
     }
 
     public <T extends BaseObject> FilterConditionBuilder addEq(PropertyFunction<T, ?> function, Object object) {
@@ -71,9 +69,7 @@ public class FilterConditionBuilder {
             condition.setColumnType(columnType);
             conditions.add(condition);
             return f;
-        }).orElseThrow(() -> {
-            throw new ConfigurationIncorrectException("class " + mappingClass.getCanonicalName() + " can not parse");
-        });
+        }).orElseThrow(() ->new ConfigurationIncorrectException("class " + mappingClass.getCanonicalName() + " can not parse"));
         return this;
     }
 
