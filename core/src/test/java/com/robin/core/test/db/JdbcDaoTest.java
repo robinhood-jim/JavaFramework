@@ -326,8 +326,9 @@ public class JdbcDaoTest extends TestCase {
         FilterCondition tcond3=new FilterCondition(SysUser.class,Const.LINKOPERATOR.LINK_OR,Arrays.stream(new FilterCondition[]{tcond2,orcond1}).collect(Collectors.toList()));
 
         builder.or(SysUser.class,Arrays.stream(new FilterCondition[]{tcond,tcond3}).collect(Collectors.toList()));
-        FilterCondition inWhereCondition=new FilterCondition(SysUserRole::getStatus, SysUserRole.class, Const.OPERATOR.EQ,"1");
-        FilterCondition inClause=new FilterCondition(SysUserRole::getUserId, SysUserRole.class,inWhereCondition);
+        // and id in (select
+        FilterCondition inWhereCondition=new FilterCondition(SysUserRole::getStatus,Const.OPERATOR.EQ,"1");
+        FilterCondition inClause=new FilterCondition(SysUserRole::getUserId,Arrays.stream(new FilterCondition[]{inWhereCondition}).collect(Collectors.toList()));
         builder.addIn(SysUser::getId,inClause);
 
         List<SysUserMybatis> list= SpringContextHolder.getBean(SysUserMybatisService.class).queryByCondition(builder.build());

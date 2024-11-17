@@ -477,8 +477,7 @@ public class Const {
         INNER("INNER"),
         LEFT("LEFT"),
         RIGHT("RIGHT"),
-        LEFTOUT("LEFTOUT"),
-        RIGHTOUT("RIGHTOUT");
+        OUT("OUT");
 
         private String value;
         JOINTYPE(String value){

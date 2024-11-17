@@ -85,7 +85,7 @@ public class FilterConditionBuilder {
     }
     public FilterCondition in(String columnName,FilterCondition inClause){
         FilterCondition condition = new FilterCondition(columnName, Const.OPERATOR.IN);
-        condition.setCondition(inClause);
+        condition.setConditions(Arrays.stream(new FilterCondition[]{inClause}).collect(Collectors.toList()));
         return condition;
     }
 
