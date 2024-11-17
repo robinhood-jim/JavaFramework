@@ -3,7 +3,6 @@ package com.robin.comm.test;
 import com.google.gson.Gson;
 import com.robin.comm.util.redis.JedisClientFactory;
 import com.robin.core.base.util.Const;
-import com.robin.core.fileaccess.fs.LocalFileSystemAccessor;
 import com.robin.core.fileaccess.iterator.IResourceIterator;
 import com.robin.core.fileaccess.iterator.TextFileIteratorFactory;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
@@ -13,7 +12,6 @@ import org.apache.avro.SchemaBuilder;
 import org.apache.avro.generic.GenericRecord;
 import org.junit.Test;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectOutputStream;
 import java.sql.Timestamp;
@@ -32,9 +30,8 @@ public class TestXMLReader {
         colmeta.setEncode("UTF-8");
         colmeta.setPath("f:/test.xml");
         colmeta.setFileFormat(Const.FILETYPE_XML);
-        BufferedReader reader = null;
         try {
-            LocalFileSystemAccessor utils = new LocalFileSystemAccessor();
+
             IResourceIterator iter = TextFileIteratorFactory.getProcessIteratorByType(colmeta);
             //iter.beforeProcess(colmeta.getPath());
             while (iter.hasNext()) {
@@ -43,14 +40,6 @@ public class TestXMLReader {
             iter.afterProcess();
         } catch (Exception ex) {
             ex.printStackTrace();
-        } finally {
-            try {
-                if (reader != null) {
-                    reader.close();
-                }
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
         }
     }
 

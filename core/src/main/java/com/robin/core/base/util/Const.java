@@ -473,6 +473,21 @@ public class Const {
             return value;
         }
     }
+    public enum JOINTYPE{
+        INNER("INNER"),
+        LEFT("LEFT"),
+        RIGHT("RIGHT"),
+        OUT("OUT");
+
+        private String value;
+        JOINTYPE(String value){
+            this.value=value;
+        }
+
+        public String getValue() {
+            return value;
+        }
+    }
     public enum ROLEDEF{
         ADMIN(1L,"admin"),
         NORMAL(2L,"normal");

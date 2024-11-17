@@ -25,6 +25,7 @@ import com.robin.core.base.reflect.ReflectUtils;
 import com.robin.core.base.util.Const;
 import com.robin.core.base.util.StringUtils;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.support.lob.LobHandler;
 import org.springframework.util.ObjectUtils;
 
@@ -40,6 +41,7 @@ import java.sql.Date;
 import java.sql.*;
 import java.util.*;
 
+@Slf4j
 @SuppressWarnings("unchecked")
 public class AnnotationRetriever {
     private static final Map<Class<? extends BaseObject>, Map<String, String>> tableCfgMap = new HashMap<>();
@@ -47,6 +49,7 @@ public class AnnotationRetriever {
     private static final Map<Class<? extends BaseObject>, Map<String, FieldContent>> fieldCfgMap = new HashMap<>();
     private static final Map<Class<? extends BaseObject>, List<FieldContent>> fieldListMap = new HashMap<>();
     private static final Map<String, WeakReference<SerializedLambda>> functionMap = new HashMap<>();
+    private static final Map<String, WeakReference<Class<? extends BaseObject>>> annotationClassMap = new HashMap<>();
 
     private AnnotationRetriever() {
 
@@ -64,7 +67,7 @@ public class AnnotationRetriever {
     }
 
     public static Map<String, FieldContent> getMappingFieldsMapCache(Class<? extends BaseObject> clazz) throws DAOException {
-        Map<String, FieldContent> map ;
+        Map<String, FieldContent> map;
         if (!fieldCfgMap.containsKey(clazz)) {
             map = getMappingFieldsMap(clazz);
             fieldCfgMap.put(clazz, map);
@@ -99,7 +102,7 @@ public class AnnotationRetriever {
             for (int i = 0; i < fields.size(); i++) {
                 Field field = fields.get(i);
                 MappingField mapfield = field.getAnnotation(MappingField.class);
-                if (isFieldValid(entity,mapfield,field)) {
+                if (isFieldValid(entity, mapfield, field)) {
                     FieldContent content = retrieveField(field, fieldClasses.get(i));
                     if (content != null) {
                         list.add(content);
@@ -148,7 +151,7 @@ public class AnnotationRetriever {
             MappingEntity entity = clazz.getAnnotation(MappingEntity.class);
             for (Field field : fields) {
                 MappingField mapfield = field.getAnnotation(MappingField.class);
-                if (isFieldValid(entity,mapfield,field)) {
+                if (isFieldValid(entity, mapfield, field)) {
                     FieldContent content = retrieveField(field, clazz);
                     if (content != null) {
                         map.put(field.getName(), content);
@@ -212,15 +215,15 @@ public class AnnotationRetriever {
         } else {
             flag = clazz.isAnnotationPresent(Entity.class);
             if (flag) {
-                Entity entity=clazz.getAnnotation(Entity.class);
+                Entity entity = clazz.getAnnotation(Entity.class);
                 Table table = clazz.getAnnotation(Table.class);
                 String tableName;
-                String schema=null;
-                if(!ObjectUtils.isEmpty(table)) {
+                String schema = null;
+                if (!ObjectUtils.isEmpty(table)) {
                     tableName = table.name();
                     schema = table.schema();
-                }else{
-                    tableName=entity.name();
+                } else {
+                    tableName = entity.name();
                 }
                 content = getEntityContent(tableName, schema, true, false);
             } else {
@@ -255,7 +258,8 @@ public class AnnotationRetriever {
         }
         return pkField;
     }
-    public static FieldContent getPrimaryFieldByClass(Class<? extends BaseObject> clazz){
+
+    public static FieldContent getPrimaryFieldByClass(Class<? extends BaseObject> clazz) {
         List<FieldContent> fields = AnnotationRetriever.getMappingFieldsCache(clazz);
         return getPrimaryField(fields);
     }
@@ -303,7 +307,7 @@ public class AnnotationRetriever {
     }
 
     private static FieldContent retrieveFieldByMyBatis(Field field, Class<? extends BaseObject> clazz) throws DAOException {
-        FieldContent content ;
+        FieldContent content;
         try {
             String tmpName = org.springframework.util.StringUtils.capitalize(field.getName());
             Method getMethod = clazz.getMethod("get" + tmpName);
@@ -311,22 +315,22 @@ public class AnnotationRetriever {
             Method setMethod = clazz.getMethod("set" + tmpName, field.getType());
             TableField mapfield = field.getAnnotation(TableField.class);
             TableId idfield = field.getAnnotation(TableId.class);
-            String fieldName ;
-            FieldContent.Builder builder=new FieldContent.Builder();
+            String fieldName;
+            FieldContent.Builder builder = new FieldContent.Builder();
             builder.setGetMethod(getMethod).setSetMethod(setMethod).setField(field).setPropertyName(field.getName());
             if (!Objects.isNull(mapfield)) {
                 if (!mapfield.exist()) {
                     return null;
                 }
-                if(!ObjectUtils.isEmpty(mapfield.update())){
+                if (!ObjectUtils.isEmpty(mapfield.update())) {
                     builder.setDefaultValue(mapfield.update());
                 }
-                if(!ObjectUtils.isEmpty(mapfield.numericScale())){
+                if (!ObjectUtils.isEmpty(mapfield.numericScale())) {
                     builder.setScale(Integer.parseInt(mapfield.numericScale()));
                 }
-                if(!ObjectUtils.isEmpty(mapfield.value())) {
+                if (!ObjectUtils.isEmpty(mapfield.value())) {
                     fieldName = mapfield.value();
-                }else{
+                } else {
                     fieldName = StringUtils.getFieldNameByCamelCase(field.getName());
                 }
             } else {
@@ -352,7 +356,7 @@ public class AnnotationRetriever {
                     }
                 }
             }
-            content=builder.build();
+            content = builder.build();
             adjustByType(content, type);
 
         } catch (Exception ex) {
@@ -372,28 +376,28 @@ public class AnnotationRetriever {
 
             Column mapfield = field.getAnnotation(Column.class);
             Id idfield = field.getAnnotation(Id.class);
-            String fieldName=null;
-            FieldContent.Builder builder=new FieldContent.Builder();
+            String fieldName = null;
+            FieldContent.Builder builder = new FieldContent.Builder();
             builder.setGetMethod(getMethod).setSetMethod(setMethod).setField(field).setPropertyName(field.getName());
             if (mapfield != null) {
-                if(mapfield.name() != null && !mapfield.name().isEmpty()) {
+                if (mapfield.name() != null && !mapfield.name().isEmpty()) {
                     fieldName = mapfield.name();
                 }
-                if(mapfield.length()!=0){
+                if (mapfield.length() != 0) {
                     builder.setLength(mapfield.length());
                 }
-                if(mapfield.scale()!=0){
+                if (mapfield.scale() != 0) {
                     builder.setScale(mapfield.scale());
                 }
-                if(mapfield.precision()!=0){
+                if (mapfield.precision() != 0) {
                     builder.setPrecise(mapfield.precision());
                 }
             }
-            if(ObjectUtils.isEmpty(fieldName)){
+            if (ObjectUtils.isEmpty(fieldName)) {
                 fieldName = StringUtils.getFieldNameByCamelCase(field.getName());
             }
             builder.setFieldName(fieldName);
-            if(idfield!=null){
+            if (idfield != null) {
                 builder.setPrimary(true);
                 GeneratedValue genval = field.getAnnotation(GeneratedValue.class);
                 if (genval != null) {
@@ -407,7 +411,7 @@ public class AnnotationRetriever {
                     }
                 }
             }
-            content=builder.build();
+            content = builder.build();
             //content = new FieldContent(field.getName(), fieldName, field, getMethod, setMethod);
             adjustByType(content, type);
 
@@ -544,25 +548,50 @@ public class AnnotationRetriever {
         SerializedLambda lambda = Optional.ofNullable(functionMap.get(name)).map(Reference::get).orElseGet(() -> getLambdaSerialized(field));
         return uncapitalize(lambda.getImplMethodName());
     }
-    public static <T> String getFieldType(PropertyFunction<T, ?> field){
+    public static <T extends BaseObject> String getFieldColumnName(PropertyFunction<T, ?> field) {
+        Class<T> clazz = getFieldOwnedClass(field);
+        String fieldName=getFieldName(field);
+        Map<String, FieldContent> map = getMappingFieldsMapCache(clazz);
+        return Optional.ofNullable(map.get(fieldName)).map(f->f.getFieldName()).orElse(fieldName);
+    }
+
+    public static <T extends BaseObject> Class<T> getFieldOwnedClass(PropertyFunction<T, ?> field) {
         Class<?> clazz = field.getClass();
         String name = clazz.getName();
         SerializedLambda lambda = Optional.ofNullable(functionMap.get(name)).map(Reference::get).orElseGet(() -> getLambdaSerialized(field));
-        String retClass=lambda.getImplMethodSignature();
-        String retType=Const.META_TYPE_STRING;
+        Class<T> aClass = null;
+        if (ObjectUtils.isEmpty(annotationClassMap.get(lambda.getImplClass()))) {
+            try {
+                aClass = (Class<T>) Class.forName(lambda.getImplClass().replace("/", "."));
+                annotationClassMap.put(lambda.getImplClass(), new WeakReference<>(aClass));
+            } catch (ClassNotFoundException ex) {
+                log.error("{}", ex.getMessage());
+            }
+        }else{
+            aClass=(Class<T>)annotationClassMap.get(lambda.getImplClass()).get();
+        }
+        return aClass;
+    }
 
-        if("()Ljava/lang/Long;".equals(retClass)){
-            retType=Const.META_TYPE_BIGINT;
-        }else if("()Ljava/lang/Double;".equals(retClass) || "()Ljava/lang/BigDecimal;".equals(retClass)){
-            retType=Const.META_TYPE_DOUBLE;
-        }else if("()Ljava/lang/Short;".equals(retClass)){
-            retType=Const.META_TYPE_SHORT;
-        }else if("()Ljava/lang/byte;".equals(retClass)){
-            retType=Const.META_TYPE_CLOB;
-        }else if("()Ljava/sql/Date;".equals(retClass) || "()Ljava/util/Date;".equals(retClass) || "()Ljava/time/LocalDate;".equals(retClass)){
-            retType=Const.META_TYPE_DATE;
-        }else if("()Ljava/sql/Timestamp;".equals(retClass) || "()Ljava/time/LocalDateTime;".equals(retClass)){
-            retType=Const.META_TYPE_TIMESTAMP;
+    public static <T> String getFieldType(PropertyFunction<T, ?> field) {
+        Class<?> clazz = field.getClass();
+        String name = clazz.getName();
+        SerializedLambda lambda = Optional.ofNullable(functionMap.get(name)).map(Reference::get).orElseGet(() -> getLambdaSerialized(field));
+        String retClass = lambda.getImplMethodSignature();
+        String retType = Const.META_TYPE_STRING;
+
+        if ("()Ljava/lang/Long;".equals(retClass)) {
+            retType = Const.META_TYPE_BIGINT;
+        } else if ("()Ljava/lang/Double;".equals(retClass) || "()Ljava/lang/BigDecimal;".equals(retClass)) {
+            retType = Const.META_TYPE_DOUBLE;
+        } else if ("()Ljava/lang/Short;".equals(retClass)) {
+            retType = Const.META_TYPE_SHORT;
+        } else if ("()Ljava/lang/byte;".equals(retClass)) {
+            retType = Const.META_TYPE_CLOB;
+        } else if ("()Ljava/sql/Date;".equals(retClass) || "()Ljava/util/Date;".equals(retClass) || "()Ljava/time/LocalDate;".equals(retClass)) {
+            retType = Const.META_TYPE_DATE;
+        } else if ("()Ljava/sql/Timestamp;".equals(retClass) || "()Ljava/time/LocalDateTime;".equals(retClass)) {
+            retType = Const.META_TYPE_TIMESTAMP;
         }
         return retType;
     }
@@ -628,10 +657,9 @@ public class AnnotationRetriever {
                 stmt.setDate(pos, new Date(((java.util.Date) obj).getTime()));
             } else if (Timestamp.class.isAssignableFrom(obj.getClass())) {
                 stmt.setTimestamp(pos, (Timestamp) obj);
-            }else if (Long.class.isAssignableFrom(obj.getClass())) {
+            } else if (Long.class.isAssignableFrom(obj.getClass())) {
                 stmt.setLong(pos, Long.parseLong(obj.toString()));
-            }
-            else{
+            } else {
                 stmt.setString(pos, obj.toString());
             }
         } catch (Exception ex) {
@@ -650,7 +678,8 @@ public class AnnotationRetriever {
             }
         }
     }
-    private static boolean isFieldValid(MappingEntity entity,MappingField mapfield,Field field){
+
+    private static boolean isFieldValid(MappingEntity entity, MappingField mapfield, Field field) {
         return ((mapfield != null && !mapfield.exclude()) || !entity.explicit())
                 && !Modifier.isStatic(field.getModifiers()) && !Modifier.isFinal(field.getModifiers());
     }

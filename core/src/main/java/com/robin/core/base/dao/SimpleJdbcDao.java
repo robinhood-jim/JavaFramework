@@ -676,10 +676,7 @@ public class SimpleJdbcDao {
 
         try(Connection conn = getConnection();
              Statement stmt = conn.createStatement()) {
-            String querySql = sql;
-            if (querySql == null || "".equals(querySql)) {
-                querySql = "select * from " + tableName;
-            }
+            String querySql = Optional.ofNullable(sql).orElse("select * from " + tableName);
             String currDateFormat = ObjectUtils.isEmpty(dateFormat)? FULL_DATE_FORMAT :dateFormat;
 
             final SimpleDateFormat dateformat = new SimpleDateFormat(currDateFormat);
@@ -712,7 +709,7 @@ public class SimpleJdbcDao {
                 }
                 return successCount > 0 ;
             };
-            ResultSet rs = stmt.executeQuery(sql);
+            ResultSet rs = stmt.executeQuery(querySql);
             return handler.handle(rs);
         } catch (Exception e) {
             throw new DAOException(e);
@@ -732,7 +729,7 @@ public class SimpleJdbcDao {
             String querySql = Const.SQL_SELECT + columns + Const.SQL_FROM + tableName + " where 1=0";
             StringBuilder insertSqlbuilder = new StringBuilder(Const.SQL_INSERTINTO).append(tableName);
             if (!"*".equals(columns)) {
-                insertSqlbuilder.append("(" + columns + ") values (");
+                insertSqlbuilder.append("(").append(columns).append(") values (");
             } else {
                 insertSqlbuilder.append(" values (");
             }
