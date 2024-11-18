@@ -496,7 +496,7 @@ public class AnnotationRetriever {
         }
     }
 
-    public static int replacementPrepared(PreparedStatement ps, LobHandler lobHandler, FieldContent field, BaseObject object, int pos) throws SQLException {
+    public static int replacementPrepared(PreparedStatement ps, LobHandler lobHandler, FieldContent field, BaseObject object, int pos, EntityMappingUtil.InsertSegment insertSegment) throws SQLException {
         int tmppos = pos;
         Object value = getValueFromVO(field, object);
         if (!field.isIncrement() && !field.isSequential() && value != null) {

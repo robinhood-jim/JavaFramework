@@ -24,7 +24,6 @@ public class FilterCondition {
     private Object value;
     private List<?> values;
     private List<FilterCondition> conditions;
-    //private FilterCondition condition;
     private String columnType;
     private Const.LINKOPERATOR linkOper = Const.LINKOPERATOR.LINK_AND;
     private Class<? extends BaseObject> mappingClass;

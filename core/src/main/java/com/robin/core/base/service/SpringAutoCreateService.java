@@ -49,6 +49,7 @@ public class SpringAutoCreateService<B extends BaseObject, P extends Serializabl
 
     protected Class<B> potype;
     protected Class<P> pkType;
+
     private SpringAutoCreateService(Class<B> potype,Class<P> pkType){
         this.potype = potype;
         this.pkType = pkType;
@@ -187,7 +188,7 @@ public class SpringAutoCreateService<B extends BaseObject, P extends Serializabl
 
 
         private void constructSaveFunction(Function<B, P> function) {
-            service.setSaveFunction((obj) -> {
+            service.setSaveFunction(obj -> {
                 PlatformTransactionManager manager = transactionManager(service);
                 DefaultTransactionDefinition definition = new DefaultTransactionDefinition();
                 definition.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRED);
@@ -203,6 +204,8 @@ public class SpringAutoCreateService<B extends BaseObject, P extends Serializabl
                         if(!ObjectUtils.isEmpty(service.getSaveAfterFunction())){
                             service.getSaveAfterFunction().accept(obj,pobj);
                         }
+                        //时间字段赋值
+
                     } else {
                         pobj = function.apply(obj);
                     }
@@ -216,7 +219,7 @@ public class SpringAutoCreateService<B extends BaseObject, P extends Serializabl
         }
 
         private void constructUpdateFunction(Function<B, Integer> function) {
-            service.setUpdateEntityPredicate((obj) -> {
+            service.setUpdateEntityPredicate(obj -> {
                 PlatformTransactionManager manager = transactionManager(service);
                 DefaultTransactionDefinition definition = new DefaultTransactionDefinition();
                 definition.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRED);
@@ -245,7 +248,7 @@ public class SpringAutoCreateService<B extends BaseObject, P extends Serializabl
         }
 
         private void constructDeleteEntityFunction(Function<P[], Integer> function) {
-            service.setDeleteEntityPredicate((obj) -> {
+            service.setDeleteEntityPredicate(obj -> {
                 PlatformTransactionManager manager = transactionManager(service);
                 DefaultTransactionDefinition definition = new DefaultTransactionDefinition();
                 definition.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRED);

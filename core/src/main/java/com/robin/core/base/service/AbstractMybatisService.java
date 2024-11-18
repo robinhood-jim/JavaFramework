@@ -554,10 +554,7 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>, T extends 
                     if (List.class.isAssignableFrom(entry.getValue().getClass())) {
                         List<Map<String, Object>> list = (List<Map<String, Object>>) entry.getValue();
                         queryWrapper.and(f ->
-                                list.forEach(map -> {
-                                    wrapNested(map, getMethod, f.or());
-                                })
-                        );
+                                list.forEach(map -> wrapNested(map, getMethod, f.or())));
                     } else if (Map.class.isAssignableFrom(entry.getValue().getClass())) {
                         Map<String, Object> tmap = (Map<String, Object>) entry.getValue();
                         if (tmap.containsKey("columns")) {

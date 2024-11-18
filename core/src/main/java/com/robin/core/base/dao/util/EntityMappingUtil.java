@@ -6,21 +6,21 @@ import com.robin.core.base.datameta.DataBaseUtil;
 import com.robin.core.base.exception.DAOException;
 import com.robin.core.base.model.BaseObject;
 import com.robin.core.base.model.BasePrimaryObject;
+import com.robin.core.base.spring.SpringContextHolder;
 import com.robin.core.base.util.Const;
+import com.robin.core.base.util.IUserUtils;
 import com.robin.core.sql.util.BaseSqlGen;
 import com.robin.core.sql.util.FilterCondition;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.jdbc.support.lob.LobHandler;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
 import java.io.Serializable;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -33,7 +33,7 @@ public class EntityMappingUtil {
 
     }
 
-    public static InsertSegment getInsertSegment(BaseObject obj, BaseSqlGen sqlGen, JdbcDao jdbcDao) throws DAOException {
+    public static InsertSegment getInsertSegment(BaseObject obj, BaseSqlGen sqlGen, JdbcDao jdbcDao, LobHandler lobHandler) throws DAOException {
 
         AnnotationRetriever.EntityContent tableDef = AnnotationRetriever.getMappingTableByCache(obj.getClass());
         List<FieldContent> fields = AnnotationRetriever.getMappingFieldsCache(obj.getClass());
@@ -48,12 +48,12 @@ public class EntityMappingUtil {
         StringBuilder valuebuBuffer = new StringBuilder();
 
         InsertSegment insertSegment = new EntityMappingUtil.InsertSegment();
-
+        List<Object> objList = new ArrayList<>();
         try {
             String schema = ObjectUtils.isEmpty(tableDef.getSchema()) ? null : tableDef.getSchema();
             //get database table metadata adjust column must exist
             Map<String, DataBaseColumnMeta> columnMetaMap = returnMetaMap(obj.getClass(), sqlGen, jdbcDao, tableDef, schema);
-
+            insertSegment.setColumnMetaMap(columnMetaMap);
             for (FieldContent content : fields) {
                 Object value = content.getGetMethod().invoke(obj);
                 if (!columnMetaMap.containsKey(content.getFieldName().toLowerCase()) && !columnMetaMap.containsKey(content.getFieldName().toUpperCase())) {
@@ -68,6 +68,7 @@ public class EntityMappingUtil {
                         if (!content.isPrimary()) {
                             fieldBuffer.append(content.getFieldName()).append(",");
                             valuebuBuffer.append("?,");
+
                         } else {
                             List<FieldContent> pkList = content.getPrimaryKeys();
                             if (pkList != null) {
@@ -108,8 +109,27 @@ public class EntityMappingUtil {
                         fieldBuffer.append(content.getFieldName()).append(",");
                     }
                 }
-
             }
+            //缺省字段赋值
+            if(obj.isHasDefaultColumn()){
+                if(!ObjectUtils.isEmpty(obj.getCreateTimeColumn()) && !ObjectUtils.isEmpty(columnMetaMap.get(obj.getCreateTimeColumn()))){
+                    fieldBuffer.append(obj.getCreateTimeColumn()).append(",");
+                    valuebuBuffer.append("?,");
+                }
+                if(!ObjectUtils.isEmpty(obj.getUpdateTimeColumn()) && !ObjectUtils.isEmpty(columnMetaMap.get(obj.getUpdateTimeColumn()))){
+                    fieldBuffer.append(obj.getUpdateTimeColumn()).append(",");
+                    valuebuBuffer.append("?,");
+                }
+                if(!ObjectUtils.isEmpty(obj.getCreatorColumn()) && !ObjectUtils.isEmpty(columnMetaMap.get(obj.getCreatorColumn()))){
+                    IUserUtils utils= SpringContextHolder.getBean(IUserUtils.class);
+                    Optional.ofNullable(utils).map(f->{
+                        fieldBuffer.append(obj.getCreatorColumn()).append(",");
+                        valuebuBuffer.append("?,");
+                        return f;
+                    });
+                }
+            }
+
             buffer.append("(").append(fieldBuffer.substring(0, fieldBuffer.length() - 1)).append(") values (").append(valuebuBuffer.substring(0, valuebuBuffer.length() - 1)).append(")");
             insertSegment.setInsertSql(buffer.toString());
         } catch (Exception ex) {
@@ -118,7 +138,7 @@ public class EntityMappingUtil {
         return insertSegment;
     }
 
-    private static Map<String, DataBaseColumnMeta> returnMetaMap(Class<? extends BaseObject> clazz, BaseSqlGen sqlGen, JdbcDao jdbcDao, AnnotationRetriever.EntityContent tableDef, String schema) throws SQLException {
+    public static Map<String, DataBaseColumnMeta> returnMetaMap(Class<? extends BaseObject> clazz, BaseSqlGen sqlGen, JdbcDao jdbcDao, AnnotationRetriever.EntityContent tableDef, String schema) throws SQLException {
         Map<String, DataBaseColumnMeta> columnMetaMap;
         if (metaCache.containsKey(clazz)) {
             columnMetaMap = metaCache.get(clazz);
@@ -432,6 +452,8 @@ public class EntityMappingUtil {
         private String seqField;
         private FieldContent incrementColumn;
         private FieldContent seqColumn;
+        List<Object> params;
+        private Map<String, DataBaseColumnMeta> columnMetaMap;
     }
 
     @Data
@@ -440,5 +462,6 @@ public class EntityMappingUtil {
         private String fieldStr;
         private String whereStr;
         private List<Object> params;
+        Map<String, DataBaseColumnMeta> columnMetaMap;
     }
 }

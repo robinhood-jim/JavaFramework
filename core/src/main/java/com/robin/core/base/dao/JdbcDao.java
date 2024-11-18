@@ -18,6 +18,7 @@ package com.robin.core.base.dao;
 import com.google.common.collect.Lists;
 import com.robin.core.base.dao.handler.MetaObjectHandler;
 import com.robin.core.base.dao.util.*;
+import com.robin.core.base.datameta.DataBaseColumnMeta;
 import com.robin.core.base.exception.DAOException;
 import com.robin.core.base.exception.MissingConfigException;
 import com.robin.core.base.exception.QueryConfgNotFoundException;
@@ -26,6 +27,7 @@ import com.robin.core.base.reflect.MetaObject;
 import com.robin.core.base.reflect.ReflectUtils;
 import com.robin.core.base.spring.SpringContextHolder;
 import com.robin.core.base.util.Const;
+import com.robin.core.base.util.IUserUtils;
 import com.robin.core.base.util.LicenseUtils;
 import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
@@ -51,6 +53,7 @@ import org.springframework.util.ObjectUtils;
 import javax.sql.DataSource;
 import java.io.Serializable;
 import java.sql.PreparedStatement;
+import java.sql.Timestamp;
 import java.util.*;
 
 @Slf4j
@@ -260,7 +263,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
         List<T> retlist = new ArrayList<>();
         try {
             StringBuilder buffer = new StringBuilder();
-            buffer.append(getWholeSelectSql(type)).append(" where ");
+            buffer.append(getWholeSelectSql(type)).append(Const.SQL_WHERE);
             List<FieldContent> fields = AnnotationRetriever.getMappingFieldsCache(type);
             List<Object> objList = new ArrayList<>();
             buffer.append(condition.toPreparedSQLPart(objList));
@@ -307,7 +310,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
         List<T> retlist = new ArrayList<>();
         try {
             StringBuilder buffer = new StringBuilder();
-            buffer.append(getWholeSelectSql(type)).append(" where ");
+            buffer.append(getWholeSelectSql(type)).append(Const.SQL_WHERE);
             StringBuilder queryBuffer = new StringBuilder();
             Map<String, FieldContent> map1 = AnnotationRetriever.getMappingFieldsMapCache(type);
             List<FieldContent> fields = AnnotationRetriever.getMappingFieldsCache(type);
@@ -360,7 +363,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
         try {
             StringBuilder builder = new StringBuilder();
             List<FieldContent> fields = AnnotationRetriever.getMappingFieldsCache(type);
-            builder.append(getWholeSelectSql(type)).append(" where ");
+            builder.append(getWholeSelectSql(type)).append(Const.SQL_WHERE);
             StringBuilder queryBuffer = new StringBuilder();
             Map<String, FieldContent> map1 = AnnotationRetriever.getMappingFieldsMapCache(type);
 
@@ -504,17 +507,17 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
                 handler.insertFill(new MetaObject(obj, fieldContentMap));
             }
             List<FieldContent> fields = AnnotationRetriever.getMappingFieldsCache(obj.getClass());
-            EntityMappingUtil.InsertSegment insertSegment = EntityMappingUtil.getInsertSegment(obj, sqlGen, this);
+            EntityMappingUtil.InsertSegment insertSegment = EntityMappingUtil.getInsertSegment(obj, sqlGen, this,lobHandler);
             String insertSql = insertSegment.getInsertSql();
             if (log.isDebugEnabled()) {
                 log.debug("insert sql={}", insertSql);
             }
             FieldContent generateColumn = null;
             if (insertSegment.isHasincrementPk()) {
-                retval = executeSqlWithReturn(fields, insertSql, obj);
+                retval = executeSqlWithReturn(fields, insertSql, obj,insertSegment);
                 generateColumn = insertSegment.getIncrementColumn();
             } else if (insertSegment.isHasSequencePk()) {
-                retval = executeSqlSequenceWithReturn(fields, insertSql, insertSegment.getSeqColumn().getFieldName(), obj);
+                retval = executeSqlSequenceWithReturn(fields, insertSql, insertSegment, obj);
                 generateColumn = insertSegment.getSeqColumn();
             }
             if (!ObjectUtils.isEmpty(retval)) {
@@ -584,7 +587,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
     private int updateWithSegment(int ret, EntityMappingUtil.UpdateSegment updateSegment) {
         StringBuilder builder = new StringBuilder();
         if (updateSegment.getFieldStr().length() != 0) {
-            builder.append(updateSegment.getFieldStr()).append(" where ").append(updateSegment.getWhereStr());
+            builder.append(updateSegment.getFieldStr()).append(Const.SQL_WHERE).append(updateSegment.getWhereStr());
             Object[] objs = updateSegment.getParams().toArray();
             String updateSql = builder.toString();
             if (log.isDebugEnabled()) {
@@ -635,7 +638,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
             if (tableDef.getSchema() != null && !tableDef.getSchema().isEmpty()) {
                 buffer.append(sqlGen.getSchemaName(tableDef.getSchema())).append(".");
             }
-            buffer.append(tableDef.getTableName()).append(" where ");
+            buffer.append(tableDef.getTableName()).append(Const.SQL_WHERE);
             StringBuilder fieldBuffer = new StringBuilder();
             for (FieldContent field : fields) {
                 if (field.isPrimary()) {
@@ -675,7 +678,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
                 throw new MissingConfigException("status field does not exists!");
             }
             Assert.notNull(primaryCol, "primary column does not exists!");
-            buffer.append(" where ").append(primaryCol.getFieldName()).append(" in (:pkObjs)");
+            buffer.append(Const.SQL_WHERE).append(primaryCol.getFieldName()).append(" in (:pkObjs)");
             Map<String, Object> valueMap = new HashMap<>();
             valueMap.put("status", statusValue);
             valueMap.put("pkObjs", pkObjs);
@@ -697,7 +700,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
             StringBuilder buffer = new StringBuilder();
             buffer.append("delete from ");
             appendSchemaAndTable(tableDef, buffer);
-            buffer.append(" where ");
+            buffer.append(Const.SQL_WHERE);
             StringBuilder fieldBuffer = new StringBuilder();
             if (fieldsMap.containsKey(field)) {
                 fieldBuffer.append(fieldsMap.get(field).getFieldName()).append("=?");
@@ -729,7 +732,6 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
     public <T extends BaseObject> T getEntity(Class<T> clazz, Serializable id) throws DAOException {
         try {
             T obj = clazz.newInstance();
-            //List<FieldContent> fields = AnnotationRetriever.getMappingFieldsCache(clazz);
             EntityMappingUtil.SelectSegment segment = EntityMappingUtil.getSelectPkSegment(clazz, id, sqlGen,this);
             List<Map<String, Object>> list1 = queryBySql(segment.getSelectSql(), segment.getAvailableFields(), segment.getValues().toArray());
             if (!CollectionUtils.isEmpty(list1)) {
@@ -779,10 +781,10 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
 
     }
 
-    private long executeSqlWithReturn(List<FieldContent> field, final String sql, BaseObject object)
+    private long executeSqlWithReturn(List<FieldContent> field, final String sql, BaseObject object, EntityMappingUtil.InsertSegment insertSegment)
             throws DAOException {
         KeyHolder keyHolder = new GeneratedKeyHolder();
-        returnTemplate().update(new DefaultPrepareStatement(field, sql, object, lobHandler), keyHolder);
+        returnTemplate().update(new DefaultPrepareStatement(field, sql, object, lobHandler,insertSegment), keyHolder);
         Assert.notNull(keyHolder.getKey(), "");
         return keyHolder.getKey().longValue();
     }
@@ -956,14 +958,28 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
     }
 
 
-    private long executeSqlSequenceWithReturn(final List<FieldContent> fields, final String sql, final String seqfield, BaseObject object)
+    private long executeSqlSequenceWithReturn(final List<FieldContent> fields, final String sql, final EntityMappingUtil.InsertSegment insertSegment, BaseObject object)
             throws DAOException {
         KeyHolder keyHolder = new GeneratedKeyHolder();
         returnTemplate().update(conn -> {
-            PreparedStatement ps = conn.prepareStatement(sql, new String[]{seqfield});
+            PreparedStatement ps = conn.prepareStatement(sql, new String[]{insertSegment.getSeqColumn().getFieldName()});
             int pos = 1;
             for (FieldContent field : fields) {
-                pos = AnnotationRetriever.replacementPrepared(ps, lobHandler, field, object, pos);
+                pos = AnnotationRetriever.replacementPrepared(ps, lobHandler, field, object, pos,insertSegment);
+            }
+            if(object.isHasDefaultColumn()){
+                if(!ObjectUtils.isEmpty(object.getCreateTimeColumn()) && !ObjectUtils.isEmpty(insertSegment.getColumnMetaMap().get(object.getCreateTimeColumn()))){
+                    ps.setTimestamp(pos++,new Timestamp(System.currentTimeMillis()));
+                }
+                if(!ObjectUtils.isEmpty(object.getUpdateTimeColumn()) && !ObjectUtils.isEmpty(insertSegment.getColumnMetaMap().get(object.getUpdateTimeColumn()))){
+                    ps.setTimestamp(pos++,new Timestamp(System.currentTimeMillis()));
+                }
+                if(!ObjectUtils.isEmpty(object.getCreatorColumn()) && !ObjectUtils.isEmpty(insertSegment.getColumnMetaMap().get(object.getCreatorColumn()))){
+                    IUserUtils utils= SpringContextHolder.getBean(IUserUtils.class);
+                    if(!ObjectUtils.isEmpty(utils) && !ObjectUtils.isEmpty(utils.getLoginUser())){
+                        ps.setLong(pos,utils.getLoginId());
+                    }
+                }
             }
             return ps;
         }, keyHolder);

@@ -35,6 +35,11 @@ import org.springframework.util.ObjectUtils;
 public abstract class BaseObject implements Serializable,Cloneable{
 	private static final long serialVersionUID = -1156095048376157515L;
 	private List<String> dirtyColumnList=new ArrayList<String>();
+	private String createTimeColumn;
+	private String updateTimeColumn;
+	private String creatorColumn;
+	private String modifierColumn;
+	private boolean hasDefaultColumn=false;
 
 	
 	public BaseObject()
@@ -50,6 +55,58 @@ public abstract class BaseObject implements Serializable,Cloneable{
 	public List<String> getDirtyColumn(){
 		return dirtyColumnList;
 	}
+
+	public void setHasDefaultColumn(boolean hasDefaultColumn) {
+		this.hasDefaultColumn = hasDefaultColumn;
+	}
+
+	public boolean isHasDefaultColumn() {
+		return hasDefaultColumn;
+	}
+
+	public void setCreateTimeColumn(String createTimeColumn) {
+		this.createTimeColumn = createTimeColumn;
+		hasDefaultColumn=true;
+	}
+
+	public String getCreateTimeColumn() {
+		return createTimeColumn;
+	}
+
+	public void setModifierColumn(String modifierColumn) {
+		this.modifierColumn = modifierColumn;
+		hasDefaultColumn=true;
+	}
+
+	public String getModifierColumn() {
+		return modifierColumn;
+	}
+
+	public void setUpdateTimeColumn(String updateTimeColumn) {
+		this.updateTimeColumn = updateTimeColumn;
+		hasDefaultColumn=true;
+	}
+
+	public String getUpdateTimeColumn() {
+		return updateTimeColumn;
+	}
+
+	public void setCreatorColumn(String creatorColumn) {
+		this.creatorColumn = creatorColumn;
+		hasDefaultColumn=true;
+	}
+	public void setDefaultColumnValues(){
+		createTimeColumn="create_tm";
+		updateTimeColumn="modifier_tm";
+		creatorColumn="creator";
+		modifierColumn="modifier";
+		hasDefaultColumn=true;
+	}
+
+	public String getCreatorColumn() {
+		return creatorColumn;
+	}
+
 	@Override
     public String toString(){
 		String str="";
