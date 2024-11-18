@@ -47,7 +47,7 @@ public class DefaultPrepareStatement implements PreparedStatementCreator {
             if(!ObjectUtils.isEmpty(object.getCreatorColumn()) && !ObjectUtils.isEmpty(insertSegment.getColumnMetaMap().get(object.getCreatorColumn()))){
                 IUserUtils utils= SpringContextHolder.getBean(IUserUtils.class);
                 if(!ObjectUtils.isEmpty(utils) && !ObjectUtils.isEmpty(utils.getLoginUser())){
-                    ps.setLong(pos,utils.getLoginId());
+                    ps.setLong(pos,utils.getLoginUserId());
                 }
             }
         }

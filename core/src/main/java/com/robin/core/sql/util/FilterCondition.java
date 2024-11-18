@@ -10,10 +10,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Data
 public class FilterCondition {
@@ -28,7 +25,7 @@ public class FilterCondition {
     private Const.LINKOPERATOR linkOper = Const.LINKOPERATOR.LINK_AND;
     private Class<? extends BaseObject> mappingClass;
     private String orderByStr;
-    private Map<Class<? extends BaseObject>,String> aliasMap;
+    private Map<Class<? extends BaseObject>,String> aliasMap=new HashMap<>();
 
 
     public FilterCondition(String columnCode, Const.OPERATOR operator) {

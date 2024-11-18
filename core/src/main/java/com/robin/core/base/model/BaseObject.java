@@ -18,7 +18,9 @@ package com.robin.core.base.model;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
 import com.robin.core.base.dao.util.AnnotationRetriever;
@@ -34,7 +36,7 @@ import org.springframework.util.ObjectUtils;
 @Slf4j
 public abstract class BaseObject implements Serializable,Cloneable{
 	private static final long serialVersionUID = -1156095048376157515L;
-	private List<String> dirtyColumnList=new ArrayList<String>();
+	private List<String> dirtyColumnList=new ArrayList<>();
 	private String createTimeColumn;
 	private String updateTimeColumn;
 	private String creatorColumn;
@@ -49,8 +51,8 @@ public abstract class BaseObject implements Serializable,Cloneable{
 	 * Make dirty to update
 	 * @param key
 	 */
-	public void AddDirtyColumn(String key){
-		dirtyColumnList.add(key);	
+	public void addDirtyColumn(String... key){
+		dirtyColumnList.addAll(Arrays.stream(key).collect(Collectors.toList()));
 	}
 	public List<String> getDirtyColumn(){
 		return dirtyColumnList;
@@ -97,7 +99,7 @@ public abstract class BaseObject implements Serializable,Cloneable{
 	}
 	public void setDefaultColumnValues(){
 		createTimeColumn="create_tm";
-		updateTimeColumn="modifier_tm";
+		updateTimeColumn="modify_tm";
 		creatorColumn="creator";
 		modifierColumn="modifier";
 		hasDefaultColumn=true;

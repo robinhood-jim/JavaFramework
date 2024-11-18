@@ -13,7 +13,6 @@ import com.robin.core.sql.util.BaseSqlGen;
 import com.robin.core.sql.util.FilterCondition;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.jdbc.support.lob.LobHandler;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
@@ -33,10 +32,9 @@ public class EntityMappingUtil {
 
     }
 
-    public static InsertSegment getInsertSegment(BaseObject obj, BaseSqlGen sqlGen, JdbcDao jdbcDao, LobHandler lobHandler) throws DAOException {
+    public static InsertSegment getInsertSegment(BaseObject obj, BaseSqlGen sqlGen, JdbcDao jdbcDao,List<FieldContent> fields) throws DAOException {
 
         AnnotationRetriever.EntityContent tableDef = AnnotationRetriever.getMappingTableByCache(obj.getClass());
-        List<FieldContent> fields = AnnotationRetriever.getMappingFieldsCache(obj.getClass());
         AnnotationRetriever.validateEntity(obj);
         StringBuilder buffer = new StringBuilder();
         buffer.append(Const.SQL_INSERTINTO);
@@ -48,7 +46,7 @@ public class EntityMappingUtil {
         StringBuilder valuebuBuffer = new StringBuilder();
 
         InsertSegment insertSegment = new EntityMappingUtil.InsertSegment();
-        List<Object> objList = new ArrayList<>();
+
         try {
             String schema = ObjectUtils.isEmpty(tableDef.getSchema()) ? null : tableDef.getSchema();
             //get database table metadata adjust column must exist
@@ -56,7 +54,7 @@ public class EntityMappingUtil {
             insertSegment.setColumnMetaMap(columnMetaMap);
             for (FieldContent content : fields) {
                 Object value = content.getGetMethod().invoke(obj);
-                if (!columnMetaMap.containsKey(content.getFieldName().toLowerCase()) && !columnMetaMap.containsKey(content.getFieldName().toUpperCase())) {
+                if (CollectionUtils.isEmpty(content.getPrimaryKeys()) && !columnMetaMap.containsKey(content.getFieldName().toLowerCase()) && !columnMetaMap.containsKey(content.getFieldName().toUpperCase())) {
                     log.warn("field {} not included in table {},insert column ignore!", content.getFieldName(), tableDef.getTableName());
                     continue;
                 }
@@ -68,7 +66,6 @@ public class EntityMappingUtil {
                         if (!content.isPrimary()) {
                             fieldBuffer.append(content.getFieldName()).append(",");
                             valuebuBuffer.append("?,");
-
                         } else {
                             List<FieldContent> pkList = content.getPrimaryKeys();
                             if (pkList != null) {
@@ -452,7 +449,6 @@ public class EntityMappingUtil {
         private String seqField;
         private FieldContent incrementColumn;
         private FieldContent seqColumn;
-        List<Object> params;
         private Map<String, DataBaseColumnMeta> columnMetaMap;
     }
 

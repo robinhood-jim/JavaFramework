@@ -21,7 +21,7 @@ public class JoinTest {
                 .alias(SysRole.class, "b").alias(SysResource.class, "d").alias(SysResourceRole.class, "e");
 
         builder.select(SysResource::getOrgId, SysResource::getName, SysResource::getName, SysResource::getCode)
-                .select(SysUserRole::getUserId, "oUserId").select(SysRole::getRoleName, "roleName");
+                .selectAs(SysUserRole::getUserId, "oUserId").selectAs(SysRole::getRoleName, "roleName");
         builder.join(SysRole::getId, SysUserRole::getRoleId, Const.JOINTYPE.INNER).join(SysUser::getId, SysUserRole::getUserId, Const.JOINTYPE.INNER)
                 .join(SysResource::getId, SysResourceRole::getResId, Const.JOINTYPE.INNER).join(SysRole::getId, SysResourceRole::getRoleId, Const.JOINTYPE.INNER);
 

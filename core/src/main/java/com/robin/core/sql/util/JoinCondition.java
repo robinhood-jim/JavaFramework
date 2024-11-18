@@ -54,7 +54,7 @@ public class JoinCondition {
             statement.getSelectFields().addAll(Arrays.asList(fields));
             return this;
         }
-        public <T extends BaseObject> JoinCondition.Builder select(PropertyFunction<T, ?> field,String alias){
+        public <T extends BaseObject> JoinCondition.Builder selectAs(PropertyFunction<T, ?> field,String alias){
             statement.getSelectFields().add(field);
             statement.getColumnAlias().put(field,alias);
             return this;
@@ -90,6 +90,7 @@ public class JoinCondition {
                     }
                 }
             }
+            Map<Class<? extends BaseObject>,Integer> existModelMap=new HashMap<>();
             for(Triple<PropertyFunction<? extends BaseObject, ?>, PropertyFunction<? extends BaseObject, ?>, Const.JOINTYPE> join:joins){
                 AnnotationRetriever.EntityContent leftTab=AnnotationRetriever.getMappingTableByCache(AnnotationRetriever.getFieldOwnedClass(join.getLeft()));
                 AnnotationRetriever.EntityContent rightTab=AnnotationRetriever.getMappingTableByCache(AnnotationRetriever.getFieldOwnedClass(join.getMiddle()));
@@ -105,25 +106,40 @@ public class JoinCondition {
 
                 switch (join.getRight()){
                     case INNER:
-                        joinBuilder.append(leftTabSep).append(",").append(rightTabSep).append(",");
+                        if(!existModelMap.containsKey(leftModelClass)){
+                            joinBuilder.append(leftTabSep).append(",");
+                            existModelMap.put(leftModelClass,1);
+                        }
+                        if(!existModelMap.containsKey(rightModelClass)){
+                            joinBuilder.append(rightTabSep).append(",");
+                            existModelMap.put(rightModelClass,1);
+                        }
                         whereBuilder.append(leftColumn).append("=").append(rightColumn).append(Const.LINKOPERATOR.LINK_AND.getSignal());
                         break;
                     case LEFT:
-                        joinBuilder.append(leftTabSep).append(" left join ").append(rightTabSep)
+                        if(!existModelMap.containsKey(leftModelClass)){
+                            joinBuilder.append(leftTabSep);
+                        }
+                        joinBuilder.append(" left join ").append(rightTabSep)
                                 .append(" ON ").append(leftColumn).append("=").append(rightColumn);
                         break;
                     case RIGHT:
-                        joinBuilder.append(leftTabSep).append(" right join ").append(rightTabSep)
+                        if(!existModelMap.containsKey(leftModelClass)){
+                            joinBuilder.append(leftTabSep);
+                        }
+                        joinBuilder.append(" right join ").append(rightTabSep)
                                 .append(" ON ").append(leftColumn).append("=").append(rightColumn);
                         break;
                     case OUT:
-                        joinBuilder.append(leftTabSep).append(" full outer join ").append(rightTabSep)
+                        if(!existModelMap.containsKey(leftModelClass)){
+                            joinBuilder.append(leftTabSep);
+                        }
+                        joinBuilder.append(" full outer join ").append(rightTabSep)
                                 .append(" ON ").append(leftColumn).append("=").append(rightColumn);
                         break;
                     default:
                         joinBuilder.append(leftTabSep).append(",").append(rightTabSep).append(",");
                         whereBuilder.append(leftColumn).append("=").append(rightColumn).append(Const.LINKOPERATOR.LINK_AND.getSignal());
-                        break;
                 }
             }
             if(!ObjectUtils.isEmpty(condition)){

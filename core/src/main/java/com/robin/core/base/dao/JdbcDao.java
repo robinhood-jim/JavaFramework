@@ -18,7 +18,6 @@ package com.robin.core.base.dao;
 import com.google.common.collect.Lists;
 import com.robin.core.base.dao.handler.MetaObjectHandler;
 import com.robin.core.base.dao.util.*;
-import com.robin.core.base.datameta.DataBaseColumnMeta;
 import com.robin.core.base.exception.DAOException;
 import com.robin.core.base.exception.MissingConfigException;
 import com.robin.core.base.exception.QueryConfgNotFoundException;
@@ -507,40 +506,44 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
                 handler.insertFill(new MetaObject(obj, fieldContentMap));
             }
             List<FieldContent> fields = AnnotationRetriever.getMappingFieldsCache(obj.getClass());
-            EntityMappingUtil.InsertSegment insertSegment = EntityMappingUtil.getInsertSegment(obj, sqlGen, this,lobHandler);
+            EntityMappingUtil.InsertSegment insertSegment = EntityMappingUtil.getInsertSegment(obj, sqlGen, this,fields);
             String insertSql = insertSegment.getInsertSql();
             if (log.isDebugEnabled()) {
                 log.debug("insert sql={}", insertSql);
             }
             FieldContent generateColumn = null;
-            if (insertSegment.isHasincrementPk()) {
-                retval = executeSqlWithReturn(fields, insertSql, obj,insertSegment);
-                generateColumn = insertSegment.getIncrementColumn();
-            } else if (insertSegment.isHasSequencePk()) {
-                retval = executeSqlSequenceWithReturn(fields, insertSql, insertSegment, obj);
-                generateColumn = insertSegment.getSeqColumn();
-            }
-            if (!ObjectUtils.isEmpty(retval)) {
-                //assign increment column
-                if (generateColumn != null) {
-                    FieldContent pkColumn = AnnotationRetriever.getPrimaryField(fields);
-                    if (pkColumn == null) {
-                        throw new DAOException("model " + obj.getClass().getSimpleName() + " does not have primary key");
-                    }
-                    Object targetVal = ReflectUtils.getIncrementValueBySetMethod(generateColumn.getSetMethod(), retval);
-                    if (pkColumn.getPrimaryKeys() == null) {
-                        generateColumn.getSetMethod().invoke(obj, targetVal);
-                        retObj = (P) targetVal;
-                    } else {
-                        for (FieldContent field : pkColumn.getPrimaryKeys()) {
-                            if (field.isIncrement() || field.isSequential()) {
-                                field.getSetMethod().invoke(generateColumn.getGetMethod().invoke(obj), retval);
-                            }
+            //pk model insert
+            if(insertSegment.isHasSequencePk() || insertSegment.isHasincrementPk()) {
+                if (insertSegment.isHasincrementPk()) {
+                    retval = executeSqlWithReturn(fields, insertSql, obj, insertSegment);
+                    generateColumn = insertSegment.getIncrementColumn();
+                } else  {
+                    retval = executeSqlSequenceWithReturn(fields, insertSql, insertSegment, obj);
+                    generateColumn = insertSegment.getSeqColumn();
+                }
+                if (!ObjectUtils.isEmpty(retval)) {
+                    //assign increment column
+                    if (generateColumn != null) {
+                        FieldContent pkColumn = AnnotationRetriever.getPrimaryField(fields);
+                        if (pkColumn == null) {
+                            throw new DAOException("model " + obj.getClass().getSimpleName() + " does not have primary key");
                         }
-                        retObj = (P) pkColumn.getGetMethod().invoke(obj);
+                        Object targetVal = ReflectUtils.getIncrementValueBySetMethod(generateColumn.getSetMethod(), retval);
+                        if (pkColumn.getPrimaryKeys() == null) {
+                            generateColumn.getSetMethod().invoke(obj, targetVal);
+                            retObj = (P) targetVal;
+                        } else {
+                            for (FieldContent field : pkColumn.getPrimaryKeys()) {
+                                if (field.isIncrement() || field.isSequential()) {
+                                    field.getSetMethod().invoke(generateColumn.getGetMethod().invoke(obj), retval);
+                                }
+                            }
+                            retObj = (P) pkColumn.getGetMethod().invoke(obj);
+                        }
                     }
                 }
-            } else {
+            }else {
+                //no pk model insert
                 if (!insertSegment.isContainlob()) {
                     executeUpdate(insertSql, fields, obj);
                 } else {
@@ -977,7 +980,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
                 if(!ObjectUtils.isEmpty(object.getCreatorColumn()) && !ObjectUtils.isEmpty(insertSegment.getColumnMetaMap().get(object.getCreatorColumn()))){
                     IUserUtils utils= SpringContextHolder.getBean(IUserUtils.class);
                     if(!ObjectUtils.isEmpty(utils) && !ObjectUtils.isEmpty(utils.getLoginUser())){
-                        ps.setLong(pos,utils.getLoginId());
+                        ps.setLong(pos,utils.getLoginUserId());
                     }
                 }
             }
