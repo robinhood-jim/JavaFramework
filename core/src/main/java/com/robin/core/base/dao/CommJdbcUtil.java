@@ -480,7 +480,7 @@ public class CommJdbcUtil {
         pageQuery.setRecordSet(list);
         return pageQuery;
     }
-     static void batchUpdate(JdbcTemplate jdbcTemplate,String sql,final List<Object[]> valueList){
+     public static void batchUpdate(JdbcTemplate jdbcTemplate,String sql,final List<Object[]> valueList){
         BatchPreparedStatementSetter setter=new BatchPreparedStatementSetter() {
             @Override
             public void setValues(PreparedStatement ps, int i) throws SQLException {

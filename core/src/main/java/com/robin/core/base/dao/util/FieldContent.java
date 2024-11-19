@@ -23,6 +23,7 @@ public class FieldContent {
     private int precise;
     private int length;
     private String defaultValue;
+    private Object value;
     //composite primary keys
     private List<FieldContent> primaryKeys;
 

@@ -26,7 +26,6 @@ import com.robin.core.base.reflect.MetaObject;
 import com.robin.core.base.reflect.ReflectUtils;
 import com.robin.core.base.spring.SpringContextHolder;
 import com.robin.core.base.util.Const;
-import com.robin.core.base.util.IUserUtils;
 import com.robin.core.base.util.LicenseUtils;
 import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
@@ -52,7 +51,6 @@ import org.springframework.util.ObjectUtils;
 import javax.sql.DataSource;
 import java.io.Serializable;
 import java.sql.PreparedStatement;
-import java.sql.Timestamp;
 import java.util.*;
 
 @Slf4j
@@ -496,7 +494,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
     @Override
     @SuppressWarnings("unchecked")
     public <T extends BaseObject, P extends Serializable> P createVO(T obj, Class<P> clazz) throws DAOException {
-        Long retval = null;
+        Long retval ;
         P retObj = null;
         try {
             //function as mybatis-plus MetaObjectHandler
@@ -511,16 +509,21 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
             if (log.isDebugEnabled()) {
                 log.debug("insert sql={}", insertSql);
             }
-            FieldContent generateColumn = null;
+            FieldContent generateColumn ;
             //pk model insert
             if(insertSegment.isHasSequencePk() || insertSegment.isHasincrementPk()) {
-                if (insertSegment.isHasincrementPk()) {
-                    retval = executeSqlWithReturn(fields, insertSql, obj, insertSegment);
-                    generateColumn = insertSegment.getIncrementColumn();
-                } else  {
-                    retval = executeSqlSequenceWithReturn(fields, insertSql, insertSegment, obj);
+                PreparedStatementCreatorFactory factory = new PreparedStatementCreatorFactory(insertSql, insertSegment.getParamTypes());
+                KeyHolder keyHolder = new GeneratedKeyHolder();
+                if(insertSegment.isHasSequencePk()) {
+                    factory.setGeneratedKeysColumnNames( new String[]{insertSegment.getSeqColumn().getFieldName()});
                     generateColumn = insertSegment.getSeqColumn();
+                }else{
+                    factory.setReturnGeneratedKeys(true);
+                    generateColumn = insertSegment.getIncrementColumn();
                 }
+                returnTemplate().update(factory.newPreparedStatementCreator(insertSegment.getParams()),keyHolder);
+                retval=keyHolder.getKey().longValue();
+
                 if (!ObjectUtils.isEmpty(retval)) {
                     //assign increment column
                     if (generateColumn != null) {
@@ -969,20 +972,6 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
             int pos = 1;
             for (FieldContent field : fields) {
                 pos = AnnotationRetriever.replacementPrepared(ps, lobHandler, field, object, pos,insertSegment);
-            }
-            if(object.isHasDefaultColumn()){
-                if(!ObjectUtils.isEmpty(object.getCreateTimeColumn()) && !ObjectUtils.isEmpty(insertSegment.getColumnMetaMap().get(object.getCreateTimeColumn()))){
-                    ps.setTimestamp(pos++,new Timestamp(System.currentTimeMillis()));
-                }
-                if(!ObjectUtils.isEmpty(object.getUpdateTimeColumn()) && !ObjectUtils.isEmpty(insertSegment.getColumnMetaMap().get(object.getUpdateTimeColumn()))){
-                    ps.setTimestamp(pos++,new Timestamp(System.currentTimeMillis()));
-                }
-                if(!ObjectUtils.isEmpty(object.getCreatorColumn()) && !ObjectUtils.isEmpty(insertSegment.getColumnMetaMap().get(object.getCreatorColumn()))){
-                    IUserUtils utils= SpringContextHolder.getBean(IUserUtils.class);
-                    if(!ObjectUtils.isEmpty(utils) && !ObjectUtils.isEmpty(utils.getLoginUser())){
-                        ps.setLong(pos,utils.getLoginUserId());
-                    }
-                }
             }
             return ps;
         }, keyHolder);

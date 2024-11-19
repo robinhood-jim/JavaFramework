@@ -173,9 +173,8 @@ public class JdbcDaoTest extends TestCase {
         InputStream bytestream = getClass().getClassLoader().getResourceAsStream("pig.ico");
         byte[] bytes = IOUtils.toByteArray(bytestream);
         model.setPicture(bytes);
-        SpringContextHolder.getBean("jdbcDao", JdbcDao.class).getJdbcTemplate().update("insert into testtablob(name,lob2) values (?,?)",new Object[]{"test2222",bytes});
-        //Long id=service.saveEntity(model);
-        //Assert.assertNotNull(id);
+        Long id=service.saveEntity(model);
+        Assert.assertNotNull(id);
     }
     @Test
     public void testGetWithSequence(){

@@ -37,20 +37,6 @@ public class DefaultPrepareStatement implements PreparedStatementCreator {
         for (FieldContent field : fields) {
             pos = AnnotationRetriever.replacementPrepared(ps, lobHandler, field, object, pos,insertSegment);
         }
-        if(object.isHasDefaultColumn()){
-            if(!ObjectUtils.isEmpty(object.getCreateTimeColumn()) && !ObjectUtils.isEmpty(insertSegment.getColumnMetaMap().get(object.getCreateTimeColumn()))){
-                ps.setTimestamp(pos++,new Timestamp(System.currentTimeMillis()));
-            }
-            if(!ObjectUtils.isEmpty(object.getUpdateTimeColumn()) && !ObjectUtils.isEmpty(insertSegment.getColumnMetaMap().get(object.getUpdateTimeColumn()))){
-                ps.setTimestamp(pos++,new Timestamp(System.currentTimeMillis()));
-            }
-            if(!ObjectUtils.isEmpty(object.getCreatorColumn()) && !ObjectUtils.isEmpty(insertSegment.getColumnMetaMap().get(object.getCreatorColumn()))){
-                IUserUtils utils= SpringContextHolder.getBean(IUserUtils.class);
-                if(!ObjectUtils.isEmpty(utils) && !ObjectUtils.isEmpty(utils.getLoginUser())){
-                    ps.setLong(pos,utils.getLoginUserId());
-                }
-            }
-        }
         return ps;
     }
 }
