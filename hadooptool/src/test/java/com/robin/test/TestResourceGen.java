@@ -35,8 +35,8 @@ import java.util.Map;
  */
 public class TestResourceGen {
 	public static void main(String[] args){
-		DataBaseParam param=new DataBaseParam("192.168.147.12",0,"etlcloud_test","root","123456");
-		BaseDataBaseMeta meta=DataBaseMetaFactory.getDataBaseMetaByType("MySql", param);
+		DataBaseParam param=new DataBaseParam("192.168.147.12",0,"test","root","123456");
+		BaseDataBaseMeta meta=DataBaseMetaFactory.getDataBaseMetaByType("Mysql", param);
 		DataBaseParam param1=new DataBaseParam("192.168.147.93",0,"wi","root","123456");
 		BaseDataBaseMeta meta1=DataBaseMetaFactory.getDataBaseMetaByType("MySql", param1);
 		Connection conn=null;

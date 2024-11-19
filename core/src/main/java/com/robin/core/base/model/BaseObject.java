@@ -18,7 +18,9 @@ package com.robin.core.base.model;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
 import com.robin.core.base.dao.util.AnnotationRetriever;
@@ -34,7 +36,12 @@ import org.springframework.util.ObjectUtils;
 @Slf4j
 public abstract class BaseObject implements Serializable,Cloneable{
 	private static final long serialVersionUID = -1156095048376157515L;
-	private List<String> dirtyColumnList=new ArrayList<String>();
+	private List<String> dirtyColumnList=new ArrayList<>();
+	private String createTimeColumn;
+	private String updateTimeColumn;
+	private String creatorColumn;
+	private String modifierColumn;
+	private boolean hasDefaultColumn=false;
 
 	
 	public BaseObject()
@@ -44,12 +51,64 @@ public abstract class BaseObject implements Serializable,Cloneable{
 	 * Make dirty to update
 	 * @param key
 	 */
-	public void AddDirtyColumn(String key){
-		dirtyColumnList.add(key);	
+	public void addDirtyColumn(String... key){
+		dirtyColumnList.addAll(Arrays.stream(key).collect(Collectors.toList()));
 	}
 	public List<String> getDirtyColumn(){
 		return dirtyColumnList;
 	}
+
+	public void setHasDefaultColumn(boolean hasDefaultColumn) {
+		this.hasDefaultColumn = hasDefaultColumn;
+	}
+
+	public boolean isHasDefaultColumn() {
+		return hasDefaultColumn;
+	}
+
+	public void setCreateTimeColumn(String createTimeColumn) {
+		this.createTimeColumn = createTimeColumn;
+		hasDefaultColumn=true;
+	}
+
+	public String getCreateTimeColumn() {
+		return createTimeColumn;
+	}
+
+	public void setModifierColumn(String modifierColumn) {
+		this.modifierColumn = modifierColumn;
+		hasDefaultColumn=true;
+	}
+
+	public String getModifierColumn() {
+		return modifierColumn;
+	}
+
+	public void setUpdateTimeColumn(String updateTimeColumn) {
+		this.updateTimeColumn = updateTimeColumn;
+		hasDefaultColumn=true;
+	}
+
+	public String getUpdateTimeColumn() {
+		return updateTimeColumn;
+	}
+
+	public void setCreatorColumn(String creatorColumn) {
+		this.creatorColumn = creatorColumn;
+		hasDefaultColumn=true;
+	}
+	public void setDefaultColumnValues(){
+		createTimeColumn="create_tm";
+		updateTimeColumn="modify_tm";
+		creatorColumn="creator";
+		modifierColumn="modifier";
+		hasDefaultColumn=true;
+	}
+
+	public String getCreatorColumn() {
+		return creatorColumn;
+	}
+
 	@Override
     public String toString(){
 		String str="";

@@ -83,7 +83,7 @@ public class JdbcDaoTest extends TestCase {
     public void testMyBatisInsert(){
         SysUserMybatisService service=SpringContextHolder.getBean(SysUserMybatisService.class);
         SysUserMybatis model=new SysUserMybatis();
-        model.setUserName("test12344");
+        model.setUserName("tet444");
         model.setUserPassword("1111");
         model.setAccountType("1");
         Long id=service.saveEntity(model);
@@ -300,7 +300,7 @@ public class JdbcDaoTest extends TestCase {
     @Test
     public void testQueryCondition(){
         /*SELECT id AS id,org_id AS orgId,account_type AS accountType,user_status AS userStatus,user_account AS userAccount,user_name AS userName,remark AS remark,order_no AS orderNo,user_password AS userPassword
-                from frameset.t_sys_user_info
+                from t_sys_user_info
                 where account_type=?
                 OR (org_id=? AND user_status>?
                     OR ((account_type=? OR order_no=?)

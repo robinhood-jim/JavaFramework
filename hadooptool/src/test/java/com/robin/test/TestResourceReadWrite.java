@@ -25,7 +25,7 @@ import java.util.Map;
 @Slf4j
 public class TestResourceReadWrite extends TestCase {
 	@Test
-	public  void testWrite(){
+	public void testWrite(){
 		DataBaseParam param=new DataBaseParam("127.0.0.1",3316,"test","root","root");
 		BaseDataBaseMeta meta=DataBaseMetaFactory.getDataBaseMetaByType(BaseDataBaseMeta.TYPE_MYSQL, param);
 		try(Connection conn=SimpleJdbcDao.getConnection(meta)){

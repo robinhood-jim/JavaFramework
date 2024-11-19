@@ -50,7 +50,6 @@ import org.springframework.util.ObjectUtils;
 
 import javax.sql.DataSource;
 import java.io.Serializable;
-import java.sql.PreparedStatement;
 import java.util.*;
 
 @Slf4j
@@ -100,7 +99,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
                     log.debug("pageSQL: {}", pageSQL);
                 }
                 if (total > 0) {
-                    CommJdbcUtil.setPageQueryParameter(pageQuery,total);
+                    CommJdbcUtil.setPageQueryParameter(pageQuery, total);
                     list = queryItemList(pageQuery, pageSQL);
                 } else {
                     list = new ArrayList<>();
@@ -235,8 +234,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
     }
 
     @Override
-    public <T extends BaseObject> List<T> queryByVO(Class<T> type, BaseObject vo, String orderByStr)
-            throws DAOException {
+    public <T extends BaseObject> List<T> queryByVO(Class<T> type, BaseObject vo, String orderByStr) throws DAOException {
         List<T> retlist = new ArrayList<>();
         if (!vo.getClass().equals(type)) {
             throw new DAOException("query VO must the same type of given Class");
@@ -255,12 +253,11 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
 
 
     @Override
-    public <T extends BaseObject> List<T> queryByCondition(Class<T> type,FilterCondition condition, PageQuery pageQuery)
-            throws DAOException {
+    public <T extends BaseObject> List<T> queryByCondition(Class<T> type, FilterCondition condition, PageQuery pageQuery) throws DAOException {
         List<T> retlist = new ArrayList<>();
         try {
             StringBuilder buffer = new StringBuilder();
-            buffer.append(getWholeSelectSql(type)).append(" where ");
+            buffer.append(getWholeSelectSql(type)).append(Const.SQL_WHERE);
             List<FieldContent> fields = AnnotationRetriever.getMappingFieldsCache(type);
             List<Object> objList = new ArrayList<>();
             buffer.append(condition.toPreparedSQLPart(objList));
@@ -307,7 +304,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
         List<T> retlist = new ArrayList<>();
         try {
             StringBuilder buffer = new StringBuilder();
-            buffer.append(getWholeSelectSql(type)).append(" where ");
+            buffer.append(getWholeSelectSql(type)).append(Const.SQL_WHERE);
             StringBuilder queryBuffer = new StringBuilder();
             Map<String, FieldContent> map1 = AnnotationRetriever.getMappingFieldsMapCache(type);
             List<FieldContent> fields = AnnotationRetriever.getMappingFieldsCache(type);
@@ -360,7 +357,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
         try {
             StringBuilder builder = new StringBuilder();
             List<FieldContent> fields = AnnotationRetriever.getMappingFieldsCache(type);
-            builder.append(getWholeSelectSql(type)).append(" where ");
+            builder.append(getWholeSelectSql(type)).append(Const.SQL_WHERE);
             StringBuilder queryBuffer = new StringBuilder();
             Map<String, FieldContent> map1 = AnnotationRetriever.getMappingFieldsMapCache(type);
 
@@ -494,7 +491,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
     @Override
     @SuppressWarnings("unchecked")
     public <T extends BaseObject, P extends Serializable> P createVO(T obj, Class<P> clazz) throws DAOException {
-        Long retval = null;
+        Long retval;
         P retObj = null;
         try {
             //function as mybatis-plus MetaObjectHandler
@@ -504,52 +501,56 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
                 handler.insertFill(new MetaObject(obj, fieldContentMap));
             }
             List<FieldContent> fields = AnnotationRetriever.getMappingFieldsCache(obj.getClass());
-            EntityMappingUtil.InsertSegment insertSegment = EntityMappingUtil.getInsertSegment(obj, sqlGen, this);
+            EntityMappingUtil.InsertSegment insertSegment = EntityMappingUtil.getInsertSegment(obj, sqlGen, this, fields);
             String insertSql = insertSegment.getInsertSql();
             if (log.isDebugEnabled()) {
                 log.debug("insert sql={}", insertSql);
             }
-            FieldContent generateColumn = null;
-            if (insertSegment.isHasincrementPk()) {
-                retval = executeSqlWithReturn(fields, insertSql, obj);
-                generateColumn = insertSegment.getIncrementColumn();
-            } else if (insertSegment.isHasSequencePk()) {
-                retval = executeSqlSequenceWithReturn(fields, insertSql, insertSegment.getSeqColumn().getFieldName(), obj);
-                generateColumn = insertSegment.getSeqColumn();
-            }
-            if (!ObjectUtils.isEmpty(retval)) {
-                //assign increment column
-                if (generateColumn != null) {
-                    FieldContent pkColumn = AnnotationRetriever.getPrimaryField(fields);
-                    if (pkColumn == null) {
-                        throw new DAOException("model " + obj.getClass().getSimpleName() + " does not have primary key");
-                    }
-                    Object targetVal = ReflectUtils.getIncrementValueBySetMethod(generateColumn.getSetMethod(), retval);
-                    if (pkColumn.getPrimaryKeys() == null) {
-                        generateColumn.getSetMethod().invoke(obj, targetVal);
-                        retObj = (P) targetVal;
-                    } else {
-                        for (FieldContent field : pkColumn.getPrimaryKeys()) {
-                            if (field.isIncrement() || field.isSequential()) {
-                                field.getSetMethod().invoke(generateColumn.getGetMethod().invoke(obj), retval);
-                            }
+            FieldContent generateColumn;
+            //pk model insert
+            if (insertSegment.isHasSequencePk() || insertSegment.isHasincrementPk()) {
+                PreparedStatementCreatorFactory factory = new PreparedStatementCreatorFactory(insertSql, insertSegment.getParamTypes());
+                KeyHolder keyHolder = new GeneratedKeyHolder();
+                if (insertSegment.isHasSequencePk()) {
+                    factory.setGeneratedKeysColumnNames(new String[]{insertSegment.getSeqColumn().getFieldName()});
+                    generateColumn = insertSegment.getSeqColumn();
+                } else {
+                    factory.setReturnGeneratedKeys(true);
+                    generateColumn = insertSegment.getIncrementColumn();
+                }
+                returnTemplate().update(factory.newPreparedStatementCreator(insertSegment.getParams()), keyHolder);
+                retval = keyHolder.getKey().longValue();
+
+                if (!ObjectUtils.isEmpty(retval)) {
+                    //assign increment column
+                    if (generateColumn != null) {
+                        FieldContent pkColumn = AnnotationRetriever.getPrimaryField(fields);
+                        if (pkColumn == null) {
+                            throw new DAOException("model " + obj.getClass().getSimpleName() + " does not have primary key");
                         }
-                        retObj = (P) pkColumn.getGetMethod().invoke(obj);
+                        Object targetVal = ReflectUtils.getIncrementValueBySetMethod(generateColumn.getSetMethod(), retval);
+                        if (pkColumn.getPrimaryKeys() == null) {
+                            generateColumn.getSetMethod().invoke(obj, targetVal);
+                            retObj = (P) targetVal;
+                        } else {
+                            for (FieldContent field : pkColumn.getPrimaryKeys()) {
+                                if (field.isIncrement() || field.isSequential()) {
+                                    field.getSetMethod().invoke(generateColumn.getGetMethod().invoke(obj), retval);
+                                }
+                            }
+                            retObj = (P) pkColumn.getGetMethod().invoke(obj);
+                        }
                     }
                 }
             } else {
+                //no pk model insert
                 if (!insertSegment.isContainlob()) {
                     executeUpdate(insertSql, fields, obj);
                 } else {
                     LobCreatingPreparedStatementCallBack back = new LobCreatingPreparedStatementCallBack(lobHandler, fields, obj);
                     this.returnTemplate().execute(insertSql, back);
                 }
-                FieldContent pkColumn = AnnotationRetriever.getPrimaryField(fields);
-                if (pkColumn != null) {
-                    retObj = (P) pkColumn.getGetMethod().invoke(obj);
-                } else {
-                    return null;
-                }
+                return null;
             }
 
         } catch (Exception ex) {
@@ -584,7 +585,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
     private int updateWithSegment(int ret, EntityMappingUtil.UpdateSegment updateSegment) {
         StringBuilder builder = new StringBuilder();
         if (updateSegment.getFieldStr().length() != 0) {
-            builder.append(updateSegment.getFieldStr()).append(" where ").append(updateSegment.getWhereStr());
+            builder.append(updateSegment.getFieldStr()).append(Const.SQL_WHERE).append(updateSegment.getWhereStr());
             Object[] objs = updateSegment.getParams().toArray();
             String updateSql = builder.toString();
             if (log.isDebugEnabled()) {
@@ -635,7 +636,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
             if (tableDef.getSchema() != null && !tableDef.getSchema().isEmpty()) {
                 buffer.append(sqlGen.getSchemaName(tableDef.getSchema())).append(".");
             }
-            buffer.append(tableDef.getTableName()).append(" where ");
+            buffer.append(tableDef.getTableName()).append(Const.SQL_WHERE);
             StringBuilder fieldBuffer = new StringBuilder();
             for (FieldContent field : fields) {
                 if (field.isPrimary()) {
@@ -675,7 +676,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
                 throw new MissingConfigException("status field does not exists!");
             }
             Assert.notNull(primaryCol, "primary column does not exists!");
-            buffer.append(" where ").append(primaryCol.getFieldName()).append(" in (:pkObjs)");
+            buffer.append(Const.SQL_WHERE).append(primaryCol.getFieldName()).append(" in (:pkObjs)");
             Map<String, Object> valueMap = new HashMap<>();
             valueMap.put("status", statusValue);
             valueMap.put("pkObjs", pkObjs);
@@ -697,7 +698,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
             StringBuilder buffer = new StringBuilder();
             buffer.append("delete from ");
             appendSchemaAndTable(tableDef, buffer);
-            buffer.append(" where ");
+            buffer.append(Const.SQL_WHERE);
             StringBuilder fieldBuffer = new StringBuilder();
             if (fieldsMap.containsKey(field)) {
                 fieldBuffer.append(fieldsMap.get(field).getFieldName()).append("=?");
@@ -729,8 +730,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
     public <T extends BaseObject> T getEntity(Class<T> clazz, Serializable id) throws DAOException {
         try {
             T obj = clazz.newInstance();
-            //List<FieldContent> fields = AnnotationRetriever.getMappingFieldsCache(clazz);
-            EntityMappingUtil.SelectSegment segment = EntityMappingUtil.getSelectPkSegment(clazz, id, sqlGen,this);
+            EntityMappingUtil.SelectSegment segment = EntityMappingUtil.getSelectPkSegment(clazz, id, sqlGen, this);
             List<Map<String, Object>> list1 = queryBySql(segment.getSelectSql(), segment.getAvailableFields(), segment.getValues().toArray());
             if (!CollectionUtils.isEmpty(list1)) {
                 wrapResultToModelWithKey(obj, list1.get(0), segment.getAvailableFields(), id);
@@ -779,18 +779,17 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
 
     }
 
-    private long executeSqlWithReturn(List<FieldContent> field, final String sql, BaseObject object)
+    /*private long executeSqlWithReturn(List<FieldContent> field, final String sql, BaseObject object, EntityMappingUtil.InsertSegment insertSegment)
             throws DAOException {
         KeyHolder keyHolder = new GeneratedKeyHolder();
-        returnTemplate().update(new DefaultPrepareStatement(field, sql, object, lobHandler), keyHolder);
+        returnTemplate().update(new DefaultPrepareStatement(field, sql, object, lobHandler,insertSegment), keyHolder);
         Assert.notNull(keyHolder.getKey(), "");
         return keyHolder.getKey().longValue();
-    }
+    }*/
 
     @SuppressWarnings("unused")
 
-    public long executeSqlWithReturn(final String sql, Object[] object)
-            throws DAOException {
+    public long executeSqlWithReturn(final String sql, Object[] object) throws DAOException {
         KeyHolder keyHolder = new GeneratedKeyHolder();
         int update = returnTemplate().update(new SimplePrepareStatement(sql, object, lobHandler), keyHolder);
         if (update > 0) {
@@ -903,8 +902,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
             if (field.isPrimary()) {
                 if (field.getPrimaryKeys() != null) {
                     for (FieldContent fieldContent : field.getPrimaryKeys()) {
-                        builder.append(fieldContent.getFieldName()).append(Const.SQL_AS)
-                                .append(fieldContent.getPropertyName()).append(",");
+                        builder.append(fieldContent.getFieldName()).append(Const.SQL_AS).append(fieldContent.getPropertyName()).append(",");
 
                     }
                 } else {
@@ -956,20 +954,19 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
     }
 
 
-    private long executeSqlSequenceWithReturn(final List<FieldContent> fields, final String sql, final String seqfield, BaseObject object)
-            throws DAOException {
+    /*private long executeSqlSequenceWithReturn(final List<FieldContent> fields, final String sql, final EntityMappingUtil.InsertSegment insertSegment, BaseObject object) throws DAOException {
         KeyHolder keyHolder = new GeneratedKeyHolder();
         returnTemplate().update(conn -> {
-            PreparedStatement ps = conn.prepareStatement(sql, new String[]{seqfield});
+            PreparedStatement ps = conn.prepareStatement(sql, new String[]{insertSegment.getSeqColumn().getFieldName()});
             int pos = 1;
             for (FieldContent field : fields) {
-                pos = AnnotationRetriever.replacementPrepared(ps, lobHandler, field, object, pos);
+                pos = AnnotationRetriever.replacementPrepared(ps, lobHandler, field, object, pos, insertSegment);
             }
             return ps;
         }, keyHolder);
         Assert.notNull(keyHolder.getKey(), "");
         return keyHolder.getKey().longValue();
-    }
+    }*/
 
 
     private NamedParameterJdbcTemplate getNamedJdbcTemplate() {

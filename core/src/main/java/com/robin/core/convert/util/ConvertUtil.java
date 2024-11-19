@@ -108,7 +108,7 @@ public class ConvertUtil {
             String key = entry.getKey();
             String value = entry.getValue();
             if (methodMap.containsKey(key)) {
-                target.AddDirtyColumn(key);
+                target.addDirtyColumn(key);
                 Class<?> type = methodMap.get(key).getParameterTypes()[0];
                 Object retValue;
                 if (StringUtils.isEmpty(value)) {
@@ -213,7 +213,7 @@ public class ConvertUtil {
 
     private static void setBaseObjectValue(BaseObject target, Object value, String field, Method setMethod, String... defaultDateTimeFormatter) throws Exception {
         if (!ObjectUtils.isEmpty(value)) {
-            target.AddDirtyColumn(field);
+            target.addDirtyColumn(field);
             Class<?> type = setMethod.getParameterTypes()[0];
             Object retValue = parseParameter(type, value, defaultDateTimeFormatter);
             setMethod.invoke(target, retValue);

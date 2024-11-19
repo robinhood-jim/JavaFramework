@@ -207,6 +207,7 @@ public class LoginService implements ILoginService {
         }
     }
 
+    @Override
     public Session ssoGetUser(String userName) {
         SysUser user = new SysUser();
         user.setUserAccount(userName);
@@ -218,6 +219,7 @@ public class LoginService implements ILoginService {
         return returnSession(users.get(0));
     }
 
+    @Override
     public Session ssoGetUserById(Long userId) {
         SysUser user = sysUserService.getEntity(userId);
         if (user == null) {
