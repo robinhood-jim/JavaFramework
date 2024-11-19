@@ -68,6 +68,7 @@ public abstract class AbstractFileIterator implements IResourceIterator {
         this.accessUtil = accessUtil;
     }
 
+    @Override
     public void beforeProcess(String resourcePath) {
         checkAccessUtil(resourcePath);
         Assert.notNull(accessUtil, "ResourceAccessUtil is required!");
@@ -106,11 +107,11 @@ public abstract class AbstractFileIterator implements IResourceIterator {
         }
     }
 
-
+    @Override
     public void setReader(BufferedReader reader) {
         this.reader = reader;
     }
-
+    @Override
     public void setInputStream(InputStream stream) {
         this.instream = stream;
     }
@@ -132,7 +133,7 @@ public abstract class AbstractFileIterator implements IResourceIterator {
             instream.close();
         }
     }
-
+    @Override
     public String getIdentifier() {
         return identifier;
     }

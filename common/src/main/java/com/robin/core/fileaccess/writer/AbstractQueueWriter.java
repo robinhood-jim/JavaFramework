@@ -77,9 +77,11 @@ public abstract class AbstractQueueWriter extends AbstractResourceWriter {
     public String getIdentifier() {
         return identifier;
     }
+    @Override
     public void setWriter(BufferedWriter writer){
         throw new OperationNotSupportException("");
     }
+    @Override
     public void setOutputStream(OutputStream outputStream){
         throw new OperationNotSupportException("");
     }

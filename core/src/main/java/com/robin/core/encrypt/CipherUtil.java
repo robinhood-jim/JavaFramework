@@ -241,7 +241,7 @@ public class CipherUtil {
         try (DataInputStream in = new DataInputStream(new ByteArrayInputStream(bytes))) {
             byte[] sshRsa = new byte[in.readInt()];
             in.readFully(sshRsa);
-            checkArgument(new String(sshRsa).equals("ssh-rsa"), "no RFC-4716 ssh-rsa");
+            checkArgument("ssh-rsa".equals(new String(sshRsa)), "no RFC-4716 ssh-rsa");
             byte[] exp = new byte[in.readInt()];
             in.readFully(exp);
             byte[] mod = new byte[in.readInt()];

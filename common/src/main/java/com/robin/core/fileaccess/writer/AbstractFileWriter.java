@@ -62,10 +62,12 @@ public abstract class AbstractFileWriter implements IResourceWriter {
 		}
 		checkAccessUtil(colmeta.getPath());
 	}
-	public void setWriter(BufferedWriter writer){
+	@Override
+    public void setWriter(BufferedWriter writer){
 		this.writer=writer;
 	}
-	public void setOutputStream(OutputStream out){
+	@Override
+    public void setOutputStream(OutputStream out){
 		this.out=out;
 	}
 

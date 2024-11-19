@@ -616,7 +616,7 @@ public class AnnotationRetriever {
         if (str == null || str.length() < 4) {
             return str;
         }
-        String fieldName = str.startsWith("get") && !str.equalsIgnoreCase("getClass") ?
+        String fieldName = str.startsWith("get") && !"getClass".equalsIgnoreCase(str) ?
                 str.substring(3) : str.startsWith("is") ? str.substring(2) : str;
         return fieldName.substring(0, 1).toLowerCase() + fieldName.substring(1);
     }

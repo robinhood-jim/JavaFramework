@@ -59,6 +59,7 @@ public class  JdbcResIterator extends AbstractResIterator {
         }
     }
 
+    @Override
     public void beforeProcess(String param) {
         try {
             if (param.toLowerCase().startsWith("select ")) {
