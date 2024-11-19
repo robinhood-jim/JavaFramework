@@ -61,7 +61,7 @@ public abstract class AbstractAutoController<O extends BaseObject, P extends Ser
                 valueOfMethod = this.pkType.getMethod("valueOf", String.class);
             }
         } catch (Exception ex) {
-            log.error("{}", ex);
+            log.error("{}", ex.getMessage());
         }
         config = getClass().getAnnotation(WebControllerConfig.class);
         primaryField = AnnotationRetriever.getPrimaryFieldByClass(potype);
@@ -111,7 +111,7 @@ public abstract class AbstractAutoController<O extends BaseObject, P extends Ser
 
             }
         } catch (NoSuchMethodException ex) {
-            log.error("{}", ex);
+            log.error("{}", ex.getMessage());
         }
     }
 

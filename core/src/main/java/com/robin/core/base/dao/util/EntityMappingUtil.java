@@ -46,7 +46,7 @@ public class EntityMappingUtil {
         }
         buffer.append(tableDef.getTableName());
         StringBuilder fieldBuffer = new StringBuilder();
-        StringBuilder valuebuBuffer = new StringBuilder();
+        StringBuilder valueBuffer = new StringBuilder();
 
         InsertSegment insertSegment = new EntityMappingUtil.InsertSegment();
         List<Object> params=new ArrayList<>();
@@ -71,7 +71,7 @@ public class EntityMappingUtil {
                     if (value != null) {
                         if (!content.isPrimary()) {
                             fieldBuffer.append(content.getFieldName()).append(",");
-                            valuebuBuffer.append("?,");
+                            valueBuffer.append("?,");
                             params.add(content.getGetMethod().invoke(obj));
                             paramTypes.add(new SqlParameter(columnMeta.getDataType()));
                         } else {
@@ -86,10 +86,10 @@ public class EntityMappingUtil {
                                         if (field.isSequential()) {
                                             insertSegment.setHasSequencePk(true);
                                             insertSegment.setSeqField(content.getSequenceName());
-                                            valuebuBuffer.append(sqlGen.getSequenceScript(field.getSequenceName())).append(",");
+                                            valueBuffer.append(sqlGen.getSequenceScript(field.getSequenceName())).append(",");
                                             insertSegment.setSeqColumn(content);
                                         } else {
-                                            valuebuBuffer.append("?,");
+                                            valueBuffer.append("?,");
                                             columnMeta=Optional.ofNullable(columnMetaMap.get(field.getFieldName().toLowerCase())).orElse(columnMetaMap.get(field.getFieldName().toUpperCase()));
                                             params.add(field.getGetMethod().invoke(pkObj));
                                             paramTypes.add(new SqlParameter(columnMeta.getDataType()));
@@ -99,7 +99,7 @@ public class EntityMappingUtil {
                                 }
                             } else {
                                 fieldBuffer.append(content.getFieldName()).append(",");
-                                valuebuBuffer.append("?,");
+                                valueBuffer.append("?,");
                                 params.add(content.getGetMethod().invoke(obj));
                                 paramTypes.add(new SqlParameter(columnMeta.getDataType()));
                             }
@@ -114,7 +114,7 @@ public class EntityMappingUtil {
                     if (content.isSequential()) {
                         insertSegment.setHasSequencePk(true);
                         insertSegment.setSeqField(content.getSequenceName());
-                        valuebuBuffer.append(sqlGen.getSequenceScript(content.getSequenceName())).append(",");
+                        valueBuffer.append(sqlGen.getSequenceScript(content.getSequenceName())).append(",");
                         insertSegment.setSeqColumn(content);
                         fieldBuffer.append(content.getFieldName()).append(",");
                     }
@@ -124,13 +124,13 @@ public class EntityMappingUtil {
             if(obj.isHasDefaultColumn()){
                 if(!ObjectUtils.isEmpty(obj.getCreateTimeColumn()) && !ObjectUtils.isEmpty(columnMetaMap.get(obj.getCreateTimeColumn()))){
                     fieldBuffer.append(obj.getCreateTimeColumn()).append(",");
-                    valuebuBuffer.append("?,");
+                    valueBuffer.append("?,");
                     params.add(new Timestamp(System.currentTimeMillis()));
                     paramTypes.add(new SqlParameter(Types.TIMESTAMP));
                 }
                 if(!ObjectUtils.isEmpty(obj.getUpdateTimeColumn()) && !ObjectUtils.isEmpty(columnMetaMap.get(obj.getUpdateTimeColumn()))){
                     fieldBuffer.append(obj.getUpdateTimeColumn()).append(",");
-                    valuebuBuffer.append("?,");
+                    valueBuffer.append("?,");
                     params.add(new Timestamp(System.currentTimeMillis()));
                     paramTypes.add(new SqlParameter(Types.TIMESTAMP));
                 }
@@ -138,7 +138,7 @@ public class EntityMappingUtil {
                     IUserUtils utils= SpringContextHolder.getBean(IUserUtils.class);
                     Optional.ofNullable(utils).map(f->{
                         fieldBuffer.append(obj.getCreatorColumn()).append(",");
-                        valuebuBuffer.append("?,");
+                        valueBuffer.append("?,");
                         params.add(utils.getLoginUserId());
                         paramTypes.add(new SqlParameter(Types.BIGINT));
                         return f;
@@ -146,7 +146,7 @@ public class EntityMappingUtil {
                 }
             }
 
-            buffer.append("(").append(fieldBuffer.substring(0, fieldBuffer.length() - 1)).append(") values (").append(valuebuBuffer.substring(0, valuebuBuffer.length() - 1)).append(")");
+            buffer.append("(").append(fieldBuffer.substring(0, fieldBuffer.length() - 1)).append(") values (").append(valueBuffer.substring(0, valueBuffer.length() - 1)).append(")");
             insertSegment.setInsertSql(buffer.toString());
             insertSegment.setParams(params);
             insertSegment.setParamTypes(paramTypes);

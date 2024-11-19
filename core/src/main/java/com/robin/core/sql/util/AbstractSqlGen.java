@@ -413,7 +413,7 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
             return condition.getColumnCode();
         }else{
             if(BaseObject.class.isAssignableFrom(condition.getMappingClass())) {
-                Map<String, FieldContent> map1 = AnnotationRetriever.getMappingFieldsMapCache((Class<? extends BaseObject>)condition.getMappingClass());
+                Map<String, FieldContent> map1 = AnnotationRetriever.getMappingFieldsMapCache(condition.getMappingClass());
                 if (map1.containsKey(condition.getColumnCode())) {
                     return map1.get(condition.getColumnCode()).getFieldName();
                 } else {

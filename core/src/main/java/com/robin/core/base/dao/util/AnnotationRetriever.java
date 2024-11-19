@@ -18,6 +18,7 @@ package com.robin.core.base.dao.util;
 import com.baomidou.mybatisplus.annotation.*;
 import com.robin.core.base.annotation.MappingEntity;
 import com.robin.core.base.annotation.MappingField;
+import com.robin.core.base.exception.ConfigurationIncorrectException;
 import com.robin.core.base.exception.DAOException;
 import com.robin.core.base.model.BaseObject;
 import com.robin.core.base.model.BasePrimaryObject;
@@ -44,7 +45,6 @@ import java.util.*;
 @Slf4j
 @SuppressWarnings("unchecked")
 public class AnnotationRetriever {
-    private static final Map<Class<? extends BaseObject>, Map<String, String>> tableCfgMap = new HashMap<>();
     private static final Map<Class<? extends BaseObject>, EntityContent> entityCfgMap = new HashMap<>();
     private static final Map<Class<? extends BaseObject>, Map<String, FieldContent>> fieldCfgMap = new HashMap<>();
     private static final Map<Class<? extends BaseObject>, List<FieldContent>> fieldListMap = new HashMap<>();
@@ -87,16 +87,16 @@ public class AnnotationRetriever {
 
             Field[] fieldArr = clazz.getDeclaredFields();
             List<Field> fields = new ArrayList<>();
-            List<Class> fieldClasses = new ArrayList<>();
-            for (int i = 0; i < fieldArr.length; i++) {
-                fields.add(fieldArr[i]);
+            List<Class<? extends BaseObject>> fieldClasses = new ArrayList<>();
+            for (Field value : fieldArr) {
+                fields.add(value);
                 fieldClasses.add(clazz);
             }
             if (clazz.getSuperclass().getSuperclass().equals(BaseObject.class)) {
                 Field[] parentFields = clazz.getSuperclass().getDeclaredFields();
                 for (Field field : parentFields) {
                     fields.add(field);
-                    fieldClasses.add(clazz.getSuperclass());
+                    fieldClasses.add((Class<? extends BaseObject>)clazz.getSuperclass());
                 }
             }
             for (int i = 0; i < fields.size(); i++) {
@@ -190,7 +190,7 @@ public class AnnotationRetriever {
 
     public static EntityContent getMappingTableByCache(Class<? extends BaseObject> clazz) throws DAOException {
         EntityContent content;
-        if (!tableCfgMap.containsKey(clazz)) {
+        if (!entityCfgMap.containsKey(clazz)) {
             content = getMappingTableEntity(clazz);
             entityCfgMap.put(clazz, content);
         } else {
@@ -342,7 +342,6 @@ public class AnnotationRetriever {
             }
             builder.setFieldName(fieldName);
 
-            //content = new FieldContent(field.getName(), fieldName, field, getMethod, setMethod);
             if (!Objects.isNull(idfield)) {
                 builder.setPrimary(true);
                 if (!Objects.isNull(idfield.type())) {
@@ -412,7 +411,6 @@ public class AnnotationRetriever {
                 }
             }
             content = builder.build();
-            //content = new FieldContent(field.getName(), fieldName, field, getMethod, setMethod);
             adjustByType(content, type);
 
         } catch (Exception ex) {
@@ -609,7 +607,7 @@ public class AnnotationRetriever {
             if (!Object.class.isAssignableFrom(clazz.getSuperclass())) {
                 return getLambdaSerialized(field);
             }
-            throw new RuntimeException("current property is not exists");
+            throw new ConfigurationIncorrectException("current property is not exists");
         }
     }
 
