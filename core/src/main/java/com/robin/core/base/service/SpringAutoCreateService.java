@@ -8,11 +8,14 @@ import com.robin.core.base.model.BaseObject;
 import com.robin.core.base.spring.SpringContextHolder;
 import com.robin.core.base.util.Const;
 import com.robin.core.query.util.PageQuery;
+import com.robin.core.sql.util.FilterCondition;
+import com.robin.core.sql.util.FilterConditionBuilder;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
@@ -23,22 +26,21 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Predicate;
 
 
 @Getter
 @Setter
 @SuppressWarnings("unused")
-public class SpringAutoCreateService<B extends BaseObject, P extends Serializable> {
+public class SpringAutoCreateService<B extends BaseObject, P extends Serializable> implements IBaseAnnotationJdbcService<B,P> {
     protected Function<B, P> saveFunction;
     protected Consumer<B> saveBeforeFunction;
     protected BiConsumer<B,P> saveAfterFunction;
 
-    protected Predicate<B> updateEntityPredicate;
+    protected Function<B,Integer> updateEntityFunction;
     protected Consumer<B> updateBeforeFunction;
     protected Consumer<B> updateAfterFunction;
 
-    protected Predicate<P[]> deleteEntityPredicate;
+    protected Function<P[],Integer> deleteEntityFunction;
 
     protected Consumer<P[]>deleteBeforeFunction;
     protected Consumer<P[]> deleteAfterFunction;
@@ -61,9 +63,41 @@ public class SpringAutoCreateService<B extends BaseObject, P extends Serializabl
         return saveFunction.apply(t);
     }
 
-    public boolean updateEntity(B t) {
-        return updateEntityPredicate.test(t);
+    public int updateEntity(B t) {
+        try{
+            return updateEntityFunction.apply(t);
+        }catch (DAOException ex){
+            throw new ServiceException(ex);
+        }
     }
+
+    @Override
+    public int deleteEntity(P[] vo) throws ServiceException {
+        try{
+            return deleteEntityFunction.apply(vo);
+        }catch (DAOException ex){
+            throw new ServiceException(ex);
+        }
+    }
+
+    @Override
+    public int deleteByField(String field, Object value) throws ServiceException {
+        try{
+            return getJdbcDao(this).deleteByField(potype,field,value);
+        }catch (DAOException ex){
+            throw new ServiceException(ex);
+        }
+    }
+
+    @Override
+    public int deleteByField(PropertyFunction<B, ?> function, Object value) throws ServiceException {
+        try{
+            return getJdbcDao(this).deleteByField(potype,function,value);
+        }catch (DAOException ex){
+            throw new ServiceException(ex);
+        }
+    }
+
     public B getEntity(P id) throws ServiceException{
         try{
             return getJdbcDao(this).getEntity(potype, id);
@@ -88,6 +122,42 @@ public class SpringAutoCreateService<B extends BaseObject, P extends Serializabl
         }
     }
 
+    @Override
+    public List<B> queryByFieldOrderBy(String orderByStr, String fieldName, Const.OPERATOR oper, Object... fieldValues) throws ServiceException {
+        try{
+            return getJdbcDao(this).queryByFieldOrderBy(potype,fieldName,oper,orderByStr,fieldValues);
+        }catch (DAOException ex){
+            throw new ServiceException(ex);
+        }
+    }
+
+    @Override
+    public List<B> queryByFieldOrderBy(String orderByStr, PropertyFunction<B, ?> function, Const.OPERATOR oper, Object... fieldValues) throws ServiceException {
+        try{
+            return getJdbcDao(this).queryByFieldOrderBy(potype,function,oper,orderByStr,fieldValues);
+        }catch (DAOException ex){
+            throw new ServiceException(ex);
+        }
+    }
+
+    @Override
+    public List<B> queryAll() throws ServiceException {
+        try{
+            return getJdbcDao(this).queryAll(potype);
+        }catch (DAOException ex){
+            throw new ServiceException(ex);
+        }
+    }
+
+    @Override
+    public List<B> queryByVO(B vo, String orderByStr) throws ServiceException {
+        try{
+            return getJdbcDao(this).queryByVO(potype,vo,orderByStr);
+        }catch (DAOException ex){
+            throw new ServiceException(ex);
+        }
+    }
+
     public void queryBySelectId(PageQuery query) throws ServiceException {
         try {
             getJdbcDao(this).queryBySelectId(query);
@@ -102,10 +172,88 @@ public class SpringAutoCreateService<B extends BaseObject, P extends Serializabl
             throw new ServiceException(ex);
         }
     }
+
+    @Override
+    public void executeBySelectId(PageQuery query) throws ServiceException {
+        try{
+            getJdbcDao(this).executeBySelectId(query);
+        }catch (DAOException ex){
+            throw new ServiceException(ex);
+        }
+    }
+
+    @Override
+    public PageQuery queryBySql(String querySQL, String countSql, String[] displayname, PageQuery pageQuery) throws ServiceException {
+        try{
+            return getJdbcDao(this).queryBySql(querySQL,countSql,displayname,pageQuery);
+        }catch (DAOException ex){
+            throw new ServiceException(ex);
+        }
+    }
+
     public List<Map<String,Object>> queryBySql(String sqlstr,Object... objects) throws ServiceException{
         try{
             return getJdbcDao(this).queryBySql(sqlstr,objects);
         }catch(DAOException ex){
+            throw new ServiceException(ex);
+        }
+    }
+
+    @Override
+    public int queryByInt(String querySQL, Object... objects) throws ServiceException {
+        try{
+            return getJdbcDao(this).queryByInt(querySQL,objects);
+        }catch (DAOException ex){
+            throw new ServiceException(ex);
+        }
+    }
+
+    @Override
+    public List<B> queryByField(String fieldName, Const.OPERATOR oper, Object... fieldValues) throws ServiceException {
+        try{
+            return getJdbcDao(this).queryByField(potype,fieldName,oper,fieldValues);
+        }catch (DAOException ex){
+            throw new ServiceException(ex);
+        }
+    }
+
+    @Transactional(
+            readOnly = true
+    )
+    public List<B> queryByCondition(FilterCondition condition, PageQuery pageQuery) throws ServiceException {
+        try {
+            List var4 = getJdbcDao(this).queryByCondition(potype, condition, pageQuery);
+            return var4;
+        } catch (DAOException var3) {
+            throw new ServiceException(var3);
+        }
+    }
+
+    @Override
+    public List<B> queryByCondition(FilterConditionBuilder filterConditions, PageQuery pageQuery) {
+        try{
+            return getJdbcDao(this).queryByCondition(potype,filterConditions.build(),pageQuery);
+        }catch (DAOException ex){
+            throw new ServiceException(ex);
+        }
+    }
+
+    @Override
+    public List<B> queryByCondition(FilterCondition filterCondition) {
+        try{
+            PageQuery query=new PageQuery();
+            query.setPageSize(0);
+            return getJdbcDao(this).queryByCondition(potype,filterCondition,query);
+        }catch (DAOException ex){
+            throw new ServiceException(ex);
+        }
+    }
+
+    @Override
+    public B getByField(String fieldName, Const.OPERATOR oper, Object... fieldValues) throws ServiceException {
+        try{
+            return getJdbcDao(this).getByField(potype,fieldName,oper,fieldValues);
+        }catch (DAOException ex){
             throw new ServiceException(ex);
         }
     }
@@ -177,15 +325,14 @@ public class SpringAutoCreateService<B extends BaseObject, P extends Serializabl
             if(ObjectUtils.isEmpty(service.getSaveFunction())){
                 constructSaveFunction(null);
             }
-            if(ObjectUtils.isEmpty(service.getUpdateEntityPredicate())){
+            if(ObjectUtils.isEmpty(service.getUpdateEntityFunction())){
                 constructUpdateFunction(null);
             }
-            if(ObjectUtils.isEmpty(service.getDeleteEntityPredicate())){
+            if(ObjectUtils.isEmpty(service.getDeleteEntityFunction())){
                 constructDeleteEntityFunction(null);
             }
             return service;
         }
-
 
         private void constructSaveFunction(Function<B, P> function) {
             service.setSaveFunction(obj -> {
@@ -219,7 +366,7 @@ public class SpringAutoCreateService<B extends BaseObject, P extends Serializabl
         }
 
         private void constructUpdateFunction(Function<B, Integer> function) {
-            service.setUpdateEntityPredicate(obj -> {
+            service.setUpdateEntityFunction(obj -> {
                 PlatformTransactionManager manager = transactionManager(service);
                 DefaultTransactionDefinition definition = new DefaultTransactionDefinition();
                 definition.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRED);
@@ -243,12 +390,12 @@ public class SpringAutoCreateService<B extends BaseObject, P extends Serializabl
                     manager.rollback(status);
                     throw new ServiceException(ex);
                 }
-                return updateRow > 0;
+                return updateRow;
             });
         }
 
         private void constructDeleteEntityFunction(Function<P[], Integer> function) {
-            service.setDeleteEntityPredicate(obj -> {
+            service.setDeleteEntityFunction(obj -> {
                 PlatformTransactionManager manager = transactionManager(service);
                 DefaultTransactionDefinition definition = new DefaultTransactionDefinition();
                 definition.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRED);
@@ -272,7 +419,7 @@ public class SpringAutoCreateService<B extends BaseObject, P extends Serializabl
                     manager.rollback(status);
                     throw new ServiceException(ex);
                 }
-                return updateRow > 0;
+                return updateRow;
             });
         }
     }

@@ -11,7 +11,6 @@ import com.robin.core.query.util.PageQuery;
 import com.robin.core.web.annotation.WebControllerConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
@@ -167,7 +166,7 @@ public abstract class AbstractAutoController<O extends BaseObject, P extends Ser
         Map<String, Object> retmap = new HashMap<>();
         try {
             if (!ObjectUtils.isEmpty(ids)) {
-                service.getDeleteEntityPredicate().test(parseId(ids));
+                service.getDeleteEntityFunction().apply(parseId(ids));
             }
             retmap.put("success", true);
         } catch (Exception e) {

@@ -365,7 +365,7 @@ public class AnnotationRetriever {
     }
 
     private static FieldContent retrieveFieldJpa(Field field, Class<? extends BaseObject> clazz) throws DAOException {
-        FieldContent content = null;
+        FieldContent content ;
         try {
 
             String tmpName = org.springframework.util.StringUtils.capitalize(field.getName());

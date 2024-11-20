@@ -17,7 +17,7 @@ package com.robin.basis.controller.user;
 
 import cn.hutool.jwt.JWTPayload;
 import cn.hutool.jwt.JWTUtil;
-import com.robin.basis.service.system.ILoginService;
+import com.robin.core.web.service.ILoginService;
 import com.robin.core.base.dao.JdbcDao;
 import com.robin.core.base.util.Const;
 import com.robin.core.convert.util.ConvertUtil;
