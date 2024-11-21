@@ -69,7 +69,9 @@ public class DataMappingContoller extends AbstractCrudDhtmlxController<ProjectIn
         conditions.withCondition(new FilterCondition("proj_id", Const.OPERATOR.EQ, info.getId())).withCondition(new FilterCondition("source_id", Const.OPERATOR.EQ, source.getId()))
                 .withCondition(new FilterCondition("db_schema", Const.OPERATOR.EQ, schema)).withCondition(new FilterCondition("entity_code", Const.OPERATOR.EQ, table));
         request.setAttribute("sourceId", source.getId());
-        List<EntityMapping> mappinglist = entityMappingService.queryByCondition(conditions, new PageQuery());
+        PageQuery<EntityMapping> pageQuery= new PageQuery<EntityMapping>();
+        entityMappingService.queryByCondition(conditions,pageQuery);
+        List<EntityMapping> mappinglist =pageQuery.getRecordSet();
         if (mappinglist != null && !mappinglist.isEmpty()) {
             mapping = mappinglist.get(0);
             request.setAttribute("mappingId", mapping.getId());
@@ -176,8 +178,9 @@ public class DataMappingContoller extends AbstractCrudDhtmlxController<ProjectIn
                             .addEq(EntityMapping::getDbSchema,schema).addEq(EntityMapping::getEntityCode,table);
            /* filterConditions.withCondition(new FilterCondition("proj_id", Const.OPERATOR.EQ, info.getId())).withCondition(new FilterCondition("source_id", Const.OPERATOR.EQ, source.getId()))
                     .withCondition(new FilterCondition("db_schema", Const.OPERATOR.EQ, schema)).withCondition(new FilterCondition("entity_code", Const.OPERATOR.EQ, table));*/
-
-            List<EntityMapping> mappinglist = entityMappingService.queryByCondition(filterConditions, new PageQuery());
+            PageQuery<EntityMapping> pageQuery= new PageQuery<>();
+            entityMappingService.queryByCondition(filterConditions, pageQuery);
+            List<EntityMapping> mappinglist =pageQuery.getRecordSet();
             if (mappinglist != null && !mappinglist.isEmpty()) {
                 mapping = mappinglist.get(0);
 

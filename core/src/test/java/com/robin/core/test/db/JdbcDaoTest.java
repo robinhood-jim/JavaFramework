@@ -27,7 +27,6 @@ import com.robin.core.base.spring.DynamicBeanReader;
 import com.robin.core.base.spring.JdbcDaoDynamicBean;
 import com.robin.core.base.spring.SpringContextHolder;
 import com.robin.core.base.util.Const;
-import com.robin.core.base.util.StringUtils;
 import com.robin.core.query.util.PageQuery;
 import com.robin.core.sql.util.FilterCondition;
 import com.robin.core.sql.util.FilterConditionBuilder;
@@ -37,7 +36,6 @@ import io.github.classgraph.*;
 import junit.framework.TestCase;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
-import org.checkerframework.checker.units.qual.C;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -115,7 +113,7 @@ public class JdbcDaoTest extends TestCase {
     @Test
     public void testPageQuery() {
         JdbcDao jdbcDao = SpringContextHolder.getBean("jdbcDao", JdbcDao.class);
-        PageQuery query = new PageQuery();
+        PageQuery<Map<String,Object>> query = new PageQuery<>();
         query.setPageSize(0);
         query.setSelectParamId("GET_TEST_PAGE");
         query.getParameters().put("queryString", "");
@@ -127,7 +125,7 @@ public class JdbcDaoTest extends TestCase {
     @Test
     public void testPageQueryWithReplaceAndPrepared() {
         JdbcDao jdbcDao = SpringContextHolder.getBean("jdbcDao", JdbcDao.class);
-        PageQuery query = new PageQuery();
+        PageQuery<Map<String,Object>> query = new PageQuery<>();
         query.setPageSize(0);
         query.setSelectParamId("GET_TEST_PREPARE");
         query.getParameters().put("queryString", "and name like ? and cs_id=?");
@@ -144,7 +142,7 @@ public class JdbcDaoTest extends TestCase {
     @Test
     public void testPageQueryWithNamedParameter(){
         JdbcDao jdbcDao = SpringContextHolder.getBean("jdbcDao", JdbcDao.class);
-        PageQuery query = new PageQuery();
+        PageQuery<Map<String,Object>> query = new PageQuery<>();
         query.setPageSize(0);
         query.setSelectParamId("GET_TEST_NAMEPARAM");
         query.setNameParameterWithKey("name","%O%");
@@ -268,7 +266,7 @@ public class JdbcDaoTest extends TestCase {
         paramMap.put("name","%a%");
         paramMap.put("description","%a%");
         paramMap.put("csId",1L);
-        List list=SpringContextHolder.getBean(SqlMapperService.class).queryByMapper("com.robin.test.query1","select1",new PageQuery(),paramMap);
+        List list=SpringContextHolder.getBean(SqlMapperService.class).queryByMapper("com.robin.test.query1","select1",new PageQuery<Map<String,Object>>(),paramMap);
         int row=SpringContextHolder.getBean(SqlMapperService.class).executeByMapper("com.robin.test.query1","insert1",model);
         //int row=SpringContextHolder.getBean(SqlMapperService.class).executeByMapper("com.robin.test.query1","update1",model);
         System.out.println(model);

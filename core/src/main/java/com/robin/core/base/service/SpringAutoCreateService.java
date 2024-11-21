@@ -220,19 +220,18 @@ public class SpringAutoCreateService<B extends BaseObject, P extends Serializabl
     @Transactional(
             readOnly = true
     )
-    public List<B> queryByCondition(FilterCondition condition, PageQuery pageQuery) throws ServiceException {
+    public void queryByCondition(FilterCondition condition, PageQuery<B> pageQuery) throws ServiceException {
         try {
-            List var4 = getJdbcDao(this).queryByCondition(potype, condition, pageQuery);
-            return var4;
+            getJdbcDao(this).queryByCondition(potype, condition, pageQuery);
         } catch (DAOException var3) {
             throw new ServiceException(var3);
         }
     }
 
     @Override
-    public List<B> queryByCondition(FilterConditionBuilder filterConditions, PageQuery pageQuery) {
+    public void queryByCondition(FilterConditionBuilder filterConditions, PageQuery pageQuery) {
         try{
-            return getJdbcDao(this).queryByCondition(potype,filterConditions.build(),pageQuery);
+            getJdbcDao(this).queryByCondition(potype,filterConditions.build(),pageQuery);
         }catch (DAOException ex){
             throw new ServiceException(ex);
         }
@@ -243,7 +242,8 @@ public class SpringAutoCreateService<B extends BaseObject, P extends Serializabl
         try{
             PageQuery query=new PageQuery();
             query.setPageSize(0);
-            return getJdbcDao(this).queryByCondition(potype,filterCondition,query);
+            getJdbcDao(this).queryByCondition(potype,filterCondition,query);
+            return query.getRecordSet();
         }catch (DAOException ex){
             throw new ServiceException(ex);
         }

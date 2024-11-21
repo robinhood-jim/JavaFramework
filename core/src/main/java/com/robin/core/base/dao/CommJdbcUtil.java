@@ -53,7 +53,7 @@ public class CommJdbcUtil {
 
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private static List getResultItemsByPrepared(JdbcTemplate jdbcTemplate, final PageQuery pageQuery, final String pageSQL) {
+    private static List getResultItemsByPrepared(JdbcTemplate jdbcTemplate, final PageQuery<Map<String,Object>> pageQuery, final String pageSQL) {
         Object ret = jdbcTemplate.query(conn -> {
             PreparedStatement ps = conn.prepareStatement(pageSQL);
             int len = pageQuery.getParameters().size();
@@ -107,7 +107,7 @@ public class CommJdbcUtil {
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    static void queryByReplaceParamter(JdbcTemplate jdbcTemplate, LobHandler lobHandler, BaseSqlGen sqlGen, QueryString qs, PageQuery pageQuery) throws DAOException {
+    static void queryByReplaceParamter(JdbcTemplate jdbcTemplate, LobHandler lobHandler, BaseSqlGen sqlGen, QueryString qs, PageQuery<Map<String,Object>> pageQuery) throws DAOException {
         List list ;
         String querySQL = getReplacementSql(sqlGen, qs, pageQuery);
 
@@ -188,7 +188,7 @@ public class CommJdbcUtil {
 
     }
 
-    private static String getReplacementSql(BaseSqlGen sqlGen, QueryString qs, PageQuery pageQuery) {
+    private static String getReplacementSql(BaseSqlGen sqlGen, QueryString qs, PageQuery<Map<String,Object>> pageQuery) {
         String querySQL = sqlGen.generateSqlBySelectId(qs, pageQuery);
 
         Map<String, String> params = pageQuery.getParameters();

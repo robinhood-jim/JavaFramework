@@ -582,14 +582,36 @@ public class AnnotationRetriever {
             retType = Const.META_TYPE_BIGINT;
         } else if ("()Ljava/lang/Double;".equals(retClass) || "()Ljava/lang/BigDecimal;".equals(retClass)) {
             retType = Const.META_TYPE_DOUBLE;
+        } else if ("()Ljava/lang/Integer;".equals(retClass)) {
+            retType = Const.META_TYPE_INTEGER;
         } else if ("()Ljava/lang/Short;".equals(retClass)) {
             retType = Const.META_TYPE_SHORT;
         } else if ("()Ljava/lang/byte;".equals(retClass)) {
-            retType = Const.META_TYPE_CLOB;
+            retType = Const.META_TYPE_BLOB;
         } else if ("()Ljava/sql/Date;".equals(retClass) || "()Ljava/util/Date;".equals(retClass) || "()Ljava/time/LocalDate;".equals(retClass)) {
             retType = Const.META_TYPE_DATE;
         } else if ("()Ljava/sql/Timestamp;".equals(retClass) || "()Ljava/time/LocalDateTime;".equals(retClass)) {
             retType = Const.META_TYPE_TIMESTAMP;
+        }
+        return retType;
+    }
+    public static <T extends BaseObject> String getFieldType(FieldContent content){
+        Class<?> clazz=content.getField().getType();
+        String retType = Const.META_TYPE_STRING;
+        if(Long.class.isAssignableFrom(clazz)){
+            retType=Const.META_TYPE_BIGINT;
+        }else if(Double.class.isAssignableFrom(clazz) || Float.class.isAssignableFrom(clazz)){
+            retType=Const.META_TYPE_DOUBLE;
+        }else if(Integer.class.isAssignableFrom(clazz)){
+            retType=Const.META_TYPE_INTEGER;
+        }else if(Short.class.isAssignableFrom(clazz)){
+            retType=Const.META_TYPE_SHORT;
+        }else if(byte[].class.isAssignableFrom(clazz)){
+            retType=Const.META_TYPE_BLOB;
+        }else if(Date.class.isAssignableFrom(clazz)){
+            retType=Const.META_TYPE_DATE;
+        }else if(java.util.Date.class.isAssignableFrom(clazz) && Timestamp.class.isAssignableFrom(clazz)){
+            retType=Const.META_TYPE_TIMESTAMP;
         }
         return retType;
     }

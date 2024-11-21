@@ -39,14 +39,14 @@ public interface IBaseAnnotationJdbcService<V extends BaseObject, P extends Seri
 
     V getEntity(P id) throws ServiceException;
 
-    void queryBySelectId(PageQuery query) throws ServiceException;
+    void queryBySelectId(PageQuery<Map<String,Object>> query) throws ServiceException;
 
     List<Map<String, Object>> queryByPageSql(String sql, PageQuery pageQuery) throws ServiceException;
 
-    void executeBySelectId(PageQuery query) throws ServiceException;
+    void executeBySelectId(PageQuery<Map<String,Object>> query) throws ServiceException;
 
 
-    PageQuery queryBySql(String querySQL, String countSql, String[] displayname, PageQuery pageQuery) throws ServiceException;
+    PageQuery queryBySql(String querySQL, String countSql, String[] displayname, PageQuery<Map<String,Object>> pageQuery) throws ServiceException;
 
     List<Map<String, Object>> queryBySql(String sqlstr, Object... objects) throws ServiceException;
 
@@ -61,9 +61,9 @@ public interface IBaseAnnotationJdbcService<V extends BaseObject, P extends Seri
     List<V> queryAll() throws ServiceException;
 
     List<V> queryByVO(V vo, String orderByStr)throws ServiceException;
-    List<V> queryByCondition(FilterCondition filterCondition, PageQuery pageQuery);
-    List<V> queryByCondition(FilterConditionBuilder filterConditions, PageQuery pageQuery);
-    List<V> queryByCondition(FilterCondition filterCondition);
+    void queryByCondition(FilterCondition filterCondition, PageQuery<V> pageQuery);
+    void queryByCondition(FilterConditionBuilder filterConditions, PageQuery<V> pageQuery);
+    List<V>  queryByCondition(FilterCondition filterCondition);
     V getByField(String fieldName,Const.OPERATOR oper,Object... fieldValues) throws ServiceException;
     V getByField(PropertyFunction<V,?> function,Const.OPERATOR oper,Object... fieldValues) throws ServiceException;
 }

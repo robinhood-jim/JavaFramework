@@ -306,39 +306,34 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 
 	@Override
     @Transactional(readOnly=true)
-	public List<V> queryByCondition(FilterCondition condition,PageQuery pageQuery)
+	public void queryByCondition(FilterCondition condition,PageQuery<V> pageQuery)
 			throws ServiceException {
-		List<V> retlist ;
 		try{
-			retlist= jdbcDao.queryByCondition(type, condition, pageQuery);
+			jdbcDao.queryByCondition(type, condition, pageQuery);
 		}catch (DAOException e) {
 			throw new ServiceException(e);
 		}
-		return retlist;
 	}
 	@Override
     @Transactional(readOnly = true)
-	public List<V> queryByCondition(FilterConditionBuilder filterConditions, PageQuery pageQuery){
-		List<V> retlist ;
+	public void queryByCondition(FilterConditionBuilder filterConditions, PageQuery pageQuery){
 		try{
-			retlist= jdbcDao.queryByCondition(type, filterConditions.build(), pageQuery);
+			jdbcDao.queryByCondition(type, filterConditions.build(), pageQuery);
 		}catch (DAOException e) {
 			throw new ServiceException(e);
 		}
-		return retlist;
 	}
 	@Override
 	@Transactional(readOnly = true)
 	public List<V> queryByCondition(FilterCondition filterConditions){
-		List<V> retlist ;
+		PageQuery pageQuery=new PageQuery();
+		pageQuery.setPageSize(0);
 		try{
-			PageQuery pageQuery=new PageQuery();
-			pageQuery.setPageSize(0);
-			retlist=jdbcDao.queryByCondition(type, filterConditions, pageQuery);
+			jdbcDao.queryByCondition(type, filterConditions, pageQuery);
 		}catch (DAOException e) {
 			throw new ServiceException(e);
 		}
-		return retlist;
+		return pageQuery.getRecordSet();
 	}
 	
 	public JdbcDao getJdbcDao() {

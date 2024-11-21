@@ -55,7 +55,7 @@ public class SysOrgController extends AbstractCrudDhtmlxController<SysOrg, Long,
         try {
             SysOrg vo = new SysOrg();
             ConvertUtil.mapToObject(vo, wrapRequest(request));
-            PageQuery query = new PageQuery();
+            PageQuery<Map<String,Object>> query = new PageQuery();
             query.setSelectParamId("GET_ORGMAXCODE");
             service.queryBySelectId(query);
             //set treecode

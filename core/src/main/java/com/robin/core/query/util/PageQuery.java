@@ -23,7 +23,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 @Data
-public class PageQuery implements Serializable {
+public class  PageQuery<T> implements Serializable {
 	protected String								groupByString;
 
 	protected String								orderString;
@@ -53,7 +53,7 @@ public class PageQuery implements Serializable {
 
 	private List<Condition>				conditions;
 
-	private List<Map<String, Object>>	recordSet;
+	private List<T>	recordSet;
 	
 	protected String 					querySql;			
 
@@ -107,14 +107,33 @@ public class PageQuery implements Serializable {
 		}
 		return timestampFormater;
 	}
+	public Map<String,Object> toMap(){
+		Map<String,Object> retMap=new HashMap<>();
+		retMap.put("pageSize",getPageSize());
+		retMap.put("pageNo",getPageNumber());
+		retMap.put("pageCount",getPageCount());
+		Optional.ofNullable(getRecordSet()).map(f->retMap.put("values",getRecordSet()));
+		return retMap;
+	}
+	public void adjustPage(Integer total){
+		if (total > 0) {
+			int pages = total / getPageSize();
+			if (total % getPageSize() != 0) {
+				pages++;
+			}
+			setPageCount(pages);
+		} else {
+			setPageCount(0);
+		}
+	}
 	public void addQueryParameter(Object value){
 		queryParameters.add(value);
 	}
 	public void addQueryParameter(Collection<Object> values){
 		queryParameters.addAll(values);
 	}
-	public static class Builder{
-		private PageQuery pageQuery=new PageQuery();
+	public static class Builder<T>{
+		private PageQuery<T> pageQuery=new PageQuery();
 		public Builder setPageSize(Integer pageSize){
 			pageQuery.setPageSize(pageSize);
 			return this;
@@ -172,7 +191,7 @@ public class PageQuery implements Serializable {
 			pageQuery.conditionMap.put(key,conditions);
 			return this;
 		}
-		public PageQuery build(){
+		public PageQuery<T> build(){
 			return pageQuery;
 		}
 

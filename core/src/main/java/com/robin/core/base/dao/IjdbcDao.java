@@ -51,7 +51,7 @@ public interface IjdbcDao {
      * @return
      * @throws DAOException
      */
-    List<Map<String,Object>> queryByPageSql(String sqlstr, PageQuery pageQuery) throws DAOException;
+    List<Map<String,Object>> queryByPageSql(String sqlstr, PageQuery<Map<String,Object>> pageQuery) throws DAOException;
 
 
     /**
@@ -129,7 +129,7 @@ public interface IjdbcDao {
      * @return
      * @throws DAOException
      */
-    PageQuery queryByPageQuery(String sqlstr, PageQuery pageQuery) throws DAOException;
+    PageQuery queryByPageQuery(String sqlstr, PageQuery<Map<String,Object>> pageQuery) throws DAOException;
 
     /**
      * Query with Plain Sql
@@ -149,7 +149,7 @@ public interface IjdbcDao {
      * @return
      * @throws DAOException
      */
-    void queryBySelectId(PageQuery pageQuery) throws DAOException;
+    void queryBySelectId(PageQuery<Map<String,Object>> pageQuery) throws DAOException;
 
     /**
      * Complex Query with given countSql
@@ -161,7 +161,7 @@ public interface IjdbcDao {
      * @return
      * @throws DAOException
      */
-    PageQuery queryBySql(String querySQL, String countSql, String[] displayname, PageQuery pageQuery) throws DAOException;
+    PageQuery queryBySql(String querySQL, String countSql, String[] displayname, PageQuery<Map<String,Object>> pageQuery) throws DAOException;
 
     /**
      * Create Record by ORM
@@ -207,7 +207,7 @@ public interface IjdbcDao {
      * @param pageQuery
      * @throws DAOException
      */
-    int executeBySelectId(PageQuery pageQuery) throws DAOException;
+    int executeBySelectId(PageQuery<Map<String,Object>> pageQuery) throws DAOException;
 
     <T extends BaseObject> List<T> queryEntityBySql(String querySQL, final Class<T> targetclazz, Object... obj);
 
@@ -219,7 +219,7 @@ public interface IjdbcDao {
     <T extends BaseObject> List<T> queryByFieldOrderBy(Class<T> type, PropertyFunction<T,?> function, Const.OPERATOR oper, String orderByStr, Object... fieldValues) throws DAOException;
     <T extends BaseObject> List<T> queryAll(Class<T> type) throws DAOException;
 
-    <T extends BaseObject> List<T> queryByCondition(Class<T> type, FilterCondition condition, PageQuery pageQuery);
+    <T extends BaseObject> void queryByCondition(Class<T> type, FilterCondition condition, PageQuery<T> pageQuery);
 
     <T extends BaseObject> T getByField(Class<T> type, String fieldName, Const.OPERATOR oper, Object... fieldValues) throws DAOException;
     <T extends BaseObject> T getByField(Class<T> type, PropertyFunction<T,?> function, Const.OPERATOR oper, Object... fieldValues) throws DAOException;

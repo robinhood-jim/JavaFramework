@@ -82,7 +82,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
     }
 
     @Override
-    public PageQuery queryByPageQuery(String querySQL, PageQuery pageQuery) throws DAOException {
+    public PageQuery queryByPageQuery(String querySQL, PageQuery<Map<String,Object>> pageQuery) throws DAOException {
         List<Map<String, Object>> list;
         Assert.notNull(this.returnTemplate(), "no datasource Config");
         try {
@@ -119,7 +119,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
     }
 
     @Override
-    public void queryBySelectId(PageQuery pageQuery) throws DAOException {
+    public void queryBySelectId(PageQuery<Map<String,Object>> pageQuery) throws DAOException {
         try {
             String selectId = assertQuery(pageQuery);
             QueryString queryString1 = queryFactory.getQuery(selectId);
@@ -133,7 +133,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
     }
 
     @Override
-    public int executeBySelectId(PageQuery pageQuery) throws DAOException {
+    public int executeBySelectId(PageQuery<Map<String,Object>> pageQuery) throws DAOException {
         try {
             String selectId = assertQuery(pageQuery);
             if (sqlGen == null) {
@@ -163,7 +163,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
 
 
     @Override
-    public List<Map<String, Object>> queryByPageSql(String sqlstr, PageQuery pageQuery) throws DAOException {
+    public List<Map<String, Object>> queryByPageSql(String sqlstr, PageQuery<Map<String,Object>> pageQuery) throws DAOException {
         if (log.isDebugEnabled()) {
             log.debug("querySQL: {}", sqlstr);
         }
@@ -172,7 +172,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
 
 
     @Override
-    public PageQuery queryBySql(String querySQL, String countSql, String[] displayname, PageQuery pageQuery) throws DAOException {
+    public PageQuery queryBySql(String querySQL, String countSql, String[] displayname, PageQuery<Map<String,Object>> pageQuery) throws DAOException {
         return CommJdbcUtil.queryBySql(this.returnTemplate(), lobHandler, sqlGen, querySQL, countSql, displayname, pageQuery);
     }
 
@@ -253,7 +253,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
 
 
     @Override
-    public <T extends BaseObject> List<T> queryByCondition(Class<T> type, FilterCondition condition, PageQuery pageQuery) throws DAOException {
+    public <T extends BaseObject> void queryByCondition(Class<T> type, FilterCondition condition, PageQuery<T> pageQuery) throws DAOException {
         List<T> retlist = new ArrayList<>();
         try {
             StringBuilder buffer = new StringBuilder();
@@ -263,7 +263,13 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
             buffer.append(condition.toPreparedSQLPart(objList));
 
             String sql = buffer.toString();
-            sql = sqlGen.generatePageSql(sql, pageQuery);
+
+            if(pageQuery.getPageSize()>0){
+                sql = sqlGen.generatePageSql(sql, pageQuery);
+                String sumSQL= sqlGen.generateCountSql(sql);
+                Integer total = getJdbcTemplate().queryForObject(sumSQL,objList.toArray(),Integer.class);
+                pageQuery.adjustPage(total);
+            }
 
             Object[] objs = objList.toArray();
 
@@ -272,10 +278,10 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
             }
             List<Map<String, Object>> rsList = queryBySql(sql, objs);
             wrapList(type, retlist, fields, rsList);
+            pageQuery.setRecordSet(retlist);
         } catch (Exception e) {
             throw new DAOException(e);
         }
-        return retlist;
     }
 
 
@@ -769,7 +775,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
         }
     }
 
-    private void queryByParameter(QueryString qs, PageQuery pageQuery) throws DAOException {
+    private void queryByParameter(QueryString qs, PageQuery<Map<String,Object>> pageQuery) throws DAOException {
 
         if (!ObjectUtils.isEmpty(pageQuery.getQueryParameters()) || !ObjectUtils.isEmpty(pageQuery.getNamedParameters())) {
             CommJdbcUtil.queryByPreparedParamter(this.returnTemplate(), getNamedJdbcTemplate(), lobHandler, sqlGen, qs, pageQuery);
@@ -799,7 +805,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
         }
     }
 
-    private List<Map<String, Object>> queryItemList(final PageQuery qs, final String pageSQL) throws DAOException {
+    private List<Map<String, Object>> queryItemList(final PageQuery<Map<String,Object>> qs, final String pageSQL) throws DAOException {
         int pageNum = qs.getPageNumber();
         int pageSize = qs.getPageSize();
         int start = 0;
@@ -976,7 +982,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
         return namedParameterJdbcTemplate;
     }
 
-    private String assertQuery(PageQuery pageQuery) {
+    private String assertQuery(PageQuery<Map<String,Object>> pageQuery) {
         if (pageQuery == null) {
             throw new DAOException("missing pagerQueryObject");
         }
