@@ -158,9 +158,9 @@ public class SysOrgController extends AbstractCrudDhtmlxController<SysOrg, Long,
     public Map<String, Object> getOrgTree(HttpServletRequest request, HttpServletResponse response) {
         String id = request.getParameter("id");
         String displayName = "机构树";
-        List<Map<String, Object>> retList = new ArrayList<Map<String, Object>>();
+        List<Map<String, Object>> retList = new ArrayList<>();
 
-        PageQuery query = new PageQuery();
+        PageQuery<Map<String,Object>> query = new PageQuery<>();
         query.getParameters().put("id", id);
         query.setSelectParamId("GET_SUBORG");
         service.queryBySelectId(query);

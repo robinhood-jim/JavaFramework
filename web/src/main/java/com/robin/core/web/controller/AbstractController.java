@@ -97,7 +97,7 @@ public abstract class AbstractController
     }
 
 
-    protected void filterListByCodeSet(PageQuery query, String columnName, String codeNo,String defaultValue)
+    protected void filterListByCodeSet(PageQuery<Map<String,Object>> query, String columnName, String codeNo,String defaultValue)
     {
         if (!query.getRecordSet().isEmpty())
         {
@@ -118,7 +118,7 @@ public abstract class AbstractController
             }
         }
     }
-    protected void fillMissingValue(PageQuery query,String columnName,String defaultValue){
+    protected void fillMissingValue(PageQuery<Map<String,Object>> query,String columnName,String defaultValue){
         if (!query.getRecordSet().isEmpty())
         {
             for(Map<String,Object> map:query.getRecordSet()){
@@ -323,9 +323,9 @@ public abstract class AbstractController
     }
 
 
-    protected PageQuery wrapPageQuery(HttpServletRequest request)
+    protected PageQuery<Map<String,Object>> wrapPageQuery(HttpServletRequest request)
     {
-        PageQuery query = new PageQuery();
+        PageQuery<Map<String,Object>> query = new PageQuery<>();
         Map map = request.getParameterMap();
         Iterator<String> iter = map.keySet().iterator();
         Map<String, Object> tmpmap = new HashMap<>();

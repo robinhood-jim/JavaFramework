@@ -6,7 +6,7 @@ import com.robin.core.base.model.BaseObject;
 import lombok.Data;
 
 @Data
-@MappingEntity(table = "t_step_cfg")
+@MappingEntity("t_step_cfg")
 public class EtlStepCfg extends BaseObject {
     @MappingField(primary = true, increment = true)
     private Long id;

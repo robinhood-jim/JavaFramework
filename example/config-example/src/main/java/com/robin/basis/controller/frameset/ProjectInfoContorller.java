@@ -376,7 +376,7 @@ public class ProjectInfoContorller extends AbstractCrudDhtmlxController<ProjectI
         Map<String, Object> retmap = new HashMap<String, Object>();
         try {
             //DataSourceService DataSourceService = (DataSourceService) getBean("DataSourceService");
-            PageQuery pageQuery = wrapPageQuery(request);
+            PageQuery<Map<String,Object>> pageQuery = wrapPageQuery(request);
             pageQuery.setSelectParamId("GET_PROJECTINFO");
             pageQuery.setPageSize(1);
             String queryString = getQueryString(pageQuery);
@@ -398,7 +398,7 @@ public class ProjectInfoContorller extends AbstractCrudDhtmlxController<ProjectI
     }
 
 
-    private String getQueryString(PageQuery pageQuery) {
+    private String getQueryString(PageQuery<Map<String,Object>> pageQuery) {
         StringBuffer buffer = new StringBuffer();
         /** Add Query Code here **/
         String orgname = pageQuery.getParameters().get("name");

@@ -11,15 +11,15 @@ import lombok.Data;
  * @version 1.0
  */
 @Data
-@MappingEntity(table="t_flow_param")
+@MappingEntity("t_flow_param")
 public class EtlFlowParam extends BaseObject {
 	@MappingField(increment=true,primary=true)
 	private Long id;
-	@MappingField(field="flow_id")
+	@MappingField
 	private Long flowId;
-	@MappingField(field="param_name")
+	@MappingField
 	private String paramName;
-	@MappingField(field="param_value")
+	@MappingField
 	private String paramValue;
 	@MappingField
 	public String status;

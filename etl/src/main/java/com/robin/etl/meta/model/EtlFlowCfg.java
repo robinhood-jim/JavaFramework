@@ -8,7 +8,7 @@ import lombok.Data;
 import java.sql.Timestamp;
 
 @Data
-@MappingEntity(table="t_flow_cfg")
+@MappingEntity("t_flow_cfg")
 public class EtlFlowCfg extends BaseObject {
 	@MappingField(primary=true,increment=true)
 	private Long id;
@@ -18,7 +18,7 @@ public class EtlFlowCfg extends BaseObject {
 	private String remark;
 	@MappingField
 	private String version;
-	@MappingField(field="is_valid")
+	@MappingField
 	private String isValid;
 	@MappingField
 	private String status;
@@ -30,7 +30,7 @@ public class EtlFlowCfg extends BaseObject {
 	private Timestamp createTime;
 	@MappingField
 	private Timestamp modifyTime;
-	@MappingField(field="define_xml")
+	@MappingField
 	private String defineXml;
 	@MappingField(length=1)
 	private String state;

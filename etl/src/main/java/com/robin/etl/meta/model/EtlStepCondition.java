@@ -6,7 +6,7 @@ import com.robin.core.base.model.BaseObject;
 import lombok.Data;
 
 @Data
-@MappingEntity(table = "t_step_condition")
+@MappingEntity("t_step_condition")
 public class EtlStepCondition extends BaseObject {
 	@MappingField(primary = true,increment = true)
 	private Long id;

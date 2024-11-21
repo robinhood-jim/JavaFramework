@@ -28,7 +28,7 @@ public class CodeSetService {
         QueryFactory factory = SpringContextHolder.getBean(QueryFactory.class);
         Map<String,String> codeMap=new LinkedHashMap<>();
         if (factory.isSelectIdExists("$_GETCODESET")) {
-            PageQuery query = new PageQuery();
+            PageQuery<Map<String,Object>> query = new PageQuery<>();
             query.setPageSize(0);
             query.setSelectParamId("$_GETCODESET");
             query.addQueryParameter(new Object[]{codeSetNo});
