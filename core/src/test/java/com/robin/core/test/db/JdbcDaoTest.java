@@ -105,8 +105,12 @@ public class JdbcDaoTest extends TestCase {
     @Test
     public void testQuery(){
         TestModelService service = (TestModelService) SpringContextHolder.getBean("modelService");
-        TestModel model=service.getEntity(1);
-        System.out.println(model);
+        //TestModel model=service.getEntity(1);
+        FilterConditionBuilder builder=new FilterConditionBuilder();
+        builder.addFilter(TestModel::getName, Const.OPERATOR.LIKE,"t");
+        PageQuery<TestModel> pageQuery=new PageQuery();
+        service.queryByCondition(builder,pageQuery);
+        System.out.println(pageQuery.getRecordSet());
     }
 
 

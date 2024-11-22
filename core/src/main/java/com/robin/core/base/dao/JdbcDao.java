@@ -260,7 +260,15 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
             buffer.append(getWholeSelectSql(type)).append(Const.SQL_WHERE);
             List<FieldContent> fields = AnnotationRetriever.getMappingFieldsCache(type);
             List<Object> objList = new ArrayList<>();
-            buffer.append(condition.toPreparedSQLPart(objList));
+            if(!CollectionUtils.isEmpty(condition.getConditions())) {
+                if(condition.getConditions().size()==1){
+                    buffer.append(condition.getConditions().get(0).toPreparedSQLPart(objList));
+                }else{
+                    buffer.append(condition.toPreparedSQLPart(objList));
+                }
+            }else{
+                buffer.append(condition.toPreparedSQLPart(objList));
+            }
 
             String sql = buffer.toString();
 

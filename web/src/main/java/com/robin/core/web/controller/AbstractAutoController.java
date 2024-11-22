@@ -224,8 +224,8 @@ public abstract class AbstractAutoController<O extends BaseObject, P extends Ser
                     if(Map.class.isInstance(value)){
                         Map<String,Object> tmap=(Map<String,Object>)value;
                         String operator=tmap.get("operator").toString();
-                        Object value1= Optional.ofNullable(tmap.get("value")).get();
-                        List<Object> values=Optional.ofNullable(tmap.get("values")).map(f->(List<Object>)f).get();
+                        Object value1= Optional.ofNullable(tmap.get("value")).orElse(null);
+                        List<Object> values=Optional.ofNullable(tmap.get("values")).map(f->(List<Object>)f).orElse(null);
                         Optional.ofNullable(value1).map(f->builder.addFilter(key,columnType, Const.OPERATOR.valueOf(operator.toUpperCase()),f))
                                 .orElseGet(()-> builder.addFilter(key,columnType, Const.OPERATOR.valueOf(operator.toUpperCase()),values));
                     }else{
