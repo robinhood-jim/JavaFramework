@@ -52,9 +52,8 @@ public class EntityMappingUtil {
         List<Object> params=new ArrayList<>();
         List<SqlParameter> paramTypes=new ArrayList<>();
         try {
-            String schema = ObjectUtils.isEmpty(tableDef.getSchema()) ? null : tableDef.getSchema();
             //get database table metadata adjust column must exist
-            Map<String, DataBaseColumnMeta> columnMetaMap = returnMetaMap(obj.getClass(), sqlGen, jdbcDao, tableDef, schema);
+            Map<String, DataBaseColumnMeta> columnMetaMap = returnMetaMap(obj.getClass(), sqlGen, jdbcDao, tableDef);
             insertSegment.setColumnMetaMap(columnMetaMap);
             for (FieldContent content : fields) {
                 Object value = content.getGetMethod().invoke(obj);
@@ -156,20 +155,20 @@ public class EntityMappingUtil {
         return insertSegment;
     }
 
-    public static Map<String, DataBaseColumnMeta> returnMetaMap(Class<? extends BaseObject> clazz, BaseSqlGen sqlGen, JdbcDao jdbcDao, AnnotationRetriever.EntityContent tableDef, String schema) throws SQLException {
+    public static Map<String, DataBaseColumnMeta> returnMetaMap(Class<? extends BaseObject> clazz, BaseSqlGen sqlGen, JdbcDao jdbcDao, AnnotationRetriever.EntityContent tableDef) throws SQLException {
         Map<String, DataBaseColumnMeta> columnMetaMap;
         if (metaCache.containsKey(clazz)) {
             columnMetaMap = metaCache.get(clazz);
         } else {
-            List<DataBaseColumnMeta> columnMetas = DataBaseUtil.getTableMetaByTableName(jdbcDao, tableDef.getTableName(), schema, sqlGen.getDbType());
+            List<DataBaseColumnMeta> columnMetas = DataBaseUtil.getTableMetaByTableName(jdbcDao, tableDef.getTableName(), tableDef.getSchema(), sqlGen.getDbType());
             columnMetaMap = columnMetas.stream().collect(Collectors.toMap(DataBaseColumnMeta::getColumnName, f -> f));
             metaCache.put(clazz, columnMetaMap);
         }
         return columnMetaMap;
     }
 
-    public static List<FieldContent> returnAvailableFields(Class<? extends BaseObject> clazz, BaseSqlGen sqlGen, JdbcDao jdbcDao, AnnotationRetriever.EntityContent tableDef, String schema, List<FieldContent> fields) throws SQLException {
-        Map<String, DataBaseColumnMeta> metaMap = returnMetaMap(clazz, sqlGen, jdbcDao, tableDef, schema);
+    public static List<FieldContent> returnAvailableFields(Class<? extends BaseObject> clazz, BaseSqlGen sqlGen, JdbcDao jdbcDao, AnnotationRetriever.EntityContent tableDef, List<FieldContent> fields) throws SQLException {
+        Map<String, DataBaseColumnMeta> metaMap = returnMetaMap(clazz, sqlGen, jdbcDao, tableDef);
         List<FieldContent> contents = new ArrayList<>();
         for (FieldContent content : fields) {
             if (metaMap.containsKey(content.getFieldName().toLowerCase()) || metaMap.containsKey(content.getFieldName().toUpperCase())) {
@@ -303,10 +302,9 @@ public class EntityMappingUtil {
         StringBuilder wherebuffer = new StringBuilder();
         SelectSegment segment = new SelectSegment();
         List<Object> selectObjs = new ArrayList<>();
-        String schema = ObjectUtils.isEmpty(tableDef.getSchema()) ? null : tableDef.getSchema();
 
         for (FieldContent field : fields) {
-            Map<String, DataBaseColumnMeta> columnMetaMap = returnMetaMap(clazz, sqlGen, jdbcDao, tableDef, schema);
+            Map<String, DataBaseColumnMeta> columnMetaMap = returnMetaMap(clazz, sqlGen, jdbcDao, tableDef);
             if (field.isPrimary()) {
                 if (field.getPrimaryKeys() != null) {
                     for (FieldContent fieldContent : field.getPrimaryKeys()) {

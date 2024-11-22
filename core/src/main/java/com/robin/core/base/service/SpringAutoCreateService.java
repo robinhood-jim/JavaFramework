@@ -83,7 +83,7 @@ public class SpringAutoCreateService<B extends BaseObject, P extends Serializabl
     @Override
     public int deleteByField(String field, Object value) throws ServiceException {
         try{
-            return getJdbcDao(this).deleteByField(potype,field,value);
+            return getJdbcDao().deleteByField(potype,field,value);
         }catch (DAOException ex){
             throw new ServiceException(ex);
         }
@@ -92,7 +92,7 @@ public class SpringAutoCreateService<B extends BaseObject, P extends Serializabl
     @Override
     public int deleteByField(PropertyFunction<B, ?> function, Object value) throws ServiceException {
         try{
-            return getJdbcDao(this).deleteByField(potype,function,value);
+            return getJdbcDao().deleteByField(potype,function,value);
         }catch (DAOException ex){
             throw new ServiceException(ex);
         }
@@ -100,14 +100,14 @@ public class SpringAutoCreateService<B extends BaseObject, P extends Serializabl
 
     public B getEntity(P id) throws ServiceException{
         try{
-            return getJdbcDao(this).getEntity(potype, id);
+            return getJdbcDao().getEntity(potype, id);
         }catch (DAOException e) {
             throw new ServiceException(e);
         }
     }
     public B getByField(PropertyFunction<B,?> function, Const.OPERATOR oper, Object... fieldValues) throws ServiceException{
         try{
-            return getJdbcDao(this).getByField(potype, function, oper, fieldValues);
+            return getJdbcDao().getByField(potype, function, oper, fieldValues);
         }
         catch(Exception e){
             throw new ServiceException(e);
@@ -115,7 +115,7 @@ public class SpringAutoCreateService<B extends BaseObject, P extends Serializabl
     }
     public List<B> queryByField(PropertyFunction<B,?> function, Const.OPERATOR oper, Object... fieldValues){
         try{
-            return getJdbcDao(this).queryByField(potype, function, oper, fieldValues);
+            return getJdbcDao().queryByField(potype, function, oper, fieldValues);
         }
         catch(Exception e){
             throw new ServiceException(e);
@@ -125,7 +125,7 @@ public class SpringAutoCreateService<B extends BaseObject, P extends Serializabl
     @Override
     public List<B> queryByFieldOrderBy(String orderByStr, String fieldName, Const.OPERATOR oper, Object... fieldValues) throws ServiceException {
         try{
-            return getJdbcDao(this).queryByFieldOrderBy(potype,fieldName,oper,orderByStr,fieldValues);
+            return getJdbcDao().queryByFieldOrderBy(potype,fieldName,oper,orderByStr,fieldValues);
         }catch (DAOException ex){
             throw new ServiceException(ex);
         }
@@ -134,7 +134,7 @@ public class SpringAutoCreateService<B extends BaseObject, P extends Serializabl
     @Override
     public List<B> queryByFieldOrderBy(String orderByStr, PropertyFunction<B, ?> function, Const.OPERATOR oper, Object... fieldValues) throws ServiceException {
         try{
-            return getJdbcDao(this).queryByFieldOrderBy(potype,function,oper,orderByStr,fieldValues);
+            return getJdbcDao().queryByFieldOrderBy(potype,function,oper,orderByStr,fieldValues);
         }catch (DAOException ex){
             throw new ServiceException(ex);
         }
@@ -143,7 +143,7 @@ public class SpringAutoCreateService<B extends BaseObject, P extends Serializabl
     @Override
     public List<B> queryAll() throws ServiceException {
         try{
-            return getJdbcDao(this).queryAll(potype);
+            return getJdbcDao().queryAll(potype);
         }catch (DAOException ex){
             throw new ServiceException(ex);
         }
@@ -152,7 +152,7 @@ public class SpringAutoCreateService<B extends BaseObject, P extends Serializabl
     @Override
     public List<B> queryByVO(B vo, String orderByStr) throws ServiceException {
         try{
-            return getJdbcDao(this).queryByVO(potype,vo,orderByStr);
+            return getJdbcDao().queryByVO(potype,vo,orderByStr);
         }catch (DAOException ex){
             throw new ServiceException(ex);
         }
@@ -160,14 +160,14 @@ public class SpringAutoCreateService<B extends BaseObject, P extends Serializabl
 
     public void queryBySelectId(PageQuery query) throws ServiceException {
         try {
-            getJdbcDao(this).queryBySelectId(query);
+            getJdbcDao().queryBySelectId(query);
         } catch (DAOException ex) {
             throw new ServiceException(ex);
         }
     }
     public List<Map<String, Object>> queryByPageSql(String sql, PageQuery pageQuery) throws ServiceException{
         try{
-            return getJdbcDao(this).queryByPageSql(sql, pageQuery);
+            return getJdbcDao().queryByPageSql(sql, pageQuery);
         }catch(DAOException ex){
             throw new ServiceException(ex);
         }
@@ -176,7 +176,7 @@ public class SpringAutoCreateService<B extends BaseObject, P extends Serializabl
     @Override
     public void executeBySelectId(PageQuery query) throws ServiceException {
         try{
-            getJdbcDao(this).executeBySelectId(query);
+            getJdbcDao().executeBySelectId(query);
         }catch (DAOException ex){
             throw new ServiceException(ex);
         }
@@ -185,7 +185,7 @@ public class SpringAutoCreateService<B extends BaseObject, P extends Serializabl
     @Override
     public PageQuery queryBySql(String querySQL, String countSql, String[] displayname, PageQuery pageQuery) throws ServiceException {
         try{
-            return getJdbcDao(this).queryBySql(querySQL,countSql,displayname,pageQuery);
+            return getJdbcDao().queryBySql(querySQL,countSql,displayname,pageQuery);
         }catch (DAOException ex){
             throw new ServiceException(ex);
         }
@@ -193,7 +193,7 @@ public class SpringAutoCreateService<B extends BaseObject, P extends Serializabl
 
     public List<Map<String,Object>> queryBySql(String sqlstr,Object... objects) throws ServiceException{
         try{
-            return getJdbcDao(this).queryBySql(sqlstr,objects);
+            return getJdbcDao().queryBySql(sqlstr,objects);
         }catch(DAOException ex){
             throw new ServiceException(ex);
         }
@@ -202,7 +202,7 @@ public class SpringAutoCreateService<B extends BaseObject, P extends Serializabl
     @Override
     public int queryByInt(String querySQL, Object... objects) throws ServiceException {
         try{
-            return getJdbcDao(this).queryByInt(querySQL,objects);
+            return getJdbcDao().queryByInt(querySQL,objects);
         }catch (DAOException ex){
             throw new ServiceException(ex);
         }
@@ -211,7 +211,7 @@ public class SpringAutoCreateService<B extends BaseObject, P extends Serializabl
     @Override
     public List<B> queryByField(String fieldName, Const.OPERATOR oper, Object... fieldValues) throws ServiceException {
         try{
-            return getJdbcDao(this).queryByField(potype,fieldName,oper,fieldValues);
+            return getJdbcDao().queryByField(potype,fieldName,oper,fieldValues);
         }catch (DAOException ex){
             throw new ServiceException(ex);
         }
@@ -222,7 +222,7 @@ public class SpringAutoCreateService<B extends BaseObject, P extends Serializabl
     )
     public void queryByCondition(FilterCondition condition, PageQuery<B> pageQuery) throws ServiceException {
         try {
-            getJdbcDao(this).queryByCondition(potype, condition, pageQuery);
+            getJdbcDao().queryByCondition(potype, condition, pageQuery);
         } catch (DAOException var3) {
             throw new ServiceException(var3);
         }
@@ -231,7 +231,7 @@ public class SpringAutoCreateService<B extends BaseObject, P extends Serializabl
     @Override
     public void queryByCondition(FilterConditionBuilder filterConditions, PageQuery pageQuery) {
         try{
-            getJdbcDao(this).queryByCondition(potype,filterConditions.build(),pageQuery);
+            getJdbcDao().queryByCondition(potype,filterConditions.build(),pageQuery);
         }catch (DAOException ex){
             throw new ServiceException(ex);
         }
@@ -242,7 +242,7 @@ public class SpringAutoCreateService<B extends BaseObject, P extends Serializabl
         try{
             PageQuery query=new PageQuery();
             query.setPageSize(0);
-            getJdbcDao(this).queryByCondition(potype,filterCondition,query);
+            getJdbcDao().queryByCondition(potype,filterCondition,query);
             return query.getRecordSet();
         }catch (DAOException ex){
             throw new ServiceException(ex);
@@ -252,7 +252,7 @@ public class SpringAutoCreateService<B extends BaseObject, P extends Serializabl
     @Override
     public B getByField(String fieldName, Const.OPERATOR oper, Object... fieldValues) throws ServiceException {
         try{
-            return getJdbcDao(this).getByField(potype,fieldName,oper,fieldValues);
+            return getJdbcDao().getByField(potype,fieldName,oper,fieldValues);
         }catch (DAOException ex){
             throw new ServiceException(ex);
         }
@@ -431,7 +431,14 @@ public class SpringAutoCreateService<B extends BaseObject, P extends Serializabl
         return manager;
     }
 
-    private static JdbcDao getJdbcDao(SpringAutoCreateService service) {
+    public  JdbcDao getJdbcDao() {
+        JdbcDao dao = SpringContextHolder.getBean(JdbcDao.class);
+        if (ObjectUtils.isEmpty(dao)) {
+            dao = SpringContextHolder.getBean(getJdbcDaoName(), JdbcDao.class);
+        }
+        return dao;
+    }
+    private static  JdbcDao getJdbcDao(SpringAutoCreateService service) {
         JdbcDao dao = SpringContextHolder.getBean(JdbcDao.class);
         if (ObjectUtils.isEmpty(dao)) {
             dao = SpringContextHolder.getBean(service.getJdbcDaoName(), JdbcDao.class);

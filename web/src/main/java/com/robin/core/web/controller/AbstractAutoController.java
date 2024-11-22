@@ -1,7 +1,9 @@
 package com.robin.core.web.controller;
 
 import com.robin.core.base.dao.util.AnnotationRetriever;
+import com.robin.core.base.dao.util.EntityMappingUtil;
 import com.robin.core.base.dao.util.FieldContent;
+import com.robin.core.base.datameta.DataBaseColumnMeta;
 import com.robin.core.base.exception.ServiceException;
 import com.robin.core.base.model.BaseObject;
 import com.robin.core.base.service.SpringAutoCreateService;
@@ -9,6 +11,7 @@ import com.robin.core.base.spring.SpringContextHolder;
 import com.robin.core.base.util.Const;
 import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.query.util.PageQuery;
+import com.robin.core.sql.util.BaseSqlGen;
 import com.robin.core.sql.util.FilterCondition;
 import com.robin.core.sql.util.FilterConditionBuilder;
 import com.robin.core.web.annotation.WebControllerConfig;
@@ -29,6 +32,7 @@ import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.function.BiConsumer;
 
@@ -96,11 +100,7 @@ public abstract class AbstractAutoController<O extends BaseObject, P extends Ser
                     //page
                     RequestMappingInfo pagePath = RequestMappingInfo.paths(config.mainPath() + config.listPath())
                             .methods(RequestMethod.POST).produces(MediaType.APPLICATION_JSON_VALUE).build();
-                    Method listmethold= this.getClass().getDeclaredMethod("doPage", Map.class);
-                    if(ObjectUtils.isEmpty(listmethold)){
-                        listmethold=this.getClass().getSuperclass().getDeclaredMethod("doPage", Map.class);
-                    }
-                    mappingHandlerMapping.registerMapping(pagePath, this, listmethold);
+
                     //update
                     RequestMappingInfo updatePath = RequestMappingInfo.paths(config.mainPath() + config.updatePath())
                             .methods(RequestMethod.POST).produces(MediaType.APPLICATION_JSON_VALUE).build();
@@ -109,6 +109,17 @@ public abstract class AbstractAutoController<O extends BaseObject, P extends Ser
                     RequestMappingInfo deletePath = RequestMappingInfo.paths(config.mainPath() + config.deletePath())
                             .methods(RequestMethod.GET).produces(MediaType.APPLICATION_JSON_VALUE).build();
                     mappingHandlerMapping.registerMapping(deletePath, this, getClass().getSuperclass().getDeclaredMethod("doDelete", String.class));
+                    Method listmethold=null;
+                    try {
+                        listmethold=this.getClass().getDeclaredMethod("doPage", Map.class);
+                    }catch (Exception ex){
+
+                    }
+                    if(ObjectUtils.isEmpty(listmethold)){
+                        listmethold=this.getClass().getSuperclass().getDeclaredMethod("doPage", Map.class);
+                    }
+                    mappingHandlerMapping.registerMapping(pagePath, this, listmethold);
+
                     if (!ObjectUtils.isEmpty(additionMappingRegConsumer)) {
                         additionMappingRegConsumer.accept(mappingHandlerMapping, config);
                     }
@@ -196,8 +207,10 @@ public abstract class AbstractAutoController<O extends BaseObject, P extends Ser
             return wrapError(ex);
         }
     }
-    private FilterCondition getCondition(Map<String,Object> paramMap){
+    private FilterCondition getCondition(Map<String,Object> paramMap) throws SQLException {
+        AnnotationRetriever.EntityContent tableDef = AnnotationRetriever.getMappingTableByCache(potype);
         Map<String,FieldContent> contentMap= AnnotationRetriever.getMappingFieldsMapCache(potype);
+        Map<String, DataBaseColumnMeta> columnMetaMap= EntityMappingUtil.returnMetaMap(potype,SpringContextHolder.getBean(BaseSqlGen.class),service.getJdbcDao(),tableDef);
         Iterator<Map.Entry<String,Object>> iterator=paramMap.entrySet().iterator();
         FilterConditionBuilder builder=new FilterConditionBuilder();
 
@@ -207,7 +220,7 @@ public abstract class AbstractAutoController<O extends BaseObject, P extends Ser
                 String key=entry.getKey();
                 Object value=entry.getValue();
                 if(contentMap.containsKey(key)){
-                    String columnType = AnnotationRetriever.getFieldType(contentMap.get(key));
+                    String columnType = columnMetaMap.get(contentMap.get(key).getFieldName()).getColumnType();
                     if(Map.class.isInstance(value)){
                         Map<String,Object> tmap=(Map<String,Object>)value;
                         String operator=tmap.get("operator").toString();

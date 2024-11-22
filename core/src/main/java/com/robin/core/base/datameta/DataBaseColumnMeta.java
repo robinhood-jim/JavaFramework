@@ -22,7 +22,7 @@ import java.io.Serializable;
 @Data
 public class DataBaseColumnMeta implements Serializable {
 	private String columnName;
-	private Integer columnType;
+	private String columnType;
 	private Integer dataType;
 	private String typeName;
 	private String columnLength;
@@ -41,11 +41,11 @@ public class DataBaseColumnMeta implements Serializable {
 	public DataBaseColumnMeta() {
 		
 	}
-	public DataBaseColumnMeta(String columnName,Integer columnType) {
+	public DataBaseColumnMeta(String columnName,String columnType) {
 		this.columnName=columnName;
 		this.columnType=columnType;
 	}
-	public DataBaseColumnMeta(String columnName,Integer columnType,Integer length) {
+	public DataBaseColumnMeta(String columnName,String columnType,Integer length) {
 		this.columnName=columnName;
 		this.columnType=columnType;
 		if(length!=null) {
