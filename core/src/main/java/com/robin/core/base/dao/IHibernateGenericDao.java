@@ -27,7 +27,6 @@ import com.robin.core.query.util.PageQuery;
 import com.robin.core.query.util.QueryString;
 
 
-@Deprecated
 public  interface IHibernateGenericDao {
 
 	<T extends BaseObject,ID extends Serializable> T get(Class<T> entityClass, ID id) throws DAOException;
@@ -124,7 +123,7 @@ public  interface IHibernateGenericDao {
 
 	
 
-	PageQuery queryBySql(String querySQL,String countSql,String[] displayname,PageQuery pageQuery)throws DAOException;
+	void queryBySql(String querySQL,String countSql,String[] displayname,PageQuery<Map<String,Object>> pageQuery)throws DAOException;
 
 	void queryByParamter(QueryString qs, PageQuery pageQuery) throws DAOException;
 

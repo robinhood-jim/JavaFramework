@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 
 
 public class SqlMapperService implements InitializingBean {
@@ -22,7 +23,7 @@ public class SqlMapperService implements InitializingBean {
     }
 
     @Transactional(readOnly=true)
-    public List queryByMapper(String nameSpace, String id, PageQuery query, Object... params) throws ServiceException {
+    public List queryByMapper(String nameSpace, String id, PageQuery<Map<String,Object>> query, Object... params) throws ServiceException {
         try {
             return sqlMapperDao.queryByMapper(nameSpace, id, query, params);
         }catch (DAOException ex){

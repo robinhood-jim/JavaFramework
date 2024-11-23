@@ -152,7 +152,7 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 	}
 	@Override
     @Transactional(readOnly=true)
-	public List<Map<String, Object>> queryByPageSql(String sql,PageQuery pageQuery) throws ServiceException{
+	public List<Map<String, Object>> queryByPageSql(String sql,PageQuery<Map<String,Object>> pageQuery) throws ServiceException{
 		try{
 			return jdbcDao.queryByPageSql(sql, pageQuery);
 		}catch(DAOException ex){
@@ -179,9 +179,9 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 	}
 	@Override
     @Transactional(readOnly=true)
-	public PageQuery queryBySql(String querySQL,String countSql,String[] displayname,PageQuery pageQuery)throws ServiceException{
+	public void queryBySql(String querySQL,String countSql,String[] displayname,PageQuery pageQuery)throws ServiceException{
 		try{
-			return jdbcDao.queryBySql(querySQL, countSql, displayname, pageQuery);
+			jdbcDao.queryBySql(querySQL, countSql, displayname, pageQuery);
 		}catch(DAOException ex){
 			throw new ServiceException(ex);
 		}

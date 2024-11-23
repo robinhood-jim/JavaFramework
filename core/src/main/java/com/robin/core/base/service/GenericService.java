@@ -17,6 +17,7 @@ package com.robin.core.base.service;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
 
 import com.robin.core.base.exception.DAOException;
 import com.robin.core.base.exception.ServiceException;
@@ -24,7 +25,7 @@ import com.robin.core.base.model.BaseObject;
 import com.robin.core.query.util.PageQuery;
 import com.robin.core.query.util.QueryString;
 
-@Deprecated
+
 public interface GenericService<V extends BaseObject,P extends Serializable> {
 	V find(P id) throws ServiceException;
 
@@ -48,7 +49,7 @@ public interface GenericService<V extends BaseObject,P extends Serializable> {
 	
 	List<V> findByFields(String[] fieldName, Object[] fieldValue, String[] orderName, boolean[] ascending) throws ServiceException;
 	
-	PageQuery queryBySql(String querySQL, String countSql, String[] displayname, PageQuery pageQuery)throws ServiceException;
+	void queryBySql(String querySQL, String countSql, String[] displayname, PageQuery<Map<String,Object>> pageQuery)throws ServiceException;
 	
 	void queryByParamter(QueryString qs, PageQuery pageQuery) throws ServiceException;
 	

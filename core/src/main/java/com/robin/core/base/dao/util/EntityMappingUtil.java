@@ -37,7 +37,7 @@ public class EntityMappingUtil {
 
     public static InsertSegment getInsertSegment(BaseObject obj, BaseSqlGen sqlGen, JdbcDao jdbcDao,List<FieldContent> fields) throws DAOException {
 
-        AnnotationRetriever.EntityContent tableDef = AnnotationRetriever.getMappingTableByCache(obj.getClass());
+        AnnotationRetriever.EntityContent<? extends BaseObject> tableDef = AnnotationRetriever.getMappingTableByCache(obj.getClass());
         AnnotationRetriever.validateEntity(obj);
         StringBuilder buffer = new StringBuilder();
         buffer.append(Const.SQL_INSERTINTO);
@@ -155,7 +155,7 @@ public class EntityMappingUtil {
         return insertSegment;
     }
 
-    public static Map<String, DataBaseColumnMeta> returnMetaMap(Class<? extends BaseObject> clazz, BaseSqlGen sqlGen, JdbcDao jdbcDao, AnnotationRetriever.EntityContent tableDef) throws SQLException {
+    public static  Map<String, DataBaseColumnMeta> returnMetaMap(Class<? extends BaseObject> clazz, BaseSqlGen sqlGen, JdbcDao jdbcDao, AnnotationRetriever.EntityContent<? extends BaseObject> tableDef) throws SQLException {
         Map<String, DataBaseColumnMeta> columnMetaMap;
         if (metaCache.containsKey(clazz)) {
             columnMetaMap = metaCache.get(clazz);
@@ -167,7 +167,7 @@ public class EntityMappingUtil {
         return columnMetaMap;
     }
 
-    public static List<FieldContent> returnAvailableFields(Class<? extends BaseObject> clazz, BaseSqlGen sqlGen, JdbcDao jdbcDao, AnnotationRetriever.EntityContent tableDef, List<FieldContent> fields) throws SQLException {
+    public static List<FieldContent> returnAvailableFields(Class<? extends BaseObject> clazz, BaseSqlGen sqlGen, JdbcDao jdbcDao, AnnotationRetriever.EntityContent<? extends BaseObject> tableDef, List<FieldContent> fields) throws SQLException {
         Map<String, DataBaseColumnMeta> metaMap = returnMetaMap(clazz, sqlGen, jdbcDao, tableDef);
         List<FieldContent> contents = new ArrayList<>();
         for (FieldContent content : fields) {
@@ -180,7 +180,7 @@ public class EntityMappingUtil {
 
     public static UpdateSegment getUpdateSegment(BaseObject obj, List<FilterCondition> conditions, BaseSqlGen sqlGen) throws SQLException {
 
-        AnnotationRetriever.EntityContent tableDef = AnnotationRetriever.getMappingTableByCache(obj.getClass());
+        AnnotationRetriever.EntityContent<? extends BaseObject> tableDef = AnnotationRetriever.getMappingTableByCache(obj.getClass());
         List<FieldContent> fields = AnnotationRetriever.getMappingFieldsCache(obj.getClass());
         Map<String, FieldContent> fieldContentMap = AnnotationRetriever.getMappingFieldsMapCache(obj.getClass());
 
@@ -234,7 +234,7 @@ public class EntityMappingUtil {
     }
 
     public static UpdateSegment getUpdateSegmentByKey(BaseObject obj, BaseSqlGen sqlGen) throws SQLException {
-        AnnotationRetriever.EntityContent tableDef = AnnotationRetriever.getMappingTableByCache(obj.getClass());
+        AnnotationRetriever.EntityContent<? extends BaseObject> tableDef = AnnotationRetriever.getMappingTableByCache(obj.getClass());
         List<FieldContent> fields = AnnotationRetriever.getMappingFieldsCache(obj.getClass());
         //AnnotationRetriever.validateEntity(obj);
 
@@ -294,9 +294,9 @@ public class EntityMappingUtil {
         return updateSegment;
     }
 
-    public static SelectSegment getSelectPkSegment(Class<? extends BaseObject> clazz, Serializable id, BaseSqlGen sqlGen, JdbcDao jdbcDao) throws Exception {
+    public static <T extends BaseObject> SelectSegment getSelectPkSegment(Class<T> clazz, Serializable id, BaseSqlGen sqlGen, JdbcDao jdbcDao) throws Exception {
         AnnotationRetriever.isBaseObjectClassValid(clazz);
-        AnnotationRetriever.EntityContent tableDef = AnnotationRetriever.getMappingTableByCache(clazz);
+        AnnotationRetriever.EntityContent<T> tableDef = AnnotationRetriever.getMappingTableByCache(clazz);
         List<FieldContent> fields = AnnotationRetriever.getMappingFieldsCache(clazz);
         StringBuilder sqlbuffer = new StringBuilder("select ");
         StringBuilder wherebuffer = new StringBuilder();
@@ -441,7 +441,7 @@ public class EntityMappingUtil {
         }
     }
 
-    private static void appendSchemaAndTable(AnnotationRetriever.EntityContent entityContent, StringBuilder builder, BaseSqlGen sqlGen) {
+    private static void appendSchemaAndTable(AnnotationRetriever.EntityContent<? extends BaseObject> entityContent, StringBuilder builder, BaseSqlGen sqlGen) {
         if (entityContent.getSchema() != null && !entityContent.getSchema().isEmpty()) {
             builder.append(sqlGen.getSchemaName(entityContent.getSchema())).append(".");
         }

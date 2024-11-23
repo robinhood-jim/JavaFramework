@@ -41,12 +41,12 @@ public interface IBaseAnnotationJdbcService<V extends BaseObject, P extends Seri
 
     void queryBySelectId(PageQuery<Map<String,Object>> query) throws ServiceException;
 
-    List<Map<String, Object>> queryByPageSql(String sql, PageQuery pageQuery) throws ServiceException;
+    List<Map<String, Object>> queryByPageSql(String sql, PageQuery<Map<String,Object>> pageQuery) throws ServiceException;
 
     void executeBySelectId(PageQuery<Map<String,Object>> query) throws ServiceException;
 
 
-    PageQuery queryBySql(String querySQL, String countSql, String[] displayname, PageQuery<Map<String,Object>> pageQuery) throws ServiceException;
+    void queryBySql(String querySQL, String countSql, String[] displayname, PageQuery<Map<String,Object>> pageQuery) throws ServiceException;
 
     List<Map<String, Object>> queryBySql(String sqlstr, Object... objects) throws ServiceException;
 

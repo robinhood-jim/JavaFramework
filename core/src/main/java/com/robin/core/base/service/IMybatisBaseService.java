@@ -20,8 +20,7 @@ public interface IMybatisBaseService<T extends Serializable,P extends Serializab
     T get(P id);
     IPage<T> getPage(Map<String, Object> params, String defaultOrderField, boolean isAsc);
     IPage<T> getPage(PageDTO pageDTO, String defaultOrderField, boolean isAsc);
-    @Override
-    boolean update(T entity, Wrapper<T> updateWrapper);
+
     boolean insertBatch(Collection<T> entityList);
     boolean insertBatch(Collection<T> entityList, int batchSize);
     boolean delete(Wrapper<T> deleteWrapper);

@@ -64,7 +64,7 @@ public class SqlMapperDao extends JdbcDaoSupport {
         namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(returnTemplate());
     }
 
-    public List<?> queryByMapper(String nameSpace, String id, PageQuery query, Object... params) throws DAOException {
+    public List<?> queryByMapper(String nameSpace, String id, PageQuery<Map<String,Object>> query, Object... params) throws DAOException {
         List<?> list;
         StringBuilder builder = new StringBuilder();
         if (sqlMapperConfigure.getSegmentsMap().containsKey(nameSpace) && sqlMapperConfigure.getSegmentsMap().get(nameSpace).containsKey(id)) {
@@ -106,7 +106,7 @@ public class SqlMapperDao extends JdbcDaoSupport {
         return builder.toString();
     }
 
-    private Map<String, Object> wrapSqlAndParamter(String nameSpace, String id, StringBuilder builder, PageQuery query, Object... params) {
+    private Map<String, Object> wrapSqlAndParamter(String nameSpace, String id, StringBuilder builder, PageQuery<Map<String,Object>> query, Object... params) {
         ImmutablePair<String, List<AbstractSegment>> pair = sqlMapperConfigure.getSegmentsMap().get(nameSpace).get(id);
         Map<String, Object> paramMap = new HashMap<>();
         CompositeSegment segment = (CompositeSegment) pair.right.get(0);
@@ -179,7 +179,7 @@ public class SqlMapperDao extends JdbcDaoSupport {
         }
     }
 
-    private static ResultSetExtractor<List<?>> resultSetExtractor(SqlMapperConfigure mapper, String nameSpace, CompositeSegment segment, LobHandler lobHandler, PageQuery pageQuery) throws DAOException {
+    private static ResultSetExtractor<List<?>> resultSetExtractor(SqlMapperConfigure mapper, String nameSpace, CompositeSegment segment, LobHandler lobHandler, PageQuery<Map<String,Object>> pageQuery) throws DAOException {
         return resultSet -> {
             List retList = new ArrayList<>();
             if (resultSet.next()) {

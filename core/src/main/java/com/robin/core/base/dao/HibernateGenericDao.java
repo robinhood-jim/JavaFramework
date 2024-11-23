@@ -42,7 +42,6 @@ import org.springframework.util.StringUtils;
 
 import java.io.Serializable;
 import java.util.*;
-@Deprecated
 public class HibernateGenericDao extends HibernateDaoSupport implements IHibernateGenericDao {
     private JdbcTemplate jdbcTemplate;
 
@@ -173,15 +172,13 @@ public class HibernateGenericDao extends HibernateDaoSupport implements IHiberna
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public <T extends BaseObject> long count(Class<T> entityClass) throws DAOException {
         try {
-            List<?> countList = returnTemplate().execute(new HibernateCallback<List<?>>() {
-                @Override
-                public List<?> doInHibernate(Session session) throws HibernateException {
-                    String hql = "select count(*) from " + getClassName(entityClass);
-                    Query query = session.createQuery(hql);
-                    return query.list();
-                }
+            List<?> countList = returnTemplate().execute((HibernateCallback<List<?>>) session -> {
+                String hql = "select count(*) from " + getClassName(entityClass);
+                Query query = session.createQuery(hql);
+                return query.list();
             });
             if (countList != null && !countList.isEmpty()) {
                 return ((Long) countList.get(0)).longValue();
@@ -471,8 +468,8 @@ public class HibernateGenericDao extends HibernateDaoSupport implements IHiberna
     }
 
     @Override
-    public PageQuery queryBySql(String querySQL, String countSql, String[] displayname, PageQuery pageQuery) throws DAOException {
-        return CommJdbcUtil.queryBySql(jdbcTemplate, lobHandler, sqlGen, querySQL, countSql, displayname, pageQuery);
+    public void queryBySql(String querySQL, String countSql, String[] displayname, PageQuery<Map<String,Object>> pageQuery) throws DAOException {
+        CommJdbcUtil.queryBySql(jdbcTemplate, lobHandler, sqlGen, querySQL, countSql, displayname, pageQuery);
     }
 
     @Override

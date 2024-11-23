@@ -165,7 +165,7 @@ public class SpringAutoCreateService<B extends BaseObject, P extends Serializabl
             throw new ServiceException(ex);
         }
     }
-    public List<Map<String, Object>> queryByPageSql(String sql, PageQuery pageQuery) throws ServiceException{
+    public List<Map<String, Object>> queryByPageSql(String sql, PageQuery<Map<String,Object>> pageQuery) throws ServiceException{
         try{
             return getJdbcDao().queryByPageSql(sql, pageQuery);
         }catch(DAOException ex){
@@ -183,9 +183,9 @@ public class SpringAutoCreateService<B extends BaseObject, P extends Serializabl
     }
 
     @Override
-    public PageQuery queryBySql(String querySQL, String countSql, String[] displayname, PageQuery pageQuery) throws ServiceException {
+    public void queryBySql(String querySQL, String countSql, String[] displayname, PageQuery pageQuery) throws ServiceException {
         try{
-            return getJdbcDao().queryBySql(querySQL,countSql,displayname,pageQuery);
+            getJdbcDao().queryBySql(querySQL,countSql,displayname,pageQuery);
         }catch (DAOException ex){
             throw new ServiceException(ex);
         }

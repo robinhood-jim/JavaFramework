@@ -129,7 +129,7 @@ public interface IjdbcDao {
      * @return
      * @throws DAOException
      */
-    PageQuery queryByPageQuery(String sqlstr, PageQuery<Map<String,Object>> pageQuery) throws DAOException;
+    PageQuery<Map<String,Object>> queryByPageQuery(String sqlstr, PageQuery<Map<String,Object>> pageQuery) throws DAOException;
 
     /**
      * Query with Plain Sql
@@ -161,7 +161,7 @@ public interface IjdbcDao {
      * @return
      * @throws DAOException
      */
-    PageQuery queryBySql(String querySQL, String countSql, String[] displayname, PageQuery<Map<String,Object>> pageQuery) throws DAOException;
+    void queryBySql(String querySQL, String countSql, String[] displayname, PageQuery<Map<String,Object>> pageQuery) throws DAOException;
 
     /**
      * Create Record by ORM

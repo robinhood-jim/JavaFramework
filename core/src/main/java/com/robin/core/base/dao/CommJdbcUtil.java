@@ -129,7 +129,7 @@ public class CommJdbcUtil {
         pageQuery.setRecordSet(list);
     }
 
-    private static List<?> getResultList(JdbcTemplate jdbcTemplate, LobHandler lobHandler, BaseSqlGen sqlGen, QueryString qs, PageQuery pageQuery, String querySQL, String sumSQL, int pageSize) throws DAOException {
+    private static List<?> getResultList(JdbcTemplate jdbcTemplate, LobHandler lobHandler, BaseSqlGen sqlGen, QueryString qs, PageQuery<Map<String,Object>> pageQuery, String querySQL, String sumSQL, int pageSize) throws DAOException {
         List<?> list;
         if (pageSize != 0) {
             if (pageSize < Integer.parseInt(Const.MIN_PAGE_SIZE)) {
@@ -165,7 +165,7 @@ public class CommJdbcUtil {
         return list;
     }
 
-    public static void setPageQueryParameter(PageQuery pageQuery, int total) {
+    public static void setPageQueryParameter(PageQuery<Map<String,Object>> pageQuery, int total) {
         int pages = total / pageQuery.getPageSize();
         if (total % pageQuery.getPageSize() != 0) {
             pages++;
@@ -179,7 +179,7 @@ public class CommJdbcUtil {
         }
     }
 
-    public static String getRealSql(BaseSqlGen sqlGen, QueryString qs, PageQuery pageQuery) throws DAOException {
+    public static String getRealSql(BaseSqlGen sqlGen, QueryString qs, PageQuery<Map<String,Object>> pageQuery) throws DAOException {
         String querySQL = getReplacementSql(sqlGen, qs, pageQuery);
         if (logger.isInfoEnabled()) {
             logger.info("operSQL: {}",querySQL);
@@ -220,7 +220,7 @@ public class CommJdbcUtil {
         return querySQL;
     }
 
-    private static List<Map> getResultItems(JdbcTemplate jdbcTemplate, LobHandler lobHandler, BaseSqlGen sqlGen, final PageQuery query, final QueryString qs, final String pageSQL) {
+    private static List<Map> getResultItems(JdbcTemplate jdbcTemplate, LobHandler lobHandler, BaseSqlGen sqlGen, final PageQuery<Map<String,Object>> query, final QueryString qs, final String pageSQL) {
         //getResultColumn from QueryString
         final String[] fields = sqlGen.getResultColName(qs);
         return jdbcTemplate.query(pageSQL, getDefaultExtract(fields, lobHandler, query));
@@ -319,7 +319,7 @@ public class CommJdbcUtil {
         return retObj;
     }
 
-    static void setTargetValue(Object target, Object value, String columnName, String columnType, LobHandler handler, PageQuery pageQuery) throws DAOException {
+    static void setTargetValue(Object target, Object value, String columnName, String columnType, LobHandler handler, PageQuery<Map<String,Object>> pageQuery) throws DAOException {
         try {
             if (value != null) {
                 Object targetValue = null;
@@ -439,7 +439,7 @@ public class CommJdbcUtil {
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    static PageQuery queryBySql(JdbcTemplate jdbcTemplate, LobHandler lobHandler, BaseSqlGen sqlGen, String querySQL, String countSql, String[] displayname, PageQuery pageQuery) throws DAOException {
+    static void queryBySql(JdbcTemplate jdbcTemplate, LobHandler lobHandler, BaseSqlGen sqlGen, String querySQL, String countSql, String[] displayname, PageQuery<Map<String,Object>> pageQuery) throws DAOException {
         String sumSQL;
         if (countSql == null || "".equals(countSql.trim())) {
             sumSQL = sqlGen.generateCountSql(querySQL);
@@ -478,7 +478,6 @@ public class CommJdbcUtil {
         }
         List list = getResultList(jdbcTemplate, lobHandler, sqlGen, qs, pageQuery, querySQL, sumSQL, pageSize);
         pageQuery.setRecordSet(list);
-        return pageQuery;
     }
      public static void batchUpdate(JdbcTemplate jdbcTemplate,String sql,final List<Object[]> valueList){
         BatchPreparedStatementSetter setter=new BatchPreparedStatementSetter() {
@@ -782,7 +781,7 @@ public class CommJdbcUtil {
         }
     }
 
-    public static int executeByPreparedParamter(JdbcTemplate jdbcTemplate, BaseSqlGen sqlGen, QueryString qs, PageQuery pageQuery) throws DAOException {
+    public static int executeByPreparedParamter(JdbcTemplate jdbcTemplate, BaseSqlGen sqlGen, QueryString qs, PageQuery<Map<String,Object>> pageQuery) throws DAOException {
         try {
             String executeSQL = sqlGen.generateSqlBySelectId(qs, pageQuery);
             if (logger.isInfoEnabled()) {
@@ -800,7 +799,7 @@ public class CommJdbcUtil {
 
     }
 
-    public static void setPageQuery(PageQuery pageQuery, int total) {
+    public static void setPageQuery(PageQuery<Map<String,Object>> pageQuery, int total) {
         pageQuery.setRecordCount(total);
         if (total > 0) {
             int pages = total / pageQuery.getPageSize();
