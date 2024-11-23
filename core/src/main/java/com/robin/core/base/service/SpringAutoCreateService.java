@@ -158,7 +158,7 @@ public class SpringAutoCreateService<B extends BaseObject, P extends Serializabl
         }
     }
 
-    public void queryBySelectId(PageQuery query) throws ServiceException {
+    public void queryBySelectId(PageQuery<Map<String,Object>> query) throws ServiceException {
         try {
             getJdbcDao().queryBySelectId(query);
         } catch (DAOException ex) {
@@ -174,7 +174,7 @@ public class SpringAutoCreateService<B extends BaseObject, P extends Serializabl
     }
 
     @Override
-    public void executeBySelectId(PageQuery query) throws ServiceException {
+    public void executeBySelectId(PageQuery<Map<String,Object>> query) throws ServiceException {
         try{
             getJdbcDao().executeBySelectId(query);
         }catch (DAOException ex){
@@ -183,7 +183,7 @@ public class SpringAutoCreateService<B extends BaseObject, P extends Serializabl
     }
 
     @Override
-    public void queryBySql(String querySQL, String countSql, String[] displayname, PageQuery pageQuery) throws ServiceException {
+    public void queryBySql(String querySQL, String countSql, String[] displayname, PageQuery<Map<String,Object>> pageQuery) throws ServiceException {
         try{
             getJdbcDao().queryBySql(querySQL,countSql,displayname,pageQuery);
         }catch (DAOException ex){
@@ -229,7 +229,7 @@ public class SpringAutoCreateService<B extends BaseObject, P extends Serializabl
     }
 
     @Override
-    public void queryByCondition(FilterConditionBuilder filterConditions, PageQuery pageQuery) {
+    public void queryByCondition(FilterConditionBuilder filterConditions, PageQuery<B> pageQuery) {
         try{
             getJdbcDao().queryByCondition(potype,filterConditions.build(),pageQuery);
         }catch (DAOException ex){
@@ -240,7 +240,7 @@ public class SpringAutoCreateService<B extends BaseObject, P extends Serializabl
     @Override
     public List<B> queryByCondition(FilterCondition filterCondition) {
         try{
-            PageQuery query=new PageQuery();
+            PageQuery<B> query=new PageQuery<>();
             query.setPageSize(0);
             getJdbcDao().queryByCondition(potype,filterCondition,query);
             return query.getRecordSet();
@@ -423,7 +423,7 @@ public class SpringAutoCreateService<B extends BaseObject, P extends Serializabl
             });
         }
     }
-    private static PlatformTransactionManager transactionManager(SpringAutoCreateService service) {
+    private static <V extends BaseObject,K extends Serializable> PlatformTransactionManager transactionManager(SpringAutoCreateService<V,K> service) {
         PlatformTransactionManager manager = SpringContextHolder.getBean(PlatformTransactionManager.class);
         if (ObjectUtils.isEmpty(manager)) {
             manager = SpringContextHolder.getBean(service.getDefaultTransactionId(), PlatformTransactionManager.class);
@@ -438,7 +438,7 @@ public class SpringAutoCreateService<B extends BaseObject, P extends Serializabl
         }
         return dao;
     }
-    private static  JdbcDao getJdbcDao(SpringAutoCreateService service) {
+    private static <V extends BaseObject,K extends Serializable>  JdbcDao getJdbcDao(SpringAutoCreateService<V,K> service) {
         JdbcDao dao = SpringContextHolder.getBean(JdbcDao.class);
         if (ObjectUtils.isEmpty(dao)) {
             dao = SpringContextHolder.getBean(service.getJdbcDaoName(), JdbcDao.class);

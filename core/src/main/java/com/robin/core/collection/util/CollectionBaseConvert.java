@@ -20,7 +20,6 @@ import com.robin.core.base.dao.util.PropertyFunction;
 import com.robin.core.base.exception.MissingConfigException;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.ObjectUtils;
 
 import java.io.Serializable;
 import java.util.*;
@@ -47,7 +46,7 @@ public class CollectionBaseConvert {
     }
 
     public static List<String> extractKeyValueByList(List<Map<String, String>> list, String key) {
-        return list.stream().collect(Collectors.mapping(f->f.get(key).toString(),Collectors.toList()));
+        return list.stream().map(f -> f.get(key)).collect(Collectors.toList());
     }
 
     public static List<Object> extractKeyValueByListObj(List<Map<String, Object>> list, String key) {
@@ -77,7 +76,7 @@ public class CollectionBaseConvert {
         return list.stream().collect(Collectors.groupingBy(function));
     }
 
-    public static <T extends Serializable> Map<String, T> groupByUniqueKey(List<T> list, PropertyFunction<T, String> function) throws Exception {
+    public static <T extends Serializable> Map<String, T> groupByUniqueKey(List<T> list, PropertyFunction<T, String> function) throws MissingConfigException {
         Assert.notNull(list, "");
         Assert.isTrue(!CollectionUtils.isEmpty(list), "Collection is Empty");
         Class<? extends Serializable> clazz = list.get(0).getClass();
@@ -85,7 +84,7 @@ public class CollectionBaseConvert {
             throw new MissingConfigException("Primitive type can not using this function!");
         }
         if (!(list.get(0) instanceof HashMap)) {
-            return list.stream().collect(Collectors.toMap(f -> function.apply(f), Function.identity()));
+            return list.stream().collect(Collectors.toMap(function, Function.identity()));
         } else {
             String columnName = AnnotationRetriever.getFieldName(function);
             return list.stream().collect(Collectors.toMap(f -> ((Map) f).get(columnName).toString(), Function.identity()));
@@ -95,7 +94,7 @@ public class CollectionBaseConvert {
 
     public static <T extends Comparable> List<Map.Entry<String, T>> sortMapByValue(Map<String, T> inputMap, final boolean order) {
         List<Map.Entry<String, T>> list = new LinkedList<>(inputMap.entrySet());
-        Collections.sort(list, (Comparator<Map.Entry<String, ?>>) (o1, o2) -> {
+        list.sort((Comparator<Map.Entry<String, ?>>) (o1, o2) -> {
             if (order) {
                 return ((Comparable) o1.getValue()).compareTo(o2.getValue());
 

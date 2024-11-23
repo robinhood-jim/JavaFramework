@@ -33,6 +33,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -56,7 +58,7 @@ public class AvroUtils {
             SchemaBuilder.FieldAssembler<Schema> fields = SchemaBuilder.record(className).namespace(tmpnames).fields();
 
             for (DataBaseColumnMeta meta : columnList) {
-                switch (meta.getColumnType().toString()) {
+                switch (meta.getColumnType()) {
                     case Const.META_TYPE_BIGINT:
                         fields = fields.name(meta.getColumnName()).type().nullable().longType().noDefault();
                         break;
@@ -91,7 +93,7 @@ public class AvroUtils {
         if (colmeta.getResourceCfgMap().containsKey(Const.AVRO_SCHEMA_FILE_PARAM)) {
             String schemaPath = colmeta.getResourceCfgMap().get("schemaPath").toString();
             try {
-                schema = new Schema.Parser().parse(new FileInputStream(schemaPath));
+                schema = new Schema.Parser().parse(Files.newInputStream(Paths.get(schemaPath)));
             } catch (IOException ex) {
                 throw new ConfigurationIncorrectException("avro schema file load exception:" + ex.getMessage());
             }
@@ -165,7 +167,7 @@ public class AvroUtils {
     }
 
     public static Protocol parseProtocolWithFile(String avroFile) throws IOException {
-        return Protocol.parse(new FileInputStream(avroFile));
+        return Protocol.parse(Files.newInputStream(Paths.get(avroFile)));
     }
 
     public static Protocol parseProtocolWithString(String fileContent) throws IOException {
@@ -382,7 +384,7 @@ public class AvroUtils {
             Map.Entry<String, Field> entry = iter.next();
             Field field = entry.getValue();
             String key = entry.getKey();
-            Class parameterType = field.getType();
+            Class<?> parameterType = field.getType();
             if (parameterType.isAssignableFrom(Long.class)) {
                 fields = fields.name(key).type().nullable().longType().noDefault();
             } else if (parameterType.isAssignableFrom(Float.class)) {
@@ -398,10 +400,10 @@ public class AvroUtils {
                 fields = fields.name(key).type().nullable().booleanType().noDefault();
             } else if (parameterType.isAssignableFrom(Map.class)) {
                 Type acutalType = ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[1];
-                if (((Class) acutalType).isAssignableFrom(Object.class)) {
+                if (((Class<?>) acutalType).isAssignableFrom(Object.class)) {
                     fields = fields.name(key).type().nullable().map().values().nullable().stringType().noDefault();
                 } else {
-                    fields = fields.name(key).type().nullable().map().values(getSchemaFromModel((Class) acutalType)).noDefault();
+                    fields = fields.name(key).type().nullable().map().values(getSchemaFromModel((Class<?>) acutalType)).noDefault();
                 }
             } else if (parameterType.isAssignableFrom(List.class)) {
                 fields = fields.name(key).type().nullable().array().items(getSchemaFromModel((Class<?>) ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[0])).noDefault();

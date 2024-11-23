@@ -74,7 +74,7 @@ public class PlainTextFileIterator extends AbstractFileIterator{
 			return null;
 		}
 		}catch(Exception ex){
-			logger.error("{}",ex);
+			logger.error("{}",ex.getMessage());
 			return null;
 		}
 	}

@@ -218,7 +218,7 @@ public class ConvertUtil {
             Object retValue = parseParameter(type, value, defaultDateTimeFormatter);
             setMethod.invoke(target, retValue);
         }else if(target.getDirtyColumn().contains(field)){
-            setMethod.invoke(target,null);
+            setMethod.invoke(target);
         }
     }
 
@@ -587,10 +587,8 @@ public class ConvertUtil {
         Map<String, Method> methodMap = ReflectUtils.returnSetMethods(target);
         try {
             targetObject = target.newInstance();
-            Iterator<Map.Entry<String, Object>> iter = map.entrySet().iterator();
-            while (iter.hasNext()) {
-                Map.Entry<String, Object> entry = iter.next();
-                if (entry.getValue() != null ) {
+            for (Map.Entry<String, Object> entry : map.entrySet()) {
+                if (entry.getValue() != null) {
                     if (entry.getValue() instanceof String) {
                         if (StringUtils.isEmpty(entry.getValue().toString())) {
                             continue;
@@ -631,7 +629,7 @@ public class ConvertUtil {
         while (iterator.hasNext()) {
             try {
                 Map.Entry<String, Method> entry = iterator.next();
-                Object value = entry.getValue().invoke(sourceObj, null);
+                Object value = entry.getValue().invoke(sourceObj);
                 if (!ignoreList.contains(entry.getKey()) && value != null) {
                     if(value.getClass().isAssignableFrom(LocalDateTime.class)){
                         map.put(entry.getKey(),timeFormatter.format((LocalDateTime) value));

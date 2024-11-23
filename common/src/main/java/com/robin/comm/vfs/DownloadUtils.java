@@ -64,7 +64,7 @@ public class DownloadUtils {
 
                     @Override
                     public void onFailure(Throwable throwable) {
-
+                        logger.error("{}",throwable.getMessage());
                     }
                 },pool);
                 futures.add(future);

@@ -30,16 +30,16 @@ import java.util.*;
 
 @Slf4j
 public class TextFileIteratorFactory {
-	private static Map<String,Class<? extends IResourceIterator>> fileIterMap=new HashMap<>();
+	private final static Map<String,Class<? extends IResourceIterator>> fileIterMap=new HashMap<>();
 	static {
-		discoverIterator(fileIterMap);
+		discoverIterator();
 	}
 	public static IResourceIterator getProcessIteratorByType(DataCollectionMeta colmeta) throws IOException{
 		IResourceIterator iterator=getIter(colmeta);
 		try {
 			iterator.init();
 		}catch (Exception ex){
-			log.error("{}",ex);
+			log.error("{}",ex.getMessage());
 		}
 		return iterator;
 	}
@@ -73,7 +73,7 @@ public class TextFileIteratorFactory {
 		return iterator;
 	}
 	public static IResourceIterator getProcessIteratorByPath(DataCollectionMeta colmeta,InputStream in) throws IOException{
-		List<String> suffixList=new ArrayList<String>();
+		List<String> suffixList=new ArrayList<>();
 		FileUtils.parseFileFormat(colmeta.getPath(),suffixList);
 		String fileFormat=suffixList.get(0);
 		if(StringUtils.isEmpty(colmeta.getFileFormat())){
@@ -98,7 +98,7 @@ public class TextFileIteratorFactory {
 		}
 		return iterator;
 	}
-	private static void discoverIterator(Map<String,Class<? extends IResourceIterator>> fileIterMap){
+	private static void discoverIterator(){
 		ServiceLoader.load(IResourceIterator.class).iterator().forEachRemaining(i->{
 			if(AbstractFileIterator.class.isAssignableFrom(i.getClass()))
 				fileIterMap.put(i.getIdentifier(),i.getClass());});

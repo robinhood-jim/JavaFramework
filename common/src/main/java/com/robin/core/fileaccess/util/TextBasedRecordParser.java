@@ -4,16 +4,19 @@ package com.robin.core.fileaccess.util;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.robin.comm.util.json.GsonUtil;
-import com.robin.core.base.datameta.DataBaseColumnMeta;
+import com.robin.core.base.exception.MissingConfigException;
 import com.robin.core.base.util.Const;
-import com.robin.core.base.util.ResourceConst;
 import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.meta.DataSetColumnMeta;
+import org.dom4j.Document;
+import org.dom4j.DocumentException;
+import org.dom4j.Element;
+import org.dom4j.io.SAXReader;
 
-import java.util.ArrayList;
+
+import java.io.StringReader;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class TextBasedRecordParser {
@@ -36,7 +39,17 @@ public class TextBasedRecordParser {
         }else if(Const.FILESUFFIX_JSON.equalsIgnoreCase(collectionMeta.getFileFormat())){
             retMap=gson.fromJson(inputLine,new TypeToken<Map<String,Object>>(){}.getType());
         }else if(Const.FILESUFFIX_XML.toString().equalsIgnoreCase(collectionMeta.getFileFormat())){
-            //TODO
+            try {
+                Document document = new SAXReader().read(new StringReader(inputLine));
+                Element root = document.getRootElement();
+                for(Element e:root.elements()){
+                    retMap.put(e.getName(),e.getText());
+                }
+            }catch (DocumentException ex){
+
+            }
+        }else{
+            throw new MissingConfigException("unknown format supported!");
         }
         return retMap;
     }
