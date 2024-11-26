@@ -100,15 +100,6 @@ public abstract class AbstractAutoController<O extends BaseObject, P extends Ser
                     //page
                     RequestMappingInfo pagePath = RequestMappingInfo.paths(config.mainPath() + config.listPath())
                             .methods(RequestMethod.POST).produces(MediaType.APPLICATION_JSON_VALUE).build();
-
-                    //update
-                    RequestMappingInfo updatePath = RequestMappingInfo.paths(config.mainPath() + config.updatePath())
-                            .methods(RequestMethod.POST).produces(MediaType.APPLICATION_JSON_VALUE).build();
-                    mappingHandlerMapping.registerMapping(updatePath, this, getClass().getSuperclass().getDeclaredMethod("doUpdate", Map.class));
-                    //delete
-                    RequestMappingInfo deletePath = RequestMappingInfo.paths(config.mainPath() + config.deletePath())
-                            .methods(RequestMethod.GET).produces(MediaType.APPLICATION_JSON_VALUE).build();
-                    mappingHandlerMapping.registerMapping(deletePath, this, getClass().getSuperclass().getDeclaredMethod("doDelete", String.class));
                     Method listmethold=null;
                     try {
                         listmethold=this.getClass().getDeclaredMethod("doPage", Map.class);
@@ -119,6 +110,16 @@ public abstract class AbstractAutoController<O extends BaseObject, P extends Ser
                         listmethold=this.getClass().getSuperclass().getDeclaredMethod("doPage", Map.class);
                     }
                     mappingHandlerMapping.registerMapping(pagePath, this, listmethold);
+
+                    //update
+                    RequestMappingInfo updatePath = RequestMappingInfo.paths(config.mainPath() + config.updatePath())
+                            .methods(RequestMethod.POST).produces(MediaType.APPLICATION_JSON_VALUE).build();
+                    mappingHandlerMapping.registerMapping(updatePath, this, getClass().getSuperclass().getDeclaredMethod("doUpdate", Map.class));
+                    //delete
+                    RequestMappingInfo deletePath = RequestMappingInfo.paths(config.mainPath() + config.deletePath())
+                            .methods(RequestMethod.GET).produces(MediaType.APPLICATION_JSON_VALUE).build();
+                    mappingHandlerMapping.registerMapping(deletePath, this, getClass().getSuperclass().getDeclaredMethod("doDelete", String.class));
+
 
                     if (!ObjectUtils.isEmpty(additionMappingRegConsumer)) {
                         additionMappingRegConsumer.accept(mappingHandlerMapping, config);
