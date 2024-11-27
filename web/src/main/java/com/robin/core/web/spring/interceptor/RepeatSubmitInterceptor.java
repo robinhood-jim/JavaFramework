@@ -4,18 +4,17 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.gson.Gson;
 import com.robin.comm.util.ip.IpUtils;
-import com.robin.core.web.util.HttpContextUtils;
 import com.robin.core.web.spring.anotation.RepeatSubmitCheck;
+import com.robin.core.web.util.HttpContextUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.method.HandlerMethod;
-import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
+import org.springframework.web.servlet.HandlerInterceptor;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -27,7 +26,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 @Slf4j
-public class RepeatSubmitInterceptor extends HandlerInterceptorAdapter implements InitializingBean {
+public class RepeatSubmitInterceptor implements HandlerInterceptor,InitializingBean {
     private static final String LASTACCESSTS = "__lastTs";
     private static final String FIRSTACCESSTS = "__firstTs";
     private static final String NUMBER = "__number";
@@ -42,9 +41,6 @@ public class RepeatSubmitInterceptor extends HandlerInterceptorAdapter implement
     private Environment environment;
     private int bannedHours = 1;
 
-    public RepeatSubmitInterceptor() {
-
-    }
 
     @Override
     public void afterPropertiesSet() throws Exception {
@@ -52,9 +48,8 @@ public class RepeatSubmitInterceptor extends HandlerInterceptorAdapter implement
         if (!ObjectUtils.isEmpty(environment) && environment.containsProperty("webrequest.bannIpfrequency")) {
             bannedHours = Integer.valueOf(environment.getProperty("webrequest.bannIpfrequency"));
         }
-        bannedIpCache = CacheBuilder.newBuilder().initialCapacity(100).maximumSize(1000)
-                .expireAfterWrite(bannedHours, TimeUnit.HOURS).build();
-        Assert.notNull(redisTemplate, "redistemplate required!");
+        bannedIpCache = CacheBuilder.newBuilder().initialCapacity(100).maximumSize(1000).expireAfterWrite(bannedHours, TimeUnit.HOURS).build();
+        Assert.notNull(redisTemplate, "redisTemplate required!");
     }
 
     @Override
@@ -111,7 +106,8 @@ public class RepeatSubmitInterceptor extends HandlerInterceptorAdapter implement
                     //请求次数超限且禁ip,添加进入禁止列表
                     if (anotation.allowAccessNumbers() > 0 && anotation.banIp()) {
                         log.error("ban ip {} for {} hour!", ipAddress, bannedHours);
-                        bannedIpCache.put(ipAddress, 1);
+                        redisTemplate.opsForHash().put("banIps",ipAddress,1);
+                        redisTemplate.expire("banIps",bannedHours,TimeUnit.HOURS);
                     }
                 }
             }
@@ -122,7 +118,7 @@ public class RepeatSubmitInterceptor extends HandlerInterceptorAdapter implement
             HttpContextUtils.renderResponse(response, gson.toJson(retMap));
             return false;
         }
-        return !isRepeated;
+        return true;
     }
 
     private boolean isRepeated(Map<String, Object> map, RepeatSubmitCheck check, Map<String, Object> paramMap, Long checkTs) {
@@ -164,10 +160,7 @@ public class RepeatSubmitInterceptor extends HandlerInterceptorAdapter implement
     }
 
     private boolean isIpBanned(String ip) {
-        return !ObjectUtils.isEmpty(bannedIpCache.getIfPresent(ip));
+        return redisTemplate.opsForHash().hasKey("banIps",ip);
     }
 
-    public Cache<String, Integer> getBannedIpCache() {
-        return bannedIpCache;
-    }
 }

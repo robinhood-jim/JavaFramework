@@ -21,6 +21,7 @@ import lombok.Data;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Data
 public class  PageQuery<T> implements Serializable {
@@ -158,8 +159,8 @@ public class  PageQuery<T> implements Serializable {
 			pageQuery.setOrderDirection(orderDir);
 			return this;
 		}
-		public Builder<T> addQueryParameterArr(Object[] objects){
-			pageQuery.addQueryParameter(objects);
+		public Builder<T> addQueryParameterArr(Object... objects){
+			pageQuery.getQueryParameters().addAll(Arrays.stream(objects).collect(Collectors.toList()));
 			return this;
 		}
 		public Builder<T> addQueryParameter(Collection<Object> collection){

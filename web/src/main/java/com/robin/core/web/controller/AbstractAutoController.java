@@ -221,14 +221,15 @@ public abstract class AbstractAutoController<O extends BaseObject, P extends Ser
                 String key=entry.getKey();
                 Object value=entry.getValue();
                 if(contentMap.containsKey(key)){
-                    String columnType = columnMetaMap.get(contentMap.get(key).getFieldName()).getColumnType();
+                    String columnType =columnMetaMap.containsKey(contentMap.get(key).getFieldName())?
+                            columnMetaMap.get(contentMap.get(key).getFieldName()).getColumnType():columnMetaMap.get(contentMap.get(key).getFieldName().toUpperCase()).getColumnType();
                     if(Map.class.isInstance(value)){
                         Map<String,Object> tmap=(Map<String,Object>)value;
                         String operator=tmap.get("operator").toString();
                         Object value1= Optional.ofNullable(tmap.get("value")).orElse(null);
                         List<Object> values=Optional.ofNullable(tmap.get("values")).map(f->(List<Object>)f).orElse(null);
-                        Optional.ofNullable(value1).map(f->builder.addFilter(key,columnType, Const.OPERATOR.valueOf(operator.toUpperCase()),f))
-                                .orElseGet(()-> builder.addFilter(key,columnType, Const.OPERATOR.valueOf(operator.toUpperCase()),values));
+                        Optional.ofNullable(value1).map(f->builder.addFilter(contentMap.get(key).getFieldName(),columnType, Const.OPERATOR.valueOf(operator.toUpperCase()),f))
+                                .orElseGet(()-> builder.addFilter(contentMap.get(key).getFieldName(),columnType, Const.OPERATOR.valueOf(operator.toUpperCase()),values));
                     }else{
                         builder.addEq(potype,key,value);
                     }

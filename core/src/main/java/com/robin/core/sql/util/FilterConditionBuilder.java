@@ -233,6 +233,16 @@ public class FilterConditionBuilder {
         conditions.add(condition);
         return this;
     }
+    public <T extends BaseObject> FilterConditionBuilder addFilter(Class<T> mappingClass, String propertyName, Const.OPERATOR operator, List<?> values, String columnType) {
+        Map<String, FieldContent> map1 = AnnotationRetriever.getMappingFieldsMapCache(mappingClass);
+        if(map1.containsKey(propertyName)) {
+            FilterCondition condition = new FilterCondition(map1.get(propertyName).getFieldName(), columnType, operator);
+            condition.setValues(values);
+            conditions.add(condition);
+        }
+        return this;
+    }
+
 
     public <T extends BaseObject> FilterConditionBuilder addFilter(PropertyFunction<T, ?> function, Const.OPERATOR operator, Object value) {
         String fieldName = AnnotationRetriever.getFieldName(function);

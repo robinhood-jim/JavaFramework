@@ -151,7 +151,7 @@ public class LoginService implements ILoginService {
         Map<String, Object> retMap = new HashMap<>();
         //get userRole
         PageQuery.Builder<Map<String,Object>> userBuilder = new PageQuery.Builder<>();
-        userBuilder.setPageSize(0).setSelectedId("GETUSER_ROLE").addQueryParameterArr(new Object[]{session.getUserId()});
+        userBuilder.setPageSize(0).setSelectedId("GETUSER_ROLE").addQueryParameterArr(session.getUserId());
         PageQuery<Map<String,Object>> query = userBuilder.build();
         jdbcDao.queryBySelectId(query);
         List<Long> roleIds = new ArrayList<>();
