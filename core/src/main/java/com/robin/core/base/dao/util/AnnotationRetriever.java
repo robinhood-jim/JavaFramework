@@ -45,7 +45,7 @@ import java.util.*;
 @Slf4j
 @SuppressWarnings("unchecked")
 public class AnnotationRetriever {
-    private static final Map<Class<? extends BaseObject>, EntityContent> entityCfgMap = new HashMap<>();
+    private static final  Map<Class<? extends BaseObject>, EntityContent<? extends BaseObject>> entityCfgMap = new HashMap<>();
     private static final Map<Class<? extends BaseObject>, Map<String, FieldContent>> fieldCfgMap = new HashMap<>();
     private static final Map<Class<? extends BaseObject>, List<FieldContent>> fieldListMap = new HashMap<>();
     private static final Map<String, WeakReference<SerializedLambda>> functionMap = new HashMap<>();
@@ -188,27 +188,27 @@ public class AnnotationRetriever {
     }
 
 
-    public static EntityContent getMappingTableByCache(Class<? extends BaseObject> clazz) throws DAOException {
-        EntityContent content;
+    public static <T extends BaseObject> EntityContent<T> getMappingTableByCache(Class<T> clazz) throws DAOException {
+        EntityContent<T> content;
         if (!entityCfgMap.containsKey(clazz)) {
             content = getMappingTableEntity(clazz);
             entityCfgMap.put(clazz, content);
         } else {
-            content = entityCfgMap.get(clazz);
+            content = (EntityContent<T>) entityCfgMap.get(clazz);
         }
         return content;
     }
 
-    private static EntityContent getMappingTableEntity(Class<? extends BaseObject> clazz) throws DAOException {
+    private static <T extends BaseObject> EntityContent<T> getMappingTableEntity(Class<T> clazz) throws DAOException {
 
-        EntityContent content = null;
+        EntityContent<T> content ;
         boolean flag = clazz.isAnnotationPresent(MappingEntity.class);
         if (flag) {
             MappingEntity entity = clazz.getAnnotation(MappingEntity.class);
             String tableName = entity.value();
             String schema = entity.schema();
             String jdbcDao = entity.jdbcDao();
-            content = getEntityContent(tableName, schema, false, false);
+            content = getEntityContent(clazz,tableName, schema, false, false);
             if (!ObjectUtils.isEmpty(jdbcDao)) {
                 content.setJdbcDao(jdbcDao);
             }
@@ -225,7 +225,7 @@ public class AnnotationRetriever {
                 } else {
                     tableName = entity.name();
                 }
-                content = getEntityContent(tableName, schema, true, false);
+                content = getEntityContent(clazz,tableName, schema, true, false);
             } else {
                 flag = clazz.isAnnotationPresent(TableName.class);
                 if (flag) {
@@ -234,7 +234,7 @@ public class AnnotationRetriever {
                     if (Objects.isNull(tableName)) {
                         tableName = StringUtils.returnCamelCaseByFieldName(clazz.getName());
                     }
-                    content = getEntityContent(tableName, table.schema(), false, true);
+                    content = getEntityContent(clazz,tableName, table.schema(), false, true);
                 } else {
                     throw new DAOException("must using MappingEntity or JPA or MybatisPlus annotation");
                 }
@@ -243,8 +243,8 @@ public class AnnotationRetriever {
         return content;
     }
 
-    private static EntityContent getEntityContent(String tableName, String schema, boolean jpaAnnotation, boolean mybatisAnnotaion) {
-        return new EntityContent(tableName, schema, jpaAnnotation, mybatisAnnotaion);
+    private static <T extends BaseObject> EntityContent<T> getEntityContent(Class<T> clazz,String tableName, String schema, boolean jpaAnnotation, boolean mybatisAnnotaion) {
+        return new EntityContent<>(clazz,tableName, schema, jpaAnnotation, mybatisAnnotaion);
     }
 
 
@@ -274,7 +274,7 @@ public class AnnotationRetriever {
         try {
             while (iterator.hasNext()) {
                 Map.Entry<String, FieldContent> entry = iterator.next();
-                Object value = entry.getValue().getGetMethod().invoke(object, null);
+                Object value = entry.getValue().getGetMethod().invoke(object);
                 if (entry.getValue().isSequential() || entry.getValue().isIncrement()) {
                     break;
                 }
@@ -282,7 +282,7 @@ public class AnnotationRetriever {
                     throw new DAOException("column " + entry.getKey() + " must not be null!");
                 }
                 if (entry.getValue().getScale() > 0 || entry.getValue().getPrecise() > 0 && value != null
-                        && !(value instanceof Float || value instanceof Double || value instanceof Number)) {
+                        && !( value instanceof Number)) {
                     throw new DAOException("column " + entry.getKey() + " must digital!");
                 }
                 if (entry.getValue().getLength() > 0 && value != null && value.toString().length() > entry.getValue().getLength()) {
@@ -365,7 +365,7 @@ public class AnnotationRetriever {
     }
 
     private static FieldContent retrieveFieldJpa(Field field, Class<? extends BaseObject> clazz) throws DAOException {
-        FieldContent content = null;
+        FieldContent content ;
         try {
 
             String tmpName = org.springframework.util.StringUtils.capitalize(field.getName());
@@ -476,8 +476,8 @@ public class AnnotationRetriever {
 
     private static void parsePrimaryKey(FieldContent fieldContent, Type type, boolean declareExplicit) {
         List<FieldContent> pkList = new ArrayList<>();
-        if (!type.getClass().isPrimitive() && ((Class) type).getSuperclass().getCanonicalName().endsWith("BasePrimaryObject")) {
-            Field[] fields = ((Class) type).getDeclaredFields();
+        if (!type.getClass().isPrimitive() && ((Class<?>) type).getSuperclass().getCanonicalName().endsWith("BasePrimaryObject")) {
+            Field[] fields = ((Class<?>) type).getDeclaredFields();
             for (Field field : fields) {
                 MappingField mapfield = field.getAnnotation(MappingField.class);
                 if (mapfield != null || !declareExplicit) {
@@ -522,7 +522,7 @@ public class AnnotationRetriever {
 
     public static Object getValueFromVO(FieldContent content, BaseObject object) throws SQLException {
         try {
-            return content.getGetMethod().invoke(object, null);
+            return content.getGetMethod().invoke(object);
         } catch (Exception ex) {
             throw new SQLException(ex);
         }
@@ -550,7 +550,7 @@ public class AnnotationRetriever {
         Class<T> clazz = getFieldOwnedClass(field);
         String fieldName=getFieldName(field);
         Map<String, FieldContent> map = getMappingFieldsMapCache(clazz);
-        return Optional.ofNullable(map.get(fieldName)).map(f->f.getFieldName()).orElse(fieldName);
+        return Optional.ofNullable(map.get(fieldName)).map(FieldContent::getFieldName).orElse(fieldName);
     }
 
     public static <T extends BaseObject> Class<T> getFieldOwnedClass(PropertyFunction<T, ?> field) {
@@ -582,14 +582,36 @@ public class AnnotationRetriever {
             retType = Const.META_TYPE_BIGINT;
         } else if ("()Ljava/lang/Double;".equals(retClass) || "()Ljava/lang/BigDecimal;".equals(retClass)) {
             retType = Const.META_TYPE_DOUBLE;
+        } else if ("()Ljava/lang/Integer;".equals(retClass)) {
+            retType = Const.META_TYPE_INTEGER;
         } else if ("()Ljava/lang/Short;".equals(retClass)) {
             retType = Const.META_TYPE_SHORT;
         } else if ("()Ljava/lang/byte;".equals(retClass)) {
-            retType = Const.META_TYPE_CLOB;
+            retType = Const.META_TYPE_BLOB;
         } else if ("()Ljava/sql/Date;".equals(retClass) || "()Ljava/util/Date;".equals(retClass) || "()Ljava/time/LocalDate;".equals(retClass)) {
             retType = Const.META_TYPE_DATE;
         } else if ("()Ljava/sql/Timestamp;".equals(retClass) || "()Ljava/time/LocalDateTime;".equals(retClass)) {
             retType = Const.META_TYPE_TIMESTAMP;
+        }
+        return retType;
+    }
+    public static String getFieldType(FieldContent content){
+        Class<?> clazz=content.getField().getType();
+        String retType = Const.META_TYPE_STRING;
+        if(Long.class.isAssignableFrom(clazz)){
+            retType=Const.META_TYPE_BIGINT;
+        }else if(Double.class.isAssignableFrom(clazz) || Float.class.isAssignableFrom(clazz)){
+            retType=Const.META_TYPE_DOUBLE;
+        }else if(Integer.class.isAssignableFrom(clazz)){
+            retType=Const.META_TYPE_INTEGER;
+        }else if(Short.class.isAssignableFrom(clazz)){
+            retType=Const.META_TYPE_SHORT;
+        }else if(byte[].class.isAssignableFrom(clazz)){
+            retType=Const.META_TYPE_BLOB;
+        }else if(Date.class.isAssignableFrom(clazz)){
+            retType=Const.META_TYPE_DATE;
+        }else if(java.util.Date.class.isAssignableFrom(clazz) && Timestamp.class.isAssignableFrom(clazz)){
+            retType=Const.META_TYPE_TIMESTAMP;
         }
         return retType;
     }
@@ -624,7 +646,7 @@ public class AnnotationRetriever {
 
     private static void wrapValue(PreparedStatement ps, LobHandler lobHandler, FieldContent field, BaseObject object, int pos) throws SQLException {
         Object value = getValueFromVO(field, object);
-        if (value == null) {
+        if (!ObjectUtils.isEmpty(value)) {
             setParameter(ps, pos, value);
             return;
         }
@@ -648,7 +670,7 @@ public class AnnotationRetriever {
             } else if (Integer.class.isAssignableFrom(obj.getClass())) {
                 stmt.setInt(pos, Integer.parseInt(obj.toString()));
             } else if (Double.class.isAssignableFrom(obj.getClass())) {
-                stmt.setDouble(pos, Double.valueOf(obj.toString()));
+                stmt.setDouble(pos, Double.parseDouble(obj.toString()));
             } else if (Date.class.isAssignableFrom(obj.getClass())) {
                 stmt.setDate(pos, (Date) obj);
             } else if (java.util.Date.class.isAssignableFrom(obj.getClass())) {
@@ -711,38 +733,25 @@ public class AnnotationRetriever {
     }
 
     @Data
-    public static class EntityContent {
+    public static class EntityContent<T extends BaseObject> {
         boolean jpaAnnotation;
         boolean mybatisAnnotation;
         private String tableName;
         private String schema;
         private String jdbcDao;
+        private Class<T> clazz;
 
         public EntityContent(String tableName) {
             this.tableName = tableName;
         }
 
-        public EntityContent(String tableName, boolean jpaAnnotation) {
-            this.tableName = tableName;
-            this.jpaAnnotation = jpaAnnotation;
-        }
 
-        public EntityContent(String tableName, String schema, boolean jpaAnnotation, boolean mybatisAnnotation) {
+        public EntityContent(Class<T> clazz,String tableName, String schema, boolean jpaAnnotation, boolean mybatisAnnotation) {
+            this.clazz=clazz;
             this.tableName = tableName;
             this.jpaAnnotation = jpaAnnotation;
             this.mybatisAnnotation = mybatisAnnotation;
             this.schema = schema;
-        }
-
-        public EntityContent(String tableName, String schema) {
-            this.tableName = tableName;
-            this.schema = schema;
-        }
-
-        public EntityContent(String tableName, String schema, boolean jpaAnnotation) {
-            this.tableName = tableName;
-            this.schema = schema;
-            this.jpaAnnotation = jpaAnnotation;
         }
 
     }

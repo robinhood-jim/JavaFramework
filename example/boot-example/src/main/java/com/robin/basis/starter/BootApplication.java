@@ -10,10 +10,10 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @EnableTransactionManagement(proxyTargetClass = true)
 
 @ComponentScan("com.robin")
-public class Application {
+public class BootApplication {
     public static  void main(String[] args) throws Exception{
         try {
-            SpringApplication.run(Application.class, args);
+            SpringApplication.run(BootApplication.class, args);
         }catch (Exception ex){
             ex.printStackTrace();
         }

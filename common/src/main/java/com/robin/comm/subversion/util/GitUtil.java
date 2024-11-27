@@ -16,10 +16,10 @@
 package com.robin.comm.subversion.util;
 
 
+import cn.hutool.core.io.FileUtil;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.dircache.DirCache;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
@@ -28,12 +28,9 @@ import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class GitUtil {
-    private static Map<String, Git> gitMap = new HashMap<String, Git>();
     private GitUtil(){
 
     }
@@ -96,24 +93,26 @@ public class GitUtil {
             return git.push().setCredentialsProvider(new UsernamePasswordCredentialsProvider(userName, password)).call();
         }
     }
+    public static void pull(String projectPath,String userName, String password){
+        try (Git git = Git.open(new File(projectPath))) {
+                git.pull().setCredentialsProvider(new UsernamePasswordCredentialsProvider(userName,password)).call();
+        }catch (Exception ex){
 
-    public static void initGitRepositoryByConf(String repName, String remoteUrl, String localPath) throws GitAPIException {
-        Git git = null;
-        if (!gitMap.containsKey(repName) || gitMap.get(repName) == null) {
-            git = Git.cloneRepository().setURI(remoteUrl).setDirectory(new File(localPath)).call();
-            gitMap.put(repName, git);
         }
     }
 
-    private static Git clone(String repName, String remoteUrl, String localPath, String userName, String password) throws GitAPIException {
-        Git git = null;
-        if (!gitMap.containsKey(repName) || gitMap.get(repName) == null) {
-            git = Git.cloneRepository().setCredentialsProvider(new UsernamePasswordCredentialsProvider(userName, password)).setURI(remoteUrl).setDirectory(new File(localPath)).call();
-            gitMap.put(repName, git);
-        } else {
-            git = gitMap.get(repName);
+
+
+    private static void clone(String repName, String remoteUrl, String localPath, String userName, String password) throws GitAPIException {
+        File projectPath=new File(localPath);
+        try {
+            if (!FileUtil.exist(projectPath.getParent())) {
+                FileUtils.forceMkdir(projectPath.getParentFile());
+            }
+            Git.cloneRepository().setCredentialsProvider(new UsernamePasswordCredentialsProvider(userName, password)).setURI(remoteUrl).setDirectory(new File(localPath)).call();
+        }catch (IOException ex){
+
         }
-        return git;
     }
     public static File initRepoistory(String baseDir) throws Exception{
         File file=new File(baseDir);

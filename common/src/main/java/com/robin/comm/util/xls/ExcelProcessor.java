@@ -34,6 +34,8 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
@@ -47,7 +49,7 @@ public class ExcelProcessor {
 
 
     public static void readExcelFile(String filename, ExcelSheetProp prop) throws FileNotFoundException {
-        try (InputStream myxls = new FileInputStream(filename)) {
+        try (InputStream myxls = Files.newInputStream(Paths.get(filename))) {
             readExcelFile(myxls, prop, null, null);
         } catch (Exception e) {
             log.error("{}", e.getMessage());
@@ -142,7 +144,7 @@ public class ExcelProcessor {
                             column = columnMap.get(cellName.toLowerCase());
                         }
                         if (column != null) {
-                            collist.add(Integer.valueOf(i));
+                            collist.add(i);
                             columnList.add(column);
                         }
                     }
@@ -158,7 +160,7 @@ public class ExcelProcessor {
 
 
                 for (int j = 0; j < collist.size(); j++) {
-                    int colpos = collist.get(j).intValue();
+                    int colpos = collist.get(j);
                     DataTypeEnum column = columnList.get(j);
                     String type = column.getDataType();
                     HSSFCell cell = (HSSFCell) row.getCell(colpos);
@@ -248,8 +250,8 @@ public class ExcelProcessor {
                         case Const.META_TYPE_DECIMAL:
                         case Const.META_TYPE_NUMERIC:
                             if (!StringUtils.isEmpty(str)) {
-                                Double d = Double.valueOf(str);
-                                strCell = d.floatValue();
+                                double d = Double.parseDouble(str);
+                                strCell = (float) d;
                             } else {
                                 strCell = 0.0;
                             }
@@ -693,7 +695,7 @@ public class ExcelProcessor {
                 }
             }
         } catch (Exception e) {
-            log.error("{}", e);
+            log.error("{}", e.getMessage());
             throw e;
         }
     }
@@ -707,9 +709,7 @@ public class ExcelProcessor {
         int[] fromPos = new int[fieldCount];
         boolean[] shallMergin = new boolean[fieldCount];
 
-        for (int pos = 0; pos < fieldCount; pos++) {
-            fromPos[pos] = -1;
-        }
+        Arrays.fill(fromPos, -1);
         Row row = ExcelBaseOper.creatRow(targetsheet, startRow + i);
         for (int j = 0; j < prop.getColumnPropList().size(); j++) {
             ExcelColumnProp excelprop = prop.getColumnPropList().get(j);
@@ -953,9 +953,9 @@ public class ExcelProcessor {
         int endCol = 0;
         for (int i = 0; i < startPosLen; i++) {
             if (isChar(startPos.charAt(i))) {
-                startCol = startRow * 26 + getDigintalByChar(startPos.toUpperCase().charAt(i));
+                startCol = i * 26 + getDigintalByChar(startPos.toUpperCase().charAt(i));
             } else {
-                startRow = Integer.parseInt(startPos.substring(i, startPos.length()));
+                startRow = Integer.parseInt(startPos.substring(i));
                 break;
             }
         }
@@ -963,7 +963,7 @@ public class ExcelProcessor {
             if (isChar(endPos.charAt(j))) {
                 endCol = endCol * 26 + getDigintalByChar(endPos.toUpperCase().charAt(j));
             } else {
-                endRow = Integer.parseInt(endPos.substring(j, endPos.length()));
+                endRow = Integer.parseInt(endPos.substring(j));
                 break;
             }
         }

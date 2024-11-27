@@ -53,7 +53,7 @@ public class CommJdbcUtil {
 
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private static List getResultItemsByPrepared(JdbcTemplate jdbcTemplate, final PageQuery pageQuery, final String pageSQL) {
+    private static List getResultItemsByPrepared(JdbcTemplate jdbcTemplate, final PageQuery<Map<String, Object>> pageQuery, final String pageSQL) {
         Object ret = jdbcTemplate.query(conn -> {
             PreparedStatement ps = conn.prepareStatement(pageSQL);
             int len = pageQuery.getParameters().size();
@@ -72,11 +72,11 @@ public class CommJdbcUtil {
                             ps.setLong(i, Long.parseLong(value));
                             break;
                         case Const.META_TYPE_DATE:
-                            Date date = new Date(Date.from(LocalDateTime.parse(value,dayFormat).atZone(ZoneId.systemDefault()).toInstant()).getTime());
+                            Date date = new Date(Date.from(LocalDateTime.parse(value, dayFormat).atZone(ZoneId.systemDefault()).toInstant()).getTime());
                             ps.setDate(i, date);
                             break;
                         case Const.META_TYPE_TIMESTAMP:
-                            Timestamp ts= new Timestamp(Date.from(LocalDateTime.parse(value,timeFormat).atZone(ZoneId.systemDefault()).toInstant()).getTime());
+                            Timestamp ts = new Timestamp(Date.from(LocalDateTime.parse(value, timeFormat).atZone(ZoneId.systemDefault()).toInstant()).getTime());
                             ps.setTimestamp(i, ts);
                             break;
                         default:
@@ -107,8 +107,8 @@ public class CommJdbcUtil {
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    static void queryByReplaceParamter(JdbcTemplate jdbcTemplate, LobHandler lobHandler, BaseSqlGen sqlGen, QueryString qs, PageQuery pageQuery) throws DAOException {
-        List list ;
+    static void queryByReplaceParamter(JdbcTemplate jdbcTemplate, LobHandler lobHandler, BaseSqlGen sqlGen, QueryString qs, PageQuery<Map<String, Object>> pageQuery) throws DAOException {
+        List list;
         String querySQL = getReplacementSql(sqlGen, qs, pageQuery);
 
         String sumSQL;
@@ -129,7 +129,7 @@ public class CommJdbcUtil {
         pageQuery.setRecordSet(list);
     }
 
-    private static List<?> getResultList(JdbcTemplate jdbcTemplate, LobHandler lobHandler, BaseSqlGen sqlGen, QueryString qs, PageQuery pageQuery, String querySQL, String sumSQL, int pageSize) throws DAOException {
+    private static List<?> getResultList(JdbcTemplate jdbcTemplate, LobHandler lobHandler, BaseSqlGen sqlGen, QueryString qs, PageQuery<Map<String, Object>> pageQuery, String querySQL, String sumSQL, int pageSize) throws DAOException {
         List<?> list;
         if (pageSize != 0) {
             if (pageSize < Integer.parseInt(Const.MIN_PAGE_SIZE)) {
@@ -147,8 +147,8 @@ public class CommJdbcUtil {
                 setPageQueryParameter(pageQuery, total);
                 String pageSQL = sqlGen.generatePageSql(querySQL, pageQuery);
                 if (logger.isDebugEnabled()) {
-                    logger.debug("sumSQL: {}",sumSQL);
-                    logger.debug("pageSQL: {}",pageSQL);
+                    logger.debug("sumSQL: {}", sumSQL);
+                    logger.debug("pageSQL: {}", pageSQL);
                 }
                 list = getResultItems(jdbcTemplate, lobHandler, sqlGen, pageQuery, qs, pageSQL);
             } else {
@@ -157,7 +157,7 @@ public class CommJdbcUtil {
             }
         } else {
             list = getResultItems(jdbcTemplate, lobHandler, sqlGen, pageQuery, qs, querySQL);
-            if(!CollectionUtils.isEmpty(list)) {
+            if (!CollectionUtils.isEmpty(list)) {
                 pageQuery.setRecordCount(list.size());
             }
             pageQuery.setPageCount(1);
@@ -165,7 +165,7 @@ public class CommJdbcUtil {
         return list;
     }
 
-    public static void setPageQueryParameter(PageQuery pageQuery, int total) {
+    public static void setPageQueryParameter(PageQuery<Map<String, Object>> pageQuery, int total) {
         int pages = total / pageQuery.getPageSize();
         if (total % pageQuery.getPageSize() != 0) {
             pages++;
@@ -179,20 +179,20 @@ public class CommJdbcUtil {
         }
     }
 
-    public static String getRealSql(BaseSqlGen sqlGen, QueryString qs, PageQuery pageQuery) throws DAOException {
+    public static String getRealSql(BaseSqlGen sqlGen, QueryString qs, PageQuery<Map<String, Object>> pageQuery) throws DAOException {
         String querySQL = getReplacementSql(sqlGen, qs, pageQuery);
         if (logger.isInfoEnabled()) {
-            logger.info("operSQL: {}",querySQL);
+            logger.info("operSQL: {}", querySQL);
         }
         return querySQL;
 
     }
 
-    private static String getReplacementSql(BaseSqlGen sqlGen, QueryString qs, PageQuery pageQuery) {
+    private static String getReplacementSql(BaseSqlGen sqlGen, QueryString qs, PageQuery<Map<String, Object>> pageQuery) {
         String querySQL = sqlGen.generateSqlBySelectId(qs, pageQuery);
 
         Map<String, String> params = pageQuery.getParameters();
-        if(!CollectionUtils.isEmpty(params)) {
+        if (!CollectionUtils.isEmpty(params)) {
 
             for (Map.Entry<String, String> entry : params.entrySet()) {
                 String key = entry.getKey();
@@ -205,13 +205,13 @@ public class CommJdbcUtil {
                 }
             }
         }
-        if(!CollectionUtils.isEmpty(pageQuery.getConditionMap())){
-            for(Map.Entry<String,FilterCondition> entry:pageQuery.getConditionMap().entrySet()){
+        if (!CollectionUtils.isEmpty(pageQuery.getConditionMap())) {
+            for (Map.Entry<String, FilterCondition> entry : pageQuery.getConditionMap().entrySet()) {
                 String key = entry.getKey();
                 String replacestr = "\\$\\{" + key + "\\}";
                 String value = sqlGen.toSQLWithType(entry.getValue());
                 if (value != null) {
-                    querySQL = querySQL.replaceAll(replacestr, entry.getValue().getLinkOper().getSignal()+value);
+                    querySQL = querySQL.replaceAll(replacestr, entry.getValue().getLinkOper().getSignal() + value);
                 } else {
                     querySQL = querySQL.replaceAll(replacestr, "");
                 }
@@ -220,7 +220,7 @@ public class CommJdbcUtil {
         return querySQL;
     }
 
-    private static List<Map> getResultItems(JdbcTemplate jdbcTemplate, LobHandler lobHandler, BaseSqlGen sqlGen, final PageQuery query, final QueryString qs, final String pageSQL) {
+    private static List<Map> getResultItems(JdbcTemplate jdbcTemplate, LobHandler lobHandler, BaseSqlGen sqlGen, final PageQuery<Map<String, Object>> query, final QueryString qs, final String pageSQL) {
         //getResultColumn from QueryString
         final String[] fields = sqlGen.getResultColName(qs);
         return jdbcTemplate.query(pageSQL, getDefaultExtract(fields, lobHandler, query));
@@ -231,45 +231,44 @@ public class CommJdbcUtil {
     private static ResultSetExtractor<List<Map>> getDefaultExtract(final String[] fields, final LobHandler lobHandler, PageQuery query) {
         return rs -> {
             List<Map> list = new ArrayList<>();
-            if (rs.next()) {
-                ResultSetMetaData rsmd = rs.getMetaData();
-                int count = rsmd.getColumnCount();
-                do {
-                    Map<String, Object> map = new HashMap<>();
-                    for (int i = 0; i < count; i++) {
-                        String columnName = rsmd.getColumnName(i + 1);
-                        String typeName = rsmd.getColumnTypeName(i + 1);
-                        String className = rsmd.getColumnClassName(i + 1);
-                        if (fields != null && i >= fields.length) {
-                            continue;
-                        }
-                        rs.getObject(i + 1);
-                        if (rs.wasNull()) {
-                            putValue(fields, i, columnName, null, map);
-                        } else if ("DATE".equalsIgnoreCase(typeName)) {
-                            Date date = rs.getDate(i + 1);
-                            String datestr = query.getDateFormater().format(date);
-                            putValue(fields, i, columnName, datestr, map);
-                        } else if ("TIMESTAMP".equalsIgnoreCase(typeName)) {
-                            Timestamp stamp = rs.getTimestamp(i + 1);
-                            String datestr = query.getTimestampFormater().format(new Date(stamp.getTime()));
-                            putValue(fields, i, columnName, datestr, map);
-                        } else if (className.toLowerCase().contains("clob")) {
-                            if (lobHandler != null) {
-                                String result = lobHandler.getClobAsString(rs, i + 1);
-                                putValue(fields, i, columnName, result, map);
-                            }
-                        } else if (className.toLowerCase().contains("blob") || typeName.toLowerCase().contains("blob")) {
-                            if (lobHandler != null && fields != null) {
-                                byte[] bytes = lobHandler.getBlobAsBytes(rs, i + 1);
-                                putValue(fields, i, columnName, bytes, map);
-                            }
-                        } else {
-                            putValue(fields, i, columnName, rs.getObject(i + 1), map);
-                        }
+
+            ResultSetMetaData rsmd = rs.getMetaData();
+            int count = rsmd.getColumnCount();
+            while (rs.next()) {
+                Map<String, Object> map = new HashMap<>();
+                for (int i = 0; i < count; i++) {
+                    String columnName = rsmd.getColumnName(i + 1);
+                    String typeName = rsmd.getColumnTypeName(i + 1);
+                    String className = rsmd.getColumnClassName(i + 1);
+                    if (fields != null && i >= fields.length) {
+                        continue;
                     }
-                    list.add(map);
-                } while (rs.next());
+                    rs.getObject(i + 1);
+                    if (rs.wasNull()) {
+                        putValue(fields, i, columnName, null, map);
+                    } else if ("DATE".equalsIgnoreCase(typeName)) {
+                        Date date = rs.getDate(i + 1);
+                        String datestr = query.getDateFormater().format(date);
+                        putValue(fields, i, columnName, datestr, map);
+                    } else if ("TIMESTAMP".equalsIgnoreCase(typeName)) {
+                        Timestamp stamp = rs.getTimestamp(i + 1);
+                        String datestr = query.getTimestampFormater().format(new Date(stamp.getTime()));
+                        putValue(fields, i, columnName, datestr, map);
+                    } else if (className.toLowerCase().contains("clob")) {
+                        if (lobHandler != null) {
+                            String result = lobHandler.getClobAsString(rs, i + 1);
+                            putValue(fields, i, columnName, result, map);
+                        }
+                    } else if (className.toLowerCase().contains("blob") || typeName.toLowerCase().contains("blob")) {
+                        if (lobHandler != null && fields != null) {
+                            byte[] bytes = lobHandler.getBlobAsBytes(rs, i + 1);
+                            putValue(fields, i, columnName, bytes, map);
+                        }
+                    } else {
+                        putValue(fields, i, columnName, rs.getObject(i + 1), map);
+                    }
+                }
+                list.add(map);
             }
             return list;
         };
@@ -319,7 +318,7 @@ public class CommJdbcUtil {
         return retObj;
     }
 
-    static void setTargetValue(Object target, Object value, String columnName, String columnType, LobHandler handler, PageQuery pageQuery) throws DAOException {
+    static void setTargetValue(Object target, Object value, String columnName, String columnType, LobHandler handler, PageQuery<Map<String, Object>> pageQuery) throws DAOException {
         try {
             if (value != null) {
                 Object targetValue = null;
@@ -406,8 +405,8 @@ public class CommJdbcUtil {
                 pageQuery.setRecordCount(total);
                 String pageSQL = sqlGen.generatePageSql(querySQL, pageQuery);
                 if (logger.isDebugEnabled()) {
-                    logger.debug("sumSQL: {}",sumSQL);
-                    logger.debug("pageSQL: {}",pageSQL);
+                    logger.debug("sumSQL: {}", sumSQL);
+                    logger.debug("pageSQL: {}", pageSQL);
                 }
                 if (total > 0) {
                     int pages = total / pageQuery.getPageSize();
@@ -439,7 +438,7 @@ public class CommJdbcUtil {
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    static PageQuery queryBySql(JdbcTemplate jdbcTemplate, LobHandler lobHandler, BaseSqlGen sqlGen, String querySQL, String countSql, String[] displayname, PageQuery pageQuery) throws DAOException {
+    static void queryBySql(JdbcTemplate jdbcTemplate, LobHandler lobHandler, BaseSqlGen sqlGen, String querySQL, String countSql, String[] displayname, PageQuery<Map<String, Object>> pageQuery) throws DAOException {
         String sumSQL;
         if (countSql == null || "".equals(countSql.trim())) {
             sumSQL = sqlGen.generateCountSql(querySQL);
@@ -478,15 +477,15 @@ public class CommJdbcUtil {
         }
         List list = getResultList(jdbcTemplate, lobHandler, sqlGen, qs, pageQuery, querySQL, sumSQL, pageSize);
         pageQuery.setRecordSet(list);
-        return pageQuery;
     }
-     public static void batchUpdate(JdbcTemplate jdbcTemplate,String sql,final List<Object[]> valueList){
-        BatchPreparedStatementSetter setter=new BatchPreparedStatementSetter() {
+
+    public static void batchUpdate(JdbcTemplate jdbcTemplate, String sql, final List<Object[]> valueList) {
+        BatchPreparedStatementSetter setter = new BatchPreparedStatementSetter() {
             @Override
             public void setValues(PreparedStatement ps, int i) throws SQLException {
-                Object[] objs=valueList.get(i);
-                for(int pos=0;pos<objs.length;pos++){
-                    ps.setObject(pos+1,objs[pos]);
+                Object[] objs = valueList.get(i);
+                for (int pos = 0; pos < objs.length; pos++) {
+                    ps.setObject(pos + 1, objs[pos]);
                 }
             }
 
@@ -498,7 +497,7 @@ public class CommJdbcUtil {
         doBatch(jdbcTemplate, sql, setter);
     }
 
-     static void batchUpdate(JdbcTemplate jdbcTemplate, String sql, final List<Map<String, String>> resultList, List<Map<String, String>> columnTypeMapList) throws DAOException {
+    static void batchUpdate(JdbcTemplate jdbcTemplate, String sql, final List<Map<String, String>> resultList, List<Map<String, String>> columnTypeMapList) throws DAOException {
         final List<Map<String, String>> list = resultList;
         final List<Map<String, String>> colList = columnTypeMapList;
         BatchPreparedStatementSetter setter = new BatchPreparedStatementSetter() {
@@ -546,14 +545,14 @@ public class CommJdbcUtil {
                     ps.addBatch();
                     if (setter.getCurrentRow() % batchSize == 0) {
                         ps.executeBatch();
-                        if(logger.isDebugEnabled()) {
+                        if (logger.isDebugEnabled()) {
                             logger.debug("-- do batch with size {}", setter.getCurrentRow());
                         }
                     }
                 }
-               if (setter.getCurrentRow() % batchSize != 0) {
-                   ps.executeBatch();
-               }
+                if (setter.getCurrentRow() % batchSize != 0) {
+                    ps.executeBatch();
+                }
                 return 1;
             });
         } catch (Exception ex) {
@@ -664,15 +663,15 @@ public class CommJdbcUtil {
                 } else {
                     ps.setDouble(pos + 1, Double.parseDouble(value));
                 }
-            } else if (Const.META_TYPE_DATE.equals(typeMap.get("dataType")) ||Const.META_TYPE_TIMESTAMP.equals(typeMap.get("dataType"))) {
+            } else if (Const.META_TYPE_DATE.equals(typeMap.get("dataType")) || Const.META_TYPE_TIMESTAMP.equals(typeMap.get("dataType"))) {
 
                 if (value == null || "".equals(value)) {
                     ps.setNull(pos + 1, Types.DATE);
                 } else {
                     Date date;
-                    if(NumberUtils.isDigits(value)){
-                        ps.setTimestamp(pos+1,new Timestamp(Long.parseLong(value)));
-                    }else {
+                    if (NumberUtils.isDigits(value)) {
+                        ps.setTimestamp(pos + 1, new Timestamp(Long.parseLong(value)));
+                    } else {
                         if (value.contains(":")) {
                             date = new Date(LocalDateTime.parse(value, dayFormat).toInstant(ZoneOffset.UTC).toEpochMilli());
                         } else {
@@ -708,7 +707,7 @@ public class CommJdbcUtil {
         BatchPreparedStatementSetter setter = new BatchPreparedStatementSetter() {
             @Override
             public int getBatchSize() {
-                return batchsize==0?resultList.size():batchsize;
+                return batchsize == 0 ? resultList.size() : batchsize;
             }
 
             @Override
@@ -732,7 +731,7 @@ public class CommJdbcUtil {
         return doBatchWithSize(template, sql, new BoundedPreparedStatementSetter(batchsize, iterator, collectionMeta), batchsize);
     }
 
-    private static class BoundedPreparedStatementSetter implements BatchPreparedStatementSetter, Iterator<Map<String,String>> {
+    private static class BoundedPreparedStatementSetter implements BatchPreparedStatementSetter, Iterator<Map<String, String>> {
         private final int batchsize;
         private final Iterator<Map<String, String>> iterator;
         private final DataCollectionMeta collectionMeta;
@@ -746,7 +745,7 @@ public class CommJdbcUtil {
         }
 
         @Override
-        public void setValues(PreparedStatement ps, int i)  {
+        public void setValues(PreparedStatement ps, int i) {
             try {
                 hasRecord = true;
                 Map<String, String> resultMap = iterator.next();
@@ -777,16 +776,16 @@ public class CommJdbcUtil {
         }
 
         @Override
-        public Map<String,String> next() {
+        public Map<String, String> next() {
             return iterator.next();
         }
     }
 
-    public static int executeByPreparedParamter(JdbcTemplate jdbcTemplate, BaseSqlGen sqlGen, QueryString qs, PageQuery pageQuery) throws DAOException {
+    public static int executeByPreparedParamter(JdbcTemplate jdbcTemplate, BaseSqlGen sqlGen, QueryString qs, PageQuery<Map<String, Object>> pageQuery) throws DAOException {
         try {
             String executeSQL = sqlGen.generateSqlBySelectId(qs, pageQuery);
             if (logger.isInfoEnabled()) {
-                logger.info("executeSQL: {}",executeSQL);
+                logger.info("executeSQL: {}", executeSQL);
             }
             if (CollectionUtils.isEmpty(pageQuery.getNamedParameters())) {
                 return jdbcTemplate.update(executeSQL, pageQuery.getQueryParameters().toArray());
@@ -800,7 +799,7 @@ public class CommJdbcUtil {
 
     }
 
-    public static void setPageQuery(PageQuery pageQuery, int total) {
+    public static void setPageQuery(PageQuery<Map<String, Object>> pageQuery, int total) {
         pageQuery.setRecordCount(total);
         if (total > 0) {
             int pages = total / pageQuery.getPageSize();

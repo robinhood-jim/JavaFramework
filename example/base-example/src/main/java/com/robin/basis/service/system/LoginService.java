@@ -26,6 +26,7 @@ import com.robin.core.base.util.Const;
 import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.query.util.PageQuery;
 import com.robin.core.sql.util.FilterConditionBuilder;
+import com.robin.core.web.service.ILoginService;
 import com.robin.core.web.util.RestTemplateUtils;
 import com.robin.core.web.util.Session;
 import com.robin.core.web.util.WebConstant;
@@ -149,9 +150,9 @@ public class LoginService implements ILoginService {
     public void getUserRightsByRole(Session session) {
         Map<String, Object> retMap = new HashMap<>();
         //get userRole
-        PageQuery.Builder userBuilder = new PageQuery.Builder();
-        userBuilder.setPageSize(0).setSelectedId("GETUSER_ROLE").addQueryParameterArr(new Object[]{session.getUserId()});
-        PageQuery query = userBuilder.build();
+        PageQuery.Builder<Map<String,Object>> userBuilder = new PageQuery.Builder<>();
+        userBuilder.setPageSize(0).setSelectedId("GETUSER_ROLE").addQueryParameterArr(session.getUserId());
+        PageQuery<Map<String,Object>> query = userBuilder.build();
         jdbcDao.queryBySelectId(query);
         List<Long> roleIds = new ArrayList<>();
         List<String> roleCodes = new ArrayList<>();
@@ -169,9 +170,9 @@ public class LoginService implements ILoginService {
         }
         retMap.put("roles", roleCodes);
         //get user org info
-        PageQuery.Builder builder=new PageQuery.Builder();
+        PageQuery.Builder<Map<String,Object>> builder=new PageQuery.Builder<>();
         builder.setPageSize(0).setSelectedId("GETUSERORGINFO").addQueryParameterArr(new Object[]{session.getUserId()});
-        PageQuery orgQuery=builder.build();
+        PageQuery<Map<String,Object>> orgQuery=builder.build();
         jdbcDao.queryBySelectId(orgQuery);
         //未配置使用缺省企业
         if(!CollectionUtils.isEmpty(orgQuery.getRecordSet())){
@@ -193,7 +194,7 @@ public class LoginService implements ILoginService {
                 Map<Long, SysResource> resmap = commresources.stream().collect(Collectors.toMap(SysResource::getId, Function.identity()));
 
                 List<Map<String, Object>> list = query1.getRecordSet();
-                Map<String, List<Map<String, Object>>> privMap = new HashMap();
+                Map<Long, List<Map<String, Object>>> privMap = new HashMap();
                 Map<String, Integer> idMap = new HashMap<>();
                 if (!CollectionUtils.isEmpty(list)) {
                     for (Map<String, Object> map : list) {
@@ -330,7 +331,7 @@ public class LoginService implements ILoginService {
         }
         this.jdbcDao.queryBySelectId(query);
         List<Map<String, Object>> list = query.getRecordSet();
-        Map<String, List<Map<String, Object>>> privMap = new HashMap();
+        Map<Long, List<Map<String, Object>>> privMap = new HashMap();
         Map<String, Integer> idMap = new HashMap<>();
         if (!CollectionUtils.isEmpty(list)) {
             for (Map<String, Object> map : list) {
@@ -343,18 +344,18 @@ public class LoginService implements ILoginService {
         }
     }
 
-    private void fillRights(Long id, @NonNull Map<Long, SysResource> resMap, Map<String, List<Map<String, Object>>> privMap, Map<String, Object> vmap, Map<String, Integer> idMap) {
+    private void fillRights(Long id, @NonNull Map<Long, SysResource> resMap, Map<Long, List<Map<String, Object>>> privMap, Map<String, Object> vmap, Map<String, Integer> idMap) {
         try {
             if (resMap.containsKey(id)) {
                 Long pid = resMap.get(id).getPid();
                 if (!idMap.containsKey(id)) {
                     if (Integer.parseInt(vmap.get("assignType").toString()) < SysResourceUser.ASSIGN_DEL) {
-                        if (!privMap.containsKey(String.valueOf(pid))) {
+                        if (!privMap.containsKey(pid)) {
                             List<Map<String, Object>> tlist = new ArrayList();
                             tlist.add(vmap);
-                            privMap.put(String.valueOf(pid), tlist);
+                            privMap.put(pid, tlist);
                         } else {
-                            privMap.get(String.valueOf(pid)).add(vmap);
+                            privMap.get(pid).add(vmap);
                         }
                     }
                 }

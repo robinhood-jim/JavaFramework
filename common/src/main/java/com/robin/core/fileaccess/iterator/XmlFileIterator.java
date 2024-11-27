@@ -87,7 +87,7 @@ public class XmlFileIterator extends AbstractFileIterator {
 	@SuppressWarnings("rawtypes")
 	@Override
 	public Map<String, Object> next() {
-		Map<String, Object> retmap=new HashMap<String, Object>();
+		Map<String, Object> retmap=new HashMap<>();
 		DataSetColumnMeta meta=null;
 		boolean finishget=false;
 		String column=null;
@@ -104,7 +104,7 @@ public class XmlFileIterator extends AbstractFileIterator {
                             }
 							//contain attribute
 							if(streamReader.getAttributeCount()>0){
-								Map<String,Object> tmap=new HashMap<String, Object>();
+								Map<String,Object> tmap=new HashMap<>();
 								for (int i=0;i<streamReader.getAttributeCount();i++) {
 									column=streamReader.getAttributeName(i).getLocalPart();
 									value=streamReader.getAttributeValue(i);
@@ -139,7 +139,7 @@ public class XmlFileIterator extends AbstractFileIterator {
 				streamReader.next();
 			}
 		}catch(Exception ex){
-			logger.error("{}",ex);
+			logger.error("{}",ex.getMessage());
 			return null;
 		}
 		return retmap;

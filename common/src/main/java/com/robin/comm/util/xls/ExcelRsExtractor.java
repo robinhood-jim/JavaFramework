@@ -20,7 +20,7 @@ public class ExcelRsExtractor extends ResultSetOperationExtractor {
     TableConfigProp header;
     CreationHelper helper;
     //cell style map
-    Map<String, CellStyle> cellMap = new HashMap<String, CellStyle>();
+    Map<String, CellStyle> cellMap = new HashMap<>();
 
     int pos;
     int processRows = 0;

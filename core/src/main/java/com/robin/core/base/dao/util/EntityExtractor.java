@@ -29,7 +29,7 @@ public class EntityExtractor<T extends BaseObject> implements
         ResultSetMetaData rsmd = rs.getMetaData();
         List<T> retList = new ArrayList<>();
         int count = rsmd.getColumnCount();
-        List<String> columnNameList = new ArrayList<String>();
+        List<String> columnNameList = new ArrayList<>();
         String[] typeName = new String[count];
         String[] className = new String[count];
         for (int k = 0; k < count; k++) {

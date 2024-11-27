@@ -1,17 +1,22 @@
 package com.robin.core.web.controller;
 
 import com.robin.core.base.dao.util.AnnotationRetriever;
+import com.robin.core.base.dao.util.EntityMappingUtil;
 import com.robin.core.base.dao.util.FieldContent;
+import com.robin.core.base.datameta.DataBaseColumnMeta;
 import com.robin.core.base.exception.ServiceException;
 import com.robin.core.base.model.BaseObject;
 import com.robin.core.base.service.SpringAutoCreateService;
 import com.robin.core.base.spring.SpringContextHolder;
+import com.robin.core.base.util.Const;
 import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.query.util.PageQuery;
+import com.robin.core.sql.util.BaseSqlGen;
+import com.robin.core.sql.util.FilterCondition;
+import com.robin.core.sql.util.FilterConditionBuilder;
 import com.robin.core.web.annotation.WebControllerConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
@@ -27,8 +32,8 @@ import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.HashMap;
-import java.util.Map;
+import java.sql.SQLException;
+import java.util.*;
 import java.util.function.BiConsumer;
 
 @Slf4j
@@ -95,7 +100,17 @@ public abstract class AbstractAutoController<O extends BaseObject, P extends Ser
                     //page
                     RequestMappingInfo pagePath = RequestMappingInfo.paths(config.mainPath() + config.listPath())
                             .methods(RequestMethod.POST).produces(MediaType.APPLICATION_JSON_VALUE).build();
-                    mappingHandlerMapping.registerMapping(pagePath, this, getClass().getSuperclass().getDeclaredMethod("doPage", Map.class));
+                    Method listmethold=null;
+                    try {
+                        listmethold=this.getClass().getDeclaredMethod("doPage", Map.class);
+                    }catch (Exception ex){
+
+                    }
+                    if(ObjectUtils.isEmpty(listmethold)){
+                        listmethold=this.getClass().getSuperclass().getDeclaredMethod("doPage", Map.class);
+                    }
+                    mappingHandlerMapping.registerMapping(pagePath, this, listmethold);
+
                     //update
                     RequestMappingInfo updatePath = RequestMappingInfo.paths(config.mainPath() + config.updatePath())
                             .methods(RequestMethod.POST).produces(MediaType.APPLICATION_JSON_VALUE).build();
@@ -104,6 +119,8 @@ public abstract class AbstractAutoController<O extends BaseObject, P extends Ser
                     RequestMappingInfo deletePath = RequestMappingInfo.paths(config.mainPath() + config.deletePath())
                             .methods(RequestMethod.GET).produces(MediaType.APPLICATION_JSON_VALUE).build();
                     mappingHandlerMapping.registerMapping(deletePath, this, getClass().getSuperclass().getDeclaredMethod("doDelete", String.class));
+
+
                     if (!ObjectUtils.isEmpty(additionMappingRegConsumer)) {
                         additionMappingRegConsumer.accept(mappingHandlerMapping, config);
                     }
@@ -115,7 +132,7 @@ public abstract class AbstractAutoController<O extends BaseObject, P extends Ser
         }
     }
 
-    protected final SpringAutoCreateService<O, P> wrapAutoService() {
+    protected SpringAutoCreateService<O, P> wrapAutoService() {
         SpringAutoCreateService.Builder<O, P> builder = new SpringAutoCreateService.Builder<>(potype, pkType);
         builder.withJdbcDaoName(config.jdbcDaoName()).withTransactionManager(config.transactionManagerName());
         return builder.build();
@@ -163,11 +180,11 @@ public abstract class AbstractAutoController<O extends BaseObject, P extends Ser
         return retmap;
     }
 
-    protected Map<String, Object> doDelete(@PathVariable String ids) {
+    protected final Map<String, Object> doDelete(@PathVariable String ids) {
         Map<String, Object> retmap = new HashMap<>();
         try {
             if (!ObjectUtils.isEmpty(ids)) {
-                service.getDeleteEntityPredicate().test(parseId(ids));
+                service.getDeleteEntityFunction().apply(parseId(ids));
             }
             retmap.put("success", true);
         } catch (Exception e) {
@@ -178,7 +195,49 @@ public abstract class AbstractAutoController<O extends BaseObject, P extends Ser
     }
 
     //queryPage,should override by child
-    protected abstract Map<String, Object> doPage(@RequestBody Map<String, String> paramMap);
+    protected Map<String, Object> doPage(@RequestBody Map<String, Object> paramMap){
+        PageQuery<O> query=new PageQuery<>();
+        try{
+            if(paramMap.containsKey("_pageQuery")) {
+                ConvertUtil.mapToObject(query, (Map<String,Object>)paramMap.get("_pageQuery"));
+            }
+            FilterCondition condition=getCondition(paramMap);
+            service.queryByCondition(condition,query);
+            return query.toMap();
+        }catch (Exception ex){
+            return wrapError(ex);
+        }
+    }
+    private FilterCondition getCondition(Map<String,Object> paramMap) throws SQLException {
+        AnnotationRetriever.EntityContent tableDef = AnnotationRetriever.getMappingTableByCache(potype);
+        Map<String,FieldContent> contentMap= AnnotationRetriever.getMappingFieldsMapCache(potype);
+        Map<String, DataBaseColumnMeta> columnMetaMap= EntityMappingUtil.returnMetaMap(potype,SpringContextHolder.getBean(BaseSqlGen.class),service.getJdbcDao(),tableDef);
+        Iterator<Map.Entry<String,Object>> iterator=paramMap.entrySet().iterator();
+        FilterConditionBuilder builder=new FilterConditionBuilder();
+
+        while(iterator.hasNext()){
+            Map.Entry<String,Object> entry=iterator.next();
+            if(!entry.getKey().equals("_pageQuery")){
+                String key=entry.getKey();
+                Object value=entry.getValue();
+                if(contentMap.containsKey(key)){
+                    String columnType =columnMetaMap.containsKey(contentMap.get(key).getFieldName())?
+                            columnMetaMap.get(contentMap.get(key).getFieldName()).getColumnType():columnMetaMap.get(contentMap.get(key).getFieldName().toUpperCase()).getColumnType();
+                    if(Map.class.isInstance(value)){
+                        Map<String,Object> tmap=(Map<String,Object>)value;
+                        String operator=tmap.get("operator").toString();
+                        Object value1= Optional.ofNullable(tmap.get("value")).orElse(null);
+                        List<Object> values=Optional.ofNullable(tmap.get("values")).map(f->(List<Object>)f).orElse(null);
+                        Optional.ofNullable(value1).map(f->builder.addFilter(contentMap.get(key).getFieldName(),columnType, Const.OPERATOR.valueOf(operator.toUpperCase()),f))
+                                .orElseGet(()-> builder.addFilter(contentMap.get(key).getFieldName(),columnType, Const.OPERATOR.valueOf(operator.toUpperCase()),values));
+                    }else{
+                        builder.addEq(potype,key,value);
+                    }
+                }
+            }
+        }
+        return builder.build();
+    }
 
     protected P[] parseId(String ids) throws ServiceException {
         P[] array = null;
@@ -203,12 +262,10 @@ public abstract class AbstractAutoController<O extends BaseObject, P extends Ser
         return array;
     }
 
-    protected PageQuery wrapPageQueryReq(Map<String, String> reqMap) {
+    protected PageQuery wrapPageQueryReq(Map<String, Object> reqMap) {
         PageQuery query = new PageQuery();
-        Map<String, Object> tmpmap = new HashMap<>();
-        tmpmap.putAll(reqMap);
         try {
-            ConvertUtil.mapToObject(query, tmpmap);
+            ConvertUtil.mapToObject(query, reqMap);
         } catch (Exception ex) {
             ex.printStackTrace();
         }

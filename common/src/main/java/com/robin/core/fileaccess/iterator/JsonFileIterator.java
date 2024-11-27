@@ -84,7 +84,7 @@ public class JsonFileIterator extends AbstractFileIterator{
 			logger.error("{}",ex);
 			return null;
 		}catch (Exception e) {
-			logger.error("{}",e);
+			logger.error("{}",e.getMessage());
 			return null;
 		}
 		return retmap;

@@ -29,7 +29,6 @@ import com.robin.core.query.util.PageQuery;
 import com.robin.core.query.util.QueryString;
 import org.springframework.transaction.annotation.Transactional;
 
-@Deprecated
 public abstract class GenericServiceImpl<V extends BaseObject,P extends Serializable> implements GenericService<V,P> {
 	protected IHibernateGenericDao genericDao;
 	protected Class<V> modelClazz;
@@ -200,10 +199,10 @@ public abstract class GenericServiceImpl<V extends BaseObject,P extends Serializ
 	}
 	
 	@Override
-	public PageQuery queryBySql(String querySQL, String countSql, String[] displayname, PageQuery pageQuery)throws ServiceException
+	public void queryBySql(String querySQL, String countSql, String[] displayname, PageQuery<Map<String,Object>> pageQuery)throws ServiceException
 	{
 		try{
-			return genericDao.queryBySql(querySQL, countSql, displayname, pageQuery);
+			genericDao.queryBySql(querySQL, countSql, displayname, pageQuery);
 		}catch (DAOException e) {
 			throw new ServiceException(e);
 		}

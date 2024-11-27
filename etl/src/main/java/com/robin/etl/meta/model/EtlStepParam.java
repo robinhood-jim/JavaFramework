@@ -9,18 +9,18 @@ import lombok.Data;
  * @author robinjim
  * @version 1.0
  */
-@MappingEntity(table = "t_step_param")
+@MappingEntity("t_step_param")
 @Data
 public class EtlStepParam extends BaseObject {
     @MappingField(primary = true,increment = true)
     private Long id;
-    @MappingField(field = "flow_id")
+    @MappingField
     private Long flowId;
-    @MappingField(field = "step_id")
+    @MappingField
     private Long stepId;
-    @MappingField(field = "param_name")
+    @MappingField
     private String paramName;
-    @MappingField(field = "param_value")
+    @MappingField
     private String paramValue;
 
     private String status;

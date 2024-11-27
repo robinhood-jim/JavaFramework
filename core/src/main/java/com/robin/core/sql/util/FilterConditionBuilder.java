@@ -71,6 +71,19 @@ public class FilterConditionBuilder {
         }).orElseThrow(() ->new ConfigurationIncorrectException("class " + mappingClass.getCanonicalName() + " can not parse"));
         return this;
     }
+    public <T extends BaseObject> FilterConditionBuilder addEq(Class<T> mappingClass,String fieldName, Object object) {
+        Map<String, FieldContent> map1 = AnnotationRetriever.getMappingFieldsMapCache(mappingClass);
+        Optional.ofNullable(map1.get(fieldName)).map(f -> {
+            String columnType = AnnotationRetriever.getFieldType(map1.get(fieldName));
+            FilterCondition condition = new FilterCondition(f.getFieldName(), Const.OPERATOR.EQ);
+            condition.setMappingClass(mappingClass);
+            condition.setValue(object);
+            condition.setColumnType(columnType);
+            conditions.add(condition);
+            return f;
+        }).orElseThrow(()->new ConfigurationIncorrectException("class " + mappingClass.getCanonicalName() + " can not parse"));
+        return this;
+    }
 
     public <T extends BaseObject> FilterConditionBuilder addIn(String columnName, String columnType, List<?> objects) {
         conditions.add(in(columnName, columnType, objects));
@@ -220,6 +233,16 @@ public class FilterConditionBuilder {
         conditions.add(condition);
         return this;
     }
+    public <T extends BaseObject> FilterConditionBuilder addFilter(Class<T> mappingClass, String propertyName, Const.OPERATOR operator, List<?> values, String columnType) {
+        Map<String, FieldContent> map1 = AnnotationRetriever.getMappingFieldsMapCache(mappingClass);
+        if(map1.containsKey(propertyName)) {
+            FilterCondition condition = new FilterCondition(map1.get(propertyName).getFieldName(), columnType, operator);
+            condition.setValues(values);
+            conditions.add(condition);
+        }
+        return this;
+    }
+
 
     public <T extends BaseObject> FilterConditionBuilder addFilter(PropertyFunction<T, ?> function, Const.OPERATOR operator, Object value) {
         String fieldName = AnnotationRetriever.getFieldName(function);

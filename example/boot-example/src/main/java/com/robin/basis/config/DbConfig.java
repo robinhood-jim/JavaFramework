@@ -5,10 +5,13 @@ import com.robin.core.base.spring.SpringContextHolder;
 import com.robin.core.query.util.QueryFactory;
 import com.robin.core.sql.util.BaseSqlGen;
 import com.robin.core.sql.util.MysqlSqlGen;
+import com.zaxxer.hikari.HikariDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.*;
 import org.springframework.context.support.ResourceBundleMessageSource;
@@ -20,31 +23,22 @@ import javax.sql.DataSource;
 @Configuration
 public class DbConfig {
     private Logger logger= LoggerFactory.getLogger(getClass());
-    @Value("${core.url}")
-    private String coreurl;
-    @Value("${core.driver-class-name}")
-    private String coredriverClassName;
-    @Value("${core.username}")
-    private String coreuserName;
-    @Value("${core.password}")
-    private String corepassword;
-    @Value("${core.type}")
-    private String coretype;
+
     @Value("${project.queryConfigPath}")
     private String queryConfigPath;
 
 
     @Bean(name = "dataSource")
     @Qualifier("dataSource")
+    @ConfigurationProperties(prefix = "spring.datasource")
     @Primary
-    @DependsOn("springContextHolder")
-    public DataSource dataSource(){
-        try {
-            return DataSourceBuilder.create().type((Class<? extends DataSource>) Class.forName(coretype)).url(coreurl).driverClassName(coredriverClassName).username(coreuserName).password(corepassword).build();
-        }catch (Exception ex){
-            logger.error("",ex);
-        }
-        return null;
+    public DataSource dataSource(DataSourceProperties dataSourceProperties){
+        return DataSourceBuilder.create(dataSourceProperties.getClassLoader()).type(HikariDataSource.class)
+                .driverClassName(dataSourceProperties.determineDriverClassName())
+                .url(dataSourceProperties.determineUrl())
+                .username(dataSourceProperties.determineUsername())
+                .password(dataSourceProperties.determinePassword())
+                .build();
     }
     @Bean(name="queryFactory")
     @Qualifier("queryFactory")
@@ -86,6 +80,11 @@ public class DbConfig {
         messageSource.setDefaultEncoding("UTF-8");
         messageSource.setUseCodeAsDefaultMessage(true);
         return messageSource;
+    }
+    @Bean
+    @Lazy(value = false)
+    public SpringContextHolder getHolder(){
+        return new SpringContextHolder();
     }
 
 

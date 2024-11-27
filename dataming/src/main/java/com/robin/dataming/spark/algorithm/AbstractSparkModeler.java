@@ -101,7 +101,7 @@ public abstract class AbstractSparkModeler implements Serializable {
             DataSetColumnMeta columnMeta = collectionMeta.getColumnList().get(i);
             if(!ObjectUtils.isEmpty(valueMap.get(columnMeta.getColumnName()))){
                 if (i < classNum) {
-                    densval[i] = Double.valueOf(valueMap.get(columnMeta.getColumnName()).toString());
+                    densval[i] = Double.parseDouble(valueMap.get(columnMeta.getColumnName()).toString());
                 } else if (i == classNum) {
                     if(!ObjectUtils.isEmpty(columnMeta.getNominalValues())){
                         String originVal = valueMap.get(columnMeta.getColumnName()).toString();
@@ -109,12 +109,12 @@ public abstract class AbstractSparkModeler implements Serializable {
                         if (columnMeta.getNominalValues().contains(originVal)) {
                             pos = columnMeta.getNominalValues().indexOf(originVal);
                         }
-                        labelVal=Double.valueOf(String.valueOf(pos));
+                        labelVal=Double.parseDouble(String.valueOf(pos));
                     }else {
-                        labelVal = Double.valueOf(valueMap.get(columnMeta.getColumnName()).toString());
+                        labelVal = Double.parseDouble(valueMap.get(columnMeta.getColumnName()).toString());
                     }
                 } else {
-                    densval[i - 1] = Double.valueOf(valueMap.get(columnMeta.getColumnName()).toString());
+                    densval[i - 1] = Double.parseDouble(valueMap.get(columnMeta.getColumnName()).toString());
                 }
             }
         }
@@ -151,11 +151,11 @@ public abstract class AbstractSparkModeler implements Serializable {
 
                 if (!ObjectUtils.isEmpty(f.getAs(columnMeta.getColumnName()))) {
                     if (i < classNum) {
-                        densval[i] = Double.valueOf(f.get(i).toString());
+                        densval[i] = Double.parseDouble(f.get(i).toString());
                     } else if (i == classNum) {
-                        labelVal = Double.valueOf(f.get(i).toString());
+                        labelVal = Double.parseDouble(f.get(i).toString());
                     } else {
-                        densval[i - 1] = Double.valueOf(f.get(i).toString());
+                        densval[i - 1] = Double.parseDouble(f.get(i).toString());
                     }
                 }
             }

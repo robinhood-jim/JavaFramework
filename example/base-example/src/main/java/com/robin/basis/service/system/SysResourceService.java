@@ -79,7 +79,7 @@ public class SysResourceService extends BaseAnnotationJdbcService<SysResource, L
 	public Map<String,Object> getUserRights(Long userId){
 		Map<String,Object> retMap=new HashMap<>();
 		//get userRole
-		PageQuery query=new PageQuery();
+		PageQuery<Map<String,Object>> query=new PageQuery<>();
 		query.setPageSize(0);
 		query.setSelectParamId("GETUSER_ROLE");
 		query.addQueryParameter(new Object[]{userId});

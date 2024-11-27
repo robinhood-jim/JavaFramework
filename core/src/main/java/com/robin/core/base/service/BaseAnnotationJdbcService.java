@@ -53,7 +53,7 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 	protected Class<V> type;
 	protected Class<P> pkType;
 	protected Logger logger=LoggerFactory.getLogger(getClass());
-	protected AnnotationRetriever.EntityContent entityContent;
+	protected AnnotationRetriever.EntityContent<V> entityContent;
 
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
@@ -143,7 +143,7 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 	}
 	@Override
     @Transactional(readOnly=true)
-	public void queryBySelectId(PageQuery query) throws ServiceException{
+	public void queryBySelectId(PageQuery<Map<String,Object>> query) throws ServiceException{
 		try{
 			jdbcDao.queryBySelectId(query);
 		}catch(DAOException ex){
@@ -152,7 +152,7 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 	}
 	@Override
     @Transactional(readOnly=true)
-	public List<Map<String, Object>> queryByPageSql(String sql,PageQuery pageQuery) throws ServiceException{
+	public List<Map<String, Object>> queryByPageSql(String sql,PageQuery<Map<String,Object>> pageQuery) throws ServiceException{
 		try{
 			return jdbcDao.queryByPageSql(sql, pageQuery);
 		}catch(DAOException ex){
@@ -161,7 +161,7 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 	}
 	@Override
     @Transactional(propagation=Propagation.REQUIRED,rollbackFor=RuntimeException.class)
-	public void executeBySelectId(PageQuery query) throws ServiceException{
+	public void executeBySelectId(PageQuery<Map<String,Object>> query) throws ServiceException{
 		try{
 			jdbcDao.executeBySelectId(query);
 		}catch(DAOException ex){
@@ -179,9 +179,9 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 	}
 	@Override
     @Transactional(readOnly=true)
-	public PageQuery queryBySql(String querySQL,String countSql,String[] displayname,PageQuery pageQuery)throws ServiceException{
+	public void queryBySql(String querySQL,String countSql,String[] displayname,PageQuery<Map<String,Object>> pageQuery)throws ServiceException{
 		try{
-			return jdbcDao.queryBySql(querySQL, countSql, displayname, pageQuery);
+			jdbcDao.queryBySql(querySQL, countSql, displayname, pageQuery);
 		}catch(DAOException ex){
 			throw new ServiceException(ex);
 		}
@@ -306,39 +306,34 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 
 	@Override
     @Transactional(readOnly=true)
-	public List<V> queryByCondition(FilterCondition condition,PageQuery pageQuery)
+	public void queryByCondition(FilterCondition condition,PageQuery<V> pageQuery)
 			throws ServiceException {
-		List<V> retlist ;
 		try{
-			retlist= jdbcDao.queryByCondition(type, condition, pageQuery);
+			jdbcDao.queryByCondition(type, condition, pageQuery);
 		}catch (DAOException e) {
 			throw new ServiceException(e);
 		}
-		return retlist;
 	}
 	@Override
     @Transactional(readOnly = true)
-	public List<V> queryByCondition(FilterConditionBuilder filterConditions, PageQuery pageQuery){
-		List<V> retlist ;
+	public void queryByCondition(FilterConditionBuilder filterConditions, PageQuery<V> pageQuery){
 		try{
-			retlist= jdbcDao.queryByCondition(type, filterConditions.build(), pageQuery);
+			jdbcDao.queryByCondition(type, filterConditions.build(), pageQuery);
 		}catch (DAOException e) {
 			throw new ServiceException(e);
 		}
-		return retlist;
 	}
 	@Override
 	@Transactional(readOnly = true)
 	public List<V> queryByCondition(FilterCondition filterConditions){
-		List<V> retlist ;
+		PageQuery<V> pageQuery=new PageQuery<>();
+		pageQuery.setPageSize(0);
 		try{
-			PageQuery pageQuery=new PageQuery();
-			pageQuery.setPageSize(0);
-			retlist=jdbcDao.queryByCondition(type, filterConditions, pageQuery);
+			jdbcDao.queryByCondition(type, filterConditions, pageQuery);
 		}catch (DAOException e) {
 			throw new ServiceException(e);
 		}
-		return retlist;
+		return pageQuery.getRecordSet();
 	}
 	
 	public JdbcDao getJdbcDao() {

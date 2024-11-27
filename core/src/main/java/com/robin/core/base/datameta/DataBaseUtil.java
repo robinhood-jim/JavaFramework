@@ -129,7 +129,7 @@ public class DataBaseUtil {
             List<String> pklist = this.getAllPrimaryKeyByTableName(tablename, dbOrtablespacename);
             while (rs.next()) {
                 String columnname = rs.getString("COLUMN_NAME");
-                Integer columnType = Integer.valueOf(translateDbType(rs.getInt("DATA_TYPE")));
+                String columnType = translateDbType(rs.getInt("DATA_TYPE"));
                 String datalength = rs.getString("COLUMN_SIZE");
                 boolean nullable = rs.getInt("NULLABLE") != DatabaseMetaData.columnNoNulls;
                 String comment = rs.getString("REMARKS");
@@ -159,7 +159,7 @@ public class DataBaseUtil {
         }
     }
 
-    private static void setType(String columnname, Integer columnType, Integer datatype, String typeName, String datalength, boolean nullable, String comment, int precise, int scale, DataBaseColumnMeta datameta) {
+    private static void setType(String columnname, String columnType, Integer datatype, String typeName, String datalength, boolean nullable, String comment, int precise, int scale, DataBaseColumnMeta datameta) {
         datameta.setColumnName(columnname);
         datameta.setColumnType(columnType);
         datameta.setDataType(datatype);
@@ -210,7 +210,7 @@ public class DataBaseUtil {
             }
             while (rs.next()) {
                 String columnname = rs.getString("COLUMN_NAME");
-                Integer columnType = Integer.valueOf(translateDbType(rs.getInt("DATA_TYPE")));
+                String columnType = translateDbType(rs.getInt("DATA_TYPE"));
                 String datalength = rs.getString("COLUMN_SIZE");
                 boolean nullable = rs.getInt("NULLABLE") != DatabaseMetaData.columnNoNulls;
                 String comment = "";
@@ -301,7 +301,7 @@ public class DataBaseUtil {
                     column = column.substring(pos + 1);
                 }
                 datameta.setColumnName(column);
-                datameta.setColumnType(Integer.valueOf(translateDbType(rsmeta.getColumnType(i + 1))));
+                datameta.setColumnType(translateDbType(rsmeta.getColumnType(i + 1)));
                 datameta.setColumnLength(String.valueOf(rsmeta.getColumnDisplaySize(i + 1)));
                 datameta.setDataScale(rsmeta.getScale(i + 1));
                 datameta.setDataPrecise(rsmeta.getPrecision(i + 1));

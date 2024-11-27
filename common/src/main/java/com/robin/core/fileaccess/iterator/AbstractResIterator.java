@@ -6,16 +6,18 @@ import com.robin.core.fileaccess.meta.DataSetColumnMeta;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.naming.OperationNotSupportedException;
 import java.io.BufferedReader;
 import java.io.InputStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 public abstract class AbstractResIterator implements IResourceIterator {
 
     protected DataCollectionMeta colmeta;
-    protected List<String> columnList=new ArrayList<String>();
+    protected List<String> columnList=new ArrayList<>();
     protected Map<String, DataSetColumnMeta> columnMap=new HashMap<>();
     protected Logger logger= LoggerFactory.getLogger(getClass());
     protected String identifier;

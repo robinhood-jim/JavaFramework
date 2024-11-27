@@ -6,7 +6,6 @@ import com.robin.core.base.model.BaseObject;
 import com.robin.core.base.util.Const;
 import lombok.Data;
 import org.apache.commons.lang3.tuple.Triple;
-import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
@@ -92,8 +91,8 @@ public class JoinCondition {
             }
             Map<Class<? extends BaseObject>,Integer> existModelMap=new HashMap<>();
             for(Triple<PropertyFunction<? extends BaseObject, ?>, PropertyFunction<? extends BaseObject, ?>, Const.JOINTYPE> join:joins){
-                AnnotationRetriever.EntityContent leftTab=AnnotationRetriever.getMappingTableByCache(AnnotationRetriever.getFieldOwnedClass(join.getLeft()));
-                AnnotationRetriever.EntityContent rightTab=AnnotationRetriever.getMappingTableByCache(AnnotationRetriever.getFieldOwnedClass(join.getMiddle()));
+                AnnotationRetriever.EntityContent<? extends BaseObject> leftTab=AnnotationRetriever.getMappingTableByCache(AnnotationRetriever.getFieldOwnedClass(join.getLeft()));
+                AnnotationRetriever.EntityContent<? extends BaseObject> rightTab=AnnotationRetriever.getMappingTableByCache(AnnotationRetriever.getFieldOwnedClass(join.getMiddle()));
                 Class<? extends BaseObject> leftModelClass=AnnotationRetriever.getFieldOwnedClass(join.getLeft());
                 Class<? extends BaseObject> rightModelClass=AnnotationRetriever.getFieldOwnedClass(join.getMiddle());
 

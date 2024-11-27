@@ -191,15 +191,12 @@ public class SimpleJdbcDao {
 
 
     public long queryByLong(final String sql) throws DAOException {
-        Connection conn = getConnection();
-        try {
+        try(Connection conn = getConnection()) {
             QueryRunner qRunner = new QueryRunner();
             ScalarHandler<Long> handler = new ScalarHandler<>(1);
             return qRunner.query(conn, sql, handler);
         } catch (Exception ex) {
             throw new DAOException(ex);
-        } finally {
-            DbUtils.closeQuietly(conn);
         }
     }
 
@@ -214,43 +211,33 @@ public class SimpleJdbcDao {
     }
 
     public static int callProcedure(final Connection conn, final String sql, Object... param) throws DAOException {
-        CallableStatement stmt = null;
-        try {
-            QueryRunner qRunner = new QueryRunner();
-            stmt = conn.prepareCall(sql);
+
+        QueryRunner qRunner = new QueryRunner();
+        try (CallableStatement stmt =conn.prepareCall(sql)){
             qRunner.fillStatement(stmt, param);
             return stmt.executeUpdate();
         } catch (Exception ex) {
             throw new DAOException(ex);
-        } finally {
-            DbUtils.closeQuietly(stmt);
         }
     }
 
     public static Serializable callProcedure(final Connection conn, final String sql, ScalarHandler<? extends Serializable> hander, Object... param) throws DAOException {
-        CallableStatement stmt = null;
-        try {
-            QueryRunner qRunner = new QueryRunner();
-            stmt = conn.prepareCall(sql);
+        QueryRunner qRunner = new QueryRunner();
+        try(CallableStatement stmt =conn.prepareCall(sql)) {
             qRunner.fillStatement(stmt, param);
             return hander.handle(stmt.executeQuery());
         } catch (Exception ex) {
             throw new DAOException(ex);
-        } finally {
-            DbUtils.closeQuietly(stmt);
         }
     }
 
     public int queryByInt(final String sql) throws DAOException {
-        Connection conn = getConnection();
-        try {
+        try(Connection conn = getConnection()) {
             QueryRunner qRunner = new QueryRunner();
             ScalarHandler<Integer> handler = new ScalarHandler<>(1);
             return qRunner.query(conn, sql, handler);
         } catch (Exception ex) {
             throw new DAOException(ex);
-        } finally {
-            DbUtils.closeQuietly(conn);
         }
     }
 
@@ -266,14 +253,11 @@ public class SimpleJdbcDao {
 
     @SuppressWarnings("unchecked")
     public Object queryByObject(final String sql, @SuppressWarnings("rawtypes") final ScalarHandler handler) throws DAOException {
-        Connection conn = getConnection();
-        try {
+        try (Connection conn = getConnection()){
             QueryRunner qRunner = new QueryRunner();
             return qRunner.query(conn, sql, handler);
         } catch (Exception ex) {
             throw new DAOException(ex);
-        } finally {
-            DbUtils.closeQuietly(conn);
         }
     }
 
@@ -288,53 +272,39 @@ public class SimpleJdbcDao {
     }
 
     public List<Map<String, Object>> queryBySql(final String sql) throws DAOException {
-        Connection conn = getConnection();
-        try {
+        try(Connection conn = getConnection()) {
             QueryRunner qRunner = new QueryRunner();
             return queryHandler(qRunner, conn, sql);
         } catch (Exception e) {
             throw new DAOException(e);
-        } finally {
-            DbUtils.closeQuietly(conn);
         }
     }
 
     public List<Map<String, Object>> queryBySqlNoMeta(final String sql) throws DAOException {
-        Connection conn = getConnection();
-        try {
+        try(Connection conn = getConnection()) {
             QueryRunner runner = new QueryRunner(true);
             return queryHandler(runner, conn, sql);
         } catch (Exception e) {
             throw new DAOException(e);
-        } finally {
-            DbUtils.closeQuietly(conn);
         }
     }
 
 
     public List<Map<String, Object>> queryBySql(final String sql, Object[] obj) throws DAOException {
-        Connection conn = getConnection();
-        try {
+        try(Connection conn = getConnection()) {
             QueryRunner qRunner = new QueryRunner();
             return queryHandler(qRunner, conn, sql, obj);
         } catch (Exception e) {
             throw new DAOException(e);
-        } finally {
-            DbUtils.closeQuietly(conn);
         }
-
     }
 
     public List<Map<String, Object>> queryBySql(final QueryRunner runner, final String sql, Object[] obj) throws DAOException {
-        Connection conn = getConnection();
-        try {
+        try(Connection conn = getConnection()) {
             return queryHandler(runner, conn, sql, obj);
         } catch (Exception e) {
             throw new DAOException(e);
-        } finally {
-            DbUtils.closeQuietly(conn);
         }
-
     }
 
     public static List<Map<String, Object>> queryString(final Connection conn, final String sql) throws DAOException {
@@ -400,31 +370,22 @@ public class SimpleJdbcDao {
     }
 
     public Serializable queryByHandler(final String sql, ResultSetHandler<? extends Serializable> handler) throws DAOException {
-        Connection conn = null;
-        Statement stmt = null;
         Serializable i;
-        try {
-            conn = getConnection(meta, retryNums, waitSecond, getConnectLoop);
-            stmt = conn.createStatement();
+        try (Connection  conn = getConnection(meta, retryNums, waitSecond, getConnectLoop);
+                Statement stmt=conn.createStatement()) {
             ResultSet rs = stmt.executeQuery(sql);
             i = handler.handle(rs);
             logger.info("ret count={}", i);
             return i;
         } catch (Exception e) {
             throw new DAOException(e);
-        } finally {
-            DbUtils.closeQuietly(stmt);
-            DbUtils.closeQuietly(conn);
         }
     }
 
     public Serializable queryByHandler(final String sql, Object[] params, ResultSetHandler<? extends Serializable> handler) throws DAOException {
-        Connection conn = null;
-        PreparedStatement stmt = null;
         Serializable obj;
-        try {
-            conn = getConnection(meta, retryNums, waitSecond, getConnectLoop);
-            stmt = conn.prepareStatement(sql);
+        try(Connection  conn = getConnection(meta, retryNums, waitSecond, getConnectLoop);
+            PreparedStatement stmt=conn.prepareStatement(sql))  {
             for (int i = 0; i < params.length; ++i) {
                 if (params[i] != null) {
                     stmt.setObject(i + 1, params[i]);
@@ -438,22 +399,15 @@ public class SimpleJdbcDao {
             return obj;
         } catch (Exception e) {
             throw new DAOException(e);
-        } finally {
-            DbUtils.closeQuietly(stmt);
-            DbUtils.closeQuietly(conn);
         }
     }
 
     public static Serializable queryByHandler(final Connection conn, final String sql, ResultSetHandler<? extends Serializable> handler) throws DAOException {
-        Statement stmt = null;
-        try {
-            stmt = conn.createStatement();
+        try(Statement stmt = conn.createStatement()) {
             ResultSet rs = stmt.executeQuery(sql);
             return handler.handle(rs);
         } catch (Exception e) {
             throw new DAOException(e);
-        } finally {
-            DbUtils.closeQuietly(stmt);
         }
     }
 
@@ -468,54 +422,35 @@ public class SimpleJdbcDao {
     }
 
     public static int executeOperationWithQuery(final Connection conn, String sql, Object[] param, boolean pmdKnownBroken, final ResultSetOperationExtractor extractor) throws SQLException {
-        QueryRunner qRunner ;
-        if (pmdKnownBroken) {
-            qRunner = new QueryRunner(pmdKnownBroken);
-        } else {
-            qRunner = new QueryRunner();
-        }
+        QueryRunner qRunner = new QueryRunner(pmdKnownBroken);
         return qRunner.query(conn, sql, extractor::extractData, param);
     }
 
     public int executeUpdate(final String sql) throws DAOException {
-        Connection conn = getConnection();
-        Statement stmt = null;
-        try {
-            stmt = conn.createStatement();
+
+        try(Connection conn = getConnection();
+            Statement stmt = conn.createStatement()) {
             return stmt.executeUpdate(sql);
         } catch (Exception ex) {
             throw new DAOException(ex);
-        } finally {
-            if (stmt != null) {
-                DbUtils.closeQuietly(stmt);
-            }
-            DbUtils.closeQuietly(conn);
         }
     }
 
     public static int executeUpdate(final Connection conn, final String sql) throws DAOException {
-        Statement stmt = null;
-        try {
-            stmt = conn.createStatement();
+        try(Statement stmt = conn.createStatement()) {
             return stmt.executeUpdate(sql);
         } catch (Exception ex) {
             throw new DAOException(ex);
-        } finally {
-            if (stmt != null) {
-                DbUtils.closeQuietly(stmt);
-            }
         }
     }
 
     public int executeUpdate(final String sql, final Object[] param) throws DAOException {
-        Connection conn = getConnection();
-        try {
+
+        try(Connection conn = getConnection()) {
             QueryRunner qRunner = new QueryRunner();
             return qRunner.update(conn, sql, param);
         } catch (Exception ex) {
             throw new DAOException(ex);
-        } finally {
-            DbUtils.closeQuietly(conn);
         }
     }
 
@@ -538,8 +473,11 @@ public class SimpleJdbcDao {
      * @throws DAOException
      */
     public boolean execute(final String hql) throws DAOException {
-        Connection conn = getConnection();
-        return execute(conn, hql);
+        try(Connection conn = getConnection()) {
+            return execute(conn, hql);
+        }catch (SQLException ex){
+            throw new DAOException(ex);
+        }
     }
 
     public static boolean execute(final Connection conn, final String hql) throws DAOException {
@@ -598,19 +536,20 @@ public class SimpleJdbcDao {
     }
 
     public int simpleBatch(final String sql, final List<Object[]> valueList) throws DAOException {
-        Connection conn = getConnection();
-
-        return simpleBatch(conn, sql, valueList);
+        try(Connection conn = getConnection()) {
+            return simpleBatch(conn, sql, valueList);
+        }catch (SQLException ex){
+            throw new DAOException(ex);
+        }
     }
 
     public static int simpleBatch(Connection conn, final String sql, final List<Object[]> valueList) throws DAOException {
-        PreparedStatement stmt = null;
+
         int retnum = -1;
         int[] retarr ;
         QueryRunner qRunner = new QueryRunner();
-        try {
+        try(PreparedStatement stmt =  conn.prepareStatement(sql)) {
             conn.setAutoCommit(false);
-            stmt = conn.prepareStatement(sql);
             for (Object[] obj : valueList) {
                 qRunner.fillStatement(stmt, obj);
                 stmt.addBatch();
@@ -624,8 +563,6 @@ public class SimpleJdbcDao {
                 throw new DAOException(e);
             }
             throw new DAOException(ex);
-        } finally {
-            DbUtils.closeQuietly(stmt);
         }
         for (int j : retarr) {
             if (j > 0) {

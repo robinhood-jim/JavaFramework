@@ -42,7 +42,7 @@ public abstract class AbstractFileIterator implements IResourceIterator {
     protected AbstractFileSystemAccessor accessUtil;
     protected String identifier;
     protected DataCollectionMeta colmeta;
-    protected List<String> columnList = new ArrayList<String>();
+    protected List<String> columnList = new ArrayList<>();
     protected Map<String, DataSetColumnMeta> columnMap = new HashMap<>();
     protected Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -85,8 +85,8 @@ public abstract class AbstractFileIterator implements IResourceIterator {
     public void afterProcess() {
         try {
             close();
-        } catch (Exception ex) {
-
+        } catch (IOException ex) {
+            logger.error("{}",ex.getMessage());
         }
     }
 
@@ -103,7 +103,7 @@ public abstract class AbstractFileIterator implements IResourceIterator {
                 accessUtil = ResourceAccessHolder.getAccessUtilByProtocol(schema.toLowerCase());
             }
         } catch (Exception ex) {
-            logger.error("{}", ex);
+            logger.error("{}", ex.getMessage());
         }
     }
 
@@ -120,7 +120,7 @@ public abstract class AbstractFileIterator implements IResourceIterator {
         try (FileOutputStream outputStream = new FileOutputStream(tmpFile)) {
             IOUtils.copyBytes(stream, outputStream, 8192);
         } catch (IOException ex) {
-            logger.error("{}", ex);
+            logger.error("{}", ex.getMessage());
         }
     }
 

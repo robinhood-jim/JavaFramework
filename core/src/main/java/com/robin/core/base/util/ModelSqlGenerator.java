@@ -17,7 +17,6 @@ import org.springframework.util.CollectionUtils;
 
 import java.sql.Connection;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -27,18 +26,20 @@ public class ModelSqlGenerator {
 
     }
 
-    public static void syncTable(BaseSqlGen sqlGen, BaseDataBaseMeta meta, Class<? extends BaseObject> clazz) throws DAOException {
+    public static <T extends BaseObject> void syncTable(BaseSqlGen sqlGen, BaseDataBaseMeta meta, Class<T> clazz) throws DAOException {
         Connection conn = null;
         try {
             conn = SimpleJdbcDao.getConnection(meta);
-            AnnotationRetriever.EntityContent content = AnnotationRetriever.getMappingTableByCache(clazz);
+            AnnotationRetriever.EntityContent<T> content = AnnotationRetriever.getMappingTableByCache(clazz);
             List<FieldContent> fields = AnnotationRetriever.getMappingFieldsCache(clazz);
-            List<Map<String, Object>> changeColumns = new ArrayList<>();
             if (tableExists(conn, content.getSchema(), content.getTableName())) {
                 List<DataBaseColumnMeta> metas = DataBaseUtil.getTableMetaByTableName(conn, content.getTableName(), content.getSchema(), meta.getDbType());
                 List<String> alertSqls = adjustDiffSqls(content, fields, metas, sqlGen);
                 if (log.isDebugEnabled()) {
                     log.debug("execute alert sql {}", alertSqls);
+                }
+                for(String alterSql:alertSqls){
+                    SimpleJdbcDao.executeUpdate(conn, alterSql);
                 }
             } else {
                 String createSql = generateCreateSql(clazz,meta, sqlGen);
@@ -55,15 +56,18 @@ public class ModelSqlGenerator {
         }
     }
 
-    public static final void syncTable(JdbcDao jdbcDao,BaseDataBaseMeta meta, BaseSqlGen sqlGen, Class<? extends BaseObject> clazz) {
+    public static <T extends BaseObject> void syncTable(JdbcDao jdbcDao,BaseDataBaseMeta meta, BaseSqlGen sqlGen, Class<T> clazz) {
         try {
-            AnnotationRetriever.EntityContent content = AnnotationRetriever.getMappingTableByCache(clazz);
+            AnnotationRetriever.EntityContent<T> content = AnnotationRetriever.getMappingTableByCache(clazz);
             List<FieldContent> fields = AnnotationRetriever.getMappingFieldsCache(clazz);
             if (tableExists(jdbcDao, content.getSchema(), content.getTableName())) {
                 List<DataBaseColumnMeta> metas = DataBaseUtil.getTableMetaByTableName(jdbcDao, content.getTableName(), content.getSchema(), sqlGen.getDbType());
                 List<String> alertSqls = adjustDiffSqls(content, fields, metas, sqlGen);
                 if (log.isDebugEnabled()) {
                     log.debug("execute alert sql {}", alertSqls);
+                }
+                for(String alterSql:alertSqls){
+                    jdbcDao.executeUpdate(alterSql);
                 }
             } else {
                 String createSql = generateCreateSql(clazz,meta, sqlGen);
@@ -82,18 +86,18 @@ public class ModelSqlGenerator {
             List<Map<String,Object>> list = SimpleJdbcDao.queryString(connection, "select COUNT(1) from " + fullName + " where 1!=1");
             return !CollectionUtils.isEmpty(list);
         } catch (Exception ex) {
-            throw ex;
+            throw new DAOException(ex);
         }
     }
 
-    private static List<String> adjustDiffSqls(AnnotationRetriever.EntityContent entityContent, List<FieldContent> fields, List<DataBaseColumnMeta> columnMetas, BaseSqlGen sqlGen) {
+    private static <T extends BaseObject> List<String> adjustDiffSqls(AnnotationRetriever.EntityContent<T> entityContent, List<FieldContent> fields, List<DataBaseColumnMeta> columnMetas, BaseSqlGen sqlGen) throws DAOException {
         List<String> alertSqls = new ArrayList<>();
         try {
             Map<String, DataBaseColumnMeta> columMap = CollectionBaseConvert.groupByUniqueKey(columnMetas,DataBaseColumnMeta::getColumnName);
             for (FieldContent field : fields) {
                 if (columMap.containsKey(field.getFieldName())) {
                     //length change
-                    if (field.getDataType().equals(columMap.get(field.getFieldName()).getColumnType().toString())) {
+                    if (field.getDataType().equals(columMap.get(field.getFieldName()).getColumnType())) {
                         if (!field.getDataType().equals(Const.META_TYPE_INTEGER) && !field.getDataType().equals(Const.META_TYPE_BIGINT)) {
                             if (field.getLength() != 0 && field.getLength() != Integer.parseInt(columMap.get(field.getFieldName()).getColumnLength())) {
                                 alertSqls.add(sqlGen.getAlertColumnSqlPart(entityContent, field, BaseSqlGen.AlertType.ALERT));
@@ -109,16 +113,14 @@ public class ModelSqlGenerator {
                 }
             }
             if (!columMap.isEmpty()) {
-                Iterator<Map.Entry<String, DataBaseColumnMeta>> iter = columMap.entrySet().iterator();
-                while (iter.hasNext()) {
-                    Map.Entry<String, DataBaseColumnMeta> entry = iter.next();
+                for (Map.Entry<String, DataBaseColumnMeta> entry : columMap.entrySet()) {
                     alertSqls.add(sqlGen.getAlertColumnSqlPart(entityContent,
                             new FieldContent(entry.getValue().getColumnName(), entry.getValue().getColumnName(), null, null, null),
                             BaseSqlGen.AlertType.DEL));
                 }
             }
         } catch (Exception ex) {
-
+            throw new DAOException(ex);
         }
         return alertSqls;
     }
@@ -130,15 +132,15 @@ public class ModelSqlGenerator {
             List<Map<String,Object>> list = jdbcDao.queryBySql("select COUNT(1) from " + fullName + " where 1!=1");
             return !CollectionUtils.isEmpty(list);
         } catch (Exception ex) {
-            throw ex;
+            throw new DAOException(ex);
         }
     }
 
 
 
-    public static String generateCreateSql(Class<? extends BaseObject> clazz,BaseDataBaseMeta meta, BaseSqlGen sqlGen) {
+    public static <T extends BaseObject> String generateCreateSql(Class<T> clazz,BaseDataBaseMeta meta, BaseSqlGen sqlGen) {
         StringBuilder builder = new StringBuilder();
-        AnnotationRetriever.EntityContent entityContent = AnnotationRetriever.getMappingTableByCache(clazz);
+        AnnotationRetriever.EntityContent<T> entityContent = AnnotationRetriever.getMappingTableByCache(clazz);
         List<FieldContent> fields = AnnotationRetriever.getMappingFieldsCache(clazz);
         FieldContent primarycol = AnnotationRetriever.getPrimaryField(fields);
         builder.append("create table ");

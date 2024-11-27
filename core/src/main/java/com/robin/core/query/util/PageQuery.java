@@ -21,9 +21,10 @@ import lombok.Data;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Data
-public class PageQuery implements Serializable {
+public class  PageQuery<T> implements Serializable {
 	protected String								groupByString;
 
 	protected String								orderString;
@@ -53,7 +54,7 @@ public class PageQuery implements Serializable {
 
 	private List<Condition>				conditions;
 
-	private List<Map<String, Object>>	recordSet;
+	private List<T>	recordSet;
 	
 	protected String 					querySql;			
 
@@ -107,72 +108,91 @@ public class PageQuery implements Serializable {
 		}
 		return timestampFormater;
 	}
+	public Map<String,Object> toMap(){
+		Map<String,Object> retMap=new HashMap<>();
+		retMap.put("pageSize",getPageSize());
+		retMap.put("pageNo",getPageNumber());
+		retMap.put("pageCount",getPageCount());
+		Optional.ofNullable(getRecordSet()).map(f->retMap.put("values",getRecordSet()));
+		return retMap;
+	}
+	public void adjustPage(Integer total){
+		if (total > 0) {
+			int pages = total / getPageSize();
+			if (total % getPageSize() != 0) {
+				pages++;
+			}
+			setPageCount(pages);
+		} else {
+			setPageCount(0);
+		}
+	}
 	public void addQueryParameter(Object value){
 		queryParameters.add(value);
 	}
 	public void addQueryParameter(Collection<Object> values){
 		queryParameters.addAll(values);
 	}
-	public static class Builder{
-		private PageQuery pageQuery=new PageQuery();
-		public Builder setPageSize(Integer pageSize){
+	public static class Builder<T>{
+		private PageQuery<T> pageQuery=new PageQuery<>();
+		public Builder<T> setPageSize(Integer pageSize){
 			pageQuery.setPageSize(pageSize);
 			return this;
 		}
-		public Builder setPageCount(Integer pageCount){
+		public Builder<T> setPageCount(Integer pageCount){
 			pageQuery.setPageCount(pageCount);
 			return this;
 		}
-		public Builder setSelectedId(String selectedId){
+		public Builder<T> setSelectedId(String selectedId){
 			pageQuery.setSelectParamId(selectedId);
 			return this;
 		}
-		public Builder setPageNumber(Integer pageNumber){
+		public Builder<T> setPageNumber(Integer pageNumber){
 			pageQuery.setPageNumber(pageNumber);
 			return this;
 		}
-		public Builder setOrder(String order){
+		public Builder<T> setOrder(String order){
 			pageQuery.setOrder(order);
 			return this;
 		}
-		public Builder setOrderDir(String orderDir){
+		public Builder<T> setOrderDir(String orderDir){
 			pageQuery.setOrderDirection(orderDir);
 			return this;
 		}
-		public Builder addQueryParameterArr(Object[] objects){
-			pageQuery.addQueryParameter(objects);
+		public Builder<T> addQueryParameterArr(Object... objects){
+			pageQuery.getQueryParameters().addAll(Arrays.stream(objects).collect(Collectors.toList()));
 			return this;
 		}
-		public Builder addQueryParameter(Collection<Object> collection){
+		public Builder<T> addQueryParameter(Collection<Object> collection){
 			pageQuery.addQueryParameter(collection);
 			return this;
 		}
-		public Builder addQueryParameter(Object obj){
+		public Builder<T> addQueryParameter(Object obj){
 			pageQuery.addQueryParameter(obj);
 			return this;
 		}
 
-		public Builder putNamedParameter(String key,Object value){
+		public Builder<T> putNamedParameter(String key,Object value){
 			pageQuery.getNamedParameters().put(key,value);
 			return this;
 		}
-		public Builder addParameter(String key,String value){
+		public Builder<T> addParameter(String key,String value){
 			pageQuery.getParameters().put(key,value);
 			return this;
 		}
-		public Builder setNamedParameters(Map<String,Object> namedParameter){
+		public Builder<T> setNamedParameters(Map<String,Object> namedParameter){
 			pageQuery.setNamedParameters(namedParameter);
 			return this;
 		}
-		public Builder setParameters(Map<String,String> parameters){
+		public Builder<T> setParameters(Map<String,String> parameters){
 			pageQuery.setParameters(parameters);
 			return this;
 		}
-		public Builder setConditions(String key,FilterCondition conditions){
+		public Builder<T> setConditions(String key,FilterCondition conditions){
 			pageQuery.conditionMap.put(key,conditions);
 			return this;
 		}
-		public PageQuery build(){
+		public PageQuery<T> build(){
 			return pageQuery;
 		}
 
