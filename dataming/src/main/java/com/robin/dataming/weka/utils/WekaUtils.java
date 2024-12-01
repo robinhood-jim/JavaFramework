@@ -11,15 +11,14 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import weka.classifiers.Classifier;
 import weka.classifiers.evaluation.Evaluation;
+import weka.clusterers.ClusterEvaluation;
+import weka.clusterers.Clusterer;
 import weka.core.Attribute;
 import weka.core.DenseInstance;
 import weka.core.Instance;
 import weka.core.Instances;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 //Weka Utils return Instances by meta define
 @Slf4j
@@ -90,9 +89,16 @@ public class WekaUtils {
     }
     public static String evaluateClassifier(Classifier classifier, Instances testInst) throws Exception {
         Evaluation evaluation=new Evaluation(testInst);
+        evaluation.crossValidateModel(classifier,testInst,10,new Random(1));
         for(int i=0;i<testInst.numInstances();i++) {
             evaluation.evaluateModelOnceAndRecordPrediction(classifier, testInst.instance(i));
         }
-        return evaluation.toSummaryString();
+        return evaluation.toSummaryString("Summary",false);
+    }
+    public static String evaluateCluster(Clusterer cluster, Instances testInsts) throws Exception{
+        ClusterEvaluation evaluation=new ClusterEvaluation();
+        evaluation.setClusterer(cluster);
+        evaluation.evaluateClusterer(testInsts);
+        return evaluation.clusterResultsToString();
     }
 }

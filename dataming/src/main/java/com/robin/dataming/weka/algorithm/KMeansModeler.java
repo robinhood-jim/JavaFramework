@@ -1,6 +1,7 @@
 package com.robin.dataming.weka.algorithm;
 
 
+import com.robin.dataming.weka.utils.WekaUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 import weka.clusterers.Clusterer;
@@ -11,31 +12,24 @@ import weka.core.ManhattanDistance;
 
 import java.util.Map;
 
-public class KMeansModeler extends AbstractModeler<Clusterer> {
-    private SimpleKMeans kMeans;
-    public KMeansModeler(){
-        kMeans=new SimpleKMeans();
-    }
-    @Override
-    public Clusterer train(int classIndex, Map<String, String> optionMap, Instances trainInst, Instances testInst) throws Exception {
-        Assert.isTrue(!ObjectUtils.isEmpty(optionMap.get("numberOfCluster")) && !ObjectUtils.isEmpty(optionMap.get("maxIter")) ,"");
-        if(!ObjectUtils.isEmpty(optionMap.get("numberOfCluster"))){
-            kMeans.setNumClusters(Integer.parseInt(optionMap.get("numberOfCluster")));
-        }
-        if(!ObjectUtils.isEmpty(optionMap.get("distanceFunc")) && "Manhattan".equalsIgnoreCase(optionMap.get("distanceFunc"))) {
-            kMeans.setDistanceFunction(new ManhattanDistance());
-        }else{
-            kMeans.setDistanceFunction(new EuclideanDistance());
-        }
-        if(!ObjectUtils.isEmpty(optionMap.get("maxIter"))){
-            kMeans.setMaxIterations(Integer.parseInt(optionMap.get("maxIter")));
-        }
-        kMeans.buildClusterer(trainInst);
-        return kMeans;
-    }
+public class KMeansModeler extends AbstractModeler<SimpleKMeans> {
 
     @Override
-    public String evaluate(Instances testInst) throws Exception {
-        return null;
+    public SimpleKMeans train(int classIndex, Map<String, String> optionMap, Instances trainInst, Instances testInst) throws Exception {
+        Assert.isTrue(!ObjectUtils.isEmpty(optionMap.get("numberOfCluster")) && !ObjectUtils.isEmpty(optionMap.get("maxIter")) ,"");
+        if(!ObjectUtils.isEmpty(optionMap.get("numberOfCluster"))){
+            model.setNumClusters(Integer.parseInt(optionMap.get("numberOfCluster")));
+        }
+        if(!ObjectUtils.isEmpty(optionMap.get("distanceFunc")) && "Manhattan".equalsIgnoreCase(optionMap.get("distanceFunc"))) {
+            model.setDistanceFunction(new ManhattanDistance());
+        }else{
+            model.setDistanceFunction(new EuclideanDistance());
+        }
+        if(!ObjectUtils.isEmpty(optionMap.get("maxIter"))){
+            model.setMaxIterations(Integer.parseInt(optionMap.get("maxIter")));
+        }
+        model.buildClusterer(trainInst);
+        return model;
     }
+
 }
