@@ -19,6 +19,7 @@ public class LogisticRegressionModeler extends AbstractModeler<Logistic> {
             model.setRidge(Double.parseDouble(optionMap.get("ridge")));
         }
         trainInst.setClassIndex(classIndex);
+        setOptions(optionMap);
         model.buildClassifier(trainInst);
         return model;
     }

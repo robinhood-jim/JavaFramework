@@ -15,7 +15,6 @@ public class EMClusterModeler extends AbstractModeler<EM>{
     @Override
     public EM train(int classIndex, Map<String, String> optionMap, Instances trainInst, Instances testInst) throws Exception {
         trainInst.setClassIndex(classIndex);
-        model.buildClusterer(trainInst);
         if(!ObjectUtils.isEmpty(optionMap.get("numberOfCluster"))){
             model.setNumClusters(Integer.parseInt(optionMap.get("numberOfCluster")));
         }
@@ -25,6 +24,8 @@ public class EMClusterModeler extends AbstractModeler<EM>{
         if(!ObjectUtils.isEmpty(optionMap.get("maxIter"))){
             model.setMaxIterations(Integer.parseInt(optionMap.get("maxIter")));
         }
+        setOptions(optionMap);
+        model.buildClusterer(trainInst);
         return model;
     }
 }

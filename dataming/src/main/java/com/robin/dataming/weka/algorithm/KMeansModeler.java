@@ -28,6 +28,7 @@ public class KMeansModeler extends AbstractModeler<SimpleKMeans> {
         if(!ObjectUtils.isEmpty(optionMap.get("maxIter"))){
             model.setMaxIterations(Integer.parseInt(optionMap.get("maxIter")));
         }
+        setOptions(optionMap);
         model.buildClusterer(trainInst);
         return model;
     }

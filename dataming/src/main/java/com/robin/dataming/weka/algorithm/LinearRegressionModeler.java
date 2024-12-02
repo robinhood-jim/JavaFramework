@@ -22,6 +22,7 @@ public class LinearRegressionModeler extends AbstractModeler<LinearRegression> {
     public LinearRegression train(int classIndex, Map<String,String> optionMap, Instances trainInst, Instances testInst) throws  Exception{
         Assert.isTrue(classIndex>0 && classIndex<trainInst.numAttributes(),"");
         trainInst.setClassIndex(classIndex);
+        setOptions(optionMap);
         model.buildClassifier(trainInst);
         return model;
     }

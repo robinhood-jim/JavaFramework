@@ -3,7 +3,10 @@ package com.robin.dataming.weka.algorithm;
 import com.robin.core.base.exception.MissingConfigException;
 import com.robin.dataming.weka.utils.WekaUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.ObjectUtils;
+import weka.classifiers.AbstractClassifier;
 import weka.classifiers.Classifier;
+import weka.clusterers.AbstractClusterer;
 import weka.clusterers.Clusterer;
 import weka.core.Instances;
 
@@ -40,6 +43,15 @@ public abstract class AbstractModeler<T> {
                return WekaUtils.evaluateCluster((Clusterer) model,testInst);
           }else{
                throw  new MissingConfigException("");
+          }
+     }
+     protected void setOptions(Map<String,String> optionMap) throws Exception{
+          if(!ObjectUtils.isEmpty(optionMap.get("options"))){
+               if(AbstractClassifier.class.isAssignableFrom(clazz)){
+                    ((AbstractClassifier)model).setOptions(optionMap.get("options").split(","));
+               }else if(AbstractClusterer.class.isAssignableFrom(clazz)){
+                    ((AbstractClusterer)model).setOptions(optionMap.get("options").split(","));
+               }
           }
      }
 }

@@ -23,6 +23,7 @@ public class DBSCANModeler extends AbstractModeler<DBSCAN>{
         if(!ObjectUtils.isEmpty(optionMap.get("minPoints"))){
             model.setMinPoints(Integer.parseInt(optionMap.get("minPoints")));
         }
+        setOptions(optionMap);
         model.buildClusterer(trainInst);
         return model;
     }
