@@ -511,7 +511,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
             }
             FieldContent generateColumn;
             //pk model insert
-            if (insertSegment.isHasSequencePk() || insertSegment.isHasincrementPk()) {
+            if (insertSegment.isHasPrimaryKey()) {
                 PreparedStatementCreatorFactory factory = new PreparedStatementCreatorFactory(insertSql, insertSegment.getParamTypes());
                 KeyHolder keyHolder = new GeneratedKeyHolder();
                 if (insertSegment.isHasSequencePk()) {

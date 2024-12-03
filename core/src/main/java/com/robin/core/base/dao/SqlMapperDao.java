@@ -71,7 +71,7 @@ public class SqlMapperDao extends JdbcDaoSupport {
             ImmutablePair<String, List<AbstractSegment>> pair = sqlMapperConfigure.getSegmentsMap().get(nameSpace).get(id);
             if ("select".equalsIgnoreCase(pair.left)) {
                 SelectSegment segment = (SelectSegment) pair.right.get(0);
-                Map<String, Object> paramMap = wrapSqlAndParamter(nameSpace, id, builder, query, params);
+                Map<String, Object> paramMap = wrapSqlAndParameter(nameSpace, id, builder, query, params);
                 String selectSql = builder.toString();
                 NamedParameterJdbcTemplate template = new NamedParameterJdbcTemplate(returnTemplate());
                 if (query.getPageSize() > 0) {
@@ -106,7 +106,7 @@ public class SqlMapperDao extends JdbcDaoSupport {
         return builder.toString();
     }
 
-    private Map<String, Object> wrapSqlAndParamter(String nameSpace, String id, StringBuilder builder, PageQuery<Map<String,Object>> query, Object... params) {
+    private Map<String, Object> wrapSqlAndParameter(String nameSpace, String id, StringBuilder builder, PageQuery<Map<String,Object>> query, Object... params) {
         ImmutablePair<String, List<AbstractSegment>> pair = sqlMapperConfigure.getSegmentsMap().get(nameSpace).get(id);
         Map<String, Object> paramMap = new HashMap<>();
         CompositeSegment segment = (CompositeSegment) pair.right.get(0);
@@ -147,7 +147,7 @@ public class SqlMapperDao extends JdbcDaoSupport {
                             keyProperty =  segment.getKeyProperty();
                         }
                     }
-                    Map<String, Object> paramMap = wrapSqlAndParamter(nameSpace, id, builder, null, targetObject);
+                    Map<String, Object> paramMap = wrapSqlAndParameter(nameSpace, id, builder, null, targetObject);
                     log.debug("execute sql={}", builder);
                     if ("insert".equalsIgnoreCase(pair.left) && useGenerateKeys) {
                         KeyHolder keyHolder = new GeneratedKeyHolder();

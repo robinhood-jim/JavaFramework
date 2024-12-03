@@ -20,7 +20,7 @@ import java.lang.reflect.Method;
 import java.util.*;
 
 @ThreadSafe
-@Deprecated
+@SuppressWarnings("unchecked")
 public class JedisClientFactory {
     private static class JedisClientHolder {
         public static JedisClient client = new JedisClient();

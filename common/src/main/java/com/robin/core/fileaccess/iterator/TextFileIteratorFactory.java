@@ -93,6 +93,7 @@ public class TextFileIteratorFactory {
 			if (!ObjectUtils.isEmpty(iterclass)) {
 				iterator =  iterclass.getConstructor(DataCollectionMeta.class).newInstance(colmeta);
 			}
+			iterator.beforeProcess(colmeta.getPath());
 		}catch (Exception ex){
 			throw new MissingConfigException(ex);
 		}

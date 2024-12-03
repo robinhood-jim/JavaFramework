@@ -12,31 +12,20 @@ import weka.core.Instances;
 import java.util.Map;
 
 
-public class LinearRegressionModeler extends AbstractModeler<Classifier> {
-    private LinearRegression linearRegression;
+public class LinearRegressionModeler extends AbstractModeler<LinearRegression> {
+
 
     public LinearRegressionModeler(){
-        linearRegression=new LinearRegression();
+        model=new LinearRegression();
     }
     @Override
-    public Classifier train(int classIndex, Map<String,String> optionMap, Instances trainInst, Instances testInst) throws  Exception{
+    public LinearRegression train(int classIndex, Map<String,String> optionMap, Instances trainInst) throws  Exception{
         Assert.isTrue(classIndex>0 && classIndex<trainInst.numAttributes(),"");
         trainInst.setClassIndex(classIndex);
-        linearRegression.buildClassifier(trainInst);
-        Evaluation evaluation=new Evaluation(testInst);
-        for(int i=0;i<testInst.numInstances();i++) {
-            evaluation.evaluateModelOnceAndRecordPrediction(linearRegression, testInst.instance(i));
-        }
-        System.out.println(evaluation.toSummaryString());
-        return linearRegression;
+        setOptions(optionMap);
+        model.buildClassifier(trainInst);
+        return model;
     }
 
-    @Override
-    public String evaluate(Instances testInst) throws Exception{
-        Evaluation evaluation=new Evaluation(testInst);
-        for(int i=0;i<testInst.numInstances();i++) {
-            evaluation.evaluateModelOnceAndRecordPrediction(linearRegression, testInst.instance(i));
-        }
-        return evaluation.toSummaryString();
-    }
+
 }

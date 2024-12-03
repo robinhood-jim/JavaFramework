@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-
+@SuppressWarnings("unchecked")
 public class TestXMLReader {
     public static void main(String[] args) {
         DataCollectionMeta colmeta = new DataCollectionMeta();

@@ -149,6 +149,27 @@
             <version>14.0.1</version>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>org.dom4j</groupId>
+            <artifactId>dom4j</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>nz.ac.waikato.cms.weka</groupId>
+            <artifactId>optics_dbScan</artifactId>
+            <version>1.0.6</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-vfs2</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.hadoop</groupId>
+                    <artifactId>hadoop-hdfs-client</artifactId>
+                </exclusion>
+            </exclusions>
+            <optional>true</optional>
+        </dependency>
 
 
     </dependencies>
@@ -212,6 +233,7 @@
                                     <include>com.robin:core</include>
                                     <include>com.google.guava:guava</include>
                                     <include>nz.ac.waikato.cms.weka:weak-stable</include>
+                                    <include>nz.ac.waikato.cms.weka:optics_dbScan</include>
                                     <include>org.apache.spark:spark-mllib_2.11</include>
                                     <include>org.apache.spark:spark-core_2.11</include>
                                 </includes>

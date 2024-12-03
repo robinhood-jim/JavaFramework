@@ -6,20 +6,22 @@ import com.robin.core.fileaccess.iterator.IResourceIterator;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.meta.DataSetColumnMeta;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import weka.classifiers.Classifier;
 import weka.classifiers.evaluation.Evaluation;
+import weka.clusterers.ClusterEvaluation;
+import weka.clusterers.Clusterer;
 import weka.core.Attribute;
 import weka.core.DenseInstance;
 import weka.core.Instance;
 import weka.core.Instances;
+import weka.filters.Filter;
+import weka.filters.unsupervised.instance.RemovePercentage;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 //Weka Utils return Instances by meta define
 @Slf4j
@@ -79,6 +81,7 @@ public class WekaUtils {
                     }
                     instances.add(instance);
                 }
+                instances.setClassIndex(classIndex);
                 return instances;
             }
 
@@ -90,9 +93,28 @@ public class WekaUtils {
     }
     public static String evaluateClassifier(Classifier classifier, Instances testInst) throws Exception {
         Evaluation evaluation=new Evaluation(testInst);
+        evaluation.crossValidateModel(classifier,testInst,10,new Random(1));
         for(int i=0;i<testInst.numInstances();i++) {
             evaluation.evaluateModelOnceAndRecordPrediction(classifier, testInst.instance(i));
         }
-        return evaluation.toSummaryString();
+        return evaluation.toSummaryString("Summary",false);
+    }
+    public static String evaluateCluster(Clusterer cluster, Instances testInsts) throws Exception{
+        ClusterEvaluation evaluation=new ClusterEvaluation();
+        evaluation.setClusterer(cluster);
+        evaluation.evaluateClusterer(testInsts);
+        return evaluation.clusterResultsToString();
+    }
+    public static Pair<Instances,Instances> splitTrainAndValidates(Instances allDatas,double trainPercentage) throws Exception{
+        RemovePercentage dtTrain=new RemovePercentage();
+        dtTrain.setPercentage(trainPercentage);
+        dtTrain.setInputFormat(allDatas);
+        double validatePercentage=100.0-trainPercentage;
+        RemovePercentage dtValidate=new RemovePercentage();
+        dtValidate.setPercentage(validatePercentage);
+        dtValidate.setInputFormat(allDatas);
+        Instances trainDatas= Filter.useFilter(allDatas,dtTrain);
+        Instances validateDatas=Filter.useFilter(allDatas,dtValidate);
+        return Pair.of(trainDatas,validateDatas);
     }
 }

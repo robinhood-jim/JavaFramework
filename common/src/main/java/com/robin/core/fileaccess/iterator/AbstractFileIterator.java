@@ -56,7 +56,6 @@ public abstract class AbstractFileIterator implements IResourceIterator {
             columnList.add(meta.getColumnName());
             columnMap.put(meta.getColumnName(), meta);
         }
-        checkAccessUtil(colmeta.getPath());
     }
 
     public AbstractFileIterator(DataCollectionMeta colmeta, AbstractFileSystemAccessor accessUtil) {

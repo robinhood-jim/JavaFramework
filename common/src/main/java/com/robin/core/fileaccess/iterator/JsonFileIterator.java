@@ -37,7 +37,6 @@ public class JsonFileIterator extends AbstractFileIterator{
 	}
 	@Override
 	public void init() {
-		checkAccessUtil(null);
 		super.beforeProcess(colmeta.getPath());
 		jreader=new JsonReader(reader);
 		try{
