@@ -38,7 +38,6 @@ public class PlainTextFileIterator extends AbstractFileIterator{
 
 	@Override
 	public void init() {
-		checkAccessUtil(null);
 		super.beforeProcess(colmeta.getPath());
 
 	}

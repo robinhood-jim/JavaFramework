@@ -74,6 +74,7 @@ public class EntityMappingUtil {
                             params.add(content.getGetMethod().invoke(obj));
                             paramTypes.add(new SqlParameter(columnMeta.getDataType()));
                         } else {
+                            insertSegment.setHasPrimaryKey(true);
                             if (!ObjectUtils.isEmpty(content.getPrimaryKeys())) {
                                 //Composite Primary Key
                                 BasePrimaryObject pkObj=(BasePrimaryObject) content.getGetMethod().invoke(obj);
@@ -461,6 +462,7 @@ public class EntityMappingUtil {
     public static class InsertSegment  {
         boolean hasincrementPk = false;
         boolean hasSequencePk = false;
+        boolean hasPrimaryKey=false;
         boolean containlob = false;
         private String insertSql;
         private String seqField;

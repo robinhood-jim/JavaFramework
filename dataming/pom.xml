@@ -146,12 +146,29 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
+            <version>14.0.1</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.dom4j</groupId>
+            <artifactId>dom4j</artifactId>
             <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>nz.ac.waikato.cms.weka</groupId>
             <artifactId>optics_dbScan</artifactId>
             <version>1.0.6</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-vfs2</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.hadoop</groupId>
+                    <artifactId>hadoop-hdfs-client</artifactId>
+                </exclusion>
+            </exclusions>
+            <optional>true</optional>
         </dependency>
 
 

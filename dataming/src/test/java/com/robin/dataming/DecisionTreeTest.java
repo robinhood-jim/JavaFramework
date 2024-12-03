@@ -29,7 +29,7 @@ public class DecisionTreeTest {
         meta.addColumnMeta("banwidth", Const.META_TYPE_DOUBLE,null);
         //nominal target column
         DataSetColumnMeta columnMeta=meta.createColumnMeta("class",Const.META_TYPE_STRING,null);
-        columnMeta.setNominalValues(Arrays.asList(new String[]{"Iris-setosa", "Iris-versicolor","Iris-virginica"}));
+        columnMeta.setNominalValues(Arrays.asList(new String[]{"setosa", "versicolor","virginica"}));
         meta.addColumnMeta(columnMeta);
         Map<String,String> configMap=new HashMap<>();
         configMap.put("masterUrl","local");
