@@ -18,7 +18,7 @@
         <spring.boot.version>2.2.4.RELEASE</spring.boot.version>
         <spring.cloud.version>2.1.2.RELEASE</spring.cloud.version>
         <jetcd.version>0.5.0</jetcd.version>
-        <swagger.version>2.7.0</swagger.version>
+        <swagger.version>2.10.0</swagger.version>
         <quartz.version>2.3.2</quartz.version>
     </properties>
     
