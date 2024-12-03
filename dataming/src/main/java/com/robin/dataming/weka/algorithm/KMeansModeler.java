@@ -15,7 +15,7 @@ import java.util.Map;
 public class KMeansModeler extends AbstractModeler<SimpleKMeans> {
 
     @Override
-    public SimpleKMeans train(int classIndex, Map<String, String> optionMap, Instances trainInst, Instances testInst) throws Exception {
+    public SimpleKMeans train(int classIndex, Map<String, String> optionMap, Instances trainInst) throws Exception {
         Assert.isTrue(!ObjectUtils.isEmpty(optionMap.get("numberOfCluster")) && !ObjectUtils.isEmpty(optionMap.get("maxIter")) ,"");
         if(!ObjectUtils.isEmpty(optionMap.get("numberOfCluster"))){
             model.setNumClusters(Integer.parseInt(optionMap.get("numberOfCluster")));

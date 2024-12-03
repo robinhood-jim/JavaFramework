@@ -6,6 +6,7 @@ import com.robin.core.fileaccess.iterator.IResourceIterator;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.meta.DataSetColumnMeta;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
@@ -17,6 +18,8 @@ import weka.core.Attribute;
 import weka.core.DenseInstance;
 import weka.core.Instance;
 import weka.core.Instances;
+import weka.filters.Filter;
+import weka.filters.unsupervised.instance.RemovePercentage;
 
 import java.util.*;
 
@@ -78,6 +81,7 @@ public class WekaUtils {
                     }
                     instances.add(instance);
                 }
+                instances.setClassIndex(classIndex);
                 return instances;
             }
 
@@ -100,5 +104,17 @@ public class WekaUtils {
         evaluation.setClusterer(cluster);
         evaluation.evaluateClusterer(testInsts);
         return evaluation.clusterResultsToString();
+    }
+    public static Pair<Instances,Instances> splitTrainAndValidates(Instances allDatas,double trainPercentage) throws Exception{
+        RemovePercentage dtTrain=new RemovePercentage();
+        dtTrain.setPercentage(trainPercentage);
+        dtTrain.setInputFormat(allDatas);
+        double validatePercentage=100.0-trainPercentage;
+        RemovePercentage dtValidate=new RemovePercentage();
+        dtValidate.setPercentage(validatePercentage);
+        dtValidate.setInputFormat(allDatas);
+        Instances trainDatas= Filter.useFilter(allDatas,dtTrain);
+        Instances validateDatas=Filter.useFilter(allDatas,dtValidate);
+        return Pair.of(trainDatas,validateDatas);
     }
 }

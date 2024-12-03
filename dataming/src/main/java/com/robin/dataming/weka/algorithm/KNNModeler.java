@@ -10,7 +10,7 @@ import java.util.Map;
 public class KNNModeler extends AbstractModeler<IBk> {
 
     @Override
-    public IBk train(int classIndex, Map<String, String> optionMap, Instances trainInst, Instances testInst) throws Exception {
+    public IBk train(int classIndex, Map<String, String> optionMap, Instances trainInst) throws Exception {
         trainInst.setClassIndex(classIndex);
 
         if(!ObjectUtils.isEmpty(optionMap.get("numberOfCluster"))){

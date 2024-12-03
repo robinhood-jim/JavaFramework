@@ -19,7 +19,7 @@ public class LinearRegressionModeler extends AbstractModeler<LinearRegression> {
         model=new LinearRegression();
     }
     @Override
-    public LinearRegression train(int classIndex, Map<String,String> optionMap, Instances trainInst, Instances testInst) throws  Exception{
+    public LinearRegression train(int classIndex, Map<String,String> optionMap, Instances trainInst) throws  Exception{
         Assert.isTrue(classIndex>0 && classIndex<trainInst.numAttributes(),"");
         trainInst.setClassIndex(classIndex);
         setOptions(optionMap);

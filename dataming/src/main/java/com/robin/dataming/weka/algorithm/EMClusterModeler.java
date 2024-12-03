@@ -13,7 +13,7 @@ public class EMClusterModeler extends AbstractModeler<EM>{
     }
 
     @Override
-    public EM train(int classIndex, Map<String, String> optionMap, Instances trainInst, Instances testInst) throws Exception {
+    public EM train(int classIndex, Map<String, String> optionMap, Instances trainInst) throws Exception {
         trainInst.setClassIndex(classIndex);
         if(!ObjectUtils.isEmpty(optionMap.get("numberOfCluster"))){
             model.setNumClusters(Integer.parseInt(optionMap.get("numberOfCluster")));

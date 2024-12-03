@@ -10,7 +10,7 @@ import java.util.Map;
 
 public class DBSCANModeler extends AbstractModeler<DBSCAN>{
     @Override
-    public DBSCAN train(int classIndex, Map<String, String> optionMap, Instances trainInst, Instances testInst) throws Exception {
+    public DBSCAN train(int classIndex, Map<String, String> optionMap, Instances trainInst) throws Exception {
 
         if(!ObjectUtils.isEmpty(optionMap.get("distanceFunc")) && "Manhattan".equalsIgnoreCase(optionMap.get("distanceFunc"))) {
             model.setDistanceFunction(new ManhattanDistance());

@@ -11,7 +11,7 @@ import java.util.Map;
 public class LogisticRegressionModeler extends AbstractModeler<Logistic> {
 
     @Override
-    public Logistic train(int classIndex, Map<String,String> optionMap, Instances trainInst, Instances testInst) throws Exception {
+    public Logistic train(int classIndex, Map<String,String> optionMap, Instances trainInst) throws Exception {
         if(!ObjectUtils.isEmpty(optionMap.get("maxIts"))) {
             model.setMaxIts(Integer.parseInt(optionMap.get("maxIts")));
         }

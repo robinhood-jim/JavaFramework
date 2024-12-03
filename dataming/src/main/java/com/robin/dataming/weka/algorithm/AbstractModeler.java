@@ -35,7 +35,7 @@ public abstract class AbstractModeler<T> {
                log.info("{}",ex.getMessage());
           }
      }
-     public abstract T train(int classIndex, Map<String,String> optionMap, Instances trainInst, Instances testInst) throws  Exception;
+     public abstract T train(int classIndex, Map<String,String> optionMap, Instances trainInst) throws  Exception;
      public String evaluate(Instances testInst) throws Exception{
           if(Classifier.class.isAssignableFrom(clazz)){
                return WekaUtils.evaluateClassifier((Classifier) model,testInst);
