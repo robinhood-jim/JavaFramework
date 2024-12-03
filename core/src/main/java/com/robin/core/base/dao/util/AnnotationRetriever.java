@@ -249,14 +249,7 @@ public class AnnotationRetriever {
 
 
     public static FieldContent getPrimaryField(List<FieldContent> columList) {
-        FieldContent pkField = null;
-        for (FieldContent field : columList) {
-            if (field.isPrimary()) {
-                pkField = field;
-                break;
-            }
-        }
-        return pkField;
+        return columList.stream().filter(FieldContent::isPrimary).findFirst().orElse(null);
     }
 
     public static FieldContent getPrimaryFieldByClass(Class<? extends BaseObject> clazz) {

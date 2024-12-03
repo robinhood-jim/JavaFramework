@@ -106,12 +106,13 @@ public class EntityMappingUtil {
                         }
                     }
                 } else {
+                    insertSegment.setHasPrimaryKey(true);
                     if (content.isIncrement()) {
                         insertSegment.setHasincrementPk(true);
                         insertSegment.setIncrementColumn(content);
                     }
                     //Sequence
-                    if (content.isSequential()) {
+                    else if (content.isSequential()) {
                         insertSegment.setHasSequencePk(true);
                         insertSegment.setSeqField(content.getSequenceName());
                         valueBuffer.append(sqlGen.getSequenceScript(content.getSequenceName())).append(",");
