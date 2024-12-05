@@ -40,6 +40,7 @@ public class LogisticRegressionTest {
         Pair<Instances,Instances> datas=WekaUtils.splitTrainAndValidates(instances,80.0);
         LogisticRegressionModeler modeler=new LogisticRegressionModeler();
         Logistic classifier= modeler.train(4,new HashMap<>(),datas.getLeft());
+        System.out.println(classifier.toString());
         System.out.println(modeler.evaluate(datas.getRight()));
     }
 }
