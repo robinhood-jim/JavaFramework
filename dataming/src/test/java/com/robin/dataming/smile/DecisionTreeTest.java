@@ -35,8 +35,7 @@ public class DecisionTreeTest {
         DataSetColumnMeta columnMeta=meta.createColumnMeta("label",Const.META_TYPE_STRING,null);
         columnMeta.setNominalValues(Lists.newArrayList(new String[]{"setosa", "versicolor","virginica"}));
         meta.addColumnMeta(columnMeta);
-        try{
-            IResourceIterator iterator= TextFileIteratorFactory.getProcessIteratorByType(meta);
+        try(IResourceIterator iterator= TextFileIteratorFactory.getProcessIteratorByType(meta)){
             DecisionTreeModeler modeler=new DecisionTreeModeler(meta,iterator);
             Pair<DataFrame,DataFrame> dfPair= SmileUtils.splitTrainAndValidate(meta,iterator,80);
             Map<String,Object> optionalMap=new HashMap<>();

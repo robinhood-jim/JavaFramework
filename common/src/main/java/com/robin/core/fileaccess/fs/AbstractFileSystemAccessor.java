@@ -104,4 +104,5 @@ public abstract class AbstractFileSystemAccessor implements IFileSystemAccessor 
 	public String getIdentifier() {
 		return identifier;
 	}
+
 }

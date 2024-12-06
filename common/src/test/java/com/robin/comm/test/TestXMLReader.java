@@ -30,10 +30,7 @@ public class TestXMLReader {
         colmeta.setEncode("UTF-8");
         colmeta.setPath("f:/test.xml");
         colmeta.setFileFormat(Const.FILETYPE_XML);
-        try {
-
-            IResourceIterator iter = TextFileIteratorFactory.getProcessIteratorByType(colmeta);
-            //iter.beforeProcess(colmeta.getPath());
+        try(IResourceIterator iter = TextFileIteratorFactory.getProcessIteratorByType(colmeta)) {
             while (iter.hasNext()) {
                 System.out.println(iter.next());
             }

@@ -1,12 +1,10 @@
 package com.robin.dataming.smile;
 
-import com.google.common.collect.Lists;
 import com.robin.core.base.util.Const;
 import com.robin.core.base.util.ResourceConst;
 import com.robin.core.fileaccess.iterator.IResourceIterator;
 import com.robin.core.fileaccess.iterator.TextFileIteratorFactory;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
-import com.robin.core.fileaccess.meta.DataSetColumnMeta;
 import com.robin.dataming.smile.algorithm.DBSCANModeler;
 import com.robin.dataming.smile.utils.SmileUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -30,15 +28,14 @@ public class DBSCANTest {
         meta.addColumnMeta("banlength", Const.META_TYPE_DOUBLE,null);
         meta.addColumnMeta("banwidth", Const.META_TYPE_DOUBLE,null);
 
-        try{
-            IResourceIterator iterator= TextFileIteratorFactory.getProcessIteratorByType(meta);
+        try(IResourceIterator iterator= TextFileIteratorFactory.getProcessIteratorByType(meta)){
             DBSCANModeler modeler=new DBSCANModeler(meta,iterator);
             Pair<DataFrame,DataFrame> dfPair=SmileUtils.splitTrainAndValidate(meta,iterator,80);
             Map<String,Object> optionalMap=new HashMap<>();
             optionalMap.put("radius",0.6);
             DBSCAN<double[]> dbscan= modeler.train(dfPair.getKey(),optionalMap);
             System.out.println(dbscan.k);
-            System.out.println(dbscan.toString());
+            System.out.println(dbscan);
             System.out.println(modeler.validate(dfPair.getValue()));
         }catch (Exception ex){
             ex.printStackTrace();
