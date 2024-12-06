@@ -1,4 +1,4 @@
-package com.robin.dataming;
+package com.robin.dataming.weka;
 
 
 import com.google.common.collect.Lists;
@@ -24,16 +24,16 @@ public class LogisticRegressionTest {
         DataCollectionMeta meta=new DataCollectionMeta();
         meta.setResType(ResourceConst.ResourceType.TYPE_LOCALFILE.getValue());
         meta.setSourceType(ResourceConst.IngestType.TYPE_LOCAL.getValue());
-        meta.setFileFormat(Const.FILESUFFIX_CSV);
-        meta.setPath("file:///e:/iris.csv");
+        meta.setFileFormat(Const.FILEFORMATSTR.ARFF.getValue());
+        meta.setPath("file:///f:/iris.arff");
         //"erwidth","banlength","banwidth","class"
-        meta.addColumnMeta("erlength", Const.META_TYPE_DOUBLE,null);
+        /*meta.addColumnMeta("erlength", Const.META_TYPE_DOUBLE,null);
         meta.addColumnMeta("erwidth", Const.META_TYPE_DOUBLE,null);
         meta.addColumnMeta("banlength", Const.META_TYPE_DOUBLE,null);
         meta.addColumnMeta("banwidth", Const.META_TYPE_DOUBLE,null);
         DataSetColumnMeta columnMeta=meta.createColumnMeta("class",Const.META_TYPE_STRING,null);
         columnMeta.setNominalValues(Lists.newArrayList(new String[]{"setosa", "versicolor","virginica"}));
-        meta.addColumnMeta(columnMeta);
+        meta.addColumnMeta(columnMeta);*/
 
         IResourceIterator iterator= TextFileIteratorFactory.getProcessIteratorByType(meta);
         Instances instances= WekaUtils.getInstancesByResource(meta,iterator,4);

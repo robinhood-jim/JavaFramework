@@ -113,8 +113,8 @@ public class WekaUtils {
         RemovePercentage dtValidate=new RemovePercentage();
         dtValidate.setPercentage(validatePercentage);
         dtValidate.setInputFormat(allDatas);
-        Instances trainDatas= Filter.useFilter(allDatas,dtTrain);
-        Instances validateDatas=Filter.useFilter(allDatas,dtValidate);
+        Instances trainDatas= Filter.useFilter(allDatas,dtValidate);
+        Instances validateDatas=Filter.useFilter(allDatas,dtTrain);
         return Pair.of(trainDatas,validateDatas);
     }
 }

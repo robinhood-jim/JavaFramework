@@ -426,7 +426,9 @@ public class Const {
         XML("xml"),
         PLAIN("txt"),
         CSV("csv"),
-        PROTOBUF("proto");
+        PROTOBUF("proto"),
+
+        ARFF("arff");
         private String value;
         FILEFORMATSTR(String value){
             this.value=value;

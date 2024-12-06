@@ -20,14 +20,15 @@ import com.robin.core.base.util.StringUtils;
 import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.meta.DataSetColumnMeta;
+import org.springframework.util.ObjectUtils;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
 public class PlainTextFileIterator extends AbstractFileIterator{
-	private String readLineStr=null;
-	private String split=",";
+	protected String readLineStr=null;
+	protected String split=",";
 	public PlainTextFileIterator(){
 		identifier= Const.FILEFORMATSTR.CSV.getValue();
 	}
@@ -47,8 +48,10 @@ public class PlainTextFileIterator extends AbstractFileIterator{
 		boolean hasNext=false;
 		try{
 			if(reader!=null){
-				readLineStr=reader.readLine();
-				if(readLineStr!=null) {
+				do{
+					readLineStr=reader.readLine();
+				} while(ObjectUtils.isEmpty(readLineStr));
+				if(!ObjectUtils.isEmpty(readLineStr)) {
                     hasNext=true;
                 }
 			}

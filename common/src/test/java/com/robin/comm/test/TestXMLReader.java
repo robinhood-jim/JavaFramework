@@ -42,6 +42,20 @@ public class TestXMLReader {
             ex.printStackTrace();
         }
     }
+    @Test
+    public void testArffRead(){
+        DataCollectionMeta colmeta = new DataCollectionMeta();
+        colmeta.setPath("file:///f:/iris.arff");
+        colmeta.setFileFormat(Const.FILEFORMATSTR.ARFF.getValue());
+        try(IResourceIterator iterator=TextFileIteratorFactory.getProcessIteratorByType(colmeta)){
+            while(iterator.hasNext()){
+                System.out.println(iterator.next());
+            }
+        }catch (Exception ex){
+            ex.printStackTrace();
+        }
+
+    }
 
     @Test
     public void test1() throws Exception {
