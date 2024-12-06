@@ -26,6 +26,7 @@ import org.apache.parquet.hadoop.util.HadoopInputFile;
 import org.apache.parquet.io.InputFile;
 import org.apache.parquet.schema.MessageType;
 import org.apache.parquet.schema.Type;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
 import java.io.ByteArrayOutputStream;
@@ -45,6 +46,7 @@ public class ParquetFileIterator extends AbstractFileIterator {
     private GenericData.Record record;
     private ParquetReader<Map<String,Object>> ireader;
     private boolean useAvroEncode = false;
+    private final long maxSize = Integer.MAX_VALUE;
 
     public ParquetFileIterator() {
         identifier = Const.FILEFORMATSTR.PARQUET.getValue();
@@ -65,12 +67,9 @@ public class ParquetFileIterator extends AbstractFileIterator {
         Configuration conf;
         InputFile file;
         // max allowable parquet file size to load in memory for no hdfs input
-        long maxSize = 1024L * 1024L * 300L;
+
         try {
             checkAccessUtil(null);
-            if (colmeta.getResourceCfgMap().containsKey("parquetMaxLoadableSize")) {
-                maxSize = Long.parseLong(colmeta.getResourceCfgMap().get("parquetMaxLoadableSize").toString());
-            }
             if (colmeta.getResourceCfgMap().containsKey("file.useAvroEncode") && "true".equalsIgnoreCase(colmeta.getResourceCfgMap().get("file.useAvroEncode").toString())) {
                 useAvroEncode = true;
             }
@@ -102,8 +101,8 @@ public class ParquetFileIterator extends AbstractFileIterator {
                 } else {
                     instream = accessUtil.getRawInputStream(colmeta, ResourceUtil.getProcessPath(colmeta.getPath()));
                     long size = instream.available();//accessUtil.getInputStreamSize(colmeta, ResourceUtil.getProcessPath(colmeta.getPath()));
-                    //file size too large ,may cause OOM,download as tmpfile
-                    if (size > maxSize) {
+                    //file size too large ,can not store in ByteArrayOutputStream
+                    if (size >= maxSize) {
                         String tmpPath = (!ObjectUtils.isEmpty(colmeta.getResourceCfgMap().get("output.tmppath"))) ? colmeta.getResourceCfgMap().get("output.tmppath").toString() : FileUtils.getUserDirectoryPath();
                         String tmpFilePath = "file:///" + tmpPath + ResourceUtil.getProcessFileName(colmeta.getPath());
                         tmpFile = new File(new URL(tmpFilePath).toURI());
@@ -175,12 +174,14 @@ public class ParquetFileIterator extends AbstractFileIterator {
     }
 
     private void parseSchemaByType() {
-        List<Type> colList = msgtype.getFields();
+        if(!CollectionUtils.isEmpty(colmeta.getColumnList())) {
+            List<Type> colList = msgtype.getFields();
 
-        for (Type type : colList) {
-            colmeta.addColumnMeta(type.getName(), ParquetReaderUtil.parseColumnType(type.asPrimitiveType()), null);
+            for (Type type : colList) {
+                colmeta.addColumnMeta(type.getName(), ParquetReaderUtil.parseColumnType(type.asPrimitiveType()), null);
+            }
+            schema = AvroUtils.getSchemaFromMeta(colmeta);
         }
-        schema = AvroUtils.getSchemaFromMeta(colmeta);
     }
 
 
@@ -192,9 +193,6 @@ public class ParquetFileIterator extends AbstractFileIterator {
     public void remove() {
         try {
             reader.read();
-            if (tmpFile != null) {
-                FileUtils.deleteQuietly(tmpFile);
-            }
         } catch (Exception ex) {
             ex.printStackTrace();
         }
