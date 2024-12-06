@@ -21,7 +21,7 @@ public class CustomParquetReader<T> extends ParquetReader<T> {
     public static  CustomParquetReader.Builder builder(InputFile file,DataCollectionMeta colMeta) {
         return new CustomParquetReader.Builder(file,colMeta);
     }
-    public static class Builder extends org.apache.parquet.hadoop.ParquetReader.Builder<Map> {
+    public static class Builder extends org.apache.parquet.hadoop.ParquetReader.Builder<Map<String,Object>> {
         private boolean enableCompatibility;
         private DataCollectionMeta colMeta;
         /** @deprecated */
@@ -48,7 +48,7 @@ public class CustomParquetReader<T> extends ParquetReader<T> {
         }
 
         @Override
-        protected ReadSupport<Map> getReadSupport() {
+        protected ReadSupport<Map<String,Object>> getReadSupport() {
             return new CustomReadSupport(colMeta);
         }
     }
