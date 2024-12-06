@@ -23,8 +23,8 @@ public class ArffFileIterator extends PlainTextFileIterator{
     }
 
     @Override
-    public void init() {
-        super.beforeProcess(colmeta.getPath());
+    public void beforeProcess() {
+        super.beforeProcess();
         if(CollectionUtils.isEmpty(colmeta.getColumnList())){
             if(!ObjectUtils.isEmpty(reader)){
                 try {
@@ -37,7 +37,7 @@ public class ArffFileIterator extends PlainTextFileIterator{
                         }
                     }
                 }catch (IOException ex){
-                    logger.info("{}",ex);
+                    logger.info("{}",ex.getMessage());
                 }
             }
         }

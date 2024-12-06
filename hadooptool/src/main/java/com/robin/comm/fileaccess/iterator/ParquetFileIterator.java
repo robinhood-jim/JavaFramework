@@ -6,6 +6,7 @@ import com.robin.comm.fileaccess.util.SeekableInputStream;
 import com.robin.core.base.util.Const;
 import com.robin.core.base.util.IOUtils;
 import com.robin.core.base.util.ResourceConst;
+import com.robin.core.fileaccess.fs.ApacheVfsFileSystemAccessor;
 import com.robin.core.fileaccess.iterator.AbstractFileIterator;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.util.AvroUtils;
@@ -16,6 +17,7 @@ import org.apache.avro.generic.GenericData;
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.parquet.ParquetReadOptions;
 import org.apache.parquet.avro.AvroParquetReader;
 import org.apache.parquet.format.converter.ParquetMetadataConverter;
 import org.apache.parquet.hadoop.ParquetFileReader;
@@ -31,6 +33,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -58,7 +61,7 @@ public class ParquetFileIterator extends AbstractFileIterator {
     private File tmpFile;
 
     @Override
-    public void init() {
+    public void beforeProcess() {
         Configuration conf;
         InputFile file;
         // max allowable parquet file size to load in memory for no hdfs input
@@ -71,7 +74,7 @@ public class ParquetFileIterator extends AbstractFileIterator {
             if (colmeta.getResourceCfgMap().containsKey("file.useAvroEncode") && "true".equalsIgnoreCase(colmeta.getResourceCfgMap().get("file.useAvroEncode").toString())) {
                 useAvroEncode = true;
             }
-            if (colmeta.getSourceType().equals(ResourceConst.IngestType.TYPE_HDFS.getValue())) {
+            if (ResourceConst.IngestType.TYPE_HDFS.getValue().equals(colmeta.getSourceType())) {
                 conf = new HDFSUtil(colmeta).getConfig();
                 if (colmeta.getColumnList().isEmpty()) {
                     ParquetMetadata meta = ParquetFileReader.readFooter(conf, new Path(colmeta.getPath()), ParquetMetadataConverter.NO_FILTER);
@@ -95,7 +98,7 @@ public class ParquetFileIterator extends AbstractFileIterator {
                     file = ParquetUtil.makeInputFile(seekableInputStream, size);
                 } else {
                     instream = accessUtil.getRawInputStream(colmeta, ResourceUtil.getProcessPath(colmeta.getPath()));
-                    long size = accessUtil.getInputStreamSize(colmeta, ResourceUtil.getProcessPath(colmeta.getPath()));
+                    long size = instream.available();//accessUtil.getInputStreamSize(colmeta, ResourceUtil.getProcessPath(colmeta.getPath()));
                     //file size too large ,may cause OOM,download as tmpfile
                     if(size>maxSize) {
                         String tmpPath = (!ObjectUtils.isEmpty(colmeta.getResourceCfgMap().get("output.tmppath"))) ? colmeta.getResourceCfgMap().get("output.tmppath").toString() : FileUtils.getUserDirectoryPath();
@@ -105,24 +108,24 @@ public class ParquetFileIterator extends AbstractFileIterator {
                         seekableInputStream = new FileSeekableInputStream(tmpPath);
                         file = ParquetUtil.makeInputFile(seekableInputStream, size);
                     }else{
-                        ByteArrayOutputStream byteout=new ByteArrayOutputStream(instream.available());
+                        ByteArrayOutputStream byteout=new ByteArrayOutputStream((int)size);
                         IOUtils.copyBytes(instream,byteout,8000);
                         SeekableInputStream seekableInputStream=new SeekableInputStream(byteout.toByteArray());
                         file = ParquetUtil.makeInputFile(seekableInputStream);
                     }
                 }
                 if (colmeta.getColumnList().isEmpty()) {
-                    ParquetMetadata meta = ParquetFileReader.readFooter(file, ParquetMetadataConverter.NO_FILTER);
+                    ParquetReadOptions options= ParquetReadOptions.builder().withMetadataFilter(ParquetMetadataConverter.NO_FILTER).build();
+                    ParquetFileReader ireader=ParquetFileReader.open(file,options);
+                    ParquetMetadata meta =ireader.getFooter(); //ParquetFileReader.readFooter(file, ParquetMetadataConverter.NO_FILTER);
                     msgtype = meta.getFileMetaData().getSchema();
+                    parseSchemaByType();
                     //read footer and schema,must return header
-                    if(!ObjectUtils.isEmpty(seekableInputStream)){
-                        seekableInputStream.seek(0L);
-                    }
+                    file.newStream().seek(0L);
                 } else {
                     schema = AvroUtils.getSchemaFromMeta(colmeta);
                 }
                 if (!useAvroEncode) {
-                    parseSchemaByType();
                     fields = schema.getFields();
                     ireader = CustomParquetReader.builder(file, colmeta).build();
                 } else {
@@ -130,7 +133,7 @@ public class ParquetFileIterator extends AbstractFileIterator {
                 }
             }
         } catch (Exception ex) {
-            logger.error("{0}", ex.getMessage());
+            logger.error("{}", ex.getMessage());
         }
 
     }

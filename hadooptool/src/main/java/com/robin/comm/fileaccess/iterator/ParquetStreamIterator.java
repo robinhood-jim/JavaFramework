@@ -44,7 +44,8 @@ public class ParquetStreamIterator extends AbstractFileIterator {
     private static final int COPY_BUFFER_SIZE = 8192;
 
     @Override
-    public void init()  {
+    public void beforeProcess()  {
+        super.beforeProcess();
         conf=new HDFSUtil(colmeta).getConfig();
         try {
             if (colmeta.getColumnList().isEmpty()) {

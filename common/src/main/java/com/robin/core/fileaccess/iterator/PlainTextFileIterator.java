@@ -23,6 +23,7 @@ import com.robin.core.fileaccess.meta.DataSetColumnMeta;
 import org.springframework.util.ObjectUtils;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -37,11 +38,6 @@ public class PlainTextFileIterator extends AbstractFileIterator{
 		identifier= Const.FILEFORMATSTR.CSV.getValue();
 	}
 
-	@Override
-	public void init() {
-		super.beforeProcess(colmeta.getPath());
-
-	}
 
 	@Override
 	public boolean hasNext() {
@@ -73,11 +69,11 @@ public class PlainTextFileIterator extends AbstractFileIterator{
 			}
 			return map;
 		}else{
-			return null;
+			return Collections.emptyMap();
 		}
 		}catch(Exception ex){
 			logger.error("{}",ex.getMessage());
-			return null;
+			return Collections.emptyMap();
 		}
 	}
 

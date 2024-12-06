@@ -58,7 +58,7 @@ public class TestExcelOperation {
             }
 
             @Override
-            public void beforeProcess(String param) {
+            public void beforeProcess() {
 
             }
 

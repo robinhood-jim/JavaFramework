@@ -36,11 +36,6 @@ public class TextFileIteratorFactory {
 	}
 	public static IResourceIterator getProcessIteratorByType(DataCollectionMeta colmeta) throws IOException{
 		IResourceIterator iterator=getIter(colmeta);
-		try {
-			iterator.init();
-		}catch (Exception ex){
-			log.error("{}",ex.getMessage());
-		}
 		return iterator;
 	}
 	public static AbstractFileIterator getProcessReaderIterator(DataCollectionMeta colmeta, AbstractFileSystemAccessor utils){
@@ -52,8 +47,8 @@ public class TextFileIteratorFactory {
 			if (!ObjectUtils.isEmpty(iterclass)) {
 				iterator = (AbstractFileIterator) iterclass.getConstructor(DataCollectionMeta.class, AbstractFileSystemAccessor.class).newInstance(colmeta,utils);
 			}
-			iterator.beforeProcess(colmeta.getPath());
 			iterator.init();
+			iterator.beforeProcess();
 		}catch (Exception ex){
 			throw new MissingConfigException(ex);
 		}
@@ -93,7 +88,8 @@ public class TextFileIteratorFactory {
 			if (!ObjectUtils.isEmpty(iterclass)) {
 				iterator =  iterclass.getConstructor(DataCollectionMeta.class).newInstance(colmeta);
 			}
-			iterator.beforeProcess(colmeta.getPath());
+			iterator.init();
+			iterator.beforeProcess();
 		}catch (Exception ex){
 			throw new MissingConfigException(ex);
 		}

@@ -70,11 +70,11 @@ public abstract class AbstractFileIterator implements IResourceIterator {
     }
 
     @Override
-    public void beforeProcess(String resourcePath) {
-        checkAccessUtil(resourcePath);
+    public void beforeProcess() {
+        checkAccessUtil(colmeta.getPath());
         Assert.notNull(accessUtil, "ResourceAccessUtil is required!");
         try {
-            Pair<BufferedReader, InputStream> pair = accessUtil.getInResourceByReader(colmeta, ResourceUtil.getProcessPath(resourcePath));
+            Pair<BufferedReader, InputStream> pair = accessUtil.getInResourceByReader(colmeta, ResourceUtil.getProcessPath(colmeta.getPath()));
             this.reader = pair.getKey();
             this.instream = pair.getValue();
         } catch (Exception ex) {
@@ -134,7 +134,7 @@ public abstract class AbstractFileIterator implements IResourceIterator {
             instream.close();
         }
         if(accessUtil!=null){
-            if(!ApacheVfsFileSystemAccessor.class.isAssignableFrom(accessUtil.getClass())) {
+            if(ApacheVfsFileSystemAccessor.class.isAssignableFrom(accessUtil.getClass())) {
                 if(!ObjectUtils.isEmpty(colmeta.getResourceCfgMap().get("$processId"))) {
                     ((ApacheVfsFileSystemAccessor)accessUtil).closeWithProcessId(colmeta.getResourceCfgMap().get("$processId").toString());
                 }

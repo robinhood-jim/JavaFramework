@@ -36,8 +36,8 @@ public class TestResourceReadWrite extends TestCase {
 			builder.addColumn("tdate",Const.META_TYPE_BIGINT,null);
 
 			builder.resourceCfg("hostName", "127.0.0.1").resourceCfg("protocol", "ftp")
-					.resourceCfg("port", 21).resourceCfg("userName", "test").resourceCfg("password", "test").fileFormat(Const.FILEFORMATSTR.PROTOBUF.getValue())
-							.resPath("/tmp/test1.proto.snappy").protocol(Const.VFS_PROTOCOL.FTP.getValue()).fsType(Const.FILESYSTEM.VFS.getValue());
+					.resourceCfg("port", 21).resourceCfg("userName", "test").resourceCfg("password", "test").fileFormat(Const.FILEFORMATSTR.PARQUET.getValue())
+							.resPath("/tmp/test1.parquet.snappy").protocol(Const.VFS_PROTOCOL.FTP.getValue()).fsType(Const.FILESYSTEM.VFS.getValue());
 
 			DataCollectionMeta colmeta=builder.build();
 			final AbstractFileWriter jwriter=(AbstractFileWriter) TextFileWriterFactory.getWriterByType(colmeta);
@@ -71,24 +71,23 @@ public class TestResourceReadWrite extends TestCase {
 	}
 	@Test
 	public void testRead(){
-		try {
-			DataCollectionMeta.Builder builder = new DataCollectionMeta.Builder();
-			builder.addColumn("id", Const.META_TYPE_BIGINT, null);
-			builder.addColumn("line_code", Const.META_TYPE_STRING, null);
-			builder.addColumn("line_name", Const.META_TYPE_STRING, null);
-			builder.addColumn("tdate", Const.META_TYPE_BIGINT, null);
+		DataCollectionMeta.Builder builder = new DataCollectionMeta.Builder();
+		//builder.addColumn("id", Const.META_TYPE_BIGINT, null);
+		//builder.addColumn("line_code", Const.META_TYPE_STRING, null);
+		//builder.addColumn("line_name", Const.META_TYPE_STRING, null);
+		//builder.addColumn("tdate", Const.META_TYPE_BIGINT, null);
 
-			builder.resourceCfg("hostName", "127.0.0.1").resourceCfg("protocol", "ftp")
-					.resourceCfg("port", 21).resourceCfg("userName", "test").resourceCfg("password", "test").fileFormat(Const.FILEFORMATSTR.PROTOBUF.getValue())
-					.resPath("/tmp/test1.proto.snappy").protocol(Const.VFS_PROTOCOL.FTP.getValue()).fsType(Const.FILESYSTEM.VFS.getValue());
+		builder.resourceCfg("hostName", "127.0.0.1").resourceCfg("protocol", "ftp")
+				.resourceCfg("port", 21).resourceCfg("userName", "test").resourceCfg("password", "test").fileFormat(Const.FILEFORMATSTR.PARQUET.getValue())
+				.resPath("/tmp/test1.parquet.snappy").protocol(Const.VFS_PROTOCOL.FTP.getValue()).fsType(Const.FILESYSTEM.VFS.getValue());
 
-			DataCollectionMeta colmeta = builder.build();
-			IResourceIterator iterator= TextFileIteratorFactory.getProcessIteratorByType(colmeta);
+		DataCollectionMeta colmeta = builder.build();
+		try(IResourceIterator iterator= TextFileIteratorFactory.getProcessIteratorByType(colmeta)){
 			while (iterator.hasNext()){
 				log.info("get record {}",iterator.next());
 			}
 		}catch (IOException ex){
-
+			ex.printStackTrace();
 		}
 	}
 

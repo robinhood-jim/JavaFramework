@@ -33,7 +33,7 @@ public class RabbitMQIterator extends AbstractQueueIterator {
     }
 
     @Override
-    public void beforeProcess(String param) {
+    public void beforeProcess() {
 
     }
 

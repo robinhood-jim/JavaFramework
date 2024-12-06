@@ -12,6 +12,7 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.QueryRunner;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
+import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 import java.io.BufferedReader;
@@ -23,7 +24,7 @@ import java.util.Objects;
 
 
 @Slf4j
-public class  JdbcResIterator extends AbstractResIterator {
+public class JdbcResIterator extends AbstractResIterator {
     private JdbcResourceHolder holder;
     private DbConnectionHolder connectionHolder;
     private String querySql;
@@ -31,21 +32,21 @@ public class  JdbcResIterator extends AbstractResIterator {
     private Statement statement;
     private PreparedStatement preparedStatement;
 
-    public JdbcResIterator(){
-        
+    public JdbcResIterator() {
+
     }
 
     public JdbcResIterator(DataCollectionMeta colmeta) {
         super(colmeta);
     }
 
-    @Retryable(maxAttempts = 10,backoff = @Backoff(delay = 60000))
-    public void getConnection() throws Exception{
-        if(holder==null) {
-            holder = SpringContextHolder.getBean(ResourceAccessHolder.class).getPoolJdbcHolder(colmeta.getDbSourceId(), colmeta,null);
+    @Retryable(maxAttempts = 10, backoff = @Backoff(delay = 60000))
+    public void getConnection() throws Exception {
+        if (holder == null) {
+            holder = SpringContextHolder.getBean(ResourceAccessHolder.class).getPoolJdbcHolder(colmeta.getDbSourceId(), colmeta, null);
         }
-        if(connectionHolder==null) {
-            connectionHolder = SpringContextHolder.getBean(ResourceAccessHolder.class).getConnectionHolder(colmeta.getDbSourceId(), colmeta.getDbMeta(),null);
+        if (connectionHolder == null) {
+            connectionHolder = SpringContextHolder.getBean(ResourceAccessHolder.class).getConnectionHolder(colmeta.getDbSourceId(), colmeta.getDbMeta(), null);
         }
     }
 
@@ -54,34 +55,30 @@ public class  JdbcResIterator extends AbstractResIterator {
         try {
             getConnection();
 
-        }catch (Exception ex){
-            log.error("{}",ex);
+        } catch (Exception ex) {
+            log.error("{}", ex);
         }
     }
 
     @Override
-    public void beforeProcess(String param) {
+    public void beforeProcess() {
         try {
-            if (param.toLowerCase().startsWith("select ")) {
-                querySql = param;
-                Object[] objs = null;
-                if (colmeta.getResourceCfgMap().containsKey("queryParams")) {
-                    objs = (Object[]) colmeta.getResourceCfgMap().get("queryParams");
-                }
-                if (!Objects.isNull(objs)) {
-                    QueryRunner qRunner = new QueryRunner();
-                    preparedStatement = connectionHolder.getConnection().prepareStatement(querySql);
-                    qRunner.fillStatement(preparedStatement, objs);
-                    rs = preparedStatement.executeQuery();
-                } else {
-                    statement = connectionHolder.getConnection().createStatement();
-                    rs = statement.executeQuery(querySql);
-                }
-            }else{
-                statement = connectionHolder.getConnection().createStatement();
-                rs = statement.executeQuery("select * from "+param);
+            Assert.notNull(colmeta.getResourceCfgMap().get("selectSql"),"");
+            querySql = colmeta.getResourceCfgMap().get("selectSql").toString();
+            Object[] objs = null;
+            if (colmeta.getResourceCfgMap().containsKey("queryParams")) {
+                objs = (Object[]) colmeta.getResourceCfgMap().get("queryParams");
             }
-        }catch (SQLException ex){
+            if (!Objects.isNull(objs)) {
+                QueryRunner qRunner = new QueryRunner();
+                preparedStatement = connectionHolder.getConnection().prepareStatement(querySql);
+                qRunner.fillStatement(preparedStatement, objs);
+                rs = preparedStatement.executeQuery();
+            } else {
+                statement = connectionHolder.getConnection().createStatement();
+                rs = statement.executeQuery(querySql);
+            }
+        } catch (SQLException ex) {
 
         }
     }
@@ -100,9 +97,9 @@ public class  JdbcResIterator extends AbstractResIterator {
 
     @Override
     public boolean hasNext() {
-        try{
+        try {
             return rs.next();
-        }catch (SQLException ex){
+        } catch (SQLException ex) {
             return false;
         }
     }

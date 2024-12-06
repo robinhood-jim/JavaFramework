@@ -47,7 +47,8 @@ public class XmlFileIterator extends AbstractFileIterator {
 
 	}
 	@Override
-	public void init() {
+	public void beforeProcess() {
+		super.beforeProcess();
 		try{
 			factory=XMLInputFactory.newFactory();
 			if(instream!=null) {

@@ -52,8 +52,7 @@ public class AvroFileIterator extends AbstractFileIterator {
 	}
 
 	@Override
-	public void init() {
-
+	public void beforeProcess() {
 		try {
 			schema= AvroUtils.getSchemaFromMeta(colmeta);
 			doInit(colmeta.getPath());

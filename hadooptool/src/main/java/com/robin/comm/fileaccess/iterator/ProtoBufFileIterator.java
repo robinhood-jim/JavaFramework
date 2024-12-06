@@ -34,7 +34,7 @@ public class ProtoBufFileIterator extends AbstractFileIterator {
 
 
     @Override
-    public void init() {
+    public void beforeProcess() {
         try {
             if (!CollectionUtils.isEmpty(colmeta.getColumnList())) {
                 schemaBuilder = DynamicSchema.newBuilder();

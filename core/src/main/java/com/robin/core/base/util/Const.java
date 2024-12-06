@@ -94,6 +94,7 @@ public class Const {
     public static final Integer COLUMN_VALID = 1;
 
     public static final Integer COLUMN_INVALID = 0;
+    public static final String ITERATOR_PROCESSID="$processId";
 
 
     public enum FILEFORMAT {
