@@ -1,21 +1,21 @@
 package com.robin.hadoop.hdfs;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.security.UserGroupInformation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.lang.reflect.Method;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.function.Function;
-
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.security.UserGroupInformation;
-import org.apache.log4j.Logger;
 
 
 public class HDFSSecurityUtil {
-	private static Logger logger=Logger.getLogger(HDFSSecurityUtil.class);
+	private static Logger logger= LoggerFactory.getLogger(HDFSSecurityUtil.class);
 
-	public static Object executeHdfsMethodWithSecurity(final Configuration config,final String methodName, final Object[] param) {
+	static Object executeHdfsMethodWithSecurity(final Configuration config,final String methodName, final Object[] param) {
 		List<Class> list = new ArrayList<Class>();
 		for (int i = 0; i < param.length; i++) {
 			list.add(param[i].getClass());
@@ -37,12 +37,11 @@ public class HDFSSecurityUtil {
 				return null;
 			});
 		} catch (Exception ex) {
-			ex.printStackTrace();
-			logger.error(ex);
+			logger.error("{}",ex.getMessage());
 		}
 		return ret;
 	}
-	public static Object executeHadoopMethodWithSecurity(final Configuration config,final Object obj,final String methodName, final Object[] param) {
+	static Object executeHadoopMethodWithSecurity(final Configuration config,final Object obj,final String methodName, final Object[] param) {
 		List<Class> list = new ArrayList<Class>();
 		for (int i = 0; i < param.length; i++) {
 			list.add(param[i].getClass());
@@ -64,19 +63,18 @@ public class HDFSSecurityUtil {
 				return null;
 			});
 		}catch(Exception ex){
-			ex.printStackTrace();
-			logger.error(ex);
+			logger.error("{}",ex.getMessage());
 		}
 		return ret;
 	}
-	public static Object executeSecurityWithProxy(final Configuration config, final Function<Configuration,Object> consumer){
-		Object ret = null;
+	static<T> T executeSecurityWithProxy(final Configuration config, final Function<Configuration,T> consumer){
+		T ret = null;
 		try {
 			UserGroupInformation.getCurrentUser().checkTGTAndReloginFromKeytab();
 			UserGroupInformation.getCurrentUser().doAs((PrivilegedAction<Object>) () -> consumer.apply(config));
 			
 		}catch(Exception ex){
-			ex.printStackTrace();
+			logger.error("{}",ex.getMessage());
 		}
 		return ret;
 	}
