@@ -120,7 +120,7 @@ public class OrcFileIterator extends AbstractFileIterator {
     }
 
     @Override
-    public void init() {
+    public void beforeProcess() {
         try {
             if(colmeta.getSourceType().equals(ResourceConst.IngestType.TYPE_HDFS.getValue())){
                 HDFSUtil util=new HDFSUtil(colmeta);

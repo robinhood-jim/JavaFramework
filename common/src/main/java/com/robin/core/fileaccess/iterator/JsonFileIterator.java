@@ -20,8 +20,10 @@ import com.robin.core.base.util.Const;
 import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.meta.DataSetColumnMeta;
+import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -36,8 +38,8 @@ public class JsonFileIterator extends AbstractFileIterator{
 		identifier= Const.FILEFORMATSTR.JSON.getValue();
 	}
 	@Override
-	public void init() {
-		super.beforeProcess(colmeta.getPath());
+	public void beforeProcess() {
+		super.beforeProcess();
 		jreader=new JsonReader(reader);
 		try{
 			jreader.beginArray();
@@ -59,7 +61,7 @@ public class JsonFileIterator extends AbstractFileIterator{
 
 	@Override
 	public Map<String, Object> next() throws NoSuchElementException {
-		Map<String, Object> retmap=new HashMap<String, Object>();
+		Map<String, Object> retmap=new HashMap<>();
 		DataSetColumnMeta meta=null;
 		try{
 			if(jreader.hasNext()){
@@ -80,11 +82,11 @@ public class JsonFileIterator extends AbstractFileIterator{
 				jreader.endObject();
 			}
 		}catch(IOException ex){
-			logger.error("{}",ex);
-			return null;
+			logger.error("{}",ex.getMessage());
+			return Collections.emptyMap();
 		}catch (Exception e) {
 			logger.error("{}",e.getMessage());
-			return null;
+			return Collections.emptyMap();
 		}
 		return retmap;
 	}

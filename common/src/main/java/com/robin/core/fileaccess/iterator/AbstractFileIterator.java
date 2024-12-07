@@ -16,8 +16,10 @@
 package com.robin.core.fileaccess.iterator;
 
 import com.robin.comm.dal.pool.ResourceAccessHolder;
+import com.robin.core.base.util.Const;
 import com.robin.core.base.util.IOUtils;
 import com.robin.core.fileaccess.fs.AbstractFileSystemAccessor;
+import com.robin.core.fileaccess.fs.ApacheVfsFileSystemAccessor;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.meta.DataSetColumnMeta;
 import com.robin.core.fileaccess.util.ResourceUtil;
@@ -68,11 +70,11 @@ public abstract class AbstractFileIterator implements IResourceIterator {
     }
 
     @Override
-    public void beforeProcess(String resourcePath) {
-        checkAccessUtil(resourcePath);
+    public void beforeProcess() {
+        checkAccessUtil(colmeta.getPath());
         Assert.notNull(accessUtil, "ResourceAccessUtil is required!");
         try {
-            Pair<BufferedReader, InputStream> pair = accessUtil.getInResourceByReader(colmeta, ResourceUtil.getProcessPath(resourcePath));
+            Pair<BufferedReader, InputStream> pair = accessUtil.getInResourceByReader(colmeta, ResourceUtil.getProcessPath(colmeta.getPath()));
             this.reader = pair.getKey();
             this.instream = pair.getValue();
         } catch (Exception ex) {
@@ -89,10 +91,6 @@ public abstract class AbstractFileIterator implements IResourceIterator {
         }
     }
 
-    @Override
-    public void init() {
-
-    }
 
     protected void checkAccessUtil(String inputPath) {
         try {
@@ -130,6 +128,13 @@ public abstract class AbstractFileIterator implements IResourceIterator {
         }
         if (instream != null) {
             instream.close();
+        }
+        if(accessUtil!=null){
+            if(ApacheVfsFileSystemAccessor.class.isAssignableFrom(accessUtil.getClass())) {
+                if(!ObjectUtils.isEmpty(colmeta.getResourceCfgMap().get(Const.ITERATOR_PROCESSID))) {
+                    ((ApacheVfsFileSystemAccessor)accessUtil).closeWithProcessId(colmeta.getResourceCfgMap().get(Const.ITERATOR_PROCESSID).toString());
+                }
+            }
         }
     }
     @Override

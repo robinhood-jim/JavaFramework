@@ -30,10 +30,7 @@ public class TestXMLReader {
         colmeta.setEncode("UTF-8");
         colmeta.setPath("f:/test.xml");
         colmeta.setFileFormat(Const.FILETYPE_XML);
-        try {
-
-            IResourceIterator iter = TextFileIteratorFactory.getProcessIteratorByType(colmeta);
-            //iter.beforeProcess(colmeta.getPath());
+        try(IResourceIterator iter = TextFileIteratorFactory.getProcessIteratorByType(colmeta)) {
             while (iter.hasNext()) {
                 System.out.println(iter.next());
             }
@@ -41,6 +38,20 @@ public class TestXMLReader {
         } catch (Exception ex) {
             ex.printStackTrace();
         }
+    }
+    @Test
+    public void testArffRead(){
+        DataCollectionMeta colmeta = new DataCollectionMeta();
+        colmeta.setPath("file:///f:/iris.arff");
+        colmeta.setFileFormat(Const.FILEFORMATSTR.ARFF.getValue());
+        try(IResourceIterator iterator=TextFileIteratorFactory.getProcessIteratorByType(colmeta)){
+            while(iterator.hasNext()){
+                System.out.println(iterator.next());
+            }
+        }catch (Exception ex){
+            ex.printStackTrace();
+        }
+
     }
 
     @Test

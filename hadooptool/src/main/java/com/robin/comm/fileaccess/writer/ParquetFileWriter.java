@@ -2,7 +2,6 @@ package com.robin.comm.fileaccess.writer;
 
 import com.robin.comm.fileaccess.util.ParquetUtil;
 import com.robin.core.base.util.Const;
-import com.robin.core.base.util.ResourceConst;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.util.AvroUtils;
 import com.robin.core.fileaccess.util.ResourceUtil;
@@ -11,12 +10,14 @@ import com.robin.hadoop.hdfs.HDFSUtil;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericRecord;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.parquet.avro.AvroParquetWriter;
 import org.apache.parquet.hadoop.ParquetWriter;
 import org.apache.parquet.hadoop.metadata.CompressionCodecName;
+import org.apache.parquet.hadoop.util.HadoopOutputFile;
+import org.apache.parquet.io.OutputFile;
 import org.apache.parquet.schema.MessageType;
-import org.springframework.util.ObjectUtils;
 
 import javax.naming.OperationNotSupportedException;
 import java.io.IOException;
@@ -27,7 +28,9 @@ import java.util.Map;
 
 public class ParquetFileWriter extends AbstractFileWriter {
     private Schema avroSchema;
-    private ParquetWriter pwriter;
+    //private ParquetWriter pwriter;
+    private ParquetWriter<GenericRecord> avroWriter;
+    private ParquetWriter<Map<String,Object>> mapWriter;
     private MessageType schema;
     private boolean useAvroEncode=false;
     public ParquetFileWriter(){
@@ -82,17 +85,19 @@ public class ParquetFileWriter extends AbstractFileWriter {
         if(colmeta.getResourceCfgMap().containsKey("file.useAvroEncode") && "true".equalsIgnoreCase(colmeta.getResourceCfgMap().get("file.useAvroEncode").toString())){
             useAvroEncode=true;
         }
-        if(!ObjectUtils.isEmpty(colmeta.getSourceType()) && colmeta.getSourceType().equals(ResourceConst.IngestType.TYPE_HDFS.getValue())){
+        if(Const.FILESYSTEM.HDFS.getValue().equals(colmeta.getFsType())){
             if(useAvroEncode) {
-                pwriter = AvroParquetWriter.builder(new Path(colmeta.getPath())).withSchema(avroSchema).withCompressionCodec(codecName).withConf(new HDFSUtil(colmeta).getConfig()).build();
+                Configuration conf=new HDFSUtil(colmeta).getConfig();
+                OutputFile outputFile= HadoopOutputFile.fromPath(new Path(colmeta.getPath()),conf);
+                avroWriter = AvroParquetWriter.<GenericRecord>builder(outputFile).withSchema(avroSchema).withCompressionCodec(codecName).withConf(conf).build();
             }else {
-                pwriter = new CustomParquetWriter(new Path(colmeta.getPath()), schema, true, codecName);
+                mapWriter = new CustomParquetWriter(new Path(colmeta.getPath()), schema, true, codecName);
             }
         }else{
             if(useAvroEncode) {
-                pwriter = AvroParquetWriter.builder(ParquetUtil.makeOutputFile(accessUtil, colmeta, ResourceUtil.getProcessPath(colmeta.getPath()))).withCompressionCodec(codecName).withSchema(avroSchema).build();
+                avroWriter = AvroParquetWriter.<GenericRecord>builder(ParquetUtil.makeOutputFile(accessUtil, colmeta, ResourceUtil.getProcessPath(colmeta.getPath()))).withCompressionCodec(codecName).withSchema(avroSchema).build();
             }else {
-                pwriter = new CustomParquetWriter.Builder<Map<String, Object>>(ParquetUtil.makeOutputFile(accessUtil, colmeta, ResourceUtil.getProcessPath(colmeta.getPath())), schema).withCompressionCodec(codecName).build();
+                mapWriter = new CustomParquetWriter.Builder<Map<String, Object>>(ParquetUtil.makeOutputFile(accessUtil, colmeta, ResourceUtil.getProcessPath(colmeta.getPath())), schema).withCompressionCodec(codecName).build();
             }
         }
     }
@@ -102,7 +107,6 @@ public class ParquetFileWriter extends AbstractFileWriter {
 
         if(useAvroEncode) {
             GenericRecord record = new GenericData.Record(avroSchema);
-
             for (int i = 0; i < colmeta.getColumnList().size(); i++) {
                 String name = colmeta.getColumnList().get(i).getColumnName();
                 Object value = getMapValueByMeta(map, name);
@@ -114,14 +118,13 @@ public class ParquetFileWriter extends AbstractFileWriter {
                     }
                 }
             }
-
             try {
-                pwriter.write(record);
+                avroWriter.write(record);
             } catch (IOException ex) {
                 logger.error("", ex);
             }
         }else {
-            pwriter.write(map);
+            mapWriter.write(map);
         }
     }
 
@@ -132,16 +135,17 @@ public class ParquetFileWriter extends AbstractFileWriter {
 
     @Override
     public void finishWrite() throws IOException {
-        if(pwriter!=null){
-            pwriter.close();
+        if(avroWriter!=null){
+            avroWriter.close();
+        }
+        if(mapWriter!=null){
+            mapWriter.close();
         }
     }
 
     @Override
     public void flush() throws IOException {
-        if(pwriter!=null){
 
-        }
     }
 
 

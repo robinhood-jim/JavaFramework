@@ -15,11 +15,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class CustomReadSupport extends ReadSupport<java.util.Map> {
+public class CustomReadSupport extends ReadSupport<Map<String,Object>> {
     MessageType type;
-    DataCollectionMeta colMeta;
-    public CustomReadSupport(DataCollectionMeta colMeta){
-        this.colMeta=colMeta;
+
+    public CustomReadSupport(){
     }
 
 
@@ -31,13 +30,13 @@ public class CustomReadSupport extends ReadSupport<java.util.Map> {
 
 
     @Override
-    public RecordMaterializer<Map> prepareForRead(Configuration configuration, Map<String, String> map, MessageType messageType, ReadContext readContext) {
+    public RecordMaterializer<Map<String,Object>> prepareForRead(Configuration configuration, Map<String, String> map, MessageType messageType, ReadContext readContext) {
 
-        java.util.Map<String, String> metadata = readContext.getReadSupportMetadata();
+        Map<String, String> metadata = readContext.getReadSupportMetadata();
         MessageType parquetSchema = readContext.getRequestedSchema();
         List<Type> types=parquetSchema.getFields();
 
-        return new RecordMaterializer<Map>() {
+        return new RecordMaterializer<Map<String,Object>>() {
             Map<String, Object> record;
 
             @Override

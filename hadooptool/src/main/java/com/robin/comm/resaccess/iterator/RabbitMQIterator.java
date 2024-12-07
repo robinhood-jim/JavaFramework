@@ -32,13 +32,9 @@ public class RabbitMQIterator extends AbstractQueueIterator {
         this.identifier= ResourceConst.ResourceType.TYPE_RABBIT.toString();
     }
 
-    @Override
-    public void beforeProcess(String param) {
-
-    }
 
     @Override
-    public void init() {
+    public void beforeProcess() {
         connectionFactory=new CachingConnectionFactory();
         int port=5672;
         Assert.notNull(cfgMap,"");

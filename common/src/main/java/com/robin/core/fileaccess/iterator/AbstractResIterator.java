@@ -33,7 +33,7 @@ public abstract class AbstractResIterator implements IResourceIterator {
         }
     }
     @Override
-    public void beforeProcess(String param) {
+    public void beforeProcess() {
 
     }
 

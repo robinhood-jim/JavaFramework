@@ -51,17 +51,10 @@ public class TestExcelOperation {
         AbstractResIterator iterator = new AbstractResIterator() {
             Map<String, Object> map = new HashMap<>();
             int row = 0;
-
             @Override
-            public void init() {
+            public void beforeProcess() {
 
             }
-
-            @Override
-            public void beforeProcess(String param) {
-
-            }
-
             @Override
             public void afterProcess() {
 

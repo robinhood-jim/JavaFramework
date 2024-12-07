@@ -207,6 +207,7 @@ public class ParquetUtil {
         final OutputStream output = accessUtil.getRawOutputStream(colmeta, ResourceUtil.getProcessPath(colmeta.getPath()));
         return new PositionOutputStream() {
             private long position = 0;
+            private boolean isClosed=false;
 
             @Override
             public void write(int b) throws IOException {
@@ -228,12 +229,17 @@ public class ParquetUtil {
 
             @Override
             public void flush() throws IOException {
-                output.flush();
+                if(!isClosed) {
+                    output.flush();
+                }
             }
 
             @Override
             public void close() throws IOException {
-                output.close();
+                if(!isClosed) {
+                    output.close();
+                    isClosed = true;
+                }
             }
 
             @Override

@@ -6,8 +6,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 public interface IResourceIterator extends Iterator<Map<String,Object>>, Closeable {
-    void init();
-    void beforeProcess(String param);
+    void beforeProcess();
     void afterProcess();
     String getIdentifier();
     void setInputStream(InputStream inputStream);

@@ -36,11 +36,6 @@ public class TextFileIteratorFactory {
 	}
 	public static IResourceIterator getProcessIteratorByType(DataCollectionMeta colmeta) throws IOException{
 		IResourceIterator iterator=getIter(colmeta);
-		try {
-			iterator.init();
-		}catch (Exception ex){
-			log.error("{}",ex.getMessage());
-		}
 		return iterator;
 	}
 	public static AbstractFileIterator getProcessReaderIterator(DataCollectionMeta colmeta, AbstractFileSystemAccessor utils){
@@ -52,8 +47,7 @@ public class TextFileIteratorFactory {
 			if (!ObjectUtils.isEmpty(iterclass)) {
 				iterator = (AbstractFileIterator) iterclass.getConstructor(DataCollectionMeta.class, AbstractFileSystemAccessor.class).newInstance(colmeta,utils);
 			}
-			iterator.beforeProcess(colmeta.getPath());
-			iterator.init();
+			iterator.beforeProcess();
 		}catch (Exception ex){
 			throw new MissingConfigException(ex);
 		}
@@ -63,13 +57,13 @@ public class TextFileIteratorFactory {
 	public static IResourceIterator getProcessIteratorByType(DataCollectionMeta colmeta, BufferedReader reader) throws IOException {
 		IResourceIterator iterator=getIter(colmeta);
 		iterator.setReader(reader);
-		iterator.init();
+		iterator.beforeProcess();
 		return iterator;
 	}
 	public static IResourceIterator getProcessIteratorByType(DataCollectionMeta colmeta, InputStream in) throws IOException{
 		IResourceIterator iterator=getIter(colmeta);
 		iterator.setInputStream(in);
-		iterator.init();
+		iterator.beforeProcess();
 		return iterator;
 	}
 	public static IResourceIterator getProcessIteratorByPath(DataCollectionMeta colmeta,InputStream in) throws IOException{
@@ -81,7 +75,7 @@ public class TextFileIteratorFactory {
 		}
 		IResourceIterator iterator=getIter(colmeta);
 		iterator.setInputStream(in);
-		iterator.init();
+		iterator.beforeProcess();
 		return iterator;
 	}
 	private static IResourceIterator getIter(DataCollectionMeta colmeta) throws MissingConfigException {
@@ -93,7 +87,7 @@ public class TextFileIteratorFactory {
 			if (!ObjectUtils.isEmpty(iterclass)) {
 				iterator =  iterclass.getConstructor(DataCollectionMeta.class).newInstance(colmeta);
 			}
-			iterator.beforeProcess(colmeta.getPath());
+			iterator.beforeProcess();
 		}catch (Exception ex){
 			throw new MissingConfigException(ex);
 		}

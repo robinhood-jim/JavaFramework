@@ -1,4 +1,5 @@
 com.robin.core.fileaccess.iterator.JsonFileIterator
 com.robin.core.fileaccess.iterator.PlainTextFileIterator
+com.robin.core.fileaccess.iterator.ArffFileIterator
 com.robin.core.fileaccess.iterator.XmlFileIterator
 com.robin.core.resaccess.iterator.JdbcResIterator

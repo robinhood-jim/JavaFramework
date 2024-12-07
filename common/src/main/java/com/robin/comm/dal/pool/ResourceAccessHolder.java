@@ -156,7 +156,7 @@ public class ResourceAccessHolder implements InitializingBean {
 			throw new RuntimeException("output strem config not found!");
 		}
 	}
-	public JdbcResourceHolder getPoolJdbcHolder(Long sourceId, DataCollectionMeta meta, HikariConfig config) throws Exception{
+	public JdbcResourceHolder getPoolJdbcHolder(Long sourceId, DataCollectionMeta meta, HikariConfig config) {
 		if(jdbcResourceHolderMap.get(sourceId)==null){
 			JdbcResourceHolder holder=new JdbcResourceHolder(meta,config);
 			jdbcResourceHolderMap.put(sourceId,holder);
