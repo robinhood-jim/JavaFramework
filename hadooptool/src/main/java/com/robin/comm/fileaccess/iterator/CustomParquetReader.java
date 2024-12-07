@@ -49,7 +49,7 @@ public class CustomParquetReader<T> extends ParquetReader<T> {
 
         @Override
         protected ReadSupport<Map<String,Object>> getReadSupport() {
-            return new CustomReadSupport(colMeta);
+            return new CustomReadSupport();
         }
     }
 }

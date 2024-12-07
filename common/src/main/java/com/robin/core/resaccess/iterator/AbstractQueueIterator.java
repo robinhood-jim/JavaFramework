@@ -25,7 +25,7 @@ public abstract class AbstractQueueIterator extends AbstractResIterator {
     }
 
     @Override
-    public void init() {
+    public void beforeProcess() {
         Assert.notNull(colmeta,"");
         schema= AvroUtils.getSchemaFromMeta(colmeta);
         cfgMap=colmeta.getResourceCfgMap();

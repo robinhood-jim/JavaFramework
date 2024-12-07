@@ -9,6 +9,7 @@ import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.util.AvroUtils;
 import com.robin.core.fileaccess.util.ResourceUtil;
 import com.robin.hadoop.hdfs.HDFSUtil;
+import org.apache.avro.LogicalTypes;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 import org.apache.commons.io.FileUtils;
@@ -25,6 +26,7 @@ import org.apache.parquet.io.InputFile;
 import org.apache.parquet.io.LocalInputFile;
 import org.apache.parquet.schema.MessageType;
 import org.apache.parquet.schema.Type;
+import org.apache.slider.server.appmaster.management.Timestamp;
 import org.springframework.util.ObjectUtils;
 
 import java.io.ByteArrayOutputStream;
@@ -82,7 +84,7 @@ public class ParquetFileIterator extends AbstractFileIterator {
                     schema = AvroUtils.getSchemaFromMeta(colmeta);
                 }
                 if (!useAvroEncode) {
-                    ParquetReader.Builder<Map<String, Object>> builder = ParquetReader.builder(new CustomReadSupport(colmeta), new Path(ResourceUtil.getProcessPath(colmeta.getPath()))).withConf(conf);
+                    ParquetReader.Builder<Map<String, Object>> builder = ParquetReader.builder(new CustomReadSupport(), new Path(ResourceUtil.getProcessPath(colmeta.getPath()))).withConf(conf);
                     ireader = builder.build();
                 } else {
                     preader = AvroParquetReader
@@ -158,7 +160,11 @@ public class ParquetFileIterator extends AbstractFileIterator {
                 throw new NoSuchElementException("");
             }
             for (Schema.Field field : fields) {
-                retMap.put(field.name(), record.get(field.name()));
+                Object value=record.get(field.name());
+                if(LogicalTypes.timestampMillis().equals(field.schema().getLogicalType())){
+                    value=new Timestamp((Long)value);
+                }
+                retMap.put(field.name(), value);
             }
             return retMap;
         } else {

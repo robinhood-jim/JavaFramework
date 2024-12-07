@@ -1,7 +1,7 @@
 package com.robin.comm.fileaccess.iterator;
 
 import com.robin.core.base.util.Const;
-import org.apache.parquet.schema.OriginalType;
+import org.apache.parquet.schema.LogicalTypeAnnotation;
 import org.apache.parquet.schema.PrimitiveType;
 
 
@@ -14,7 +14,7 @@ public class ParquetReaderUtil {
         if(type.getPrimitiveTypeName().equals(PrimitiveType.PrimitiveTypeName.INT32)){
             rettype=Const.META_TYPE_INTEGER;
         }else if(type.getPrimitiveTypeName().equals(PrimitiveType.PrimitiveTypeName.INT64)){
-            if(OriginalType.DATE.equals(type.getOriginalType()) || OriginalType.TIME_MILLIS.equals(type.getOriginalType())){
+            if(LogicalTypeAnnotation.dateType().equals(type.getLogicalTypeAnnotation()) || LogicalTypeAnnotation.timestampType(true, LogicalTypeAnnotation.TimeUnit.MILLIS).equals(type.getLogicalTypeAnnotation())){
                 rettype=Const.META_TYPE_TIMESTAMP;
             }else {
                 rettype = Const.META_TYPE_BIGINT;

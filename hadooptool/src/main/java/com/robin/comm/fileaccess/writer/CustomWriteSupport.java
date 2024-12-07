@@ -2,12 +2,12 @@ package com.robin.comm.fileaccess.writer;
 
 
 import org.apache.hadoop.conf.Configuration;
-
 import org.apache.parquet.column.ColumnDescriptor;
 import org.apache.parquet.hadoop.api.WriteSupport;
 import org.apache.parquet.io.ParquetEncodingException;
 import org.apache.parquet.io.api.Binary;
 import org.apache.parquet.io.api.RecordConsumer;
+import org.apache.parquet.schema.LogicalTypeAnnotation;
 import org.apache.parquet.schema.MessageType;
 import org.apache.parquet.schema.OriginalType;
 import org.apache.parquet.schema.Type;
@@ -53,7 +53,7 @@ public class CustomWriteSupport<T> extends WriteSupport<T> {
 
                 switch (type.asPrimitiveType().getPrimitiveTypeName()) {
                     case BOOLEAN:
-                        recordConsumer.addBoolean(ObjectUtils.isEmpty(tobj) ? false : Boolean.parseBoolean(tobj.toString()));
+                        recordConsumer.addBoolean(!ObjectUtils.isEmpty(tobj) && Boolean.parseBoolean(tobj.toString()));
                         break;
                     case FLOAT:
                         recordConsumer.addFloat(ObjectUtils.isEmpty(tobj) ? Float.valueOf("0.0") : Float.valueOf(tobj.toString()));
@@ -65,10 +65,10 @@ public class CustomWriteSupport<T> extends WriteSupport<T> {
                         recordConsumer.addInteger(ObjectUtils.isEmpty(tobj) ? 0 : Integer.valueOf(tobj.toString()));
                         break;
                     case INT64:
-                        Long realVal = 0L;
+                        long realVal = 0L;
                         if (!ObjectUtils.isEmpty(tobj)) {
-                            if (type.getOriginalType() == OriginalType.DATE || type.getOriginalType() == OriginalType.TIME_MILLIS
-                                    || type.getOriginalType() == OriginalType.TIMESTAMP_MILLIS) {
+                            if (LogicalTypeAnnotation.dateType().equals(type.getLogicalTypeAnnotation())
+                                    || LogicalTypeAnnotation.timestampType(true, LogicalTypeAnnotation.TimeUnit.MILLIS).equals(type.getLogicalTypeAnnotation())){
                                 realVal = ((Timestamp) tobj).getTime();
                             } else {
                                 realVal = Long.valueOf(tobj.toString());
@@ -77,10 +77,10 @@ public class CustomWriteSupport<T> extends WriteSupport<T> {
                         recordConsumer.addLong(realVal);
                         break;
                     case INT96:
-                        Long realVal1 = 0L;
+                        long realVal1 = 0L;
                         if (!ObjectUtils.isEmpty(tobj)) {
-                            if (type.getOriginalType() == OriginalType.DATE || type.getOriginalType() == OriginalType.TIME_MILLIS
-                                    || type.getOriginalType() == OriginalType.TIMESTAMP_MILLIS) {
+                            if (LogicalTypeAnnotation.dateType().equals(type.getLogicalTypeAnnotation())
+                                    || LogicalTypeAnnotation.timestampType(false, LogicalTypeAnnotation.TimeUnit.MILLIS).equals(type.getLogicalTypeAnnotation())) {
                                 realVal1 = ((Timestamp) tobj).getTime();
                             } else {
                                 realVal1 = Long.valueOf(tobj.toString());

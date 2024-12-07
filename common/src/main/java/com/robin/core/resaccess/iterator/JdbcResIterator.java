@@ -41,7 +41,7 @@ public class JdbcResIterator extends AbstractResIterator {
     }
 
     @Retryable(maxAttempts = 10, backoff = @Backoff(delay = 60000))
-    public void getConnection() throws Exception {
+    public void getConnection()  {
         if (holder == null) {
             holder = SpringContextHolder.getBean(ResourceAccessHolder.class).getPoolJdbcHolder(colmeta.getDbSourceId(), colmeta, null);
         }
@@ -50,19 +50,12 @@ public class JdbcResIterator extends AbstractResIterator {
         }
     }
 
-    @Override
-    public void init() {
-        try {
-            getConnection();
 
-        } catch (Exception ex) {
-            log.error("{}", ex);
-        }
-    }
 
     @Override
     public void beforeProcess() {
         try {
+            getConnection();
             Assert.notNull(colmeta.getResourceCfgMap().get("selectSql"),"");
             querySql = colmeta.getResourceCfgMap().get("selectSql").toString();
             Object[] objs = null;

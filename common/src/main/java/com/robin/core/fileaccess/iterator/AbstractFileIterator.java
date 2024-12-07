@@ -16,6 +16,7 @@
 package com.robin.core.fileaccess.iterator;
 
 import com.robin.comm.dal.pool.ResourceAccessHolder;
+import com.robin.core.base.util.Const;
 import com.robin.core.base.util.IOUtils;
 import com.robin.core.fileaccess.fs.AbstractFileSystemAccessor;
 import com.robin.core.fileaccess.fs.ApacheVfsFileSystemAccessor;
@@ -46,7 +47,6 @@ public abstract class AbstractFileIterator implements IResourceIterator {
     protected List<String> columnList = new ArrayList<>();
     protected Map<String, DataSetColumnMeta> columnMap = new HashMap<>();
     protected Logger logger = LoggerFactory.getLogger(getClass());
-    private String processId;
 
     public AbstractFileIterator() {
 
@@ -91,10 +91,6 @@ public abstract class AbstractFileIterator implements IResourceIterator {
         }
     }
 
-    @Override
-    public void init() {
-
-    }
 
     protected void checkAccessUtil(String inputPath) {
         try {
@@ -135,8 +131,8 @@ public abstract class AbstractFileIterator implements IResourceIterator {
         }
         if(accessUtil!=null){
             if(ApacheVfsFileSystemAccessor.class.isAssignableFrom(accessUtil.getClass())) {
-                if(!ObjectUtils.isEmpty(colmeta.getResourceCfgMap().get("$processId"))) {
-                    ((ApacheVfsFileSystemAccessor)accessUtil).closeWithProcessId(colmeta.getResourceCfgMap().get("$processId").toString());
+                if(!ObjectUtils.isEmpty(colmeta.getResourceCfgMap().get(Const.ITERATOR_PROCESSID))) {
+                    ((ApacheVfsFileSystemAccessor)accessUtil).closeWithProcessId(colmeta.getResourceCfgMap().get(Const.ITERATOR_PROCESSID).toString());
                 }
             }
         }

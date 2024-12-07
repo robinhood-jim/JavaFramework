@@ -34,7 +34,7 @@ public class KafkaIterator extends AbstractQueueIterator {
         this.identifier= ResourceConst.ResourceType.TYPE_KAFKA.toString();
     }
     @Override
-    public void init() {
+    public void beforeProcess() {
         Properties props = new Properties();
         brokerUrl=colmeta.getResourceCfgMap().get("brokerUrl").toString();
         groupId=colmeta.getResourceCfgMap().get("groupId").toString();
