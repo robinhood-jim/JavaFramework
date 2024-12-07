@@ -14,7 +14,7 @@ public class ParquetReaderUtil {
         if(type.getPrimitiveTypeName().equals(PrimitiveType.PrimitiveTypeName.INT32)){
             rettype=Const.META_TYPE_INTEGER;
         }else if(type.getPrimitiveTypeName().equals(PrimitiveType.PrimitiveTypeName.INT64)){
-            if(type.getOriginalType().equals(OriginalType.DATE) || type.getOriginalType().equals(OriginalType.TIME_MILLIS)){
+            if(OriginalType.DATE.equals(type.getOriginalType()) || OriginalType.TIME_MILLIS.equals(type.getOriginalType())){
                 rettype=Const.META_TYPE_TIMESTAMP;
             }else {
                 rettype = Const.META_TYPE_BIGINT;

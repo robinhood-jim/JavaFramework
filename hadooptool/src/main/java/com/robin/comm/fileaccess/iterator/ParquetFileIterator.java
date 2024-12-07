@@ -59,7 +59,6 @@ public class ParquetFileIterator extends AbstractFileIterator {
 
     private List<Schema.Field> fields;
     Map<String, Object> rsMap;
-    //private FileSeekableInputStream seekableInputStream = null;
     private File tmpFile;
 
     @Override
@@ -77,7 +76,6 @@ public class ParquetFileIterator extends AbstractFileIterator {
                     ParquetReadOptions options = ParquetReadOptions.builder().withMetadataFilter(ParquetMetadataConverter.NO_FILTER).build();
                     ParquetFileReader ireader = ParquetFileReader.open(HadoopInputFile.fromPath(new Path(colmeta.getPath()), conf), options);
                     ParquetMetadata meta = ireader.getFooter();
-                    //ParquetMetadata meta = ParquetFileReader.readFooter(conf, new Path(colmeta.getPath()), ParquetMetadataConverter.NO_FILTER);
                     msgtype = meta.getFileMetaData().getSchema();
                     parseSchemaByType();
                 } else {
@@ -114,7 +112,7 @@ public class ParquetFileIterator extends AbstractFileIterator {
                 if (colmeta.getColumnList().isEmpty()) {
                     ParquetReadOptions options = ParquetReadOptions.builder().withMetadataFilter(ParquetMetadataConverter.NO_FILTER).build();
                     ParquetFileReader ireader = ParquetFileReader.open(file, options);
-                    ParquetMetadata meta = ireader.getFooter(); //ParquetFileReader.readFooter(file, ParquetMetadataConverter.NO_FILTER);
+                    ParquetMetadata meta = ireader.getFooter();
                     msgtype = meta.getFileMetaData().getSchema();
                     parseSchemaByType();
                     //read footer and schema,must return header
@@ -122,8 +120,8 @@ public class ParquetFileIterator extends AbstractFileIterator {
                 } else {
                     schema = AvroUtils.getSchemaFromMeta(colmeta);
                 }
+                fields = schema.getFields();
                 if (!useAvroEncode) {
-                    fields = schema.getFields();
                     ireader = CustomParquetReader.builder(file, colmeta).build();
                 } else {
                     preader = AvroParquetReader.<GenericData.Record>builder(file).build();
