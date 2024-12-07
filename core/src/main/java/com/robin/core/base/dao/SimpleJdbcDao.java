@@ -420,6 +420,16 @@ public class SimpleJdbcDao {
         }
         return qRunner.query(conn, sql, extractor::extractData);
     }
+    public static int executeOperationWithHandler(final Connection conn, String sql, boolean pmdKnownBroken, final ResultSetHandler<Integer> handler) throws SQLException {
+        QueryRunner qRunner ;
+        if (pmdKnownBroken) {
+            qRunner = new QueryRunner(pmdKnownBroken);
+        } else {
+            qRunner = new QueryRunner();
+        }
+        return qRunner.query(conn, sql, handler);
+    }
+
 
     public static int executeOperationWithQuery(final Connection conn, String sql, Object[] param, boolean pmdKnownBroken, final ResultSetOperationExtractor extractor) throws SQLException {
         QueryRunner qRunner = new QueryRunner(pmdKnownBroken);
