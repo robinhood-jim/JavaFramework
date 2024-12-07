@@ -13,6 +13,7 @@ import com.robin.core.fileaccess.util.ResourceUtil;
 import com.robin.core.fileaccess.writer.AbstractFileWriter;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
+import org.tukaani.xz.LZMAOutputStream;
 
 import javax.naming.OperationNotSupportedException;
 import java.io.IOException;

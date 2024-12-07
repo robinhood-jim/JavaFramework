@@ -11,6 +11,7 @@ import org.apache.commons.compress.compressors.xz.XZCompressorOutputStream;
 import org.apache.commons.compress.compressors.zstandard.ZstdCompressorOutputStream;
 import org.tukaani.xz.LZMA2Options;
 import org.tukaani.xz.LZMAOutputStream;
+import org.tukaani.xz.XZOutputStream;
 import org.xerial.snappy.SnappyOutputStream;
 
 import java.io.BufferedOutputStream;
@@ -64,7 +65,7 @@ public class CompressEncoder {
                 outputStream=new LZ4FrameOutputStream(wrapOutputStream(rawstream));
                 break;
             case COMPRESS_TYPE_LZMA:
-                outputStream=new LZMAOutputStream(wrapOutputStream(rawstream),new LZMA2Options(),false);
+                outputStream=new XZOutputStream(wrapOutputStream(rawstream),new LZMA2Options());
                 break;
             case COMPRESS_TYPE_ZSTD:
                 outputStream=new ZstdCompressorOutputStream(wrapOutputStream(rawstream));

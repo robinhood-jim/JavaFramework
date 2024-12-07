@@ -56,7 +56,7 @@ public class CompressDecoder {
                 inputStream=new LZ4FrameInputStream(wrapInputStream(rawstream));
                 break;
             case COMPRESS_TYPE_LZMA:
-                inputStream=new LZMAInputStream(wrapInputStream(rawstream));
+                inputStream=new XZInputStream(wrapInputStream(rawstream));
                 break;
             case COMPRESS_TYPE_ZSTD:
                 inputStream=new ZstdCompressorInputStream(wrapInputStream(rawstream));

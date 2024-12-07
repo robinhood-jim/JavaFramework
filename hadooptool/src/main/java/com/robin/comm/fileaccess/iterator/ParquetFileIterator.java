@@ -72,17 +72,11 @@ public class ParquetFileIterator extends AbstractFileIterator {
             if (colmeta.getResourceCfgMap().containsKey("file.useAvroEncode") && "true".equalsIgnoreCase(colmeta.getResourceCfgMap().get("file.useAvroEncode").toString())) {
                 useAvroEncode = true;
             }
+
             if (Const.FILESYSTEM.HDFS.getValue().equals(colmeta.getFsType())) {
                 conf = new HDFSUtil(colmeta).getConfig();
-                if (colmeta.getColumnList().isEmpty()) {
-                    ParquetReadOptions options = ParquetReadOptions.builder().withMetadataFilter(ParquetMetadataConverter.NO_FILTER).build();
-                    ParquetFileReader ireader = ParquetFileReader.open(HadoopInputFile.fromPath(new Path(colmeta.getPath()), conf), options);
-                    ParquetMetadata meta = ireader.getFooter();
-                    msgtype = meta.getFileMetaData().getSchema();
-                    parseSchemaByType();
-                } else {
-                    schema = AvroUtils.getSchemaFromMeta(colmeta);
-                }
+                file=HadoopInputFile.fromPath(new Path(colmeta.getPath()), conf);
+                getSchema(file,false);
                 if (!useAvroEncode) {
                     ParquetReader.Builder<Map<String, Object>> builder = ParquetReader.builder(new CustomReadSupport(), new Path(ResourceUtil.getProcessPath(colmeta.getPath()))).withConf(conf);
                     ireader = builder.build();
@@ -111,28 +105,33 @@ public class ParquetFileIterator extends AbstractFileIterator {
                         file = ParquetUtil.makeInputFile(seekableInputStream);
                     }
                 }
-                if (colmeta.getColumnList().isEmpty()) {
-                    ParquetReadOptions options = ParquetReadOptions.builder().withMetadataFilter(ParquetMetadataConverter.NO_FILTER).build();
-                    ParquetFileReader ireader = ParquetFileReader.open(file, options);
-                    ParquetMetadata meta = ireader.getFooter();
-                    msgtype = meta.getFileMetaData().getSchema();
-                    parseSchemaByType();
-                    //read footer and schema,must return header
-                    file.newStream().seek(0L);
-                } else {
-                    schema = AvroUtils.getSchemaFromMeta(colmeta);
-                }
-                fields = schema.getFields();
+                getSchema(file,true);
                 if (!useAvroEncode) {
                     ireader = CustomParquetReader.builder(file, colmeta).build();
                 } else {
                     preader = AvroParquetReader.<GenericData.Record>builder(file).build();
                 }
             }
+            fields = schema.getFields();
         } catch (Exception ex) {
             logger.error("{}", ex.getMessage());
         }
 
+    }
+
+    private void getSchema(InputFile file,boolean seekFrist) throws IOException {
+        if (colmeta.getColumnList().isEmpty()) {
+            ParquetReadOptions options = ParquetReadOptions.builder().withMetadataFilter(ParquetMetadataConverter.NO_FILTER).build();
+            ParquetFileReader ireader = ParquetFileReader.open(file, options);
+            ParquetMetadata meta = ireader.getFooter();
+            msgtype = meta.getFileMetaData().getSchema();
+            parseSchemaByType();
+            if(seekFrist) {
+                file.newStream().seek(0L);
+            }
+        } else {
+            schema = AvroUtils.getSchemaFromMeta(colmeta);
+        }
     }
 
     @Override
