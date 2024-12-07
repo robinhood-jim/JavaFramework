@@ -82,7 +82,7 @@ public class ParquetFileWriter extends AbstractFileWriter {
         if(colmeta.getResourceCfgMap().containsKey("file.useAvroEncode") && "true".equalsIgnoreCase(colmeta.getResourceCfgMap().get("file.useAvroEncode").toString())){
             useAvroEncode=true;
         }
-        if(!ObjectUtils.isEmpty(colmeta.getSourceType()) && colmeta.getSourceType().equals(ResourceConst.IngestType.TYPE_HDFS.getValue())){
+        if(Const.FILESYSTEM.HDFS.getValue().equals(colmeta.getFsType())){
             if(useAvroEncode) {
                 pwriter = AvroParquetWriter.builder(new Path(colmeta.getPath())).withSchema(avroSchema).withCompressionCodec(codecName).withConf(new HDFSUtil(colmeta).getConfig()).build();
             }else {

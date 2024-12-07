@@ -51,6 +51,7 @@ public class TestResourceReadWrite extends TestCase {
 						throws SQLException {
 					try{
 						map.put("tdate",((Timestamp)map.get("start_time")).getTime());
+						map.remove("start_time");
 						jwriter.writeRecord(map);
 					}catch(Exception ex){
 						ex.printStackTrace();
@@ -72,10 +73,6 @@ public class TestResourceReadWrite extends TestCase {
 	@Test
 	public void testRead(){
 		DataCollectionMeta.Builder builder = new DataCollectionMeta.Builder();
-		//builder.addColumn("id", Const.META_TYPE_BIGINT, null);
-		//builder.addColumn("line_code", Const.META_TYPE_STRING, null);
-		//builder.addColumn("line_name", Const.META_TYPE_STRING, null);
-		//builder.addColumn("tdate", Const.META_TYPE_BIGINT, null);
 
 		builder.resourceCfg("hostName", "127.0.0.1").resourceCfg("protocol", "ftp")
 				.resourceCfg("port", 21).resourceCfg("userName", "test").resourceCfg("password", "test").fileFormat(Const.FILEFORMATSTR.PARQUET.getValue())
