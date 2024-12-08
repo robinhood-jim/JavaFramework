@@ -141,4 +141,7 @@ public abstract class AbstractFileIterator implements IResourceIterator {
     public String getIdentifier() {
         return identifier;
     }
+    public AbstractFileSystemAccessor getFileSystemAccessor(){
+        return accessUtil;
+    }
 }

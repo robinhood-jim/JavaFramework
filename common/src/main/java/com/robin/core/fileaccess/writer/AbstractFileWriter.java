@@ -108,9 +108,11 @@ public abstract class AbstractFileWriter implements IResourceWriter {
 		if(writer!=null){
 			writer.close();
 		}
+		accessUtil.finishWrite(colmeta,out);
 		if(out!=null){
 			out.close();
 		}
+
 	}
 	protected String getOutputStringByType(Map<String,?> valueMap,String columnName){
 		String columnType=columnMap.get(columnName);

@@ -93,7 +93,7 @@ public class ParquetFileIterator extends AbstractFileIterator {
                     long size = instream.available();//accessUtil.getInputStreamSize(colmeta, ResourceUtil.getProcessPath(colmeta.getPath()));
                     //file size too large ,can not store in ByteArrayOutputStream
                     if (size >= maxSize) {
-                        String tmpPath = (!ObjectUtils.isEmpty(colmeta.getResourceCfgMap().get("output.tmppath"))) ? colmeta.getResourceCfgMap().get("output.tmppath").toString() : FileUtils.getTempDirectoryPath();
+                        String tmpPath = com.robin.core.base.util.FileUtils.getWorkingPath(colmeta);
                         String tmpFilePath = "file:///" + tmpPath + ResourceUtil.getProcessFileName(colmeta.getPath());
                         tmpFile = new File(new URL(tmpFilePath).toURI());
                         copyToLocal(tmpFile, instream);

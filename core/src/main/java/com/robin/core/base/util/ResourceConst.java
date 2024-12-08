@@ -2,6 +2,8 @@ package com.robin.core.base.util;
 
 
 public class ResourceConst {
+    public static final String WORKINGPATHPARAM="output.workingPath";
+    public static final String USETMPFILETAG="output.usingTmpFiles";
 
     public enum IngestType {
         TYPE_HDFS(1L,"HDFS"),
@@ -113,6 +115,38 @@ public class ResourceConst {
         BUCKETNAME("S3BucketName");
         private String value;
         S3PARAM(String value){
+            this.value=value;
+        }
+
+        public String getValue() {
+            return value;
+        }
+    }
+    public enum OSSPARAM{
+        ENDPOIN("endpoint"),
+        REGION("region"),
+        ACESSSKEYID("accessKeyId"),
+        SECURITYACCESSKEY("securityAccessKey"),
+        BUCKETNAME("bucketName"),
+        OBJECTNAME("objectName");
+        private String value;
+        OSSPARAM(String value){
+            this.value=value;
+        }
+
+        public String getValue() {
+            return value;
+        }
+    }
+    public enum COSPARAM{
+        HTTPPROTOCOL("protocol"),
+        REGION("region"),
+        ACESSSKEY("accessKey"),
+        SECURITYKEY("securityKey"),
+        BUCKETNAME("bucketName"),
+        OBJECTNAME("objectName");
+        private String value;
+        COSPARAM(String value){
             this.value=value;
         }
 

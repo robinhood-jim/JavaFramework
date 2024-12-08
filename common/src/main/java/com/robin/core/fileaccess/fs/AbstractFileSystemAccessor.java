@@ -30,6 +30,7 @@ public abstract class AbstractFileSystemAccessor implements IFileSystemAccessor 
 
 	}
 
+
 	public static String[] retrieveResource(String path){
 		String[] ret=new String[2];
 		ret[1]=getFileSuffix(path);
@@ -97,6 +98,9 @@ public abstract class AbstractFileSystemAccessor implements IFileSystemAccessor 
 	
 	@Override
 	public void init(DataCollectionMeta meta){
+
+	}
+	public void finishWrite(DataCollectionMeta meta,OutputStream outputStream) {
 
 	}
 
