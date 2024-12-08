@@ -190,14 +190,12 @@ public class CollectionMapConvert {
 
     public static <T> String getColumnValueAppendBySeparate(List<T> listobj, Function<T,?> column, String separate) throws MissingConfigException,InvocationTargetException,IllegalAccessException {
         checkType(listobj);
-        StringBuilder buffer = new StringBuilder();
         Assert.notNull(column,"");
         List<?> values= listobj.stream().collect(Collectors.mapping(column,Collectors.toList()));
         return StringUtils.join(values,separate);
     }
 
     public static <T,P> List<P> getValueListBySeparate(List<T> listobj, Function<T,P> column) throws MissingConfigException,InvocationTargetException,IllegalAccessException {
-        List<String> retList = new ArrayList<>();
         checkType(listobj);
         return listobj.stream().collect(Collectors.mapping(column,Collectors.toList()));
     }

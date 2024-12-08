@@ -442,7 +442,7 @@ public class Const {
     //定时任务触发时间点
     public static final String TRIGGER_TIMESPAN = "triggerTimeSpan";
 
-    public final static List<String> ESCAPE_CHARACTERS = new ArrayList<String>(
+    public final static List<String> ESCAPE_CHARACTERS = new ArrayList<>(
             Lists.newArrayList("$", "(", ")", "*", "+", ".", "[",
                     "?", "\\", "^", "{", "|"));
 

@@ -32,7 +32,7 @@ public class RecordWriterHolder extends AbstractResourceHolder {
         if(!colmeta.isFsTag()) {
             writer = TextFileWriterFactory.getWriterByPath(colmeta, outStream);
         } else{
-            writer= CommResWriterFactory.getFileWriterByType(colmeta.getResType(),colmeta);
+            writer= CommResWriterFactory.getFileWriterByType(colmeta.getFileFormat(),colmeta);
         }
     }
     public void writeRecord(Map<String,Object> map) throws IOException, OperationNotSupportedException {

@@ -416,7 +416,7 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>, T extends 
     public boolean deleteWithRequest(Object queryObject) {
         try {
             QueryWrapper<T> wrapper = wrapWithEntity(queryObject);
-            return delete(wrapper);
+            return SqlHelper.retBool(baseDao.delete(wrapper));
         } catch (Exception ex) {
             throw new ServiceException(ex);
         }
@@ -426,7 +426,7 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>, T extends 
     public boolean updateWithRequest(T model, Object queryObject) {
         try {
             QueryWrapper<T> wrapper = wrapWithEntity(queryObject);
-            return update(model, wrapper);
+            return SqlHelper.retBool(baseDao.update(model, wrapper));
         } catch (Exception ex) {
             throw new ServiceException(ex);
         }

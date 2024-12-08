@@ -194,7 +194,7 @@ public class SqlMapperDao extends JdbcDaoSupport {
                                 Map<String, Object> map = new HashMap<>();
                                 for (int i = 0; i < count; i++) {
                                     String columnName = rsmd.getColumnName(i + 1);
-                                    CommJdbcUtil.setTargetValue(map, resultSet.getObject(i + 1), segment1.getColumnMapper().get(columnName).left, segment1.getColumnMapper().get(columnName).right, lobHandler, pageQuery);
+                                    CommJdbcUtil.setTargetValue(map, resultSet.getObject(i + 1), segment1.getColumnMapper().get(columnName).left, segment1.getColumnMapper().get(columnName).right, pageQuery);
                                 }
                                 retList.add(map);
                             } else {
@@ -208,7 +208,7 @@ public class SqlMapperDao extends JdbcDaoSupport {
                                     if (!segment1.getColumnMapper().containsKey(columnName)) {
                                         throw new DAOException("property " + columnName + " not exist in class " + segment1.getClassName());
                                     }
-                                    CommJdbcUtil.setTargetValue(targetObject, resultSet.getObject(i + 1), segment1.getColumnMapper().get(columnName).left, segment1.getColumnMapper().get(columnName).right, lobHandler, pageQuery);
+                                    CommJdbcUtil.setTargetValue(targetObject, resultSet.getObject(i + 1), segment1.getColumnMapper().get(columnName).left, segment1.getColumnMapper().get(columnName).right, pageQuery);
                                 }
                                 retList.add(targetObject);
                             } catch (IllegalAccessException|InstantiationException ex1) {
@@ -220,7 +220,7 @@ public class SqlMapperDao extends JdbcDaoSupport {
                         Map<String, Object> map = new HashMap<>();
                         for (int i = 0; i < count; i++) {
                             String columnName = rsmd.getColumnName(i + 1);
-                            CommJdbcUtil.setTargetValue(map, resultSet.getObject(i + 1), columnName, null, lobHandler, pageQuery);
+                            CommJdbcUtil.setTargetValue(map, resultSet.getObject(i + 1), columnName, null, pageQuery);
                         }
                         retList.add(map);
                     }

@@ -16,12 +16,6 @@ import java.util.ServiceLoader;
 
 @Slf4j
 public class CommResWriterFactory {
-    private static final String KAFKA_WRITER_CLASS = "com.robin.comm.resaccess.writer.KafkaResourceWriter";
-    private static final String CASSANDRA_WRITER_CLASS = "com.robin.comm.resaccess.writer.CassandraResourceWriter";
-    private static final String MONGO_WRITER_CLASS = "com.robin.comm.resaccess.writer.MongoResourceWriter";
-    private static final String REDIS_WRITER_CLASS = "com.robin.comm.resaccess.writer.RedisResourceWriter";
-    private static final String ROCKET_WRITER_CLASS = "com.robin.comm.resaccess.writer.RocketResourceWriter";
-    private static final String HBASE_WRITER_CLASS = "com.robin.comm.resaccess.writer.HbaseResourceWriter";
 
     private static Map<String,Class<? extends IResourceWriter>> writerMap =new HashMap<>();
     static {
@@ -30,7 +24,7 @@ public class CommResWriterFactory {
     private CommResWriterFactory(){
 
     }
-    public static AbstractResourceWriter getFileWriterByType(Long resType, DataCollectionMeta colmeta) {
+    public static AbstractResourceWriter getFileWriterByType(String resType, DataCollectionMeta colmeta) {
         AbstractResourceWriter fileWriter = null;
         Class<? extends IResourceWriter> clazz = writerMap.get(resType);
         try {
