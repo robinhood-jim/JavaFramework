@@ -29,6 +29,9 @@ public abstract class AbstractFileSystemAccessor implements IFileSystemAccessor 
 	public AbstractFileSystemAccessor(){
 
 	}
+	public void init(FileSystemConfig config){
+
+	}
 
 	public static String[] retrieveResource(String path){
 		String[] ret=new String[2];
@@ -97,6 +100,9 @@ public abstract class AbstractFileSystemAccessor implements IFileSystemAccessor 
 	
 	@Override
 	public void init(DataCollectionMeta meta){
+
+	}
+	public void finishWrite(DataCollectionMeta meta,OutputStream outputStream) {
 
 	}
 
