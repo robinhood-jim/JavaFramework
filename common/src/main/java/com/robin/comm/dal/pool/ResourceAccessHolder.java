@@ -120,7 +120,7 @@ public class ResourceAccessHolder implements InitializingBean {
 		if(inputStreamPool!=null){
 			return inputStreamPool.borrowObject();
 		}else{
-			throw new RuntimeException("input strem config not found!");
+			throw new RuntimeException("inputstream config not found!");
 		}
 	}
 	public void returnInputStreamHolder(InputStreamHolder holder) throws Exception{

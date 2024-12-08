@@ -2,7 +2,9 @@ package com.robin.core.base.util;
 
 import cn.hutool.core.io.FileUtil;
 import com.google.common.collect.Lists;
+import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.ObjectUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -103,5 +105,10 @@ public class FileUtils {
             return false;
         }
         return true;
+    }
+    public static String getWorkingPath(DataCollectionMeta meta){
+        return !ObjectUtils.isEmpty(meta.getResourceCfgMap().get(ResourceConst.WORKINGPATHPARAM))
+                ? meta.getResourceCfgMap().get(ResourceConst.WORKINGPATHPARAM).toString()
+                : org.apache.commons.io.FileUtils.getTempDirectoryPath();
     }
 }

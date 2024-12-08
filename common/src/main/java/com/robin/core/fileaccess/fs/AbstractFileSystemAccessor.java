@@ -29,9 +29,7 @@ public abstract class AbstractFileSystemAccessor implements IFileSystemAccessor 
 	public AbstractFileSystemAccessor(){
 
 	}
-	public void init(FileSystemConfig config){
 
-	}
 
 	public static String[] retrieveResource(String path){
 		String[] ret=new String[2];
