@@ -318,7 +318,7 @@ public class CommJdbcUtil {
         return retObj;
     }
 
-    static void setTargetValue(Object target, Object value, String columnName, String columnType, LobHandler handler, PageQuery<Map<String, Object>> pageQuery) throws DAOException {
+    static void setTargetValue(Object target, Object value, String columnName, String columnType, PageQuery<Map<String, Object>> pageQuery) throws DAOException {
         try {
             if (value != null) {
                 Object targetValue = null;

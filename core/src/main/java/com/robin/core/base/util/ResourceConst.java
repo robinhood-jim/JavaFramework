@@ -154,4 +154,19 @@ public class ResourceConst {
             return value;
         }
     }
+    public enum QINIUPARAM{
+        DOMAIN("domain"),
+        REGION("region"),
+        ACESSSKEY("accessKey"),
+        SECURITYKEY("securityKey");
+        private String value;
+        QINIUPARAM(String value){
+            this.value=value;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+    }
 }

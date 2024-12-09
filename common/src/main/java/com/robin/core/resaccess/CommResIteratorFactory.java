@@ -12,12 +12,15 @@ import java.util.ServiceLoader;
 
 @Slf4j
 public class CommResIteratorFactory {
+    private CommResIteratorFactory(){
+
+    }
     private static Map<String,Class<? extends IResourceIterator>> iterMap =new HashMap<>();
     static {
         discoverIterator(iterMap);
     }
 
-    public static AbstractResIterator getIterator(Long resType, DataCollectionMeta colmeta) {
+    public static AbstractResIterator getIterator(String resType, DataCollectionMeta colmeta) {
         AbstractResIterator iterator = null;
         Class<? extends IResourceIterator> clazz = iterMap.get(resType);
         try {

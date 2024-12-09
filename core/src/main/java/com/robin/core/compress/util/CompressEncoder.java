@@ -38,9 +38,8 @@ public class CompressEncoder {
          */
     public static OutputStream getOutputStreamByCompressType(String path,OutputStream rawstream) throws IOException{
         OutputStream outputStream;
-        List<String> suffixList=new ArrayList<>();
-        String fileName= FileUtils.parseFileFormat(path,suffixList);
-        Const.CompressType type=FileUtils.getFileCompressType(suffixList);
+        FileUtils.FileContent content=FileUtils.parseFile(path);
+        Const.CompressType type=content.getCompressType();
         switch (type){
             case COMPRESS_TYPE_GZ:
                 outputStream=new GZIPOutputStream(wrapOutputStream(rawstream));
@@ -58,7 +57,7 @@ public class CompressEncoder {
                 break;
             case COMPRESS_TYPE_ZIP:
                 ZipOutputStream stream1=new ZipOutputStream(wrapOutputStream(rawstream));
-                stream1.putNextEntry(new ZipEntry(fileName));
+                stream1.putNextEntry(new ZipEntry(content.getFileName()+"."+content.getFileFormat()));
                 outputStream=stream1;
                 break;
             case COMPRESS_TYPE_LZ4:

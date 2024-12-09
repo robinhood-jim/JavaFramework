@@ -7,6 +7,9 @@ import com.robin.core.fileaccess.fs.AbstractFileSystemAccessor;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.util.ResourceUtil;
 import com.robin.dfs.aws.AwsUtils;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
@@ -22,11 +25,17 @@ import java.nio.file.Paths;
 /**
  * Amazon AWS FileSystemAccessor
  */
+@Slf4j
+@Getter
 public class S3FileSystemAccessor extends AbstractFileSystemAccessor {
     private S3Client client;
     private S3AsyncClient asyncClient;
     private Region region;
-    public S3FileSystemAccessor(){
+    private String regionName;
+    private String accessKey;
+    private String secret;
+
+    private S3FileSystemAccessor(){
         this.identifier= Const.FILESYSTEM.S3.getValue();
     }
 
@@ -50,15 +59,14 @@ public class S3FileSystemAccessor extends AbstractFileSystemAccessor {
     @Override
     public OutputStream getRawOutputStream(DataCollectionMeta meta, String resourcePath) throws IOException {
         return getOutputStream(meta);
-        //Pair<OutputStream, CompletableFuture<PutObjectResponse>> pair = AwsUtils.putAsync(asyncClient, bucketName, resourcePath);
-        //futureMap.put(resourcePath, pair.getValue());
     }
 
 
 
     @Override
     public InputStream getInResourceByStream(DataCollectionMeta meta, String resourcePath) throws IOException {
-        return null;
+        InputStream inputStream = getRawInputStream(meta,resourcePath);
+        return getInputStreamByPath(resourcePath, inputStream);
     }
 
     @Override
@@ -91,6 +99,15 @@ public class S3FileSystemAccessor extends AbstractFileSystemAccessor {
             }
         }
     }
+    public void init(){
+        Assert.notNull(region,"region name required!");
+        Assert.notNull(accessKey,"accessKey name required!");
+        Assert.notNull(secret,"secret name required!");
+
+        region = ObjectUtils.isEmpty(regionName) ? Region.US_EAST_1 : Region.of(regionName.toString());
+        client = AwsUtils.getClientByCredential(region,accessKey,secret);
+        asyncClient = AwsUtils.getAsyncClientByCredential(region, accessKey, secret);
+    }
 
 
     @Override
@@ -98,17 +115,36 @@ public class S3FileSystemAccessor extends AbstractFileSystemAccessor {
         String bucketName = meta.getResourceCfgMap().get(ResourceConst.S3PARAM.BUCKETNAME.getValue()).toString();
         ByteArrayOutputStream outputStream1=(ByteArrayOutputStream) outputStream;
         int size=outputStream1.size();
-        AwsUtils.put(client,bucketName,meta.getPath(),new ByteArrayInputStream(outputStream1.toByteArray()),new Long(size));
+        String contentType=!ObjectUtils.isEmpty(meta.getContent())?meta.getContent().getContentType():null;
+        AwsUtils.put(client,bucketName,meta.getPath(),contentType,new ByteArrayInputStream(outputStream1.toByteArray()),new Long(size));
     }
-    private static OutputStream getOutputStream(DataCollectionMeta meta) throws IOException {
-        OutputStream outputStream;
-        if(!ObjectUtils.isEmpty(meta.getResourceCfgMap().get(ResourceConst.USETMPFILETAG)) && "true".equalsIgnoreCase(meta.getResourceCfgMap().get(ResourceConst.USETMPFILETAG).toString())){
-            String tmpPath = com.robin.core.base.util.FileUtils.getWorkingPath(meta);
-            String tmpFilePath =  tmpPath + ResourceUtil.getProcessFileName(meta.getPath());
-            outputStream= Files.newOutputStream(Paths.get(tmpFilePath));
-        }else {
-            outputStream = new ByteArrayOutputStream();
+    public static class Builder{
+        private S3FileSystemAccessor accessor;
+        public Builder(){
+            accessor=new S3FileSystemAccessor();
         }
-        return outputStream;
+        public Builder accessKey(String accessKey){
+            accessor.accessKey=accessKey;
+            return this;
+        }
+        public Builder secret(String secret){
+            accessor.secret=secret;
+            return this;
+        }
+        public Builder region(String regionName){
+            accessor.regionName=regionName;
+            return this;
+        }
+        public Builder withMetaConfig(DataCollectionMeta meta){
+            accessor.init(meta);
+            return this;
+        }
+        public S3FileSystemAccessor build(){
+            if(!ObjectUtils.isEmpty(accessor.getClient())){
+                accessor.init();
+            }
+            return accessor;
+        }
     }
+
 }

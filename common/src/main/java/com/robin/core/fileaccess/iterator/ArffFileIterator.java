@@ -25,8 +25,7 @@ public class ArffFileIterator extends PlainTextFileIterator{
     @Override
     public void beforeProcess() {
         super.beforeProcess();
-        if(CollectionUtils.isEmpty(colmeta.getColumnList())){
-            if(!ObjectUtils.isEmpty(reader)){
+        if(CollectionUtils.isEmpty(colmeta.getColumnList()) && (!ObjectUtils.isEmpty(reader))){
                 try {
                     while (!(readLineStr = reader.readLine()).equalsIgnoreCase("@data")) {
                         if(StringUtils.startsWithIgnoreCase(readLineStr,"@RELATION ")){
@@ -39,7 +38,7 @@ public class ArffFileIterator extends PlainTextFileIterator{
                 }catch (IOException ex){
                     logger.info("{}",ex.getMessage());
                 }
-            }
+
         }
     }
     private DataSetColumnMeta parseDefine(String content){

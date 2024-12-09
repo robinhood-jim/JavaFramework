@@ -390,7 +390,8 @@ public class Const {
         HDFS("hdfs"),
         S3("s3"),
         ALIYUN("oss"),
-        TENCENT("cos");
+        TENCENT("cos"),
+        QINIU("qiniu");
         private String value;
         FILESYSTEM(String value){
             this.value=value;
@@ -442,7 +443,7 @@ public class Const {
     //定时任务触发时间点
     public static final String TRIGGER_TIMESPAN = "triggerTimeSpan";
 
-    public final static List<String> ESCAPE_CHARACTERS = new ArrayList<String>(
+    public final static List<String> ESCAPE_CHARACTERS = new ArrayList<>(
             Lists.newArrayList("$", "(", ")", "*", "+", ".", "[",
                     "?", "\\", "^", "{", "|"));
 

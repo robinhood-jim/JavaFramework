@@ -15,6 +15,9 @@ import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Singleton HDFS FileSystem Accessor,using defaultName as key
+ */
 public class HdfsFileSystemAccessor extends AbstractFileSystemAccessor {
 	private static final Logger logger=LoggerFactory.getLogger(HdfsFileSystemAccessor.class);
 	private final Map<String, HDFSUtil> hdfsUtilMap=new MapMaker().concurrencyLevel(16).makeMap();

@@ -42,14 +42,15 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
+@SuppressWarnings("unused")
 public class DataBaseUtil {
     private Connection connection;
     private static final Logger logger = LoggerFactory.getLogger(DataBaseUtil.class);
     private BaseDataBaseMeta dataBaseMeta;
-    private static final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-    private static final SimpleDateFormat format1 = new SimpleDateFormat("yyyyMMddhhmmss");
-    private static final SimpleDateFormat format2 = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.SSS");
-    private static final SimpleDateFormat format3 = new SimpleDateFormat("yyyy-MM-dd");
+    private static final DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm:ss");
+    private static final DateTimeFormatter format1 = DateTimeFormatter.ofPattern("yyyyMMddhhmmss");
+    private static final DateTimeFormatter format2 = DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm:ss.SSS");
+    private static final DateTimeFormatter format3 = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     public void connect(BaseDataBaseMeta meta) throws ClassNotFoundException, SQLException {
         dataBaseMeta = meta;
@@ -148,11 +149,7 @@ public class DataBaseUtil {
                 if(!org.springframework.util.StringUtils.isEmpty(defaultValue)) {
                     datameta.setDefaultValue(defaultValue);
                 }
-                if (pklist.contains(columnname)) {
-                    datameta.setPrimaryKey(true);
-                } else {
-                    datameta.setPrimaryKey(false);
-                }
+                datameta.setPrimaryKey(pklist.contains(columnname));
                 columnlist.add(datameta);
             }
             return columnlist;
@@ -235,11 +232,7 @@ public class DataBaseUtil {
                     }
                 }
                 setType(columnname, columnType, rs.getInt("DATA_TYPE"), rs.getString("TYPE_NAME"), datalength, nullable, comment, precise, scale, datameta);
-                if (pklist != null && pklist.contains(columnname)) {
-                    datameta.setPrimaryKey(true);
-                } else {
-                    datameta.setPrimaryKey(false);
-                }
+                datameta.setPrimaryKey(pklist != null && pklist.contains(columnname));
                 columnlist.add(datameta);
             }
             return columnlist;
@@ -311,8 +304,7 @@ public class DataBaseUtil {
         }
     }
 
-    public static String translateDbType(Integer dbType) {
-        int type = dbType.intValue();
+    public static String translateDbType(Integer type) {
         String retStr;
         if (type == Types.INTEGER || type == Types.TINYINT) {
             retStr = Const.META_TYPE_INTEGER;
@@ -344,7 +336,7 @@ public class DataBaseUtil {
         Map<String, Object> retMap = new HashMap<>();
         String type = null;
 
-        SimpleDateFormat targetFormat = null;
+        DateTimeFormatter targetFormat = null;
         if (obj instanceof Long) {
             type = Const.META_TYPE_BIGINT;
         } else if (obj instanceof Integer) {
@@ -374,7 +366,7 @@ public class DataBaseUtil {
         return retMap;
     }
 
-    private static boolean isStringValueDate(String value, SimpleDateFormat format) {
+    private static boolean isStringValueDate(String value, DateTimeFormatter format) {
         try {
             format.parse(value);
             return true;
@@ -426,9 +418,8 @@ public class DataBaseUtil {
                         validtag = true;
                     }
                     break;
-                case Const.META_TYPE_STRING:
+                default:
                     validtag = true;
-                    break;
             }
         }
         return validtag;
@@ -473,7 +464,7 @@ public class DataBaseUtil {
             if (primaryKeys.contains(f.getColumnName())) {
                 f.setNullable(false);
             }
-            builder.append("\t").append(sqlGen.returnTypeDef(f.getColumnType().toString(), f)).append(",\n");
+            builder.append("\t").append(sqlGen.returnTypeDef(f.getColumnType(), f)).append(",\n");
         });
         StringBuilder builder1 = new StringBuilder();
         primaryKeys.forEach(f -> {

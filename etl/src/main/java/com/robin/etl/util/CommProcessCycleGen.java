@@ -1,9 +1,7 @@
 package com.robin.etl.util;
 
-import com.robin.core.base.util.Const;
 import com.robin.etl.common.EtlConstant;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.tomcat.jni.Local;
 import org.springframework.lang.NonNull;
 import org.springframework.util.Assert;
 
@@ -11,7 +9,6 @@ import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.WeekFields;
-import java.util.Map;
 
 public class CommProcessCycleGen implements IprocessCycleGen {
     private LocalDateTime preTime;
