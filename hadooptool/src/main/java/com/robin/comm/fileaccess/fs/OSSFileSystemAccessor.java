@@ -39,6 +39,7 @@ public class OSSFileSystemAccessor extends AbstractFileSystemAccessor {
     private String region;
     private String accessKeyId;
     private String securityAccessKey;
+    private String bucketName;
 
     private OSSFileSystemAccessor(){
         this.identifier= Const.FILESYSTEM.ALIYUN.getValue();
@@ -106,19 +107,24 @@ public class OSSFileSystemAccessor extends AbstractFileSystemAccessor {
 
     @Override
     public boolean exists(DataCollectionMeta meta, String resourcePath) throws IOException {
-        String bucketName= meta.getResourceCfgMap().get("bucketName").toString();
+        String bucketName= getBucketName(meta);
         return ossClient.doesObjectExist(bucketName,resourcePath);
     }
 
     @Override
     public long getInputStreamSize(DataCollectionMeta meta, String resourcePath) throws IOException {
-        String bucketName= meta.getResourceCfgMap().get("bucketName").toString();
+        String bucketName= getBucketName(meta);
         if(exists(meta,resourcePath)){
             OSSObject object=ossClient.getObject(bucketName,resourcePath);
             return object.getObjectMetadata().getContentLength();
         }
         return 0;
     }
+
+    private String getBucketName(DataCollectionMeta meta) {
+        return !ObjectUtils.isEmpty(bucketName)?bucketName:meta.getResourceCfgMap().get(ResourceConst.BUCKETNAME).toString();
+    }
+
     @Override
     public void finishWrite(DataCollectionMeta meta,OutputStream outputStream) {
         Assert.notNull(meta.getResourceCfgMap().get("bucketName"),"must provide bucketName");
@@ -131,8 +137,8 @@ public class OSSFileSystemAccessor extends AbstractFileSystemAccessor {
     }
 
     private InputStream getInputStreamByConfig(DataCollectionMeta meta) {
-        Assert.notNull(meta.getResourceCfgMap().get(ResourceConst.OSSPARAM.BUCKETNAME.getValue()),"must provide bucketName");
-        String bucketName= meta.getResourceCfgMap().get(ResourceConst.OSSPARAM.BUCKETNAME.getValue()).toString();
+
+        String bucketName= getBucketName(meta);
         String objectName= meta.getPath();
         return getObject(bucketName,objectName);
     }
@@ -180,6 +186,9 @@ public class OSSFileSystemAccessor extends AbstractFileSystemAccessor {
         public Builder(){
             accessor=new OSSFileSystemAccessor();
         }
+        public static Builder builder(){
+            return new Builder();
+        }
         public Builder region(String region){
             accessor.region=region;
             return this;
@@ -198,6 +207,10 @@ public class OSSFileSystemAccessor extends AbstractFileSystemAccessor {
         }
         public Builder withMetaConfig(DataCollectionMeta meta){
             accessor.init(meta);
+            return this;
+        }
+        public Builder bucket(String bucketName){
+            accessor.bucketName=bucketName;
             return this;
         }
         public OSSFileSystemAccessor build(){

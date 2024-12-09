@@ -4,6 +4,7 @@ package com.robin.core.base.util;
 public class ResourceConst {
     public static final String WORKINGPATHPARAM="output.workingPath";
     public static final String USETMPFILETAG="output.usingTmpFiles";
+    public static final String BUCKETNAME="bucketName";
 
     public enum IngestType {
         TYPE_HDFS(1L,"HDFS"),
@@ -111,8 +112,7 @@ public class ResourceConst {
     public enum S3PARAM{
         ACCESSKEY("S3AccessKey"),
         SECRET("S3Secret"),
-        REGION("S3Region"),
-        BUCKETNAME("S3BucketName");
+        REGION("S3Region");
         private String value;
         S3PARAM(String value){
             this.value=value;
@@ -127,7 +127,6 @@ public class ResourceConst {
         REGION("region"),
         ACESSSKEYID("accessKeyId"),
         SECURITYACCESSKEY("securityAccessKey"),
-        BUCKETNAME("bucketName"),
         OBJECTNAME("objectName");
         private String value;
         OSSPARAM(String value){
@@ -143,7 +142,6 @@ public class ResourceConst {
         REGION("region"),
         ACESSSKEY("accessKey"),
         SECURITYKEY("securityKey"),
-        BUCKETNAME("bucketName"),
         OBJECTNAME("objectName");
         private String value;
         COSPARAM(String value){
@@ -158,9 +156,24 @@ public class ResourceConst {
         DOMAIN("domain"),
         REGION("region"),
         ACESSSKEY("accessKey"),
-        SECURITYKEY("securityKey");
+        SECURITYKEY("securityKey"),
+        DOWNDOMAIN("downDomain");
         private String value;
         QINIUPARAM(String value){
+            this.value=value;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+    }
+    public enum MINIO{
+        ENDPOINT("endpoint"),
+        ACESSSKEY("accessKey"),
+        SECURITYKEY("securityKey");
+        private String value;
+        MINIO(String value){
             this.value=value;
         }
 

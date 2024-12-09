@@ -178,16 +178,16 @@ public class ParquetUtil {
         }
     }
 
-    public static OutputFile makeOutputFile(@NonNull AbstractFileSystemAccessor accessUtil, @NonNull DataCollectionMeta colmeta, @NonNull String filePath) {
+    public static OutputFile makeOutputFile(@NonNull OutputStream outputStream, @NonNull DataCollectionMeta colmeta, @NonNull String filePath) {
         return new OutputFile() {
             @Override
             public PositionOutputStream create(long l) throws IOException {
-                return makePositionOutputStream(accessUtil, colmeta, filePath, IO_BUF_SIZE);
+                return makePositionOutputStream(outputStream, colmeta, filePath, IO_BUF_SIZE);
             }
 
             @Override
             public PositionOutputStream createOrOverwrite(long l) throws IOException {
-                return makePositionOutputStream(accessUtil, colmeta, filePath, IO_BUF_SIZE);
+                return makePositionOutputStream(outputStream, colmeta, filePath, IO_BUF_SIZE);
             }
 
             @Override
@@ -202,9 +202,8 @@ public class ParquetUtil {
         };
     }
 
-    private static PositionOutputStream makePositionOutputStream(@NonNull AbstractFileSystemAccessor accessUtil, DataCollectionMeta colmeta, @Nonnull String filePath, int ioBufSize)
+    private static PositionOutputStream makePositionOutputStream(@NonNull OutputStream output, DataCollectionMeta colmeta, @Nonnull String filePath, int ioBufSize)
             throws IOException {
-        final OutputStream output = accessUtil.getRawOutputStream(colmeta, ResourceUtil.getProcessPath(colmeta.getPath()));
         return new PositionOutputStream() {
             private long position = 0;
             private boolean isClosed=false;

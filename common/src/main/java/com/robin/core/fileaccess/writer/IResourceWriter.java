@@ -1,5 +1,7 @@
 package com.robin.core.fileaccess.writer;
 
+import com.robin.core.fileaccess.fs.AbstractFileSystemAccessor;
+
 import javax.naming.OperationNotSupportedException;
 import java.io.BufferedWriter;
 import java.io.Closeable;
@@ -17,5 +19,6 @@ public interface IResourceWriter extends Closeable {
     String getIdentifier();
     void setWriter(BufferedWriter writer);
     void setOutputStream(OutputStream outputStream);
+    void setAccessUtil(AbstractFileSystemAccessor accessUtil);
 
 }

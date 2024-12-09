@@ -4,7 +4,9 @@ import com.robin.comm.dal.holder.db.DbConnectionHolder;
 import com.robin.comm.dal.holder.db.JdbcResourceHolder;
 import com.robin.comm.dal.pool.ResourceAccessHolder;
 import com.robin.core.base.dao.SimpleJdbcDao;
+import com.robin.core.base.exception.OperationNotSupportException;
 import com.robin.core.base.spring.SpringContextHolder;
+import com.robin.core.fileaccess.fs.AbstractFileSystemAccessor;
 import com.robin.core.fileaccess.iterator.AbstractResIterator;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import lombok.extern.slf4j.Slf4j;
@@ -107,4 +109,8 @@ public class JdbcResIterator extends AbstractResIterator {
         return "jdbc";
     }
 
+    @Override
+    public void setAccessUtil(AbstractFileSystemAccessor accessUtil) {
+        throw new OperationNotSupportException("");
+    }
 }

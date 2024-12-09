@@ -49,7 +49,8 @@ public class TextFileIteratorFactory {
 		Class<? extends IResourceIterator> iterclass=fileIterMap.get(fileType);
 		try {
 			if (!ObjectUtils.isEmpty(iterclass)) {
-				iterator = (AbstractFileIterator) iterclass.getConstructor(DataCollectionMeta.class, AbstractFileSystemAccessor.class).newInstance(colmeta,utils);
+				iterator = (AbstractFileIterator) iterclass.getConstructor(DataCollectionMeta.class).newInstance(colmeta);
+				iterator.setAccessUtil(utils);
 			}
 			iterator.beforeProcess();
 		}catch (Exception ex){

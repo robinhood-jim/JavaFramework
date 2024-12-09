@@ -43,6 +43,7 @@ public class COSFileSystemAccessor extends AbstractFileSystemAccessor {
     private HttpProtocol protocol=HttpProtocol.http;
     private String securityKey;
     private String accessKey;
+    private String bucketName;
     private COSFileSystemAccessor(){
         this.identifier= Const.FILESYSTEM.TENCENT.getValue();
     }
@@ -109,13 +110,13 @@ public class COSFileSystemAccessor extends AbstractFileSystemAccessor {
 
     @Override
     public boolean exists(DataCollectionMeta meta, String resourcePath) throws IOException {
-        String bucketName= meta.getResourceCfgMap().get("bucketName").toString();
+        String bucketName= getBucketName(meta);
         return exists(bucketName,resourcePath);
     }
 
     @Override
     public long getInputStreamSize(DataCollectionMeta meta, String resourcePath) throws IOException {
-        String bucketName= meta.getResourceCfgMap().get("bucketName").toString();
+        String bucketName= getBucketName(meta);
         if(exists(bucketName,resourcePath)){
             ObjectMetadata metadata=cosClient.getObjectMetadata(bucketName,resourcePath);
             if(!ObjectUtils.isEmpty(metadata)){
@@ -125,8 +126,7 @@ public class COSFileSystemAccessor extends AbstractFileSystemAccessor {
         return 0;
     }
     private InputStream getInputStreamByConfig(DataCollectionMeta meta) {
-        Assert.notNull(meta.getResourceCfgMap().get(ResourceConst.OSSPARAM.BUCKETNAME.getValue()),"must provide bucketName");
-        String bucketName= meta.getResourceCfgMap().get(ResourceConst.OSSPARAM.BUCKETNAME.getValue()).toString();
+        String bucketName= getBucketName(meta);
         String objectName= meta.getPath();
         return getObject(bucketName,objectName);
     }
@@ -162,7 +162,6 @@ public class COSFileSystemAccessor extends AbstractFileSystemAccessor {
 
     @Override
     public void finishWrite(DataCollectionMeta meta, OutputStream outputStream) {
-        Assert.notNull(meta.getResourceCfgMap().get("bucketName"),"must provide bucketName");
         try{
             upload(meta,outputStream);
         }catch (InterruptedException | IOException ex){
@@ -171,7 +170,7 @@ public class COSFileSystemAccessor extends AbstractFileSystemAccessor {
     }
 
     private boolean upload(DataCollectionMeta meta, OutputStream outputStream) throws IOException,InterruptedException {
-        String bucketName=meta.getResourceCfgMap().get("bucketName").toString();
+        String bucketName= getBucketName(meta);
         TransferManager transferManager=getManager();
         PutObjectRequest request;
         String tmpFilePath=null;
@@ -205,10 +204,18 @@ public class COSFileSystemAccessor extends AbstractFileSystemAccessor {
         }
         return false;
     }
+
+    private String getBucketName(DataCollectionMeta meta) {
+        return !ObjectUtils.isEmpty(bucketName)?bucketName:meta.getResourceCfgMap().get(ResourceConst.BUCKETNAME).toString();
+    }
+
     public static class Builder{
         private COSFileSystemAccessor accessor;
         public Builder(){
             accessor=new COSFileSystemAccessor();
+        }
+        public static Builder builder(){
+            return new Builder();
         }
         public Builder accessKey(String accessKey){
             accessor.accessKey=accessKey;
@@ -228,6 +235,10 @@ public class COSFileSystemAccessor extends AbstractFileSystemAccessor {
         }
         public Builder protocol(HttpProtocol protocol){
             accessor.protocol=protocol;
+            return this;
+        }
+        public Builder bucket(String bucketName){
+            accessor.bucketName=bucketName;
             return this;
         }
         public COSFileSystemAccessor build(){

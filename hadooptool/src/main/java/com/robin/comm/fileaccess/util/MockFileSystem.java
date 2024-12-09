@@ -21,7 +21,6 @@ public class MockFileSystem extends FileSystem {
     byte[] streamBytes;
     final List<MockInputStream> streams = new ArrayList<>();
     OutputStream outputStream;
-    AbstractFileSystemAccessor accessUtil;
     DataCollectionMeta colmeta;
 
     @Override
@@ -36,8 +35,8 @@ public class MockFileSystem extends FileSystem {
         setConf(conf);
         this.streamBytes = streamBytes;
     }
-    public MockFileSystem(DataCollectionMeta colmeta, AbstractFileSystemAccessor accessUtil) {
-       this.accessUtil=accessUtil;
+    public MockFileSystem(DataCollectionMeta colmeta,OutputStream outputStream) {
+       this.outputStream=outputStream;
        this.colmeta=colmeta;
     }
 
@@ -57,10 +56,6 @@ public class MockFileSystem extends FileSystem {
 
     @Override
     public FSDataOutputStream create(Path path, FsPermission fsPermission, boolean b, int i, short i1, long l, Progressable progressable) throws IOException {
-        if(outputStream!=null){
-            throw new FileAlreadyExistsException("file already write,wait for closing");
-        }
-        outputStream=accessUtil.getRawOutputStream(colmeta, ResourceUtil.getProcessPath(path.toString()));
         return new FSDataOutputStream(outputStream,new Statistics(""));
     }
 

@@ -1,5 +1,7 @@
 package com.robin.core.resaccess.iterator;
 
+import com.robin.core.base.exception.OperationNotSupportException;
+import com.robin.core.fileaccess.fs.AbstractFileSystemAccessor;
 import com.robin.core.fileaccess.iterator.AbstractResIterator;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.util.AvroUtils;
@@ -46,4 +48,9 @@ public abstract class AbstractQueueIterator extends AbstractResIterator {
         return null;
     }
     public abstract List<Map<String,Object>> pollMessage() throws IOException;
+
+    @Override
+    public void setAccessUtil(AbstractFileSystemAccessor accessUtil) {
+        throw new OperationNotSupportException("");
+    }
 }

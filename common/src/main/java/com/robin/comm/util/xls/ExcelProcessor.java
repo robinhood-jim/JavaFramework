@@ -232,8 +232,7 @@ public class ExcelProcessor {
                             break;
                         case Const.META_TYPE_BIGINT:
                             if (!StringUtils.isEmpty(str)) {
-                                Double d = Double.valueOf(str);
-                                strCell = d.longValue();
+                                strCell = Double.valueOf(str).longValue();
                             } else {
                                 strCell = 0L;
                             }

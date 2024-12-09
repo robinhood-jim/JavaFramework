@@ -338,6 +338,12 @@
             <version>[7.16.0, 7.16.99]</version>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>io.minio</groupId>
+            <artifactId>minio</artifactId>
+            <version>8.4.0</version>
+            <optional>true</optional>
+        </dependency>
 
     </dependencies>
 
