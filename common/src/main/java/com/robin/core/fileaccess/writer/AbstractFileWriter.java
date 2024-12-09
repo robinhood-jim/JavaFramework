@@ -62,6 +62,16 @@ public abstract class AbstractFileWriter implements IResourceWriter {
 		}
 		checkAccessUtil(colmeta.getPath());
 	}
+	protected AbstractFileWriter(DataCollectionMeta colmeta,AbstractFileSystemAccessor accessor){
+		this.colmeta=colmeta;
+		formatter=DateTimeFormatter.ofPattern(colmeta.getDefaultTimestampFormat());
+		for (DataSetColumnMeta meta:colmeta.getColumnList()) {
+			columnList.add(meta.getColumnName());
+			columnMap.put(meta.getColumnName(), meta.getColumnType());
+		}
+		accessUtil=accessor;
+	}
+
 	@Override
     public void setWriter(BufferedWriter writer){
 		this.writer=writer;
@@ -161,9 +171,11 @@ public abstract class AbstractFileWriter implements IResourceWriter {
 		return url;
 	}
 	protected Const.CompressType getCompressType(){
-		List<String> fileSuffix=new ArrayList<>();
-		FileUtils.parseFileFormat(getOutputPath(colmeta.getPath()),fileSuffix);
-		return FileUtils.getFileCompressType(fileSuffix);
+		if(ObjectUtils.isEmpty(colmeta.getContent())) {
+			FileUtils.FileContent content = FileUtils.parseFile(colmeta.getPath());
+			colmeta.setContent(content);
+		}
+		return colmeta.getContent().getCompressType();
 	}
 
 	@Override

@@ -29,9 +29,8 @@ public class CompressDecoder {
     }
     public static InputStream getInputStreamByCompressType(String path, InputStream rawstream) throws IOException{
         InputStream inputStream;
-        List<String> suffixList=new ArrayList<>();
-        FileUtils.parseFileFormat(path,suffixList);
-        Const.CompressType type=FileUtils.getFileCompressType(suffixList);
+        FileUtils.FileContent content=FileUtils.parseFile(path);
+        Const.CompressType type=content.getCompressType();
         switch (type){
             case COMPRESS_TYPE_GZ:
                 inputStream=new GZIPInputStream(wrapInputStream(rawstream));

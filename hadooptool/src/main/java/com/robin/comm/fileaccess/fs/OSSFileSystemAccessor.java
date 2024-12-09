@@ -7,6 +7,7 @@ import com.aliyun.oss.common.auth.CredentialsProviderFactory;
 import com.aliyun.oss.common.comm.ResponseMessage;
 import com.aliyun.oss.model.Bucket;
 import com.aliyun.oss.model.OSSObject;
+import com.aliyun.oss.model.ObjectMetadata;
 import com.aliyun.oss.model.PutObjectResult;
 import com.robin.core.base.exception.MissingConfigException;
 import com.robin.core.base.util.Const;
@@ -14,6 +15,7 @@ import com.robin.core.base.util.ResourceConst;
 import com.robin.core.fileaccess.fs.AbstractFileSystemAccessor;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.util.ResourceUtil;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -29,11 +31,18 @@ import java.nio.file.Paths;
  * Aliyun OSS FileSystemAccessor
  */
 @Slf4j
+@Getter
 public class OSSFileSystemAccessor extends AbstractFileSystemAccessor {
-    public OSSFileSystemAccessor(){
+
+    private OSS ossClient;
+    private String endpoint;
+    private String region;
+    private String accessKeyId;
+    private String securityAccessKey;
+
+    private OSSFileSystemAccessor(){
         this.identifier= Const.FILESYSTEM.ALIYUN.getValue();
     }
-    private OSS ossClient;
 
     @Override
     public void init(DataCollectionMeta meta){
@@ -43,14 +52,23 @@ public class OSSFileSystemAccessor extends AbstractFileSystemAccessor {
         Assert.notNull(meta.getResourceCfgMap().get(ResourceConst.OSSPARAM.ACESSSKEYID.getValue()),"must provide accessKey");
         Assert.notNull(meta.getResourceCfgMap().get(ResourceConst.OSSPARAM.SECURITYACCESSKEY.getValue()),"must provide securityAccessKey");
 
-        String endpoint=meta.getResourceCfgMap().get(ResourceConst.OSSPARAM.ENDPOIN.getValue()).toString();
-        String region=meta.getResourceCfgMap().get(ResourceConst.OSSPARAM.REGION.getValue()).toString();
-        String accessKeyId=meta.getResourceCfgMap().get(ResourceConst.OSSPARAM.ACESSSKEYID.getValue()).toString();
-        String securityAccessKey=meta.getResourceCfgMap().get(ResourceConst.OSSPARAM.SECURITYACCESSKEY.getValue()).toString();
+        endpoint=meta.getResourceCfgMap().get(ResourceConst.OSSPARAM.ENDPOIN.getValue()).toString();
+        region=meta.getResourceCfgMap().get(ResourceConst.OSSPARAM.REGION.getValue()).toString();
+        accessKeyId=meta.getResourceCfgMap().get(ResourceConst.OSSPARAM.ACESSSKEYID.getValue()).toString();
+        securityAccessKey=meta.getResourceCfgMap().get(ResourceConst.OSSPARAM.SECURITYACCESSKEY.getValue()).toString();
 
         CredentialsProvider credentialsProvider= CredentialsProviderFactory.newDefaultCredentialProvider(accessKeyId,securityAccessKey);
         ossClient= OSSClientBuilder.create().endpoint(endpoint).credentialsProvider(credentialsProvider)
                     .region(region).build();
+    }
+    public void init(){
+        Assert.notNull(region,"must provide endpoint");
+        Assert.notNull(endpoint,"must provide region");
+        Assert.notNull(accessKeyId,"must provide accessKey");
+        Assert.notNull(securityAccessKey,"must provide securityAccessKey");
+        CredentialsProvider credentialsProvider= CredentialsProviderFactory.newDefaultCredentialProvider(accessKeyId,securityAccessKey);
+        ossClient= OSSClientBuilder.create().endpoint(endpoint).credentialsProvider(credentialsProvider)
+                .region(region).build();
     }
 
     @Override
@@ -111,17 +129,7 @@ public class OSSFileSystemAccessor extends AbstractFileSystemAccessor {
             log.error("{}",ex.getMessage());
         }
     }
-    private static OutputStream getOutputStream(DataCollectionMeta meta) throws IOException {
-        OutputStream outputStream;
-        if(!ObjectUtils.isEmpty(meta.getResourceCfgMap().get(ResourceConst.USETMPFILETAG)) && "true".equalsIgnoreCase(meta.getResourceCfgMap().get(ResourceConst.USETMPFILETAG).toString())){
-            String tmpPath = com.robin.core.base.util.FileUtils.getWorkingPath(meta);
-            String tmpFilePath =  tmpPath + ResourceUtil.getProcessFileName(meta.getPath());
-            outputStream= Files.newOutputStream(Paths.get(tmpFilePath));
-        }else {
-            outputStream = new ByteArrayOutputStream();
-        }
-        return outputStream;
-    }
+
     private InputStream getInputStreamByConfig(DataCollectionMeta meta) {
         Assert.notNull(meta.getResourceCfgMap().get(ResourceConst.OSSPARAM.BUCKETNAME.getValue()),"must provide bucketName");
         String bucketName= meta.getResourceCfgMap().get(ResourceConst.OSSPARAM.BUCKETNAME.getValue()).toString();
@@ -134,13 +142,20 @@ public class OSSFileSystemAccessor extends AbstractFileSystemAccessor {
     private boolean putObject(String bucketName,DataCollectionMeta meta,OutputStream outputStream) throws IOException{
         PutObjectResult result;
         String tmpFilePath=null;
+        ObjectMetadata metadata=new ObjectMetadata();
+        if(!ObjectUtils.isEmpty(meta.getContent())){
+            metadata.setContentType(meta.getContent().getContentType());
+        }
         if(ByteArrayOutputStream.class.isAssignableFrom(outputStream.getClass())) {
-            result = ossClient.putObject(bucketName, meta.getPath(), new ByteArrayInputStream(((ByteArrayOutputStream)outputStream).toByteArray()));
+            ByteArrayOutputStream byteArrayOutputStream=(ByteArrayOutputStream)outputStream;
+            metadata.setContentLength(byteArrayOutputStream.size());
+            result = ossClient.putObject(bucketName, meta.getPath(), new ByteArrayInputStream(byteArrayOutputStream.toByteArray()),metadata);
         }else{
             outputStream.close();
             String tmpPath = com.robin.core.base.util.FileUtils.getWorkingPath(meta);
             tmpFilePath = tmpPath + ResourceUtil.getProcessFileName(meta.getPath());
-            result=ossClient.putObject(bucketName,meta.getPath(), Files.newInputStream(Paths.get(tmpFilePath)));
+            metadata.setContentLength(Files.size(Paths.get(tmpFilePath)));
+            result=ossClient.putObject(bucketName,meta.getPath(), Files.newInputStream(Paths.get(tmpFilePath)),metadata);
         }
         ResponseMessage message=result.getResponse();
         if(message.isSuccessful() && !ObjectUtils.isEmpty(tmpFilePath)){
@@ -159,5 +174,38 @@ public class OSSFileSystemAccessor extends AbstractFileSystemAccessor {
         }else{
             throw new MissingConfigException(" key "+objectName+" not in OSS bucket "+bucketName);
         }
+    }
+    public static class Builder{
+        private OSSFileSystemAccessor accessor;
+        public Builder(){
+            accessor=new OSSFileSystemAccessor();
+        }
+        public Builder region(String region){
+            accessor.region=region;
+            return this;
+        }
+        public Builder accessKeyId(String accessKeyId){
+            accessor.accessKeyId=accessKeyId;
+            return this;
+        }
+        public Builder endpoint(String endPoint){
+            accessor.endpoint=endPoint;
+            return this;
+        }
+        public Builder securityAccessKey(String securityAccessKey){
+            accessor.securityAccessKey=securityAccessKey;
+            return this;
+        }
+        public Builder withMetaConfig(DataCollectionMeta meta){
+            accessor.init(meta);
+            return this;
+        }
+        public OSSFileSystemAccessor build(){
+            if(ObjectUtils.isEmpty(accessor.getOssClient())){
+                accessor.init();
+            }
+            return accessor;
+        }
+
     }
 }

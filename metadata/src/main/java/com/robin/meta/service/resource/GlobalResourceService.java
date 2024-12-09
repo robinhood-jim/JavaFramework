@@ -201,9 +201,8 @@ public class GlobalResourceService extends BaseAnnotationJdbcService<GlobalResou
 
     private Schema getFileSchema(AbstractFileSystemAccessor util, DataCollectionMeta meta, GlobalResource resource, int maxReadLines) throws Exception {
         Schema schema = null;
-        List<String> suffixList = new ArrayList<>();
-        FileUtils.parseFileFormat(meta.getPath(), suffixList);
-        String fileFormat = suffixList.get(0);
+        FileUtils.FileContent content=FileUtils.parseFile(meta.getPath());
+        String fileFormat =content.getFileFormat();
         int columnPos = 0;
         //read Header 10000 Line
         int readLines = maxReadLines > 0 ? maxReadLines : 10000;

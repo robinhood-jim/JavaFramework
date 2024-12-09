@@ -18,6 +18,7 @@ package com.robin.core.fileaccess.meta;
 import com.robin.core.base.datameta.BaseDataBaseMeta;
 import com.robin.core.base.datameta.DataBaseColumnMeta;
 import com.robin.core.base.datameta.DataBaseParam;
+import com.robin.core.base.util.FileUtils;
 import com.robin.core.base.util.ResourceConst;
 import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.fileaccess.util.ResourceUtil;
@@ -58,6 +59,7 @@ public class DataCollectionMeta implements Serializable {
 	private String dbType;
 	private String tableName;
 	private String protocol;
+	private FileUtils.FileContent content;
 	public void setAvroSchema(Class<?> clazz){
 		String fullClassName=clazz.getClass().getCanonicalName();
 		int pos=fullClassName.lastIndexOf(".");

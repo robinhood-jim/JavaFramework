@@ -15,11 +15,16 @@
  */
 package com.robin.core.fileaccess.fs;
 
+import com.robin.core.base.util.ResourceConst;
 import com.robin.core.compress.util.CompressDecoder;
 import com.robin.core.compress.util.CompressEncoder;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
+import com.robin.core.fileaccess.util.ResourceUtil;
+import org.springframework.util.ObjectUtils;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 /**
  * abstract resource system access Utils (Local/Hdfs/ApacheVFS(including ftp sftp)/S3/Tencent cloud/aliyun)
@@ -94,6 +99,17 @@ public abstract class AbstractFileSystemAccessor implements IFileSystemAccessor 
 	}
 	protected static OutputStream getOutputStreamByPath(String path, OutputStream out) throws IOException{
 		return CompressEncoder.getOutputStreamByCompressType(path,out);
+	}
+	protected OutputStream getOutputStream(DataCollectionMeta meta) throws IOException {
+		OutputStream outputStream;
+		if(!ObjectUtils.isEmpty(meta.getResourceCfgMap().get(ResourceConst.USETMPFILETAG)) && "true".equalsIgnoreCase(meta.getResourceCfgMap().get(ResourceConst.USETMPFILETAG).toString())){
+			String tmpPath = com.robin.core.base.util.FileUtils.getWorkingPath(meta);
+			String tmpFilePath =  tmpPath + ResourceUtil.getProcessFileName(meta.getPath());
+			outputStream= Files.newOutputStream(Paths.get(tmpFilePath));
+		}else {
+			outputStream = new ByteArrayOutputStream();
+		}
+		return outputStream;
 	}
 	
 	@Override

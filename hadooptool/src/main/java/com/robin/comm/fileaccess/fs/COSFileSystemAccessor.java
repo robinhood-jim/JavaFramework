@@ -11,10 +11,13 @@ import com.qcloud.cos.transfer.TransferManager;
 import com.qcloud.cos.transfer.TransferManagerConfiguration;
 import com.qcloud.cos.transfer.Upload;
 import com.robin.core.base.exception.ResourceNotAvailableException;
+import com.robin.core.base.util.Const;
 import com.robin.core.base.util.ResourceConst;
 import com.robin.core.fileaccess.fs.AbstractFileSystemAccessor;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.util.ResourceUtil;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -30,11 +33,19 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * Tencent COS FileSystemAccessor
+ * Tencent COS FileSystemAccessor,must init individual
  */
 @Slf4j
+@Getter
 public class COSFileSystemAccessor extends AbstractFileSystemAccessor {
     private COSClient cosClient;
+    private String regionName;
+    private HttpProtocol protocol=HttpProtocol.http;
+    private String securityKey;
+    private String accessKey;
+    private COSFileSystemAccessor(){
+        this.identifier= Const.FILESYSTEM.TENCENT.getValue();
+    }
 
     @Override
     public void init(DataCollectionMeta meta) {
@@ -50,6 +61,16 @@ public class COSFileSystemAccessor extends AbstractFileSystemAccessor {
         config.setHttpProtocol(protocol);
         COSCredentials cosCredentials = new BasicCOSCredentials(meta.getResourceCfgMap().get(ResourceConst.COSPARAM.ACESSSKEY.getValue()).toString(),
                 meta.getResourceCfgMap().get(ResourceConst.COSPARAM.SECURITYKEY.getValue()).toString());
+        cosClient = new COSClient(cosCredentials, config);
+    }
+    public void init(){
+        Assert.notNull(regionName,"regionName required!");
+        Assert.notNull(accessKey,"accessKey required!");
+        Assert.notNull(securityKey,"securityKey required!");
+        Region region=new Region(regionName);
+        ClientConfig config=new ClientConfig(region);
+        config.setHttpProtocol(protocol);
+        COSCredentials cosCredentials = new BasicCOSCredentials(accessKey,securityKey);
         cosClient = new COSClient(cosCredentials, config);
     }
 
@@ -109,17 +130,7 @@ public class COSFileSystemAccessor extends AbstractFileSystemAccessor {
         String objectName= meta.getPath();
         return getObject(bucketName,objectName);
     }
-    private static OutputStream getOutputStream(DataCollectionMeta meta) throws IOException {
-        OutputStream outputStream;
-        if(!ObjectUtils.isEmpty(meta.getResourceCfgMap().get(ResourceConst.USETMPFILETAG)) && "true".equalsIgnoreCase(meta.getResourceCfgMap().get(ResourceConst.USETMPFILETAG).toString())){
-            String tmpPath = com.robin.core.base.util.FileUtils.getWorkingPath(meta);
-            String tmpFilePath =  tmpPath + ResourceUtil.getProcessFileName(meta.getPath());
-            outputStream= Files.newOutputStream(Paths.get(tmpFilePath));
-        }else {
-            outputStream = new ByteArrayOutputStream();
-        }
-        return outputStream;
-    }
+
     private COSObjectInputStream getObject(@NonNull String bucketName,@NonNull String key) {
         GetObjectRequest request = new GetObjectRequest(bucketName, key);
         COSObject object = cosClient.getObject(request);
@@ -162,10 +173,13 @@ public class COSFileSystemAccessor extends AbstractFileSystemAccessor {
     private boolean upload(DataCollectionMeta meta, OutputStream outputStream) throws IOException,InterruptedException {
         String bucketName=meta.getResourceCfgMap().get("bucketName").toString();
         TransferManager transferManager=getManager();
-        PutObjectRequest request=null;
+        PutObjectRequest request;
         String tmpFilePath=null;
+        ObjectMetadata objectMetadata = new ObjectMetadata();
+        if(!ObjectUtils.isEmpty(meta.getContent())){
+            objectMetadata.setContentType(meta.getContent().getContentType());
+        }
         if(ByteArrayOutputStream.class.isAssignableFrom(outputStream.getClass())){
-            ObjectMetadata objectMetadata = new ObjectMetadata();
             objectMetadata.setContentLength(((ByteArrayOutputStream)outputStream).size());
             request = new PutObjectRequest(bucketName, meta.getPath(), new ByteArrayInputStream(((ByteArrayOutputStream)outputStream).toByteArray()),objectMetadata);
         }else{
@@ -190,6 +204,39 @@ public class COSFileSystemAccessor extends AbstractFileSystemAccessor {
             }
         }
         return false;
+    }
+    public static class Builder{
+        private COSFileSystemAccessor accessor;
+        public Builder(){
+            accessor=new COSFileSystemAccessor();
+        }
+        public Builder accessKey(String accessKey){
+            accessor.accessKey=accessKey;
+            return this;
+        }
+        public Builder secretKey(String secretKey){
+            accessor.securityKey=secretKey;
+            return this;
+        }
+        public Builder withMetaConfig(DataCollectionMeta meta){
+            accessor.init(meta);
+            return this;
+        }
+        public Builder region(String regionName){
+            accessor.regionName=regionName;
+            return this;
+        }
+        public Builder protocol(HttpProtocol protocol){
+            accessor.protocol=protocol;
+            return this;
+        }
+        public COSFileSystemAccessor build(){
+            if(!ObjectUtils.isEmpty(accessor.getCosClient())){
+                accessor.init();
+            }
+            return accessor;
+        }
+
     }
 
 }

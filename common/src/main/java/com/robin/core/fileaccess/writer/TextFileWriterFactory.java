@@ -16,6 +16,7 @@
 package com.robin.core.fileaccess.writer;
 
 import com.robin.core.base.util.FileUtils;
+import com.robin.core.fileaccess.fs.AbstractFileSystemAccessor;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,9 +40,21 @@ public class TextFileWriterFactory {
         fileWriter.setWriter(writer);
         return fileWriter;
     }
+    public static IResourceWriter getWriterByType(DataCollectionMeta colmeta, BufferedWriter writer,AbstractFileSystemAccessor accessor) throws IOException {
+        IResourceWriter fileWriter = getWriterByType(colmeta,accessor);
+        fileWriter.setWriter(writer);
+        return fileWriter;
+    }
 
     public static IResourceWriter getOutputStreamByType(DataCollectionMeta colmeta, OutputStream writer) throws IOException{
         IResourceWriter fileWriter = getWriterByType(colmeta);
+        if(writer!=null) {
+            fileWriter.setOutputStream(writer);
+        }
+        return fileWriter;
+    }
+    public static IResourceWriter getOutputStreamByType(DataCollectionMeta colmeta, OutputStream writer,AbstractFileSystemAccessor accessor) throws IOException{
+        IResourceWriter fileWriter = getWriterByType(colmeta,accessor);
         if(writer!=null) {
             fileWriter.setOutputStream(writer);
         }
@@ -57,8 +70,8 @@ public class TextFileWriterFactory {
     public static IResourceWriter getWriterByType(DataCollectionMeta colmeta) throws IOException {
         IResourceWriter fileWriter = null;
         try {
+            String fileSuffix = getFileSuffix(colmeta);
 
-            String fileSuffix=colmeta.getFileFormat();
             Class<? extends IResourceWriter> writerClass=fileWriterMap.get(fileSuffix);
             if (!ObjectUtils.isEmpty(writerClass)) {
                 fileWriter =  writerClass.getConstructor(DataCollectionMeta.class).newInstance(colmeta);
@@ -70,6 +83,33 @@ public class TextFileWriterFactory {
         }
         return fileWriter;
     }
+    public static IResourceWriter getWriterByType(DataCollectionMeta colmeta, AbstractFileSystemAccessor accessor) throws IOException {
+        IResourceWriter fileWriter = null;
+        try {
+            String fileSuffix = getFileSuffix(colmeta);
+
+            Class<? extends IResourceWriter> writerClass=fileWriterMap.get(fileSuffix);
+            if (!ObjectUtils.isEmpty(writerClass)) {
+                fileWriter =  writerClass.getConstructor(DataCollectionMeta.class,AbstractFileSystemAccessor.class).newInstance(colmeta,accessor);
+                logger.info("using resource writer {}",writerClass.getCanonicalName());
+            }
+
+        } catch (Exception ex) {
+            throw new IOException(ex);
+        }
+        return fileWriter;
+    }
+
+    private static String getFileSuffix(DataCollectionMeta colmeta) {
+        String fileSuffix= colmeta.getFileFormat();
+        if(ObjectUtils.isEmpty(fileSuffix)){
+            FileUtils.FileContent content=FileUtils.parseFile(colmeta.getPath());
+            colmeta.setContent(content);
+            fileSuffix=content.getFileFormat();
+        }
+        return fileSuffix;
+    }
+
     private static void discoverIterator(Map<String,Class<? extends IResourceWriter>> fileIterMap){
         ServiceLoader.load(IResourceWriter.class).iterator().forEachRemaining(i->{
             if(AbstractFileWriter.class.isAssignableFrom(i.getClass()))

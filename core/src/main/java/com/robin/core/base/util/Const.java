@@ -390,7 +390,8 @@ public class Const {
         HDFS("hdfs"),
         S3("s3"),
         ALIYUN("oss"),
-        TENCENT("cos");
+        TENCENT("cos"),
+        QINIU("qiniu");
         private String value;
         FILESYSTEM(String value){
             this.value=value;

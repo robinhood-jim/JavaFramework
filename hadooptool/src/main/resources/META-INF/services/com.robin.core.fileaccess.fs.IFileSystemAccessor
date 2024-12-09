@@ -1,4 +1,1 @@
 com.robin.comm.fileaccess.fs.HdfsFileSystemAccessor
-com.robin.comm.fileaccess.fs.OSSFileSystemAccessor
-com.robin.comm.fileaccess.fs.COSFileSystemAccessor
-com.robin.comm.fileaccess.fs.S3FileSystemAccessor
