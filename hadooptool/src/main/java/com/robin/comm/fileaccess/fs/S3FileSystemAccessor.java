@@ -107,7 +107,6 @@ public class S3FileSystemAccessor extends AbstractFileSystemAccessor {
         }
     }
     public void init(){
-        Assert.notNull(region,"region name required!");
         Assert.notNull(accessKey,"accessKey name required!");
         Assert.notNull(secret,"secret name required!");
 

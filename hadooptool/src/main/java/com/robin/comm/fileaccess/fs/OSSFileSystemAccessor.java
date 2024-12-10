@@ -137,7 +137,6 @@ public class OSSFileSystemAccessor extends AbstractFileSystemAccessor {
     }
 
     private InputStream getInputStreamByConfig(DataCollectionMeta meta) {
-
         String bucketName= getBucketName(meta);
         String objectName= meta.getPath();
         return getObject(bucketName,objectName);

@@ -122,6 +122,20 @@ public class ResourceConst {
             return value;
         }
     }
+    public enum BOSPARAM{
+        ENDPOIN("endpoint"),
+        REGION("region"),
+        ACESSSKEYID("accessKeyId"),
+        SECURITYACCESSKEY("securityAccessKey");
+        private String value;
+        BOSPARAM(String value){
+            this.value=value;
+        }
+
+        public String getValue() {
+            return value;
+        }
+    }
     public enum OSSPARAM{
         ENDPOIN("endpoint"),
         REGION("region"),

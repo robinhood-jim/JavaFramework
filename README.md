@@ -8,40 +8,85 @@ Slightly Framework design to  support Spring based java or Bigdata program.
 
 1.Introduction
 
-	I.This project is base on Spring Framework and has four modules:
-		|----------------------------------------------------------------------------------------------------|
-		| Module   | Description                                                                             |
-		|----------------------------------------------------------------------------------------------------|
-		| Core     | the core class include data access layer basic class(model,dao,service) and  etc.       |
-		|----------------------------------------------------------------------------------------------------|
-		| Comm     | FileSystem Access tool(local/vfs),support FileFormat(csv/xml/json/avro/parquet/protobuf)|
-		|          | ,support Compress Format(gzip/bzip2/snappy/lzo/zip/lzma/lz4)                            |
-		|          | ,read and write excel,read word or PowerPoint                                           |
-		|----------------------------------------------------------------------------------------------------|
-		|Hadooptool|FileSystem Access tool(hdfs), comm tool to access to HDFS,Hbase,Hive,Mongdb and etc      |
-		|----------------------------------------------------------------------------------------------------|
-		|Example   |springmvc config based and spring boot based Example;                                    |
-		|----------------------------------------------------------------------------------------------------|
-		|Web       |struts1,struts2 and springmvc support web component and required class.                  |
-		|----------------------------------------------------------------------------------------------------|
-		|Webui     |Spring Boot with Oauth2 Thymeleaf Example;                                               |
-		|----------------------------------------------------------------------------------------------------|
-		|Estool    | ElasticSearch Comm Query tool                                                           |
-		|----------------------------------------------------------------------------------------------------|
-		|Tracer    | Zipkin Brave tracing，Can trace All Database and Record parameters                      |
-		|----------------------------------------------------------------------------------------------------|
-   
-    II. Special feature
+	I.This project is base on Spring Framework and has below modules:
+		|----------------------------------------------------------------------------------------------------------------|
+		| Module       | Description                                                                                                                      |
+		|----------------------------------------------------------------------------------------------------------------|
+		| Core           | the core class include data access layer basic class(model,dao,service) and  etc.                 |
+		|----------------------------------------------------------------------------------------------------------------|
+		| Comm        | FileSystem Access tool(local/vfs),support FileFormat(csv/xml/json/avro/parquet/protobuf)|
+		|                   | ,support Compress Format(gzip/bzip2/snappy/lzo/zip/lzma/lz4)                                       |
+		|                   | ,read and write excel,read word or PowerPoint                                                                 |
+		|----------------------------------------------------------------------------------------------------------------|
+		|Hadooptool |FileSystem Access tool(hdfs), comm tool to access to HDFS,Hbase,Hive,Mongdb and etc   |
+		|----------------------------------------------------------------------------------------------------------------|
+		|Example      |springmvc config based and spring boot based Simple framework Example;                      |
+		|----------------------------------------------------------------------------------------------------------------|
+		|Web            |struts1,struts2 and springmvc support web component and required class.                       |
+		|----------------------------------------------------------------------------------------------------------------|
+		|Webui         |Spring Boot with Oauth2 Thymeleaf Example;                                                                    |
+		|----------------------------------------------------------------------------------------------------------------|
+		|Estool          | ElasticSearch Comm Query tool                                                                                        |
+		|----------------------------------------------------------------------------------------------------------------|
+		|Tracer          | Zipkin Brave tracing，Can trace All Database and Record parameters                               |
+		|----------------------------------------------------------------------------------------------------------------|
+
+        
+ It is available under the terms of either the Apache Software License 2.0 or the Eclipse Public License 1.0.
+
+2.Support Features 
+    I. Construct Simple Java FrameWork
+        contain use sysrole and relation with customer privilege to use and roles;
+        1.xml based standard frame : see example/config-example
+        2.spring based standard frame: see example/boot-example 
+
+    II. Bigdata supprot
+        hadooptool:
+        HDFS tool: com.robin.hadoop.hdfs  can access HDFS with kerberos security
+        Hbase tool: com.robin.hadoop.hbase hbase tool
+        Cassandra tool : CassandraUtils 
+    
+    III. BigData common file format read/write tools support(including compress type support)
+        AVRO
+        PARQUET
+        ORC
+        PROTOBUF
+        CSV
+        XML
+        JSON
+        ARFF(weka format)
+
+    IV. File storage and Cloud storage support
+        LocalFileSystem
+        ApacheVFS
+        HDFS
+        Amazon S3 
+        Aliyun OSS
+        Tencent COS
+        Apache Kafka 
+        RabbitMq
+        
+    V. Iterable and wirtable support intergate Storage and file format
+        mix storage and File format to support cross storage read/write        
+
+	VI. Spring cloud support
+	WebUI simple webui base on dhtmlxGrid 5.1 with spring boot native 
+	related project in my another project microservices
+
+    VII. Zipkin Intergation
+        trace sub project aimed to support All database to be tracable and can record query parameters.
+
+    VIII. Special feature
         a.A user defined xml Query config system,similar to mybatis,but easy config.
         b.Support defined annotation or jpa annotation in JdbcDao with ORM.
         c. BaseAnnotationService can access DB with minimize code,and use transaction with annotation.
         d.A common db access meta and util,can access all kind of db.
 		e.Spring cloud based WebUI
 		f.support Hadoop plateform
-        
- It is available under the terms of either the Apache Software License 2.0 or the Eclipse Public License 1.0.
- 
- 2.Development
+        g. Excel read write utils support auto merge columns and customer header define.
+
+
+3.Development
  
     I.Model Layer:Simple ORM tool, Support JAVA JPA or my BaseObject Annotation
         Demostration：(support Composite primary key) 
@@ -221,14 +266,5 @@ Slightly Framework design to  support Spring based java or Bigdata program.
 			
 		upon feature aim to simplify the work to develop standard MVC java code.
             
-    II. Bigdata supprot
-		hadooptool: 
-			HDFS tool: com.robin.hadoop.hdfs  can access HDFS with kerberos security
-			Hbase tool: com.robin.hadoop.hbase hbase tool 
-			Cassandra tool : CassandraUtils
-			
-	III. Spring cloud support
-	WebUI simple webui base on dhtmlxGrid 5.1 with spring boot native 
-	related project in my another project microservices
    
          
