@@ -116,7 +116,7 @@
         <oracle.version>11.1.0.6.0</oracle.version>
         <sqlserver.version>4.0</sqlserver.version>
         <aspectj.version>1.6.2</aspectj.version>
-        <avro.version>1.8.2</avro.version>
+        <avro.version>1.11.4</avro.version>
         <parquet.avro.version>1.14.3</parquet.avro.version>
         <postgresql.version>9.1-901.jdbc3</postgresql.version>
         <scannotation.version>1.0.3</scannotation.version>
