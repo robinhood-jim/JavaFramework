@@ -7,16 +7,17 @@ import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
 import com.robin.comm.fileaccess.util.ProtoBufUtil;
 import com.robin.core.base.util.Const;
+import com.robin.core.compress.util.CompressEncoder;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.meta.DataSetColumnMeta;
 import com.robin.core.fileaccess.util.ResourceUtil;
 import com.robin.core.fileaccess.writer.AbstractFileWriter;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
-import org.tukaani.xz.LZMAOutputStream;
 
 import javax.naming.OperationNotSupportedException;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -27,6 +28,7 @@ public class ProtoBufFileWriter extends AbstractFileWriter {
     private DynamicSchema.Builder schemaBuilder;
     private DynamicMessage.Builder mesgBuilder;
     private MessageDefinition definition;
+    private OutputStream wrapOutputStream;
     public ProtoBufFileWriter(){
         this.identifier= Const.FILEFORMATSTR.PROTOBUF.getValue();
     }
@@ -53,8 +55,9 @@ public class ProtoBufFileWriter extends AbstractFileWriter {
                 mesgBuilder= DynamicMessage.newBuilder(schema.getMessageDescriptor(colmeta.getValueClassName()));
             }
             checkAccessUtil(null);
-            out = accessUtil.getOutResourceByStream(colmeta, ResourceUtil.getProcessPath(colmeta.getPath()));
-
+            out=accessUtil.getRawOutputStream(colmeta,ResourceUtil.getProcessPath(colmeta.getPath()));
+            wrapOutputStream = CompressEncoder.getOutputStreamByCompressType(ResourceUtil.getProcessPath(colmeta.getPath()),out); //accessUtil.getOutResourceByStream(colmeta, ResourceUtil.getProcessPath(colmeta.getPath()));
+            getCompressType();
         }catch (Exception ex){
             ex.printStackTrace();
         }
@@ -63,12 +66,12 @@ public class ProtoBufFileWriter extends AbstractFileWriter {
 
     @Override
     public void finishWrite() throws IOException {
-        out.close();
+        wrapOutputStream.close();
     }
 
     @Override
     public void flush() throws IOException {
-        out.flush();
+        wrapOutputStream.flush();
     }
 
     @Override
@@ -84,6 +87,6 @@ public class ProtoBufFileWriter extends AbstractFileWriter {
             }
         }
         DynamicMessage message=msgBuilder.build();
-        message.writeDelimitedTo(out);
+        message.writeDelimitedTo(wrapOutputStream);
     }
 }

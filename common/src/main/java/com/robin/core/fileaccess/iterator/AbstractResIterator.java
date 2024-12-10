@@ -1,6 +1,7 @@
 package com.robin.core.fileaccess.iterator;
 
 import com.robin.core.base.exception.OperationNotSupportException;
+import com.robin.core.fileaccess.fs.AbstractFileSystemAccessor;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.meta.DataSetColumnMeta;
 import org.slf4j.Logger;
@@ -49,6 +50,11 @@ public abstract class AbstractResIterator implements IResourceIterator {
 
     @Override
     public void setInputStream(InputStream inputStream) {
+        throw new OperationNotSupportException("");
+    }
+
+    @Override
+    public void setAccessUtil(AbstractFileSystemAccessor accessUtil) {
         throw new OperationNotSupportException("");
     }
 }

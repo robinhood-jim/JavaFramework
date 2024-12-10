@@ -1,10 +1,8 @@
 package com.robin.dataming.weka.algorithm;
 
 
-import com.robin.dataming.weka.utils.WekaUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
-import weka.clusterers.Clusterer;
 import weka.clusterers.SimpleKMeans;
 import weka.core.EuclideanDistance;
 import weka.core.Instances;

@@ -524,26 +524,24 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
                 returnTemplate().update(factory.newPreparedStatementCreator(insertSegment.getParams()), keyHolder);
                 retval = keyHolder.getKey().longValue();
 
-                if (!ObjectUtils.isEmpty(retval)) {
-                    //assign increment column
-                    if (generateColumn != null) {
-                        FieldContent pkColumn = AnnotationRetriever.getPrimaryField(fields);
-                        if (pkColumn == null) {
-                            throw new DAOException("model " + obj.getClass().getSimpleName() + " does not have primary key");
-                        }
-                        Object targetVal = ReflectUtils.getIncrementValueBySetMethod(generateColumn.getSetMethod(), retval);
-                        if (pkColumn.getPrimaryKeys() == null) {
-                            generateColumn.getSetMethod().invoke(obj, targetVal);
-                            retObj = (P) targetVal;
-                        } else {
-                            for (FieldContent field : pkColumn.getPrimaryKeys()) {
-                                if (field.isIncrement() || field.isSequential()) {
-                                    field.getSetMethod().invoke(generateColumn.getGetMethod().invoke(obj), retval);
-                                }
-                            }
-                            retObj = (P) pkColumn.getGetMethod().invoke(obj);
-                        }
+                if (!ObjectUtils.isEmpty(retval) && (generateColumn != null)) {
+                    FieldContent pkColumn = AnnotationRetriever.getPrimaryField(fields);
+                    if (pkColumn == null) {
+                        throw new DAOException("model " + obj.getClass().getSimpleName() + " does not have primary key");
                     }
+                    Object targetVal = ReflectUtils.getIncrementValueBySetMethod(generateColumn.getSetMethod(), retval);
+                    if (pkColumn.getPrimaryKeys() == null) {
+                        generateColumn.getSetMethod().invoke(obj, targetVal);
+                        retObj = (P) targetVal;
+                    } else {
+                        for (FieldContent field : pkColumn.getPrimaryKeys()) {
+                            if (field.isIncrement() || field.isSequential()) {
+                                field.getSetMethod().invoke(generateColumn.getGetMethod().invoke(obj), retval);
+                            }
+                        }
+                        retObj = (P) pkColumn.getGetMethod().invoke(obj);
+                    }
+
                 }
             } else {
                 //no pk model insert
@@ -811,15 +809,18 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
             start = (pageNum - 1) * pageSize;
             end = pageNum * pageSize;
         }
-        return this.returnTemplate().query(pageSQL, new SplitPageResultSetExtractor(start, end, lobHandler) {});
+        return this.returnTemplate().query(pageSQL, new SplitPageResultSetExtractor(start, end, lobHandler) {
+        });
     }
 
     private List<Map<String, Object>> queryAllItemList(final String querySQL, Object... obj) {
-        return this.returnTemplate().query(querySQL, obj, new SplitPageResultSetExtractor(0, 0, lobHandler) {});
+        return this.returnTemplate().query(querySQL, obj, new SplitPageResultSetExtractor(0, 0, lobHandler) {
+        });
     }
 
     private List<Map<String, Object>> queryAllItemList(final String querySQL, final List<FieldContent> mappingFieldList, Object[] obj) {
-        return this.returnTemplate().query(querySQL, obj, new SplitPageResultSetExtractor(0, 0, lobHandler, mappingFieldList) {});
+        return this.returnTemplate().query(querySQL, obj, new SplitPageResultSetExtractor(0, 0, lobHandler, mappingFieldList) {
+        });
     }
 
     private void generateQuerySqlBySingleFields(FieldContent columncfg, Const.OPERATOR oper, StringBuilder queryBuffer, int length) {

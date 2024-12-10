@@ -16,6 +16,7 @@ import com.robin.core.base.util.ResourceConst;
 import com.robin.core.fileaccess.fs.AbstractFileSystemAccessor;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.util.ResourceUtil;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.lang.NonNull;
@@ -34,13 +35,19 @@ import java.nio.file.Paths;
  * Qiniu  FileSystemAccessor
  */
 @Slf4j
+@Getter
 public class QiniuFileSystemAccessor extends AbstractFileSystemAccessor {
     private UploadManager uploadManager;
     private BucketManager bucketManager;
     private String domain;
     private Auth auth;
+    private String accessKey;
+    private String secretKey;
+    private Region region;
+    private String bucketName;
     private Gson gson= GsonUtil.getGson();
-    public QiniuFileSystemAccessor(){
+    private String downDomain;
+    private QiniuFileSystemAccessor(){
         this.identifier= Const.FILESYSTEM.QINIU.getValue();
     }
 
@@ -51,11 +58,23 @@ public class QiniuFileSystemAccessor extends AbstractFileSystemAccessor {
         Assert.notNull(meta.getResourceCfgMap().get(ResourceConst.QINIUPARAM.REGION.getValue()),"must provide region");
         Assert.notNull(meta.getResourceCfgMap().get(ResourceConst.QINIUPARAM.ACESSSKEY.getValue()),"must provide accessKey");
         Assert.notNull(meta.getResourceCfgMap().get(ResourceConst.QINIUPARAM.SECURITYKEY.getValue()),"must provide securityKey");
+        Assert.notNull(meta.getResourceCfgMap().get(ResourceConst.QINIUPARAM.DOWNDOMAIN.getValue()),"must provide downDomain");
         String accessKey=meta.getResourceCfgMap().get(ResourceConst.QINIUPARAM.ACESSSKEY.getValue()).toString();
         String secretKey=meta.getResourceCfgMap().get(ResourceConst.QINIUPARAM.SECURITYKEY.getValue()).toString();
         domain=meta.getResourceCfgMap().get(ResourceConst.QINIUPARAM.DOMAIN.getValue()).toString();
         auth= Auth.create(accessKey,secretKey);
-        Region region=Region.autoRegion();
+        region=Region.autoRegion();
+        downDomain=meta.getResourceCfgMap().get(ResourceConst.QINIUPARAM.DOWNDOMAIN.getValue()).toString();
+        Configuration cfg=new Configuration(region);
+        cfg.resumableUploadAPIVersion=Configuration.ResumableUploadAPIVersion.V2;
+        uploadManager=new UploadManager(cfg);
+    }
+    public void init(){
+        Assert.notNull(domain,"must provide domain");
+        Assert.notNull(region,"must provide region");
+        Assert.notNull(accessKey,"must provide accessKey");
+        Assert.notNull(secretKey,"must provide securityKey");
+        auth= Auth.create(accessKey,secretKey);
         Configuration cfg=new Configuration(region);
         cfg.resumableUploadAPIVersion=Configuration.ResumableUploadAPIVersion.V2;
         uploadManager=new UploadManager(cfg);
@@ -96,19 +115,21 @@ public class QiniuFileSystemAccessor extends AbstractFileSystemAccessor {
 
     @Override
     public boolean exists(DataCollectionMeta meta, String resourcePath) throws IOException {
-        String bucketName=meta.getResourceCfgMap().get("bucketName").toString();
+        String bucketName= getBucketName(meta);
         return isKeyExist(bucketName,resourcePath);
     }
 
+
+
     @Override
     public long getInputStreamSize(DataCollectionMeta meta, String resourcePath) throws IOException {
-        String bucketName=meta.getResourceCfgMap().get("bucketName").toString();
+        String bucketName=getBucketName(meta);
         return getSize(bucketName,resourcePath);
     }
 
     @Override
     public void finishWrite(DataCollectionMeta meta, OutputStream outputStream) {
-        String bucketName=meta.getResourceCfgMap().get("bucketName").toString();
+        String bucketName=getBucketName(meta);
         String token=auth.uploadToken(bucketName,meta.getPath());
         try{
             putObject(token,meta,outputStream);
@@ -118,8 +139,7 @@ public class QiniuFileSystemAccessor extends AbstractFileSystemAccessor {
     }
 
     private InputStream getInputStreamByConfig(DataCollectionMeta meta) {
-        Assert.notNull(meta.getResourceCfgMap().get(ResourceConst.OSSPARAM.BUCKETNAME.getValue()),"must provide bucketName");
-        String bucketName= meta.getResourceCfgMap().get(ResourceConst.OSSPARAM.BUCKETNAME.getValue()).toString();
+        String bucketName= getBucketName(meta);
         String objectName= meta.getPath();
         return getObject(bucketName,objectName);
     }
@@ -170,5 +190,51 @@ public class QiniuFileSystemAccessor extends AbstractFileSystemAccessor {
 
         }
         return null;
+    }
+    private String getBucketName(DataCollectionMeta meta) {
+        return !ObjectUtils.isEmpty(this.getBucketName()) ? this.getBucketName() : meta.getResourceCfgMap().get("bucketName").toString();
+    }
+    public static class Builder{
+        private QiniuFileSystemAccessor accessor;
+        public Builder(){
+            accessor=new QiniuFileSystemAccessor();
+        }
+        public static Builder builder(){
+            return new Builder();
+        }
+        public Builder accessKey(String accessKey){
+            accessor.accessKey=accessKey;
+            return this;
+        }
+        public Builder secretKey(String secretKey){
+            accessor.secretKey=secretKey;
+            return this;
+        }
+        public Builder domain(String domain){
+            accessor.domain=domain;
+            return this;
+        }
+        public Builder region(Region region){
+            accessor.region=region;
+            return this;
+        }
+        public Builder bucket(String bucketName){
+            accessor.bucketName=bucketName;
+            return this;
+        }
+        public Builder withMetaConfig(DataCollectionMeta meta){
+            accessor.init(meta);
+            return this;
+        }
+        public Builder downDomain(String downDomain){
+            accessor.downDomain=downDomain;
+            return this;
+        }
+        public QiniuFileSystemAccessor build(){
+            if(ObjectUtils.isEmpty(accessor.getUploadManager())){
+                accessor.init();
+            }
+            return accessor;
+        }
     }
 }

@@ -26,6 +26,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -95,7 +96,7 @@ public class HttpContextUtils {
         try {
             if (StringUtils.startsWithIgnoreCase(request.getContentType(), MediaType.APPLICATION_JSON_VALUE)) {
                 byte[] requestbytes=getRequestJson(request);
-                retMap.putAll(gson.fromJson(new String(requestbytes,"UTF8"),new TypeToken<Map<String,Object>>(){}.getType()));
+                retMap.putAll(gson.fromJson(new String(requestbytes, StandardCharsets.UTF_8),new TypeToken<Map<String,Object>>(){}.getType()));
             } else if (StringUtils.startsWithIgnoreCase(request.getContentType(), MediaType.APPLICATION_FORM_URLENCODED_VALUE)) {
                 Map<String,String[]> reqMap=request.getParameterMap();
                 if(!CollectionUtils.isEmpty(reqMap)){

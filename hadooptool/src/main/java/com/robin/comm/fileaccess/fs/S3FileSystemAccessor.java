@@ -17,6 +17,7 @@ import org.springframework.util.ObjectUtils;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -34,6 +35,7 @@ public class S3FileSystemAccessor extends AbstractFileSystemAccessor {
     private String regionName;
     private String accessKey;
     private String secret;
+    private String bucketName;
 
     private S3FileSystemAccessor(){
         this.identifier= Const.FILESYSTEM.S3.getValue();
@@ -71,19 +73,24 @@ public class S3FileSystemAccessor extends AbstractFileSystemAccessor {
 
     @Override
     public InputStream getRawInputStream(DataCollectionMeta meta, String resourcePath) throws IOException {
-        String bucketName = meta.getResourceCfgMap().get(ResourceConst.S3PARAM.BUCKETNAME.getValue()).toString();
+        String bucketName = getBucketName(meta);
         return AwsUtils.getObject(client, bucketName, resourcePath);
+    }
+
+    private  String getBucketName(DataCollectionMeta meta) {
+        return ObjectUtils.isEmpty(bucketName)?bucketName:meta.getResourceCfgMap().get(ResourceConst.BUCKETNAME).toString();
     }
 
     @Override
     public boolean exists(DataCollectionMeta meta, String resourcePath) throws IOException {
-        String bucketName = meta.getResourceCfgMap().get(ResourceConst.S3PARAM.BUCKETNAME.getValue()).toString();
+        String bucketName = getBucketName(meta);
         return AwsUtils.exists(client,bucketName,meta.getPath());
     }
 
     @Override
     public long getInputStreamSize(DataCollectionMeta meta, String resourcePath) throws IOException {
-        return 0;
+        String bucketName=getBucketName(meta);
+        return AwsUtils.size(client,bucketName,resourcePath);
     }
 
     @Override
@@ -100,7 +107,6 @@ public class S3FileSystemAccessor extends AbstractFileSystemAccessor {
         }
     }
     public void init(){
-        Assert.notNull(region,"region name required!");
         Assert.notNull(accessKey,"accessKey name required!");
         Assert.notNull(secret,"secret name required!");
 
@@ -112,7 +118,7 @@ public class S3FileSystemAccessor extends AbstractFileSystemAccessor {
 
     @Override
     public void finishWrite(DataCollectionMeta meta, OutputStream outputStream) {
-        String bucketName = meta.getResourceCfgMap().get(ResourceConst.S3PARAM.BUCKETNAME.getValue()).toString();
+        String bucketName = getBucketName(meta);
         ByteArrayOutputStream outputStream1=(ByteArrayOutputStream) outputStream;
         int size=outputStream1.size();
         String contentType=!ObjectUtils.isEmpty(meta.getContent())?meta.getContent().getContentType():null;
@@ -120,6 +126,9 @@ public class S3FileSystemAccessor extends AbstractFileSystemAccessor {
     }
     public static class Builder{
         private S3FileSystemAccessor accessor;
+        public static Builder builder(){
+            return new Builder();
+        }
         public Builder(){
             accessor=new S3FileSystemAccessor();
         }
@@ -133,6 +142,10 @@ public class S3FileSystemAccessor extends AbstractFileSystemAccessor {
         }
         public Builder region(String regionName){
             accessor.regionName=regionName;
+            return this;
+        }
+        public Builder bucket(String bucketName){
+            accessor.bucketName=bucketName;
             return this;
         }
         public Builder withMetaConfig(DataCollectionMeta meta){

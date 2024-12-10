@@ -144,4 +144,8 @@ public abstract class AbstractFileIterator implements IResourceIterator {
     public AbstractFileSystemAccessor getFileSystemAccessor(){
         return accessUtil;
     }
+
+    public void setAccessUtil(AbstractFileSystemAccessor accessUtil) {
+        this.accessUtil = accessUtil;
+    }
 }

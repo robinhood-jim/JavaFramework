@@ -90,7 +90,8 @@ public class TextFileWriterFactory {
 
             Class<? extends IResourceWriter> writerClass=fileWriterMap.get(fileSuffix);
             if (!ObjectUtils.isEmpty(writerClass)) {
-                fileWriter =  writerClass.getConstructor(DataCollectionMeta.class,AbstractFileSystemAccessor.class).newInstance(colmeta,accessor);
+                fileWriter =  writerClass.getConstructor(DataCollectionMeta.class).newInstance(colmeta);
+                fileWriter.setAccessUtil(accessor);
                 logger.info("using resource writer {}",writerClass.getCanonicalName());
             }
 

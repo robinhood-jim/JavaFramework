@@ -94,10 +94,11 @@ public class ParquetFileWriter extends AbstractFileWriter {
                 mapWriter = new CustomParquetWriter(new Path(colmeta.getPath()), schema, true, codecName);
             }
         }else{
+            out=accessUtil.getRawOutputStream(colmeta, ResourceUtil.getProcessPath(colmeta.getPath()));
             if(useAvroEncode) {
-                avroWriter = AvroParquetWriter.<GenericRecord>builder(ParquetUtil.makeOutputFile(accessUtil, colmeta, ResourceUtil.getProcessPath(colmeta.getPath()))).withCompressionCodec(codecName).withSchema(avroSchema).build();
+                avroWriter = AvroParquetWriter.<GenericRecord>builder(ParquetUtil.makeOutputFile(out, colmeta, ResourceUtil.getProcessPath(colmeta.getPath()))).withCompressionCodec(codecName).withSchema(avroSchema).build();
             }else {
-                mapWriter = new CustomParquetWriter.Builder<Map<String, Object>>(ParquetUtil.makeOutputFile(accessUtil, colmeta, ResourceUtil.getProcessPath(colmeta.getPath())), schema).withCompressionCodec(codecName).build();
+                mapWriter = new CustomParquetWriter.Builder<Map<String, Object>>(ParquetUtil.makeOutputFile(out, colmeta, ResourceUtil.getProcessPath(colmeta.getPath())), schema).withCompressionCodec(codecName).build();
             }
         }
     }

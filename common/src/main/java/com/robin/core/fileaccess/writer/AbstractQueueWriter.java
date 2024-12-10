@@ -3,6 +3,7 @@ package com.robin.core.fileaccess.writer;
 import com.robin.core.base.exception.OperationNotSupportException;
 import com.robin.core.base.util.Const;
 import com.robin.core.base.util.ResourceConst;
+import com.robin.core.fileaccess.fs.AbstractFileSystemAccessor;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.twitter.bijection.Injection;
 import com.twitter.bijection.avro.GenericAvroCodecs;
@@ -86,4 +87,8 @@ public abstract class AbstractQueueWriter extends AbstractResourceWriter {
         throw new OperationNotSupportException("");
     }
 
+    @Override
+    public void setAccessUtil(AbstractFileSystemAccessor accessUtil) {
+        throw new OperationNotSupportException("");
+    }
 }

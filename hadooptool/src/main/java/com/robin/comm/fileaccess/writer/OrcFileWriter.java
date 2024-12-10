@@ -6,6 +6,7 @@ import com.robin.core.base.util.Const;
 import com.robin.core.base.util.ResourceConst;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.meta.DataSetColumnMeta;
+import com.robin.core.fileaccess.util.ResourceUtil;
 import com.robin.core.fileaccess.writer.AbstractFileWriter;
 import com.robin.hadoop.hdfs.HDFSUtil;
 import org.apache.hadoop.conf.Configuration;
@@ -74,14 +75,15 @@ public class OrcFileWriter extends AbstractFileWriter {
                 compressionKind=CompressionKind.ZLIB;
         }
 
-        if(!ObjectUtils.isEmpty(colmeta.getSourceType()) && colmeta.getSourceType().equals(ResourceConst.IngestType.TYPE_HDFS.getValue())){
+        if(Const.FILESYSTEM.HDFS.getValue().equals(colmeta.getFsType())){
             HDFSUtil util=new HDFSUtil(colmeta);
             conf=util.getConfig();
             fs= FileSystem.get(conf);
         }else{
             conf=new Configuration();
             checkAccessUtil(null);
-            fs=new MockFileSystem(colmeta,accessUtil);
+            out= accessUtil.getRawOutputStream(colmeta, ResourceUtil.getProcessPath(colmeta.getPath()));
+            fs=new MockFileSystem(colmeta,out);
         }
         schema= OrcUtil.getSchema(colmeta);
         owriter= OrcFile.createWriter(new Path(colmeta.getPath()), OrcFile.writerOptions(conf).setSchema(schema).compress(compressionKind).fileSystem(fs));
