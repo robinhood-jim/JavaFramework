@@ -10,35 +10,36 @@ Slightly Framework design to  support Spring based java or Bigdata program.
 
 	I.This project is base on Spring Framework and has below modules:
 		|----------------------------------------------------------------------------------------------------------------|
-		| Module       | Description                                                                                                                      |
+		| Module         | Description     
 		|----------------------------------------------------------------------------------------------------------------|
 		| Core           | the core class include data access layer basic class(model,dao,service) and  etc.                 |
 		|----------------------------------------------------------------------------------------------------------------|
-		| Comm        | FileSystem Access tool(local/vfs),support FileFormat(csv/xml/json/avro/parquet/protobuf)|
-		|                   | ,support Compress Format(gzip/bzip2/snappy/lzo/zip/lzma/lz4)                                       |
-		|                   | ,read and write excel,read word or PowerPoint                                                                 |
+		| Comm           | FileSystem Access tool(local/vfs),support FileFormat(csv/xml/json/avro/parquet/protobuf)     |
+		|                | ,support Compress Format(gzip/bzip2/snappy/lzo/zip/lzma/lz4)                                       |
+		|                | ,read and write excel,read word or PowerPoint                                                                 |
 		|----------------------------------------------------------------------------------------------------------------|
-		|Hadooptool |FileSystem Access tool(hdfs), comm tool to access to HDFS,Hbase,Hive,Mongdb and etc   |
+		|Hadooptool      |FileSystem Access tool(hdfs), comm tool to access to HDFS,Hbase,Hive,Mongdb and etc            |
 		|----------------------------------------------------------------------------------------------------------------|
-		|Example      |springmvc config based and spring boot based Simple framework Example;                      |
+		|Example         |springmvc config based and spring boot based Simple framework Example;                         |
 		|----------------------------------------------------------------------------------------------------------------|
-		|Web            |struts1,struts2 and springmvc support web component and required class.                       |
+		|Web             |struts1,struts2 and springmvc support web component and required class.                        |
 		|----------------------------------------------------------------------------------------------------------------|
-		|Webui         |Spring Boot with Oauth2 Thymeleaf Example;                                                                    |
+		|Webui           |Spring Boot with Oauth2 Thymeleaf Example;                                                                    |
 		|----------------------------------------------------------------------------------------------------------------|
-		|Estool          | ElasticSearch Comm Query tool                                                                                        |
+		|Estool          | ElasticSearch Comm Query tool                                                                                       |
 		|----------------------------------------------------------------------------------------------------------------|
-		|Tracer          | Zipkin Brave tracing，Can trace All Database and Record parameters                               |
+		|Tracer          | Zipkin Brave tracing，Can trace All Database and Record parameters                            |
 		|----------------------------------------------------------------------------------------------------------------|
 
         
  It is available under the terms of either the Apache Software License 2.0 or the Eclipse Public License 1.0.
 
 2.Support Features 
+
     I. Construct Simple Java FrameWork
         contain use sysrole and relation with customer privilege to use and roles;
-        1.xml based standard frame : see example/config-example
-        2.spring based standard frame: see example/boot-example 
+            1.xml based standard frame : see example/config-example
+            2.spring based standard frame: see example/boot-example 
 
     II. Bigdata supprot
         hadooptool:
@@ -63,6 +64,8 @@ Slightly Framework design to  support Spring based java or Bigdata program.
         Amazon S3 
         Aliyun OSS
         Tencent COS
+        Minio
+        Qiniu  Koda
         Apache Kafka 
         RabbitMq
         
@@ -70,13 +73,18 @@ Slightly Framework design to  support Spring based java or Bigdata program.
         mix storage and File format to support cross storage read/write        
 
 	VI. Spring cloud support
-	WebUI simple webui base on dhtmlxGrid 5.1 with spring boot native 
-	related project in my another project microservices
+	    WebUI simple webui base on dhtmlxGrid 5.1 with spring boot native 
+	    related project in my another project microservices
 
     VII. Zipkin Intergation
         trace sub project aimed to support All database to be tracable and can record query parameters.
 
-    VIII. Special feature
+    VIII.Dataming support
+        Support weka dataming tools
+        Support simile dataming tools
+        Support spark mlib dataming tools
+
+    IX. Special feature
         a.A user defined xml Query config system,similar to mybatis,but easy config.
         b.Support defined annotation or jpa annotation in JdbcDao with ORM.
         c. BaseAnnotationService can access DB with minimize code,and use transaction with annotation.
@@ -102,14 +110,14 @@ Slightly Framework design to  support Spring based java or Bigdata program.
             @MappingEnity 
                  -------------------------------------------------------------------
                 |parameter           |reference                                     |
-                |table               |tableName                                     |
+                |value               |tableName                                     |
                 |schema              |specify schema                                |
                 |jdbcDao             |Specify JdbcDao(can switch datasource)        |                       |
                 --------------------------------------------------------------------
             @MappingField
                 ----------------------------------------------------------------------------------------
                 |parameter           |reference                                                         |
-                |field               |DB column name,if java param same as columnName,can unsign        |
+                |value               |DB column name,if java param same as columnName,can unsign        |
                 |primary             |if column is primary,set true                                     |
                 |increment           |if column is autoincrement,set true                               |
                 |sequenceName        |column insert with sequence,set sequenceName                      |
@@ -130,15 +138,16 @@ Slightly Framework design to  support Spring based java or Bigdata program.
             exmaple: core/src/test/java/com/robin/core/test/service 
             base class:
             main function
-                ---------------------------------------------------------------------------------
-                |function name           |description                                           |
-                |saveEntity              |insert to DB                                           |
-                |updateEntity            |update to DB                                           |
-                |deleteEntity            |delete by key array                                    |
-                |getEntity               |select by id                                           |
-                |queryByField            |query with specify column and value                    |
-                |queryBySelectId         |query with config query                                |
-                ---------------------------------------------------------------------------------    
+                -------------------------------------------------------------------------
+                |function name           |description                                   |
+                ------------------------------------------------------------------------|
+                |saveEntity              |insert to DB                                  |
+                |updateEntity            |update to DB                                  |
+                |deleteEntity            |delete by key array                           |
+                |getEntity               |select by id                                  |
+                |queryByField            |query with specify column and value           |
+                |queryBySelectId         |query with config query                       |
+                ------------------------------------------------------------------------   
         
         4.Query Configuration XML        
             4.1 Config Spring Bean

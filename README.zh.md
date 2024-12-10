@@ -1,5 +1,5 @@
 # Simple Java Frame V1.0
-简易支持只定义ORM,可以灵活整合JPA，mybatis_plus,提供大数据相关工具类
+简易支持自定义ORM,可以灵活整合JPA，mybatis_plus,提供大数据相关工具类，支持数据挖掘工具
 [![Build Status](https://api.travis-ci.com/robinhood-jim/JavaFramework.svg?branch=master)](https://app.travis-ci.com/github/robinhood-jim/JavaFramework)
 [![CircleCI](https://circleci.com/gh/robinhood-jim/JavaFramework.svg?style=svg)](https://circleci.com/gh/robinhood-jim/JavaFramework)
 ![license](https://img.shields.io/badge/license-Apache--2.0-green.svg)
@@ -10,7 +10,7 @@
 #### 软件架构
 软件架构说明
 
-目前框架由6个模块组成
+目前框架由8个模块组成
 
     1.Core：核心包，包含Model/DAO/Service及ORM的基础类及DB Dialect。数据库Dump和Import的工具包等，支持JAVA基本框架的内容
     增加License 管理功能，支持引用核心包后带上许可验证功能
@@ -19,10 +19,29 @@
     4.web：基于SpringMVC的基础类及Spring message的基础类（支持多国语言）
     5.metadata 基于统一资源访问的关系数据源与NoSql数据源的元数据数据探索和管理；
     6.estool 通用的ElasticSearch查询访问工具类，能自动感知es下的所有索引，基于restapi
+    7.trace 基于Zipkin的链路追踪项目，支持任意数据库的追踪，并支持记录PreparedStatement 的参数；
+    8.dataming 数据挖掘工具支持（支持Weka Smile spark mlib 等数据挖掘框架）
 
 Spring Boot 支持
 
     spring-start 工程，与spring boot 进行整合，支持链路追踪相关的配置（基于zipkin），基于探针的链路追踪详见另一个开源工程comm-probe
+
+通用文件系统和云存储读写访问支持
+
+    支持本地文件（Local）/HDFS/ApacheVFS 等文件系统
+    支持 亚马逊 S3/阿里云/腾讯云/百度云/七牛云/Minio 等云存储系统
+    支持Apache Kafka/rabittMQ 等流式处理平台
+
+大数据通用文件格式读写支持
+
+    支持parquet/orc/avro/protobuf/csv/xml/json 等文件格式
+    与通用文件系统和云存储访问整合，支持压缩格式
+
+数据挖掘平台支持
+
+    支持Weka/Smile/spark mlib 数据挖掘工具，与上面提到的文件格式读写和通用文件系统读取能力结合；
+    支持ARFF格式文件操作 （Weka 支持）
+
 
 core与common工程由ProGuard进行混淆保护
 
@@ -49,7 +68,7 @@ core与common工程由ProGuard进行混淆保护
             @MappingEnity 
                  -------------------------------------------------------------------
                 |参数                 |说明                                           |
-                |table               |表名                                           |
+                |value               |表名                                           |
                 |schema              |schema                                         | 
                 |jdbcDao             |多数据源支持(详见core的testcase)                 |
                 --------------------------------------------------------------------
@@ -57,7 +76,7 @@ core与common工程由ProGuard进行混淆保护
             @MappingField
                 ----------------------------------------------------------------------------------------
                 |parameter           |reference                                                         |
-                |field               |数据库字段名，确实驼峰命名                                             |
+                |value               |数据库字段名，确实驼峰命名                                             |
                 |primary             |主键设为true                                                        |
                 |increment           |自增长设为true                                                      |
                 |sequenceName        |支持sequence得数据库设为true                                         |
@@ -134,6 +153,7 @@ core与common工程由ProGuard进行混淆保护
             BaseController  Contorller 基类
             BaseCrudController         基于单表增删改查
             BaseCrudDhtmlxController   结合Dhtmlx 5.1，辅助类
+            AbstractAutoController  自动装配的Controller，零代码实现CRUD基本操作
 
     V.统一资源访问
 
