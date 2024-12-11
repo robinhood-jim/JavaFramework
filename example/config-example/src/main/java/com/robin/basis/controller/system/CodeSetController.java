@@ -5,6 +5,7 @@ import com.robin.core.web.controller.AbstractController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.ObjectUtils;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -22,7 +23,7 @@ public class CodeSetController extends AbstractController {
     @Autowired
     private CodeSetService codeSetService;
 
-    @RequestMapping("/select")
+    @GetMapping("/select")
     @ResponseBody
     public Map<String,Object> showCodeSetSelection(HttpServletRequest request, HttpServletResponse response, @RequestParam String codeSetNo,@RequestParam String allowNull){
         Map<String,String> codeMap=codeSetService.getCacheCode(codeSetNo);

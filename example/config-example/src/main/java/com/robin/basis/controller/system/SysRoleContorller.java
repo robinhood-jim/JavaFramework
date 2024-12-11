@@ -8,8 +8,7 @@ import com.robin.basis.model.user.SysRole;
 import com.robin.basis.service.system.SysRoleService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -19,7 +18,7 @@ import java.util.Map;
 @RequestMapping("/system/role")
 public class SysRoleContorller extends AbstractCrudDhtmlxController<SysRole,Long, SysRoleService> {
 
-	@RequestMapping("/list")
+	@PostMapping("/list")
 	@ResponseBody
 	public Map<String,Object> listRole(HttpServletRequest request,
 			HttpServletResponse response) {
@@ -32,21 +31,20 @@ public class SysRoleContorller extends AbstractCrudDhtmlxController<SysRole,Long
 		filterListByCodeSet(query,"status","VALIDTAG",null);
 		return wrapDhtmlxGridOutput(query);
 	}
-	@RequestMapping("/show")
+	@GetMapping("/show")
 	public String showRole(ModelMap model,HttpServletRequest request,
 			HttpServletResponse response){
 		
 		return "role/role_list";
 	}
-	@RequestMapping("/edit")
+	@GetMapping("/edit/{id}")
 	@ResponseBody
 	public SysRole queryRole(HttpServletRequest request,
-			HttpServletResponse response){
-		String id=request.getParameter("id");
+							 @PathVariable String id){
 		SysRole user=service.getEntity(Long.valueOf(id));
 		return user;
 	}
-	@RequestMapping("/save")
+	@PostMapping("/save")
 	@ResponseBody
 	public String saveRole(HttpServletRequest request,
 			HttpServletResponse response){
@@ -66,7 +64,7 @@ public class SysRoleContorller extends AbstractCrudDhtmlxController<SysRole,Long
 		Gson gson=new Gson();
 		return gson.toJson(retmap);
 	}
-	@RequestMapping("/update")
+	@PostMapping("/update")
 	@ResponseBody
 	public Map<String, Object> updateRole(HttpServletRequest request,
 			HttpServletResponse response){
@@ -89,7 +87,7 @@ public class SysRoleContorller extends AbstractCrudDhtmlxController<SysRole,Long
 		
 		return retmap;
 	}
-	@RequestMapping("/delete")
+	@GetMapping("/delete")
 	@ResponseBody
 	public Map<String,String> deleteRole(HttpServletRequest request,
 			HttpServletResponse response){

@@ -37,25 +37,29 @@ public class TextFileWriterFactory {
 
     public static IResourceWriter getWriterByType(DataCollectionMeta colmeta, BufferedWriter writer) throws IOException {
         IResourceWriter fileWriter = getWriterByType(colmeta);
-        fileWriter.setWriter(writer);
+        if(!ObjectUtils.isEmpty(fileWriter) && writer!=null) {
+            fileWriter.setWriter(writer);
+        }
         return fileWriter;
     }
     public static IResourceWriter getWriterByType(DataCollectionMeta colmeta, BufferedWriter writer,AbstractFileSystemAccessor accessor) throws IOException {
         IResourceWriter fileWriter = getWriterByType(colmeta,accessor);
-        fileWriter.setWriter(writer);
+        if(!ObjectUtils.isEmpty(fileWriter) && writer!=null) {
+            fileWriter.setWriter(writer);
+        }
         return fileWriter;
     }
 
     public static IResourceWriter getOutputStreamByType(DataCollectionMeta colmeta, OutputStream writer) throws IOException{
         IResourceWriter fileWriter = getWriterByType(colmeta);
-        if(writer!=null) {
+        if(!ObjectUtils.isEmpty(fileWriter) && writer!=null) {
             fileWriter.setOutputStream(writer);
         }
         return fileWriter;
     }
     public static IResourceWriter getOutputStreamByType(DataCollectionMeta colmeta, OutputStream writer,AbstractFileSystemAccessor accessor) throws IOException{
         IResourceWriter fileWriter = getWriterByType(colmeta,accessor);
-        if(writer!=null) {
+        if(!ObjectUtils.isEmpty(fileWriter) &&  writer!=null) {
             fileWriter.setOutputStream(writer);
         }
         return fileWriter;
@@ -63,7 +67,9 @@ public class TextFileWriterFactory {
 
     public static IResourceWriter getWriterByPath(DataCollectionMeta colmeta, OutputStream writer) throws IOException{
         IResourceWriter fileWriter = getWriterByType(colmeta);
-        fileWriter.setOutputStream(writer);
+        if(!ObjectUtils.isEmpty(fileWriter) && !ObjectUtils.isEmpty(writer)) {
+            fileWriter.setOutputStream(writer);
+        }
         return fileWriter;
     }
 

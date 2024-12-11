@@ -15,32 +15,24 @@
  */
 package com.robin.comm.util.word.itext;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.List;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-
+import com.lowagie.text.PageSize;
+import com.lowagie.text.Paragraph;
+import com.lowagie.text.html.simpleparser.HTMLWorker;
+import com.lowagie.text.html.simpleparser.StyleSheet;
+import com.lowagie.text.pdf.BaseFont;
+import com.lowagie.text.rtf.RtfWriter2;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.tidy.Tidy;
 import org.xhtmlrenderer.pdf.ITextFontResolver;
 import org.xhtmlrenderer.pdf.ITextRenderer;
 
-import com.lowagie.text.PageSize;
-import com.lowagie.text.Paragraph;
-import com.lowagie.text.html.simpleparser.HTMLWorker;
-import com.lowagie.text.html.simpleparser.StyleSheet;
-import com.lowagie.text.pdf.BaseFont;
-import com.lowagie.text.pdf.PdfWriter;
-import com.lowagie.text.rtf.RtfWriter2;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import java.io.*;
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.List;
 
 public class WordHtmlGenUtil {
 	public static void GeneratePdfFromSacure(String url,String fontPath,OutputStream out,String inputEncode) {
@@ -64,9 +56,13 @@ public class WordHtmlGenUtil {
 			tidy.parse(con.getInputStream(), tidyOut);
 			InputStream tidyIn=new ByteArrayInputStream(tidyOut.toByteArray());
 			DocumentBuilderFactory dbf=DocumentBuilderFactory.newInstance();
+			dbf.setFeature("http://xml.org/sax/features/external-general-entities", Boolean.FALSE);
+			dbf.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", Boolean.FALSE);
 			dbf.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", Boolean.FALSE);
 			dbf.setFeature("http://xml.org/sax/features/validation", Boolean.FALSE);
 			dbf.setFeature("http://apache.org/xml/features/dom/defer-node-expansion", Boolean.FALSE);
+			dbf.setXIncludeAware(false);
+			dbf.setExpandEntityReferences(false);
 			DocumentBuilder db=dbf.newDocumentBuilder();
 			Document doc=db.parse(tidyIn);
 			Element style=doc.createElement("style");

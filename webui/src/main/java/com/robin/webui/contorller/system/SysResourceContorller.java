@@ -3,6 +3,8 @@ package com.robin.webui.contorller.system;
 import com.robin.webui.contorller.BaseController;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
@@ -15,19 +17,19 @@ import java.util.Map;
 public class SysResourceContorller extends BaseController {
 
 
-	@RequestMapping("/list")
+	@PostMapping("/list")
 	@ResponseBody
 	public Map<String,Object> list(HttpServletRequest request,
 			HttpServletResponse response) {
 
 		return getResultFromRest(request,"system/menu/list");
 	}
-	@RequestMapping("/show")
+	@GetMapping("/show")
 	public String show(ModelMap model,HttpServletRequest request,
 			HttpServletResponse response){
 		return "/menu/show_menu";
 	}
-	@RequestMapping("/save")
+	@PostMapping("/save")
 	@ResponseBody
 	public Map<String, Object> saveMenu(HttpServletRequest request,
 			HttpServletResponse response){
@@ -35,7 +37,7 @@ public class SysResourceContorller extends BaseController {
 		return getResultFromRest(request,"system/menu/save");
 	}
 	
-	@RequestMapping("/showrole")
+	@GetMapping("/showrole")
 	public String showAssignRole(HttpServletRequest request,HttpServletResponse response){
 		
 		Map<String,Object> retMap=getResultFromRest(request,"system/menu/showrole");
@@ -44,21 +46,21 @@ public class SysResourceContorller extends BaseController {
 		request.setAttribute("resId", retMap.get("resId"));
 		return "/menu/assign_role";
 	}
-	@RequestMapping("/edit")
+	@GetMapping("/edit")
 	@ResponseBody
 	public Map<String,Object> queryUser(HttpServletRequest request,
 			HttpServletResponse response){
 
 		return getResultFromRest(request,"system/menu/edit");
 	}
-	@RequestMapping("/update")
+	@PostMapping("/update")
 	@ResponseBody
 	public Map<String, Object> updateSysResource(HttpServletRequest request,
 			HttpServletResponse response){
 
 		return getResultFromRest(request,"system/menu/update");
 	}
-	@RequestMapping("/assignrole")
+	@PostMapping("/assignrole")
 	@ResponseBody
 	public Map<String, Object> assignRole(HttpServletRequest request,HttpServletResponse response){
 

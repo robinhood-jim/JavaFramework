@@ -55,6 +55,8 @@ public class XmlFileIterator extends AbstractFileIterator {
 		super.beforeProcess();
 		try{
 			factory=XMLInputFactory.newFactory();
+			factory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, Boolean.FALSE);
+			factory.setProperty(XMLInputFactory.SUPPORT_DTD, Boolean.FALSE);
 			if(instream!=null) {
                 streamReader=factory.createXMLStreamReader(instream,colmeta.getEncode());
             } else if(reader!=null) {

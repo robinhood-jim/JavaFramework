@@ -7,9 +7,7 @@ import com.robin.webui.contorller.BaseController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.HttpServletRequest;
@@ -27,33 +25,33 @@ public class SysOrgController extends BaseController {
     private RestTemplate restTemplate;
     private Gson gson=new Gson();
 
-    @RequestMapping("/show")
+    @GetMapping("/show")
     public String showSchema(HttpServletRequest request, HttpServletResponse response) {
         return "/org/org_list";
     }
 
-    @RequestMapping("/edit/{id}")
+    @GetMapping("/edit/{id}")
     @ResponseBody
     public Map<String, Object> editOrg(HttpServletRequest request,
                                        HttpServletResponse response, @PathVariable Long id) {
         return getResultFromRest(request,"system/org/edit/{1}",new Object[]{id});
     }
 
-    @RequestMapping("/update")
+    @PostMapping("/update")
     @ResponseBody
     public Map<String, Object> updateOrg(HttpServletRequest request,
                                          HttpServletResponse response) {
         return getResultFromRest(request,"system/org/update/",new Object[]{});
     }
 
-    @RequestMapping("/save")
+    @PostMapping("/save")
     @ResponseBody
     public Map<String, Object> saveOrg(HttpServletRequest request, HttpServletResponse response) {
 
         return getResultFromRest(request,"system/org/save/",new Object[]{});
     }
 
-    @RequestMapping("/listjson")
+    @GetMapping("/listjson")
     @ResponseBody
     public Map<String, Object> getdeptJson(HttpServletRequest request, HttpServletResponse response) {
 
@@ -62,7 +60,7 @@ public class SysOrgController extends BaseController {
 
 
 
-    @RequestMapping(value = "/listAll")
+    @GetMapping(value = "/listAll")
     @ResponseBody
     public List<Map<String,Object>> getAllOrgByUser(HttpServletRequest request, HttpServletResponse response) {
         Session session=(Session)request.getSession().getAttribute(Const.SESSION);
@@ -75,19 +73,19 @@ public class SysOrgController extends BaseController {
         return (List<Map<String,Object>>)getResultListByType(request,"system/org/listAll",vMap,new HashMap<String, Object>().getClass());
     }
 
-    @RequestMapping("/tree")
+    @GetMapping("/tree")
     @ResponseBody
     public Map<String, Object> getOrgTree(HttpServletRequest request, HttpServletResponse response) {
         return getResultFromRest(request,"system/org/tree/",new Object[]{});
     }
 
-    @RequestMapping("/contextmenu")
+    @GetMapping("/contextmenu")
     @ResponseBody
     public List<Map<String, Object>> getMenu(HttpServletRequest request, HttpServletResponse response) {
-        return  (List<Map<String, Object>>)getResultListByType(request,"system/org/contextmenu/",new HashMap<String,String>(),new HashMap<String, Object>().getClass());
+        return  (List<Map<String, Object>>)getResultListByType(request,"system/org/contextmenu/",new HashMap<>(),new HashMap<String, Object>().getClass());
     }
 
-    @RequestMapping("/getuporg")
+    @GetMapping("/getuporg")
     @ResponseBody
     public Map<String, Object> getUporg(HttpServletRequest request, HttpServletResponse response) {
         return getResultFromRest(request,"system/org/getuporg/",new Object[]{});

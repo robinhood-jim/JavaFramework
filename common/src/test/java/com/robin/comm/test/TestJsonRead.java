@@ -1,5 +1,6 @@
 package com.robin.comm.test;
 
+import com.robin.comm.dal.pool.ResourceAccessHolder;
 import com.robin.core.base.util.Const;
 import com.robin.core.base.util.ResourceConst;
 import com.robin.core.fileaccess.fs.FileSystemAccessorFactory;
@@ -35,7 +36,7 @@ public class TestJsonRead {
 
         //ftpparam.put("schemaContent", "{\"namespace\":\"com.robin.avro\",\"name\":\"Content\",\"type\":\"record\",\"fields\":[{\"name\":\"info_id\",\"type\":\"string\"},{\"name\":\"url\",\"type\":\"string\"},{\"name\":\"title\",\"type\":\"string\"},{\"name\":\"content\",\"type\":\"string\"}]}");
         List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
-        AbstractFileSystemAccessor util = FileSystemAccessorFactory.getResourceAccessorByType(Const.FILESYSTEM.VFS.getValue());
+        AbstractFileSystemAccessor util = ResourceAccessHolder.getAccessUtilByProtocol(Const.FILESYSTEM.VFS.getValue());
         try (InputStream reader = util.getInResourceByStream(colmeta, colmeta.getPath());
              IResourceIterator jreader = TextFileIteratorFactory.getProcessIteratorByType(colmeta, reader)) {
             while (jreader.hasNext()) {

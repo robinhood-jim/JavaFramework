@@ -3,6 +3,7 @@ package com.robin.webui.contorller.main;
 import com.robin.core.base.util.Const;
 import com.robin.core.web.util.Session;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -22,26 +23,26 @@ import java.util.Map;
  */
 @Controller
 public class MainController {
-    @RequestMapping("/health")
+    @GetMapping("/health")
     @ResponseBody
     String health(){
         return "OK";
     }
 
-    @RequestMapping("/main")
+    @GetMapping("/main")
     String mainpage(){
         return "main";
     }
-    @RequestMapping("/index")
+    @GetMapping("/index")
     String indexpage(){
         return "main";
     }
-    @RequestMapping("/login")
+    @GetMapping("/login")
     String login(){
         return "login";
     }
 
-    @RequestMapping("/menu/list")
+    @GetMapping("/menu/list")
     @ResponseBody
     Map<String,Object> getMenu(HttpServletRequest request, HttpServletResponse response,@RequestParam String id){
         Session session=(Session) request.getSession().getAttribute(Const.SESSION);

@@ -31,10 +31,7 @@ import com.robin.core.web.util.Session;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -51,7 +48,7 @@ public class SysUserCrudController extends AbstractCrudDhtmlxController<SysUser,
     private ResourceBundleMessageSource messageSource;
 
 
-    @RequestMapping("/show")
+    @GetMapping("/show")
     public String userList(HttpServletRequest request, HttpServletResponse response) {
         Session session=(Session)request.getSession().getAttribute(Const.SESSION);
         if(session.getOrgId()!=null){
@@ -61,7 +58,7 @@ public class SysUserCrudController extends AbstractCrudDhtmlxController<SysUser,
         return "/user/user_list";
     }
 
-    @RequestMapping("/list")
+    @PostMapping("/list")
     @ResponseBody
     public Map<String, Object> listUser(HttpServletRequest request, HttpServletResponse response) {
         PageQuery query = wrapPageQuery(request);
@@ -90,15 +87,14 @@ public class SysUserCrudController extends AbstractCrudDhtmlxController<SysUser,
         return null;
     }
 
-    @RequestMapping("/edit")
+    @GetMapping("/edit/{id]")
     @ResponseBody
     public Map<String, Object> editUser(HttpServletRequest request,
-                                        HttpServletResponse response) {
-        String id = request.getParameter("id");
+                                        @PathVariable String id) {
         return doEdit(Long.valueOf(id));
     }
 
-    @RequestMapping("/save")
+    @PostMapping("/save")
     @ResponseBody
     public Map<String, Object> saveUser(HttpServletRequest request,
                                         HttpServletResponse response){
@@ -112,7 +108,7 @@ public class SysUserCrudController extends AbstractCrudDhtmlxController<SysUser,
         }
     }
 
-    @RequestMapping("/update")
+    @PostMapping("/update")
     @ResponseBody
     public Map<String, Object> updateUser(HttpServletRequest request,
                                           HttpServletResponse response) {
@@ -128,7 +124,7 @@ public class SysUserCrudController extends AbstractCrudDhtmlxController<SysUser,
 
 
 
-    @RequestMapping("/listorg")
+    @GetMapping("/listorg")
     @ResponseBody
     public Map<String, Object> listUserOrg(HttpServletRequest request) {
         Map<String, Object> retMap = new HashMap<>();
@@ -148,7 +144,7 @@ public class SysUserCrudController extends AbstractCrudDhtmlxController<SysUser,
     }
 
 
-    @RequestMapping("/delete")
+    @GetMapping("/delete")
     @ResponseBody
     public Map<String, Object> deleteUser(HttpServletRequest request,
                                           HttpServletResponse response) {
@@ -163,7 +159,7 @@ public class SysUserCrudController extends AbstractCrudDhtmlxController<SysUser,
         return retMap;
     }
 
-    @RequestMapping("/changepwd")
+    @PostMapping("/changepwd")
     @ResponseBody
     public Map<String, Object> changePassword(HttpServletRequest request,
                                               HttpServletResponse response) {
@@ -186,7 +182,7 @@ public class SysUserCrudController extends AbstractCrudDhtmlxController<SysUser,
         return retMap;
     }
 
-    @RequestMapping("/active/{id}")
+    @GetMapping("/active/{id}")
     @ResponseBody
     public Map<String, Object> activeUser(@PathVariable Long id) {
         Map<String, Object> retMap = new HashMap<>();
@@ -204,7 +200,7 @@ public class SysUserCrudController extends AbstractCrudDhtmlxController<SysUser,
         }
         return retMap;
     }
-    @RequestMapping("/deactive/{id}")
+    @GetMapping("/deactive/{id}")
     @ResponseBody
     public Map<String,Object> deactiveUser(@PathVariable Long id){
         Map<String, Object> retMap = new HashMap<>();
@@ -258,14 +254,14 @@ public class SysUserCrudController extends AbstractCrudDhtmlxController<SysUser,
         return builder.toString();
     }
 
-    @RequestMapping("/showright")
+    @GetMapping("/showright")
     public String userRight(HttpServletRequest request, HttpServletResponse response) {
         String userId = request.getParameter("userId");
         request.setAttribute("userId", userId);
         return "user/show_right";
     }
 
-    @RequestMapping("listright")
+    @GetMapping("listright")
     @ResponseBody
     public Map<String, Object> listUserRight(HttpServletRequest request, HttpServletResponse response) {
         Session session=(Session) request.getSession().getAttribute(Const.SESSION);
@@ -355,7 +351,7 @@ public class SysUserCrudController extends AbstractCrudDhtmlxController<SysUser,
         }
     }
 
-    @RequestMapping("/assignright")
+    @PostMapping("/assignright")
     @ResponseBody
     public Map<String, Object> assignRight(HttpServletRequest request, HttpServletResponse response) {
         Session session=(Session) request.getSession().getAttribute(Const.SESSION);

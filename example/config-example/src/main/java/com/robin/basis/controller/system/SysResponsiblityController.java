@@ -15,8 +15,7 @@ import com.robin.basis.service.system.SysResponsibilityService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -33,7 +32,7 @@ public class SysResponsiblityController extends AbstractCrudDhtmlxController<Sys
     @Autowired
     private ResourceBundleMessageSource messageSource;
 
-    @RequestMapping("/listUser")
+    @PostMapping("/listUser")
     @ResponseBody
     public Map<String,Object> listUser(HttpServletRequest request,
                                        HttpServletResponse response) {
@@ -54,13 +53,13 @@ public class SysResponsiblityController extends AbstractCrudDhtmlxController<Sys
     }
 
 
-    @RequestMapping("/show")
+    @GetMapping("/show")
     public String showResp(HttpServletRequest request,
                            HttpServletResponse response){
 
         return "resp/resp_list";
     }
-    @RequestMapping("/showuser")
+    @GetMapping("/showuser")
     public String showRespUser(HttpServletRequest request,
                            HttpServletResponse response){
         Session session=(Session) request.getSession().getAttribute(Const.SESSION);
@@ -70,15 +69,14 @@ public class SysResponsiblityController extends AbstractCrudDhtmlxController<Sys
         request.setAttribute("selectResp",request.getParameter("respId"));
         return "resp/resp_user_list";
     }
-    @RequestMapping("/edit")
+    @GetMapping("/edit/{id}")
     @ResponseBody
     public SysResponsibility queryResp(HttpServletRequest request,
-                             HttpServletResponse response){
-        String id=request.getParameter("id");
+                                       @PathVariable String id){
         SysResponsibility resp=service.getEntity(Long.valueOf(id));
         return resp;
     }
-    @RequestMapping("/save")
+    @PostMapping("/save")
     @ResponseBody
     public String saveRole(HttpServletRequest request,
                            HttpServletResponse response){
@@ -98,7 +96,7 @@ public class SysResponsiblityController extends AbstractCrudDhtmlxController<Sys
         Gson gson=new Gson();
         return gson.toJson(retmap);
     }
-    @RequestMapping("/update")
+    @PostMapping("/update")
     @ResponseBody
     public Map<String, Object> updateRole(HttpServletRequest request,
                                           HttpServletResponse response){
@@ -121,7 +119,7 @@ public class SysResponsiblityController extends AbstractCrudDhtmlxController<Sys
 
         return retmap;
     }
-    @RequestMapping("/listAll")
+    @GetMapping("/listAll")
     @ResponseBody
     public List<Map<String,Object>> showAll(HttpServletRequest request) {
         PageQuery query=new PageQuery();
@@ -131,7 +129,7 @@ public class SysResponsiblityController extends AbstractCrudDhtmlxController<Sys
         fillMissingValue(query,"rcount","0");
         return query.getRecordSet();
     }
-    @RequestMapping("/delete")
+    @GetMapping("/delete")
     @ResponseBody
     public Map<String,String> deleteRole(HttpServletRequest request,
                                          HttpServletResponse response){

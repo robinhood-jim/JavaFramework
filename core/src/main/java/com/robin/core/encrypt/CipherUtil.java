@@ -34,23 +34,20 @@ public class CipherUtil {
     public static final byte[] mzHeader = {0x4D, 0x5A, 0x50, 0x00, 0x02, 0x00, 0x00, 0x00, 0x04, 0x00, 0x0f, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
     public static final String DEFAULTKEY = "Robin1234567@123";
     public static final byte[] FILEENDS = {0x7F, 0x7F};
-    private final static int KEY_SIZE = 512;
+    private static final int KEY_SIZE = 512;
 
     static {
         Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
     }
 
-    public static byte[] initSecretKey() throws Exception {
-
+    public static byte[] initSecretKey() throws NoSuchAlgorithmException {
         KeyGenerator kg = KeyGenerator.getInstance(DEFAULTALGORITHM);
-
         kg.init(56);
-
         SecretKey secretKey = kg.generateKey();
         return secretKey.getEncoded();
     }
 
-    private static SecretKey toKey(byte[] keybyte) throws Exception {
+    private static SecretKey toKey(byte[] keybyte) throws NoSuchAlgorithmException,InvalidKeySpecException {
         SecretKeySpec key = new SecretKeySpec(keybyte, DEFAULTALGORITHM);
         SecretKeyFactory skf = SecretKeyFactory.getInstance(DEFAULTALGORITHM);
         return skf.generateSecret(key);
@@ -62,7 +59,7 @@ public class CipherUtil {
             kg.init(56);
             return kg.generateKey();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log.error("{}",ex.getMessage());
         }
         return null;
     }
@@ -73,7 +70,7 @@ public class CipherUtil {
             cipher.init(Cipher.ENCRYPT_MODE, key);
             return cipher.doFinal(bytes);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log.error("{}",ex.getMessage());
         }
         return null;
     }
@@ -85,7 +82,7 @@ public class CipherUtil {
             cipher.init(Cipher.ENCRYPT_MODE, toKey(key));
             return cipher.doFinal(bytes);
         } catch (Exception ex) {
-            log.error("{}", ex);
+            log.error("{}", ex.getMessage());
         }
         return null;
     }
@@ -110,7 +107,7 @@ public class CipherUtil {
             CipherOutputStream out = new CipherOutputStream(os, cipher);
             doCopy(is, out);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log.error("{}",ex.getMessage());
         }
     }
 

@@ -137,13 +137,12 @@ public class EntityMappingUtil {
                 }
                 if(!ObjectUtils.isEmpty(obj.getCreatorColumn()) && !ObjectUtils.isEmpty(columnMetaMap.get(obj.getCreatorColumn()))){
                     IUserUtils utils= SpringContextHolder.getBean(IUserUtils.class);
-                    Optional.ofNullable(utils).map(f->{
+                    if(!ObjectUtils.isEmpty(utils)){
                         fieldBuffer.append(obj.getCreatorColumn()).append(",");
                         valueBuffer.append("?,");
                         params.add(utils.getLoginUserId());
                         paramTypes.add(new SqlParameter(Types.BIGINT));
-                        return f;
-                    });
+                    }
                 }
             }
 

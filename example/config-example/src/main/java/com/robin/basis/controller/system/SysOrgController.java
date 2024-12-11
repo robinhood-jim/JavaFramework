@@ -12,9 +12,7 @@ import com.robin.core.web.util.WebConstant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -27,19 +25,19 @@ public class SysOrgController extends AbstractCrudDhtmlxController<SysOrg, Long,
     private ResourceBundleMessageSource messageSource;
     private Gson gson=new Gson();
 
-    @RequestMapping("/show")
+    @GetMapping("/show")
     public String showSchema(HttpServletRequest request, HttpServletResponse response) {
         return "/org/org_list";
     }
 
-    @RequestMapping("/edit/{id}")
+    @GetMapping("/edit/{id}")
     @ResponseBody
     public Map<String, Object> editOrg(HttpServletRequest request,
                                        HttpServletResponse response, @PathVariable Long id) {
         return doEdit(id);
     }
 
-    @RequestMapping("/update")
+    @PostMapping("/update")
     @ResponseBody
     public Map<String, Object> updateOrg(HttpServletRequest request,
                                          HttpServletResponse response) {
@@ -47,7 +45,7 @@ public class SysOrgController extends AbstractCrudDhtmlxController<SysOrg, Long,
         return doUpdate(valueMap, Long.valueOf(request.getParameter("id")));
     }
 
-    @RequestMapping("/save")
+    @PostMapping("/save")
     @ResponseBody
     public Map<String, Object> saveOrg(HttpServletRequest request, HttpServletResponse response) {
         Map<String, Object> retMap = new HashMap<>();
@@ -80,7 +78,7 @@ public class SysOrgController extends AbstractCrudDhtmlxController<SysOrg, Long,
         return retMap;
     }
 
-    @RequestMapping("/listjson")
+    @GetMapping("/listjson")
     @ResponseBody
     public Map<String, Object> getdeptJson(HttpServletRequest request, HttpServletResponse response) {
         String allowNull = request.getParameter("allowNull");
@@ -104,7 +102,7 @@ public class SysOrgController extends AbstractCrudDhtmlxController<SysOrg, Long,
 
 
 
-    @RequestMapping(value = "/listAll")
+    @GetMapping(value = "/listAll")
     @ResponseBody
     public List<Map<String,Object>> getAllOrgByUser(HttpServletRequest request, HttpServletResponse response) {
         Long id = Long.valueOf(request.getParameter("id"));
@@ -153,7 +151,7 @@ public class SysOrgController extends AbstractCrudDhtmlxController<SysOrg, Long,
         map.put("kids",true);
     }
 
-    @RequestMapping("/tree")
+    @GetMapping("/tree")
     @ResponseBody
     public Map<String, Object> getOrgTree(HttpServletRequest request, HttpServletResponse response) {
         String id = request.getParameter("id");
@@ -182,7 +180,7 @@ public class SysOrgController extends AbstractCrudDhtmlxController<SysOrg, Long,
         return retMaps;
     }
 
-    @RequestMapping("/contextmenu")
+    @GetMapping("/contextmenu")
     @ResponseBody
     public List<Map<String, Object>> getMenu(HttpServletRequest request, HttpServletResponse response) {
         List<Map<String, Object>> retmap = new ArrayList<Map<String, Object>>();
@@ -200,7 +198,7 @@ public class SysOrgController extends AbstractCrudDhtmlxController<SysOrg, Long,
         return retmap;
     }
 
-    @RequestMapping("/getuporg")
+    @GetMapping("/getuporg")
     @ResponseBody
     public Map<String, Object> getUporg(HttpServletRequest request, HttpServletResponse response) {
         String id = request.getParameter("pid");

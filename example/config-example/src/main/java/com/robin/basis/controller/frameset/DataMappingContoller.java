@@ -23,8 +23,7 @@ import com.robin.core.web.util.DhtmxTreeWrapper;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -53,12 +52,12 @@ public class DataMappingContoller extends AbstractCrudDhtmlxController<ProjectIn
     private EntityMapping mapping;
     private static final String COL_PROJID = "projId";
 
-    @RequestMapping("/showschema")
+    @GetMapping("/showschema")
     public String showSchema(HttpServletRequest request, HttpServletResponse response) {
         return "/datamapping/mapping_tree";
     }
 
-    @RequestMapping("/showfields")
+    @PostMapping("/showfields")
     public String showFields(HttpServletRequest request, HttpServletResponse response) throws Exception {
         String schema = request.getParameter("schema");
         String projId = request.getParameter(COL_PROJID);
@@ -85,11 +84,9 @@ public class DataMappingContoller extends AbstractCrudDhtmlxController<ProjectIn
         return "/datamapping/mapping_fields";
     }
 
-    @RequestMapping("/listschema")
+    @GetMapping("/listschema/{id}")
     @ResponseBody
-
-    public String listSchema(HttpServletRequest request, HttpServletResponse response) {
-        String id = request.getParameter(COL_PROJID);
+    public String listSchema(HttpServletRequest request, @PathVariable String id) {
         DataBaseUtil util = null;
         String ret = "";
         try {
@@ -110,10 +107,9 @@ public class DataMappingContoller extends AbstractCrudDhtmlxController<ProjectIn
         return ret;
     }
 
-    @RequestMapping("/listtable")
+    @GetMapping("/listtable/{id}")
     @ResponseBody
-    public String listTable(HttpServletRequest request, HttpServletResponse response) {
-        String id = request.getParameter(COL_PROJID);
+    public String listTable(HttpServletRequest request, @PathVariable String id) {
         String schema = request.getParameter("id");
         DataBaseUtil util = null;
         String ret = "";
@@ -135,7 +131,7 @@ public class DataMappingContoller extends AbstractCrudDhtmlxController<ProjectIn
         return ret;
     }
 
-    @RequestMapping("/listfields")
+    @PostMapping("/listfields")
     @ResponseBody
     public Map<String, Object> listField(HttpServletRequest request, HttpServletResponse response) {
         String schema = request.getParameter("schema");
@@ -212,7 +208,7 @@ public class DataMappingContoller extends AbstractCrudDhtmlxController<ProjectIn
         return retmap;
     }
 
-    @RequestMapping("/saveMapping")
+    @PostMapping("/saveMapping")
     @ResponseBody
     public Map<String, Object> saveMapping(HttpServletRequest request, HttpServletResponse response) {
         String schema = request.getParameter("schema");
@@ -248,7 +244,7 @@ public class DataMappingContoller extends AbstractCrudDhtmlxController<ProjectIn
         return retMap;
     }
 
-    @RequestMapping("genCode")
+    @PostMapping("genCode")
     @ResponseBody
     public Map<String, Object> genCode(HttpServletRequest request, HttpServletResponse response) {
         String schema = request.getParameter("schema");
@@ -406,14 +402,13 @@ public class DataMappingContoller extends AbstractCrudDhtmlxController<ProjectIn
         return "SHOWCFG";
     }
 
-    @RequestMapping("/getConfig")
+    @GetMapping("/getConfig/{id}")
     @ResponseBody
-    public EntityMapping getConfig(HttpServletRequest request, HttpServletResponse response) {
-        String id = request.getParameter("id");
+    public EntityMapping getConfig(HttpServletRequest request, @PathVariable String id) {
         return entityMappingService.getEntity(Long.valueOf(id));
     }
 
-    @RequestMapping("/getPkType")
+    @GetMapping("/getPkType")
     @ResponseBody
     public Map<String, Object> getPkType(HttpServletRequest request, HttpServletResponse response) {
         String allowNull = request.getParameter("allowNull");
@@ -424,7 +419,7 @@ public class DataMappingContoller extends AbstractCrudDhtmlxController<ProjectIn
         return returnCodeSetDhtmlxCombo("PKTYPE", insertNullVal);
     }
 
-    @RequestMapping("/getPkGen")
+    @GetMapping("/getPkGen")
     @ResponseBody
     public Map<String, Object> getPkGenType(HttpServletRequest request, HttpServletResponse response) {
         String allowNull = request.getParameter("allowNull");
@@ -435,7 +430,7 @@ public class DataMappingContoller extends AbstractCrudDhtmlxController<ProjectIn
         return returnCodeSetDhtmlxCombo("PKGEN", insertNullVal);
     }
 
-    @RequestMapping("/saveConfig")
+    @PostMapping("/saveConfig")
     @ResponseBody
     public Map<String, Object> saveConfig(HttpServletRequest request, HttpServletResponse response) {
         Map<String, Object> retMap = new HashMap<>();

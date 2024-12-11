@@ -7,6 +7,7 @@ import org.springframework.util.StringUtils;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -82,16 +83,20 @@ public enum DataBaseTypeEnum {
         return this.driverParam;
     }
     public DataBaseTypeEnum getEnumType(String dbType,String dbVersion){
-        List<DataBaseTypeEnum> configDse = (List) Arrays.stream(DataBaseTypeEnum.class.getEnumConstants()).filter((dse) -> {
-            return dse.getCode().equalsIgnoreCase(dbType);
-        }).collect(Collectors.toList());
+        List<DataBaseTypeEnum> configDse = Arrays.stream(DataBaseTypeEnum.class.getEnumConstants())
+                .filter((dse) ->dse.getCode().equalsIgnoreCase(dbType)).collect(Collectors.toList());
         if(ObjectUtils.isEmpty(configDse)){
             return null;
         }else{
             if(!StringUtils.isEmpty(dbVersion)){
                 return  getTypeByDbVersion(configDse,dbVersion);
             }else{
-                return configDse.stream().filter(DataBaseTypeEnum::isDefaults).findFirst().get();
+                Optional<DataBaseTypeEnum> optional=configDse.stream().filter(DataBaseTypeEnum::isDefaults).findFirst();
+                if(optional.isPresent()){
+                    return optional.get();
+                }else{
+                    return null;
+                }
             }
         }
     }
