@@ -165,7 +165,7 @@ public class EncryptWebClassLoaderHolder {
                     clazz = loadedClassPool.get(name);
                     //logger.info("load class in cache="+name);
                 } else {
-                    if (!name.startsWith("cn.com.talkweb.core")) {
+                    if (!name.startsWith("com.robin")) {
                         if (name.contains("log4j")) {
                             clazz = loadClass(name);
                         }

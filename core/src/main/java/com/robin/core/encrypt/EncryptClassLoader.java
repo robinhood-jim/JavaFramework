@@ -67,7 +67,7 @@ public class EncryptClassLoader extends ClassLoader{
 					if(clazz==null ){
 						clazz=findSystemClass(name);
 					}
-					if(clazz!=null && name.startsWith("cn.com.talkweb.core")){
+					if(clazz!=null && name.startsWith("com.robin")){
 						Object obj=clazz.newInstance();
 						Method method=clazz.getMethod("getEncrptName",null);
 						if(method!=null){
@@ -79,7 +79,7 @@ public class EncryptClassLoader extends ClassLoader{
 					ex.printStackTrace();
 				}
 				try{
-				if(clazz==null && classname.startsWith("cn.com.talkweb.core")){
+				if(clazz==null && classname.startsWith("com.robin")){
 					InputStream in=loadClassDataStream(classname);
 					if(in!=null){
 						ByteArrayOutputStream out=new ByteArrayOutputStream();

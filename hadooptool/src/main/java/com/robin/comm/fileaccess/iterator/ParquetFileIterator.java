@@ -29,6 +29,7 @@ import org.apache.parquet.schema.Type;
 import org.apache.slider.server.appmaster.management.Timestamp;
 import org.springframework.util.ObjectUtils;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;

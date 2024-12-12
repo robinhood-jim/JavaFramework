@@ -19,6 +19,7 @@ import java.io.*;
 
 @Slf4j
 @Getter
+@SuppressWarnings("unused")
 public class BOSFileSystemAccessor extends AbstractFileSystemAccessor {
     private String endpoint;
     private String accessKeyId;

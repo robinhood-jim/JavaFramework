@@ -55,6 +55,7 @@ import java.util.*;
 @Slf4j
 public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
 
+    public static final String QUERY_SQL = "querySQL: {}";
     private BaseSqlGen sqlGen;
     private QueryFactory queryFactory;
     private LobHandler lobHandler;
@@ -161,7 +162,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
     @Override
     public List<Map<String, Object>> queryByPageSql(String sqlstr, PageQuery<Map<String, Object>> pageQuery) throws DAOException {
         if (log.isDebugEnabled()) {
-            log.debug("querySQL: {}", sqlstr);
+            log.debug(QUERY_SQL, sqlstr);
         }
         return queryItemList(pageQuery, sqlstr);
     }
@@ -177,7 +178,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
         List<Map<String, Object>> list;
         try {
             if (log.isDebugEnabled()) {
-                log.debug("querySQL: {}", querySQL);
+                log.debug(QUERY_SQL, querySQL);
             }
             list = queryAllItemList(querySQL, obj);
             return list;
@@ -202,7 +203,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
         Assert.notNull(querySQL, "querySql is null");
         try {
             if (log.isDebugEnabled()) {
-                log.debug("querySQL: {}", querySQL);
+                log.debug(QUERY_SQL, querySQL);
             }
             list = this.returnTemplate().queryForObject(querySQL, obj, new EntityExtractor<>(targetclazz, lobHandler));
             return list;
@@ -272,7 +273,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
             }
             Object[] objs = objList.toArray();
             if (log.isDebugEnabled()) {
-                log.debug("querySql= {}", sql);
+                log.debug(QUERY_SQL, sql);
             }
             List<Map<String, Object>> rsList = queryBySql(sql, objs);
             wrapList(type, retlist, fields, rsList);
@@ -395,7 +396,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
         try {
             String sql = getWholeSelectSql(type);
             if (log.isDebugEnabled()) {
-                log.debug("querySql= {}", sql);
+                log.debug(QUERY_SQL, sql);
             }
             List<Map<String, Object>> rsList = queryBySql(sql);
             wrapList(type, retlist, fields, rsList);
@@ -494,7 +495,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
     @Override
     @SuppressWarnings("unchecked")
     public <T extends BaseObject, P extends Serializable> P createVO(T obj, Class<P> clazz) throws DAOException {
-        Long retval;
+        Long retval=null;
         P retObj = null;
         try {
             //function as mybatis-plus MetaObjectHandler
@@ -522,7 +523,9 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
                     generateColumn = insertSegment.getIncrementColumn();
                 }
                 returnTemplate().update(factory.newPreparedStatementCreator(insertSegment.getParams()), keyHolder);
-                retval = keyHolder.getKey().longValue();
+                if(keyHolder.getKey()!=null) {
+                    retval = keyHolder.getKey().longValue();
+                }
 
                 if (!ObjectUtils.isEmpty(retval) && (generateColumn != null)) {
                     FieldContent pkColumn = AnnotationRetriever.getPrimaryField(fields);
@@ -945,7 +948,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
         List<Map<String, Object>> list;
         try {
             if (log.isDebugEnabled()) {
-                log.debug("querySQL: {}", sqlstr);
+                log.debug(QUERY_SQL, sqlstr);
             }
             list = queryAllItemList(sqlstr, mappingFieldList, obj);
             return list;

@@ -30,7 +30,7 @@ public class HdfsFileSystemAccessor extends AbstractFileSystemAccessor {
 	public Pair<BufferedReader,InputStream> getInResourceByReader(DataCollectionMeta meta, String resourcePath)
 			throws IOException {
 		HDFSUtil util=getHdfsUtil(meta);
-		InputStream stream=util.getFileSystem().open(new Path(resourcePath));
+		InputStream stream=util.getHDFSDataByRawInputStream(resourcePath);
 		return Pair.of(getReaderByPath(resourcePath, stream, meta.getEncode()),stream);
 	}
 	
@@ -44,7 +44,7 @@ public class HdfsFileSystemAccessor extends AbstractFileSystemAccessor {
 				logger.error("output file {}  exist!,remove it" ,resourcePath );
 				util.delete(meta.getPath());
 			}
-			outputStream=util.getFileSystem().create(new Path(resourcePath));
+			outputStream=util.getHDFSRawOutputStream(resourcePath);
 			return Pair.of(getWriterByPath(meta.getPath(), outputStream, meta.getEncode()),outputStream);
 		}catch (Exception ex){
 			throw new IOException(ex);
@@ -59,7 +59,7 @@ public class HdfsFileSystemAccessor extends AbstractFileSystemAccessor {
 				logger.error("output file {} exist!,remove it" , resourcePath);
 				util.delete(meta.getPath());
 			}
-			return getOutputStreamByPath(resourcePath, util.getFileSystem().create(new Path(resourcePath)));
+			return getOutputStreamByPath(resourcePath, util.getHDFSDataByOutputStream(resourcePath));
 		}catch (Exception ex){
 			throw new IOException(ex);
 		}
@@ -73,7 +73,7 @@ public class HdfsFileSystemAccessor extends AbstractFileSystemAccessor {
 				logger.error("output file {}  exist!,remove it" , resourcePath);
 				util.delete(resourcePath);
 			}
-			return util.getFileSystem().create(new Path(resourcePath));
+			return util.getHDFSRawOutputStream(resourcePath);
 		}catch (Exception ex){
 			throw new IOException(ex);
 		}
@@ -84,7 +84,7 @@ public class HdfsFileSystemAccessor extends AbstractFileSystemAccessor {
 		HDFSUtil util=getHdfsUtil(meta);
 		try {
 			if (util.exists(resourcePath)) {
-				return util.getFileSystem().open(new Path(resourcePath));
+				return util.getHDFSDataByRawInputStream(resourcePath);
 			}else{
 				throw new IOException("path "+resourcePath+" not found");
 			}
@@ -102,7 +102,7 @@ public class HdfsFileSystemAccessor extends AbstractFileSystemAccessor {
 				logger.error("output file {}  exist!,remove it" , resourcePath );
 				util.delete(resourcePath);
 			}
-			return getInputStreamByPath(resourcePath, util.getFileSystem().open(new Path(resourcePath)));
+			return getInputStreamByPath(resourcePath, util.getHDFSDataByInputStream(resourcePath));
 		}catch (Exception ex){
 			throw new IOException(ex);
 		}
@@ -148,7 +148,7 @@ public class HdfsFileSystemAccessor extends AbstractFileSystemAccessor {
 		HDFSUtil util=getHdfsUtil(meta);
 		try {
 			if (util.exists(resourcePath)) {
-				return util.getFileSystem().getFileStatus(new Path(resourcePath)).getLen();
+				return util.getHDFSFileSize(resourcePath);
 			}else{
 				throw new IOException("path "+resourcePath+" not found");
 			}
