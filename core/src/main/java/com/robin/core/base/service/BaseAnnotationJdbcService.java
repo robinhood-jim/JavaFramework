@@ -73,7 +73,7 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 		if(type!=null){
 			entityContent= AnnotationRetriever.getMappingTableByCache(type);
 		}
-		LicenseUtils.getInstance();
+		//LicenseUtils.getInstance();
 	}
 
 	@Override

@@ -24,6 +24,7 @@ import com.robin.core.query.util.PageQuery;
 import com.robin.core.query.util.QueryString;
 import com.robin.core.sql.util.BaseSqlGen;
 import com.robin.core.sql.util.FilterCondition;
+import lombok.NonNull;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -46,6 +47,7 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
+@SuppressWarnings("unused")
 public class CommJdbcUtil {
     private static final Logger logger = LoggerFactory.getLogger(CommJdbcUtil.class);
     private static final DateTimeFormatter dayFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -53,7 +55,7 @@ public class CommJdbcUtil {
 
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private static List getResultItemsByPrepared(JdbcTemplate jdbcTemplate, final PageQuery<Map<String, Object>> pageQuery, final String pageSQL) {
+    private static List getResultItemsByPrepared(@NonNull JdbcTemplate jdbcTemplate, final PageQuery<Map<String, Object>> pageQuery, final String pageSQL) {
         Object ret = jdbcTemplate.query(conn -> {
             PreparedStatement ps = conn.prepareStatement(pageSQL);
             int len = pageQuery.getParameters().size();
@@ -72,11 +74,11 @@ public class CommJdbcUtil {
                             ps.setLong(i, Long.parseLong(value));
                             break;
                         case Const.META_TYPE_DATE:
-                            Date date = new Date(Date.from(LocalDateTime.parse(value, dayFormat).atZone(ZoneId.systemDefault()).toInstant()).getTime());
+                            Date date = new Date(LocalDateTime.parse(value, dayFormat).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
                             ps.setDate(i, date);
                             break;
                         case Const.META_TYPE_TIMESTAMP:
-                            Timestamp ts = new Timestamp(Date.from(LocalDateTime.parse(value, timeFormat).atZone(ZoneId.systemDefault()).toInstant()).getTime());
+                            Timestamp ts = new Timestamp(LocalDateTime.parse(value, timeFormat).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
                             ps.setTimestamp(i, ts);
                             break;
                         default:
@@ -96,7 +98,7 @@ public class CommJdbcUtil {
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    private static List getResultItemsByPreparedSimple(JdbcTemplate jdbcTemplate, NamedParameterJdbcTemplate namedParameterJdbcTemplate, LobHandler lobHandler, final BaseSqlGen sqlGen, final QueryString qs, final PageQuery pageQuery, final String pageSQL) {
+    private static List getResultItemsByPreparedSimple(@NonNull JdbcTemplate jdbcTemplate, NamedParameterJdbcTemplate namedParameterJdbcTemplate, LobHandler lobHandler, final BaseSqlGen sqlGen, final QueryString qs, final PageQuery pageQuery, final String pageSQL) {
         final String[] fields = sqlGen.getResultColName(qs);
         if (pageQuery.getNamedParameters().isEmpty()) {
             //Preparedstatment
@@ -129,7 +131,7 @@ public class CommJdbcUtil {
         pageQuery.setRecordSet(list);
     }
 
-    private static List<?> getResultList(JdbcTemplate jdbcTemplate, LobHandler lobHandler, BaseSqlGen sqlGen, QueryString qs, PageQuery<Map<String, Object>> pageQuery, String querySQL, String sumSQL, int pageSize) throws DAOException {
+    private static List<?> getResultList(@NonNull JdbcTemplate jdbcTemplate, LobHandler lobHandler, BaseSqlGen sqlGen, QueryString qs, PageQuery<Map<String, Object>> pageQuery, String querySQL, String sumSQL, int pageSize) throws DAOException {
         List<?> list;
         if (pageSize != 0) {
             if (pageSize < Integer.parseInt(Const.MIN_PAGE_SIZE)) {
@@ -220,7 +222,7 @@ public class CommJdbcUtil {
         return querySQL;
     }
 
-    private static List<Map> getResultItems(JdbcTemplate jdbcTemplate, LobHandler lobHandler, BaseSqlGen sqlGen, final PageQuery<Map<String, Object>> query, final QueryString qs, final String pageSQL) {
+    private static List<Map<String,Object>> getResultItems(JdbcTemplate jdbcTemplate, LobHandler lobHandler, BaseSqlGen sqlGen, final PageQuery<Map<String, Object>> query, final QueryString qs, final String pageSQL) {
         //getResultColumn from QueryString
         final String[] fields = sqlGen.getResultColName(qs);
         return jdbcTemplate.query(pageSQL, getDefaultExtract(fields, lobHandler, query));
@@ -228,9 +230,9 @@ public class CommJdbcUtil {
 
 
     @SuppressWarnings("rawtypes")
-    private static ResultSetExtractor<List<Map>> getDefaultExtract(final String[] fields, final LobHandler lobHandler, PageQuery query) {
+    private static ResultSetExtractor<List<Map<String,Object>>> getDefaultExtract(final String[] fields, final LobHandler lobHandler, PageQuery query) {
         return rs -> {
-            List<Map> list = new ArrayList<>();
+            List<Map<String,Object>> list = new ArrayList<>();
 
             ResultSetMetaData rsmd = rs.getMetaData();
             int count = rsmd.getColumnCount();
@@ -396,7 +398,7 @@ public class CommJdbcUtil {
                     sumSQL = sqlGen.getCountSqlByConfig(qs, pageQuery);
                 }
 
-                Integer total;
+                int total;
                 if (CollectionUtils.isEmpty(pageQuery.getNamedParameters()) && !CollectionUtils.isEmpty(pageQuery.getQueryParameters())) {
                     total = jdbcTemplate.queryForObject(sumSQL, pageQuery.getQueryParameters().toArray(), Integer.class);
                 } else {

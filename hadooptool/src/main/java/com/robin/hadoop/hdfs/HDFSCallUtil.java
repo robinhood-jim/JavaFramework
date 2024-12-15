@@ -248,17 +248,11 @@ public class HDFSCallUtil {
             Path path = new Path(hdfsUrl);
             FileStatus[] status = fs.listStatus(path);
             Path[] listPaths = FileUtil.stat2Paths(status);
-            boolean isDir;
             for (Path listPath : listPaths) {
                 Map<String, String> map = new HashMap<>();
-                if (isDirectory(config, listPath)) {
-                    isDir = true;
-                } else {
-                    isDir = false;
-                }
                 map.put("name", listPath.getName());
                 map.put("path", listPath.toString());
-                map.put("isDir", isDir ? "1" : "0");
+                map.put("isDir",  isDirectory(config, listPath) ? "1" : "0");
                 hdfsUrlList.add(map);
             }
         } catch (IOException e) {
@@ -549,8 +543,10 @@ public class HDFSCallUtil {
                 try (OutputStream outputStream = getHDFSOutputStream(config, newFilePath)) {
                     for (String file : mergeList) {
                         InputStream inputStream = getHDFSDataByInputStream(config, file);
-                        IOUtils.copyBytes(inputStream, outputStream, 4096);
-                        inputStream.close();
+                        if(!ObjectUtils.isEmpty(inputStream)) {
+                            IOUtils.copyBytes(inputStream, outputStream, 4096);
+                            inputStream.close();
+                        }
                     }
                     return true;
                 } catch (IOException ex) {
