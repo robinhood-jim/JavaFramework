@@ -22,6 +22,7 @@ import org.apache.parquet.hadoop.ParquetFileReader;
 import org.apache.parquet.hadoop.ParquetReader;
 import org.apache.parquet.hadoop.metadata.ParquetMetadata;
 import org.apache.parquet.hadoop.util.HadoopInputFile;
+import org.apache.parquet.hadoop.util.HadoopStreams;
 import org.apache.parquet.io.InputFile;
 import org.apache.parquet.io.LocalInputFile;
 import org.apache.parquet.schema.MessageType;
@@ -29,7 +30,6 @@ import org.apache.parquet.schema.Type;
 import org.apache.slider.server.appmaster.management.Timestamp;
 import org.springframework.util.ObjectUtils;
 
-import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -49,7 +49,7 @@ public class ParquetFileIterator extends AbstractFileIterator {
     private GenericData.Record record;
     private ParquetReader<Map<String, Object>> ireader;
     private boolean useAvroEncode = false;
-    private final long maxSize = Integer.MAX_VALUE;
+    private static final long maxSize = Integer.MAX_VALUE;
 
     public ParquetFileIterator() {
         identifier = Const.FILEFORMATSTR.PARQUET.getValue();

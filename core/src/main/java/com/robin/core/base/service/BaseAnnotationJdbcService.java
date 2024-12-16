@@ -335,6 +335,13 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 		}
 		return pageQuery.getRecordSet();
 	}
+	public int countByCondition(FilterCondition filterCondition){
+		try {
+			return getJdbcDao().countByCondition(type,filterCondition);
+		}catch (DAOException ex){
+			throw new ServiceException(ex);
+		}
+	}
 	
 	public JdbcDao getJdbcDao() {
 		return jdbcDao;

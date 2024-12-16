@@ -96,6 +96,7 @@ public class Const {
 
     public static final Integer COLUMN_INVALID = 0;
     public static final String ITERATOR_PROCESSID="$processId";
+    public static final String SUCCESS="success";
 
 
     public enum FILEFORMAT {

@@ -3,6 +3,9 @@ package com.robin.core.web.util;
 
 public class WebConstant {
     public static final Long DEFAULT_ORG=0L;
+    public static final String SUCCESS="success";
+    public static final String MESSAGE="message";
+    public static final String DATA="data";
     public enum SYS_RESPONSIBLITIY{
         SYS_RESP(1L),
         ORG_RESP(2L),

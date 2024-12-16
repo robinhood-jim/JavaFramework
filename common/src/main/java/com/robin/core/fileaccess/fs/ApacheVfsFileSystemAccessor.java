@@ -17,13 +17,14 @@ import org.springframework.util.ObjectUtils;
 import java.io.FileNotFoundException;
 import java.io.*;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class ApacheVfsFileSystemAccessor extends AbstractFileSystemAccessor {
-    private Map<String, FileObject> objectMap = new HashMap<>();
+    private final Map<String, FileObject> objectMap = new HashMap<>();
 
     public ApacheVfsFileSystemAccessor() {
         this.identifier = Const.FILESYSTEM.VFS.getValue();
@@ -212,7 +213,7 @@ public class ApacheVfsFileSystemAccessor extends AbstractFileSystemAccessor {
         }
     }
 
-    private static URI getUriByParam(VfsParam param, String relativePath) throws Exception {
+    private static URI getUriByParam(VfsParam param, String relativePath) throws URISyntaxException {
         String userInfo = param.getUserName() + ":" + param.getPassword();//URLEncoder.encode(param.getPassword(), "iso8859-1");// 解决密码中的特殊字符问题，如@。
         String remoteFilePath = relativePath;
         if (!remoteFilePath.startsWith("/")) {

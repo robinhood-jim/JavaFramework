@@ -220,6 +220,7 @@ public interface IjdbcDao {
     <T extends BaseObject> List<T> queryAll(Class<T> type) throws DAOException;
 
     <T extends BaseObject> void queryByCondition(Class<T> type, FilterCondition condition, PageQuery<T> pageQuery);
+    <T extends BaseObject> int countByCondition(Class<T> type, FilterCondition condition) throws DAOException;
 
     <T extends BaseObject> T getByField(Class<T> type, String fieldName, Const.OPERATOR oper, Object... fieldValues) throws DAOException;
     <T extends BaseObject> T getByField(Class<T> type, PropertyFunction<T,?> function, Const.OPERATOR oper, Object... fieldValues) throws DAOException;

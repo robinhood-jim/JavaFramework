@@ -114,7 +114,7 @@ public class BOSFileSystemAccessor extends AbstractFileSystemAccessor {
             if (!ObjectUtils.isEmpty(object)) {
                 return object.getObjectContent();
             } else {
-                throw new RuntimeException("objectName " + objectName + " can not get!");
+                throw new MissingConfigException("objectName " + objectName + " can not get!");
             }
         }else{
             throw new MissingConfigException(" key "+objectName+" not in OSS bucket "+bucketName);
