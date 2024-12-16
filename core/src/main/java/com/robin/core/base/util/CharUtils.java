@@ -22,9 +22,9 @@ public class CharUtils {
     private static final Map<Integer, String> keywordMap = new HashMap<>();
     private static final Map<Integer, byte[]> encryptMap = new HashMap<>();
     private static final Map<Integer, byte[]> keyMap = new HashMap<>();
-    private static String encryptStrFile = "encrypt.dat";
-    private static String wordFile = "word.dat";
-    private static String keywordFile = "keyword.dat";
+    private static final String encryptStrFile = "encrypt.dat";
+    private static final String wordFile = "word.dat";
+    private static final String keywordFile = "keyword.dat";
     public static final byte[] m_datapadding = {0x7F};
     public static final byte[] separator = {0x7f, 0x7f};
     //EXE header,pretend as a exe file
@@ -33,9 +33,9 @@ public class CharUtils {
 
 
     private CharUtils() {
-        try (DataInputStream wordIn = CharUtils.class.getClassLoader().getResourceAsStream(wordFile) != null ? new DataInputStream(CharUtils.class.getClassLoader().getResourceAsStream(wordFile)) : null;
-             DataInputStream enIn = CharUtils.class.getClassLoader().getResourceAsStream(encryptStrFile) != null ? new DataInputStream(CharUtils.class.getClassLoader().getResourceAsStream(encryptStrFile)) : null;
-             DataInputStream keywordIn = CharUtils.class.getClassLoader().getResourceAsStream(keywordFile) != null ? new DataInputStream(CharUtils.class.getClassLoader().getResourceAsStream(keywordFile)) : null) {
+        try (DataInputStream wordIn = new DataInputStream(CharUtils.class.getClassLoader().getResourceAsStream(wordFile));
+             DataInputStream enIn = new DataInputStream(CharUtils.class.getClassLoader().getResourceAsStream(encryptStrFile));
+             DataInputStream keywordIn = new DataInputStream(CharUtils.class.getClassLoader().getResourceAsStream(keywordFile))) {
             int pos = 0;
             if (!ObjectUtils.isEmpty(wordIn)) {
                 wordIn.read(mzHeader);

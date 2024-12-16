@@ -31,7 +31,7 @@ import java.nio.file.Paths;
  */
 public abstract class AbstractFileSystemAccessor implements IFileSystemAccessor {
 	protected String identifier;
-	public AbstractFileSystemAccessor(){
+	protected AbstractFileSystemAccessor(){
 
 	}
 

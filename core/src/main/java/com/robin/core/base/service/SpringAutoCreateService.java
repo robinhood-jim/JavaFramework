@@ -248,6 +248,13 @@ public class SpringAutoCreateService<B extends BaseObject, P extends Serializabl
             throw new ServiceException(ex);
         }
     }
+    public int countByCondition(FilterCondition filterCondition){
+        try {
+            return getJdbcDao().countByCondition(potype,filterCondition);
+        }catch (DAOException ex){
+            throw new ServiceException(ex);
+        }
+    }
 
     @Override
     public B getByField(String fieldName, Const.OPERATOR oper, Object... fieldValues) throws ServiceException {

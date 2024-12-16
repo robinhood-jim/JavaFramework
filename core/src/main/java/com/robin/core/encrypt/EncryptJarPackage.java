@@ -309,10 +309,10 @@ public class EncryptJarPackage {
                 JavaCompiler.CompilationTask task = compiler.getTask(null, fileManager, listener, optionList, null, Lists.newArrayList(new MyJavaFileObject(fullName, buffer)));
                 boolean result = task.call();
                 if (result) {
-                    writeFile(outputStream, encryptclaspath, new FileInputStream(new File(srcPath + encryptclaspath)));
+                    writeFile(outputStream, encryptclaspath, new FileInputStream(srcPath + encryptclaspath));
                 }
             }
-            writeFile(outputStream, "META-INF/config.exe", new FileInputStream(new File(srcPath + "config.bin")));
+            writeFile(outputStream, "META-INF/config.exe", new FileInputStream(srcPath + "config.bin"));
             outputStream.close();
 
         } catch (Exception ex) {
@@ -421,7 +421,7 @@ public class EncryptJarPackage {
     }
 
     private static byte[] getKeyByte(String key) {
-        byte[] retbyte = new byte[12];
+        byte[] retbyte = new byte[16];
         for (int i = 0; i < key.length(); i++) {
             retbyte[i] = (byte) (key.charAt(i) - beginchar);
         }
@@ -678,10 +678,10 @@ public class EncryptJarPackage {
         }
         String remain = machineStr.substring(machineStr.length() - len);
         String headerStr = machineStr.substring(0, len);
-        Long remainVal = Long.valueOf(remain);
+        Long remainVal = Long.valueOf(remain,16);
         Long overflowval = Double.valueOf(Math.pow(10.0, len + 1)).longValue() - expireTs - 1L;
         //机器码后部分与 超时时间补进行xor
-        Long xorVal = (Long.valueOf(headerStr) & remainVal) ^ overflowval;
+        Long xorVal = (Long.valueOf(headerStr,16) & remainVal) ^ overflowval;
         //BigInteger real = new BigInteger(builder.toString(),10).add(BigInteger.valueOf(Long.valueOf(xorVal)));
         String[] output = new String[3];
         output[0] = xorVal.toString();

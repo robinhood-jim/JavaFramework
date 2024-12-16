@@ -8,6 +8,7 @@ import com.robin.core.fileaccess.iterator.AbstractFileIterator;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.util.ResourceUtil;
 import com.robin.hadoop.hdfs.HDFSUtil;
+import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -20,7 +21,9 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.List;
@@ -28,11 +31,11 @@ import java.util.Map;
 
 public class OrcFileIterator extends AbstractFileIterator {
     private Configuration conf;
-    List<TypeDescription> fields;
-    TypeDescription schema;
-    RecordReader rows ;
-    VectorizedRowBatch batch ;
-    List<String> fieldNames;
+    private List<TypeDescription> fields;
+    private TypeDescription schema;
+    private RecordReader rows ;
+    private VectorizedRowBatch batch ;
+    private List<String> fieldNames;
     public OrcFileIterator(){
         identifier= Const.FILEFORMATSTR.ORC.getValue();
     }
@@ -45,6 +48,7 @@ public class OrcFileIterator extends AbstractFileIterator {
     int currentRow=0;
     private FileSystem fs;
     private Reader oreader;
+    private File tmpFile;
 
 
     @Override
@@ -122,19 +126,33 @@ public class OrcFileIterator extends AbstractFileIterator {
     @Override
     public void beforeProcess() {
         try {
-            if(colmeta.getSourceType().equals(ResourceConst.IngestType.TYPE_HDFS.getValue())){
+            String readPath=colmeta.getPath();
+            if(Const.FILESYSTEM.HDFS.getValue().equals(colmeta.getFsType())){
                 HDFSUtil util=new HDFSUtil(colmeta);
                 conf=util.getConfig();
                 fs=FileSystem.get(conf);
             }else {
                 checkAccessUtil(null);
-                instream=accessUtil.getInResourceByStream(colmeta, ResourceUtil.getProcessPath(colmeta.getPath()));
-                ByteArrayOutputStream byteout = new ByteArrayOutputStream();
-                IOUtils.copyBytes(instream, byteout, 8064);
-                fs=new MockFileSystem(conf,byteout.toByteArray());
+                if(Const.FILESYSTEM.LOCAL.getValue().equals(colmeta.getFsType())){
+                    fs=FileSystem.get(new Configuration());
+                    readPath=new File(readPath).toURI().toString();
+                }else {
+                    instream = accessUtil.getInResourceByStream(colmeta, ResourceUtil.getProcessPath(colmeta.getPath()));
+                    if (instream.available() < Integer.MAX_VALUE) {
+                        ByteArrayOutputStream byteout = new ByteArrayOutputStream();
+                        IOUtils.copyBytes(instream, byteout, 8064);
+                        fs = new MockFileSystem(conf, byteout.toByteArray());
+                    } else {
+                        String tmpPath = com.robin.core.base.util.FileUtils.getWorkingPath(colmeta);
+                        String tmpFilePath = "file:///" + tmpPath + ResourceUtil.getProcessFileName(colmeta.getPath());
+                        tmpFile = new File(new URL(tmpFilePath).toURI());
+                        copyToLocal(tmpFile, instream);
+                        fs = FileSystem.get(new Configuration());
+                        readPath = tmpFilePath;
+                    }
+                }
             }
-
-            oreader =OrcFile.createReader(new Path(colmeta.getPath()),OrcFile.readerOptions(conf).filesystem(fs));
+            oreader =OrcFile.createReader(new Path(readPath),OrcFile.readerOptions(conf).filesystem(fs));
             schema= oreader.getSchema();
             fieldNames=schema.getFieldNames();
             rows= oreader.rows();
@@ -158,6 +176,9 @@ public class OrcFileIterator extends AbstractFileIterator {
         }
         if(!ObjectUtils.isEmpty(oreader)){
             oreader.close();
+        }
+        if(!ObjectUtils.isEmpty(tmpFile)){
+            FileUtils.deleteQuietly(tmpFile);
         }
     }
 }

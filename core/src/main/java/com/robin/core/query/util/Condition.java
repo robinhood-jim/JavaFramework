@@ -16,6 +16,7 @@
 package com.robin.core.query.util;
 
 import com.robin.core.base.exception.ConfigurationIncorrectException;
+import com.robin.core.base.exception.MissingConfigException;
 import com.robin.core.base.util.StringUtils;
 
 import java.io.Serializable;
@@ -258,7 +259,7 @@ public class Condition implements ICondition, Serializable {
 		} else 
 		if (NOT.equals(state)){
 			if (value == null){
-				//throw new Exception("(in "+values+")");
+				throw new ConfigurationIncorrectException("(in "+values+")");
 			}
 			sbSQLStr.append(" (not (");
 			sbSQLStr.append(((Condition)value).toSQLPart());

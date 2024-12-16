@@ -27,10 +27,7 @@ import com.robin.core.web.util.Session;
 import com.robin.core.web.util.WebConstant;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.Cookie;
@@ -52,7 +49,7 @@ public class LoginController extends AbstractController {
     private JdbcDao jdbcDao;
 
 
-    @RequestMapping("/login")
+    @PostMapping("/login")
     @ResponseBody
     public Map<String, Object> login(HttpServletRequest request, HttpServletResponse response, @RequestParam String accountName, @RequestParam String password) {
         Map<String, Object> map = new HashMap();
@@ -92,7 +89,7 @@ public class LoginController extends AbstractController {
         return map;
     }
 
-    @RequestMapping("/checklogin")
+    @GetMapping("/checklogin")
     @ResponseBody
     public String checkLogin(HttpServletRequest request, HttpServletResponse response) {
         Session session = (Session) request.getSession().getAttribute(Const.SESSION);
@@ -103,14 +100,14 @@ public class LoginController extends AbstractController {
         }
     }
 
-    @RequestMapping("/logout")
+    @GetMapping("/logout")
     public String logOut(HttpServletRequest request, HttpServletResponse response) {
         request.getSession().removeAttribute(Const.SESSION);
         CookieUtils.delCookie(request, response, "/", Arrays.asList(Const.TOKEN, "orgName", "userName", "accountType"));
         return "../login";
     }
 
-    @RequestMapping(value = "/setDefaultOrg", method = RequestMethod.POST)
+    @PostMapping(value = "/setDefaultOrg")
     @ResponseBody
     public Map<String, Object> setDefaultOrg(HttpServletRequest request, HttpServletResponse response, @RequestParam Long userId, @RequestParam Long orgId) {
         Map<String, Object> retMap = new HashMap<>();
@@ -137,7 +134,7 @@ public class LoginController extends AbstractController {
         return retMap;
     }
 
-    @RequestMapping("/showlogin")
+    @GetMapping("/showlogin")
     public String showLogin(HttpServletRequest request, HttpServletResponse response) {
         return "../login";
     }

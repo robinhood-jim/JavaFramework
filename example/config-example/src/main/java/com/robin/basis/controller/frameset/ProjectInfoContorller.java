@@ -21,9 +21,7 @@ import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.ObjectUtils;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -56,12 +54,12 @@ public class ProjectInfoContorller extends AbstractCrudDhtmlxController<ProjectI
 
     private String projId;
 
-    @RequestMapping("/show")
+    @GetMapping("/show")
     public String showProject(HttpServletRequest request, HttpServletResponse response) {
         return "project/project_list";
     }
 
-    @RequestMapping("/save")
+    @PostMapping("/save")
     @ResponseBody
     public Map<String, Object> saveProjectInfo(HttpServletRequest request, HttpServletResponse response) throws Exception {
         Map<String, Object> retmap = new HashMap<String, Object>();
@@ -79,42 +77,42 @@ public class ProjectInfoContorller extends AbstractCrudDhtmlxController<ProjectI
         return retmap;
     }
 
-    @RequestMapping("/presisttype")
+    @GetMapping("/presisttype")
     @ResponseBody
     public Map<String, Object> getPresistType(HttpServletRequest request, HttpServletResponse response) {
         List<Code> list = getCodeList(codeSetUtil.getCacheCode("PRESISTTYPE"));
         return wrapComoboWithCode(list, false);
     }
 
-    @RequestMapping("/webframe")
+    @GetMapping("/webframe")
     @ResponseBody
     public Map<String, Object> getWebFrame(HttpServletRequest request, HttpServletResponse response) {
         List<Code> list = getCodeList(codeSetUtil.getCacheCode("WEBFRAME"));
         return wrapComoboWithCode(list, false);
     }
 
-    @RequestMapping("/projecttype")
+    @GetMapping("/projecttype")
     @ResponseBody
     public Map<String, Object> getProjectType(HttpServletRequest request, HttpServletResponse response) {
         List<Code> list = getCodeList(codeSetUtil.getCacheCode("PROJECTTYPE"));
         return wrapComoboWithCode(list, false);
     }
 
-    @RequestMapping("/teamtype")
+    @GetMapping("/teamtype")
     @ResponseBody
     public Map<String, Object> getTeamType(HttpServletRequest request, HttpServletResponse response) {
         List<Code> list = getCodeList(codeSetUtil.getCacheCode("TEAMTYPE"));
         return wrapComoboWithCode(list, false);
     }
 
-    @RequestMapping("/datasource")
+    @GetMapping("/datasource")
     @ResponseBody
     public Map<String, Object> getDataSources(HttpServletRequest request, HttpServletResponse response) {
         List<Map<String, Object>> list4 = dbDriverService.queryBySql("select id,name from t_base_datasource");
         return wrapComobo(list4, "id", "name", false);
     }
 
-    @RequestMapping("/gencvs/{id}")
+    @GetMapping("/gencvs/{id}")
     @ResponseBody
     public Map<String, Object> genCvs(HttpServletRequest request, HttpServletResponse response, @PathVariable Long id) throws Exception {
         try {
@@ -131,7 +129,7 @@ public class ProjectInfoContorller extends AbstractCrudDhtmlxController<ProjectI
         }
     }
 
-    @RequestMapping("/view/{id}")
+    @GetMapping("/view/{id}")
     @ResponseBody
     public Map<String, Object> viewProjectInfo(HttpServletRequest request, HttpServletResponse response, @PathVariable Long id) throws Exception {
         if (log.isDebugEnabled()) {
@@ -150,7 +148,7 @@ public class ProjectInfoContorller extends AbstractCrudDhtmlxController<ProjectI
         return retmap;
     }
 
-    @RequestMapping("/edit/{id}")
+    @GetMapping("/edit/{id}")
     @ResponseBody
     public Map<String, Object> editProjectInfo(HttpServletRequest request, HttpServletResponse response, @PathVariable Long id) throws Exception {
         if (log.isDebugEnabled()) {
@@ -169,7 +167,7 @@ public class ProjectInfoContorller extends AbstractCrudDhtmlxController<ProjectI
     }
 
 
-    @RequestMapping("/update")
+    @PostMapping("/update")
     @ResponseBody
     public Map<String, Object> updateProjectInfo(HttpServletRequest request, HttpServletResponse response) throws Exception {
         if (log.isDebugEnabled()) {
@@ -188,7 +186,7 @@ public class ProjectInfoContorller extends AbstractCrudDhtmlxController<ProjectI
         return retmap;
     }
 
-    @RequestMapping("/delete")
+    @GetMapping("/delete")
     @ResponseBody
     public Map<String, Object> deleteProjectInfo(HttpServletRequest request, HttpServletResponse response) throws Exception {
         if (log.isDebugEnabled()) {
@@ -220,7 +218,7 @@ public class ProjectInfoContorller extends AbstractCrudDhtmlxController<ProjectI
         return null;
     }
 
-    @RequestMapping("/javalib")
+    @GetMapping("/javalib")
     @ResponseBody
     public Map<String, Object> showLibaray(HttpServletRequest request, HttpServletResponse response) {
         List<Map<String, Object>> libList = jdbcDao.queryBySql("select id,library_name as name,version from t_base_javalibrary");
@@ -262,7 +260,7 @@ public class ProjectInfoContorller extends AbstractCrudDhtmlxController<ProjectI
         return null;
     }
 
-    @RequestMapping("/genconfig/{id}")
+    @GetMapping("/genconfig/{id}")
     @ResponseBody
     public Map<String, Object> genConfig(HttpServletRequest request, HttpServletResponse response, @PathVariable Long id) {
 
@@ -332,7 +330,7 @@ public class ProjectInfoContorller extends AbstractCrudDhtmlxController<ProjectI
         }
     }
 
-    @RequestMapping("/checkin/{id}")
+    @GetMapping("/checkin/{id}")
     @ResponseBody
     public Map<String, Object> checkInCode(HttpServletRequest request, HttpServletResponse response, @PathVariable Long id) throws Exception {
         try {
@@ -367,7 +365,7 @@ public class ProjectInfoContorller extends AbstractCrudDhtmlxController<ProjectI
         writer.close();
     }
 
-    @RequestMapping("/list")
+    @PostMapping("/list")
     @ResponseBody
     public Map<String, Object> searchProjectInfo(HttpServletRequest request, HttpServletResponse response) throws Exception {
         if (log.isDebugEnabled()) {

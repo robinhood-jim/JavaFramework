@@ -16,7 +16,6 @@
 package com.robin.core.base.util;
 
 import org.apache.commons.codec.binary.Hex;
-import org.apache.commons.lang3.CharSequenceUtils;
 import org.apache.commons.lang3.text.StrBuilder;
 import org.springframework.util.Assert;
 
@@ -27,7 +26,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-
+@SuppressWarnings("unused")
 public class StringUtils extends org.apache.commons.lang3.StringUtils {
     public static final int ASCII_VISIBLE_START = 48;
     public static final int ASCII_VISIBLE_END = 122;
@@ -41,7 +40,7 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
      * @param str
      * @param delimer
      * @param excludeArr char must exclude for example like \","{:}"
-     * @return
+     * @return array
      */
     public static String[] split(String str, char delimer, String[] excludeArr) {
         char[] chars = str.toCharArray();
@@ -62,8 +61,8 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
         int start = 0;
         int length = str.length();
         int i = 0;
-        Character curstr ;
-        int selpos ;
+        Character curstr;
+        int selpos;
         //start pos
         boolean startpos = true;
         while (i < length) {
@@ -83,7 +82,6 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
                         start = length;
                         i = length;
                     }
-                    startpos = true;
                 }
             } else if (chars[i] != delimer) {
                 i++;
@@ -92,15 +90,12 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
                 if (start == i) {
                     list.add("");
                     i++;
-                    start = i;
                 } else {
                     list.add(str.substring(start, i));
-                    if (i < length) {
+                    i++;
+                    while (i < length && chars[i] == delimer) {
+                        list.add("");
                         i++;
-                        while (i < length && chars[i] == delimer) {
-                            list.add("");
-                            i++;
-                        }
                     }
                     startpos = true;
                 }
@@ -181,7 +176,7 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
     }
 
     public static int getSplitCharInt(String split) {
-        int retchar ;
+        int retchar;
         if ("\\t".equals(split)) {
             retchar = 10;
         } else if ("0x1F".equalsIgnoreCase(split)) {
@@ -224,16 +219,16 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
         StringBuilder builder = new StringBuilder();
 
         for (int i = 0; i < length; i++) {
-            builder.append((char) (ASCII_VISIBLE_START + getRandomChar(random)));
+            builder.append((char) (ASCII_VISIBLE_START + getRandomChar()));
         }
         return builder.toString();
     }
 
-    private static int getRandomUpperChar(Random random) {
+    private static int getRandomUpperChar() {
         return ASCII_UPPER_START + random.nextInt(26) + 1;
     }
 
-    private static int getRandomLowerChar(Random random) {
+    private static int getRandomLowerChar() {
         return ASCII_LOWER_START + random.nextInt(26) + 1;
     }
 
@@ -241,15 +236,15 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
         StringBuilder builder = new StringBuilder();
         for (int i = 0; i < length; i++) {
             if (random.nextFloat() < 0.5) {
-                builder.append((char) getRandomUpperChar(random));
+                builder.append((char) getRandomUpperChar());
             } else {
-                builder.append((char) getRandomLowerChar(random));
+                builder.append((char) getRandomLowerChar());
             }
         }
         return builder.toString();
     }
 
-    private static int getRandomChar(Random random) {
+    private static int getRandomChar() {
         return random.nextInt(ASCII_VISIBLE_END - ASCII_VISIBLE_START + 1);
     }
 
@@ -271,7 +266,7 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
             }
 
         }
-		
+
         return builder.toString();
     }
 
@@ -302,65 +297,70 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
 
     /**
      * get trim string by specify char end  (430000  trim zero  result 43)
+     *
      * @param input
-     * @param selChar  end char
+     * @param selChar end char
      * @return
      */
-    public static String trimCharRight(String input,char selChar){
-        int pos=input.length();
-        for(int i=input.length()-1;i>0;i--){
-            if(input.charAt(i)==selChar){
-                pos=i;
-            }else{
+    public static String trimCharRight(String input, char selChar) {
+        int pos = input.length();
+        for (int i = input.length() - 1; i > 0; i--) {
+            if (input.charAt(i) == selChar) {
+                pos = i;
+            } else {
                 break;
             }
         }
-        return input.substring(0,pos);
+        return input.substring(0, pos);
     }
-    public static String fillCharHeader(String input,int length,char fillChar){
-        StringBuilder builder=new StringBuilder(input);
-        for(int i=0;i<length-input.length();i++){
+
+    public static String fillCharHeader(String input, int length, char fillChar) {
+        StringBuilder builder = new StringBuilder(input);
+        for (int i = 0; i < length - input.length(); i++) {
             builder.append(fillChar);
         }
         return builder.toString();
     }
-    public static String fillCharTail(String input,int length,char fillChar){
-        StringBuilder builder=new StringBuilder();
-        for(int i=0;i<length-input.length();i++){
+
+    public static String fillCharTail(String input, int length, char fillChar) {
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < length - input.length(); i++) {
             builder.append(fillChar);
         }
         builder.append(input);
         return builder.toString();
     }
-    public static String stringToUnicode(String input,String header){
-        Assert.isTrue(!StringUtils.isEmpty(input),"");
-        String headerStr=StringUtils.isEmpty(header)?"\\u":header;
-        char[] chars=input.toCharArray();
-        StringBuilder builder=new StringBuilder();
-        for(int i=0;i<chars.length;i++){
-            builder.append(headerStr+Integer.toHexString(chars[i]).toUpperCase());
+
+    public static String stringToUnicode(String input, String header) {
+        Assert.isTrue(!StringUtils.isEmpty(input), "");
+        String headerStr = StringUtils.isEmpty(header) ? "\\u" : header;
+        char[] chars = input.toCharArray();
+        StringBuilder builder = new StringBuilder();
+        for (char aChar : chars) {
+            builder.append(headerStr + Integer.toHexString(aChar).toUpperCase());
         }
         return builder.toString();
     }
-    public static boolean isValidUtf8(byte[] b,int aMaxCount){
-        int lLen=b.length,lCharCount=0;
-        for(int i=0;i<lLen && lCharCount<aMaxCount;++lCharCount){
-            byte lByte=b[i++];//to fast operation, ++ now, ready for the following for(;;)
-            if(lByte>=0) continue;//>=0 is normal ascii
-            if(lByte<(byte)0xc0 || lByte>(byte)0xfd) return false;
-            int lCount=lByte>(byte)0xfc?5:lByte>(byte)0xf8?4
-                    :lByte>(byte)0xf0?3:lByte>(byte)0xe0?2:1;
-            if(i+lCount>lLen) return false;
-            for(int j=0;j<lCount;++j,++i) if(b[i]>=(byte)0xc0) return false;
+
+    public static boolean isValidUtf8(byte[] b, int aMaxCount) {
+        int lLen = b.length, lCharCount = 0;
+        for (int i = 0; i < lLen && lCharCount < aMaxCount; ++lCharCount) {
+            byte lByte = b[i++];//to fast operation, ++ now, ready for the following for(;;)
+            if (lByte >= 0) continue;//>=0 is normal ascii
+            if (lByte < (byte) 0xc0 || lByte > (byte) 0xfd) return false;
+            int lCount = lByte > (byte) 0xfc ? 5 : lByte > (byte) 0xf8 ? 4
+                    : lByte > (byte) 0xf0 ? 3 : lByte > (byte) 0xe0 ? 2 : 1;
+            if (i + lCount > lLen) return false;
+            for (int j = 0; j < lCount; ++j, ++i) if (b[i] >= (byte) 0xc0) return false;
         }
         return true;
     }
 
 
     public static void main(String[] args) {
-        //System.out.println(getFieldNameByCamelCase("asdsadTTsdadDDasda"));
-        //System.out.println(returnCamelCaseByFieldName("index_cd"));
-        System.out.println(stringToUnicode("更新时间：2023年09月05日10时","%u"));
+        System.out.println(getFieldNameByCamelCase("asdsadTTsdadDDasda"));
+        System.out.println(returnCamelCaseByFieldName("index_cd"));
+        System.out.println(stringToUnicode("更新时间：2023年09月05日10时", "%u"));
     }
 
 }

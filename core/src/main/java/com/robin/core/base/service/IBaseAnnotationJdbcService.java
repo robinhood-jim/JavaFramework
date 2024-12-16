@@ -66,4 +66,5 @@ public interface IBaseAnnotationJdbcService<V extends BaseObject, P extends Seri
     List<V>  queryByCondition(FilterCondition filterCondition);
     V getByField(String fieldName,Const.OPERATOR oper,Object... fieldValues) throws ServiceException;
     V getByField(PropertyFunction<V,?> function,Const.OPERATOR oper,Object... fieldValues) throws ServiceException;
+    int countByCondition(FilterCondition filterCondition);
 }

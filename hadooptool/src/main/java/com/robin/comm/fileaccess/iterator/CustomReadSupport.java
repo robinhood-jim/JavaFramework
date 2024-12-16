@@ -1,7 +1,6 @@
 package com.robin.comm.fileaccess.iterator;
 
 
-import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.parquet.hadoop.api.InitContext;
 import org.apache.parquet.hadoop.api.ReadSupport;
@@ -31,8 +30,6 @@ public class CustomReadSupport extends ReadSupport<Map<String,Object>> {
 
     @Override
     public RecordMaterializer<Map<String,Object>> prepareForRead(Configuration configuration, Map<String, String> map, MessageType messageType, ReadContext readContext) {
-
-        Map<String, String> metadata = readContext.getReadSupportMetadata();
         MessageType parquetSchema = readContext.getRequestedSchema();
         List<Type> types=parquetSchema.getFields();
 

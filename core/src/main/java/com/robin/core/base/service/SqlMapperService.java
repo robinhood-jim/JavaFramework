@@ -3,7 +3,6 @@ package com.robin.core.base.service;
 import com.robin.core.base.dao.SqlMapperDao;
 import com.robin.core.base.exception.DAOException;
 import com.robin.core.base.exception.ServiceException;
-import com.robin.core.base.util.LicenseUtils;
 import com.robin.core.query.util.PageQuery;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.transaction.annotation.Propagation;

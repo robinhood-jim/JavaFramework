@@ -73,7 +73,7 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 		if(type!=null){
 			entityContent= AnnotationRetriever.getMappingTableByCache(type);
 		}
-		LicenseUtils.getInstance();
+		//LicenseUtils.getInstance();
 	}
 
 	@Override
@@ -334,6 +334,13 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 			throw new ServiceException(e);
 		}
 		return pageQuery.getRecordSet();
+	}
+	public int countByCondition(FilterCondition filterCondition){
+		try {
+			return getJdbcDao().countByCondition(type,filterCondition);
+		}catch (DAOException ex){
+			throw new ServiceException(ex);
+		}
 	}
 	
 	public JdbcDao getJdbcDao() {

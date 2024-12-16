@@ -166,11 +166,7 @@ public class RunningJobInfoUtil extends AbstractJobInfoUtil {
             }
             if (caninsert) {
                 if (coutnnum >= startIndex) {
-                    if (coutnnum < endIndex) {
-                        retList.add(getJobSummary(statue.getJobID().toString(), false));
-                    } else {
-                        break;
-                    }
+                    retList.add(getJobSummary(statue.getJobID().toString(), false));
                 }
                 coutnnum++;
             }

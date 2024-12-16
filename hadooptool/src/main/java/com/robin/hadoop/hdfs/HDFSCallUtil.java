@@ -1,17 +1,22 @@
 package com.robin.hadoop.hdfs;
 
+import com.robin.core.compress.util.CompressDecoder;
+import com.robin.core.compress.util.CompressEncoder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.*;
+import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.io.IOUtils;
 import org.springframework.lang.NonNull;
 import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import java.io.*;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
@@ -19,18 +24,16 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
-import java.util.zip.ZipInputStream;
-import java.util.zip.ZipOutputStream;
+import java.util.stream.Collectors;
 
 
 @Slf4j
+@SuppressWarnings("unused")
 public class HDFSCallUtil {
 
     private static final int BUFFER_SIZE = 100 * 1024;
 
-    public static String uploadFile(Configuration config, String filePath,String toPath) throws HdfsException {
+    public static String uploadFile(Configuration config, String filePath, String toPath) throws HdfsException {
         String[] fileArr = filePath.split(",");
         StringBuilder buffer = new StringBuilder();
         try {
@@ -40,10 +43,9 @@ public class HDFSCallUtil {
                     buffer.append(",");
                 }
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-            log.error("", e);
-            throw new HdfsException(e);
+        } catch (HdfsException e) {
+            log.error("{}", e.getMessage());
+            throw e;
         }
         return buffer.toString();
     }
@@ -56,8 +58,8 @@ public class HDFSCallUtil {
         }
     }
 
-    public static String upload(@NonNull final Configuration config,@NonNull String filePath,String toUrl) throws HdfsException {
-        String url ;
+    public static String upload(@NonNull final Configuration config, @NonNull String filePath, String toUrl) throws HdfsException {
+        String url;
         try {
             String hdfsUrl = "";
             if (!ObjectUtils.isEmpty(toUrl)) {
@@ -73,7 +75,7 @@ public class HDFSCallUtil {
             }
             fs.copyFromLocalFile(new Path(filePath), new Path(toUrl));
             url = hdfsUrl;
-        } catch (Exception e) {
+        } catch (IOException e) {
             log.error("{}", e.getMessage());
             throw new HdfsException(e);
         }
@@ -84,13 +86,13 @@ public class HDFSCallUtil {
         Path dfs = new Path(toUrl);
         try (FileSystem fs = FileSystem.get(config);
              FSDataOutputStream fsdo = fs.create(dfs)) {
-            int len ;
+            int len;
             byte[] buffer = new byte[bufferSize <= 0 ? BUFFER_SIZE : bufferSize];
             while ((len = in.read(buffer)) > 0) {
                 fsdo.write(buffer, 0, len);
             }
             return true;
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new HdfsException(e);
         }
     }
@@ -103,7 +105,8 @@ public class HDFSCallUtil {
                 InputStreamReader isr = new InputStreamReader(in, Charset.forName(fromCharset))) {
             char[] buf = new char[bufferSize];
             StringBuilder strb = new StringBuilder();
-            int readCount = 0, point = 0;
+            int readCount = 0;
+            int point = 0;
             while (-1 != (readCount = isr.read(buf, 0, bufferSize))) {
                 strb.append(buf, 0, readCount);
                 if ((point++) % 10000 == 0) {
@@ -115,7 +118,7 @@ public class HDFSCallUtil {
                 fsdo.write(strb.toString().getBytes(toCharset));
             }
 
-        } catch (Exception e) {
+        } catch (IOException e) {
             e.printStackTrace();
             throw new HdfsException(e);
         }
@@ -142,13 +145,14 @@ public class HDFSCallUtil {
         return cb.array();
     }
 
-    public synchronized static void deleteHdsfUrl(final Configuration config, String uri, String path) throws HdfsException {
+    public static boolean deleteHdsfUrl(final Configuration config, String uri, String path) throws HdfsException {
         try {
             FileSystem fs = FileSystem.get(new URI(uri), config);
             if (fs.exists(new Path(path))) {
                 fs.delete(new Path(path), true);
             }
-        } catch (Exception e) {
+            return true;
+        } catch (IOException | URISyntaxException e) {
             e.printStackTrace();
             log.error("", e);
             throw new HdfsException(e);
@@ -178,7 +182,7 @@ public class HDFSCallUtil {
             } else {
                 log.error("source file does not exists,mv ignore!");
             }
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new HdfsException(e);
         }
     }
@@ -190,7 +194,7 @@ public class HDFSCallUtil {
 
                 fs.rename(new Path(fromPath), new Path(toPath));
             }
-        } catch (Exception ex) {
+        } catch (IOException ex) {
             throw new HdfsException(ex);
         }
     }
@@ -204,11 +208,11 @@ public class HDFSCallUtil {
             FileStatus[] status = fs.listStatus(path);
             Path[] listPaths = FileUtil.stat2Paths(status);
             for (Path listPath : listPaths) {
-                if (!isDirectory(config, listPath)) {
+                if (isDirectory(config, listPath)) {
                     hdfsUrlList.add(listPath.getName());
                 }
             }
-        } catch (Exception e) {
+        } catch (IOException e) {
             e.printStackTrace();
             log.error("", e);
             throw new HdfsException(e);
@@ -230,7 +234,7 @@ public class HDFSCallUtil {
             Path path = new Path(hdfsUrl);
             FileStatus status = fs.getFileStatus(path);
             return status.getLen();
-        } catch (Exception e) {
+        } catch (IOException e) {
             e.printStackTrace();
             log.error("", e);
             throw new HdfsException(e);
@@ -244,20 +248,14 @@ public class HDFSCallUtil {
             Path path = new Path(hdfsUrl);
             FileStatus[] status = fs.listStatus(path);
             Path[] listPaths = FileUtil.stat2Paths(status);
-            boolean isDir ;
             for (Path listPath : listPaths) {
                 Map<String, String> map = new HashMap<>();
-                if (!isDirectory(config, listPath)) {
-                    isDir = true;
-                } else {
-                    isDir = false;
-                }
                 map.put("name", listPath.getName());
                 map.put("path", listPath.toString());
-                map.put("isDir", isDir ? "1" : "0");
+                map.put("isDir",  isDirectory(config, listPath) ? "1" : "0");
                 hdfsUrlList.add(map);
             }
-        } catch (Exception e) {
+        } catch (IOException e) {
             e.printStackTrace();
             log.error("", e);
             throw new HdfsException(e);
@@ -272,24 +270,13 @@ public class HDFSCallUtil {
             if (fs.exists(sourcePath)) {
                 isd = fs.getFileStatus(sourcePath).isDirectory();
             }
-        } catch (Exception e) {
+        } catch (IOException e) {
             log.error("{}", e.getMessage());
             throw new HdfsException(e);
         }
         return isd;
     }
 
-    @SuppressWarnings("unused")
-    private String getExtension(String filename, String defExt) {
-        if ((filename != null) && (filename.length() > 0)) {
-            int i = filename.lastIndexOf('.');
-
-            if ((i > -1) && (i < (filename.length() - 1))) {
-                return filename.substring(i + 1);
-            }
-        }
-        return defExt;
-    }
 
     public static List<String> listFile(final Configuration config, String hdfsUrl) throws HdfsException {
         List<String> hdfsUrlList = new ArrayList<>();
@@ -303,7 +290,7 @@ public class HDFSCallUtil {
                     hdfsUrlList.add(listPath.toString());
                 }
             }
-        } catch (Exception e) {
+        } catch (IOException e) {
             e.printStackTrace();
             log.error("", e);
             throw new HdfsException(e);
@@ -319,13 +306,13 @@ public class HDFSCallUtil {
             Path path = new Path(workDir + "/" + relativeName);
             fs.delete(path, true);
 
-        } catch (Exception e) {
+        } catch (IOException e) {
             e.printStackTrace();
             log.error("", e);
         }
     }
 
-    public static void mkdir(final Configuration config, String relativeName) throws HdfsException {
+    public static boolean mkdir(final Configuration config, String relativeName) throws HdfsException {
         try {
             FileSystem fs = FileSystem.get(config);
             String[] pathSeq = relativeName.split("/", -1);
@@ -352,7 +339,8 @@ public class HDFSCallUtil {
             } else {
                 fs.mkdirs(new Path(relativeName));
             }
-        } catch (Exception e) {
+            return true;
+        } catch (IOException e) {
             log.error("{}", e.getMessage());
             throw new HdfsException(e);
         }
@@ -366,45 +354,44 @@ public class HDFSCallUtil {
             if (fs.exists(path)) {
                 isd = fs.getFileStatus(path).isDirectory();
             }
-        } catch (Exception e) {
+        } catch (IOException e) {
             log.error("{}", e.getMessage());
             throw new HdfsException(e);
         }
         return isd;
     }
 
-    public static void emptyDirectory(final Configuration config, String hdfsUrl) throws HdfsException {
-        try {
-            if (exists(config, hdfsUrl)) {
-                List<String> paths = listFile(config, hdfsUrl);
-                for (String str : paths) {
-                    delete(config, str);
-                }
+    public static boolean emptyDirectory(final Configuration config, String hdfsUrl) throws HdfsException {
+        if (exists(config, hdfsUrl)) {
+            List<String> paths = listFile(config, hdfsUrl);
+            for (String str : paths) {
+                delete(config, str);
             }
-        } catch (Exception ex) {
-            log.error("", ex);
-            throw new HdfsException(ex);
         }
+        return true;
     }
 
-    public static void delete(final Configuration config, String hdfsUrl) throws HdfsException {
+    public static boolean delete(final Configuration config, String hdfsUrl) throws HdfsException {
         try {
             if (exists(config, hdfsUrl)) {
                 FileSystem fs = FileSystem.get(config);
                 Path path = new Path(hdfsUrl);
                 fs.delete(path, true);
+                return true;
             }
-        } catch (Exception e) {
+            return false;
+        } catch (IOException e) {
             log.error("", e);
             throw new HdfsException(e);
         }
     }
 
-    public static void setresp(final Configuration config, String hdfsUrl, int resp) throws HdfsException {
+    public static boolean setresp(final Configuration config, String hdfsUrl, int resp) throws HdfsException {
         try {
             FileSystem fs = FileSystem.get(config);
             fs.setReplication(new Path(hdfsUrl), (short) resp);
-        } catch (Exception e) {
+            return true;
+        } catch (IOException e) {
             throw new HdfsException(e);
         }
     }
@@ -414,7 +401,7 @@ public class HDFSCallUtil {
             FileSystem fs = FileSystem.get(config);
             Path path = new Path(hdfsUrl);
             return fs.exists(path);
-        } catch (Exception e) {
+        } catch (IOException e) {
             log.error("{}", e.getMessage());
             throw new HdfsException(e);
         }
@@ -422,7 +409,7 @@ public class HDFSCallUtil {
 
     public static String read(final Configuration config, String hdfsUrl, String encode) throws HdfsException {
         String retStr = "";
-        try(FileSystem fs = FileSystem.get(URI.create(hdfsUrl), config)) {
+        try (FileSystem fs = FileSystem.get(URI.create(hdfsUrl), config)) {
             Path path = new Path(hdfsUrl);
             if (fs.exists(path)) {
                 try (FSDataInputStream is = fs.open(path)) {
@@ -433,7 +420,7 @@ public class HDFSCallUtil {
                     retStr = new String(buffer, encode);
                 }
             }
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new HdfsException(e);
         }
         return retStr;
@@ -452,9 +439,9 @@ public class HDFSCallUtil {
                     return buffer;
                 }
             } else {
-                throw new HdfsException("file path "+hdfsUrl+" does not exists!");
+                throw new HdfsException("file path " + hdfsUrl + " does not exists!");
             }
-        } catch (Exception e) {
+        } catch (IOException e) {
             log.error("", e);
             throw new HdfsException(e);
         }
@@ -469,17 +456,17 @@ public class HDFSCallUtil {
             if (!exists(config, hdfsUrl)) {
                 return fs.create(new Path(hdfsUrl));
             }
-        } catch (Exception e) {
+        } catch (IOException e) {
             log.error("{}", e.getMessage());
             throw new HdfsException(e);
         }
         return null;
     }
 
-    public static void insertLine(final Configuration config, FSDataOutputStream out, String outStr) throws HdfsException {
+    public static void insertLine(FSDataOutputStream out, String outStr) throws HdfsException {
         try {
             out.writeUTF(outStr);
-        } catch (Exception e) {
+        } catch (IOException e) {
             log.error("{}", e.getMessage());
             throw new HdfsException(e);
         }
@@ -490,95 +477,162 @@ public class HDFSCallUtil {
              DataInputStream dis = new DataInputStream(fs.open(new Path(hdfsUrl)));
              BufferedReader br = new BufferedReader(new InputStreamReader(dis, encode))) {
             return br;
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new HdfsException(e);
         }
     }
 
-    public static void copyToLocal(final Configuration config, String fromPath, String toPath) throws HdfsException {
+    public static boolean copyToLocal(final Configuration config, String fromPath, String toPath) throws HdfsException {
         try {
             if (exists(config, fromPath)) {
                 FileSystem fs = FileSystem.get(config);
                 fs.copyToLocalFile(new Path(fromPath), new Path(toPath));
+                return true;
             }
-        } catch (Exception ex) {
+            return false;
+        } catch (IOException ex) {
             throw new HdfsException(ex);
         }
     }
 
-    public static void copyFromLocal(final Configuration config, String fromPath, String toPath) throws HdfsException {
+    public static boolean copyFromLocal(final Configuration config, String fromPath, String toPath) throws HdfsException {
         try {
             if (exists(config, fromPath)) {
                 FileSystem fs = FileSystem.get(config);
                 fs.copyFromLocalFile(new Path(fromPath), new Path(toPath));
+                return true;
             }
-        } catch (Exception ex) {
+            return false;
+        } catch (IOException ex) {
             throw new HdfsException(ex);
         }
     }
 
-    public static void copy(final Configuration config, String fromPath, String toPath) throws HdfsException {
+    public static boolean copy(final Configuration config, String fromPath, String toPath) throws HdfsException {
         if (exists(config, fromPath)) {
-            try(FileSystem fs = FileSystem.get(URI.create(fromPath), config);
-                DataInputStream dis=new DataInputStream(fs.open(new Path(fromPath)));
-                FSDataOutputStream out=fs.create(new Path(toPath))) {
+            try (FileSystem fs = FileSystem.get(URI.create(fromPath), config);
+                 DataInputStream dis = new DataInputStream(fs.open(new Path(fromPath)));
+                 FSDataOutputStream out = fs.create(new Path(toPath))) {
                 IOUtils.copyBytes(dis, out, config);
-            } catch (Exception e) {
+                return true;
+            } catch (IOException e) {
                 throw new HdfsException(e);
             }
+        }else{
+            return false;
         }
     }
 
+    public static boolean chmod(final Configuration configuration, String filePath, short permission) throws HdfsException {
+        if (exists(configuration, filePath)) {
+            try (FileSystem fs = FileSystem.get(URI.create(filePath), configuration)) {
+                fs.setPermission(new Path(filePath), FsPermission.createImmutable(permission));
+                return true;
+            } catch (IOException ex) {
+                throw new HdfsException(ex);
+            }
+        }
+        return false;
+    }
 
-    public static BufferedReader getHDFSDataByReader(final Configuration config, String path, String encode) throws Exception {
+    public static boolean mergeToNewFile(final Configuration config, String sourcePath, String fileSuffix, String newFilePath) throws HdfsException {
+        if (exists(config, sourcePath) && isDirectory(config, sourcePath)) {
+            List<String> files = listFile(config, sourcePath);
+            if (!CollectionUtils.isEmpty(files)) {
+                List<String> mergeList = files.stream().filter(f -> f.endsWith("." + fileSuffix)).collect(Collectors.toList());
+                try (OutputStream outputStream = getHDFSOutputStream(config, newFilePath)) {
+                    for (String file : mergeList) {
+                        InputStream inputStream = getHDFSDataByInputStream(config, file);
+                        if(!ObjectUtils.isEmpty(inputStream)) {
+                            IOUtils.copyBytes(inputStream, outputStream, 4096);
+                            inputStream.close();
+                        }
+                    }
+                    return true;
+                } catch (IOException ex) {
+                    throw new HdfsException(ex);
+                }
+
+            }
+
+        }
+        return false;
+    }
+
+
+    public static BufferedReader getHDFSDataByReader(final Configuration config, String path, String encode) throws HdfsException {
         BufferedReader reader = null;
-        File file = new File(path);
-        if (exists(config, path)) {
-            String suffix = getFileSuffix(file);
-            if ("gz".equalsIgnoreCase(suffix)) {
-                reader = new BufferedReader(new InputStreamReader(new GZIPInputStream(FileSystem.get(config).open(new Path(path))), encode));
-            } else if ("zip".equalsIgnoreCase(suffix)) {
-                reader = new BufferedReader(new InputStreamReader(new ZipInputStream(FileSystem.get(config).open(new Path(path))), encode));
-            } else {
-                reader = new BufferedReader(new InputStreamReader(FileSystem.get(config).open(new Path(path)), encode));
+        try {
+            if (exists(config, path)) {
+                if (ObjectUtils.isEmpty(encode)) {
+                    reader = new BufferedReader(new InputStreamReader(CompressDecoder.getInputStreamByCompressType(path, FileSystem.get(config).open(new Path(path)))));
+                } else {
+                    reader = new BufferedReader(new InputStreamReader(CompressDecoder.getInputStreamByCompressType(path, FileSystem.get(config).open(new Path(path))), encode));
+                }
             }
+            return reader;
+        }catch (IOException ex){
+            throw new HdfsException(ex);
         }
-        return reader;
     }
 
-    public static BufferedInputStream getHDFSDataByInputStream(final Configuration config, String path) throws Exception {
-        BufferedInputStream reader = null;
-        File file = new File(path);
-        if (exists(config, path)) {
-            String suffix = getFileSuffix(file);
-            if ("gz".equalsIgnoreCase(suffix)) {
-                reader = new BufferedInputStream(new GZIPInputStream(FileSystem.get(config).open(new Path(path))));
-            } else if ("zip".equalsIgnoreCase(suffix)) {
-                reader = new BufferedInputStream(new ZipInputStream(FileSystem.get(config).open(new Path(path))));
-            } else {
-                reader = new BufferedInputStream(FileSystem.get(config).open(new Path(path)));
+    public static BufferedInputStream getHDFSDataByInputStream(final Configuration config, String path) throws HdfsException {
+        try {
+            if (exists(config, path)) {
+                return new BufferedInputStream(CompressDecoder.getInputStreamByCompressType(path, FileSystem.get(config).open(new Path(path))));
             }
+            return null;
+        }catch (IOException ex){
+            throw new HdfsException(ex);
         }
-        return reader;
     }
-    public static BufferedInputStream getHDFSRawInputStream(final Configuration config, String path) throws IOException{
-        return new BufferedInputStream(FileSystem.get(config).open(new Path(path)));
+    public static OutputStream getHDFSDataByOutputStream(final Configuration config,String path) throws HdfsException{
+        try{
+            return CompressEncoder.getOutputStreamByCompressType(path,FileSystem.get(config).create(new Path(path)));
+        }catch (IOException ex){
+            throw new HdfsException(ex);
+        }
     }
 
-    public static BufferedWriter getHDFSDataByWriter(final Configuration config, String path, String encode) throws Exception {
-        BufferedWriter writer ;
-        if (exists(config, path)) {
-            delete(config, path);
+    public static InputStream getHDFSRawInputStream(final Configuration config, String path) throws HdfsException {
+        try{
+            return FileSystem.get(config).open(new Path(path));
+        }catch (IOException ex){
+            throw new HdfsException(ex);
         }
-        String suffix = getFileSuffix(new File(path));
-        if ("gz".equalsIgnoreCase(suffix)) {
-            writer = new BufferedWriter(new OutputStreamWriter(new GZIPOutputStream(FileSystem.get(config).create(new Path(path))), encode));
-        } else if ("zip".equalsIgnoreCase(suffix)) {
-            writer = new BufferedWriter(new OutputStreamWriter(new ZipOutputStream(FileSystem.get(config).create(new Path(path))), encode));
-        } else {
-            writer = new BufferedWriter(new OutputStreamWriter(FileSystem.get(config).create(new Path(path)), encode));
+    }
+
+    public static OutputStream getHDFSRawOutputStream(final Configuration config, String path) throws HdfsException {
+        try{
+            return FileSystem.get(config).create(new Path(path));
+        }catch (IOException ex){
+            throw new HdfsException(ex);
         }
-        return writer;
+    }
+
+    public static BufferedWriter getHDFSDataByWriter(final Configuration config, String path, String encode) throws HdfsException {
+        BufferedWriter writer;
+        try {
+            if (exists(config, path)) {
+                delete(config, path);
+            }
+            if (ObjectUtils.isEmpty(encode)) {
+                writer = new BufferedWriter(new OutputStreamWriter(CompressEncoder.getOutputStreamByCompressType(path, FileSystem.get(config).create(new Path(path)))));
+            } else {
+                writer = new BufferedWriter(new OutputStreamWriter(CompressEncoder.getOutputStreamByCompressType(path, FileSystem.get(config).create(new Path(path))), encode));
+            }
+            return writer;
+        }catch (IOException ex){
+            throw new HdfsException(ex);
+        }
+    }
+
+    public static OutputStream getHDFSOutputStream(final Configuration config, String path) throws HdfsException {
+        try{
+            return CompressEncoder.getOutputStreamByCompressType(path, FileSystem.get(config).create(new Path(path)));
+        }catch (IOException ex){
+            throw new HdfsException(ex);
+        }
     }
 
     public static String getFileSuffix(File file) {
@@ -587,13 +641,13 @@ public class HDFSCallUtil {
         return name.substring(pos + 1);
     }
 
-    public static void createAndinsert(final Configuration config, String hdfsUrl, String txt, boolean overwriteOrgion) throws HdfsException {
-        Assert.isTrue(!StringUtils.isEmpty(hdfsUrl),"");
-        Assert.notNull(config,"");
-        try(FSDataOutputStream stream=createFile(config, hdfsUrl, overwriteOrgion)) {
-            Assert.notNull(stream,"");
+    public static void createAndInsert(final Configuration config, String hdfsUrl, String txt, boolean overwriteOrgion) throws HdfsException {
+        Assert.isTrue(!StringUtils.isEmpty(hdfsUrl), "");
+        Assert.notNull(config, "");
+        try (FSDataOutputStream stream = createFile(config, hdfsUrl, overwriteOrgion)) {
+            Assert.notNull(stream, "");
             stream.writeUTF(txt);
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new HdfsException(e);
         }
     }

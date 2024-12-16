@@ -22,6 +22,7 @@ import com.robin.core.web.util.Session;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
@@ -38,7 +39,7 @@ public class MenuController {
 	@Autowired
 	@Qualifier("sysResourceService")
 	private IBaseAnnotationJdbcService sysResourceService;
-	@RequestMapping("/list")
+	@PostMapping("/list")
 	@ResponseBody
 	public Map<String,Object> getMenu(HttpServletRequest request,HttpServletResponse response){
 		String id=request.getParameter("id");

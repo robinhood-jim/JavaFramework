@@ -1,14 +1,13 @@
 package com.robin.comm.fileaccess.fs;
 
 
+import com.robin.core.base.exception.MissingConfigException;
 import com.robin.core.base.util.Const;
 import com.robin.core.base.util.ResourceConst;
 import com.robin.core.fileaccess.fs.AbstractFileSystemAccessor;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
-import com.robin.core.fileaccess.util.ResourceUtil;
 import com.robin.dfs.aws.AwsUtils;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.util.Assert;
@@ -17,11 +16,8 @@ import org.springframework.util.ObjectUtils;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
 /**
  * Amazon AWS FileSystemAccessor
@@ -103,14 +99,18 @@ public class S3FileSystemAccessor extends AbstractFileSystemAccessor {
                 region = ObjectUtils.isEmpty(regionName) ? Region.US_EAST_1 : Region.of(regionName.toString());
                 client = AwsUtils.getClientByCredential(region, meta.getResourceCfgMap().get(ResourceConst.S3PARAM.ACCESSKEY.getValue()).toString(), meta.getResourceCfgMap().get(ResourceConst.S3PARAM.SECRET.getValue()).toString());
                 asyncClient = AwsUtils.getAsyncClientByCredential(region, meta.getResourceCfgMap().get(ResourceConst.S3PARAM.ACCESSKEY.getValue()).toString(), meta.getResourceCfgMap().get(ResourceConst.S3PARAM.SECRET.getValue()).toString());
+            }else{
+                throw new MissingConfigException("resource config missing!");
             }
+        }else{
+            throw new MissingConfigException("resource config must provided!");
         }
     }
     public void init(){
         Assert.notNull(accessKey,"accessKey name required!");
         Assert.notNull(secret,"secret name required!");
 
-        region = ObjectUtils.isEmpty(regionName) ? Region.US_EAST_1 : Region.of(regionName.toString());
+        region = ObjectUtils.isEmpty(regionName) ? Region.US_EAST_1 : Region.of(regionName);
         client = AwsUtils.getClientByCredential(region,accessKey,secret);
         asyncClient = AwsUtils.getAsyncClientByCredential(region, accessKey, secret);
     }

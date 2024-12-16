@@ -15,6 +15,7 @@ import com.robin.core.sql.util.BaseSqlGen;
 import com.robin.core.sql.util.FilterCondition;
 import com.robin.core.sql.util.FilterConditionBuilder;
 import com.robin.core.web.annotation.WebControllerConfig;
+import com.robin.core.web.util.WebConstant;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
 import org.springframework.http.MediaType;
@@ -80,11 +81,7 @@ public abstract class AbstractAutoController<O extends BaseObject, P extends Ser
                 if (StringUtils.isEmpty(serviceName)) {
                     serviceName = potype.getSimpleName() + "Service";
                 }
-                try {
-                    service = SpringContextHolder.getBean(serviceName, SpringAutoCreateService.class);
-                } catch (BeansException ex) {
-
-                }
+                getService(serviceName);
                 if (ObjectUtils.isEmpty(service)) {
                     service = wrapAutoService();
                     SpringContextHolder.registerSingleton(serviceName, service);
@@ -100,12 +97,7 @@ public abstract class AbstractAutoController<O extends BaseObject, P extends Ser
                     //page
                     RequestMappingInfo pagePath = RequestMappingInfo.paths(config.mainPath() + config.listPath())
                             .methods(RequestMethod.POST).produces(MediaType.APPLICATION_JSON_VALUE).build();
-                    Method listmethold=null;
-                    try {
-                        listmethold=this.getClass().getDeclaredMethod("doPage", Map.class);
-                    }catch (Exception ex){
-
-                    }
+                    Method listmethold= getCurrentDoPageMethod();
                     if(ObjectUtils.isEmpty(listmethold)){
                         listmethold=this.getClass().getSuperclass().getDeclaredMethod("doPage", Map.class);
                     }
@@ -132,6 +124,23 @@ public abstract class AbstractAutoController<O extends BaseObject, P extends Ser
         }
     }
 
+    private Method getCurrentDoPageMethod() {
+        try {
+            return this.getClass().getDeclaredMethod("doPage", Map.class);
+        }catch (Exception ex){
+
+        }
+        return null;
+    }
+
+    private void getService(String serviceName) {
+        try {
+            service = SpringContextHolder.getBean(serviceName, SpringAutoCreateService.class);
+        } catch (BeansException ex) {
+
+        }
+    }
+
     protected SpringAutoCreateService<O, P> wrapAutoService() {
         SpringAutoCreateService.Builder<O, P> builder = new SpringAutoCreateService.Builder<>(potype, pkType);
         builder.withJdbcDaoName(config.jdbcDaoName()).withTransactionManager(config.transactionManagerName());
@@ -144,7 +153,7 @@ public abstract class AbstractAutoController<O extends BaseObject, P extends Ser
             O vo = potype.newInstance();
             ConvertUtil.mapToObject(vo, reqMap);
             P p = service.getSaveFunction().apply(vo);
-            retMap.put("data", p);
+            retMap.put(WebConstant.DATA, p);
             constructRetMap(retMap);
         } catch (Exception ex) {
             return wrapError(ex);
@@ -159,7 +168,7 @@ public abstract class AbstractAutoController<O extends BaseObject, P extends Ser
             P pkid = (P) valueOfMethod.invoke(null, id);
             vo = service.getEntity(pkid);
             constructRetMap(retMap);
-            retMap.put("data", vo);
+            retMap.put(WebConstant.DATA, vo);
             return retMap;
         } catch (Exception ex) {
             return wrapError(ex);
@@ -172,10 +181,10 @@ public abstract class AbstractAutoController<O extends BaseObject, P extends Ser
             O vo = potype.newInstance();
             ConvertUtil.mapToObject(vo, reqMap);
             this.service.updateEntity(vo);
-            retmap.put("success", true);
+            retmap.put(WebConstant.SUCCESS, true);
         } catch (Exception e) {
-            retmap.put("success", false);
-            retmap.put("message", e.getMessage());
+            retmap.put(WebConstant.SUCCESS, false);
+            retmap.put(WebConstant.MESSAGE, e.getMessage());
         }
         return retmap;
     }
@@ -186,10 +195,10 @@ public abstract class AbstractAutoController<O extends BaseObject, P extends Ser
             if (!ObjectUtils.isEmpty(ids)) {
                 service.getDeleteEntityFunction().apply(parseId(ids));
             }
-            retmap.put("success", true);
+            retmap.put(WebConstant.SUCCESS, true);
         } catch (Exception e) {
-            retmap.put("success", false);
-            retmap.put("message", e.getMessage());
+            retmap.put(WebConstant.SUCCESS, false);
+            retmap.put(WebConstant.MESSAGE, e.getMessage());
         }
         return retmap;
     }
@@ -209,7 +218,7 @@ public abstract class AbstractAutoController<O extends BaseObject, P extends Ser
         }
     }
     private FilterCondition getCondition(Map<String,Object> paramMap) throws SQLException {
-        AnnotationRetriever.EntityContent tableDef = AnnotationRetriever.getMappingTableByCache(potype);
+        AnnotationRetriever.EntityContent<O> tableDef = AnnotationRetriever.getMappingTableByCache(potype);
         Map<String,FieldContent> contentMap= AnnotationRetriever.getMappingFieldsMapCache(potype);
         Map<String, DataBaseColumnMeta> columnMetaMap= EntityMappingUtil.returnMetaMap(potype,SpringContextHolder.getBean(BaseSqlGen.class),service.getJdbcDao(),tableDef);
         Iterator<Map.Entry<String,Object>> iterator=paramMap.entrySet().iterator();
@@ -227,7 +236,7 @@ public abstract class AbstractAutoController<O extends BaseObject, P extends Ser
                         Map<String,Object> tmap=(Map<String,Object>)value;
                         String operator=tmap.get("operator").toString();
                         Object value1= Optional.ofNullable(tmap.get("value")).orElse(null);
-                        List<Object> values=Optional.ofNullable(tmap.get("values")).map(f->(List<Object>)f).orElse(null);
+                        List<Object> values= (List<Object>) tmap.get("values");
                         Optional.ofNullable(value1).map(f->builder.addFilter(contentMap.get(key).getFieldName(),columnType, Const.OPERATOR.valueOf(operator.toUpperCase()),f))
                                 .orElseGet(()-> builder.addFilter(contentMap.get(key).getFieldName(),columnType, Const.OPERATOR.valueOf(operator.toUpperCase()),values));
                     }else{
@@ -242,8 +251,7 @@ public abstract class AbstractAutoController<O extends BaseObject, P extends Ser
     protected P[] parseId(String ids) throws ServiceException {
         P[] array = null;
         try {
-            Assert.notNull(ids, "input id is null");
-            Assert.isTrue(ids.length() > 0, "input ids is empty");
+            Assert.isTrue(!ObjectUtils.isEmpty(ids), "input ids is empty");
             String[] idsArr = ids.split(",");
             array = (P[]) java.lang.reflect.Array.newInstance(pkType, idsArr.length);
             for (int i = 0; i < idsArr.length; i++) {
@@ -262,8 +270,8 @@ public abstract class AbstractAutoController<O extends BaseObject, P extends Ser
         return array;
     }
 
-    protected PageQuery wrapPageQueryReq(Map<String, Object> reqMap) {
-        PageQuery query = new PageQuery();
+    protected PageQuery<Map<String,Object>> wrapPageQueryReq(Map<String, Object> reqMap) {
+        PageQuery<Map<String,Object>> query = new PageQuery<>();
         try {
             ConvertUtil.mapToObject(query, reqMap);
         } catch (Exception ex) {
@@ -272,7 +280,7 @@ public abstract class AbstractAutoController<O extends BaseObject, P extends Ser
         return query;
     }
 
-    protected void wrapPageQuery(PageQuery pageQuery, Map<String, Object> retMap) {
+    protected void wrapPageQuery(PageQuery<?> pageQuery, Map<String, Object> retMap) {
         retMap.put("pageSize", pageQuery.getPageSize());
         retMap.put("pageNumber", pageQuery.getPageNumber());
         retMap.put("pageCount", pageQuery.getPageCount());

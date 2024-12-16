@@ -19,6 +19,7 @@ import java.io.*;
 
 @Slf4j
 @Getter
+@SuppressWarnings("unused")
 public class BOSFileSystemAccessor extends AbstractFileSystemAccessor {
     private String endpoint;
     private String accessKeyId;
@@ -113,7 +114,7 @@ public class BOSFileSystemAccessor extends AbstractFileSystemAccessor {
             if (!ObjectUtils.isEmpty(object)) {
                 return object.getObjectContent();
             } else {
-                throw new RuntimeException("objectName " + objectName + " can not get!");
+                throw new MissingConfigException("objectName " + objectName + " can not get!");
             }
         }else{
             throw new MissingConfigException(" key "+objectName+" not in OSS bucket "+bucketName);

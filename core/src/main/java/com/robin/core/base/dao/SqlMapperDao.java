@@ -19,6 +19,7 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.jdbc.support.lob.LobHandler;
 import org.springframework.lang.NonNull;
 import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 
 import javax.sql.DataSource;
 import java.lang.reflect.Method;
@@ -86,7 +87,7 @@ public class SqlMapperDao extends JdbcDaoSupport {
                     CommJdbcUtil.setPageQuery(query, total);
                     selectSql = sqlGen.generatePageSql(selectSql, query);
                 }
-                list = template.query(selectSql, paramMap, resultSetExtractor(sqlMapperConfigure, nameSpace, segment, lobHandler, query));
+                list = template.query(selectSql, paramMap, resultSetExtractor(sqlMapperConfigure, nameSpace, segment, query));
 
             } else {
                 throw new DAOException("Mapper id" + id + " in namespace " + nameSpace + " is not a select Config!");
@@ -179,7 +180,7 @@ public class SqlMapperDao extends JdbcDaoSupport {
         }
     }
 
-    private static ResultSetExtractor<List<?>> resultSetExtractor(SqlMapperConfigure mapper, String nameSpace, CompositeSegment segment, LobHandler lobHandler, PageQuery<Map<String,Object>> pageQuery) throws DAOException {
+    private static ResultSetExtractor<List<?>> resultSetExtractor(SqlMapperConfigure mapper, String nameSpace, CompositeSegment segment, PageQuery<Map<String,Object>> pageQuery) throws DAOException {
         return resultSet -> {
             List retList = new ArrayList<>();
             if (resultSet.next()) {
@@ -189,7 +190,7 @@ public class SqlMapperDao extends JdbcDaoSupport {
                     String resultMap = segment.getResultMap();
                     if (resultMap != null) {
                         ResultMapperSegment segment1 = (ResultMapperSegment) mapper.getSegmentsMap().get(nameSpace).get(resultMap).right.get(0);
-                        if ("HashMap".equalsIgnoreCase(segment1.getClassName())) {
+                        if (ObjectUtils.isEmpty(segment1.getClassName()) ||  "HashMap".equalsIgnoreCase(segment1.getClassName())) {
                             if (mapper.getSegmentsMap().get(nameSpace).containsKey(resultMap)) {
                                 Map<String, Object> map = new HashMap<>();
                                 for (int i = 0; i < count; i++) {
