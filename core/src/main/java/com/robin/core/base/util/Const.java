@@ -409,6 +409,7 @@ public class Const {
         RABBITMQ("rabbitmq"),
         ROCKETMQ("rocket"),
         ZEROQ("zero"),
+        HBASE("hbase"),
         CLICKHOUSE("clickhouse"),
         CASSANDRA("cassandra");
 

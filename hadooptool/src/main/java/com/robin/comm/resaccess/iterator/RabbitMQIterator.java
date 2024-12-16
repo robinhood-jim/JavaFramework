@@ -1,12 +1,12 @@
 package com.robin.comm.resaccess.iterator;
 
 import com.rabbitmq.client.*;
+import com.robin.core.base.util.Const;
 import com.robin.core.base.util.ResourceConst;
+import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.util.AvroUtils;
 import com.robin.core.resaccess.iterator.AbstractQueueIterator;
-import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.hadoop.hbase.exceptions.TimeoutIOException;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.Connection;
 import org.springframework.util.Assert;
@@ -23,22 +23,23 @@ public class RabbitMQIterator extends AbstractQueueIterator {
 
     private String queueName;
     private Connection connection;
-    public RabbitMQIterator(){
-        this.identifier= ResourceConst.ResourceType.TYPE_RABBIT.toString();
+
+    public RabbitMQIterator() {
+        this.identifier = Const.ACCESSRESOURCE.RABBITMQ.getValue();
     }
 
-    public RabbitMQIterator(DataCollectionMeta collectionMeta){
+    public RabbitMQIterator(DataCollectionMeta collectionMeta) {
         super(collectionMeta);
-        this.identifier= ResourceConst.ResourceType.TYPE_RABBIT.toString();
+        this.identifier = ResourceConst.ResourceType.TYPE_RABBIT.toString();
     }
 
 
     @Override
     public void beforeProcess() {
-        connectionFactory=new CachingConnectionFactory();
-        int port=5672;
-        Assert.notNull(cfgMap,"");
-        if(CollectionUtils.isEmpty(cfgMap)) {
+        connectionFactory = new CachingConnectionFactory();
+        int port = 5672;
+        Assert.notNull(cfgMap, "");
+        if (CollectionUtils.isEmpty(cfgMap)) {
             Assert.notNull(cfgMap.get("queue"), "queue name must exists!");
             queueName = cfgMap.get("queue").toString();
             if (null != cfgMap.get("hostName") && !StringUtils.isEmpty(cfgMap.get("hostName").toString())) {
@@ -55,14 +56,14 @@ public class RabbitMQIterator extends AbstractQueueIterator {
                 connectionFactory.setPassword(cfgMap.get("password").toString());
             }
             connectionFactory.setCacheMode(CachingConnectionFactory.CacheMode.CHANNEL);
-            connection=connectionFactory.createConnection();
+            connection = connectionFactory.createConnection();
         }
     }
 
     @Override
     public List<Map<String, Object>> pollMessage() throws IOException {
         List<Map<String, Object>> retList = new ArrayList<>();
-        try(Channel channel=connection.createChannel(true)) {
+        try (Channel channel = connection.createChannel(true)) {
             channel.basicQos(64);
             Consumer consumer = new DefaultConsumer(channel) {
                 @Override
@@ -71,7 +72,7 @@ public class RabbitMQIterator extends AbstractQueueIterator {
                     channel.basicAck(envelope.getDeliveryTag(), false);
                 }
             };
-        }catch (TimeoutException ex){
+        } catch (TimeoutException ex) {
             throw new IOException(ex);
         }
         return retList;
@@ -80,10 +81,5 @@ public class RabbitMQIterator extends AbstractQueueIterator {
     @Override
     public void close() throws IOException {
 
-    }
-
-    @Override
-    public String getIdentifier() {
-        return "rabbitmq";
     }
 }

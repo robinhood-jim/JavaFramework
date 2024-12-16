@@ -276,7 +276,7 @@ public class CommJdbcUtil {
         };
     }
 
-    private Object getRecordValue(ResultSetMetaData rsmd, ResultSet rs, LobHandler lobHandler, int pos) throws SQLException {
+    public static Object getRecordValue(ResultSetMetaData rsmd, ResultSet rs, LobHandler lobHandler, int pos) throws SQLException {
         int columnType = rsmd.getColumnType(pos + 1);
         rs.getObject(pos + 1);
         Object retObj = null;

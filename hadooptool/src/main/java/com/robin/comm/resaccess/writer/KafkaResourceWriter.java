@@ -45,12 +45,6 @@ public class KafkaResourceWriter extends AbstractQueueWriter {
         producer.send(new ProducerRecord(topic, key,output));
     }
 
-
-
-    @Override
-    public void writeRecord(List<Object> list) throws IOException {
-
-    }
     @Override
     public void initalize() throws IOException {
         Properties properties=new Properties();

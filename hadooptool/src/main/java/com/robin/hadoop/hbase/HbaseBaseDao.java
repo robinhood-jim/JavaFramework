@@ -17,9 +17,9 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.*;
 
+@SuppressWarnings("unused")
 public class HbaseBaseDao {
     private final Configuration config;
-    private static final Logger LOGGER = LoggerFactory.getLogger(HbaseBaseDao.class);
     private Configuration cfg;
 
     public static final int POOL_MAX_SIZE = 20;

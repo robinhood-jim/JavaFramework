@@ -3,24 +3,26 @@ package com.robin.core.resaccess.iterator;
 import com.robin.comm.dal.holder.db.DbConnectionHolder;
 import com.robin.comm.dal.holder.db.JdbcResourceHolder;
 import com.robin.comm.dal.pool.ResourceAccessHolder;
-import com.robin.core.base.dao.SimpleJdbcDao;
+import com.robin.core.base.dao.CommJdbcUtil;
+import com.robin.core.base.exception.GenericException;
 import com.robin.core.base.exception.OperationNotSupportException;
 import com.robin.core.base.spring.SpringContextHolder;
+import com.robin.core.base.util.Const;
 import com.robin.core.fileaccess.fs.AbstractFileSystemAccessor;
 import com.robin.core.fileaccess.iterator.AbstractResIterator;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.QueryRunner;
+import org.springframework.jdbc.support.lob.DefaultLobHandler;
+import org.springframework.jdbc.support.lob.LobHandler;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.sql.*;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
@@ -33,9 +35,11 @@ public class JdbcResIterator extends AbstractResIterator {
     private ResultSet rs;
     private Statement statement;
     private PreparedStatement preparedStatement;
+    private LobHandler lobHandler;
 
     public JdbcResIterator() {
-
+        this.identifier= Const.ACCESSRESOURCE.JDBC.getValue();
+        lobHandler=new DefaultLobHandler();
     }
 
     public JdbcResIterator(DataCollectionMeta colmeta) {
@@ -101,16 +105,22 @@ public class JdbcResIterator extends AbstractResIterator {
 
     @Override
     public Map<String, Object> next() {
-        return null;
-    }
-
-    @Override
-    public String getIdentifier() {
-        return "jdbc";
+        Map<String, Object> map = new HashMap<>();
+        try {
+            ResultSetMetaData rsmd = rs.getMetaData();
+            int count = rsmd.getColumnCount();
+            for (int i = 0; i < count; i++) {
+                String columnName = rsmd.getColumnName(i + 1);
+                map.put(columnName, CommJdbcUtil.getRecordValue(rsmd,rs,lobHandler,i));
+            }
+        }catch (SQLException ex){
+            throw new GenericException(ex);
+        }
+        return map;
     }
 
     @Override
     public void setAccessUtil(AbstractFileSystemAccessor accessUtil) {
-        throw new OperationNotSupportException("");
+        throw new OperationNotSupportException("jdbc can not access format data file!");
     }
 }

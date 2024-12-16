@@ -24,6 +24,7 @@ import java.io.*;
  */
 @Slf4j
 @Getter
+@SuppressWarnings("unused")
 public class S3FileSystemAccessor extends AbstractFileSystemAccessor {
     private S3Client client;
     private S3AsyncClient asyncClient;
@@ -69,8 +70,7 @@ public class S3FileSystemAccessor extends AbstractFileSystemAccessor {
 
     @Override
     public InputStream getRawInputStream(DataCollectionMeta meta, String resourcePath) throws IOException {
-        String bucketName = getBucketName(meta);
-        return AwsUtils.getObject(client, bucketName, resourcePath);
+        return AwsUtils.getObject(client, getBucketName(meta), resourcePath);
     }
 
     private  String getBucketName(DataCollectionMeta meta) {
@@ -79,14 +79,12 @@ public class S3FileSystemAccessor extends AbstractFileSystemAccessor {
 
     @Override
     public boolean exists(DataCollectionMeta meta, String resourcePath) throws IOException {
-        String bucketName = getBucketName(meta);
-        return AwsUtils.exists(client,bucketName,meta.getPath());
+        return AwsUtils.exists(client,getBucketName(meta),meta.getPath());
     }
 
     @Override
     public long getInputStreamSize(DataCollectionMeta meta, String resourcePath) throws IOException {
-        String bucketName=getBucketName(meta);
-        return AwsUtils.size(client,bucketName,resourcePath);
+        return AwsUtils.size(client,getBucketName(meta),resourcePath);
     }
 
     @Override
