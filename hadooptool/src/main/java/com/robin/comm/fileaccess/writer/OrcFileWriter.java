@@ -3,7 +3,6 @@ package com.robin.comm.fileaccess.writer;
 import com.robin.comm.fileaccess.util.MockFileSystem;
 import com.robin.comm.fileaccess.util.OrcUtil;
 import com.robin.core.base.util.Const;
-import com.robin.core.base.util.ResourceConst;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.meta.DataSetColumnMeta;
 import com.robin.core.fileaccess.util.ResourceUtil;
@@ -18,14 +17,15 @@ import org.apache.orc.OrcFile;
 import org.apache.orc.TypeDescription;
 import org.apache.orc.Writer;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import javax.naming.OperationNotSupportedException;
 import java.io.IOException;
-
 import java.sql.Timestamp;
-import java.util.*;
+import java.util.Date;
+import java.util.InputMismatchException;
+import java.util.Map;
+import java.util.Objects;
 
 
 public class OrcFileWriter extends AbstractFileWriter {
@@ -97,7 +97,6 @@ public class OrcFileWriter extends AbstractFileWriter {
             batch.reset();
         }
         if(owriter!=null){
-            //owriter.notify();
             owriter.close();
         }
     }

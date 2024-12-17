@@ -75,15 +75,9 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
             if (ObjectUtils.isEmpty(param.getValue()) || CollectionUtils.isEmpty(param.getConditions())) {
                 continue;
             }
-            String prevoper = param.getPrefixOper();
-            String nextoper = param.getSuffixOper();
+            String prevoper = !ObjectUtils.isEmpty(param.getPrefixOper())?param.getPrefixOper():"";
+            String nextoper = !ObjectUtils.isEmpty(param.getSuffixOper())?param.getSuffixOper():"";
 
-            if (prevoper == null || prevoper.length() == 0) {
-                prevoper = "";
-            }
-            if (nextoper == null || nextoper.length() == 0) {
-                nextoper = "";
-            }
             if(org.apache.commons.lang3.StringUtils.isEmpty(linkOper)) {
                 replaceStr = Const.OPERATOR_AND;
             }
@@ -284,7 +278,7 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
     }
     @Override
     public String getFieldDefineSqlByMeta(DataBaseColumnMeta columnMeta){
-        String datatype = columnMeta.getColumnType().toString();
+        String datatype = columnMeta.getColumnType();
         StringBuilder builder = new StringBuilder();
         String name = columnMeta.getColumnName();
         builder.append(name).append(" ").append(returnTypeDef(datatype, columnMeta));
@@ -620,7 +614,7 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
             return "\"" + schema + "\"";
         }
     }
-    protected String getNoPageSql(String sql,PageQuery pageQuery){
+    protected String getNoPageSql(String sql,PageQuery<?> pageQuery){
         Assert.isTrue(pageQuery.getPageSize()==0,"");
         StringBuilder builder=new StringBuilder(sql);
         if(!StringUtils.isEmpty(pageQuery.getOrder()) && !StringUtils.isEmpty(pageQuery.getOrderDirection())){
@@ -629,7 +623,7 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
         return builder.toString();
     }
 
-    protected Integer[] getStartEndRecord(PageQuery pageQuery) {
+    protected Integer[] getStartEndRecord(PageQuery<?> pageQuery) {
         int nBegin = (pageQuery.getPageNumber() - 1) * pageQuery.getPageSize();
         int tonums = nBegin + pageQuery.getPageSize();
         if (!ObjectUtils.isEmpty(pageQuery.getRecordCount()) && pageQuery.getRecordCount() < tonums) {
@@ -718,7 +712,7 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
         pagingSelect.append(" )r) r ");
         return pagingSelect;
     }
-    protected void checkSqlAndPage(String sql,PageQuery pageQuery){
+    protected void checkSqlAndPage(String sql,PageQuery<?> pageQuery){
         Assert.isTrue(!ObjectUtils.isEmpty(sql),"querySql not null");
         //Assert.notNull(pageQuery,"pageQuery is Null");
     }

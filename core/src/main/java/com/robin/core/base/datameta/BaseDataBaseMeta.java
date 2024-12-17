@@ -44,7 +44,7 @@ public abstract class BaseDataBaseMeta implements DataBaseInterface, Serializabl
 	protected DataBaseParam param;
 	protected String dbType;
 	//Enum type of all support DB
-	public static final String[] DB_TYPE_ENMU ={"Oracle","Mysql","DB2","Sqlserver","Sybase","Postgresql","Phoenix4","Hive1","Hive","Oraclerac","H2","Impala"};
+	public static final String[] DB_TYPE_ENMU ={TYPE_ORACLE,TYPE_MYSQL,TYPE_DB2,TYPE_SQLSERVER,TYPE_SYBASE,TYPE_PGSQL,TYPE_PHONEIX,TYPE_HIVE,TYPE_HIVE2,TYPE_ORACLERAC,TYPE_H2,TYPE_IMPALA};
 	//jdbc Url Template like jdbc:mysql://[hostName]:[port]/[databaseName]?useUnicode=true&characterEncoding=[encode]
 	public static final Pattern PATTERN_TEMPLATE_PARAM = Pattern.compile("\\[.*?\\]");
 	@Override
@@ -125,7 +125,7 @@ public abstract class BaseDataBaseMeta implements DataBaseInterface, Serializabl
 										DataBaseColumnMeta v) {
 		StringBuilder builder=new StringBuilder();
 		builder.append("ALTER TABLE ").append(getTableSpec(tableName,schema)).append(" ADD COLUMN ");
-		builder.append(v.getColumnName()).append(" ").append(getSqlGen().returnTypeDef(v.getColumnType().toString(),v));
+		builder.append(v.getColumnName()).append(" ").append(getSqlGen().returnTypeDef(v.getColumnType(),v));
 		if(v.isIncrement() && supportAutoInc()){
 			builder.append(" ").append(getSqlGen().getAutoIncrementDef());
 		}

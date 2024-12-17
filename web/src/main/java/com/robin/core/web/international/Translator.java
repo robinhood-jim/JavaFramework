@@ -22,7 +22,7 @@ public class Translator {
     private static ResourceBundleMessageSource messageSource;
 
     public Translator(ResourceBundleMessageSource messageSource){
-        Translator.messageSource=messageSource;
+        this.messageSource=messageSource;
     }
     public static String toLocale(String msgCode) {
         Locale locale = LocaleContextHolder.getLocale();
