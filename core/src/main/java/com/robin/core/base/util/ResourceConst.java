@@ -196,4 +196,18 @@ public class ResourceConst {
         }
 
     }
+    public enum OBSPARAM{
+        ENDPOIN("endpoint"),
+        REGION("region"),
+        ACESSSKEYID("accessKeyId"),
+        SECURITYACCESSKEY("securityAccessKey");
+        private String value;
+        OBSPARAM(String value){
+            this.value=value;
+        }
+
+        public String getValue() {
+            return value;
+        }
+    }
 }

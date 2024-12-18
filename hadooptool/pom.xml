@@ -278,6 +278,7 @@
             <version>0.9.6</version>
             <optional>true</optional>
         </dependency>
+        <!-- FileSystem dependency begin -->
         <dependency>
             <groupId>com.qcloud</groupId>
             <artifactId>cos_api</artifactId>
@@ -289,17 +290,20 @@
             <version>3.17.0</version>
         </dependency>
         <dependency>
-            <groupId>org.mongodb</groupId>
-            <artifactId>mongo-java-driver</artifactId>
-            <version>3.2.2</version>
-            <optional>true</optional>
+            <groupId>com.huaweicloud</groupId>
+            <artifactId>esdk-obs-java-bundle</artifactId>
+            <version>3.23.9</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>log4j-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>log4j-api</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
-        <dependency>
-            <groupId>org.apache.calcite</groupId>
-            <artifactId>calcite-core</artifactId>
-            <optional>true</optional>
-        </dependency>
-        <!-- s3 import -->
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>s3</artifactId>
@@ -355,6 +359,20 @@
             <version>8.4.0</version>
             <optional>true</optional>
         </dependency>
+        <!-- FileSystem dependency end -->
+        <dependency>
+            <groupId>org.mongodb</groupId>
+            <artifactId>mongo-java-driver</artifactId>
+            <version>3.2.2</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.calcite</groupId>
+            <artifactId>calcite-core</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <!-- s3 import -->
+
 
     </dependencies>
 

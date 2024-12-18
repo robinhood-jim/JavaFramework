@@ -12,13 +12,10 @@ import com.aliyun.oss.model.PutObjectResult;
 import com.robin.core.base.exception.MissingConfigException;
 import com.robin.core.base.util.Const;
 import com.robin.core.base.util.ResourceConst;
-import com.robin.core.fileaccess.fs.AbstractFileSystemAccessor;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.util.ResourceUtil;
 import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
@@ -30,9 +27,8 @@ import java.nio.file.Paths;
 /**
  * Aliyun OSS FileSystemAccessor
  */
-@Slf4j
 @Getter
-public class OSSFileSystemAccessor extends AbstractFileSystemAccessor {
+public class OSSFileSystemAccessor extends AbstractCloudStorageFileSystemAccessor {
 
     private OSS ossClient;
     private String endpoint;
@@ -72,38 +68,7 @@ public class OSSFileSystemAccessor extends AbstractFileSystemAccessor {
                 .region(region).build();
     }
 
-    @Override
-    public Pair<BufferedReader, InputStream> getInResourceByReader(DataCollectionMeta meta, String resourcePath) throws IOException {
-        InputStream inputStream = getInputStreamByConfig(meta);
-        return Pair.of(getReaderByPath(resourcePath, inputStream, meta.getEncode()),inputStream);
-    }
 
-    @Override
-    public Pair<BufferedWriter, OutputStream> getOutResourceByWriter(DataCollectionMeta meta, String resourcePath) throws IOException {
-        OutputStream outputStream = getOutputStream(meta);
-        return Pair.of(getWriterByPath(meta.getPath(), outputStream, meta.getEncode()),outputStream);
-    }
-
-    @Override
-    public OutputStream getRawOutputStream(DataCollectionMeta meta, String resourcePath) throws IOException {
-        return getOutputStream(meta);
-    }
-
-    @Override
-    public OutputStream getOutResourceByStream(DataCollectionMeta meta, String resourcePath) throws IOException {
-        return getOutputStreamByPath(resourcePath, getOutputStream(meta));
-    }
-
-    @Override
-    public InputStream getInResourceByStream(DataCollectionMeta meta, String resourcePath) throws IOException {
-        InputStream inputStream = getInputStreamByConfig(meta);
-        return getInputStreamByPath(resourcePath, inputStream);
-    }
-
-    @Override
-    public InputStream getRawInputStream(DataCollectionMeta meta, String resourcePath) throws IOException {
-        return getInputStreamByConfig(meta);
-    }
 
     @Override
     public boolean exists(DataCollectionMeta meta, String resourcePath) throws IOException {
@@ -120,31 +85,22 @@ public class OSSFileSystemAccessor extends AbstractFileSystemAccessor {
         }
         return 0;
     }
-
-    private String getBucketName(DataCollectionMeta meta) {
-        return !ObjectUtils.isEmpty(bucketName)?bucketName:meta.getResourceCfgMap().get(ResourceConst.BUCKETNAME).toString();
-    }
-
-    @Override
-    public void finishWrite(DataCollectionMeta meta,OutputStream outputStream) {
-        Assert.notNull(meta.getResourceCfgMap().get("bucketName"),"must provide bucketName");
-        String bucketName=meta.getResourceCfgMap().get("bucketName").toString();
-        try{
-            putObject(bucketName,meta,outputStream);
-        }catch (IOException ex){
-            log.error("{}",ex.getMessage());
+    protected InputStream getObject(String bucketName,String objectName){
+        if(ossClient.doesObjectExist(bucketName,objectName)) {
+            OSSObject object = ossClient.getObject(bucketName, objectName);
+            if (object.getResponse().isSuccessful()) {
+                return object.getObjectContent();
+            } else {
+                throw new RuntimeException("objectName " + objectName + " can not get!");
+            }
+        }else{
+            throw new MissingConfigException(" key "+objectName+" not in OSS bucket "+bucketName);
         }
-    }
-
-    private InputStream getInputStreamByConfig(DataCollectionMeta meta) {
-        String bucketName= getBucketName(meta);
-        String objectName= meta.getPath();
-        return getObject(bucketName,objectName);
     }
     private Bucket createBucket(String bucketName){
         return ossClient.createBucket(bucketName);
     }
-    private boolean putObject(String bucketName,DataCollectionMeta meta,OutputStream outputStream) throws IOException{
+    protected boolean putObject(String bucketName,DataCollectionMeta meta,OutputStream outputStream) throws IOException{
         PutObjectResult result;
         String tmpFilePath=null;
         ObjectMetadata metadata=new ObjectMetadata();
@@ -168,18 +124,7 @@ public class OSSFileSystemAccessor extends AbstractFileSystemAccessor {
         }
         return message.isSuccessful();
     }
-    private InputStream getObject(String bucketName,String objectName){
-        if(ossClient.doesObjectExist(bucketName,objectName)) {
-            OSSObject object = ossClient.getObject(bucketName, objectName);
-            if (object.getResponse().isSuccessful()) {
-                return object.getObjectContent();
-            } else {
-                throw new RuntimeException("objectName " + objectName + " can not get!");
-            }
-        }else{
-            throw new MissingConfigException(" key "+objectName+" not in OSS bucket "+bucketName);
-        }
-    }
+
     public static class Builder{
         private OSSFileSystemAccessor accessor;
         public Builder(){

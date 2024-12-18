@@ -102,7 +102,6 @@ public class AwsUtils {
     public static ResponseInputStream<GetObjectResponse> getObject(S3Client client, String bucketName, String key) {
         try {
             GetObjectRequest request = GetObjectRequest.builder().bucket(bucketName).key(key).build();
-
             return client.getObject(request);
         } catch (S3Exception ex) {
 

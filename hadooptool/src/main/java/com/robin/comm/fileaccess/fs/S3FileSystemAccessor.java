@@ -4,12 +4,11 @@ package com.robin.comm.fileaccess.fs;
 import com.robin.core.base.exception.MissingConfigException;
 import com.robin.core.base.util.Const;
 import com.robin.core.base.util.ResourceConst;
-import com.robin.core.fileaccess.fs.AbstractFileSystemAccessor;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
+import com.robin.core.fileaccess.util.ResourceUtil;
 import com.robin.dfs.aws.AwsUtils;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
@@ -18,6 +17,8 @@ import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.S3Client;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 /**
  * Amazon AWS FileSystemAccessor
@@ -25,66 +26,16 @@ import java.io.*;
 @Slf4j
 @Getter
 @SuppressWarnings("unused")
-public class S3FileSystemAccessor extends AbstractFileSystemAccessor {
+public class S3FileSystemAccessor extends AbstractCloudStorageFileSystemAccessor {
     private S3Client client;
     private S3AsyncClient asyncClient;
     private Region region;
     private String regionName;
     private String accessKey;
     private String secret;
-    private String bucketName;
 
     private S3FileSystemAccessor(){
         this.identifier= Const.FILESYSTEM.S3.getValue();
-    }
-
-    @Override
-    public Pair<BufferedReader,InputStream> getInResourceByReader(DataCollectionMeta meta, String resourcePath) throws IOException {
-        InputStream stream=getRawInputStream(meta, resourcePath);
-        return Pair.of(getReaderByPath(resourcePath, stream, meta.getEncode()),stream);
-    }
-
-    @Override
-    public Pair<BufferedWriter,OutputStream> getOutResourceByWriter(DataCollectionMeta meta, String resourcePath) throws IOException {
-        OutputStream outputStream=getOutputStream(meta);
-        return Pair.of(getWriterByPath(meta.getPath(), outputStream, meta.getEncode()),outputStream);
-    }
-
-    @Override
-    public OutputStream getOutResourceByStream(DataCollectionMeta meta, String resourcePath) throws IOException {
-        return getOutputStreamByPath(resourcePath, getOutputStream(meta));
-    }
-
-    @Override
-    public OutputStream getRawOutputStream(DataCollectionMeta meta, String resourcePath) throws IOException {
-        return getOutputStream(meta);
-    }
-
-
-
-    @Override
-    public InputStream getInResourceByStream(DataCollectionMeta meta, String resourcePath) throws IOException {
-        InputStream inputStream = getRawInputStream(meta,resourcePath);
-        return getInputStreamByPath(resourcePath, inputStream);
-    }
-
-    @Override
-    public InputStream getRawInputStream(DataCollectionMeta meta, String resourcePath) throws IOException {
-        return AwsUtils.getObject(client, getBucketName(meta), resourcePath);
-    }
-
-    private  String getBucketName(DataCollectionMeta meta) {
-        return ObjectUtils.isEmpty(bucketName)?bucketName:meta.getResourceCfgMap().get(ResourceConst.BUCKETNAME).toString();
-    }
-
-    @Override
-    public boolean exists(DataCollectionMeta meta, String resourcePath) throws IOException {
-        return AwsUtils.exists(client,getBucketName(meta),meta.getPath());
-    }
-
-    @Override
-    public long getInputStreamSize(DataCollectionMeta meta, String resourcePath) throws IOException {
-        return AwsUtils.size(client,getBucketName(meta),resourcePath);
     }
 
     @Override
@@ -112,14 +63,43 @@ public class S3FileSystemAccessor extends AbstractFileSystemAccessor {
         client = AwsUtils.getClientByCredential(region,accessKey,secret);
         asyncClient = AwsUtils.getAsyncClientByCredential(region, accessKey, secret);
     }
+    @Override
+    public boolean exists(DataCollectionMeta meta, String resourcePath) throws IOException {
+        return AwsUtils.exists(client,getBucketName(meta),meta.getPath());
+    }
 
+    @Override
+    public long getInputStreamSize(DataCollectionMeta meta, String resourcePath) throws IOException {
+        return AwsUtils.size(client,getBucketName(meta),resourcePath);
+    }
+
+    @Override
+    protected boolean putObject(String bucketName, DataCollectionMeta meta, OutputStream outputStream) throws IOException {
+        String tmpFilePath;
+        String contentType=!ObjectUtils.isEmpty(meta.getContent())?meta.getContent().getContentType():"application/octet-stream";
+        if(ByteArrayOutputStream.class.isAssignableFrom(outputStream.getClass())) {
+            ByteArrayOutputStream byteArrayOutputStream = (ByteArrayOutputStream) outputStream;
+            return AwsUtils.put(client,bucketName,meta.getPath(),contentType,new ByteArrayInputStream(byteArrayOutputStream.toByteArray()),new Long(byteArrayOutputStream.size()));
+        }else{
+            outputStream.close();
+            String tmpPath = com.robin.core.base.util.FileUtils.getWorkingPath(meta);
+            tmpFilePath = tmpPath + ResourceUtil.getProcessFileName(meta.getPath());
+            long size= Files.size(Paths.get(tmpFilePath));
+            return AwsUtils.put(client,bucketName,meta.getPath(),contentType,Files.newInputStream(Paths.get(tmpFilePath)),size);
+        }
+    }
+
+    @Override
+    protected InputStream getObject(String bucketName, String objectName) {
+        return AwsUtils.getObject(client,bucketName,objectName);
+    }
 
     @Override
     public void finishWrite(DataCollectionMeta meta, OutputStream outputStream) {
         String bucketName = getBucketName(meta);
         ByteArrayOutputStream outputStream1=(ByteArrayOutputStream) outputStream;
         int size=outputStream1.size();
-        String contentType=!ObjectUtils.isEmpty(meta.getContent())?meta.getContent().getContentType():null;
+        String contentType=!ObjectUtils.isEmpty(meta.getContent())?meta.getContent().getContentType():"application/octet-stream";
         AwsUtils.put(client,bucketName,meta.getPath(),contentType,new ByteArrayInputStream(outputStream1.toByteArray()),new Long(size));
     }
     public static class Builder{

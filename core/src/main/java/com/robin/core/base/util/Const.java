@@ -393,7 +393,10 @@ public class Const {
         S3("s3"),
         ALIYUN("oss"),
         TENCENT("cos"),
-        QINIU("qiniu");
+        QINIU("qiniu"),
+        BAIDU_BOS("bos"),
+        HUAWEI_OBS("obs"),
+        MINIO("minio");
         private String value;
         FILESYSTEM(String value){
             this.value=value;

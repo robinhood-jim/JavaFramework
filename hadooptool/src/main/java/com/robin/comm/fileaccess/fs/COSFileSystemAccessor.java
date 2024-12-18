@@ -10,25 +10,21 @@ import com.qcloud.cos.region.Region;
 import com.qcloud.cos.transfer.TransferManager;
 import com.qcloud.cos.transfer.TransferManagerConfiguration;
 import com.qcloud.cos.transfer.Upload;
+import com.robin.core.base.exception.OperationNotSupportException;
 import com.robin.core.base.exception.ResourceNotAvailableException;
 import com.robin.core.base.util.Const;
 import com.robin.core.base.util.ResourceConst;
-import com.robin.core.fileaccess.fs.AbstractFileSystemAccessor;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.util.ResourceUtil;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.lang.NonNull;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -37,13 +33,12 @@ import java.util.concurrent.Executors;
  */
 @Slf4j
 @Getter
-public class COSFileSystemAccessor extends AbstractFileSystemAccessor {
+public class COSFileSystemAccessor extends AbstractCloudStorageFileSystemAccessor {
     private COSClient cosClient;
     private String regionName;
     private HttpProtocol protocol=HttpProtocol.http;
     private String securityKey;
     private String accessKey;
-    private String bucketName;
     private COSFileSystemAccessor(){
         this.identifier= Const.FILESYSTEM.TENCENT.getValue();
     }
@@ -75,63 +70,25 @@ public class COSFileSystemAccessor extends AbstractFileSystemAccessor {
         cosClient = new COSClient(cosCredentials, config);
     }
 
-    @Override
-    public Pair<BufferedReader, InputStream> getInResourceByReader(DataCollectionMeta meta, String resourcePath) throws IOException {
-        InputStream inputStream = getInputStreamByConfig(meta);
-        return Pair.of(getReaderByPath(resourcePath, inputStream, meta.getEncode()),inputStream);
-    }
-
-    @Override
-    public Pair<BufferedWriter, OutputStream> getOutResourceByWriter(DataCollectionMeta meta, String resourcePath) throws IOException {
-        OutputStream outputStream = getOutputStream(meta);
-        return Pair.of(getWriterByPath(meta.getPath(), outputStream, meta.getEncode()),outputStream);
-    }
-
-    @Override
-    public OutputStream getRawOutputStream(DataCollectionMeta meta, String resourcePath) throws IOException {
-        return getOutputStream(meta);
-    }
-
-    @Override
-    public OutputStream getOutResourceByStream(DataCollectionMeta meta, String resourcePath) throws IOException {
-        return getOutputStreamByPath(resourcePath, getOutputStream(meta));
-    }
-
-    @Override
-    public InputStream getInResourceByStream(DataCollectionMeta meta, String resourcePath) throws IOException {
-        InputStream inputStream = getInputStreamByConfig(meta);
-        return getInputStreamByPath(resourcePath, inputStream);
-    }
-
-    @Override
-    public InputStream getRawInputStream(DataCollectionMeta meta, String resourcePath) throws IOException {
-        return getInputStreamByConfig(meta);
-    }
 
     @Override
     public boolean exists(DataCollectionMeta meta, String resourcePath) throws IOException {
-        String bucketName= getBucketName(meta);
-        return exists(bucketName,resourcePath);
+        return exists(getBucketName(meta),resourcePath);
     }
 
     @Override
     public long getInputStreamSize(DataCollectionMeta meta, String resourcePath) throws IOException {
-        String bucketName= getBucketName(meta);
-        if(exists(bucketName,resourcePath)){
-            ObjectMetadata metadata=cosClient.getObjectMetadata(bucketName,resourcePath);
+        if(exists(getBucketName(meta),resourcePath)){
+            ObjectMetadata metadata=cosClient.getObjectMetadata(getBucketName(meta),resourcePath);
             if(!ObjectUtils.isEmpty(metadata)){
                 return metadata.getContentLength();
             }
         }
         return 0;
     }
-    private InputStream getInputStreamByConfig(DataCollectionMeta meta) {
-        String bucketName= getBucketName(meta);
-        String objectName= meta.getPath();
-        return getObject(bucketName,objectName);
-    }
 
-    private COSObjectInputStream getObject(@NonNull String bucketName,@NonNull String key) {
+
+    protected InputStream getObject(@NonNull String bucketName,@NonNull String key) {
         GetObjectRequest request = new GetObjectRequest(bucketName, key);
         COSObject object = cosClient.getObject(request);
         if (!ObjectUtils.isEmpty(object)) {
@@ -142,9 +99,6 @@ public class COSFileSystemAccessor extends AbstractFileSystemAccessor {
     }
     private boolean exists(String bucketName,String key){
         return cosClient.doesObjectExist(bucketName,key);
-    }
-    private boolean bucketExists(String bucketName){
-        return cosClient.doesBucketExist(bucketName);
     }
     private TransferManager getManager() {
         ExecutorService threadPool = Executors.newFixedThreadPool(32);
@@ -205,8 +159,9 @@ public class COSFileSystemAccessor extends AbstractFileSystemAccessor {
         return false;
     }
 
-    private String getBucketName(DataCollectionMeta meta) {
-        return !ObjectUtils.isEmpty(bucketName)?bucketName:meta.getResourceCfgMap().get(ResourceConst.BUCKETNAME).toString();
+    @Override
+    protected boolean putObject(String bucketName, DataCollectionMeta meta, OutputStream outputStream) throws IOException {
+        throw new OperationNotSupportException("putObject replaced in cos filesystem");
     }
 
     public static class Builder{
