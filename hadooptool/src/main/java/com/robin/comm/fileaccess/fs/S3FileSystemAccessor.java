@@ -94,14 +94,7 @@ public class S3FileSystemAccessor extends AbstractCloudStorageFileSystemAccessor
         return AwsUtils.getObject(client,bucketName,objectName);
     }
 
-    @Override
-    public void finishWrite(DataCollectionMeta meta, OutputStream outputStream) {
-        String bucketName = getBucketName(meta);
-        ByteArrayOutputStream outputStream1=(ByteArrayOutputStream) outputStream;
-        int size=outputStream1.size();
-        String contentType=!ObjectUtils.isEmpty(meta.getContent())?meta.getContent().getContentType():"application/octet-stream";
-        AwsUtils.put(client,bucketName,meta.getPath(),contentType,new ByteArrayInputStream(outputStream1.toByteArray()),new Long(size));
-    }
+
     public static class Builder{
         private S3FileSystemAccessor accessor;
         public static Builder builder(){

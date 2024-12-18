@@ -127,7 +127,6 @@ public class COSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
         String bucketName= getBucketName(meta);
         TransferManager transferManager=getManager();
         PutObjectRequest request;
-        String tmpFilePath=null;
         ObjectMetadata objectMetadata = new ObjectMetadata();
         if(!ObjectUtils.isEmpty(meta.getContent())){
             objectMetadata.setContentType(meta.getContent().getContentType());
@@ -137,11 +136,8 @@ public class COSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
             request = new PutObjectRequest(bucketName, meta.getPath(), new ByteArrayInputStream(((ByteArrayOutputStream)outputStream).toByteArray()),objectMetadata);
         }else{
             outputStream.close();
-            String tmpPath = com.robin.core.base.util.FileUtils.getWorkingPath(meta);
-            tmpFilePath = tmpPath + ResourceUtil.getProcessFileName(meta.getPath());
             request=new PutObjectRequest(bucketName,meta.getPath(),new File(tmpFilePath));
         }
-
         try {
             Upload upload = transferManager.upload(request, null);
             UploadResult result = upload.waitForUploadResult();
@@ -151,9 +147,6 @@ public class COSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
         } finally {
             if (!ObjectUtils.isEmpty(transferManager)) {
                 transferManager.shutdownNow(true);
-            }
-            if(!ObjectUtils.isEmpty(tmpFilePath)){
-                FileUtils.deleteQuietly(new File(tmpFilePath));
             }
         }
         return false;

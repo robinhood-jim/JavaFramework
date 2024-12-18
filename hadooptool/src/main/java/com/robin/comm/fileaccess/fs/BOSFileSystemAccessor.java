@@ -88,7 +88,6 @@ public class BOSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
     protected boolean putObject(String bucketName, DataCollectionMeta meta, OutputStream outputStream) throws IOException {
         PutObjectResponse result;
         ObjectMetadata metadata=new ObjectMetadata();
-        String tmpFilePath=null;
         if(!ObjectUtils.isEmpty(meta.getContent())){
             metadata.setContentType(meta.getContent().getContentType());
         }
@@ -98,13 +97,7 @@ public class BOSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
             result = client.putObject(bucketName, meta.getPath(), new ByteArrayInputStream(byteArrayOutputStream.toByteArray()),metadata);
         }else{
             outputStream.close();
-            String tmpPath = com.robin.core.base.util.FileUtils.getWorkingPath(meta);
-            tmpFilePath = tmpPath + ResourceUtil.getProcessFileName(meta.getPath());
-            metadata.setContentLength(Files.size(Paths.get(tmpFilePath)));
             result=client.putObject(bucketName,meta.getPath(), Files.newInputStream(Paths.get(tmpFilePath)),metadata);
-        }
-        if(ObjectUtils.isEmpty(tmpFilePath)){
-            FileUtils.deleteQuietly(new File(tmpFilePath));
         }
         return !ObjectUtils.isEmpty(result) && !ObjectUtils.isEmpty(result.getETag());
     }

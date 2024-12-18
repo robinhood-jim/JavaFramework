@@ -35,7 +35,6 @@ public class OSSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
     private String region;
     private String accessKeyId;
     private String securityAccessKey;
-    private String bucketName;
 
     private OSSFileSystemAccessor(){
         this.identifier= Const.FILESYSTEM.ALIYUN.getValue();
@@ -91,7 +90,7 @@ public class OSSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
             if (object.getResponse().isSuccessful()) {
                 return object.getObjectContent();
             } else {
-                throw new RuntimeException("objectName " + objectName + " can not get!");
+                throw new MissingConfigException("objectName " + objectName + " can not get!");
             }
         }else{
             throw new MissingConfigException(" key "+objectName+" not in OSS bucket "+bucketName);
@@ -102,7 +101,6 @@ public class OSSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
     }
     protected boolean putObject(String bucketName,DataCollectionMeta meta,OutputStream outputStream) throws IOException{
         PutObjectResult result;
-        String tmpFilePath=null;
         ObjectMetadata metadata=new ObjectMetadata();
         if(!ObjectUtils.isEmpty(meta.getContent())){
             metadata.setContentType(meta.getContent().getContentType());
@@ -113,16 +111,9 @@ public class OSSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
             result = ossClient.putObject(bucketName, meta.getPath(), new ByteArrayInputStream(byteArrayOutputStream.toByteArray()),metadata);
         }else{
             outputStream.close();
-            String tmpPath = com.robin.core.base.util.FileUtils.getWorkingPath(meta);
-            tmpFilePath = tmpPath + ResourceUtil.getProcessFileName(meta.getPath());
-            metadata.setContentLength(Files.size(Paths.get(tmpFilePath)));
             result=ossClient.putObject(bucketName,meta.getPath(), Files.newInputStream(Paths.get(tmpFilePath)),metadata);
         }
-        ResponseMessage message=result.getResponse();
-        if(message.isSuccessful() && !ObjectUtils.isEmpty(tmpFilePath)){
-            FileUtils.deleteQuietly(new File(tmpFilePath));
-        }
-        return message.isSuccessful();
+        return result.getResponse().isSuccessful();
     }
 
     public static class Builder{

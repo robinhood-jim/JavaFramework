@@ -5,6 +5,7 @@ import com.robin.core.fileaccess.fs.AbstractFileSystemAccessor;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.util.ResourceUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.util.ObjectUtils;
 
@@ -18,6 +19,7 @@ import java.nio.file.Paths;
 @Slf4j
 public abstract class AbstractCloudStorageFileSystemAccessor extends AbstractFileSystemAccessor {
     protected String bucketName;
+    protected String tmpFilePath;
     @Override
     public Pair<BufferedReader, InputStream> getInResourceByReader(DataCollectionMeta meta, String resourcePath) throws IOException {
         InputStream inputStream = getInputStreamByConfig(meta);
@@ -54,12 +56,13 @@ public abstract class AbstractCloudStorageFileSystemAccessor extends AbstractFil
     public void finishWrite(DataCollectionMeta meta,OutputStream outputStream) {
         try{
             putObject(getBucketName(meta),meta,outputStream);
+            if(!ObjectUtils.isEmpty(tmpFilePath)){
+                FileUtils.deleteQuietly(new File(tmpFilePath));
+            }
         }catch (IOException ex){
             log.error("{}",ex.getMessage());
         }
     }
-
-
     protected InputStream getInputStreamByConfig(DataCollectionMeta meta) {
         return getObject(getBucketName(meta), meta.getPath());
     }
@@ -70,7 +73,7 @@ public abstract class AbstractCloudStorageFileSystemAccessor extends AbstractFil
         OutputStream outputStream;
         if(!ObjectUtils.isEmpty(meta.getResourceCfgMap().get(ResourceConst.USETMPFILETAG)) && "true".equalsIgnoreCase(meta.getResourceCfgMap().get(ResourceConst.USETMPFILETAG).toString())){
             String tmpPath = com.robin.core.base.util.FileUtils.getWorkingPath(meta);
-            String tmpFilePath =  tmpPath + ResourceUtil.getProcessFileName(meta.getPath());
+            tmpFilePath =  tmpPath + ResourceUtil.getProcessFileName(meta.getPath());
             outputStream= Files.newOutputStream(Paths.get(tmpFilePath));
         }else {
             outputStream = new ByteArrayOutputStream();

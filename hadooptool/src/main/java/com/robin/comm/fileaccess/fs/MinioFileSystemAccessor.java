@@ -74,14 +74,11 @@ public class MinioFileSystemAccessor extends AbstractCloudStorageFileSystemAcces
     @Override
     protected boolean putObject(String bucketName, DataCollectionMeta meta, OutputStream outputStream) throws IOException {
         String contentType=!ObjectUtils.isEmpty(meta.getContent().getContentType())?meta.getContent().getContentType():"application/octet-stream";
-        String tmpFilePath;
         if(ByteArrayOutputStream.class.isAssignableFrom(outputStream.getClass())){
             ByteArrayOutputStream byteArrayOutputStream=(ByteArrayOutputStream)outputStream;
             return MinioUtils.putBucket(client,getBucketName(meta),meta.getPath(),new ByteArrayInputStream(byteArrayOutputStream.toByteArray()),byteArrayOutputStream.size(),contentType);
         }else{
             outputStream.close();
-            String tmpPath = com.robin.core.base.util.FileUtils.getWorkingPath(meta);
-            tmpFilePath = tmpPath + ResourceUtil.getProcessFileName(meta.getPath());
             return MinioUtils.putBucket(client,getBucketName(meta),meta.getPath(), Files.newInputStream(Paths.get(tmpFilePath)),Files.size(Paths.get(tmpFilePath)),contentType);
         }
     }

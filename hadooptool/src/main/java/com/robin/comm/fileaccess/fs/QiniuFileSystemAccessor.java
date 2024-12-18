@@ -42,7 +42,6 @@ public class QiniuFileSystemAccessor extends AbstractCloudStorageFileSystemAcces
     private String accessKey;
     private String secretKey;
     private Region region;
-    private String bucketName;
     private Gson gson= GsonUtil.getGson();
     private String downDomain;
     private QiniuFileSystemAccessor(){
@@ -95,7 +94,7 @@ public class QiniuFileSystemAccessor extends AbstractCloudStorageFileSystemAcces
         try {
             FileInfo info = bucketManager.stat(bucketName, key);
             int status = info.status;
-            return true;
+            return status>0;
         } catch (QiniuException ex) {
             log.error("{}", ex.getMessage());
         }
@@ -112,14 +111,11 @@ public class QiniuFileSystemAccessor extends AbstractCloudStorageFileSystemAcces
     }
     protected boolean putObject(String token,DataCollectionMeta meta,OutputStream outputStream) throws IOException{
         Response result;
-        String tmpFilePath=null;
         if(ByteArrayOutputStream.class.isAssignableFrom(outputStream.getClass())) {
             ByteArrayOutputStream byteArrayOutputStream=(ByteArrayOutputStream)outputStream;
             result= uploadManager.put(new ByteArrayInputStream(byteArrayOutputStream.toByteArray()),byteArrayOutputStream.size(),meta.getPath(),token,null,meta.getContent().getContentType(),true);
         }else{
             outputStream.close();
-            String tmpPath = com.robin.core.base.util.FileUtils.getWorkingPath(meta);
-            tmpFilePath = tmpPath + ResourceUtil.getProcessFileName(meta.getPath());
             long size=Files.size(Paths.get(tmpFilePath));
             result=uploadManager.put(Files.newInputStream(Paths.get(tmpFilePath)),size,meta.getPath(),token,null,meta.getContent().getContentType(),true);
         }

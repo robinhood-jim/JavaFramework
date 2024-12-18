@@ -11,6 +11,7 @@ import com.robin.core.base.util.Const;
 import com.robin.core.base.util.ResourceConst;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.util.ResourceUtil;
+import lombok.Getter;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
@@ -22,6 +23,7 @@ import java.nio.file.Paths;
 /**
  * HUAWEI OBS FileSystemAccessor,must init individual
  */
+@Getter
 public class OBSFileSystemAccessor extends AbstractCloudStorageFileSystemAccessor {
     private String endpoint;
     private String accessKeyId;
@@ -84,7 +86,6 @@ public class OBSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
 
     @Override
     protected boolean putObject(String bucketName, DataCollectionMeta meta, OutputStream outputStream) throws IOException {
-        String tmpFilePath;
         ObjectMetadata metadata=new ObjectMetadata();
         PutObjectResult result;
         if(!ObjectUtils.isEmpty(meta.getContent())){
@@ -96,9 +97,6 @@ public class OBSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
             result=client.putObject(bucketName,meta.getPath(),new ByteArrayInputStream(byteArrayOutputStream.toByteArray()),metadata);
         }else{
             outputStream.close();
-            String tmpPath = com.robin.core.base.util.FileUtils.getWorkingPath(meta);
-            tmpFilePath = tmpPath + ResourceUtil.getProcessFileName(meta.getPath());
-            metadata.setContentLength(Files.size(Paths.get(tmpFilePath)));
             result=client.putObject(bucketName,meta.getPath(), Files.newInputStream(Paths.get(tmpFilePath)),metadata);
         }
         return result.getStatusCode()==200;
