@@ -2,7 +2,9 @@ package com.robin.comm.fileaccess.iterator;
 
 import com.robin.comm.fileaccess.util.ByteBufferSeekableInputStream;
 import com.robin.comm.fileaccess.util.ParquetUtil;
+import com.robin.comm.utils.SysUtils;
 import com.robin.core.base.util.Const;
+import com.robin.core.base.util.ResourceConst;
 import com.robin.core.fileaccess.iterator.AbstractFileIterator;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.util.AvroUtils;
@@ -29,6 +31,7 @@ import org.apache.parquet.io.LocalInputFile;
 import org.apache.parquet.schema.MessageType;
 import org.apache.parquet.schema.Type;
 import org.apache.slider.server.appmaster.management.Timestamp;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
 import java.io.File;
@@ -54,6 +57,7 @@ public class ParquetFileIterator extends AbstractFileIterator {
     private boolean useAvroEncode = false;
     private static final long maxSize = Integer.MAX_VALUE;
     private MemorySegment segment;
+    private Double allowOffHeapDumpLimit= ResourceConst.ALLOWOUFHEAPMEMLIMIT;
 
     public ParquetFileIterator() {
         identifier = Const.FILEFORMATSTR.PARQUET.getValue();
@@ -62,6 +66,9 @@ public class ParquetFileIterator extends AbstractFileIterator {
     public ParquetFileIterator(DataCollectionMeta colmeta) {
         super(colmeta);
         identifier = Const.FILEFORMATSTR.PARQUET.getValue();
+        if(!CollectionUtils.isEmpty(colmeta.getResourceCfgMap()) && colmeta.getResourceCfgMap().containsKey(ResourceConst.ALLOWOFFHEAPKEY)){
+            allowOffHeapDumpLimit=Double.parseDouble(colmeta.getResourceCfgMap().get(ResourceConst.ALLOWOFFHEAPKEY).toString());
+        }
     }
 
     private List<Schema.Field> fields;
@@ -95,9 +102,10 @@ public class ParquetFileIterator extends AbstractFileIterator {
                     file = new LocalInputFile(Paths.get(colmeta.getPath()));
                 } else {
                     instream = accessUtil.getRawInputStream(colmeta, ResourceUtil.getProcessPath(colmeta.getPath()));
-                    long size = instream.available();//accessUtil.getInputStreamSize(colmeta, ResourceUtil.getProcessPath(colmeta.getPath()));
-                    //file size too large ,can not store in ByteArrayOutputStream
-                    if (size >= maxSize) {
+                    long size = instream.available();
+                    Double freeMemory= SysUtils.getFreeMemory();
+                    //file size too large ,can not store in ByteBuffer or freeMemory too low
+                    if (size >= maxSize || freeMemory<allowOffHeapDumpLimit) {
                         String tmpPath = com.robin.core.base.util.FileUtils.getWorkingPath(colmeta);
                         String tmpFilePath = "file:///" + tmpPath + ResourceUtil.getProcessFileName(colmeta.getPath());
                         tmpFile = new File(new URL(tmpFilePath).toURI());
@@ -107,15 +115,12 @@ public class ParquetFileIterator extends AbstractFileIterator {
                         //use flink memory utils to use offHeapMemory to dump file content
                         segment= MemorySegmentFactory.allocateOffHeapUnsafeMemory((int)size,this,new Thread(){});
                         ByteBuffer byteBuffer=segment.getOffHeapBuffer();
-                        ReadableByteChannel channel= Channels.newChannel(instream);
-                        IOUtils.readFully(channel,byteBuffer);
-                        byteBuffer.position(0);
-                        channel.close();
-                        ByteBufferSeekableInputStream seekableInputStream=new ByteBufferSeekableInputStream(byteBuffer);
-                        /*ByteArrayOutputStream byteout = new ByteArrayOutputStream((int) size);
-                        IOUtils.copy(instream, byteout, 4096);
-                        ByteArraySeekableInputStream seekableInputStream = new ByteArraySeekableInputStream(byteout.toByteArray());*/
-                        file = ParquetUtil.makeInputFile(seekableInputStream);
+                        try(ReadableByteChannel channel= Channels.newChannel(instream)) {
+                            IOUtils.readFully(channel, byteBuffer);
+                            byteBuffer.position(0);
+                            ByteBufferSeekableInputStream seekableInputStream = new ByteBufferSeekableInputStream(byteBuffer);
+                            file = ParquetUtil.makeInputFile(seekableInputStream);
+                        }
                     }
                 }
                 getSchema(file,true);
@@ -135,12 +140,13 @@ public class ParquetFileIterator extends AbstractFileIterator {
     private void getSchema(InputFile file,boolean seekFrist) throws IOException {
         if (colmeta.getColumnList().isEmpty()) {
             ParquetReadOptions options = ParquetReadOptions.builder().withMetadataFilter(ParquetMetadataConverter.NO_FILTER).build();
-            ParquetFileReader ireader = ParquetFileReader.open(file, options);
-            ParquetMetadata meta = ireader.getFooter();
-            msgtype = meta.getFileMetaData().getSchema();
-            parseSchemaByType();
-            if(seekFrist) {
-                file.newStream().seek(0L);
+            try(ParquetFileReader ireader = ParquetFileReader.open(file, options)) {
+                ParquetMetadata meta = ireader.getFooter();
+                msgtype = meta.getFileMetaData().getSchema();
+                parseSchemaByType();
+                if (seekFrist) {
+                    file.newStream().seek(0L);
+                }
             }
         } else {
             schema = AvroUtils.getSchemaFromMeta(colmeta);

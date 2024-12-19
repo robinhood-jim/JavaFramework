@@ -4,6 +4,7 @@ import org.apache.hadoop.fs.FSDataInputStream;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 
 public class MockInputStream extends FSDataInputStream {
     MockFileSystem fs;
@@ -11,6 +12,10 @@ public class MockInputStream extends FSDataInputStream {
     public MockInputStream(MockFileSystem fs, byte[] streamBytes) throws IOException {
         super(new ByteArraySeekableInputStream(streamBytes));
         this.fs = fs;
+    }
+    public MockInputStream(MockFileSystem fs, ByteBuffer byteBuffer){
+        super(new ByteBufferSeekableInputStream(byteBuffer));
+        this.fs=fs;
     }
 
     public MockInputStream(InputStream in) {

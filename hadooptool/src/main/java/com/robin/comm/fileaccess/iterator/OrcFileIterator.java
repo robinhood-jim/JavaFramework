@@ -1,14 +1,16 @@
 package com.robin.comm.fileaccess.iterator;
 
 import com.robin.comm.fileaccess.util.MockFileSystem;
+import com.robin.comm.utils.SysUtils;
 import com.robin.core.base.util.Const;
-import com.robin.core.base.util.IOUtils;
 import com.robin.core.base.util.ResourceConst;
 import com.robin.core.fileaccess.iterator.AbstractFileIterator;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.util.ResourceUtil;
 import com.robin.hadoop.hdfs.HDFSUtil;
 import org.apache.commons.io.FileUtils;
+import org.apache.flink.core.memory.MemorySegment;
+import org.apache.flink.core.memory.MemorySegmentFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -20,10 +22,12 @@ import org.apache.orc.TypeDescription;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.List;
@@ -35,13 +39,18 @@ public class OrcFileIterator extends AbstractFileIterator {
     private TypeDescription schema;
     private RecordReader rows ;
     private VectorizedRowBatch batch ;
-    private List<String> fieldNames;
+    private MemorySegment segment;
+    private Double allowOffHeapDumpLimit= ResourceConst.ALLOWOUFHEAPMEMLIMIT;
+
     public OrcFileIterator(){
         identifier= Const.FILEFORMATSTR.ORC.getValue();
     }
     public OrcFileIterator(DataCollectionMeta colmeta) {
         super(colmeta);
         identifier= Const.FILEFORMATSTR.ORC.getValue();
+        if(!CollectionUtils.isEmpty(colmeta.getResourceCfgMap()) && colmeta.getResourceCfgMap().containsKey(ResourceConst.ALLOWOFFHEAPKEY)){
+            allowOffHeapDumpLimit=Double.parseDouble(colmeta.getResourceCfgMap().get(ResourceConst.ALLOWOFFHEAPKEY).toString());
+        }
     }
     private final Map<String,Object> valueMap=new HashMap<>();
     int maxRow=-1;
@@ -137,11 +146,18 @@ public class OrcFileIterator extends AbstractFileIterator {
                     fs=FileSystem.get(new Configuration());
                     readPath=new File(readPath).toURI().toString();
                 }else {
-                    instream = accessUtil.getInResourceByStream(colmeta, ResourceUtil.getProcessPath(colmeta.getPath()));
-                    if (instream.available() < Integer.MAX_VALUE) {
-                        ByteArrayOutputStream byteout = new ByteArrayOutputStream();
-                        IOUtils.copyBytes(instream, byteout, 8064);
-                        fs = new MockFileSystem(conf, byteout.toByteArray());
+                    instream = accessUtil.getRawInputStream(colmeta, ResourceUtil.getProcessPath(colmeta.getPath()));
+                    long size = instream.available();
+                    Double freeMemory= SysUtils.getFreeMemory();
+                    if (size < Integer.MAX_VALUE && freeMemory>allowOffHeapDumpLimit) {
+                        //use flink memory utils to use offHeapMemory to dump file content
+                        segment= MemorySegmentFactory.allocateOffHeapUnsafeMemory((int)size,this,new Thread(){});
+                        ByteBuffer byteBuffer=segment.getOffHeapBuffer();
+                        try(ReadableByteChannel channel= Channels.newChannel(instream)) {
+                            org.apache.commons.io.IOUtils.readFully(channel, byteBuffer);
+                            byteBuffer.position(0);
+                        }
+                        fs=new MockFileSystem(conf,byteBuffer);
                     } else {
                         String tmpPath = com.robin.core.base.util.FileUtils.getWorkingPath(colmeta);
                         String tmpFilePath = "file:///" + tmpPath + ResourceUtil.getProcessFileName(colmeta.getPath());
@@ -154,7 +170,6 @@ public class OrcFileIterator extends AbstractFileIterator {
             }
             oreader =OrcFile.createReader(new Path(readPath),OrcFile.readerOptions(conf).filesystem(fs));
             schema= oreader.getSchema();
-            fieldNames=schema.getFieldNames();
             rows= oreader.rows();
             fields=schema.getChildren();
             batch= oreader.getSchema().createRowBatch();
@@ -176,6 +191,9 @@ public class OrcFileIterator extends AbstractFileIterator {
         }
         if(!ObjectUtils.isEmpty(oreader)){
             oreader.close();
+        }
+        if(!ObjectUtils.isEmpty(segment)){
+            segment.free();
         }
         if(!ObjectUtils.isEmpty(tmpFile)){
             FileUtils.deleteQuietly(tmpFile);
