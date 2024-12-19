@@ -76,7 +76,7 @@
         <jackson.version>2.9.10</jackson.version>
         <pool.version>2.4.3</pool.version>
         <commons-dbcp.version>1.4</commons-dbcp.version>
-        <commons-io.version>2.7</commons-io.version>
+        <commons-io.version>2.14.0</commons-io.version>
         <commons-net.version>3.9.0</commons-net.version>
         <commons-beanutils.version>1.9.4</commons-beanutils.version>
         <comm-codec.version>1.4</comm-codec.version>
