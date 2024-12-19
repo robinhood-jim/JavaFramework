@@ -69,6 +69,13 @@ public abstract class AbstractCloudStorageFileSystemAccessor extends AbstractFil
     protected String getBucketName(DataCollectionMeta meta) {
         return !ObjectUtils.isEmpty(bucketName)?bucketName:meta.getResourceCfgMap().get(ResourceConst.BUCKETNAME).toString();
     }
+
+    /**
+     * Cloud storage now only support ingest InputStream ,So use ByteArrayOutputStream or use temp file to store data temporary
+     * @param meta
+     * @return
+     * @throws IOException
+     */
     protected OutputStream getOutputStream(DataCollectionMeta meta) throws IOException {
         OutputStream outputStream;
         if(!ObjectUtils.isEmpty(meta.getResourceCfgMap().get(ResourceConst.USETMPFILETAG)) && "true".equalsIgnoreCase(meta.getResourceCfgMap().get(ResourceConst.USETMPFILETAG).toString())){

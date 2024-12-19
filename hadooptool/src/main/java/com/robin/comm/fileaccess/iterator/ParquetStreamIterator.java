@@ -1,7 +1,7 @@
 package com.robin.comm.fileaccess.iterator;
 
 import com.robin.comm.fileaccess.util.ParquetUtil;
-import com.robin.comm.fileaccess.util.SeekableInputStream;
+import com.robin.comm.fileaccess.util.ByteArraySeekableInputStream;
 import com.robin.core.base.util.Const;
 import com.robin.core.base.util.IOUtils;
 import com.robin.core.fileaccess.iterator.AbstractFileIterator;
@@ -58,7 +58,7 @@ public class ParquetStreamIterator extends AbstractFileIterator {
             //seek remote file to local tmp
             ByteArrayOutputStream byteout=new ByteArrayOutputStream(instream.available());
             IOUtils.copyBytes(instream,byteout,8000);
-            com.robin.comm.fileaccess.util.SeekableInputStream seekableInputStream=new SeekableInputStream(byteout.toByteArray());
+            ByteArraySeekableInputStream seekableInputStream=new ByteArraySeekableInputStream(byteout.toByteArray());
             preader = AvroParquetReader
                     .<GenericData.Record>builder(ParquetUtil.makeInputFile(seekableInputStream)).withConf(conf).build();
             fields = schema.getFields();

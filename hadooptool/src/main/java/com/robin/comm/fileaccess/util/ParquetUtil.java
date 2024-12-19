@@ -1,10 +1,8 @@
 package com.robin.comm.fileaccess.util;
 
 import com.robin.core.base.util.Const;
-import com.robin.core.fileaccess.fs.AbstractFileSystemAccessor;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.meta.DataSetColumnMeta;
-import com.robin.core.fileaccess.util.ResourceUtil;
 import org.apache.parquet.io.InputFile;
 import org.apache.parquet.io.OutputFile;
 import org.apache.parquet.io.PositionOutputStream;
@@ -30,7 +28,104 @@ public class ParquetUtil {
     private static final int COPY_BUFFER_SIZE = 8192;
     private static final int IO_BUF_SIZE = 16 * 1024;
 
-    public static InputFile makeInputFile(com.robin.comm.fileaccess.util.SeekableInputStream instream) {
+    public static InputFile makeInputFile(ByteArraySeekableInputStream instream) {
+        return new InputFile() {
+            @Override
+            public long getLength() throws IOException {
+                return instream.available();
+            }
+
+            @Override
+            public org.apache.parquet.io.SeekableInputStream newStream() throws IOException {
+
+                return new SeekableInputStream() {
+
+                    private final byte[] tmpBuf = new byte[COPY_BUFFER_SIZE];
+
+                    @Override
+                    public int read() throws IOException {
+                        return instream.read();
+                    }
+
+                    @SuppressWarnings("NullableProblems")
+                    @Override
+                    public int read(byte[] b) throws IOException {
+                        return instream.read(b);
+                    }
+
+                    @SuppressWarnings("NullableProblems")
+                    @Override
+                    public int read(byte[] b, int off, int len) throws IOException {
+                        return instream.read(b, off, len);
+                    }
+
+                    @Override
+                    public long skip(long n) throws IOException {
+                        return instream.skip(n);
+                    }
+
+                    @Override
+                    public int available() throws IOException {
+                        return instream.available();
+                    }
+
+                    @Override
+                    public void close() throws IOException {
+                        instream.close();
+                    }
+
+
+                    @Override
+                    public synchronized void mark(int readlimit) {
+                        instream.mark(readlimit);
+
+                    }
+
+                    @Override
+                    public synchronized void reset() throws IOException {
+                        instream.reset();
+                    }
+
+                    @Override
+                    public boolean markSupported() {
+                        return true;
+                    }
+
+                    @Override
+                    public long getPos() throws IOException {
+                        return instream.getPos();
+                    }
+
+                    @Override
+                    public void seek(long l) throws IOException {
+                        instream.seek(l);
+                    }
+
+                    @Override
+                    public void readFully(byte[] bytes) throws IOException {
+                        instream.read(bytes);
+                    }
+
+                    @Override
+                    public void readFully(byte[] bytes, int i, int i1) throws IOException {
+                        instream.read(bytes, i, i1);
+                    }
+
+                    @Override
+                    public int read(ByteBuffer byteBuffer) throws IOException {
+                        return readDirectBuffer(byteBuffer, tmpBuf, instream);
+                    }
+
+                    @Override
+                    public void readFully(ByteBuffer byteBuffer) throws IOException {
+                        readFullyDirectBuffer(byteBuffer, tmpBuf, instream);
+                    }
+
+                };
+            }
+        };
+    }
+    public static InputFile makeInputFile(ByteBufferSeekableInputStream instream) {
         return new InputFile() {
             @Override
             public long getLength() throws IOException {

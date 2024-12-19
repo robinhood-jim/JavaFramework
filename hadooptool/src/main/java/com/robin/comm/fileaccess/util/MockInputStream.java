@@ -9,7 +9,7 @@ public class MockInputStream extends FSDataInputStream {
     MockFileSystem fs;
 
     public MockInputStream(MockFileSystem fs, byte[] streamBytes) throws IOException {
-        super(new SeekableInputStream(streamBytes));
+        super(new ByteArraySeekableInputStream(streamBytes));
         this.fs = fs;
     }
 

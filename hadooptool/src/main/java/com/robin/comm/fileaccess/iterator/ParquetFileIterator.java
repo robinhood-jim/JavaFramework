@@ -1,9 +1,8 @@
 package com.robin.comm.fileaccess.iterator;
 
+import com.robin.comm.fileaccess.util.ByteBufferSeekableInputStream;
 import com.robin.comm.fileaccess.util.ParquetUtil;
-import com.robin.comm.fileaccess.util.SeekableInputStream;
 import com.robin.core.base.util.Const;
-import com.robin.core.base.util.IOUtils;
 import com.robin.core.fileaccess.iterator.AbstractFileIterator;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.util.AvroUtils;
@@ -13,6 +12,9 @@ import org.apache.avro.LogicalTypes;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.flink.core.memory.MemorySegment;
+import org.apache.flink.core.memory.MemorySegmentFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.parquet.ParquetReadOptions;
@@ -22,7 +24,6 @@ import org.apache.parquet.hadoop.ParquetFileReader;
 import org.apache.parquet.hadoop.ParquetReader;
 import org.apache.parquet.hadoop.metadata.ParquetMetadata;
 import org.apache.parquet.hadoop.util.HadoopInputFile;
-import org.apache.parquet.hadoop.util.HadoopStreams;
 import org.apache.parquet.io.InputFile;
 import org.apache.parquet.io.LocalInputFile;
 import org.apache.parquet.schema.MessageType;
@@ -30,11 +31,13 @@ import org.apache.parquet.schema.Type;
 import org.apache.slider.server.appmaster.management.Timestamp;
 import org.springframework.util.ObjectUtils;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
+import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
@@ -50,6 +53,7 @@ public class ParquetFileIterator extends AbstractFileIterator {
     private ParquetReader<Map<String, Object>> ireader;
     private boolean useAvroEncode = false;
     private static final long maxSize = Integer.MAX_VALUE;
+    private MemorySegment segment;
 
     public ParquetFileIterator() {
         identifier = Const.FILEFORMATSTR.PARQUET.getValue();
@@ -100,9 +104,17 @@ public class ParquetFileIterator extends AbstractFileIterator {
                         copyToLocal(tmpFile, instream);
                         file = new LocalInputFile(Paths.get(new URI(tmpFilePath)));
                     } else {
-                        ByteArrayOutputStream byteout = new ByteArrayOutputStream((int) size);
-                        IOUtils.copyBytes(instream, byteout, 8000);
-                        SeekableInputStream seekableInputStream = new SeekableInputStream(byteout.toByteArray());
+                        //use flink memory utils to use offHeapMemory to dump file content
+                        segment= MemorySegmentFactory.allocateOffHeapUnsafeMemory((int)size,this,new Thread(){});
+                        ByteBuffer byteBuffer=segment.getOffHeapBuffer();
+                        ReadableByteChannel channel= Channels.newChannel(instream);
+                        IOUtils.readFully(channel,byteBuffer);
+                        byteBuffer.position(0);
+                        channel.close();
+                        ByteBufferSeekableInputStream seekableInputStream=new ByteBufferSeekableInputStream(byteBuffer);
+                        /*ByteArrayOutputStream byteout = new ByteArrayOutputStream((int) size);
+                        IOUtils.copy(instream, byteout, 4096);
+                        ByteArraySeekableInputStream seekableInputStream = new ByteArraySeekableInputStream(byteout.toByteArray());*/
                         file = ParquetUtil.makeInputFile(seekableInputStream);
                     }
                 }
@@ -209,6 +221,10 @@ public class ParquetFileIterator extends AbstractFileIterator {
         }
         if (!ObjectUtils.isEmpty(preader)) {
             preader.close();
+        }
+        //free offHeap memory
+        if(!ObjectUtils.isEmpty(segment)){
+            segment.free();
         }
 
         if (!ObjectUtils.isEmpty(tmpFile)) {

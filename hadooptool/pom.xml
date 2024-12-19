@@ -14,18 +14,18 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <aws.java.sdk.version>2.20.43</aws.java.sdk.version>
+        <flink.version>1.20.0</flink.version>
+        <cos.version>5.6.24</cos.version>
+        <bos.version></bos.version>
+        <cos.version>5.6.24</cos.version>
+        <obs.version>3.23.9</obs.version>
+        <qiniu.version>[7.16.0, 7.16.99]</qiniu.version>
+        <oss.version>3.17.0</oss.version>
+        <bce.version>0.10.353</bce.version>
+        <cassandra.version>3.11.12</cassandra.version>
+        <flink.version>1.20.0</flink.version>
     </properties>
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>software.amazon.awssdk</groupId>
-                <artifactId>bom</artifactId>
-                <version>${aws.java.sdk.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
+
 
     <dependencies>
         <dependency>
@@ -128,6 +128,7 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
+            <optional>true</optional>
         </dependency>
 
         <dependency>
@@ -282,17 +283,20 @@
         <dependency>
             <groupId>com.qcloud</groupId>
             <artifactId>cos_api</artifactId>
-            <version>5.6.24</version>
+            <version>${cos.version}</version>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>com.aliyun.oss</groupId>
             <artifactId>aliyun-sdk-oss</artifactId>
-            <version>3.17.0</version>
+            <version>${oss.version}</version>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>com.huaweicloud</groupId>
             <artifactId>esdk-obs-java-bundle</artifactId>
-            <version>3.23.9</version>
+            <version>${obs.version}</version>
+            <optional>true</optional>
             <exclusions>
                 <exclusion>
                     <groupId>org.apache.logging.log4j</groupId>
@@ -307,6 +311,8 @@
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>s3</artifactId>
+            <version>${aws.java.sdk.version}</version>
+            <optional>true</optional>
             <exclusions>
                 <exclusion>
                     <groupId>software.amazon.awssdk</groupId>
@@ -321,14 +327,20 @@
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>sso</artifactId>
+            <version>${aws.java.sdk.version}</version>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>ssooidc</artifactId>
+            <version>${aws.java.sdk.version}</version>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>apache-client</artifactId>
+            <version>${aws.java.sdk.version}</version>
+            <optional>true</optional>
             <exclusions>
                 <exclusion>
                     <groupId>commons-logging</groupId>
@@ -339,13 +351,14 @@
         <dependency>
             <groupId>com.qiniu</groupId>
             <artifactId>qiniu-java-sdk</artifactId>
-            <version>[7.16.0, 7.16.99]</version>
+            <version>${qiniu.version}</version>
             <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>com.baidubce</groupId>
             <artifactId>bce-java-sdk</artifactId>
-            <version>0.10.353</version>
+            <version>${bce.version}</version>
+            <optional>true</optional>
             <exclusions>
                 <exclusion>
                     <groupId>org.eclipse.paho</groupId>
@@ -372,6 +385,12 @@
             <optional>true</optional>
         </dependency>
         <!-- s3 import -->
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-core</artifactId>
+            <version>${flink.version}</version>
+            <optional>true</optional>
+        </dependency>
 
 
     </dependencies>
