@@ -5,18 +5,20 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.*;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.util.Progressable;
+import org.springframework.util.ObjectUtils;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
 //mock filesystem support parquet and orc file read from outside of hadoop filesystem
 public class MockFileSystem extends FileSystem {
-    byte[] streamBytes;
+    private ByteBuffer byteBuffer;
     final List<MockInputStream> streams = new ArrayList<>();
     OutputStream outputStream;
     DataCollectionMeta colmeta;
@@ -29,9 +31,9 @@ public class MockFileSystem extends FileSystem {
             throw new IllegalArgumentException("bad uri", e);
         }
     }
-    public MockFileSystem(Configuration conf, byte[] streamBytes) {
+    public MockFileSystem(Configuration conf,ByteBuffer byteBuffer){
         setConf(conf);
-        this.streamBytes = streamBytes;
+        this.byteBuffer=byteBuffer;
     }
     public MockFileSystem(DataCollectionMeta colmeta,OutputStream outputStream) {
        this.outputStream=outputStream;
@@ -40,14 +42,14 @@ public class MockFileSystem extends FileSystem {
 
     @Override
     public FSDataInputStream open(Path f) throws IOException {
-        MockInputStream result = new MockInputStream(this, streamBytes);
+        MockInputStream result =new MockInputStream(this,byteBuffer);
         streams.add(result);
         return result;
     }
 
     @Override
     public FSDataInputStream open(Path path, int i) throws IOException {
-        MockInputStream result = new MockInputStream(this, streamBytes);
+        MockInputStream result =new MockInputStream(this,byteBuffer);
         streams.add(result);
         return result;
     }
@@ -80,7 +82,7 @@ public class MockFileSystem extends FileSystem {
 
     @Override
     public FileStatus getFileStatus(Path path) throws IOException {
-        return new FileStatus(streamBytes.length, false, 1, 4096, 0, path);
+        return new FileStatus(byteBuffer.capacity(), false, 1, 4096, 0, path);
     }
     void removeStream(MockInputStream stream) {
         streams.remove(stream);

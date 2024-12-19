@@ -6,13 +6,16 @@ import org.apache.hadoop.fs.Seekable;
 import java.io.ByteArrayInputStream;
 import java.io.EOFException;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 
-public class SeekableInputStream extends ByteArrayInputStream implements Seekable, PositionedReadable {
+public class ByteArraySeekableInputStream extends ByteArrayInputStream implements Seekable, PositionedReadable {
 
-
-    public SeekableInputStream(byte[] buf) {
+    public ByteArraySeekableInputStream(byte[] buf) {
         super(buf);
+    }
+    public ByteArraySeekableInputStream(ByteBuffer byteBuffer){
+        super(byteBuffer.array());
     }
 
 

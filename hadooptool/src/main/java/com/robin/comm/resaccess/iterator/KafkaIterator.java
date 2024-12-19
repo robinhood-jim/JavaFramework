@@ -1,10 +1,11 @@
 package com.robin.comm.resaccess.iterator;
 
 import com.google.common.base.Splitter;
+import com.robin.core.base.util.Const;
 import com.robin.core.base.util.ResourceConst;
-import com.robin.core.resaccess.iterator.AbstractQueueIterator;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.util.AvroUtils;
+import com.robin.core.resaccess.iterator.AbstractQueueIterator;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -26,7 +27,7 @@ public class KafkaIterator extends AbstractQueueIterator {
     private int pollSeconds=10;
     private String resetType="earliest";
     public KafkaIterator(){
-        this.identifier= ResourceConst.ResourceType.TYPE_KAFKA.toString();
+        this.identifier= Const.ACCESSRESOURCE.KAFAK.getValue();
     }
 
     public KafkaIterator(DataCollectionMeta collectionMeta){
@@ -78,8 +79,4 @@ public class KafkaIterator extends AbstractQueueIterator {
         }
     }
 
-    @Override
-    public String getIdentifier() {
-        return "kafka";
-    }
 }

@@ -10,6 +10,7 @@ import com.robin.nosql.cassandra.network.SslContextFactory;
 import io.netty.handler.ssl.SslContext;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.lang.NonNull;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
 import java.sql.Timestamp;
@@ -264,16 +265,18 @@ public class CassandraUtils {
                         batchstmt.clear();
                     }
                 }
+
+                @Override
+                public void doAfter() {
+                    if(!CollectionUtils.isEmpty(batchstmt.getStatements()) && !insertSession.execute(batchstmt).wasApplied()){
+                        throw new RuntimeException("execute failed at last batch!");
+                    }
+                    batchstmt.clear();
+                }
             };
             operation.setBatchSize(1000);
             operation.doOperationInQuery(sourceSession, selectSql, params);
             log.info("Batch processing row {}",operation.getRowPos());
-            if(batchstmt.size()>0){
-                if(!targetSession.execute(batchstmt).wasApplied()){
-                    throw new RuntimeException("execute failed at last batch!");
-                }
-                batchstmt.clear();
-            }
         }catch (RuntimeException ex){
             ex.printStackTrace();
             log.error("{}",ex.getMessage());

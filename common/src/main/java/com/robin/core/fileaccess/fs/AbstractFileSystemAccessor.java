@@ -100,17 +100,7 @@ public abstract class AbstractFileSystemAccessor implements IFileSystemAccessor 
 	protected static OutputStream getOutputStreamByPath(String path, OutputStream out) throws IOException{
 		return CompressEncoder.getOutputStreamByCompressType(path,out);
 	}
-	protected OutputStream getOutputStream(DataCollectionMeta meta) throws IOException {
-		OutputStream outputStream;
-		if(!ObjectUtils.isEmpty(meta.getResourceCfgMap().get(ResourceConst.USETMPFILETAG)) && "true".equalsIgnoreCase(meta.getResourceCfgMap().get(ResourceConst.USETMPFILETAG).toString())){
-			String tmpPath = com.robin.core.base.util.FileUtils.getWorkingPath(meta);
-			String tmpFilePath =  tmpPath + ResourceUtil.getProcessFileName(meta.getPath());
-			outputStream= Files.newOutputStream(Paths.get(tmpFilePath));
-		}else {
-			outputStream = new ByteArrayOutputStream();
-		}
-		return outputStream;
-	}
+
 	
 	@Override
 	public void init(DataCollectionMeta meta){

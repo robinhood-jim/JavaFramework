@@ -4,28 +4,33 @@ import com.baidubce.auth.DefaultBceCredentials;
 import com.baidubce.services.bos.BosClient;
 import com.baidubce.services.bos.BosClientConfiguration;
 import com.baidubce.services.bos.model.BosObject;
+import com.baidubce.services.bos.model.ObjectMetadata;
+import com.baidubce.services.bos.model.PutObjectResponse;
 import com.robin.core.base.exception.MissingConfigException;
+import com.robin.core.base.util.Const;
 import com.robin.core.base.util.ResourceConst;
-import com.robin.core.fileaccess.fs.AbstractFileSystemAccessor;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
+import com.robin.core.fileaccess.util.ResourceUtil;
 import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.io.FileUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
-@Slf4j
 @Getter
 @SuppressWarnings("unused")
-public class BOSFileSystemAccessor extends AbstractFileSystemAccessor {
+public class BOSFileSystemAccessor extends AbstractCloudStorageFileSystemAccessor {
     private String endpoint;
     private String accessKeyId;
     private String securityAccessKey;
-    private String bucketName;
     private BosClient client;
+    private BOSFileSystemAccessor(){
+        this.identifier= Const.FILESYSTEM.BAIDU_BOS.getValue();
+    }
 
     @Override
     public void init(DataCollectionMeta meta) {
@@ -53,62 +58,20 @@ public class BOSFileSystemAccessor extends AbstractFileSystemAccessor {
     }
 
     @Override
-    public Pair<BufferedReader, InputStream> getInResourceByReader(DataCollectionMeta meta, String resourcePath) throws IOException {
-        InputStream inputStream = getInputStreamByConfig(meta);
-        return Pair.of(getReaderByPath(resourcePath, inputStream, meta.getEncode()),inputStream);
-    }
-
-    @Override
-    public Pair<BufferedWriter, OutputStream> getOutResourceByWriter(DataCollectionMeta meta, String resourcePath) throws IOException {
-        OutputStream outputStream = getOutputStream(meta);
-        return Pair.of(getWriterByPath(meta.getPath(), outputStream, meta.getEncode()),outputStream);
-    }
-
-    @Override
-    public OutputStream getRawOutputStream(DataCollectionMeta meta, String resourcePath) throws IOException {
-        return getOutputStream(meta);
-    }
-
-    @Override
-    public OutputStream getOutResourceByStream(DataCollectionMeta meta, String resourcePath) throws IOException {
-        return getOutputStreamByPath(resourcePath, getOutputStream(meta));
-    }
-
-    @Override
-    public InputStream getInResourceByStream(DataCollectionMeta meta, String resourcePath) throws IOException {
-        InputStream inputStream = getInputStreamByConfig(meta);
-        return getInputStreamByPath(resourcePath, inputStream);
-    }
-
-    @Override
-    public InputStream getRawInputStream(DataCollectionMeta meta, String resourcePath) throws IOException {
-        return getInputStreamByConfig(meta);
-    }
-
-    @Override
     public boolean exists(DataCollectionMeta meta, String resourcePath) throws IOException {
-        String bucketName= getBucketName(meta);
-        return client.doesObjectExist(bucketName,resourcePath);
+        return client.doesObjectExist(getBucketName(meta),resourcePath);
     }
 
     @Override
     public long getInputStreamSize(DataCollectionMeta meta, String resourcePath) throws IOException {
-        String bucketName= getBucketName(meta);
         if(exists(meta,resourcePath)){
-            BosObject object=client.getObject(bucketName,resourcePath);
+            BosObject object=client.getObject(getBucketName(meta),resourcePath);
             return object.getObjectMetadata().getContentLength();
         }
         return 0;
     }
-    private InputStream getInputStreamByConfig(DataCollectionMeta meta) {
-        String bucketName= getBucketName(meta);
-        String objectName= meta.getPath();
-        return getObject(bucketName,objectName);
-    }
-    private String getBucketName(DataCollectionMeta meta) {
-        return !ObjectUtils.isEmpty(bucketName)?bucketName:meta.getResourceCfgMap().get(ResourceConst.BUCKETNAME).toString();
-    }
-    private InputStream getObject(String bucketName,String objectName){
+
+    protected InputStream getObject(String bucketName,String objectName){
         if(client.doesObjectExist(bucketName,objectName)) {
             BosObject object = client.getObject(bucketName, objectName);
             if (!ObjectUtils.isEmpty(object)) {
@@ -120,6 +83,25 @@ public class BOSFileSystemAccessor extends AbstractFileSystemAccessor {
             throw new MissingConfigException(" key "+objectName+" not in OSS bucket "+bucketName);
         }
     }
+
+    @Override
+    protected boolean putObject(String bucketName, DataCollectionMeta meta, OutputStream outputStream) throws IOException {
+        PutObjectResponse result;
+        ObjectMetadata metadata=new ObjectMetadata();
+        if(!ObjectUtils.isEmpty(meta.getContent())){
+            metadata.setContentType(meta.getContent().getContentType());
+        }
+        if(ByteArrayOutputStream.class.isAssignableFrom(outputStream.getClass())) {
+            ByteArrayOutputStream byteArrayOutputStream=(ByteArrayOutputStream)outputStream;
+            metadata.setContentLength(byteArrayOutputStream.size());
+            result = client.putObject(bucketName, meta.getPath(), new ByteArrayInputStream(byteArrayOutputStream.toByteArray()),metadata);
+        }else{
+            outputStream.close();
+            result=client.putObject(bucketName,meta.getPath(), Files.newInputStream(Paths.get(tmpFilePath)),metadata);
+        }
+        return !ObjectUtils.isEmpty(result) && !ObjectUtils.isEmpty(result.getETag());
+    }
+
     public static class Builder{
         private BOSFileSystemAccessor accessor;
         public Builder(){

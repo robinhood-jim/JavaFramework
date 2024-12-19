@@ -5,6 +5,8 @@ public class ResourceConst {
     public static final String WORKINGPATHPARAM="output.workingPath";
     public static final String USETMPFILETAG="output.usingTmpFiles";
     public static final String BUCKETNAME="bucketName";
+    public static final String ALLOWOFFHEAPKEY="allowOffHeapMemLimit";
+    public static final Double ALLOWOUFHEAPMEMLIMIT=4000.0;
 
     public enum IngestType {
         TYPE_HDFS(1L,"HDFS"),
@@ -195,5 +197,19 @@ public class ResourceConst {
             return value;
         }
 
+    }
+    public enum OBSPARAM{
+        ENDPOIN("endpoint"),
+        REGION("region"),
+        ACESSSKEYID("accessKeyId"),
+        SECURITYACCESSKEY("securityAccessKey");
+        private String value;
+        OBSPARAM(String value){
+            this.value=value;
+        }
+
+        public String getValue() {
+            return value;
+        }
     }
 }

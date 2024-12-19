@@ -1,30 +1,36 @@
 package com.robin.comm.fileaccess.fs;
 
+import com.robin.core.base.exception.OperationNotSupportException;
+import com.robin.core.base.util.Const;
 import com.robin.core.base.util.ResourceConst;
-import com.robin.core.fileaccess.fs.AbstractFileSystemAccessor;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
+import com.robin.core.fileaccess.util.ResourceUtil;
 import com.robin.dfs.minio.MinioUtils;
 import io.minio.MinioClient;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 /**
  * Minio FileSystemAccessor,must init individual
  */
 @Slf4j
 @Getter
-public class MinioFileSystemAccessor extends AbstractFileSystemAccessor {
+public class MinioFileSystemAccessor extends AbstractCloudStorageFileSystemAccessor {
     private MinioClient client;
     private String accessKey;
     private String secretKey;
     private String endpoint;
-    private String bucketName;
+
+    private MinioFileSystemAccessor(){
+        this.identifier= Const.FILESYSTEM.MINIO.getValue();
+    }
 
     @Override
     public void init(DataCollectionMeta meta) {
@@ -46,37 +52,6 @@ public class MinioFileSystemAccessor extends AbstractFileSystemAccessor {
         client=builder.build();
     }
 
-    @Override
-    public Pair<BufferedReader, InputStream> getInResourceByReader(DataCollectionMeta meta, String resourcePath) throws IOException {
-        InputStream inputStream = getObject(getBucketName(meta),resourcePath);
-        return Pair.of(getReaderByPath(resourcePath, inputStream, meta.getEncode()),inputStream);
-    }
-
-    @Override
-    public Pair<BufferedWriter, OutputStream> getOutResourceByWriter(DataCollectionMeta meta, String resourcePath) throws IOException {
-        OutputStream outputStream = getOutputStream(meta);
-        return Pair.of(getWriterByPath(meta.getPath(), outputStream, meta.getEncode()),outputStream);
-    }
-
-    @Override
-    public OutputStream getRawOutputStream(DataCollectionMeta meta, String resourcePath) throws IOException {
-        return getOutputStream(meta);
-    }
-
-    @Override
-    public OutputStream getOutResourceByStream(DataCollectionMeta meta, String resourcePath) throws IOException {
-        return getOutputStreamByPath(resourcePath, getOutputStream(meta));
-    }
-
-    @Override
-    public InputStream getInResourceByStream(DataCollectionMeta meta, String resourcePath) throws IOException {
-        return getInputStreamByPath(resourcePath, getObject(getBucketName(meta),resourcePath));
-    }
-
-    @Override
-    public InputStream getRawInputStream(DataCollectionMeta meta, String resourcePath) throws IOException {
-        return getObject(getBucketName(meta),resourcePath);
-    }
 
     @Override
     public boolean exists(DataCollectionMeta meta, String resourcePath) throws IOException {
@@ -87,12 +62,27 @@ public class MinioFileSystemAccessor extends AbstractFileSystemAccessor {
     public long getInputStreamSize(DataCollectionMeta meta, String resourcePath) throws IOException {
         return MinioUtils.size(client,getBucketName(meta),resourcePath);
     }
-    private String getBucketName(DataCollectionMeta meta){
-        return !ObjectUtils.isEmpty(bucketName)?bucketName:meta.getResourceCfgMap().get(ResourceConst.BUCKETNAME).toString();
+
+    protected InputStream getObject(String bucketName,String objectName) {
+        try{
+            return MinioUtils.getObject(client,bucketName,objectName);
+        }catch (IOException ex){
+            throw  new OperationNotSupportException(ex);
+        }
     }
-    private InputStream getObject(String bucketName,String objectName) throws IOException{
-        return MinioUtils.getObject(client,bucketName,objectName);
+
+    @Override
+    protected boolean putObject(String bucketName, DataCollectionMeta meta, OutputStream outputStream) throws IOException {
+        String contentType=!ObjectUtils.isEmpty(meta.getContent().getContentType())?meta.getContent().getContentType():"application/octet-stream";
+        if(ByteArrayOutputStream.class.isAssignableFrom(outputStream.getClass())){
+            ByteArrayOutputStream byteArrayOutputStream=(ByteArrayOutputStream)outputStream;
+            return MinioUtils.putBucket(client,getBucketName(meta),meta.getPath(),new ByteArrayInputStream(byteArrayOutputStream.toByteArray()),byteArrayOutputStream.size(),contentType);
+        }else{
+            outputStream.close();
+            return MinioUtils.putBucket(client,getBucketName(meta),meta.getPath(), Files.newInputStream(Paths.get(tmpFilePath)),Files.size(Paths.get(tmpFilePath)),contentType);
+        }
     }
+
     public static class Builder{
         private MinioFileSystemAccessor accessor;
         public Builder(){

@@ -23,6 +23,7 @@ public abstract class AbstractCassandraOperation {
         while (iter.hasNext()) {
             doInQuery(iter.next());
         }
+        doAfter();
     }
 
     protected void doInQuery(Row row)  {
@@ -36,6 +37,7 @@ public abstract class AbstractCassandraOperation {
     public void setBatchSize(int batchSize) {
         this.batchSize = batchSize;
     }
+    public abstract void doAfter();
 
     protected Object wrapValueWithType(DataType type, String columnName, Row row) {
         Object value = null;

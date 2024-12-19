@@ -13,12 +13,10 @@ import com.qiniu.util.Auth;
 import com.robin.comm.util.json.GsonUtil;
 import com.robin.core.base.util.Const;
 import com.robin.core.base.util.ResourceConst;
-import com.robin.core.fileaccess.fs.AbstractFileSystemAccessor;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.util.ResourceUtil;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.lang.NonNull;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
@@ -36,7 +34,7 @@ import java.nio.file.Paths;
  */
 @Slf4j
 @Getter
-public class QiniuFileSystemAccessor extends AbstractFileSystemAccessor {
+public class QiniuFileSystemAccessor extends AbstractCloudStorageFileSystemAccessor {
     private UploadManager uploadManager;
     private BucketManager bucketManager;
     private String domain;
@@ -44,7 +42,6 @@ public class QiniuFileSystemAccessor extends AbstractFileSystemAccessor {
     private String accessKey;
     private String secretKey;
     private Region region;
-    private String bucketName;
     private Gson gson= GsonUtil.getGson();
     private String downDomain;
     private QiniuFileSystemAccessor(){
@@ -80,38 +77,7 @@ public class QiniuFileSystemAccessor extends AbstractFileSystemAccessor {
         uploadManager=new UploadManager(cfg);
     }
 
-    @Override
-    public Pair<BufferedReader, InputStream> getInResourceByReader(DataCollectionMeta meta, String resourcePath) throws IOException {
-        InputStream inputStream = getInputStreamByConfig(meta);
-        return Pair.of(getReaderByPath(resourcePath, inputStream, meta.getEncode()),inputStream);
-    }
 
-    @Override
-    public Pair<BufferedWriter, OutputStream> getOutResourceByWriter(DataCollectionMeta meta, String resourcePath) throws IOException {
-        OutputStream outputStream = getOutputStream(meta);
-        return Pair.of(getWriterByPath(meta.getPath(), outputStream, meta.getEncode()),outputStream);
-    }
-
-    @Override
-    public OutputStream getRawOutputStream(DataCollectionMeta meta, String resourcePath) throws IOException {
-        return getOutputStream(meta);
-    }
-
-    @Override
-    public OutputStream getOutResourceByStream(DataCollectionMeta meta, String resourcePath) throws IOException {
-        return getOutputStreamByPath(resourcePath, getOutputStream(meta));
-    }
-
-    @Override
-    public InputStream getInResourceByStream(DataCollectionMeta meta, String resourcePath) throws IOException {
-        InputStream inputStream = getInputStreamByConfig(meta);
-        return getInputStreamByPath(resourcePath, inputStream);
-    }
-
-    @Override
-    public InputStream getRawInputStream(DataCollectionMeta meta, String resourcePath) throws IOException {
-        return getInputStreamByConfig(meta);
-    }
 
     @Override
     public boolean exists(DataCollectionMeta meta, String resourcePath) throws IOException {
@@ -119,35 +85,16 @@ public class QiniuFileSystemAccessor extends AbstractFileSystemAccessor {
         return isKeyExist(bucketName,resourcePath);
     }
 
-
-
     @Override
     public long getInputStreamSize(DataCollectionMeta meta, String resourcePath) throws IOException {
-        String bucketName=getBucketName(meta);
-        return getSize(bucketName,resourcePath);
+        return getSize(getBucketName(meta),resourcePath);
     }
 
-    @Override
-    public void finishWrite(DataCollectionMeta meta, OutputStream outputStream) {
-        String bucketName=getBucketName(meta);
-        String token=auth.uploadToken(bucketName,meta.getPath());
-        try{
-            putObject(token,meta,outputStream);
-        }catch (IOException ex){
-            log.error("{}",ex.getMessage());
-        }
-    }
-
-    private InputStream getInputStreamByConfig(DataCollectionMeta meta) {
-        String bucketName= getBucketName(meta);
-        String objectName= meta.getPath();
-        return getObject(bucketName,objectName);
-    }
     private boolean isKeyExist(String bucketName,String key) {
         try {
             FileInfo info = bucketManager.stat(bucketName, key);
             int status = info.status;
-            return true;
+            return status>0;
         } catch (QiniuException ex) {
             log.error("{}", ex.getMessage());
         }
@@ -162,16 +109,13 @@ public class QiniuFileSystemAccessor extends AbstractFileSystemAccessor {
         }
         return 0L;
     }
-    private boolean putObject(String token,DataCollectionMeta meta,OutputStream outputStream) throws IOException{
+    protected boolean putObject(String token,DataCollectionMeta meta,OutputStream outputStream) throws IOException{
         Response result;
-        String tmpFilePath=null;
         if(ByteArrayOutputStream.class.isAssignableFrom(outputStream.getClass())) {
             ByteArrayOutputStream byteArrayOutputStream=(ByteArrayOutputStream)outputStream;
             result= uploadManager.put(new ByteArrayInputStream(byteArrayOutputStream.toByteArray()),byteArrayOutputStream.size(),meta.getPath(),token,null,meta.getContent().getContentType(),true);
         }else{
             outputStream.close();
-            String tmpPath = com.robin.core.base.util.FileUtils.getWorkingPath(meta);
-            tmpFilePath = tmpPath + ResourceUtil.getProcessFileName(meta.getPath());
             long size=Files.size(Paths.get(tmpFilePath));
             result=uploadManager.put(Files.newInputStream(Paths.get(tmpFilePath)),size,meta.getPath(),token,null,meta.getContent().getContentType(),true);
         }
@@ -181,7 +125,7 @@ public class QiniuFileSystemAccessor extends AbstractFileSystemAccessor {
         }
         return false;
     }
-    private InputStream getObject(@NonNull String bucketName, @NonNull String key) {
+    protected InputStream getObject(@NonNull String bucketName, @NonNull String key) {
         try{
             String fileUrl= URLEncoder.encode(bucketName,"UTF-8").replace("+","%20");
             String accessUrl=String.format("%s/%s",domain,fileUrl);
@@ -191,9 +135,7 @@ public class QiniuFileSystemAccessor extends AbstractFileSystemAccessor {
         }
         return null;
     }
-    private String getBucketName(DataCollectionMeta meta) {
-        return !ObjectUtils.isEmpty(this.getBucketName()) ? this.getBucketName() : meta.getResourceCfgMap().get("bucketName").toString();
-    }
+
     public static class Builder{
         private QiniuFileSystemAccessor accessor;
         public Builder(){
