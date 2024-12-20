@@ -39,20 +39,19 @@ public class TestResourceReadWrite extends TestCase {
 			builder.addColumn("total_money",Const.META_TYPE_INTEGER,null);
 			builder.addColumn("subscribe_id",Const.META_TYPE_STRING,null);
 			builder.addColumn("product_name",Const.META_TYPE_STRING,null);
-			//builder.addColumn("start_time",Const.META_TYPE_TIMESTAMP,null);
 
 			builder.resourceCfg("hostName", "127.0.0.1").resourceCfg("protocol", "ftp")
 					.resourceCfg("file.useAvroEncode","true")
-					.resourceCfg("port", 21).resourceCfg("userName", "test").resourceCfg("password", "test").fileFormat(Const.FILEFORMATSTR.PROTOBUF.getValue())
-							.resPath("tmp/test2.proto.lzma").protocol(Const.VFS_PROTOCOL.FTP.getValue());
+					.resourceCfg("port", 21).resourceCfg("userName", "test").resourceCfg("password", "test").fileFormat(Const.FILEFORMATSTR.PARQUET.getValue())
+							.resPath("tmp/test2.parquet.gz").protocol(Const.VFS_PROTOCOL.FTP.getValue());
 			QiniuFileSystemAccessor.Builder builder1=new QiniuFileSystemAccessor.Builder();
 			ResourceBundle bundle=ResourceBundle.getBundle("qiniu");
 
 			builder1.domain(bundle.getString("domain")).region(Region.autoRegion()).bucket(bundle.getString("bucket"))
 					.accessKey(bundle.getString("accessKey")).secretKey(bundle.getString("secretKey"));
-			QiniuFileSystemAccessor accessor=builder1.build();
+			//QiniuFileSystemAccessor accessor=builder1.build();
 			DataCollectionMeta colmeta=builder.build();
-			final AbstractFileWriter jwriter=(AbstractFileWriter) TextFileWriterFactory.getWriterByType(colmeta,accessor);
+			final AbstractFileWriter jwriter=(AbstractFileWriter) TextFileWriterFactory.getWriterByType(colmeta);
 
 			System.out.println(new Date());
 			jwriter.beginWrite();

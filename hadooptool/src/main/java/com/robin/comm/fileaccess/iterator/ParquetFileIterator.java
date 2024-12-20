@@ -102,7 +102,7 @@ public class ParquetFileIterator extends AbstractFileIterator {
                     file = new LocalInputFile(Paths.get(colmeta.getPath()));
                 } else {
                     instream = accessUtil.getRawInputStream(colmeta, ResourceUtil.getProcessPath(colmeta.getPath()));
-                    long size = instream.available();
+                    int size = instream.available();
                     Double freeMemory= SysUtils.getFreeMemory();
                     //file size too large ,can not store in ByteBuffer or freeMemory too low
                     if (size >= maxSize || freeMemory<allowOffHeapDumpLimit) {
@@ -113,7 +113,7 @@ public class ParquetFileIterator extends AbstractFileIterator {
                         file = new LocalInputFile(Paths.get(new URI(tmpFilePath)));
                     } else {
                         //use flink memory utils to use offHeapMemory to dump file content
-                        segment= MemorySegmentFactory.allocateOffHeapUnsafeMemory((int)size,this,new Thread(){});
+                        segment= MemorySegmentFactory.allocateOffHeapUnsafeMemory(size,this,new Thread(){});
                         ByteBuffer byteBuffer=segment.getOffHeapBuffer();
                         try(ReadableByteChannel channel= Channels.newChannel(instream)) {
                             IOUtils.readFully(channel, byteBuffer);

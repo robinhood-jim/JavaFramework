@@ -212,4 +212,17 @@ public class ResourceConst {
             return value;
         }
     }
+    public enum GCSPARAM {
+        CREDENTIALSFILE("credentialsFile"),
+        SCOPES("scopes"),
+        SELFLINK("selfLink");
+        private String value;
+        GCSPARAM(String value){
+            this.value=value;
+        }
+
+        public String getValue() {
+            return value;
+        }
+    }
 }

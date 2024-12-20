@@ -22,7 +22,7 @@ public class RecordWriterHolder extends AbstractResourceHolder {
     @Override
     public void init(DataCollectionMeta colmeta) throws Exception {
         if(writer!=null || busyTag){
-            throw new OperationInWorkException("last Opertaion Writer already Exists.May not be shutdown Propery");
+            throw new OperationInWorkException("last Operation Writer already Exists.May not be shutdown Property");
         }
         URI uri=new URI(colmeta.getPath());
         String schema=uri.getScheme();

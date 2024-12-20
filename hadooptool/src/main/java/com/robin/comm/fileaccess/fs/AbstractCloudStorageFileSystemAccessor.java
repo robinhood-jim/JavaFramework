@@ -20,6 +20,7 @@ import java.nio.file.Paths;
 public abstract class AbstractCloudStorageFileSystemAccessor extends AbstractFileSystemAccessor {
     protected String bucketName;
     protected String tmpFilePath;
+
     @Override
     public Pair<BufferedReader, InputStream> getInResourceByReader(DataCollectionMeta meta, String resourcePath) throws IOException {
         InputStream inputStream = getInputStreamByConfig(meta);
