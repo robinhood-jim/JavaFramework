@@ -147,11 +147,11 @@ public class OrcFileIterator extends AbstractFileIterator {
                     readPath=new File(readPath).toURI().toString();
                 }else {
                     instream = accessUtil.getRawInputStream(colmeta, ResourceUtil.getProcessPath(colmeta.getPath()));
-                    long size = instream.available();
+                    int size = instream.available();
                     Double freeMemory= SysUtils.getFreeMemory();
-                    if (size < Integer.MAX_VALUE && freeMemory>allowOffHeapDumpLimit) {
+                    if (size < ResourceConst.MAX_ARRAY_SIZE && freeMemory>allowOffHeapDumpLimit) {
                         //use flink memory utils to use offHeapMemory to dump file content
-                        segment= MemorySegmentFactory.allocateOffHeapUnsafeMemory((int)size,this,new Thread(){});
+                        segment= MemorySegmentFactory.allocateOffHeapUnsafeMemory(size,this,new Thread(){});
                         ByteBuffer byteBuffer=segment.getOffHeapBuffer();
                         try(ReadableByteChannel channel= Channels.newChannel(instream)) {
                             org.apache.commons.io.IOUtils.readFully(channel, byteBuffer);

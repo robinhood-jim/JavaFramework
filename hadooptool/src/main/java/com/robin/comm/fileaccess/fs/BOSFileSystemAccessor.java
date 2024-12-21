@@ -34,6 +34,7 @@ public class BOSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
 
     @Override
     public void init(DataCollectionMeta meta) {
+        super.init(meta);
         Assert.isTrue(!CollectionUtils.isEmpty(meta.getResourceCfgMap()),"config map is empty!");
         Assert.notNull(meta.getResourceCfgMap().get(ResourceConst.BOSPARAM.ENDPOIN.getValue()),"must provide endpoint");
         Assert.notNull(meta.getResourceCfgMap().get(ResourceConst.BOSPARAM.ACESSSKEYID.getValue()),"must provide accessKey");
@@ -47,6 +48,7 @@ public class BOSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
         config.setEndpoint(endpoint);
         client=new BosClient(config);
     }
+    @Override
     public void init(){
         Assert.notNull(endpoint,"must provide region");
         Assert.notNull(accessKeyId,"must provide accessKey");
@@ -85,20 +87,11 @@ public class BOSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
     }
 
     @Override
-    protected boolean putObject(String bucketName, DataCollectionMeta meta, OutputStream outputStream) throws IOException {
-        PutObjectResponse result;
+    protected boolean putObject(String bucketName, DataCollectionMeta meta, InputStream inputStream,long size) throws IOException {
         ObjectMetadata metadata=new ObjectMetadata();
-        if(!ObjectUtils.isEmpty(meta.getContent())){
-            metadata.setContentType(meta.getContent().getContentType());
-        }
-        if(ByteArrayOutputStream.class.isAssignableFrom(outputStream.getClass())) {
-            ByteArrayOutputStream byteArrayOutputStream=(ByteArrayOutputStream)outputStream;
-            metadata.setContentLength(byteArrayOutputStream.size());
-            result = client.putObject(bucketName, meta.getPath(), new ByteArrayInputStream(byteArrayOutputStream.toByteArray()),metadata);
-        }else{
-            outputStream.close();
-            result=client.putObject(bucketName,meta.getPath(), Files.newInputStream(Paths.get(tmpFilePath)),metadata);
-        }
+        metadata.setContentType(getContentType(meta));
+        metadata.setContentLength(size);
+        PutObjectResponse result=client.putObject(bucketName,meta.getPath(),inputStream);
         return !ObjectUtils.isEmpty(result) && !ObjectUtils.isEmpty(result.getETag());
     }
 

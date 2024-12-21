@@ -10,15 +10,13 @@ import com.robin.core.base.exception.MissingConfigException;
 import com.robin.core.base.util.Const;
 import com.robin.core.base.util.ResourceConst;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
-import com.robin.core.fileaccess.util.ResourceUtil;
 import lombok.Getter;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
-import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * HUAWEI OBS FileSystemAccessor,must init individual
@@ -85,20 +83,11 @@ public class OBSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
     }
 
     @Override
-    protected boolean putObject(String bucketName, DataCollectionMeta meta, OutputStream outputStream) throws IOException {
+    protected boolean putObject(String bucketName, DataCollectionMeta meta, InputStream inputStream, long size) throws IOException {
         ObjectMetadata metadata=new ObjectMetadata();
-        PutObjectResult result;
-        if(!ObjectUtils.isEmpty(meta.getContent())){
-            metadata.setContentType(meta.getContent().getContentType());
-        }
-        if(ByteArrayOutputStream.class.isAssignableFrom(outputStream.getClass())) {
-            ByteArrayOutputStream byteArrayOutputStream = (ByteArrayOutputStream) outputStream;
-            metadata.setContentLength(Long.valueOf(byteArrayOutputStream.size()));
-            result=client.putObject(bucketName,meta.getPath(),new ByteArrayInputStream(byteArrayOutputStream.toByteArray()),metadata);
-        }else{
-            outputStream.close();
-            result=client.putObject(bucketName,meta.getPath(), Files.newInputStream(Paths.get(tmpFilePath)),metadata);
-        }
+        metadata.setContentType(getContentType(meta));
+        metadata.setContentLength(size);
+        PutObjectResult result=client.putObject(bucketName,meta.getPath(), inputStream,metadata);
         return result.getStatusCode()==200;
     }
 

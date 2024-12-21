@@ -10,7 +10,6 @@ import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -42,7 +41,7 @@ public class KafkaResourceWriter extends AbstractQueueWriter {
     @Override
     public void writeMessage(String topic, Map<String, ?> map) throws IOException {
         byte[] output= constructContent(map);
-        producer.send(new ProducerRecord(topic, key,output));
+        producer.send(new ProducerRecord<>(topic, key,output));
     }
 
     @Override
@@ -57,7 +56,7 @@ public class KafkaResourceWriter extends AbstractQueueWriter {
         properties.put(ProducerConfig.BATCH_SIZE_CONFIG,"65535");
         properties.put(ProducerConfig.LINGER_MS_CONFIG, "1");
         properties.put(ProducerConfig.BUFFER_MEMORY_CONFIG, "6553500");
-        producer=new KafkaProducer(properties);
+        producer=new KafkaProducer<>(properties);
     }
 
     @Override

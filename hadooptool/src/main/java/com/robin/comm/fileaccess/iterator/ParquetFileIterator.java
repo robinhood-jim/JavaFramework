@@ -55,7 +55,6 @@ public class ParquetFileIterator extends AbstractFileIterator {
     private GenericData.Record record;
     private ParquetReader<Map<String, Object>> ireader;
     private boolean useAvroEncode = false;
-    private static final long maxSize = Integer.MAX_VALUE;
     private MemorySegment segment;
     private Double allowOffHeapDumpLimit= ResourceConst.ALLOWOUFHEAPMEMLIMIT;
 
@@ -102,10 +101,10 @@ public class ParquetFileIterator extends AbstractFileIterator {
                     file = new LocalInputFile(Paths.get(colmeta.getPath()));
                 } else {
                     instream = accessUtil.getRawInputStream(colmeta, ResourceUtil.getProcessPath(colmeta.getPath()));
-                    long size = instream.available();
+                    int size = instream.available();
                     Double freeMemory= SysUtils.getFreeMemory();
                     //file size too large ,can not store in ByteBuffer or freeMemory too low
-                    if (size >= maxSize || freeMemory<allowOffHeapDumpLimit) {
+                    if (size >= ResourceConst.MAX_ARRAY_SIZE || freeMemory<allowOffHeapDumpLimit) {
                         String tmpPath = com.robin.core.base.util.FileUtils.getWorkingPath(colmeta);
                         String tmpFilePath = "file:///" + tmpPath + ResourceUtil.getProcessFileName(colmeta.getPath());
                         tmpFile = new File(new URL(tmpFilePath).toURI());
@@ -113,7 +112,7 @@ public class ParquetFileIterator extends AbstractFileIterator {
                         file = new LocalInputFile(Paths.get(new URI(tmpFilePath)));
                     } else {
                         //use flink memory utils to use offHeapMemory to dump file content
-                        segment= MemorySegmentFactory.allocateOffHeapUnsafeMemory((int)size,this,new Thread(){});
+                        segment= MemorySegmentFactory.allocateOffHeapUnsafeMemory(size,this,new Thread(){});
                         ByteBuffer byteBuffer=segment.getOffHeapBuffer();
                         try(ReadableByteChannel channel= Channels.newChannel(instream)) {
                             IOUtils.readFully(channel, byteBuffer);

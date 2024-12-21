@@ -14,7 +14,6 @@ import com.robin.comm.util.json.GsonUtil;
 import com.robin.core.base.util.Const;
 import com.robin.core.base.util.ResourceConst;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
-import com.robin.core.fileaccess.util.ResourceUtil;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.lang.NonNull;
@@ -22,11 +21,10 @@ import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
 
 /**
@@ -42,7 +40,7 @@ public class QiniuFileSystemAccessor extends AbstractCloudStorageFileSystemAcces
     private String accessKey;
     private String secretKey;
     private Region region;
-    private Gson gson= GsonUtil.getGson();
+    private final Gson gson= GsonUtil.getGson();
     private String downDomain;
     private QiniuFileSystemAccessor(){
         this.identifier= Const.FILESYSTEM.QINIU.getValue();
@@ -56,8 +54,8 @@ public class QiniuFileSystemAccessor extends AbstractCloudStorageFileSystemAcces
         Assert.notNull(meta.getResourceCfgMap().get(ResourceConst.QINIUPARAM.ACESSSKEY.getValue()),"must provide accessKey");
         Assert.notNull(meta.getResourceCfgMap().get(ResourceConst.QINIUPARAM.SECURITYKEY.getValue()),"must provide securityKey");
         Assert.notNull(meta.getResourceCfgMap().get(ResourceConst.QINIUPARAM.DOWNDOMAIN.getValue()),"must provide downDomain");
-        String accessKey=meta.getResourceCfgMap().get(ResourceConst.QINIUPARAM.ACESSSKEY.getValue()).toString();
-        String secretKey=meta.getResourceCfgMap().get(ResourceConst.QINIUPARAM.SECURITYKEY.getValue()).toString();
+        accessKey=meta.getResourceCfgMap().get(ResourceConst.QINIUPARAM.ACESSSKEY.getValue()).toString();
+        secretKey=meta.getResourceCfgMap().get(ResourceConst.QINIUPARAM.SECURITYKEY.getValue()).toString();
         domain=meta.getResourceCfgMap().get(ResourceConst.QINIUPARAM.DOMAIN.getValue()).toString();
         auth= Auth.create(accessKey,secretKey);
         region=Region.autoRegion();
@@ -109,22 +107,14 @@ public class QiniuFileSystemAccessor extends AbstractCloudStorageFileSystemAcces
         }
         return 0L;
     }
-    protected boolean putObject(String token,DataCollectionMeta meta,OutputStream outputStream) throws IOException{
-        Response result;
-        if(ByteArrayOutputStream.class.isAssignableFrom(outputStream.getClass())) {
-            ByteArrayOutputStream byteArrayOutputStream=(ByteArrayOutputStream)outputStream;
-            result= uploadManager.put(new ByteArrayInputStream(byteArrayOutputStream.toByteArray()),byteArrayOutputStream.size(),meta.getPath(),token,null,meta.getContent().getContentType(),true);
-        }else{
-            outputStream.close();
-            long size=Files.size(Paths.get(tmpFilePath));
-            result=uploadManager.put(Files.newInputStream(Paths.get(tmpFilePath)),size,meta.getPath(),token,null,meta.getContent().getContentType(),true);
-        }
+    @Override
+    protected boolean putObject(String bucketName, DataCollectionMeta meta, InputStream inputStream,long size) throws IOException {
+        String token=auth.uploadToken(bucketName,meta.getPath());
+        Response result=uploadManager.put(inputStream,size,meta.getPath(),token,null,getContentType(meta),true);
         DefaultPutRet putRet=gson.fromJson(result.bodyString(),DefaultPutRet.class);
-        if(!ObjectUtils.isEmpty(putRet)){
-            return true;
-        }
-        return false;
+        return !ObjectUtils.isEmpty(putRet);
     }
+
     protected InputStream getObject(@NonNull String bucketName, @NonNull String key) {
         try{
             String fileUrl= URLEncoder.encode(bucketName,"UTF-8").replace("+","%20");

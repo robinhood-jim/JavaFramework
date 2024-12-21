@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
-
 public class ParquetStreamIterator extends AbstractFileIterator {
     private ParquetReader<GenericData.Record> preader;
     private Schema schema;
@@ -98,7 +97,6 @@ public class ParquetStreamIterator extends AbstractFileIterator {
         schema= AvroUtils.getSchemaFromMeta(colmeta);
     }
 
-
     public Schema getSchema() {
         return schema;
     }
@@ -112,16 +110,9 @@ public class ParquetStreamIterator extends AbstractFileIterator {
         }
     }
 
-
-
     public MessageType getMessageType(){
         return msgtype;
     }
-
-
-
-
-
 }
 
 
