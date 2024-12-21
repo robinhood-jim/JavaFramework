@@ -99,7 +99,17 @@ public class OSSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
     private Bucket createBucket(String bucketName){
         return ossClient.createBucket(bucketName);
     }
-    protected boolean putObject(String bucketName,DataCollectionMeta meta,OutputStream outputStream) throws IOException{
+
+    @Override
+    protected boolean putObject(String bucketName, DataCollectionMeta meta, InputStream inputStream, long size) throws IOException {
+        ObjectMetadata metadata=new ObjectMetadata();
+        metadata.setContentType(getContentType(meta));
+        metadata.setContentLength(size);
+        PutObjectResult result=ossClient.putObject(bucketName,meta.getPath(),inputStream,metadata);
+        return result.getResponse().isSuccessful();
+    }
+
+    protected boolean putObject(String bucketName, DataCollectionMeta meta, OutputStream outputStream) throws IOException{
         PutObjectResult result;
         ObjectMetadata metadata=new ObjectMetadata();
         if(!ObjectUtils.isEmpty(meta.getContent())){

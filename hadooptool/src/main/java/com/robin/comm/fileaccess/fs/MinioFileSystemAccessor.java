@@ -4,7 +4,6 @@ import com.robin.core.base.exception.OperationNotSupportException;
 import com.robin.core.base.util.Const;
 import com.robin.core.base.util.ResourceConst;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
-import com.robin.core.fileaccess.util.ResourceUtil;
 import com.robin.dfs.minio.MinioUtils;
 import io.minio.MinioClient;
 import lombok.Getter;
@@ -34,6 +33,7 @@ public class MinioFileSystemAccessor extends AbstractCloudStorageFileSystemAcces
 
     @Override
     public void init(DataCollectionMeta meta) {
+        super.init(meta);
         Assert.isTrue(!CollectionUtils.isEmpty(meta.getResourceCfgMap()),"config map is empty!");
         Assert.notNull(meta.getResourceCfgMap().get(ResourceConst.MINIO.ENDPOINT.getValue()),"must provide endpoint");
         Assert.notNull(meta.getResourceCfgMap().get(ResourceConst.MINIO.ACESSSKEY.getValue()),"must provide accessKey");
@@ -45,6 +45,7 @@ public class MinioFileSystemAccessor extends AbstractCloudStorageFileSystemAcces
         client=builder.build();
     }
     public void init(){
+        super.init();
         Assert.notNull(endpoint,"must provide endpoint");
         Assert.notNull(accessKey,"must provide accessKey");
         Assert.notNull(secretKey,"must provide securityKey");
@@ -81,6 +82,11 @@ public class MinioFileSystemAccessor extends AbstractCloudStorageFileSystemAcces
             outputStream.close();
             return MinioUtils.putBucket(client,getBucketName(meta),meta.getPath(), Files.newInputStream(Paths.get(tmpFilePath)),Files.size(Paths.get(tmpFilePath)),contentType);
         }
+    }
+
+    @Override
+    protected boolean putObject(String bucketName, DataCollectionMeta meta, InputStream inputStream,long size) throws IOException {
+        return MinioUtils.putBucket(client,getBucketName(meta),meta.getPath(),inputStream,size,getContentType(meta));
     }
 
     public static class Builder{

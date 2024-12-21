@@ -1,14 +1,12 @@
 package com.robin.core.encrypt;
 
-import java.beans.Introspector;
+import org.apache.commons.codec.binary.Base64;
+
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.lang.reflect.Method;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.apache.commons.codec.binary.Base64;
 
 /**
  * <p>Project:  core</p>

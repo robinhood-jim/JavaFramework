@@ -15,10 +15,8 @@ import com.robin.core.base.exception.ResourceNotAvailableException;
 import com.robin.core.base.util.Const;
 import com.robin.core.base.util.ResourceConst;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
-import com.robin.core.fileaccess.util.ResourceUtil;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FileUtils;
 import org.springframework.lang.NonNull;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
@@ -60,6 +58,7 @@ public class COSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
         cosClient = new COSClient(cosCredentials, config);
     }
     public void init(){
+        super.init();
         Assert.notNull(regionName,"regionName required!");
         Assert.notNull(accessKey,"accessKey required!");
         Assert.notNull(securityKey,"securityKey required!");
@@ -115,36 +114,22 @@ public class COSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
     }
 
     @Override
-    public void finishWrite(DataCollectionMeta meta, OutputStream outputStream) {
-        try{
-            upload(meta,outputStream);
-        }catch (InterruptedException | IOException ex){
-            log.error("{}",ex.getMessage());
-        }
-    }
-
-    private boolean upload(DataCollectionMeta meta, OutputStream outputStream) throws IOException,InterruptedException {
-        String bucketName= getBucketName(meta);
+    protected boolean putObject(String bucketName, DataCollectionMeta meta, InputStream inputStream,long size) throws IOException {
         TransferManager transferManager=getManager();
-        PutObjectRequest request;
         ObjectMetadata objectMetadata = new ObjectMetadata();
-        if(!ObjectUtils.isEmpty(meta.getContent())){
-            objectMetadata.setContentType(meta.getContent().getContentType());
-        }
-        if(ByteArrayOutputStream.class.isAssignableFrom(outputStream.getClass())){
-            objectMetadata.setContentLength(((ByteArrayOutputStream)outputStream).size());
-            request = new PutObjectRequest(bucketName, meta.getPath(), new ByteArrayInputStream(((ByteArrayOutputStream)outputStream).toByteArray()),objectMetadata);
-        }else{
-            outputStream.close();
-            request=new PutObjectRequest(bucketName,meta.getPath(),new File(tmpFilePath));
-        }
+        objectMetadata.setContentType(getContentType(meta));
+        objectMetadata.setContentLength(size);
+        PutObjectRequest request = new PutObjectRequest(bucketName, meta.getPath(),inputStream,objectMetadata);
         try {
             Upload upload = transferManager.upload(request, null);
             UploadResult result = upload.waitForUploadResult();
             if (!ObjectUtils.isEmpty(result)) {
                 return true;
             }
-        } finally {
+        } catch (InterruptedException ex){
+            log.error("{}",ex.getMessage());
+        }
+        finally {
             if (!ObjectUtils.isEmpty(transferManager)) {
                 transferManager.shutdownNow(true);
             }

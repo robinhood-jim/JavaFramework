@@ -45,6 +45,7 @@ public class GCSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
 
     }
     public void init() {
+        super.init();
         Assert.notNull(credentialsFile, "must provide credentialsFile");
         try{
             credentials=GoogleCredentials.fromStream(new FileInputStream(credentialsFile));
@@ -94,7 +95,16 @@ public class GCSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
         return !ObjectUtils.isEmpty(blob.getEtag());
     }
 
-
+    @Override
+    protected boolean putObject(String bucketName, DataCollectionMeta meta, InputStream inputStream,long size) throws IOException {
+        checkStorage(meta);
+        BlobId blobId=BlobId.of(getBucketName(meta),meta.getPath());
+        String contentType=!ObjectUtils.isEmpty(meta.getContent().getContentType())?meta.getContent().getContentType():"application/octet-stream";
+        BlobInfo blobInfo= BlobInfo.newBuilder(blobId).setContentType(contentType).build();
+        Blob blob=storage.createFrom(blobInfo,inputStream);
+        meta.getResourceCfgMap().put(ResourceConst.GCSPARAM.SELFLINK.getValue(),blob.getSelfLink());
+        return !ObjectUtils.isEmpty(blob.getEtag());
+    }
 
     @Override
     protected InputStream getObject(String bucketName, String objectName) {

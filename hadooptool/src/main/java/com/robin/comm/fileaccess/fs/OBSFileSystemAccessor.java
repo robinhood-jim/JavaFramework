@@ -10,7 +10,6 @@ import com.robin.core.base.exception.MissingConfigException;
 import com.robin.core.base.util.Const;
 import com.robin.core.base.util.ResourceConst;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
-import com.robin.core.fileaccess.util.ResourceUtil;
 import lombok.Getter;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
@@ -82,6 +81,15 @@ public class OBSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
         } else {
             throw new MissingConfigException(" key " + objectName + " not in OSS bucket " + bucketName);
         }
+    }
+
+    @Override
+    protected boolean putObject(String bucketName, DataCollectionMeta meta, InputStream inputStream, long size) throws IOException {
+        ObjectMetadata metadata=new ObjectMetadata();
+        metadata.setContentType(getContentType(meta));
+        metadata.setContentLength(size);
+        PutObjectResult result=client.putObject(bucketName,meta.getPath(), inputStream,metadata);
+        return result.getStatusCode()==200;
     }
 
     @Override

@@ -125,6 +125,18 @@ public class QiniuFileSystemAccessor extends AbstractCloudStorageFileSystemAcces
         }
         return false;
     }
+
+    @Override
+    protected boolean putObject(String bucketName, DataCollectionMeta meta, InputStream inputStream,long size) throws IOException {
+        String token=auth.uploadToken(bucketName,meta.getPath());
+        Response result=uploadManager.put(inputStream,size,meta.getPath(),token,null,getContentType(meta),true);
+        DefaultPutRet putRet=gson.fromJson(result.bodyString(),DefaultPutRet.class);
+        if(!ObjectUtils.isEmpty(putRet)){
+            return true;
+        }
+        return false;
+    }
+
     protected InputStream getObject(@NonNull String bucketName, @NonNull String key) {
         try{
             String fileUrl= URLEncoder.encode(bucketName,"UTF-8").replace("+","%20");

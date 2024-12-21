@@ -74,6 +74,11 @@ public class S3FileSystemAccessor extends AbstractCloudStorageFileSystemAccessor
     }
 
     @Override
+    protected boolean putObject(String bucketName, DataCollectionMeta meta, InputStream inputStream, long size) throws IOException {
+        return AwsUtils.put(client,bucketName,meta.getPath(),getContentType(meta),inputStream,size);
+    }
+
+    @Override
     protected boolean putObject(String bucketName, DataCollectionMeta meta, OutputStream outputStream) throws IOException {
         String tmpFilePath;
         String contentType=!ObjectUtils.isEmpty(meta.getContent())?meta.getContent().getContentType():"application/octet-stream";

@@ -7,6 +7,9 @@ public class ResourceConst {
     public static final String BUCKETNAME="bucketName";
     public static final String ALLOWOFFHEAPKEY="allowOffHeapMemLimit";
     public static final Double ALLOWOUFHEAPMEMLIMIT=4000.0;
+    public static final int DEFAULTDUMPEDOFFHEAPSIZE=1024*1024*10;
+    public static final String DUMPEDOFFHEAPSIZEKEY ="dumpOffHeapSize";
+    public static final String DEFAULTCONTENTTYPE="application/octet-stream";
 
     public enum IngestType {
         TYPE_HDFS(1L,"HDFS"),

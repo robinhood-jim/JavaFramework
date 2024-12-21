@@ -16,7 +16,7 @@ public interface IFileSystemAccessor {
      * @return Pair(BufferedReader,InputStream)
      * @throws IOException
      */
-    Pair<BufferedReader,InputStream> getInResourceByReader(DataCollectionMeta meta, String resourcePath) throws IOException;
+     Pair<BufferedReader,InputStream> getInResourceByReader(DataCollectionMeta meta, String resourcePath) throws IOException;
 
     /**
      * get BufferedWriter or OutputStream with compress format
