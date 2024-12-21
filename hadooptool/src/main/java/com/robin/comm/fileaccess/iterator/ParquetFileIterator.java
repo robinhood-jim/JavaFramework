@@ -55,7 +55,6 @@ public class ParquetFileIterator extends AbstractFileIterator {
     private GenericData.Record record;
     private ParquetReader<Map<String, Object>> ireader;
     private boolean useAvroEncode = false;
-    private static final long maxSize = Integer.MAX_VALUE;
     private MemorySegment segment;
     private Double allowOffHeapDumpLimit= ResourceConst.ALLOWOUFHEAPMEMLIMIT;
 
@@ -105,7 +104,7 @@ public class ParquetFileIterator extends AbstractFileIterator {
                     int size = instream.available();
                     Double freeMemory= SysUtils.getFreeMemory();
                     //file size too large ,can not store in ByteBuffer or freeMemory too low
-                    if (size >= maxSize || freeMemory<allowOffHeapDumpLimit) {
+                    if (size >= ResourceConst.MAX_ARRAY_SIZE || freeMemory<allowOffHeapDumpLimit) {
                         String tmpPath = com.robin.core.base.util.FileUtils.getWorkingPath(colmeta);
                         String tmpFilePath = "file:///" + tmpPath + ResourceUtil.getProcessFileName(colmeta.getPath());
                         tmpFile = new File(new URL(tmpFilePath).toURI());

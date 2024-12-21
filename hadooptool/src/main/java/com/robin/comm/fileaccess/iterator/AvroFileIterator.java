@@ -86,7 +86,7 @@ public class AvroFileIterator extends AbstractFileIterator {
                 int size = instream.available();
                 Double freeMemory = SysUtils.getFreeMemory();
                 //file size too large ,can not store in ByteBuffer or freeMemory too low
-                if (size >= Integer.MAX_VALUE || freeMemory < allowOffHeapDumpLimit) {
+                if (size >=ResourceConst.MAX_ARRAY_SIZE || freeMemory < allowOffHeapDumpLimit) {
                     String tmpPath = FileUtils.getTempDirectoryPath() + ResourceUtil.getProcessFileName(resourcePath);
                     tmpFile = new File(tmpPath);
                     copyToLocal(tmpFile, instream);

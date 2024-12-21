@@ -10,6 +10,7 @@ public class ResourceConst {
     public static final int DEFAULTDUMPEDOFFHEAPSIZE=1024*1024*10;
     public static final String DUMPEDOFFHEAPSIZEKEY ="dumpOffHeapSize";
     public static final String DEFAULTCONTENTTYPE="application/octet-stream";
+    public static final int MAX_ARRAY_SIZE = Integer.MAX_VALUE - 8;
 
     public enum IngestType {
         TYPE_HDFS(1L,"HDFS"),
