@@ -137,11 +137,6 @@ public class COSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
         return false;
     }
 
-    @Override
-    protected boolean putObject(String bucketName, DataCollectionMeta meta, OutputStream outputStream) throws IOException {
-        throw new OperationNotSupportException("putObject replaced in cos filesystem");
-    }
-
     public static class Builder{
         private COSFileSystemAccessor accessor;
         public Builder(){

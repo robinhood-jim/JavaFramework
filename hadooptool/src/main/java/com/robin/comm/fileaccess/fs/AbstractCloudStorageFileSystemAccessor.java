@@ -2,7 +2,6 @@ package com.robin.comm.fileaccess.fs;
 
 import com.robin.comm.fileaccess.util.ByteBufferInputStream;
 import com.robin.comm.fileaccess.util.ByteBufferOutputStream;
-import com.robin.comm.fileaccess.util.ByteBufferSeekableInputStream;
 import com.robin.core.base.exception.MissingConfigException;
 import com.robin.core.base.exception.OperationNotSupportException;
 import com.robin.core.base.util.ResourceConst;
@@ -27,7 +26,7 @@ import java.nio.file.Paths;
 public abstract class AbstractCloudStorageFileSystemAccessor extends AbstractFileSystemAccessor {
     protected String bucketName;
     protected String tmpFilePath;
-    private int defaultDumpSize = ResourceConst.DEFAULTDUMPEDOFFHEAPSIZE;
+    private int dumpOffHeapSize = ResourceConst.DEFAULTDUMPEDOFFHEAPSIZE;
     private MemorySegment segment;
     private boolean useFileCache = false;
 
@@ -111,10 +110,10 @@ public abstract class AbstractCloudStorageFileSystemAccessor extends AbstractFil
                 throw new OperationNotSupportException("Off Heap Segment is still in used! try later");
             }
             if (!ObjectUtils.isEmpty(meta.getResourceCfgMap().get(ResourceConst.DUMPEDOFFHEAPSIZEKEY))) {
-                defaultDumpSize = Integer.parseInt(meta.getResourceCfgMap().get(ResourceConst.DUMPEDOFFHEAPSIZEKEY).toString());
+                dumpOffHeapSize = Integer.parseInt(meta.getResourceCfgMap().get(ResourceConst.DUMPEDOFFHEAPSIZEKEY).toString());
             }
-            segment = MemorySegmentFactory.allocateOffHeapUnsafeMemory(defaultDumpSize, this, new Thread() {});
-            outputStream = new ByteBufferOutputStream(segment.getOffHeapBuffer());//new ByteArrayOutputStream();
+            segment = MemorySegmentFactory.allocateOffHeapUnsafeMemory(dumpOffHeapSize, this, new Thread() {});
+            outputStream = new ByteBufferOutputStream(segment.getOffHeapBuffer());
         }
         return outputStream;
     }
@@ -132,6 +131,14 @@ public abstract class AbstractCloudStorageFileSystemAccessor extends AbstractFil
             }
         } catch (IOException ex) {
             log.error("{}", ex.getMessage());
+        }finally {
+            try {
+                if (!ObjectUtils.isEmpty(outputStream)) {
+                    outputStream.close();
+                }
+            }catch (IOException ex){
+
+            }
         }
         return false;
     }
@@ -141,8 +148,6 @@ public abstract class AbstractCloudStorageFileSystemAccessor extends AbstractFil
     }
 
     protected abstract boolean putObject(String bucketName, DataCollectionMeta meta, InputStream inputStream, long size) throws IOException;
-
-    protected abstract boolean putObject(String bucketName, DataCollectionMeta meta, OutputStream outputStream) throws IOException;
 
     protected abstract InputStream getObject(String bucketName, String objectName);
 }

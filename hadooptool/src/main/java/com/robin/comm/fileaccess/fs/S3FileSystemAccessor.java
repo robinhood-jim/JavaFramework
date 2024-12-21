@@ -5,7 +5,6 @@ import com.robin.core.base.exception.MissingConfigException;
 import com.robin.core.base.util.Const;
 import com.robin.core.base.util.ResourceConst;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
-import com.robin.core.fileaccess.util.ResourceUtil;
 import com.robin.dfs.aws.AwsUtils;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -16,9 +15,8 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.S3Client;
 
-import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * Amazon AWS FileSystemAccessor
@@ -44,8 +42,8 @@ public class S3FileSystemAccessor extends AbstractCloudStorageFileSystemAccessor
         if (!CollectionUtils.isEmpty(meta.getResourceCfgMap())) {
             if (meta.getResourceCfgMap().containsKey(ResourceConst.S3PARAM.ACCESSKEY.getValue()) &&
                     meta.getResourceCfgMap().containsKey(ResourceConst.S3PARAM.SECRET.getValue())) {
-                Object regionName = meta.getResourceCfgMap().get(ResourceConst.S3PARAM.REGION.getValue());
-                region = ObjectUtils.isEmpty(regionName) ? Region.US_EAST_1 : Region.of(regionName.toString());
+                regionName = meta.getResourceCfgMap().get(ResourceConst.S3PARAM.REGION.getValue()).toString();
+                region = ObjectUtils.isEmpty(regionName) ? Region.US_EAST_1 : Region.of(regionName);
                 client = AwsUtils.getClientByCredential(region, meta.getResourceCfgMap().get(ResourceConst.S3PARAM.ACCESSKEY.getValue()).toString(), meta.getResourceCfgMap().get(ResourceConst.S3PARAM.SECRET.getValue()).toString());
                 asyncClient = AwsUtils.getAsyncClientByCredential(region, meta.getResourceCfgMap().get(ResourceConst.S3PARAM.ACCESSKEY.getValue()).toString(), meta.getResourceCfgMap().get(ResourceConst.S3PARAM.SECRET.getValue()).toString());
             }else{
@@ -76,22 +74,6 @@ public class S3FileSystemAccessor extends AbstractCloudStorageFileSystemAccessor
     @Override
     protected boolean putObject(String bucketName, DataCollectionMeta meta, InputStream inputStream, long size) throws IOException {
         return AwsUtils.put(client,bucketName,meta.getPath(),getContentType(meta),inputStream,size);
-    }
-
-    @Override
-    protected boolean putObject(String bucketName, DataCollectionMeta meta, OutputStream outputStream) throws IOException {
-        String tmpFilePath;
-        String contentType=!ObjectUtils.isEmpty(meta.getContent())?meta.getContent().getContentType():"application/octet-stream";
-        if(ByteArrayOutputStream.class.isAssignableFrom(outputStream.getClass())) {
-            ByteArrayOutputStream byteArrayOutputStream = (ByteArrayOutputStream) outputStream;
-            return AwsUtils.put(client,bucketName,meta.getPath(),contentType,new ByteArrayInputStream(byteArrayOutputStream.toByteArray()),new Long(byteArrayOutputStream.size()));
-        }else{
-            outputStream.close();
-            String tmpPath = com.robin.core.base.util.FileUtils.getWorkingPath(meta);
-            tmpFilePath = tmpPath + ResourceUtil.getProcessFileName(meta.getPath());
-            long size= Files.size(Paths.get(tmpFilePath));
-            return AwsUtils.put(client,bucketName,meta.getPath(),contentType,Files.newInputStream(Paths.get(tmpFilePath)),size);
-        }
     }
 
     @Override

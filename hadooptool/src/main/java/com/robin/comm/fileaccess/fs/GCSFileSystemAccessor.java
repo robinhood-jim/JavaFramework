@@ -12,9 +12,10 @@ import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
-import java.io.*;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.channels.Channels;
-import java.nio.file.Paths;
 import java.util.List;
 /**
  * Google Cloud Storage FileSystemAccessor,must init individual
@@ -75,24 +76,6 @@ public class GCSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
             return blob.getSize();
         }
         return 0;
-    }
-
-    @Override
-    protected boolean putObject(String bucketName, DataCollectionMeta meta, OutputStream outputStream) throws IOException {
-        checkStorage(meta);
-        BlobId blobId=BlobId.of(getBucketName(meta),meta.getPath());
-        String contentType=!ObjectUtils.isEmpty(meta.getContent().getContentType())?meta.getContent().getContentType():"application/octet-stream";
-        BlobInfo blobInfo= BlobInfo.newBuilder(blobId).setContentType(contentType).build();
-        Blob blob;
-        if(ByteArrayOutputStream.class.isAssignableFrom(outputStream.getClass())) {
-            ByteArrayOutputStream byteArrayOutputStream = (ByteArrayOutputStream) outputStream;
-            blob = storage.create(blobInfo, byteArrayOutputStream.toByteArray());
-        }else{
-            outputStream.close();
-            blob=storage.createFrom(blobInfo,Paths.get(tmpFilePath));
-        }
-        meta.getResourceCfgMap().put(ResourceConst.GCSPARAM.SELFLINK.getValue(),blob.getSelfLink());
-        return !ObjectUtils.isEmpty(blob.getEtag());
     }
 
     @Override

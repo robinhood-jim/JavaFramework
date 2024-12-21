@@ -27,6 +27,9 @@ import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 public class AwsUtils {
+    private AwsUtils(){
+
+    }
     public static S3Client getHttpClient() {
         return S3Client.builder().httpClientBuilder(ApacheHttpClient.builder()).build();
     }

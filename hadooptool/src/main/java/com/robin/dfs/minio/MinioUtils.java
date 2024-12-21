@@ -11,6 +11,9 @@ import java.util.ResourceBundle;
 
 @Slf4j
 public class MinioUtils {
+    private MinioUtils(){
+
+    }
     public static boolean bucketExists(MinioClient client,String bucketName){
         boolean found=false;
         try{

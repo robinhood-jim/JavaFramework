@@ -4,7 +4,6 @@ import com.aliyun.oss.OSS;
 import com.aliyun.oss.OSSClientBuilder;
 import com.aliyun.oss.common.auth.CredentialsProvider;
 import com.aliyun.oss.common.auth.CredentialsProviderFactory;
-import com.aliyun.oss.common.comm.ResponseMessage;
 import com.aliyun.oss.model.Bucket;
 import com.aliyun.oss.model.OSSObject;
 import com.aliyun.oss.model.ObjectMetadata;
@@ -13,16 +12,13 @@ import com.robin.core.base.exception.MissingConfigException;
 import com.robin.core.base.util.Const;
 import com.robin.core.base.util.ResourceConst;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
-import com.robin.core.fileaccess.util.ResourceUtil;
 import lombok.Getter;
-import org.apache.commons.io.FileUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
-import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * Aliyun OSS FileSystemAccessor
@@ -106,23 +102,6 @@ public class OSSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
         metadata.setContentType(getContentType(meta));
         metadata.setContentLength(size);
         PutObjectResult result=ossClient.putObject(bucketName,meta.getPath(),inputStream,metadata);
-        return result.getResponse().isSuccessful();
-    }
-
-    protected boolean putObject(String bucketName, DataCollectionMeta meta, OutputStream outputStream) throws IOException{
-        PutObjectResult result;
-        ObjectMetadata metadata=new ObjectMetadata();
-        if(!ObjectUtils.isEmpty(meta.getContent())){
-            metadata.setContentType(meta.getContent().getContentType());
-        }
-        if(ByteArrayOutputStream.class.isAssignableFrom(outputStream.getClass())) {
-            ByteArrayOutputStream byteArrayOutputStream=(ByteArrayOutputStream)outputStream;
-            metadata.setContentLength(byteArrayOutputStream.size());
-            result = ossClient.putObject(bucketName, meta.getPath(), new ByteArrayInputStream(byteArrayOutputStream.toByteArray()),metadata);
-        }else{
-            outputStream.close();
-            result=ossClient.putObject(bucketName,meta.getPath(), Files.newInputStream(Paths.get(tmpFilePath)),metadata);
-        }
         return result.getResponse().isSuccessful();
     }
 

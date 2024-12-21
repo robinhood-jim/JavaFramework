@@ -95,24 +95,6 @@ public class BOSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
         return !ObjectUtils.isEmpty(result) && !ObjectUtils.isEmpty(result.getETag());
     }
 
-    @Override
-    protected boolean putObject(String bucketName, DataCollectionMeta meta, OutputStream outputStream) throws IOException {
-        PutObjectResponse result;
-        ObjectMetadata metadata=new ObjectMetadata();
-        if(!ObjectUtils.isEmpty(meta.getContent())){
-            metadata.setContentType(meta.getContent().getContentType());
-        }
-        if(ByteArrayOutputStream.class.isAssignableFrom(outputStream.getClass())) {
-            ByteArrayOutputStream byteArrayOutputStream=(ByteArrayOutputStream)outputStream;
-            metadata.setContentLength(byteArrayOutputStream.size());
-            result = client.putObject(bucketName, meta.getPath(), new ByteArrayInputStream(byteArrayOutputStream.toByteArray()),metadata);
-        }else{
-            outputStream.close();
-            result=client.putObject(bucketName,meta.getPath(), Files.newInputStream(Paths.get(tmpFilePath)),metadata);
-        }
-        return !ObjectUtils.isEmpty(result) && !ObjectUtils.isEmpty(result.getETag());
-    }
-
     public static class Builder{
         private BOSFileSystemAccessor accessor;
         public Builder(){

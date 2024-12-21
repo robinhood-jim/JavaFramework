@@ -15,9 +15,8 @@ import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
-import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * HUAWEI OBS FileSystemAccessor,must init individual
@@ -89,24 +88,6 @@ public class OBSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
         metadata.setContentType(getContentType(meta));
         metadata.setContentLength(size);
         PutObjectResult result=client.putObject(bucketName,meta.getPath(), inputStream,metadata);
-        return result.getStatusCode()==200;
-    }
-
-    @Override
-    protected boolean putObject(String bucketName, DataCollectionMeta meta, OutputStream outputStream) throws IOException {
-        ObjectMetadata metadata=new ObjectMetadata();
-        PutObjectResult result;
-        if(!ObjectUtils.isEmpty(meta.getContent())){
-            metadata.setContentType(meta.getContent().getContentType());
-        }
-        if(ByteArrayOutputStream.class.isAssignableFrom(outputStream.getClass())) {
-            ByteArrayOutputStream byteArrayOutputStream = (ByteArrayOutputStream) outputStream;
-            metadata.setContentLength(Long.valueOf(byteArrayOutputStream.size()));
-            result=client.putObject(bucketName,meta.getPath(),new ByteArrayInputStream(byteArrayOutputStream.toByteArray()),metadata);
-        }else{
-            outputStream.close();
-            result=client.putObject(bucketName,meta.getPath(), Files.newInputStream(Paths.get(tmpFilePath)),metadata);
-        }
         return result.getStatusCode()==200;
     }
 

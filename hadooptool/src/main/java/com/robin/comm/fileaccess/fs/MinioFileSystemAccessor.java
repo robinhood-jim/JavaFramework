@@ -12,9 +12,8 @@ import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
-import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * Minio FileSystemAccessor,must init individual
@@ -69,18 +68,6 @@ public class MinioFileSystemAccessor extends AbstractCloudStorageFileSystemAcces
             return MinioUtils.getObject(client,bucketName,objectName);
         }catch (IOException ex){
             throw  new OperationNotSupportException(ex);
-        }
-    }
-
-    @Override
-    protected boolean putObject(String bucketName, DataCollectionMeta meta, OutputStream outputStream) throws IOException {
-        String contentType=!ObjectUtils.isEmpty(meta.getContent().getContentType())?meta.getContent().getContentType():"application/octet-stream";
-        if(ByteArrayOutputStream.class.isAssignableFrom(outputStream.getClass())){
-            ByteArrayOutputStream byteArrayOutputStream=(ByteArrayOutputStream)outputStream;
-            return MinioUtils.putBucket(client,getBucketName(meta),meta.getPath(),new ByteArrayInputStream(byteArrayOutputStream.toByteArray()),byteArrayOutputStream.size(),contentType);
-        }else{
-            outputStream.close();
-            return MinioUtils.putBucket(client,getBucketName(meta),meta.getPath(), Files.newInputStream(Paths.get(tmpFilePath)),Files.size(Paths.get(tmpFilePath)),contentType);
         }
     }
 
