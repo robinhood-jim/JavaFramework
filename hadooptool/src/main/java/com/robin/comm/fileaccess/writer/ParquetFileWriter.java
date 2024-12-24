@@ -134,6 +134,7 @@ public class ParquetFileWriter extends AbstractFileWriter {
 
     }
 
+
     @Override
     public void finishWrite() throws IOException {
         if(avroWriter!=null){

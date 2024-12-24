@@ -11,6 +11,7 @@ public class ResourceConst {
     public static final String DUMPEDOFFHEAPSIZEKEY ="dumpOffHeapSize";
     public static final String DEFAULTCONTENTTYPE="application/octet-stream";
     public static final int MAX_ARRAY_SIZE = Integer.MAX_VALUE - 8;
+    public static final int DEFAULTCACHEOFFHEAPSIZE=1024*1024*20;
 
     public enum IngestType {
         TYPE_HDFS(1L,"HDFS"),
@@ -191,7 +192,8 @@ public class ResourceConst {
     public enum MINIO{
         ENDPOINT("endpoint"),
         ACESSSKEY("accessKey"),
-        SECURITYKEY("securityKey");
+        SECURITYKEY("securityKey"),
+        REGION("region");
         private String value;
         MINIO(String value){
             this.value=value;

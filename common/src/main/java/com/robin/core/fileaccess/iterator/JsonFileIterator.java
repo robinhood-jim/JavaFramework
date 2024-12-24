@@ -38,6 +38,11 @@ public class JsonFileIterator extends AbstractFileIterator{
 		super(metaList);
 		identifier= Const.FILEFORMATSTR.JSON.getValue();
 	}
+	public JsonFileIterator(DataCollectionMeta metaList,AbstractFileSystemAccessor accessor) {
+		super(metaList);
+		identifier= Const.FILEFORMATSTR.JSON.getValue();
+		accessUtil=accessor;
+	}
 	@Override
 	public void beforeProcess() {
 		super.beforeProcess();

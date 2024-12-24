@@ -1,7 +1,7 @@
 package com.robin.comm.fileaccess.fs;
 
-import com.robin.comm.fileaccess.util.ByteBufferInputStream;
-import com.robin.comm.fileaccess.util.ByteBufferOutputStream;
+import com.robin.core.fileaccess.util.ByteBufferInputStream;
+import com.robin.core.fileaccess.util.ByteBufferOutputStream;
 import com.robin.core.base.exception.MissingConfigException;
 import com.robin.core.base.exception.OperationNotSupportException;
 import com.robin.core.base.util.ResourceConst;
@@ -27,8 +27,8 @@ public abstract class AbstractCloudStorageFileSystemAccessor extends AbstractFil
     protected String bucketName;
     protected String tmpFilePath;
     private int dumpOffHeapSize = ResourceConst.DEFAULTDUMPEDOFFHEAPSIZE;
-    private MemorySegment segment;
-    private boolean useFileCache = false;
+    protected MemorySegment segment;
+    protected boolean useFileCache = false;
 
     public void init() {
 
@@ -124,7 +124,7 @@ public abstract class AbstractCloudStorageFileSystemAccessor extends AbstractFil
                 ByteBufferOutputStream out1=(ByteBufferOutputStream) outputStream;
                 out1.reset();
                 ByteBufferInputStream inputStream = new ByteBufferInputStream(out1.getByteBuffer(),out1.getCount());
-                return putObject(bucketName, meta, inputStream, inputStream.available());
+                return putObject(bucketName, meta, inputStream, out1.getCount());
             } else {
                 outputStream.close();
                 return putObject(bucketName, meta, Files.newInputStream(Paths.get(tmpFilePath)), Files.size(Paths.get(tmpFilePath)));

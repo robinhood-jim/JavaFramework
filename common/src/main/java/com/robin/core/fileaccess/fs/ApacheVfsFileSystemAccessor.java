@@ -293,6 +293,14 @@ public class ApacheVfsFileSystemAccessor extends AbstractFileSystemAccessor {
         VfsParam param = new VfsParam();
         try {
             ConvertUtil.convertToTarget(param, meta.getResourceCfgMap());
+            FileObject object=null;
+            if(!ObjectUtils.isEmpty(meta.getResourceCfgMap().get(Const.ITERATOR_PROCESSID))){
+                object=objectMap.get(meta.getResourceCfgMap().get(Const.ITERATOR_PROCESSID).toString());
+            }
+            if(object!=null){
+                return object.getContent().getSize();
+            }
+
             try (FileObject fileObject = manager.resolveFile(getUriByParam(param, resourcePath).toString(), getOptions(param))) {
                 return fileObject.getContent().getSize();
             }

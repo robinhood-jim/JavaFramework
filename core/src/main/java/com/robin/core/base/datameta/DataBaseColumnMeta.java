@@ -25,7 +25,7 @@ public class DataBaseColumnMeta implements Serializable {
 	private String columnType;
 	private Integer dataType;
 	private String typeName;
-	private String columnLength;
+	private Integer columnLength;
 	private int dataPrecise;
 	private int dataScale;
 	private String comment;
@@ -38,7 +38,7 @@ public class DataBaseColumnMeta implements Serializable {
 	private Integer keySeq;
 	private String defaultValue;
 
-	public DataBaseColumnMeta() {
+	private DataBaseColumnMeta() {
 		
 	}
 	public DataBaseColumnMeta(String columnName,String columnType) {
@@ -49,8 +49,67 @@ public class DataBaseColumnMeta implements Serializable {
 		this.columnName=columnName;
 		this.columnType=columnType;
 		if(length!=null) {
-            this.columnLength=String.valueOf(length);
+            this.columnLength=length;
         }
+	}
+	public static class Builder{
+		private DataBaseColumnMeta meta=new DataBaseColumnMeta();
+		public static Builder builder(){
+			return new Builder();
+		}
+		public Builder columnName(String columnName){
+			meta.setColumnName(columnName);
+			return this;
+		}
+		public Builder columnType(String columnType){
+			meta.setColumnType(columnType);
+			return this;
+		}
+		public Builder dataType(Integer dataType){
+			meta.setDataType(dataType);
+			return this;
+		}
+		public Builder columnLength(Integer columnLength){
+			meta.setColumnLength(columnLength);
+			return this;
+		}
+		public Builder increment(boolean increment){
+			meta.setIncrement(increment);
+			return this;
+		}
+		public Builder defaultValue(String defaultValue){
+			meta.setDefaultValue(defaultValue);
+			return this;
+		}
+		public Builder primaryKey(boolean pkKey){
+			meta.setPrimaryKey(pkKey);
+			return this;
+		}
+		public Builder nullable(boolean nullable){
+			meta.setNullable(nullable);
+			return this;
+		}
+		public Builder precise(int precise){
+			meta.setDataPrecise(precise);
+			return this;
+		}
+		public Builder scale(int scale){
+			meta.setDataScale(scale);
+			return this;
+		}
+		public Builder comment(String comment){
+			meta.setComment(comment);
+			return this;
+		}
+		public Builder typeName(String typeName){
+			meta.setTypeName(typeName);
+			return this;
+		}
+		public DataBaseColumnMeta build(){
+			return meta;
+		}
+
+
 	}
 
 }	

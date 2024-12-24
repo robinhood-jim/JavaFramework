@@ -520,7 +520,7 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
         }else if(dataType.equals(Const.META_TYPE_TIMESTAMP)){
             builder.append(getTimestampFormat());
         }else if(dataType.equals(Const.META_TYPE_STRING)){
-            int length= org.apache.commons.lang3.StringUtils.isEmpty(field.getColumnLength())?0:Integer.parseInt(field.getColumnLength());
+            int length= field.getColumnLength();
             if(length==0){
                 length=32;
             }

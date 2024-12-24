@@ -22,6 +22,11 @@ public class ArffFileIterator extends PlainTextFileIterator{
         super(colmeta);
         identifier= Const.FILEFORMATSTR.ARFF.getValue();
     }
+    public ArffFileIterator(DataCollectionMeta colmeta,AbstractFileSystemAccessor accessor) {
+        super(colmeta);
+        identifier= Const.FILEFORMATSTR.ARFF.getValue();
+        accessUtil=accessor;
+    }
 
     @Override
     public void beforeProcess() {

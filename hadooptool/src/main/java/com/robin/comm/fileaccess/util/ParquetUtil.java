@@ -356,11 +356,11 @@ public class ParquetUtil {
                     builder.optional(PrimitiveType.PrimitiveTypeName.INT32).as(OriginalType.INT_32).named(columnMeta.getColumnName());
                     break;
                 case Const.META_TYPE_FLOAT:
-                    builder.optional(PrimitiveType.PrimitiveTypeName.FLOAT).as(OriginalType.DECIMAL).named(columnMeta.getColumnName());
+                    builder.optional(PrimitiveType.PrimitiveTypeName.FLOAT).named(columnMeta.getColumnName());
                     break;
                 case Const.META_TYPE_DOUBLE:
                 case Const.META_TYPE_DECIMAL:
-                    builder.optional(PrimitiveType.PrimitiveTypeName.DOUBLE).as(OriginalType.DECIMAL).named(columnMeta.getColumnName());
+                    builder.optional(PrimitiveType.PrimitiveTypeName.DOUBLE).named(columnMeta.getColumnName());
                     break;
                 case Const.META_TYPE_BIGINT:
                     builder.optional(PrimitiveType.PrimitiveTypeName.INT64).as(OriginalType.INT_64).named(columnMeta.getColumnName());

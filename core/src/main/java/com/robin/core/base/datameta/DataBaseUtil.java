@@ -28,6 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.support.JdbcUtils;
 import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 
 import javax.sql.DataSource;
 import java.sql.*;
@@ -131,41 +132,41 @@ public class DataBaseUtil {
             while (rs.next()) {
                 String columnname = rs.getString("COLUMN_NAME");
                 String columnType = translateDbType(rs.getInt("DATA_TYPE"));
-                String datalength = rs.getString("COLUMN_SIZE");
+                int datalength = !ObjectUtils.isEmpty(rs.getString("COLUMN_SIZE"))?Integer.parseInt(rs.getString("COLUMN_SIZE")):0;
                 boolean nullable = rs.getInt("NULLABLE") != DatabaseMetaData.columnNoNulls;
                 String comment = rs.getString("REMARKS");
                 int precise = rs.getInt("DECIMAL_DIGITS");
                 int scale = rs.getInt("NUM_PREC_RADIX");
                 String defaultValue=rs.getString("COLUMN_DEF");
 
-                DataBaseColumnMeta datameta = new DataBaseColumnMeta();
+                DataBaseColumnMeta.Builder builder = DataBaseColumnMeta.Builder.builder();
                 if (dataBaseMeta.supportAutoInc()) {
                     String autoInc = rs.getString("IS_AUTOINCREMENT");
                     if ("YES".equalsIgnoreCase(autoInc)) {
-                        datameta.setIncrement(true);
+                        builder.increment(true);
                     }
                 }
-                setType(columnname, columnType, rs.getInt("DATA_TYPE"), rs.getString("TYPE_NAME"), datalength, nullable, comment, precise, scale, datameta);
+                setType(columnname, columnType, rs.getInt("DATA_TYPE"), rs.getString("TYPE_NAME"), datalength, nullable, comment, precise, scale, builder);
                 if(!org.springframework.util.StringUtils.isEmpty(defaultValue)) {
-                    datameta.setDefaultValue(defaultValue);
+                    builder.defaultValue(defaultValue);
                 }
-                datameta.setPrimaryKey(pklist.contains(columnname));
-                columnlist.add(datameta);
+                builder.primaryKey(pklist.contains(columnname));
+                columnlist.add(builder.build());
             }
             return columnlist;
         }
     }
 
-    private static void setType(String columnname, String columnType, Integer datatype, String typeName, String datalength, boolean nullable, String comment, int precise, int scale, DataBaseColumnMeta datameta) {
-        datameta.setColumnName(columnname);
-        datameta.setColumnType(columnType);
-        datameta.setDataType(datatype);
-        datameta.setNullable(nullable);
-        datameta.setComment(comment);
-        datameta.setDataPrecise(precise);
-        datameta.setDataScale(scale);
-        datameta.setColumnLength(datalength);
-        datameta.setTypeName(typeName);
+    private static void setType(String columnname, String columnType, Integer datatype, String typeName, int datalength, boolean nullable, String comment, int precise, int scale, DataBaseColumnMeta.Builder builder) {
+        builder.columnName(columnname);
+        builder.columnType(columnType);
+        builder.dataType(datatype);
+        builder.nullable(nullable);
+        builder.comment(comment);
+        builder.precise(precise);
+        builder.scale(scale);
+        builder.columnLength(datalength);
+        builder.typeName(typeName);
     }
     @NonNull
     public static List<DataBaseColumnMeta> getTableMetaByTableName(DataSource source, String tableName, String dbOrtablespacename, String dbType) throws SQLException {
@@ -208,7 +209,7 @@ public class DataBaseUtil {
             while (rs.next()) {
                 String columnname = rs.getString("COLUMN_NAME");
                 String columnType = translateDbType(rs.getInt("DATA_TYPE"));
-                String datalength = rs.getString("COLUMN_SIZE");
+                int datalength = !ObjectUtils.isEmpty(rs.getString("COLUMN_SIZE"))?Integer.parseInt(rs.getString("COLUMN_SIZE")):0;
                 boolean nullable = rs.getInt("NULLABLE") != DatabaseMetaData.columnNoNulls;
                 String comment = "";
                 ResultSetMetaData rsmeta = rs.getMetaData();
@@ -222,18 +223,18 @@ public class DataBaseUtil {
                 int precise = rs.getInt("DECIMAL_DIGITS");
                 int scale = rs.getInt("NUM_PREC_RADIX");
 
-                DataBaseColumnMeta datameta = new DataBaseColumnMeta();
+                DataBaseColumnMeta.Builder builder =DataBaseColumnMeta.Builder.builder();
                 //SqlServer2005 may fail for not support  get AUTOINCREMENT  attribute
                 if (!dbType.equals(BaseDataBaseMeta.TYPE_ORACLE) && !dbType.equals(BaseDataBaseMeta.TYPE_ORACLERAC) && !dbType.equals(BaseDataBaseMeta.TYPE_HIVE)
                         && !dbType.equals(BaseDataBaseMeta.TYPE_HIVE2) && !dbType.equals(BaseDataBaseMeta.TYPE_PHONEIX)) {
                     String autoInc = rs.getString("IS_AUTOINCREMENT");
                     if ("YES".equalsIgnoreCase(autoInc)) {
-                        datameta.setIncrement(true);
+                        builder.increment(true);
                     }
                 }
-                setType(columnname, columnType, rs.getInt("DATA_TYPE"), rs.getString("TYPE_NAME"), datalength, nullable, comment, precise, scale, datameta);
-                datameta.setPrimaryKey(pklist != null && pklist.contains(columnname));
-                columnlist.add(datameta);
+                setType(columnname, columnType, rs.getInt("DATA_TYPE"), rs.getString("TYPE_NAME"), datalength, nullable, comment, precise, scale, builder);
+                builder.primaryKey(pklist != null && pklist.contains(columnname));
+                columnlist.add(builder.build());
             }
             return columnlist;
         }
@@ -287,18 +288,18 @@ public class DataBaseUtil {
             rsmeta = rs.getMetaData();
             int columnnum = rsmeta.getColumnCount();
             for (int i = 0; i < columnnum; i++) {
-                DataBaseColumnMeta datameta = new DataBaseColumnMeta();
+                DataBaseColumnMeta.Builder builder = DataBaseColumnMeta.Builder.builder();
                 String column = JdbcUtils.lookupColumnName(rsmeta, i + 1);
                 if (column.contains(".")) {
                     int pos = column.indexOf(".");
                     column = column.substring(pos + 1);
                 }
-                datameta.setColumnName(column);
-                datameta.setColumnType(translateDbType(rsmeta.getColumnType(i + 1)));
-                datameta.setColumnLength(String.valueOf(rsmeta.getColumnDisplaySize(i + 1)));
-                datameta.setDataScale(rsmeta.getScale(i + 1));
-                datameta.setDataPrecise(rsmeta.getPrecision(i + 1));
-                columnlist.add(datameta);
+                builder.columnName(column);
+                builder.columnType(translateDbType(rsmeta.getColumnType(i + 1)));
+                builder.columnLength(rsmeta.getColumnDisplaySize(i + 1));
+                builder.scale(rsmeta.getScale(i + 1));
+                builder.precise(rsmeta.getPrecision(i + 1));
+                columnlist.add(builder.build());
             }
             return columnlist;
         }

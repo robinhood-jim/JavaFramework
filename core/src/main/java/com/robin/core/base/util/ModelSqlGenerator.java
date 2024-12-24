@@ -99,7 +99,7 @@ public class ModelSqlGenerator {
                     //length change
                     if (field.getDataType().equals(columMap.get(field.getFieldName()).getColumnType())) {
                         if (!field.getDataType().equals(Const.META_TYPE_INTEGER) && !field.getDataType().equals(Const.META_TYPE_BIGINT)) {
-                            if (field.getLength() != 0 && field.getLength() != Integer.parseInt(columMap.get(field.getFieldName()).getColumnLength())) {
+                            if (field.getLength() != 0 && field.getLength() != columMap.get(field.getFieldName()).getColumnLength()) {
                                 alertSqls.add(sqlGen.getAlertColumnSqlPart(entityContent, field, BaseSqlGen.AlertType.ALERT));
                             }
                         }
