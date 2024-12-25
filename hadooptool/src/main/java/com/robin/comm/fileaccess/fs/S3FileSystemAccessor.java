@@ -1,6 +1,7 @@
 package com.robin.comm.fileaccess.fs;
 
 
+import com.robin.comm.fileaccess.fs.outputstream.S3OutputStream;
 import com.robin.core.base.exception.MissingConfigException;
 import com.robin.core.base.util.Const;
 import com.robin.core.base.util.ResourceConst;
@@ -17,6 +18,7 @@ import software.amazon.awssdk.services.s3.S3Client;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  * Amazon AWS FileSystemAccessor
@@ -74,6 +76,11 @@ public class S3FileSystemAccessor extends AbstractCloudStorageFileSystemAccessor
     @Override
     protected boolean putObject(String bucketName, DataCollectionMeta meta, InputStream inputStream, long size) throws IOException {
         return AwsUtils.put(client,bucketName,meta.getPath(),getContentType(meta),inputStream,size);
+    }
+
+    @Override
+    protected synchronized OutputStream getOutputStream(DataCollectionMeta meta) throws IOException {
+        return new S3OutputStream(client,meta,getBucketName(meta),meta.getPath());
     }
 
     @Override

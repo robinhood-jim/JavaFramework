@@ -95,6 +95,11 @@ public class BOSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
         return !ObjectUtils.isEmpty(result) && !ObjectUtils.isEmpty(result.getETag());
     }
 
+    @Override
+    protected OutputStream getOutputStream(DataCollectionMeta meta) throws IOException {
+        return null;
+    }
+
     public static class Builder{
         private BOSFileSystemAccessor accessor;
         public Builder(){

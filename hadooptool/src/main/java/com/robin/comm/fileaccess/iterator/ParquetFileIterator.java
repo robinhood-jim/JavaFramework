@@ -132,6 +132,7 @@ public class ParquetFileIterator extends AbstractFileIterator {
                     }
                 }
                 getSchema(file,true);
+
                 if (!useAvroEncode) {
                     ireader = CustomParquetReader.builder(file, colmeta).build();
                 } else {

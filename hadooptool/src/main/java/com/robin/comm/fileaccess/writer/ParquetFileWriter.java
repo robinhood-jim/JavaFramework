@@ -13,11 +13,14 @@ import org.apache.avro.generic.GenericRecord;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.parquet.avro.AvroParquetWriter;
+import org.apache.parquet.column.ParquetProperties;
 import org.apache.parquet.hadoop.ParquetWriter;
 import org.apache.parquet.hadoop.metadata.CompressionCodecName;
 import org.apache.parquet.hadoop.util.HadoopOutputFile;
 import org.apache.parquet.io.OutputFile;
 import org.apache.parquet.schema.MessageType;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 
 import javax.naming.OperationNotSupportedException;
 import java.io.IOException;
@@ -33,6 +36,12 @@ public class ParquetFileWriter extends AbstractFileWriter {
     private ParquetWriter<Map<String,Object>> mapWriter;
     private MessageType schema;
     private boolean useAvroEncode=false;
+    private ParquetProperties.WriterVersion writerVersion=ParquetProperties.WriterVersion.PARQUET_1_0;
+    private int pageSize=ParquetWriter.DEFAULT_PAGE_SIZE;
+    public static final String PAGESIZECOLUMN="parquet.Pagesize";
+    public static final String WRITEVERSION="parquet.writeVersion";
+
+    private CompressionCodecName codecName;
     public ParquetFileWriter(){
         this.identifier= Const.FILEFORMATSTR.PARQUET.getValue();
     }
@@ -41,12 +50,23 @@ public class ParquetFileWriter extends AbstractFileWriter {
         avroSchema= AvroUtils.getSchemaFromMeta(colmeta);
         schema=ParquetUtil.genSchema(colmeta);
         this.identifier= Const.FILEFORMATSTR.PARQUET.getValue();
+        try {
+            if (!CollectionUtils.isEmpty(colmeta.getResourceCfgMap())) {
+                if (!ObjectUtils.isEmpty(colmeta.getResourceCfgMap().get(PAGESIZECOLUMN))) {
+                    pageSize = Integer.parseInt(colmeta.getResourceCfgMap().get(PAGESIZECOLUMN).toString());
+                }
+                if (!ObjectUtils.isEmpty(colmeta.getResourceCfgMap().get(WRITEVERSION)) && "2".equals(colmeta.getResourceCfgMap().get(WRITEVERSION).toString())) {
+                    writerVersion= ParquetProperties.WriterVersion.PARQUET_2_0;
+                }
+            }
+        }catch (Exception ex){
+
+        }
+
     }
 
     @Override
     public void beginWrite() throws IOException {
-
-        CompressionCodecName codecName;
         Const.CompressType type= getCompressType();
         switch (type){
             case COMPRESS_TYPE_GZ:
@@ -91,17 +111,18 @@ public class ParquetFileWriter extends AbstractFileWriter {
                 OutputFile outputFile= HadoopOutputFile.fromPath(new Path(colmeta.getPath()),conf);
                 avroWriter = AvroParquetWriter.<GenericRecord>builder(outputFile).withSchema(avroSchema).withCompressionCodec(codecName).withConf(conf).build();
             }else {
-                mapWriter = new CustomParquetWriter(new Path(colmeta.getPath()), schema, true, codecName);
+                mapWriter =new CustomParquetWriter.Builder(new Path(colmeta.getPath()), schema).withPageSize(pageSize).withCompressionCodec(codecName).withDictionaryEncoding(false).withWriterVersion(writerVersion).build();
             }
         }else{
             out=accessUtil.getRawOutputStream(colmeta, ResourceUtil.getProcessPath(colmeta.getPath()));
             if(useAvroEncode) {
                 avroWriter = AvroParquetWriter.<GenericRecord>builder(ParquetUtil.makeOutputFile(out, colmeta, ResourceUtil.getProcessPath(colmeta.getPath()))).withCompressionCodec(codecName).withSchema(avroSchema).build();
             }else {
-                mapWriter = new CustomParquetWriter.Builder<Map<String, Object>>(ParquetUtil.makeOutputFile(out, colmeta, ResourceUtil.getProcessPath(colmeta.getPath())), schema).withCompressionCodec(codecName).build();
+                mapWriter = new CustomParquetWriter.Builder<Map<String, Object>>(ParquetUtil.makeOutputFile(out, colmeta, ResourceUtil.getProcessPath(colmeta.getPath())), schema).withPageSize(pageSize).withCompressionCodec(codecName).withDictionaryEncoding(false).withWriterVersion(writerVersion).build();
             }
         }
     }
+
 
     @Override
     public void writeRecord(Map<String, Object> map) throws IOException, OperationNotSupportedException {

@@ -12,6 +12,7 @@ public class ResourceConst {
     public static final String DEFAULTCONTENTTYPE="application/octet-stream";
     public static final int MAX_ARRAY_SIZE = Integer.MAX_VALUE - 8;
     public static final int DEFAULTCACHEOFFHEAPSIZE=1024*1024*20;
+    public static final String DEFAULTCACHEOFFHEAPSIZEKEY="defaultCacheHeapSize";
 
     public enum IngestType {
         TYPE_HDFS(1L,"HDFS"),
@@ -178,7 +179,8 @@ public class ResourceConst {
         REGION("region"),
         ACESSSKEY("accessKey"),
         SECURITYKEY("securityKey"),
-        DOWNDOMAIN("downDomain");
+        DOWNDOMAIN("downDomain"),
+        URLPREFIX("urlPrefix");
         private String value;
         QINIUPARAM(String value){
             this.value=value;

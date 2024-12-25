@@ -73,7 +73,6 @@ public class CustomMinioClient extends MinioAsyncClient {
             buffer.position(0);
             buffer.get(writeBytesRef.get(),0,(int)length);
             body =RequestBody.create(writeBytesRef.get());
-            //body=new ByteBufferRequestBody(buffer,contentType,(int)length);
             builder.put(body);
             final CompletableFuture<Response> completableFuture = new CompletableFuture();
             httpClient.newCall(builder.build()).enqueue(
@@ -99,7 +98,6 @@ public class CustomMinioClient extends MinioAsyncClient {
                 } finally {
                     response.close();
                 }
-                writeBytesRef.clear();
                 return response1;
             });
         }catch (Exception ex){

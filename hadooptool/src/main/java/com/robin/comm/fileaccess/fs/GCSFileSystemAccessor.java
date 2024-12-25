@@ -15,6 +15,7 @@ import org.springframework.util.ObjectUtils;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.channels.Channels;
 import java.util.List;
 /**
@@ -142,5 +143,10 @@ public class GCSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
             }
             return accessor;
         }
+    }
+
+    @Override
+    protected OutputStream getOutputStream(DataCollectionMeta meta) throws IOException {
+        return null;
     }
 }

@@ -1,7 +1,7 @@
 package com.robin.comm.fileaccess.fs;
 
-import com.robin.comm.fileaccess.fs.utils.CustomMinioClient;
 import com.robin.comm.fileaccess.fs.outputstream.MinioOutputStream;
+import com.robin.comm.fileaccess.fs.utils.CustomMinioClient;
 import com.robin.core.base.exception.OperationNotSupportException;
 import com.robin.core.base.util.Const;
 import com.robin.core.base.util.ResourceConst;
@@ -10,12 +10,10 @@ import com.robin.dfs.minio.MinioUtils;
 import io.minio.MinioAsyncClient;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FileUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -26,7 +24,6 @@ import java.io.OutputStream;
 @Slf4j
 @Getter
 public class MinioFileSystemAccessor extends AbstractCloudStorageFileSystemAccessor {
-    //private MinioClient client;
     private String accessKey;
     private String secretKey;
     private String endpoint;
@@ -69,20 +66,11 @@ public class MinioFileSystemAccessor extends AbstractCloudStorageFileSystemAcces
     }
 
     @Override
-    public synchronized OutputStream getRawOutputStream(DataCollectionMeta meta, String resourcePath) throws IOException {
-        return new MinioOutputStream(new CustomMinioClient(client),meta,bucketName,resourcePath,region);
+    protected synchronized OutputStream getOutputStream(DataCollectionMeta meta) throws IOException {
+        return new MinioOutputStream(new CustomMinioClient(client),meta,bucketName,meta.getPath(),region);
     }
 
-    @Override
-    public synchronized void finishWrite(DataCollectionMeta meta, OutputStream outputStream) {
-        if (!ObjectUtils.isEmpty(segment)) {
-            segment.free();
-            segment = null;
-        }
-        if (!ObjectUtils.isEmpty(tmpFilePath)) {
-            FileUtils.deleteQuietly(new File(tmpFilePath));
-        }
-    }
+
 
     @Override
     public boolean exists(DataCollectionMeta meta, String resourcePath) throws IOException {
