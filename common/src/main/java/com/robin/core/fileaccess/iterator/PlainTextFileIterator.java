@@ -38,6 +38,11 @@ public class PlainTextFileIterator extends AbstractFileIterator{
 		super(metaList);
 		identifier= Const.FILEFORMATSTR.CSV.getValue();
 	}
+	public PlainTextFileIterator(DataCollectionMeta metaList,AbstractFileSystemAccessor accessor) {
+		super(metaList);
+		identifier= Const.FILEFORMATSTR.CSV.getValue();
+		accessUtil=accessor;
+	}
 
 
 	@Override

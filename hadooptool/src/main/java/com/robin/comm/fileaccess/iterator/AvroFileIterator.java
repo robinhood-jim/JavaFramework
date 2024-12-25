@@ -3,6 +3,7 @@ package com.robin.comm.fileaccess.iterator;
 import com.robin.comm.utils.SysUtils;
 import com.robin.core.base.util.Const;
 import com.robin.core.base.util.ResourceConst;
+import com.robin.core.fileaccess.fs.AbstractFileSystemAccessor;
 import com.robin.core.fileaccess.iterator.AbstractFileIterator;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.util.AvroUtils;
@@ -49,6 +50,11 @@ public class AvroFileIterator extends AbstractFileIterator {
         super(colmeta);
         identifier = Const.FILEFORMATSTR.AVRO.getValue();
     }
+    public AvroFileIterator(DataCollectionMeta colmeta, AbstractFileSystemAccessor accessor) {
+        super(colmeta);
+        identifier = Const.FILEFORMATSTR.AVRO.getValue();
+        accessUtil=accessor;
+    }
 
     private File tmpFile;
     private SeekableInput input = null;
@@ -83,7 +89,7 @@ public class AvroFileIterator extends AbstractFileIterator {
             // no hdfs input source
             if (!ResourceConst.IngestType.TYPE_LOCAL.getValue().equals(colmeta.getSourceType())) {
                 instream = accessUtil.getRawInputStream(colmeta, ResourceUtil.getProcessPath(resourcePath));
-                int size = instream.available();
+                long size = accessUtil.getInputStreamSize(colmeta, ResourceUtil.getProcessPath(colmeta.getPath()));
                 Double freeMemory = SysUtils.getFreeMemory();
                 //file size too large ,can not store in ByteBuffer or freeMemory too low
                 if (size >=ResourceConst.MAX_ARRAY_SIZE || freeMemory < allowOffHeapDumpLimit) {
@@ -92,7 +98,7 @@ public class AvroFileIterator extends AbstractFileIterator {
                     copyToLocal(tmpFile, instream);
                     input = new SeekableFileInput(tmpFile);
                 } else {
-                    segment = MemorySegmentFactory.allocateOffHeapUnsafeMemory(size, this, new Thread() {});
+                    segment = MemorySegmentFactory.allocateOffHeapUnsafeMemory((int)size, this, new Thread() {});
                     ByteBuffer byteBuffer = segment.getOffHeapBuffer();
                     try (ReadableByteChannel channel = Channels.newChannel(instream)) {
                         IOUtils.readFully(channel, byteBuffer);

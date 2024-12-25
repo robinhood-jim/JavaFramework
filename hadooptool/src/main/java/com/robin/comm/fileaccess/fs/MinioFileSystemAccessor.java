@@ -1,11 +1,13 @@
 package com.robin.comm.fileaccess.fs;
 
+import com.robin.comm.fileaccess.fs.outputstream.MinioOutputStream;
+import com.robin.comm.fileaccess.fs.utils.CustomMinioClient;
 import com.robin.core.base.exception.OperationNotSupportException;
 import com.robin.core.base.util.Const;
 import com.robin.core.base.util.ResourceConst;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.dfs.minio.MinioUtils;
-import io.minio.MinioClient;
+import io.minio.MinioAsyncClient;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.Assert;
@@ -14,6 +16,7 @@ import org.springframework.util.ObjectUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  * Minio FileSystemAccessor,must init individual
@@ -21,10 +24,11 @@ import java.io.InputStream;
 @Slf4j
 @Getter
 public class MinioFileSystemAccessor extends AbstractCloudStorageFileSystemAccessor {
-    private MinioClient client;
     private String accessKey;
     private String secretKey;
     private String endpoint;
+    private String region;
+    private MinioAsyncClient client;
 
     private MinioFileSystemAccessor(){
         this.identifier= Const.FILESYSTEM.MINIO.getValue();
@@ -40,7 +44,13 @@ public class MinioFileSystemAccessor extends AbstractCloudStorageFileSystemAcces
         endpoint=meta.getResourceCfgMap().get(ResourceConst.MINIO.ENDPOINT.getValue()).toString();
         accessKey=meta.getResourceCfgMap().get(ResourceConst.MINIO.ACESSSKEY.getValue()).toString();
         secretKey=meta.getResourceCfgMap().get(ResourceConst.MINIO.SECURITYKEY.getValue()).toString();
-        MinioClient.Builder builder=MinioClient.builder().endpoint(endpoint).credentials(accessKey,secretKey);
+        if(!ObjectUtils.isEmpty(meta.getResourceCfgMap().get(ResourceConst.MINIO.REGION.getValue()))){
+            region=meta.getResourceCfgMap().get(ResourceConst.MINIO.REGION.getValue()).toString();
+        }
+        MinioAsyncClient.Builder builder=MinioAsyncClient.builder().endpoint(endpoint).credentials(accessKey,secretKey);
+        if(!ObjectUtils.isEmpty(region)){
+            builder.region(region);
+        }
         client=builder.build();
     }
     public void init(){
@@ -48,9 +58,18 @@ public class MinioFileSystemAccessor extends AbstractCloudStorageFileSystemAcces
         Assert.notNull(endpoint,"must provide endpoint");
         Assert.notNull(accessKey,"must provide accessKey");
         Assert.notNull(secretKey,"must provide securityKey");
-        MinioClient.Builder builder=MinioClient.builder().endpoint(endpoint).credentials(accessKey,secretKey);
+        MinioAsyncClient.Builder builder=MinioAsyncClient.builder().endpoint(endpoint).credentials(accessKey,secretKey);
+        if(!ObjectUtils.isEmpty(region)){
+            builder.region(region);
+        }
         client=builder.build();
     }
+
+    @Override
+    protected synchronized OutputStream getOutputStream(DataCollectionMeta meta) throws IOException {
+        return new MinioOutputStream(new CustomMinioClient(client),meta,bucketName,meta.getPath(),region);
+    }
+
 
 
     @Override
@@ -70,6 +89,7 @@ public class MinioFileSystemAccessor extends AbstractCloudStorageFileSystemAcces
             throw  new OperationNotSupportException(ex);
         }
     }
+
 
     @Override
     protected boolean putObject(String bucketName, DataCollectionMeta meta, InputStream inputStream,long size) throws IOException {
@@ -99,6 +119,10 @@ public class MinioFileSystemAccessor extends AbstractCloudStorageFileSystemAcces
 
         public Builder bucket(String bucketName){
             accessor.bucketName=bucketName;
+            return this;
+        }
+        public Builder region(String region){
+            accessor.region=region;
             return this;
         }
         public Builder withMetaConfig(DataCollectionMeta meta){

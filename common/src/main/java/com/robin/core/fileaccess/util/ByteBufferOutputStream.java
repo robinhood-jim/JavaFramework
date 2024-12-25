@@ -1,4 +1,4 @@
-package com.robin.comm.fileaccess.util;
+package com.robin.core.fileaccess.util;
 
 import java.io.IOException;
 import java.io.OutputStream;

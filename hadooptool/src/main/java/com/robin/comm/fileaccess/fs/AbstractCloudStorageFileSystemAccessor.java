@@ -1,7 +1,7 @@
 package com.robin.comm.fileaccess.fs;
 
-import com.robin.comm.fileaccess.util.ByteBufferInputStream;
-import com.robin.comm.fileaccess.util.ByteBufferOutputStream;
+import com.robin.core.fileaccess.util.ByteBufferInputStream;
+import com.robin.core.fileaccess.util.ByteBufferOutputStream;
 import com.robin.core.base.exception.MissingConfigException;
 import com.robin.core.base.exception.OperationNotSupportException;
 import com.robin.core.base.util.ResourceConst;
@@ -27,8 +27,8 @@ public abstract class AbstractCloudStorageFileSystemAccessor extends AbstractFil
     protected String bucketName;
     protected String tmpFilePath;
     private int dumpOffHeapSize = ResourceConst.DEFAULTDUMPEDOFFHEAPSIZE;
-    private MemorySegment segment;
-    private boolean useFileCache = false;
+    protected MemorySegment segment;
+    protected boolean useFileCache = false;
 
     public void init() {
 
@@ -69,10 +69,6 @@ public abstract class AbstractCloudStorageFileSystemAccessor extends AbstractFil
 
     @Override
     public synchronized void finishWrite(DataCollectionMeta meta, OutputStream outputStream) {
-
-        if (!uploadStorage(getBucketName(meta), meta, outputStream)) {
-            throw new MissingConfigException("error!");
-        }
         if (!ObjectUtils.isEmpty(segment)) {
             segment.free();
             segment = null;
@@ -98,33 +94,16 @@ public abstract class AbstractCloudStorageFileSystemAccessor extends AbstractFil
      * @return
      * @throws IOException
      */
-    protected synchronized OutputStream getOutputStream(DataCollectionMeta meta) throws IOException {
-        OutputStream outputStream;
-        if (!ObjectUtils.isEmpty(meta.getResourceCfgMap().get(ResourceConst.USETMPFILETAG)) && "true".equalsIgnoreCase(meta.getResourceCfgMap().get(ResourceConst.USETMPFILETAG).toString())) {
-            String tmpPath = com.robin.core.base.util.FileUtils.getWorkingPath(meta);
-            tmpFilePath = tmpPath + ResourceUtil.getProcessFileName(meta.getPath());
-            outputStream = Files.newOutputStream(Paths.get(tmpFilePath));
-            useFileCache = true;
-        } else {
-            if (!ObjectUtils.isEmpty(segment)) {
-                throw new OperationNotSupportException("Off Heap Segment is still in used! try later");
-            }
-            if (!ObjectUtils.isEmpty(meta.getResourceCfgMap().get(ResourceConst.DUMPEDOFFHEAPSIZEKEY))) {
-                dumpOffHeapSize = Integer.parseInt(meta.getResourceCfgMap().get(ResourceConst.DUMPEDOFFHEAPSIZEKEY).toString());
-            }
-            segment = MemorySegmentFactory.allocateOffHeapUnsafeMemory(dumpOffHeapSize, this, new Thread() {});
-            outputStream = new ByteBufferOutputStream(segment.getOffHeapBuffer());
-        }
-        return outputStream;
-    }
+    protected abstract OutputStream getOutputStream(DataCollectionMeta meta) throws IOException;
 
-    protected boolean uploadStorage(String bucketName, DataCollectionMeta meta, OutputStream outputStream) {
+
+    /*protected boolean uploadStorage(String bucketName, DataCollectionMeta meta, OutputStream outputStream) {
         try {
             if (!useFileCache) {
                 ByteBufferOutputStream out1=(ByteBufferOutputStream) outputStream;
                 out1.reset();
                 ByteBufferInputStream inputStream = new ByteBufferInputStream(out1.getByteBuffer(),out1.getCount());
-                return putObject(bucketName, meta, inputStream, inputStream.available());
+                return putObject(bucketName, meta, inputStream, out1.getCount());
             } else {
                 outputStream.close();
                 return putObject(bucketName, meta, Files.newInputStream(Paths.get(tmpFilePath)), Files.size(Paths.get(tmpFilePath)));
@@ -141,7 +120,7 @@ public abstract class AbstractCloudStorageFileSystemAccessor extends AbstractFil
             }
         }
         return false;
-    }
+    }*/
 
     protected String getContentType(DataCollectionMeta meta) {
         return !ObjectUtils.isEmpty(meta.getContent()) && !ObjectUtils.isEmpty(meta.getContent().getContentType()) ? meta.getContent().getContentType() : ResourceConst.DEFAULTCONTENTTYPE;

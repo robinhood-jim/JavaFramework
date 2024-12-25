@@ -2,6 +2,7 @@ package com.robin.comm.fileaccess.fs;
 
 import com.google.gson.Gson;
 import com.qiniu.common.QiniuException;
+import com.qiniu.http.Client;
 import com.qiniu.http.Response;
 import com.qiniu.storage.BucketManager;
 import com.qiniu.storage.Configuration;
@@ -10,6 +11,7 @@ import com.qiniu.storage.UploadManager;
 import com.qiniu.storage.model.DefaultPutRet;
 import com.qiniu.storage.model.FileInfo;
 import com.qiniu.util.Auth;
+import com.robin.comm.fileaccess.fs.outputstream.QiniuOutputStream;
 import com.robin.comm.util.json.GsonUtil;
 import com.robin.core.base.util.Const;
 import com.robin.core.base.util.ResourceConst;
@@ -23,6 +25,7 @@ import org.springframework.util.ObjectUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLEncoder;
 
@@ -42,6 +45,8 @@ public class QiniuFileSystemAccessor extends AbstractCloudStorageFileSystemAcces
     private Region region;
     private final Gson gson= GsonUtil.getGson();
     private String downDomain;
+    private Client client;
+    private String urlPrefix;
     private QiniuFileSystemAccessor(){
         this.identifier= Const.FILESYSTEM.QINIU.getValue();
     }
@@ -54,14 +59,18 @@ public class QiniuFileSystemAccessor extends AbstractCloudStorageFileSystemAcces
         Assert.notNull(meta.getResourceCfgMap().get(ResourceConst.QINIUPARAM.ACESSSKEY.getValue()),"must provide accessKey");
         Assert.notNull(meta.getResourceCfgMap().get(ResourceConst.QINIUPARAM.SECURITYKEY.getValue()),"must provide securityKey");
         Assert.notNull(meta.getResourceCfgMap().get(ResourceConst.QINIUPARAM.DOWNDOMAIN.getValue()),"must provide downDomain");
+        Assert.notNull(meta.getResourceCfgMap().get(ResourceConst.QINIUPARAM.URLPREFIX.getValue()),"must provide urlPrefix");
         accessKey=meta.getResourceCfgMap().get(ResourceConst.QINIUPARAM.ACESSSKEY.getValue()).toString();
         secretKey=meta.getResourceCfgMap().get(ResourceConst.QINIUPARAM.SECURITYKEY.getValue()).toString();
         domain=meta.getResourceCfgMap().get(ResourceConst.QINIUPARAM.DOMAIN.getValue()).toString();
         auth= Auth.create(accessKey,secretKey);
         region=Region.autoRegion();
+        urlPrefix=meta.getResourceCfgMap().get(ResourceConst.QINIUPARAM.URLPREFIX.getValue()).toString();
+
         downDomain=meta.getResourceCfgMap().get(ResourceConst.QINIUPARAM.DOWNDOMAIN.getValue()).toString();
         Configuration cfg=new Configuration(region);
         cfg.resumableUploadAPIVersion=Configuration.ResumableUploadAPIVersion.V2;
+        client=new Client(cfg);
         uploadManager=new UploadManager(cfg);
     }
     public void init(){
@@ -73,9 +82,8 @@ public class QiniuFileSystemAccessor extends AbstractCloudStorageFileSystemAcces
         Configuration cfg=new Configuration(region);
         cfg.resumableUploadAPIVersion=Configuration.ResumableUploadAPIVersion.V2;
         uploadManager=new UploadManager(cfg);
+        client=new Client(cfg);
     }
-
-
 
     @Override
     public boolean exists(DataCollectionMeta meta, String resourcePath) throws IOException {
@@ -115,6 +123,11 @@ public class QiniuFileSystemAccessor extends AbstractCloudStorageFileSystemAcces
         return !ObjectUtils.isEmpty(putRet);
     }
 
+    @Override
+    protected synchronized OutputStream getOutputStream(DataCollectionMeta meta) throws IOException {
+        return new QiniuOutputStream(client,uploadManager,meta,auth,getBucketName(meta),meta.getPath(),urlPrefix);
+    }
+
     protected InputStream getObject(@NonNull String bucketName, @NonNull String key) {
         try{
             String fileUrl= URLEncoder.encode(bucketName,"UTF-8").replace("+","%20");
@@ -152,6 +165,10 @@ public class QiniuFileSystemAccessor extends AbstractCloudStorageFileSystemAcces
         }
         public Builder bucket(String bucketName){
             accessor.bucketName=bucketName;
+            return this;
+        }
+        public Builder urlPrefix(String urlPrefix){
+            accessor.urlPrefix=urlPrefix;
             return this;
         }
         public Builder withMetaConfig(DataCollectionMeta meta){

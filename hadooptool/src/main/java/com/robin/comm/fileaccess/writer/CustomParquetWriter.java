@@ -13,7 +13,7 @@ import java.io.IOException;
 import java.util.Map;
 
 public class CustomParquetWriter extends ParquetWriter<Map<String,Object>> {
-    public CustomParquetWriter(Path path, MessageType schema, boolean enableDictionary, CompressionCodecName codecName) throws IOException {
+    private CustomParquetWriter(Path path, MessageType schema, boolean enableDictionary, CompressionCodecName codecName) throws IOException {
         super(path,new CustomWriteSupport(schema),codecName,DEFAULT_BLOCK_SIZE, DEFAULT_PAGE_SIZE, enableDictionary, false);
     }
     public static class Builder<T> extends org.apache.parquet.hadoop.ParquetWriter.Builder<T, CustomParquetWriter.Builder<T>> {
@@ -38,6 +38,7 @@ public class CustomParquetWriter extends ParquetWriter<Map<String,Object>> {
             super.withCompressionCodec(compressCode);
             return this;
         }
+
 
         @Override
         protected CustomParquetWriter.Builder<T> self() {

@@ -146,6 +146,10 @@ public class DataCollectionMeta implements Serializable {
 			meta.getResourceCfgMap().put(key,value);
 			return this;
 		}
+		public DataCollectionMeta.Builder resourceCfg(Map<String,Object> map){
+			meta.getResourceCfgMap().putAll(map);
+			return this;
+		}
 		public DataCollectionMeta.Builder fsType(String fsType){
 			meta.setFsType(fsType);
 			return this;

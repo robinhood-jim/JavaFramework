@@ -17,6 +17,7 @@ import org.springframework.util.ObjectUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  * HUAWEI OBS FileSystemAccessor,must init individual
@@ -134,6 +135,11 @@ public class OBSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
             return accessor;
         }
 
+    }
+
+    @Override
+    protected OutputStream getOutputStream(DataCollectionMeta meta) throws IOException {
+        return null;
     }
 
     public ObsClient getClient() {

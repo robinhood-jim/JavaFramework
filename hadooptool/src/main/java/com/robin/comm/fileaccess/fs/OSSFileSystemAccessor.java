@@ -8,6 +8,7 @@ import com.aliyun.oss.model.Bucket;
 import com.aliyun.oss.model.OSSObject;
 import com.aliyun.oss.model.ObjectMetadata;
 import com.aliyun.oss.model.PutObjectResult;
+import com.robin.comm.fileaccess.fs.outputstream.OSSOutputStream;
 import com.robin.core.base.exception.MissingConfigException;
 import com.robin.core.base.util.Const;
 import com.robin.core.base.util.ResourceConst;
@@ -19,6 +20,7 @@ import org.springframework.util.ObjectUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  * Aliyun OSS FileSystemAccessor
@@ -63,7 +65,10 @@ public class OSSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
                 .region(region).build();
     }
 
-
+    @Override
+    protected synchronized OutputStream getOutputStream(DataCollectionMeta meta) throws IOException {
+        return new OSSOutputStream(ossClient,meta,getBucketName(meta),meta.getPath(),region);
+    }
 
     @Override
     public boolean exists(DataCollectionMeta meta, String resourcePath) throws IOException {

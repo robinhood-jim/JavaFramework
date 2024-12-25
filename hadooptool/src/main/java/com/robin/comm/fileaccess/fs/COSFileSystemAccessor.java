@@ -10,6 +10,7 @@ import com.qcloud.cos.region.Region;
 import com.qcloud.cos.transfer.TransferManager;
 import com.qcloud.cos.transfer.TransferManagerConfiguration;
 import com.qcloud.cos.transfer.Upload;
+import com.robin.comm.fileaccess.fs.outputstream.COSOutputStream;
 import com.robin.core.base.exception.OperationNotSupportException;
 import com.robin.core.base.exception.ResourceNotAvailableException;
 import com.robin.core.base.util.Const;
@@ -135,6 +136,11 @@ public class COSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
             }
         }
         return false;
+    }
+
+    @Override
+    protected OutputStream getOutputStream(DataCollectionMeta meta) throws IOException {
+        return new COSOutputStream(cosClient,meta,getBucketName(meta),meta.getPath(),regionName);
     }
 
     public static class Builder{

@@ -15,6 +15,7 @@
  */
 package com.robin.comm.util.http;
 
+import com.robin.core.fileaccess.util.ByteBufferInputStream;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -35,6 +36,7 @@ import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.entity.ContentType;
+import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
@@ -53,6 +55,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.net.UnknownHostException;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
@@ -225,6 +228,24 @@ public class HttpUtils {
             if (data != null && !"".equals(data)) {
                 StringEntity entity = null;
                 entity = new StringEntity(data, charset);
+                put.setEntity(entity);
+            }
+            return getResponseData(httpClient, put, charset);
+        } catch (Exception ex) {
+            log.error("{}", ex);
+        } finally {
+            put.releaseConnection();
+        }
+        return new Response(500,"");
+    }
+    public static Response doPut(String url, ByteBuffer buffer,int size, String charset, Map<String, String> headerMap) {
+        CloseableHttpClient httpClient = createHttpClient();
+        HttpPut put = new HttpPut(url);
+        config(put);
+        fillHeader(put, headerMap);
+        try {
+            if (buffer!=null) {
+                InputStreamEntity entity = new InputStreamEntity(new ByteBufferInputStream(buffer,size));
                 put.setEntity(entity);
             }
             return getResponseData(httpClient, put, charset);

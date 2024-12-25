@@ -1,14 +1,17 @@
-package com.robin.comm.fileaccess.util;
+package com.robin.core.fileaccess.util;
+
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
-
+@Slf4j
 public class ByteBufferInputStream  extends InputStream {
     private ByteBuffer byteBuffer;
     private int count;
     public ByteBufferInputStream(ByteBuffer byteBuffer,int count){
         this.byteBuffer=byteBuffer;
+        byteBuffer.position(0);
         this.count=count;
     }
     @Override
@@ -21,7 +24,7 @@ public class ByteBufferInputStream  extends InputStream {
 
     @Override
     public int available() throws IOException {
-        return byteBuffer.remaining();
+        return count-byteBuffer.position();
     }
 
     @Override

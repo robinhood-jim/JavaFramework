@@ -1,7 +1,8 @@
 package com.robin.core.fileaccess.meta;
 
-import com.robin.core.base.datameta.DataBaseParam;
+import com.robin.core.base.datameta.DataBaseColumnMeta;
 import lombok.Data;
+import org.springframework.util.ObjectUtils;
 
 import java.io.Serializable;
 import java.util.List;
@@ -53,6 +54,15 @@ public class DataSetColumnMeta implements Serializable {
             this.defaultNullValue="";
         }
         this.required=required;
+    }
+    public DataBaseColumnMeta toDataBaseColumnMeta(){
+        DataBaseColumnMeta.Builder builder=DataBaseColumnMeta.Builder.builder();
+        builder.columnName(columnName).columnType(columnType);
+        if(!ObjectUtils.isEmpty(defaultNullValue)){
+            builder.defaultValue(defaultNullValue.toString());
+        }
+        builder.scale(scale).precise(precise).primaryKey(primary).nullable(!required).increment(increment);
+        return builder.build();
     }
 
 }

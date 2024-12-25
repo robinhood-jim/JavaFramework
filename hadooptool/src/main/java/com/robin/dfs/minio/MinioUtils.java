@@ -14,17 +14,17 @@ public class MinioUtils {
     private MinioUtils(){
 
     }
-    public static boolean bucketExists(MinioClient client,String bucketName){
+    public static boolean bucketExists(MinioAsyncClient client,String bucketName){
         boolean found=false;
         try{
-            found=client.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build());
+            found=client.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build()).get();
         }catch (Exception e){
             log.error("{}",e);
         }
         return found;
     }
 
-    public static boolean putBucket(MinioClient client,String bucketName, String objectName, InputStream inputStream,long fileSize,String contentType){
+    public static boolean putBucket(MinioAsyncClient client,String bucketName, String objectName, InputStream inputStream,long fileSize,String contentType){
         try{
             PutObjectArgs args= PutObjectArgs.builder().bucket(bucketName).object(objectName)
                     .stream(inputStream,fileSize,-1).contentType(contentType).build();
@@ -35,7 +35,7 @@ public class MinioUtils {
         }
         return true;
     }
-    public static boolean exists(MinioClient client,String bucketName,String key){
+    public static boolean exists(MinioAsyncClient client,String bucketName,String key){
         try{
             client.statObject(StatObjectArgs.builder().bucket(bucketName).object(key).build());
             return true;
@@ -43,27 +43,27 @@ public class MinioUtils {
             return false;
         }
     }
-    public static long size(MinioClient client,String bucketName,String key){
+    public static long size(MinioAsyncClient client,String bucketName,String key){
         try{
-            StatObjectResponse response=client.statObject(StatObjectArgs.builder().bucket(bucketName).object(key).build());
+            StatObjectResponse response=client.statObject(StatObjectArgs.builder().bucket(bucketName).object(key).build()).get();
             return response.size();
         }catch (Exception ex){
             return 0L;
         }
     }
-    public static InputStream getObject(MinioClient client,String bucketName,String objectName) throws IOException{
+    public static InputStream getObject(MinioAsyncClient client,String bucketName,String objectName) throws IOException{
         try {
             GetObjectArgs args = GetObjectArgs.builder().bucket(bucketName).object(objectName).build();
-            return client.getObject(args);
+            return client.getObject(args).get();
         }catch (Exception ex){
             throw new IOException(ex);
         }
     }
 
-    public static boolean download(MinioClient client,String bucketName,String objectName, OutputStream outputStream){
+    public static boolean download(MinioAsyncClient client,String bucketName,String objectName, OutputStream outputStream){
         boolean executeOk=false;
         GetObjectArgs args= GetObjectArgs.builder().bucket(bucketName).object(objectName).build();
-        try(GetObjectResponse response1=client.getObject(args)){
+        try(GetObjectResponse response1=client.getObject(args).get()){
             IOUtils.copy(response1,outputStream);
             executeOk=true;
         }catch (Exception ex){
@@ -71,9 +71,9 @@ public class MinioUtils {
         }
         return executeOk;
     }
-    public static void download(MinioClient client,String bucketName,String objectName,String contentType,  HttpServletResponse response) throws Exception{
+    public static void download(MinioAsyncClient client,String bucketName,String objectName,String contentType,  HttpServletResponse response) throws Exception{
         GetObjectArgs args= GetObjectArgs.builder().bucket(bucketName).object(objectName).build();
-        try(GetObjectResponse response1=client.getObject(args)){
+        try(GetObjectResponse response1=client.getObject(args).get()){
             int pos=objectName.lastIndexOf("/");
             String fileName=objectName.substring(pos);
             response.setCharacterEncoding("utf-8");

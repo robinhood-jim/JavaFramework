@@ -4,6 +4,7 @@ import com.robin.comm.fileaccess.util.MockFileSystem;
 import com.robin.comm.utils.SysUtils;
 import com.robin.core.base.util.Const;
 import com.robin.core.base.util.ResourceConst;
+import com.robin.core.fileaccess.fs.AbstractFileSystemAccessor;
 import com.robin.core.fileaccess.iterator.AbstractFileIterator;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.util.ResourceUtil;
@@ -52,6 +53,15 @@ public class OrcFileIterator extends AbstractFileIterator {
             allowOffHeapDumpLimit=Double.parseDouble(colmeta.getResourceCfgMap().get(ResourceConst.ALLOWOFFHEAPKEY).toString());
         }
     }
+    public OrcFileIterator(DataCollectionMeta colmeta, AbstractFileSystemAccessor accessor) {
+        super(colmeta);
+        identifier= Const.FILEFORMATSTR.ORC.getValue();
+        if(!CollectionUtils.isEmpty(colmeta.getResourceCfgMap()) && colmeta.getResourceCfgMap().containsKey(ResourceConst.ALLOWOFFHEAPKEY)){
+            allowOffHeapDumpLimit=Double.parseDouble(colmeta.getResourceCfgMap().get(ResourceConst.ALLOWOFFHEAPKEY).toString());
+        }
+        accessUtil=accessor;
+    }
+
     private final Map<String,Object> valueMap=new HashMap<>();
     int maxRow=-1;
     int currentRow=0;
@@ -147,11 +157,11 @@ public class OrcFileIterator extends AbstractFileIterator {
                     readPath=new File(readPath).toURI().toString();
                 }else {
                     instream = accessUtil.getRawInputStream(colmeta, ResourceUtil.getProcessPath(colmeta.getPath()));
-                    int size = instream.available();
+                    long size = accessUtil.getInputStreamSize(colmeta, ResourceUtil.getProcessPath(colmeta.getPath()));
                     Double freeMemory= SysUtils.getFreeMemory();
                     if (size < ResourceConst.MAX_ARRAY_SIZE && freeMemory>allowOffHeapDumpLimit) {
                         //use flink memory utils to use offHeapMemory to dump file content
-                        segment= MemorySegmentFactory.allocateOffHeapUnsafeMemory(size,this,new Thread(){});
+                        segment= MemorySegmentFactory.allocateOffHeapUnsafeMemory((int)size,this,new Thread(){});
                         ByteBuffer byteBuffer=segment.getOffHeapBuffer();
                         try(ReadableByteChannel channel= Channels.newChannel(instream)) {
                             org.apache.commons.io.IOUtils.readFully(channel, byteBuffer);
