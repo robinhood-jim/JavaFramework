@@ -6,6 +6,7 @@ import com.baidubce.services.bos.BosClientConfiguration;
 import com.baidubce.services.bos.model.BosObject;
 import com.baidubce.services.bos.model.ObjectMetadata;
 import com.baidubce.services.bos.model.PutObjectResponse;
+import com.robin.comm.fileaccess.fs.outputstream.BOSOutputStream;
 import com.robin.core.base.exception.MissingConfigException;
 import com.robin.core.base.util.Const;
 import com.robin.core.base.util.ResourceConst;
@@ -97,7 +98,7 @@ public class BOSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
 
     @Override
     protected OutputStream getOutputStream(DataCollectionMeta meta) throws IOException {
-        return null;
+        return new BOSOutputStream(client,meta,bucketName, meta.getPath());
     }
 
     public static class Builder{

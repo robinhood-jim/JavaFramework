@@ -2,12 +2,12 @@ package com.robin.comm.fileaccess.fs.outputstream;
 
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.util.ByteBufferInputStream;
-import org.springframework.util.ObjectUtils;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
 
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 
 public class S3OutputStream extends AbstractUploadPartOutputStream {
     private S3Client client;
@@ -21,27 +21,18 @@ public class S3OutputStream extends AbstractUploadPartOutputStream {
         this.bucketName = bucketName;
         this.path = path;
         this.meta = meta;
-        initHeap();
+        init();
     }
 
-
     @Override
-    protected void flushIfNecessary(boolean force) throws IOException {
-        try {
-            if (ObjectUtils.isEmpty(uploadId)) {
-                CreateMultipartUploadRequest uploadRequest = CreateMultipartUploadRequest.builder()
-                        .bucket(bucketName)
-                        .key(path)
-                        .build();
-                CreateMultipartUploadResponse multipartUpload = client.createMultipartUpload(uploadRequest);
-                uploadId = multipartUpload.uploadId();
-            }
-            if (position >= buffer.capacity() || force) {
-                uploadPart();
-                buffer.clear();
-                buffer.position(0);
-                position = 0;
-            }
+    protected void initiateUpload() throws IOException {
+        try{
+            CreateMultipartUploadRequest uploadRequest = CreateMultipartUploadRequest.builder()
+                    .bucket(bucketName)
+                    .key(path)
+                    .build();
+            CreateMultipartUploadResponse multipartUpload = client.createMultipartUpload(uploadRequest);
+            uploadId = multipartUpload.uploadId();
         }catch (Exception ex){
             throw new IOException(ex);
         }
@@ -67,54 +58,75 @@ public class S3OutputStream extends AbstractUploadPartOutputStream {
     }
 
     @Override
-    public void close() throws IOException {
-        try {
-            if (!doFlush) {
-                if (uploadId != null) {
-                    if (position > 0) {
-                        uploadPart();
-                        position = 0;
-                    }
-
-                    CompletedPart[] completedParts = new CompletedPart[etags.size()];
-                    for (int i = 0; i < etags.size(); i++) {
-                        completedParts[i] = CompletedPart.builder()
-                                .eTag(etags.get(i))
-                                .partNumber(i + 1)
-                                .build();
-                    }
-
-                    CompletedMultipartUpload completedMultipartUpload = CompletedMultipartUpload.builder()
-                            .parts(completedParts)
-                            .build();
-                    CompleteMultipartUploadRequest completeMultipartUploadRequest = CompleteMultipartUploadRequest.builder()
+    protected void uploadAsync(WeakReference<byte[]> writeBytesRef, int partNumber, int byteSize) throws IOException {
+        futures.add(guavaExecutor.submit(new AbstractUploadPartCallable(writeBytesRef,partNumber,byteSize) {
+            @Override
+            protected boolean uploadPartAsync() throws IOException {
+                try{
+                    UploadPartRequest uploadRequest = UploadPartRequest.builder()
                             .bucket(bucketName)
                             .key(path)
                             .uploadId(uploadId)
-                            .multipartUpload(completedMultipartUpload)
+                            .partNumber(partNumber)
+                            .contentLength((long) byteSize)
                             .build();
-                    client.completeMultipartUpload(completeMultipartUploadRequest);
-                    doFlush = true;
-                } else {
-                    PutObjectRequest putRequest = PutObjectRequest.builder()
-                            .bucket(bucketName)
-                            .key(path)
-                            .contentLength((long) position)
-                            .contentType(getContentType(meta))
-                            .build();
-
-                    RequestBody requestBody = RequestBody.fromInputStream(new ByteBufferInputStream(buffer, position),
-                            position);
-                    client.putObject(putRequest, requestBody);
-                    doFlush=true;
+                    RequestBody requestBody = RequestBody.fromBytes(writeBytesRef.get());
+                    UploadPartResponse uploadPartResponse = client.uploadPart(uploadRequest, requestBody);
+                    etagsMap.put(partNumber,uploadPartResponse.eTag());
+                    return true;
+                }catch (Exception ex){
+                    throw new IOException(ex);
                 }
             }
-        } catch (Exception ex) {
+        }));
+    }
+
+    @Override
+    protected String uploadSingle() throws IOException {
+        try{
+            PutObjectRequest putRequest = PutObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(path)
+                    .contentLength((long) position)
+                    .contentType(getContentType(meta))
+                    .build();
+
+            RequestBody requestBody = RequestBody.fromInputStream(new ByteBufferInputStream(buffer, position),
+                    position);
+            PutObjectResponse response= client.putObject(putRequest, requestBody);
+            return response.eTag();
+        }catch (Exception ex){
             throw new IOException(ex);
-        } finally {
-            closeHeap();
         }
     }
+
+    @Override
+    protected String completeMultiUpload() throws IOException {
+        try {
+            CompletedPart[] completedParts = new CompletedPart[etags.size()];
+            for (int i = 0; i < etags.size(); i++) {
+                completedParts[i] = CompletedPart.builder()
+                        .eTag(etags.get(i))
+                        .partNumber(i + 1)
+                        .build();
+            }
+
+            CompletedMultipartUpload completedMultipartUpload = CompletedMultipartUpload.builder()
+                    .parts(completedParts)
+                    .build();
+            CompleteMultipartUploadRequest completeMultipartUploadRequest = CompleteMultipartUploadRequest.builder()
+                    .bucket(bucketName)
+                    .key(path)
+                    .uploadId(uploadId)
+                    .multipartUpload(completedMultipartUpload)
+                    .build();
+            CompleteMultipartUploadResponse response = client.completeMultipartUpload(completeMultipartUploadRequest);
+            return response.eTag();
+        }catch (Exception ex){
+            throw new IOException(ex);
+        }
+    }
+
 
     public static class Builder {
         private S3OutputStream s3 = new S3OutputStream();
@@ -137,8 +149,13 @@ public class S3OutputStream extends AbstractUploadPartOutputStream {
             s3.path = path;
             return this;
         }
+        public Builder uploadAsync(boolean tag){
+            s3.asyncTag =tag;
+            return this;
+        }
 
         public S3OutputStream build() {
+            s3.init();
             return s3;
         }
     }

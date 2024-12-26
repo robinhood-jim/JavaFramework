@@ -13,6 +13,9 @@ public class ResourceConst {
     public static final int MAX_ARRAY_SIZE = Integer.MAX_VALUE - 8;
     public static final int DEFAULTCACHEOFFHEAPSIZE=1024*1024*20;
     public static final String DEFAULTCACHEOFFHEAPSIZEKEY="defaultCacheHeapSize";
+    public static final String USEASYNCUPLOAD="storage.useAsyncUpload";
+    public static final String DEFAULTSTORAGEUPLOADTHREADKEY="storage.defaultUploadThread";
+    public static final int DEFAULTSTORAGEUPLOADTHREAD=4;
 
     public enum IngestType {
         TYPE_HDFS(1L,"HDFS"),
