@@ -50,7 +50,7 @@ public abstract class AbstractUploadPartOutputStream extends OutputStream {
     protected List<ListenableFuture<Boolean>> futures = new ArrayList<>();
 
     protected void init() {
-        if (!asyncTag && !ObjectUtils.isEmpty(meta) && !CollectionUtils.isEmpty(meta.getResourceCfgMap()) && !ObjectUtils.isEmpty(meta.getResourceCfgMap().get(ResourceConst.USEASYNCUPLOAD)) && ("true".equalsIgnoreCase(meta.getResourceCfgMap().get(ResourceConst.USEASYNCUPLOAD).toString()))) {
+        if (!asyncTag && !ObjectUtils.isEmpty(meta) && !CollectionUtils.isEmpty(meta.getResourceCfgMap()) && !ObjectUtils.isEmpty(meta.getResourceCfgMap().get(ResourceConst.USEASYNCUPLOAD)) && "true".equalsIgnoreCase(meta.getResourceCfgMap().get(ResourceConst.USEASYNCUPLOAD).toString())) {
             asyncTag = true;
         }
         if (asyncTag) {
@@ -94,6 +94,10 @@ public abstract class AbstractUploadPartOutputStream extends OutputStream {
     protected void closeHeap() {
         if (!ObjectUtils.isEmpty(segment)) {
             segment.free();
+        }
+        if(!ObjectUtils.isEmpty(executorService)){
+            guavaExecutor.shutdown();
+            executorService.shutdown();
         }
     }
 
@@ -211,6 +215,11 @@ public abstract class AbstractUploadPartOutputStream extends OutputStream {
                     successTag = uploadPartAsync();
                 } catch (Exception ex) {
                     tryNum += 1;
+                    log.error("upload {} partNum {} failed {} times!",uploadId,partNumber,tryNum);
+                }finally {
+                    if(!successTag){
+                        Thread.sleep(1000L);
+                    }
                 }
             }
             free();

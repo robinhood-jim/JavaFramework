@@ -28,8 +28,10 @@ public class OrcUtil {
                     case Const.META_TYPE_NUMERIC:
                     case Const.META_TYPE_DOUBLE:
                     case Const.META_TYPE_FLOAT:
-                    case Const.META_TYPE_DECIMAL:
                         schema.addField(columnMeta.getColumnName(),TypeDescription.createDouble());
+                        break;
+                    case Const.META_TYPE_DECIMAL:
+                        schema.addField(columnMeta.getColumnName(),TypeDescription.createDecimal());
                         break;
                     case Const.META_TYPE_BIGINT:
                         schema.addField(columnMeta.getColumnName(),TypeDescription.createLong());

@@ -4,6 +4,7 @@ import com.robin.core.base.dao.util.AnnotationRetriever;
 import com.robin.core.base.dao.util.FieldContent;
 import com.robin.core.base.dao.util.PropertyFunction;
 import com.robin.core.base.exception.ConfigurationIncorrectException;
+import com.robin.core.base.exception.MissingConfigException;
 import com.robin.core.base.model.BaseObject;
 import com.robin.core.base.util.Const;
 import org.springframework.util.ObjectUtils;
@@ -41,6 +42,7 @@ public class FilterConditionBuilder {
         conditions.add(new FilterCondition(columnName, columnType, Const.OPERATOR.EQ, object));
         return this;
     }
+
 
     public <T extends BaseObject> FilterCondition eq(PropertyFunction<T, ?> function, Object object) {
         String fieldName = AnnotationRetriever.getFieldName(function);
@@ -96,6 +98,22 @@ public class FilterConditionBuilder {
         condition.setColumnType(columnType);
         return condition;
     }
+    public <T extends BaseObject> FilterCondition in(PropertyFunction<T,?> function, List<?> objects) {
+        String fieldName = AnnotationRetriever.getFieldName(function);
+        String columnType = AnnotationRetriever.getFieldType(function);
+        Class<T> mappingClass=AnnotationRetriever.getFieldOwnedClass(function);
+        Map<String, FieldContent> map1 = AnnotationRetriever.getMappingFieldsMapCache(mappingClass);
+        String columnName;
+        if(map1.containsKey(fieldName)){
+            columnName=map1.get(fieldName).getFieldName();
+        }else{
+            throw new MissingConfigException("field not found in  "+fieldName);
+        }
+        FilterCondition condition = new FilterCondition(columnName, Const.OPERATOR.IN);
+        condition.setValues(objects);
+        condition.setColumnType(columnType);
+        return condition;
+    }
     public FilterCondition in(String columnName,FilterCondition inClause){
         FilterCondition condition = new FilterCondition(columnName, Const.OPERATOR.IN);
         condition.setConditions(Arrays.stream(new FilterCondition[]{inClause}).collect(Collectors.toList()));
@@ -110,15 +128,16 @@ public class FilterConditionBuilder {
         return this;
     }
 
-    public <T extends BaseObject> FilterConditionBuilder addIn(PropertyFunction<T, ?> function, Class<T> clazz, List<?> objects) {
+    public <T extends BaseObject> FilterConditionBuilder addIn(PropertyFunction<T, ?> function,  List<?> objects) {
         String fieldName = AnnotationRetriever.getFieldName(function);
+        Class<T> mappingClass=AnnotationRetriever.getFieldOwnedClass(function);
         String columnType = AnnotationRetriever.getFieldType(function);
-        Map<String, FieldContent> map1 = AnnotationRetriever.getMappingFieldsMapCache(clazz);
+        Map<String, FieldContent> map1 = AnnotationRetriever.getMappingFieldsMapCache(mappingClass);
         Optional.ofNullable(map1.get(fieldName)).map(f -> {
             conditions.add(in(f.getFieldName(), columnType, objects));
             return f;
         }).orElseThrow(() ->
-                new ConfigurationIncorrectException("class " + clazz.getCanonicalName() + " can not parse"));
+                new ConfigurationIncorrectException("class " + mappingClass.getCanonicalName() + " can not parse"));
         return this;
     }
 

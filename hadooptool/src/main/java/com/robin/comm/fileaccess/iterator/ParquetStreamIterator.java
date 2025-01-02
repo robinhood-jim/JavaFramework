@@ -67,6 +67,11 @@ public class ParquetStreamIterator extends AbstractFileIterator {
     }
 
     @Override
+    protected void pullNext() {
+
+    }
+
+    @Override
     public boolean hasNext() {
         try {
             record = null;

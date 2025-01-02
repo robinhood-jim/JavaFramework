@@ -7,7 +7,6 @@ import com.robin.core.base.datameta.DataBaseParam;
 import com.robin.hadoop.hdfs.HDFSProperty;
 import com.robin.hadoop.hdfs.HDFSUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.IOUtils;
@@ -21,8 +20,6 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.lang.reflect.Method;
@@ -39,7 +36,7 @@ public class YarnJobInfoUtil extends AbstractJobInfoUtil{
 	private int yarnport;
 	private static int defaultmrport=10020;
 	private Configuration config;
-	private Logger logger=LoggerFactory.getLogger(getClass());
+
 	HDFSProperty property;
 	public YarnJobInfoUtil() {
 		config=new Configuration();
@@ -73,11 +70,11 @@ public class YarnJobInfoUtil extends AbstractJobInfoUtil{
 			setConfiguration(property);
 			UserGroupInformation.setConfiguration(config);
 			if(UserGroupInformation.isSecurityEnabled()){
-				logger.debug("visit HDFS using kerberos");
+				log.debug("visit HDFS using kerberos");
                 HDFSUtil.setSecurity(config);
             }
 		}catch(Exception ex){
-			logger.error("",ex);
+			log.error("",ex);
 		}
 	
 	}

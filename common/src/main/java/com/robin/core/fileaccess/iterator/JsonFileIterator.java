@@ -56,8 +56,7 @@ public class JsonFileIterator extends AbstractFileIterator{
 
 
 
-	@Override
-	public boolean hasNext() {
+	public boolean hasNext1() {
 		try{
 			return jreader.hasNext();
 		}catch(Exception ex){
@@ -66,7 +65,36 @@ public class JsonFileIterator extends AbstractFileIterator{
 	}
 
 	@Override
-	public Map<String, Object> next() throws NoSuchElementException {
+	protected void pullNext() {
+		DataSetColumnMeta meta=null;
+		try{
+			cachedValue.clear();
+			if(jreader.hasNext()){
+				jreader.beginObject();
+				while(jreader.hasNext()){
+					String column = jreader.nextName();
+					String value = jreader.nextString();
+					if(!columnMap.containsKey(column)){
+						if(columnMap.containsKey(column.toLowerCase())){
+							column=column.toLowerCase();
+						}else if(columnMap.containsKey(column.toUpperCase())){
+							column=column.toUpperCase();
+						}
+					}
+					meta=columnMap.get(column);
+					cachedValue.put(column, ConvertUtil.convertStringToTargetObject(value, meta));
+				}
+				jreader.endObject();
+			}
+		}catch(IOException ex){
+			logger.error("{}",ex.getMessage());
+		}catch (Exception e) {
+			logger.error("{}",e.getMessage());
+		}
+	}
+
+
+	public Map<String, Object> next1() throws NoSuchElementException {
 		Map<String, Object> retmap=new HashMap<>();
 		DataSetColumnMeta meta=null;
 		try{
@@ -100,12 +128,16 @@ public class JsonFileIterator extends AbstractFileIterator{
 	@Override
 	public void remove() {
 		try{
-			if(jreader.hasNext()){
-				jreader.beginObject();
-				while(jreader.hasNext()){
-					jreader.nextString();
+			if(useFilter){
+				hasNext();
+			}else {
+				if (jreader.hasNext()) {
+					jreader.beginObject();
+					while (jreader.hasNext()) {
+						jreader.nextString();
+					}
+					jreader.endObject();
 				}
-				jreader.endObject();
 			}
 		}catch(IOException ex){
 			

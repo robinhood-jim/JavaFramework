@@ -8,7 +8,6 @@ import com.robin.core.fileaccess.iterator.TextFileIteratorFactory;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.meta.DataSetColumnMeta;
 import com.robin.dataming.smile.algorithm.DecisionTreeModeler;
-import com.robin.dataming.smile.algorithm.RandomForestModeler;
 import com.robin.dataming.smile.algorithm.SmileSVMModeler;
 import com.robin.dataming.smile.utils.SmileUtils;
 import org.apache.commons.lang3.tuple.Pair;

@@ -51,5 +51,6 @@ public class CustomParquetReader<T> extends ParquetReader<T> {
         protected ReadSupport<Map<String,Object>> getReadSupport() {
             return new CustomReadSupport();
         }
+
     }
 }

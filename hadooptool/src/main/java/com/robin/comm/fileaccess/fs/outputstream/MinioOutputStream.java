@@ -112,7 +112,7 @@ public class MinioOutputStream extends AbstractUploadPartOutputStream {
             super(content,partNum,byteSize);
             this.partNumber=partNum;
             body=new WeakReference<>(RequestBody.create(content.get()));
-            Request.Builder builder = new Request.Builder().url(partUrl.get()).post(body.get());
+            Request.Builder builder = new Request.Builder().url(partUrl.get()).put(body.get());
             builder.header("Accept-Encoding", "identity");
             request=new WeakReference<>(builder.build());
         }
@@ -120,7 +120,8 @@ public class MinioOutputStream extends AbstractUploadPartOutputStream {
             super(content,partNum,byteSize);
             this.retryNum=retryNum;
             body=new WeakReference<>(RequestBody.create(content.get()));
-            Request.Builder builder = new Request.Builder().url(partUrl.get()).post(body.get());
+            Request.Builder builder = new Request.Builder().url(partUrl.get()).put(body.get());
+
             builder.header("Accept-Encoding", "identity");
             request=new WeakReference<>(builder.build());
         }

@@ -16,6 +16,7 @@ public class ResourceConst {
     public static final String USEASYNCUPLOAD="storage.useAsyncUpload";
     public static final String DEFAULTSTORAGEUPLOADTHREADKEY="storage.defaultUploadThread";
     public static final int DEFAULTSTORAGEUPLOADTHREAD=4;
+    public static final String STORAGEFILTERSQL="storage.FilterSql";
 
     public enum IngestType {
         TYPE_HDFS(1L,"HDFS"),

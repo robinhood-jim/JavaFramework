@@ -45,17 +45,18 @@ public class PlainTextFileIterator extends AbstractFileIterator{
 	}
 
 
-	@Override
-	public boolean hasNext() {
+	public boolean hasNext1() {
 		boolean hasNext=false;
 		try{
 			if(reader!=null){
 				do{
 					readLineStr=reader.readLine();
 				} while(ObjectUtils.isEmpty(readLineStr));
-				if(!ObjectUtils.isEmpty(readLineStr)) {
+				if(!useFilter &&!ObjectUtils.isEmpty(readLineStr)) {
                     hasNext=true;
-                }
+                }else{
+					pullNext();
+				}
 			}
 		}catch(IOException ex){
 			logger.error("{0}",ex);
@@ -63,30 +64,42 @@ public class PlainTextFileIterator extends AbstractFileIterator{
 		return hasNext;
 	}
 
+
+
 	@Override
-	public Map<String, Object> next(){
-		Map<String,Object> map=new HashMap<>();
-		String[] arr=StringUtils.split(readLineStr, split.charAt(0));
+	protected void pullNext() {
 		try{
-		if(arr.length>=colmeta.getColumnList().size()){
-			for (int i=0;i<colmeta.getColumnList().size();i++) {
-				DataSetColumnMeta meta=colmeta.getColumnList().get(i);
-				map.put(meta.getColumnName(), ConvertUtil.convertStringToTargetObject(arr[i], meta));
+			cachedValue.clear();
+			try{
+				if(reader!=null){
+					do{
+						readLineStr=reader.readLine();
+					} while(ObjectUtils.isEmpty(readLineStr));
+					String[] arr=StringUtils.split(readLineStr, split.charAt(0));
+					if(arr.length>=colmeta.getColumnList().size()){
+						for (int i=0;i<colmeta.getColumnList().size();i++) {
+							DataSetColumnMeta meta=colmeta.getColumnList().get(i);
+							cachedValue.put(meta.getColumnName(), ConvertUtil.convertStringToTargetObject(arr[i], meta));
+						}
+					}
+				}
+			}catch(IOException ex){
+				logger.error("{0}",ex.getMessage());
 			}
-			return map;
-		}else{
-			return Collections.emptyMap();
-		}
+
 		}catch(Exception ex){
 			logger.error("{}",ex.getMessage());
-			return Collections.emptyMap();
 		}
 	}
 
 	@Override
 	public void remove() {
 		try{
-			reader.readLine();
+			if(useFilter) {
+				hasNext();
+			}else{
+				reader.readLine();
+			}
 		}catch(Exception ex){
 			
 		}
@@ -95,6 +108,22 @@ public class PlainTextFileIterator extends AbstractFileIterator{
 	public void setSplit(String split) {
 		this.split = split;
 	}
-	
+	public static void main(String[] args){
+		PlainTextFileIterator iterator=new PlainTextFileIterator();
+		iterator.withFilterSql("((((a1+a2)+a9)/10>a3 and a4>a5) or a7 in (1,2,3)) or (not ((a3-a6)/a8<b1))");
+		Map<String,Object> valueMap=new HashMap<>();
+		valueMap.put("a1",10);
+		valueMap.put("a2",20);
+		valueMap.put("a9",5);
+		valueMap.put("a3",2.4);
+		valueMap.put("a4",3.6);
+		valueMap.put("a5",3.1);
+		valueMap.put("a7",4);
+		valueMap.put("a6",77);
+		valueMap.put("a8",10);
+		valueMap.put("b1",1.0);
+		System.out.println(iterator.walkTree(iterator.rootNode,valueMap));
+
+	}
 	
 }

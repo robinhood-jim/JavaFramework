@@ -11,7 +11,9 @@ import com.robin.hadoop.hdfs.HDFSUtil;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.*;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.orc.CompressionKind;
 import org.apache.orc.OrcFile;
 import org.apache.orc.TypeDescription;
@@ -21,6 +23,7 @@ import org.springframework.util.StringUtils;
 
 import javax.naming.OperationNotSupportedException;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.InputMismatchException;
@@ -33,70 +36,72 @@ public class OrcFileWriter extends AbstractFileWriter {
     private TypeDescription schema;
     private Writer owriter;
     private VectorizedRowBatch batch;
-    public OrcFileWriter(){
-        this.identifier= Const.FILEFORMATSTR.ORC.getValue();
+
+    public OrcFileWriter() {
+        this.identifier = Const.FILEFORMATSTR.ORC.getValue();
     }
+
     public OrcFileWriter(DataCollectionMeta colmeta) {
         super(colmeta);
-        this.identifier= Const.FILEFORMATSTR.ORC.getValue();
+        this.identifier = Const.FILEFORMATSTR.ORC.getValue();
     }
 
     @Override
     public void beginWrite() throws IOException {
         FileSystem fs;
         CompressionKind compressionKind;
-        Const.CompressType type= getCompressType();
-        switch (type){
+        Const.CompressType type = getCompressType();
+        switch (type) {
             case COMPRESS_TYPE_GZ:
                 throw new IOException("orc does not support gzip compression");
             case COMPRESS_TYPE_BZ2:
                 throw new IOException("orc does not support bzip2 compression");
             case COMPRESS_TYPE_SNAPPY:
-                compressionKind= CompressionKind.SNAPPY;
+                compressionKind = CompressionKind.SNAPPY;
                 break;
             case COMPRESS_TYPE_ZIP:
                 throw new IOException("orc does not support zip compression");
             case COMPRESS_TYPE_LZO:
-                compressionKind= CompressionKind.LZO;
+                compressionKind = CompressionKind.LZO;
                 break;
             case COMPRESS_TYPE_LZ4:
-                compressionKind= CompressionKind.LZ4;
+                compressionKind = CompressionKind.LZ4;
                 break;
             case COMPRESS_TYPE_LZMA:
                 throw new IOException("orc does not support lzma compression");
             case COMPRESS_TYPE_BROTLI:
                 throw new IOException("orc does not support brotli compression");
             case COMPRESS_TYPE_ZSTD:
-                compressionKind=CompressionKind.ZSTD;
+                compressionKind = CompressionKind.ZSTD;
                 break;
             case COMPRESS_TYPE_XZ:
                 throw new IOException("orc does not support xz compression");
             default:
-                compressionKind=CompressionKind.ZLIB;
+                compressionKind = CompressionKind.ZLIB;
         }
 
-        if(Const.FILESYSTEM.HDFS.getValue().equals(colmeta.getFsType())){
-            HDFSUtil util=new HDFSUtil(colmeta);
-            conf=util.getConfig();
-            fs= FileSystem.get(conf);
-        }else{
-            conf=new Configuration();
+        if (Const.FILESYSTEM.HDFS.getValue().equals(colmeta.getFsType())) {
+            HDFSUtil util = new HDFSUtil(colmeta);
+            conf = util.getConfig();
+            fs = FileSystem.get(conf);
+        } else {
+            conf = new Configuration(false);
             checkAccessUtil(null);
-            out= accessUtil.getRawOutputStream(colmeta, ResourceUtil.getProcessPath(colmeta.getPath()));
-            fs=new MockFileSystem(colmeta,out);
+            out = accessUtil.getRawOutputStream(colmeta, ResourceUtil.getProcessPath(colmeta.getPath()));
+            fs = new MockFileSystem(colmeta, out);
         }
-        schema= OrcUtil.getSchema(colmeta);
-        owriter= OrcFile.createWriter(new Path(colmeta.getPath()), OrcFile.writerOptions(conf).setSchema(schema).compress(compressionKind).fileSystem(fs));
-        batch=schema.createRowBatch();
+        schema = OrcUtil.getSchema(colmeta);
+        owriter = OrcFile.createWriter(new Path(colmeta.getPath()), OrcFile.writerOptions(conf).setSchema(schema).compress(compressionKind).fileSystem(fs));
+        batch = schema.createRowBatch();
     }
 
     @Override
     public void finishWrite() throws IOException {
-        if(batch.size>0){
+        if (batch.size > 0) {
             owriter.addRowBatch(batch);
             batch.reset();
         }
-        if(owriter!=null){
+        if (owriter != null) {
             owriter.close();
         }
     }
@@ -108,68 +113,77 @@ public class OrcFileWriter extends AbstractFileWriter {
 
     @Override
     public void writeRecord(Map<String, Object> map) throws IOException, OperationNotSupportedException {
-        if(batch.size==batch.getMaxSize()){
-            owriter.addRowBatch(batch);
-            batch.reset();
-        }else{
-            int row=batch.size++;
-            if(!CollectionUtils.isEmpty(colmeta.getColumnList())){
 
-                for(int i=0;i<colmeta.getColumnList().size();i++){
-                    DataSetColumnMeta columnMeta=colmeta.getColumnList().get(i);
-                    if(StringUtils.isEmpty(columnMeta.getColumnType()) || Objects.isNull(map.get(columnMeta.getColumnName()))){
-                        if(!columnMeta.getColumnType().equals(Const.META_TYPE_STRING)) {
-                            continue;
-                        }
-                        else{
-                            ((BytesColumnVector) batch.cols[i]).setVal(row, "".getBytes());
-                        }
-                    }
-                    switch (columnMeta.getColumnType()){
-                        case Const.META_TYPE_INTEGER:
-                            ((LongColumnVector) batch.cols[i]).vector[row]=Integer.valueOf(map.get(columnMeta.getColumnName()).toString());
-                            break;
-                        case Const.META_TYPE_SHORT:
-                            ((LongColumnVector) batch.cols[i]).vector[row]=Short.valueOf(map.get(columnMeta.getColumnName()).toString());
-                            break;
-                        case Const.META_TYPE_BIGINT:
-                            ((LongColumnVector) batch.cols[i]).fill(Long.valueOf(map.get(columnMeta.getColumnName()).toString()));
-                            break;
-                        case Const.META_TYPE_DOUBLE:
-                            ((DoubleColumnVector) batch.cols[i]).fill(Double.valueOf(map.get(columnMeta.getColumnName()).toString()));
-                            break;
-                        case Const.META_TYPE_DATE:
-                            if(Date.class.isAssignableFrom(map.get(columnMeta.getColumnName()).getClass())){
-                                ((LongColumnVector) batch.cols[i]).fill(((Date)map.get(columnMeta.getColumnName())).getTime());
-                            }else if(java.sql.Date.class.isAssignableFrom(map.get(columnMeta.getColumnName()).getClass())){
-                                ((LongColumnVector) batch.cols[i]).fill(((java.sql.Date)map.get(columnMeta.getColumnName())).getTime());
-                            }else if(Long.class.isAssignableFrom(map.get(columnMeta.getColumnName()).getClass())){
-                                ((LongColumnVector) batch.cols[i]).fill(Long.valueOf(map.get(columnMeta.getColumnName()).toString()));
-                            }
-                            break;
-                        case Const.META_TYPE_TIMESTAMP:
-                            if(Timestamp.class.isAssignableFrom(map.get(columnMeta.getColumnName()).getClass())){
-                                ((TimestampColumnVector) batch.cols[i]).fill((Timestamp)map.get(columnMeta.getColumnName()));
-                            }else if(Long.class.isAssignableFrom(map.get(columnMeta.getColumnName()).getClass())){
-                                ((TimestampColumnVector) batch.cols[i]).fill( new Timestamp(Long.valueOf(map.get(columnMeta.getColumnName()).toString())));
-                            }
-                            break;
-                        case Const.META_TYPE_STRING:
-                            if(!StringUtils.isEmpty(map.get(columnMeta.getColumnName()))) {
-                                ((BytesColumnVector) batch.cols[i]).setVal(row, map.get(columnMeta.getColumnName()).toString().getBytes());
-                            }
-                            else{
-                                ((BytesColumnVector) batch.cols[i]).setVal(row, "".getBytes());
-                            }
-                            break;
-                        case Const.META_TYPE_BINARY:
-                        case Const.META_TYPE_BLOB:
-                            ((BytesColumnVector) batch.cols[i]).setVal(row,(byte[])map.get(columnMeta.getColumnName()));
-                            break;
-                        default:
-                            throw new InputMismatchException("input type not support!");
+        int row = batch.size++;
+        if (!CollectionUtils.isEmpty(colmeta.getColumnList())) {
+
+            for (int i = 0; i < colmeta.getColumnList().size(); i++) {
+                DataSetColumnMeta columnMeta = colmeta.getColumnList().get(i);
+                if (StringUtils.isEmpty(columnMeta.getColumnType()) || Objects.isNull(map.get(columnMeta.getColumnName()))) {
+                    if (!columnMeta.getColumnType().equals(Const.META_TYPE_STRING)) {
+                        continue;
+                    } else {
+                        ((BytesColumnVector) batch.cols[i]).setVal(row, "".getBytes());
                     }
                 }
+                switch (columnMeta.getColumnType()) {
+                    case Const.META_TYPE_INTEGER:
+                        ((LongColumnVector) batch.cols[i]).vector[row] = Integer.valueOf(map.get(columnMeta.getColumnName()).toString());
+                        break;
+                    case Const.META_TYPE_SHORT:
+                        ((LongColumnVector) batch.cols[i]).vector[row] = Short.valueOf(map.get(columnMeta.getColumnName()).toString());
+                        break;
+                    case Const.META_TYPE_BIGINT:
+                        ((LongColumnVector) batch.cols[i]).vector[row] = Long.valueOf(map.get(columnMeta.getColumnName()).toString());
+                        break;
+                    case Const.META_TYPE_DOUBLE:
+                        ((DoubleColumnVector) batch.cols[i]).vector[row] = Double.valueOf(map.get(columnMeta.getColumnName()).toString());
+                        break;
+                    case Const.META_TYPE_DECIMAL:
+                        BigDecimal decimal = new BigDecimal(Double.valueOf(map.get(columnMeta.getColumnName()).toString()));
+                        if (columnMeta.getScale() > 0) {
+                            decimal.setScale(columnMeta.getScale(), BigDecimal.ROUND_DOWN);
+                        }
+                        HiveDecimal decimal1 = HiveDecimal.create(decimal);
+                        if (columnMeta.getScale() > 0) {
+                            decimal1.setScale(columnMeta.getScale());
+                        }
+                        ((DecimalColumnVector) batch.cols[i]).vector[row] = new HiveDecimalWritable(decimal1);
+                        break;
+                    case Const.META_TYPE_DATE:
+                        if (Date.class.isAssignableFrom(map.get(columnMeta.getColumnName()).getClass())) {
+                            ((LongColumnVector) batch.cols[i]).vector[row] = (((Date) map.get(columnMeta.getColumnName())).getTime());
+                        } else if (java.sql.Date.class.isAssignableFrom(map.get(columnMeta.getColumnName()).getClass())) {
+                            ((LongColumnVector) batch.cols[i]).vector[row] = (((java.sql.Date) map.get(columnMeta.getColumnName())).getTime());
+                        } else if (Long.class.isAssignableFrom(map.get(columnMeta.getColumnName()).getClass())) {
+                            ((LongColumnVector) batch.cols[i]).vector[row] = (Long.valueOf(map.get(columnMeta.getColumnName()).toString()));
+                        }
+                        break;
+                    case Const.META_TYPE_TIMESTAMP:
+                        if (Timestamp.class.isAssignableFrom(map.get(columnMeta.getColumnName()).getClass())) {
+                            ((TimestampColumnVector) batch.cols[i]).set(row, (Timestamp) map.get(columnMeta.getColumnName()));
+                        } else if (Long.class.isAssignableFrom(map.get(columnMeta.getColumnName()).getClass())) {
+                            ((TimestampColumnVector) batch.cols[i]).set(row, new Timestamp(Long.valueOf(map.get(columnMeta.getColumnName()).toString())));
+                        }
+                        break;
+                    case Const.META_TYPE_STRING:
+                        if (!StringUtils.isEmpty(map.get(columnMeta.getColumnName()))) {
+                            ((BytesColumnVector) batch.cols[i]).setVal(row, map.get(columnMeta.getColumnName()).toString().getBytes());
+                        } else {
+                            ((BytesColumnVector) batch.cols[i]).setVal(row, "".getBytes());
+                        }
+                        break;
+                    case Const.META_TYPE_BINARY:
+                    case Const.META_TYPE_BLOB:
+                        ((BytesColumnVector) batch.cols[i]).setVal(row, (byte[]) map.get(columnMeta.getColumnName()));
+                        break;
+                    default:
+                        throw new InputMismatchException("input type not support!");
+                }
+            }
+            if (batch.size == batch.getMaxSize()) {
+                owriter.addRowBatch(batch);
+                batch.reset();
             }
         }
     }
