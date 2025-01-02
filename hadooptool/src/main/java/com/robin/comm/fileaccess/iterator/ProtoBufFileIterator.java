@@ -68,7 +68,28 @@ public class ProtoBufFileIterator extends AbstractFileIterator {
     }*/
 
     @Override
-    public boolean hasNext() {
+    protected void pullNext() {
+        try {
+            cachedValue.clear();
+            if (mesgBuilder.mergeDelimitedFrom(instream)) {
+                message = mesgBuilder.build();
+            } else {
+                message = null;
+            }
+            if (message == null) {
+                throw new NoSuchElementException("");
+            }
+            for (Descriptors.FieldDescriptor descriptor : schema.getMessageDescriptor(colmeta.getValueClassName()).getFields()) {
+                cachedValue.put(descriptor.getName(), message.getField(descriptor));
+            }
+
+        } catch (Exception ex) {
+            logger.error("{}", ex);
+        }
+    }
+
+
+    public boolean hasNext1() {
         try {
             if (mesgBuilder.mergeDelimitedFrom(instream)) {
                 message = mesgBuilder.build();
@@ -83,8 +104,8 @@ public class ProtoBufFileIterator extends AbstractFileIterator {
         return false;
     }
 
-    @Override
-    public Map<String, Object> next() {
+
+    public Map<String, Object> next1() {
         if (message == null) {
             throw new NoSuchElementException("");
         }

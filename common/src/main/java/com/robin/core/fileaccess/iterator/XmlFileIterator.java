@@ -84,16 +84,71 @@ public class XmlFileIterator extends AbstractFileIterator {
 			ex.printStackTrace();
 		}
 	}
-
-	
+	@SuppressWarnings("rawtypes")
 	@Override
-	public boolean hasNext() {
+	protected void pullNext() {
+		boolean finishget=false;
+		String column=null;
+		String value=null;
+		StringBuilder builder=new StringBuilder();
+		try{
+			cachedValue.clear();
+			while (streamReader.getEventType()!=XMLStreamConstants.END_DOCUMENT && streamReader.hasNext() && streamReader.getEventType()!=XMLStreamConstants.END_ELEMENT) {
+				if(streamReader.getEventType()==XMLStreamConstants.START_ELEMENT){
+					String curName=streamReader.getLocalName();
+					if(!secondContainEntity){
+						if(!curName.equals(entityName)){
+							if(finishget) {
+								break;
+							}
+							//contain attribute
+							if(streamReader.getAttributeCount()>0){
+								Map<String,Object> tmap=new HashMap<>();
+								for (int i=0;i<streamReader.getAttributeCount();i++) {
+									column=streamReader.getAttributeName(i).getLocalPart();
+									value=streamReader.getAttributeValue(i);
+									adjustColumn(column,value,tmap);
+								}
+								//value
+								streamReader.next();
+								getValue(builder);
+								tmap.put("value",builder.toString());
+								cachedValue.put(curName,tmap);
+							}
+						}
+					}else{
+						if(finishget) {
+							break;
+						}
+						if(curName.equals(entityName)){
+							int count=streamReader.getAttributeCount();
+							for (int i=0;i<count;i++){
+								column=streamReader.getAttributeName(i).getLocalPart();
+								value=streamReader.getAttributeValue(i);
+								adjustColumn(column,value,cachedValue);
+							}
+						}
+					}
+				}else if(streamReader.getEventType()==XMLStreamConstants.END_ELEMENT){
+					String curName=streamReader.getLocalName();
+					if(curName.equals(entityName)){
+						finishget=true;
+					}
+				}
+				streamReader.next();
+			}
+		}catch(Exception ex){
+			logger.error("{}",ex.getMessage());
+		}
+	}
+
+
+	public boolean hasNext1() {
 		return streamReader.getEventType()!=XMLStreamConstants.END_DOCUMENT;
 	}
 
 	@SuppressWarnings("rawtypes")
-	@Override
-	public Map<String, Object> next() {
+	public Map<String, Object> next1() {
 		Map<String, Object> retmap=new HashMap<>();
 		DataSetColumnMeta meta=null;
 		boolean finishget=false;
@@ -101,7 +156,7 @@ public class XmlFileIterator extends AbstractFileIterator {
 		String value=null;
 		StringBuilder builder=new StringBuilder();
 		try{
-			while (streamReader.hasNext()) {
+			while (streamReader.hasNext() || streamReader.getEventType()!=XMLStreamConstants.END_ELEMENT) {
 				if(streamReader.getEventType()==XMLStreamConstants.START_ELEMENT){
 					String curName=streamReader.getLocalName();
 					if(!secondContainEntity){
@@ -176,7 +231,17 @@ public class XmlFileIterator extends AbstractFileIterator {
 	}
 	@Override
 	public void remove() {
-		next();
+		if(!useFilter){
+			try {
+				while (streamReader.getEventType() != XMLStreamConstants.END_DOCUMENT && streamReader.hasNext() && streamReader.getEventType()!=XMLStreamConstants.END_ELEMENT) {
+					streamReader.next();
+				}
+			}catch (Exception ex){
+
+			}
+		}else{
+			hasNext();
+		}
 	}
 
 	@Override

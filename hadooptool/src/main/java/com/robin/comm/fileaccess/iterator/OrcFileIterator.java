@@ -1,21 +1,31 @@
 package com.robin.comm.fileaccess.iterator;
 
 import com.robin.comm.fileaccess.util.MockFileSystem;
+import com.robin.comm.fileaccess.util.OrcUtil;
 import com.robin.comm.utils.SysUtils;
+import com.robin.core.base.exception.OperationNotSupportException;
 import com.robin.core.base.util.Const;
 import com.robin.core.base.util.ResourceConst;
 import com.robin.core.fileaccess.fs.AbstractFileSystemAccessor;
 import com.robin.core.fileaccess.iterator.AbstractFileIterator;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
+import com.robin.core.fileaccess.meta.DataSetColumnMeta;
+import com.robin.core.fileaccess.util.CompareNode;
 import com.robin.core.fileaccess.util.ResourceUtil;
 import com.robin.hadoop.hdfs.HDFSUtil;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.flink.core.memory.MemorySegment;
 import org.apache.flink.core.memory.MemorySegmentFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.*;
+import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
+import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
+import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentFactory;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.orc.OrcFile;
 import org.apache.orc.Reader;
 import org.apache.orc.RecordReader;
@@ -30,9 +40,9 @@ import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.sql.Timestamp;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class OrcFileIterator extends AbstractFileIterator {
     private Configuration conf;
@@ -42,6 +52,7 @@ public class OrcFileIterator extends AbstractFileIterator {
     private VectorizedRowBatch batch ;
     private MemorySegment segment;
     private Double allowOffHeapDumpLimit= ResourceConst.ALLOWOUFHEAPMEMLIMIT;
+    private Reader.Options options;
 
     public OrcFileIterator(){
         identifier= Const.FILEFORMATSTR.ORC.getValue();
@@ -62,17 +73,42 @@ public class OrcFileIterator extends AbstractFileIterator {
         accessUtil=accessor;
     }
 
-    private final Map<String,Object> valueMap=new HashMap<>();
-    int maxRow=-1;
+    int maxRow=0;
     int currentRow=0;
     private FileSystem fs;
     private Reader oreader;
     private File tmpFile;
 
+    @Override
+    protected void pullNext() {
+        try {
+            cachedValue.clear();
+            if (maxRow > 0 && currentRow >= maxRow ) {
+                currentRow = 0;
+                boolean exists=rows.nextBatch(batch);
+                if(!exists){
+                    return;
+                }
+                maxRow = batch.size;
+            }
+            List<String> fieldNames=schema.getFieldNames();
+            currentRow++;
+            if(!CollectionUtils.isEmpty(fields)){
+                for(int i=0;i<fields.size();i++){
+                    wrapValue(fields.get(i),fieldNames.get(i),batch.cols[i],currentRow,cachedValue);
+                }
+            }
+        }catch (Exception ex){
+            logger.error("{}",ex.getMessage());
+        }
+    }
 
     @Override
     public boolean hasNext() {
-        if(maxRow>0 && currentRow<maxRow-1){
+        if(hasFourOperations || hasRightColumnCmp){
+            return super.hasNext();
+        }
+        if(maxRow>0 && currentRow<maxRow){
             return true;
         }
         try{
@@ -88,15 +124,18 @@ public class OrcFileIterator extends AbstractFileIterator {
 
     @Override
     public Map<String, Object> next() {
+        if(hasFourOperations || hasRightColumnCmp){
+            return super.next();
+        }
         List<String> fieldNames=schema.getFieldNames();
-        valueMap.clear();
-        currentRow++;
+        cachedValue.clear();
         if(!CollectionUtils.isEmpty(fields)){
             for(int i=0;i<fields.size();i++){
-                wrapValue(fields.get(i),fieldNames.get(i),batch.cols[i],currentRow,valueMap);
+                wrapValue(fields.get(i),fieldNames.get(i),batch.cols[i],currentRow,cachedValue);
             }
         }
-        return valueMap;
+        currentRow++;
+        return cachedValue;
     }
     public void wrapValue(TypeDescription schema,String columnName, ColumnVector vector,int row,Map<String,Object> valueMap){
         if(vector.noNulls || !vector.isNull[row]){
@@ -118,7 +157,7 @@ public class OrcFileIterator extends AbstractFileIterator {
                     valueMap.put(columnName,((DoubleColumnVector)vector).vector[row]);
                     break;
                 case DECIMAL:
-                    valueMap.put(columnName,((DecimalColumnVector)vector).vector[row].doubleValue());
+                    valueMap.put(columnName,((DecimalColumnVector)vector).vector[row].getHiveDecimal().bigDecimalValue());
                     break;
                 case STRING:
                 case CHAR:
@@ -142,6 +181,130 @@ public class OrcFileIterator extends AbstractFileIterator {
         }
     }
 
+    private void walkCondition(CompareNode node, SearchArgument.Builder argumentBuilder){
+        if (node.getRightNode() != null && node.getLeftNode() != null) {
+            if(node.getLeftNode().getKey()!=null || node.getRightNode().getKey()!=null){
+                throw new OperationNotSupportException("four operation not support");
+            }
+            parseOperator(node.getLeftNode().getValue(),node.getLinkOperator(),node.getRightNode().getValue(),argumentBuilder);
+        } else {
+            if (node.getLeft() != null) {
+                if("or".equalsIgnoreCase(node.getRight().getComparator())){
+                    argumentBuilder.startOr();
+                }else if("and".equalsIgnoreCase(node.getRight().getComparator())){
+                    argumentBuilder.startAnd();
+                }
+                walkCondition(node.getLeft(),argumentBuilder);
+                walkCondition(node.getRight(),argumentBuilder);
+                argumentBuilder.end();
+            }
+        }
+    }
+    private void parseOperator(String column,String operator,Object value,SearchArgument.Builder argumentBuilder){
+        Pair<PredicateLeaf.Type,Object> pair=returnType(column,value);
+        switch (operator) {
+            case ">":
+                argumentBuilder.startNot();
+                argumentBuilder.lessThanEquals(column,pair.getKey(),pair.getValue());
+                argumentBuilder.end();
+                break;
+            case ">=":
+                argumentBuilder.startNot();
+                argumentBuilder.lessThan(column,pair.getKey(),pair.getValue());
+                argumentBuilder.end();
+                break;
+            case "=":
+                argumentBuilder.nullSafeEquals(column, pair.getKey(), pair.getValue());
+                break;
+            case "<":
+                argumentBuilder.lessThan(column, pair.getKey(), pair.getValue());
+                break;
+            case "<=":
+                argumentBuilder.lessThanEquals(column, pair.getKey(), pair.getValue());
+                break;
+            case "between":
+                argumentBuilder.between(column, pair.getKey(), pair.getValue(),pair.getValue());
+                break;
+            case "in":
+                argumentBuilder.in(column,pair.getKey(),inPartMap.get(column).stream().map(f-> returnWithType(columnMap.get(column),f)).collect(Collectors.toList()).toArray());
+                break;
+            case "<>":
+                argumentBuilder.startNot();
+                argumentBuilder.equals(column, pair.getKey(), pair.getValue());
+                argumentBuilder.end();
+                break;
+            default:
+                throw new OperationNotSupportException(" not supported!");
+
+        }
+    }
+    private Pair<PredicateLeaf.Type,Object> returnType(String columnName,Object value){
+        if(columnMap.containsKey(columnName)){
+            return returnType(columnMap.get(columnName),value);
+        }else {
+            return returnType(columnMap.get(columnName.toUpperCase()),value);
+        }
+    }
+    private Pair<PredicateLeaf.Type,Object> returnType(DataSetColumnMeta columnMeta,Object value){
+        PredicateLeaf.Type type=null;
+        Object targetVal=null;
+        try {
+            switch (columnMeta.getColumnType()) {
+                case Const.META_TYPE_INTEGER:
+                case Const.META_TYPE_BIGINT:
+                    type = PredicateLeaf.Type.LONG;
+                    targetVal = Long.parseLong(value.toString());
+                    break;
+                case Const.META_TYPE_DOUBLE:
+                    type = PredicateLeaf.Type.FLOAT;
+                    targetVal =Double.parseDouble(value.toString());
+                    break;
+                case Const.META_TYPE_DECIMAL:
+                    type = PredicateLeaf.Type.DECIMAL;
+                    targetVal =new HiveDecimalWritable(HiveDecimal.create(Double.parseDouble(value.toString())));
+                    break;
+                case Const.META_TYPE_DATE:
+                    type = PredicateLeaf.Type.DATE;
+                    targetVal = Long.parseLong(value.toString());
+                    break;
+                case Const.META_TYPE_TIMESTAMP:
+                    type = PredicateLeaf.Type.TIMESTAMP;
+                    if(Timestamp.class.isAssignableFrom(value.getClass())){
+                        targetVal= value;
+                    }else {
+                        targetVal = new Timestamp(Long.parseLong(value.toString()));
+                    }
+                    break;
+                default:
+                    type = PredicateLeaf.Type.STRING;
+                    targetVal = value.toString();
+            }
+        }catch (Exception ex){
+
+        }
+        return Pair.of(type,targetVal);
+    }
+    private Object returnWithType(DataSetColumnMeta columnMeta,Object value){
+        Object targetVal=null;
+        switch (columnMeta.getColumnType()) {
+            case Const.META_TYPE_INTEGER:
+            case Const.META_TYPE_BIGINT:
+                targetVal = Long.parseLong(value.toString());
+                break;
+            case Const.META_TYPE_DOUBLE:
+            case Const.META_TYPE_DECIMAL:
+                targetVal = Double.parseDouble(value.toString());
+                break;
+            case Const.META_TYPE_DATE:
+            case Const.META_TYPE_TIMESTAMP:
+                targetVal = new Timestamp(Long.parseLong(value.toString()));
+                break;
+            default:
+                targetVal = value.toString();
+        }
+        return targetVal;
+    }
+
     @Override
     public void beforeProcess() {
         try {
@@ -151,6 +314,7 @@ public class OrcFileIterator extends AbstractFileIterator {
                 conf=util.getConfig();
                 fs=FileSystem.get(conf);
             }else {
+                conf=new Configuration(false);
                 checkAccessUtil(null);
                 if(Const.FILESYSTEM.LOCAL.getValue().equals(colmeta.getFsType())){
                     fs=FileSystem.get(new Configuration());
@@ -178,12 +342,23 @@ public class OrcFileIterator extends AbstractFileIterator {
                     }
                 }
             }
+            schema=OrcUtil.getSchema(colmeta);
+            if(!ObjectUtils.isEmpty(rootNode) && !hasFourOperations && !hasRightColumnCmp){
+                SearchArgument.Builder argumentBuilder=SearchArgumentFactory.newBuilder();
+                walkCondition(rootNode,argumentBuilder);
+                options= new Reader.Options().schema(schema).allowSARGToFilter(true)
+                        .searchArgument(argumentBuilder.build(),columnList.toArray(new String[0]));
+            }
+
             oreader =OrcFile.createReader(new Path(readPath),OrcFile.readerOptions(conf).filesystem(fs));
-            schema= oreader.getSchema();
-            rows= oreader.rows();
+            //schema= oreader.getSchema();
+            if(options!=null){
+                rows=oreader.rows(options);
+            }else {
+                rows = oreader.rows();
+            }
             fields=schema.getChildren();
-            batch= oreader.getSchema().createRowBatch();
-            maxRow=batch.size;
+            batch= schema.createRowBatch();
 
         }catch (Exception ex){
             ex.printStackTrace();

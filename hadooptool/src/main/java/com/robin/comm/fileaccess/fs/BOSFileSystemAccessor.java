@@ -6,20 +6,19 @@ import com.baidubce.services.bos.BosClientConfiguration;
 import com.baidubce.services.bos.model.BosObject;
 import com.baidubce.services.bos.model.ObjectMetadata;
 import com.baidubce.services.bos.model.PutObjectResponse;
+import com.robin.comm.fileaccess.fs.outputstream.BOSOutputStream;
 import com.robin.core.base.exception.MissingConfigException;
 import com.robin.core.base.util.Const;
 import com.robin.core.base.util.ResourceConst;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
-import com.robin.core.fileaccess.util.ResourceUtil;
 import lombok.Getter;
-import org.apache.commons.io.FileUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
-import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 @Getter
 @SuppressWarnings("unused")
@@ -97,7 +96,7 @@ public class BOSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
 
     @Override
     protected OutputStream getOutputStream(DataCollectionMeta meta) throws IOException {
-        return null;
+        return new BOSOutputStream(client,meta,bucketName, meta.getPath());
     }
 
     public static class Builder{

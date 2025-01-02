@@ -34,12 +34,50 @@ public class TextFileIteratorFactory {
 	static {
 		discoverIterator();
 	}
+	/**
+	 * return Resource Iterator
+	 * @param colmeta  meta definition
+	 * @return
+	 * @throws IOException
+	 */
 	public static IResourceIterator getProcessIteratorByType(DataCollectionMeta colmeta) throws IOException{
-		IResourceIterator iterator=getIter(colmeta);
+		IResourceIterator iterator=getIter(colmeta,true);
 		return iterator;
 	}
-	public static IResourceIterator getProcessIteratorByType(DataCollectionMeta colmeta,AbstractFileSystemAccessor accessor) throws IOException{
-		IResourceIterator iterator=getIter(colmeta,accessor);
+
+	/**
+	 * return Resource Iterator
+	 * @param colmeta  meta definition
+	 * @param initDirectly  if call init method beforeProcess directly
+	 * @return
+	 * @throws IOException
+	 */
+	public static IResourceIterator getProcessIteratorByType(DataCollectionMeta colmeta, boolean initDirectly) throws IOException{
+		IResourceIterator iterator=getIter(colmeta,initDirectly);
+		return iterator;
+	}
+	/**
+	 * return Resource Iterator with specify FileSystemAccessor
+	 * @param colmeta  meta definition
+	 * @param accessor FileSystemAccessor
+
+	 * @return
+	 * @throws IOException
+	 */
+	public static IResourceIterator getProcessIteratorByType(DataCollectionMeta colmeta, AbstractFileSystemAccessor accessor) throws IOException{
+		IResourceIterator iterator=getIter(colmeta,accessor,true);
+		return iterator;
+	}
+	/**
+	 * return Resource Iterator with specify FileSystemAccessor
+	 * @param colmeta  meta definition
+	 * @param accessor FileSystemAccessor
+	 * @param initDirectly  if call init method beforeProcess directly
+	 * @return
+	 * @throws IOException
+	 */
+	public static IResourceIterator getProcessIteratorByType(DataCollectionMeta colmeta, AbstractFileSystemAccessor accessor, boolean initDirectly) throws IOException{
+		IResourceIterator iterator=getIter(colmeta,accessor,initDirectly);
 		return iterator;
 	}
 	public static AbstractFileIterator getProcessReaderIterator(DataCollectionMeta colmeta, AbstractFileSystemAccessor utils){
@@ -60,7 +98,7 @@ public class TextFileIteratorFactory {
 	}
 
 	public static IResourceIterator getProcessIteratorByType(DataCollectionMeta colmeta, BufferedReader reader) throws IOException {
-		IResourceIterator iterator=getIter(colmeta);
+		IResourceIterator iterator=getIter(colmeta,true);
 		if(!ObjectUtils.isEmpty(iterator) && !ObjectUtils.isEmpty(reader)) {
 			iterator.setReader(reader);
 			iterator.beforeProcess();
@@ -68,7 +106,7 @@ public class TextFileIteratorFactory {
 		return iterator;
 	}
 	public static IResourceIterator getProcessIteratorByType(DataCollectionMeta colmeta, InputStream in) throws IOException{
-		IResourceIterator iterator=getIter(colmeta);
+		IResourceIterator iterator=getIter(colmeta,true);
 		if(!ObjectUtils.isEmpty(iterator) && !ObjectUtils.isEmpty(in)) {
 			iterator.setInputStream(in);
 			iterator.beforeProcess();
@@ -82,14 +120,14 @@ public class TextFileIteratorFactory {
 		if(StringUtils.isEmpty(colmeta.getFileFormat())){
 			colmeta.setFileFormat(fileFormat);
 		}
-		IResourceIterator iterator=getIter(colmeta);
+		IResourceIterator iterator=getIter(colmeta,true);
 		if(!ObjectUtils.isEmpty(iterator) && !ObjectUtils.isEmpty(in)) {
 			iterator.setInputStream(in);
 			iterator.beforeProcess();
 		}
 		return iterator;
 	}
-	private static IResourceIterator getIter(DataCollectionMeta colmeta) throws MissingConfigException {
+	private static IResourceIterator getIter(DataCollectionMeta colmeta,boolean initDirectly) throws MissingConfigException {
 		IResourceIterator iterator=null;
 		String fileType = getFileType(colmeta);
 
@@ -98,7 +136,7 @@ public class TextFileIteratorFactory {
 			if (!ObjectUtils.isEmpty(iterclass)) {
 				iterator =  iterclass.getConstructor(DataCollectionMeta.class).newInstance(colmeta);
 			}
-			if(!ObjectUtils.isEmpty(iterator)) {
+			if(!ObjectUtils.isEmpty(iterator) && initDirectly) {
 				iterator.beforeProcess();
 			}
 		}catch (Exception ex){
@@ -106,7 +144,7 @@ public class TextFileIteratorFactory {
 		}
 		return iterator;
 	}
-	private static IResourceIterator getIter(DataCollectionMeta colmeta,AbstractFileSystemAccessor accessor) throws MissingConfigException {
+	private static IResourceIterator getIter(DataCollectionMeta colmeta,AbstractFileSystemAccessor accessor,boolean initDirectly) throws MissingConfigException {
 		IResourceIterator iterator=null;
 		String fileType = getFileType(colmeta);
 
@@ -116,7 +154,9 @@ public class TextFileIteratorFactory {
 				iterator =  iterclass.getConstructor(DataCollectionMeta.class,AbstractFileSystemAccessor.class).newInstance(colmeta,accessor);
 			}
 			if(!ObjectUtils.isEmpty(iterator)) {
-				iterator.beforeProcess();
+				if(initDirectly) {
+					iterator.beforeProcess();
+				}
 				iterator.setAccessUtil(accessor);
 			}
 		}catch (Exception ex){

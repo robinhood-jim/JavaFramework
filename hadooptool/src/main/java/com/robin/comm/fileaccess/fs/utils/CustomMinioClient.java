@@ -55,24 +55,22 @@ public class CustomMinioClient extends MinioAsyncClient {
                 .build();
         return super.getPresignedObjectUrl(args);
     }
-    public CompletableFuture<UploadPartResponse> uploadPart(String bucketName,String region, String objectName, ByteBuffer buffer, long length, String uploadId, int partNumber,String contentType, Map<String,String> queryParams){
+    public UploadPartResponse uploadPart(String bucketName,String region, String objectName, ByteBuffer buffer, long length, String uploadId, int partNumber,String contentType, Map<String,String> queryParams) throws IOException{
+        Response response=null;
         try {
-            //ListPartsResponse listPartsResponse=listMultipart(bucketName,region,objectName,2000,1,uploadId,null,null);
             int insertNum=partNumber;
-            Map<String,String> queryParam=new HashMap<>();
-            queryParam.put("uploadId",uploadId);
-            queryParam.put("partNumber",String.valueOf(insertNum));
-            String partUrl = getPresignedObjectUrl(bucketName, objectName, queryParam);
+            String partUrl = getPartUploadUrl(bucketName, objectName,uploadId,insertNum);
             log.info("upload Part {} url {}",insertNum,partUrl);
             RequestBody body;
             Request.Builder builder = new Request.Builder().url(partUrl);
 
             builder.header("Accept-Encoding", "identity");
-            //TODO ByteBufferInputStream encounter connect reset by peer error,so use byte[] instead
-            WeakReference<byte[]> writeBytesRef=new WeakReference<>(new byte[(int)length]);
+            /*WeakReference<byte[]> writeBytesRef=new WeakReference<>(new byte[(int)length]);
             buffer.position(0);
             buffer.get(writeBytesRef.get(),0,(int)length);
-            body =RequestBody.create(writeBytesRef.get());
+            body =RequestBody.create(writeBytesRef.get());*/
+            body=new ByteBufferRequestBody(buffer,contentType,(int)length);
+            log.info("access body {}",body);
             builder.put(body);
             final CompletableFuture<Response> completableFuture = new CompletableFuture();
             httpClient.newCall(builder.build()).enqueue(
@@ -91,18 +89,28 @@ public class CustomMinioClient extends MinioAsyncClient {
                     }
             );
             final int lastInsertNum=insertNum;
-            return completableFuture.thenApply(response->{
-                UploadPartResponse response1;
-                try {
-                    response1 = new UploadPartResponse(response.headers(), bucketName, region, objectName, uploadId, lastInsertNum, response.header("ETag").replaceAll("\"", ""));
-                } finally {
-                    response.close();
-                }
-                return response1;
-            });
+            response=completableFuture.join();
+            return new UploadPartResponse(response.headers(), bucketName, region, objectName, uploadId, lastInsertNum, response.header("ETag").replaceAll("\"", ""));
         }catch (Exception ex){
-            throw new MissingConfigException(ex);
+            throw new IOException(ex);
+        }finally {
+            if(response!=null){
+                response.close();
+            }
+        }
+    }
+    public String getPartUploadUrl(String bucketName, String objectName, String uploadId, int insertNum) throws IOException{
+        try {
+            Map<String, String> queryParam = new HashMap<>();
+            queryParam.put("uploadId", uploadId);
+            queryParam.put("partNumber", String.valueOf(insertNum));
+            return getPresignedObjectUrl(bucketName, objectName, queryParam);
+        }catch (Exception ex){
+            throw new IOException(ex);
         }
     }
 
+    public OkHttpClient getHttpClient() {
+        return httpClient;
+    }
 }

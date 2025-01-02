@@ -26,7 +26,7 @@ import java.nio.file.Paths;
 public abstract class AbstractCloudStorageFileSystemAccessor extends AbstractFileSystemAccessor {
     protected String bucketName;
     protected String tmpFilePath;
-    private int dumpOffHeapSize = ResourceConst.DEFAULTDUMPEDOFFHEAPSIZE;
+
     protected MemorySegment segment;
     protected boolean useFileCache = false;
 

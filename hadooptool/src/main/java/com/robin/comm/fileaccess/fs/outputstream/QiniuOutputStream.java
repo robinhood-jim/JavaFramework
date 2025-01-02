@@ -18,6 +18,7 @@ import org.springframework.util.ObjectUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -30,6 +31,10 @@ public class QiniuOutputStream extends AbstractUploadPartOutputStream {
     private Auth auth;
     private UploadManager manager;
     private final Gson gson = GsonUtil.getGson();
+    private String token;
+    private QiniuOutputStream(){
+
+    }
 
     public QiniuOutputStream(Client client, UploadManager manager, DataCollectionMeta colmeta, Auth auth, String bucketName, String path, String urlPrefix) {
         this.client = client;
@@ -43,32 +48,85 @@ public class QiniuOutputStream extends AbstractUploadPartOutputStream {
         initHeap();
     }
 
+
     @Override
-    protected void flushIfNecessary(boolean force) throws IOException {
+    protected void initiateUpload() throws IOException {
         try {
-            if (ObjectUtils.isEmpty(uploadId)) {
-                ApiUploadV2InitUpload upload = new ApiUploadV2InitUpload(client);
-                String token = auth.uploadToken(bucketName);
-                ApiUploadV2InitUpload.Request request = new ApiUploadV2InitUpload.Request(urlPrefix, token).setKey(path);
-                ApiUploadV2InitUpload.Response response = upload.request(request);
-                uploadId = response.getUploadId();
-            }
-            if (position >= buffer.capacity() || force) {
-                uploadPart();
-                buffer.clear();
-                buffer.position(0);
-                position = 0;
-                partNum += 1;
-            }
+            ApiUploadV2InitUpload upload = new ApiUploadV2InitUpload(client);
+            String token = getToken();
+            ApiUploadV2InitUpload.Request request = new ApiUploadV2InitUpload.Request(urlPrefix, token).setKey(path);
+            ApiUploadV2InitUpload.Response response = upload.request(request);
+            uploadId = response.getUploadId();
         } catch (Exception ex) {
             throw new IOException(ex);
         }
     }
 
+    private String getToken() {
+        if (ObjectUtils.isEmpty(token)) {
+            token = auth.uploadToken(bucketName);
+        }
+        return token;
+    }
+
     @Override
-    protected void uploadPart() throws IOException{
+    protected String uploadSingle() throws IOException {
+        String token = getToken();
+
+        Response result = manager.put(new ByteBufferInputStream(buffer, position), position, meta.getPath(), token, null, getContentType(meta), true);
+        DefaultPutRet putRet = gson.fromJson(result.bodyString(), DefaultPutRet.class);
+        if (!ObjectUtils.isEmpty(putRet)) {
+            log.info("upload success {}", putRet.key);
+        }
+        return putRet.hash;
+    }
+
+    @Override
+    protected void uploadAsync(WeakReference<byte[]> writeBytesRef,int partNumber,int byteSize) throws IOException {
+        futures.add(guavaExecutor.submit(new QiniuUploadPartCallable(writeBytesRef,partNumber,byteSize,getToken())));
+    }
+
+    @Override
+    protected String completeMultiUpload() throws IOException {
+        ApiUploadV2CompleteUpload upload = new ApiUploadV2CompleteUpload(client);
+        try {
+            List<Map<String, Object>> listPartInfo = new ArrayList<>();
+            if (!asyncTag) {
+                for (int i = 0; i < etags.size(); i++) {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("partNumber", i + 1);
+                    map.put("etag", etags.get(i));
+                    listPartInfo.add(map);
+                }
+            } else {
+                for (int i = 0; i < etagsMap.size(); i++) {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("partNumber", i + 1);
+                    map.put("etag", etagsMap.get(i + 1));
+                    listPartInfo.add(map);
+                }
+            }
+            int pos = meta.getPath().lastIndexOf(File.separator);
+            if (pos == -1) {
+                pos = meta.getPath().lastIndexOf("/");
+            }
+            String fileName = meta.getPath().substring(pos);
+            ApiUploadV2CompleteUpload.Request request = new ApiUploadV2CompleteUpload.Request(urlPrefix, token, uploadId, listPartInfo)
+                    .setKey(meta.getPath()).setFileName(fileName).setFileMimeType(getContentType(meta));
+            ApiUploadV2CompleteUpload.Response response = upload.request(request);
+            if (!ObjectUtils.isEmpty(response.getResponse()) && response.getResponse().statusCode == 200) {
+                log.info(" part upload success {}", response.getResponse().getInfo());
+            }
+            return response.getHash();
+        } catch (QiniuException ex) {
+            throw new IOException(ex);
+        }
+    }
+
+    @Override
+    protected void uploadPart() throws IOException {
         ApiUploadV2UploadPart part = new ApiUploadV2UploadPart(client);
-        String token = auth.uploadToken(bucketName);
+        String token = getToken();
         ApiUploadV2UploadPart.Request request = new ApiUploadV2UploadPart.Request(urlPrefix, token, uploadId, partNum)
                 .setKey(path)
                 .setUploadData(new ByteBufferInputStream(buffer, position), getContentType(meta), position);
@@ -81,60 +139,60 @@ public class QiniuOutputStream extends AbstractUploadPartOutputStream {
         }
     }
 
-    @Override
-    public void close() throws IOException {
-        try {
-            if (!doFlush) {
-                if (uploadId != null) {
-                    if (position > 0) {
-                        uploadPart();
-                        position = 0;
-                    }
-                    Integer partNumberMarker = null;
-                    String token = auth.uploadToken(bucketName);
+    class QiniuUploadPartCallable extends AbstractUploadPartCallable {
+        private String token;
+        public QiniuUploadPartCallable(WeakReference<byte[]> content, int partNumber,int byteSize,String token) {
+            super(content,partNumber,byteSize);
+            this.token=token;
+        }
 
-                    List<Map<String, Object>> listPartInfo = new ArrayList<>();
-                    for (int i = 0; i < etags.size(); i++) {
-                        Map<String, Object> map = new HashMap<>();
-                        map.put("partNumber", i + 1);
-                        map.put("etag", etags.get(i));
-                        listPartInfo.add(map);
-                    }
-
-                    ApiUploadV2CompleteUpload upload = new ApiUploadV2CompleteUpload(client);
-
-                    try {
-
-                        int pos = meta.getPath().lastIndexOf(File.separator);
-                        if (pos == -1) {
-                            pos = meta.getPath().lastIndexOf("/");
-                        }
-                        String fileName = meta.getPath().substring(pos);
-                        ApiUploadV2CompleteUpload.Request request = new ApiUploadV2CompleteUpload.Request(urlPrefix, token, uploadId, listPartInfo)
-                                .setKey(meta.getPath()).setFileName(fileName).setFileMimeType(getContentType(meta));
-                        ApiUploadV2CompleteUpload.Response response = upload.request(request);
-                        if (!ObjectUtils.isEmpty(response.getResponse()) && response.getResponse().statusCode == 200) {
-                            log.info(" part upload success {}", response.getResponse().getInfo());
-                        }
-                    } catch (QiniuException ex) {
-                        ex.printStackTrace();
-                    }
-                    doFlush = true;
-
-                } else {
-                    String token = auth.uploadToken(bucketName);
-                    Response result = manager.put(new ByteBufferInputStream(buffer, position), position, meta.getPath(), token, null, getContentType(meta), true);
-                    DefaultPutRet putRet = gson.fromJson(result.bodyString(), DefaultPutRet.class);
-                    if (!ObjectUtils.isEmpty(putRet)) {
-                        log.info("upload success {}", putRet.key);
-                    }
-                    doFlush = true;
-                }
+        @Override
+        protected boolean uploadPartAsync() throws IOException {
+            ApiUploadV2UploadPart part = new ApiUploadV2UploadPart(client);
+            ApiUploadV2UploadPart.Request request = new ApiUploadV2UploadPart.Request(urlPrefix, token, uploadId, partNumber)
+                    .setKey(path)
+                    .setUploadData(content.get(), 0, byteSize, getContentType(meta));
+            try {
+                ApiUploadV2UploadPart.Response response = part.request(request);
+                etagsMap.put(partNumber, response.getEtag());
+                //log.info(" upload {} from {} size {} etag{}", partNumber, (partNumber - 1) * buffer.capacity(), position, response.getEtag());
+                return true;
+            } catch (QiniuException ex) {
+                throw new IOException(ex);
             }
-        }catch (Exception ex){
-            throw new IOException(ex);
-        } finally {
-            closeHeap();
         }
     }
+    public static class Builder {
+        private QiniuOutputStream out = new QiniuOutputStream();
+
+        public static Builder newBuilder() {
+            return new Builder();
+        }
+
+        public Builder withManager(UploadManager manger) {
+            out.manager=manger;
+            return this;
+        }
+
+        public Builder bucketName(String bucketName) {
+            out.bucketName = bucketName;
+            return this;
+        }
+
+        public Builder path(String path) {
+            out.path = path;
+            return this;
+        }
+        public Builder uploadAsync(boolean tag){
+            out.asyncTag =tag;
+            return this;
+        }
+
+        public QiniuOutputStream build() {
+            out.init();
+            return out;
+        }
+    }
+
+
 }

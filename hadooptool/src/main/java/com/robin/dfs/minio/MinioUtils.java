@@ -28,7 +28,7 @@ public class MinioUtils {
         try{
             PutObjectArgs args= PutObjectArgs.builder().bucket(bucketName).object(objectName)
                     .stream(inputStream,fileSize,-1).contentType(contentType).build();
-            client.putObject(args);
+            client.putObject(args).join();
         }catch (Exception ex){
             log.error("{}",ex);
             return false;

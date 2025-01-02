@@ -1,6 +1,7 @@
 package com.robin.comm.fileaccess.iterator;
 
 import com.robin.comm.utils.SysUtils;
+import com.robin.core.base.exception.MissingConfigException;
 import com.robin.core.base.util.Const;
 import com.robin.core.base.util.ResourceConst;
 import com.robin.core.fileaccess.fs.AbstractFileSystemAccessor;
@@ -59,8 +60,8 @@ public class AvroFileIterator extends AbstractFileIterator {
     private File tmpFile;
     private SeekableInput input = null;
 
-    @Override
-    public boolean hasNext() {
+
+    public boolean hasNext1() {
         try {
             return fileReader.hasNext();
         } catch (Exception ex) {
@@ -118,7 +119,24 @@ public class AvroFileIterator extends AbstractFileIterator {
     }
 
     @Override
-    public Map<String, Object> next() {
+    protected void pullNext() {
+        try{
+            cachedValue.clear();
+            if(fileReader.hasNext()){
+                GenericRecord records = fileReader.next();
+                List<Field> flist = schema.getFields();
+                for (Field f : flist) {
+                    if (!ObjectUtils.isEmpty(records.get(f.name()))) {
+                        cachedValue.put(f.name(), records.get(f.name()).toString());
+                    }
+                }
+            }
+        }catch (Exception ex){
+            throw new MissingConfigException(ex);
+        }
+    }
+
+    public Map<String, Object> next1() {
         Map<String, Object> retmap = new HashMap<>();
         try {
             GenericRecord records = fileReader.next();
@@ -141,7 +159,11 @@ public class AvroFileIterator extends AbstractFileIterator {
     @Override
     public void remove() {
         try {
-            fileReader.next();
+            if(!useFilter) {
+                fileReader.next();
+            }else{
+                hasNext();
+            }
         } catch (Exception ex) {
             logger.error("", ex);
         }

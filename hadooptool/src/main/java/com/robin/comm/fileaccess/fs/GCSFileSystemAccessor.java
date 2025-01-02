@@ -4,10 +4,14 @@ import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.storage.*;
 import com.google.common.collect.Lists;
 import com.robin.core.base.exception.MissingConfigException;
+import com.robin.core.base.exception.OperationNotSupportException;
 import com.robin.core.base.util.ResourceConst;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
+import com.robin.core.fileaccess.util.ByteBufferOutputStream;
+import com.robin.core.fileaccess.util.ResourceUtil;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.flink.core.memory.MemorySegmentFactory;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
@@ -17,6 +21,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.channels.Channels;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 /**
  * Google Cloud Storage FileSystemAccessor,must init individual
@@ -27,6 +33,7 @@ public class GCSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
     private String credentialsFile;
     private List<String> scopes;
     private Storage storage;
+    private int dumpOffHeapSize = ResourceConst.DEFAULTDUMPEDOFFHEAPSIZE;
 
     @Override
     public void init(DataCollectionMeta meta) {
@@ -147,6 +154,22 @@ public class GCSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
 
     @Override
     protected OutputStream getOutputStream(DataCollectionMeta meta) throws IOException {
-        return null;
+        OutputStream outputStream;
+        if (!ObjectUtils.isEmpty(meta.getResourceCfgMap().get(ResourceConst.USETMPFILETAG)) && "true".equalsIgnoreCase(meta.getResourceCfgMap().get(ResourceConst.USETMPFILETAG).toString())) {
+            String tmpPath = com.robin.core.base.util.FileUtils.getWorkingPath(meta);
+            tmpFilePath = tmpPath + ResourceUtil.getProcessFileName(meta.getPath());
+            outputStream = Files.newOutputStream(Paths.get(tmpFilePath));
+            useFileCache = true;
+        } else {
+            if (!ObjectUtils.isEmpty(segment)) {
+                throw new OperationNotSupportException("Off Heap Segment is still in used! try later");
+            }
+            if (!ObjectUtils.isEmpty(meta.getResourceCfgMap().get(ResourceConst.DUMPEDOFFHEAPSIZEKEY))) {
+                dumpOffHeapSize = Integer.parseInt(meta.getResourceCfgMap().get(ResourceConst.DUMPEDOFFHEAPSIZEKEY).toString());
+            }
+            segment = MemorySegmentFactory.allocateOffHeapUnsafeMemory(dumpOffHeapSize, this, new Thread() {});
+            outputStream = new ByteBufferOutputStream(segment.getOffHeapBuffer());
+        }
+        return outputStream;
     }
 }
