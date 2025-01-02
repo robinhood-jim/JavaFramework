@@ -1,7 +1,6 @@
 package com.robin.test;
 
 import com.robin.comm.fileaccess.fs.MinioFileSystemAccessor;
-import com.robin.comm.fileaccess.iterator.ParquetGroupIterator;
 import com.robin.core.base.util.Const;
 import com.robin.core.base.util.ResourceConst;
 import com.robin.core.base.util.StringUtils;
@@ -17,7 +16,6 @@ import junit.framework.TestCase;
 import org.junit.Test;
 
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
@@ -77,24 +75,7 @@ public class TestCloudStorage extends TestCase {
             ex.printStackTrace();
         }
     }
-    public void testReadGroup(){
-        DataCollectionMeta.Builder builder=new DataCollectionMeta.Builder();
-        builder.resourceCfg("hostName", "127.0.0.1").resourceCfg("protocol", "ftp")
-                .resourceCfg("file.useAvroEncode","true")
-                .resourceCfg("port", 21).resourceCfg("userName", "test").resourceCfg("password", "test").fileFormat(Const.FILEFORMATSTR.PARQUET.getValue())
-                .resPath("tmp/bigdata6.parquet.gz").protocol(Const.VFS_PROTOCOL.FTP.getValue()).fsType(Const.FILESYSTEM.VFS.getValue());
 
-        DataCollectionMeta colmeta=builder.build();
-        MinioFileSystemAccessor.Builder builder1=new MinioFileSystemAccessor.Builder();
-        MinioFileSystemAccessor accessor=builder1.accessKey("jeason").secretKey("Jeason@1234").endpoint("http://36.158.32.29:18888")
-                .bucket("test").build();
-        try(ParquetGroupIterator iterator= new ParquetGroupIterator(colmeta,accessor)){
-            iterator.beforeProcess();
-            iterator.read();
-        }catch (IOException ex){
-            ex.printStackTrace();
-        }
-    }
     @Test
     public void testReadFromMinio(){
         DataCollectionMeta.Builder builder=new DataCollectionMeta.Builder();
