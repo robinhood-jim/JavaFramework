@@ -16,14 +16,30 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+/**
+ * Single Table schema record generator
+ */
 public class CommRecordGenerator {
-    public static boolean recordAccessible(SqlSegment segment, Map<String, Object> inputRecord) {
+    /**
+     * Adjust input record (Map) fit Selected Condition
+     * @param segment   SqlParseSegment
+     * @param inputRecord   inputRecord
+     * @return
+     */
+    public static boolean recordAcceptable(SqlSegment segment, Map<String, Object> inputRecord) {
         SqlNode whereNode = segment.getWhereCause();
         if (CollectionUtils.isEmpty(segment.getWherePartsMap())) {
             segment.setWherePartsMap(segment.getWhereColumns().stream().collect(Collectors.toMap(CommSqlParser.ValueParts::getNodeString, Function.identity())));
         }
         return walkTree(whereNode, inputRecord, segment);
     }
+
+    /**
+     * return Selected Column (including calculated column)
+     * @param segment
+     * @param inputRecord
+     * @return
+     */
     public static Map<String,Object> doCalculator(SqlSegment segment,Map<String,Object> inputRecord){
         Map<String,Object> retMap=new HashMap<>();
 
@@ -85,6 +101,8 @@ public class CommRecordGenerator {
                         break;
                     case "nvl":
                         break;
+                    default:
+
 
                 }
             }
@@ -167,10 +185,8 @@ public class CommRecordGenerator {
                     }
                 } else if (SqlLiteral.class.isAssignableFrom(nodes[0].getClass())) {
                     lefValue = ((SqlLiteral) nodes[0]).getValue();
-                } else if (SqlIdentifier.class.isAssignableFrom(nodes[0].getClass())) {
-                    if (inputMap.containsKey(nodes[0].toString())) {
-                        lefValue = inputMap.get(nodes[0].toString());
-                    }
+                } else if (SqlIdentifier.class.isAssignableFrom(nodes[0].getClass()) && inputMap.containsKey(nodes[0].toString())) {
+                    lefValue = inputMap.get(nodes[0].toString());
                 }
                 if (SqlBasicCall.class.isAssignableFrom(nodes[1].getClass())) {
                     if (segment.getWherePartsMap().containsKey(nodes[1].toString())) {

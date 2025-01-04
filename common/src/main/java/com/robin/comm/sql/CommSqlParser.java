@@ -41,6 +41,33 @@ public class CommSqlParser {
     static {
         rootSchema = Frameworks.createRootSchema(true);
     }
+    public static SqlSegment parseGroupByAgg(String sql,Lex lex,DataCollectionMeta meta,String newColumnPrefix) throws SqlParseException, ValidationException{
+        SqlSegment segment = new SqlSegment();
+        String tabName = null;
+        String tabAlias = null;
+
+        SqlSelect sqlSelect = parseWithLex(sql, lex, meta);
+        if (SqlKind.AS.equals(sqlSelect.getFrom().getKind())) {
+            List<SqlNode> tableNode = ((SqlBasicCall) sqlSelect.getFrom()).getOperandList();
+            tabName = tableNode.get(0).toString();
+            tabAlias = tableNode.get(1).toString();
+        }else{
+            tabName=sqlSelect.getFrom().toString();
+        }
+        SqlNodeList selectLists = sqlSelect.getSelectList();
+        Map<Integer,Integer> newColumnPosMap=new HashMap<>();
+        List<ValueParts> columns = parseSelectColumn(selectLists,newColumnPrefix,newColumnPosMap);
+        List<SqlNode> groupNodes= sqlSelect.getGroup();
+        SqlNode havingNode= sqlSelect.getHaving();
+        segment.setGroupBy(groupNodes);
+        segment.setSelectColumns(columns);
+        segment.setWhereCause(sqlSelect.getWhere());
+        segment.setNewColumnPosMap(newColumnPosMap);
+        parseWhereParts(segment,segment.getWhereCause());
+        List<DataSetColumnMeta> calculateSchema=getCalculateSchema(segment,meta);
+
+        return null;
+    }
 
     public static SqlSegment parseSingleTableQuerySql(String sql, Lex lex,DataCollectionMeta meta,String newColumnPrefix) throws SqlParseException, ValidationException {
         SqlSegment segment = new SqlSegment();
@@ -48,6 +75,31 @@ public class CommSqlParser {
         String tabAlias = null;
 
 
+        SqlSelect sqlSelect = parseWithLex(sql, lex, meta);
+        if (SqlKind.AS.equals(sqlSelect.getFrom().getKind())) {
+            List<SqlNode> tableNode = ((SqlBasicCall) sqlSelect.getFrom()).getOperandList();
+            tabName = tableNode.get(0).toString();
+            tabAlias = tableNode.get(1).toString();
+        }else{
+            tabName=sqlSelect.getFrom().toString();
+        }
+        segment.setTableName(tabName);
+        segment.setTabAlias(tabAlias);
+        segment.setNewColumnPrefix(newColumnPrefix);
+        SqlNodeList selectLists = sqlSelect.getSelectList();
+        Map<Integer,Integer> newColumnPosMap=new HashMap<>();
+        List<ValueParts> columns = parseSelectColumn(selectLists,newColumnPrefix,newColumnPosMap);
+        segment.setSelectColumns(columns);
+        segment.setWhereCause(sqlSelect.getWhere());
+        segment.setNewColumnPosMap(newColumnPosMap);
+        parseWhereParts(segment,segment.getWhereCause());
+        List<DataSetColumnMeta> calculateSchema=getCalculateSchema(segment,meta);
+        segment.setCalculateSchema(calculateSchema);
+        segment.setOriginSchemaMap(meta.getColumnList().stream().collect(Collectors.toMap(DataSetColumnMeta::getColumnName,Function.identity())));
+        return segment;
+    }
+
+    private static SqlSelect parseWithLex(String sql, Lex lex, DataCollectionMeta meta) throws SqlParseException, ValidationException {
         DataMetaCalciteTable table=new DataMetaCalciteTable(meta);
         rootSchema.add(meta.getTableName(),table);
         FrameworkConfig workConfig=Frameworks.newConfigBuilder().defaultSchema(rootSchema).parserConfig(SqlParser.configBuilder().setLex(lex).build()).operatorTable(SqlOperatorTables.chain(SqlStdOperatorTable.instance(),CustomSqlOperatorTable.instance())).build();
@@ -61,27 +113,7 @@ public class CommSqlParser {
         Assert.isTrue(SqlKind.SELECT.equals(sqlNode.getKind()), "can only parse select Sql");
         SqlSelect sqlSelect = (SqlSelect) sqlNode;
         Assert.isTrue(!SqlKind.JOIN.equals(sqlSelect.getFrom().getKind()), "only support single table query");
-        if (SqlKind.AS.equals(sqlSelect.getFrom().getKind())) {
-            List<SqlNode> tableNode = ((SqlBasicCall) sqlSelect.getFrom()).getOperandList();
-            tabName = tableNode.get(0).toString();
-            tabAlias = tableNode.get(1).toString();
-        }else{
-            tabName=sqlSelect.getFrom().toString();
-        }
-        segment.setTableName(tabName);
-        segment.setTabAlias(tabAlias);
-        segment.setNewColumnPrefix(newColumnPrefix);
-        SqlNodeList selectLists = sqlSelect.getSelectList();
-        Map<Integer,Integer> newColumnPosMap=new HashMap<>();
-        List<ValueParts> columns = parseSelectColumn(sqlSelect, selectLists,newColumnPrefix,newColumnPosMap);
-        segment.setSelectColumns(columns);
-        segment.setWhereCause(sqlSelect.getWhere());
-        segment.setNewColumnPosMap(newColumnPosMap);
-        parseWhereParts(segment,segment.getWhereCause());
-        List<DataSetColumnMeta> calculateSchema=getCalculateSchema(segment,meta);
-        segment.setCalculateSchema(calculateSchema);
-        segment.setOriginSchemaMap(meta.getColumnList().stream().collect(Collectors.toMap(DataSetColumnMeta::getColumnName,Function.identity())));
-        return segment;
+        return sqlSelect;
     }
 
     public static List<DataSetColumnMeta> getCalculateSchema(SqlSegment segment, DataCollectionMeta meta) {
@@ -106,7 +138,7 @@ public class CommSqlParser {
         return columns;
     }
 
-    private static List<ValueParts> parseSelectColumn(SqlSelect sqlSelect, SqlNodeList selectLists,String newColumnPrefix,Map<Integer,Integer> newColumnPosMap) {
+    private static List<ValueParts> parseSelectColumn(SqlNodeList selectLists,String newColumnPrefix,Map<Integer,Integer> newColumnPosMap) {
         List<ValueParts> selectColumns = new ArrayList<>();
         for (SqlNode selected : selectLists) {
             ValueParts valueParts = new ValueParts();
@@ -120,7 +152,7 @@ public class CommSqlParser {
                 } else if (SqlKind.CASE.equals(columnNodes.get(0).getKind())) {
                     parseCase((SqlCase) columnNodes.get(0), valueParts);
                     setAliasName(newColumnPrefix, newColumnPosMap, valueParts);
-                } else if (SqlKind.FUNCTION.equals(columnNodes.get(0).getKind()) || SqlKind.OTHER_FUNCTION.equals(columnNodes.get(0).getKind())) {
+                } else if (SqlKind.FUNCTION.contains(columnNodes.get(0).getKind())) {
                     List<SqlNode> funcNodes = ((SqlBasicCall) columnNodes.get(0)).getOperandList();
                     valueParts.setFunctionName(((SqlBasicCall) columnNodes.get(0)).getOperator().toString());
                     valueParts.setFunctionParams(funcNodes);
@@ -134,7 +166,7 @@ public class CommSqlParser {
                 if (SqlKind.CASE.equals(selected.getKind())) {
                     parseCase((SqlCase) selected, valueParts);
                     setAliasName(newColumnPrefix, newColumnPosMap, valueParts);
-                } else if (SqlKind.FUNCTION.equals(selected.getKind()) || SqlKind.OTHER_FUNCTION.equals(selected.getKind())) {
+                } else if (SqlKind.FUNCTION.contains(selected.getKind())) {
                     valueParts.setFunctionName(((SqlBasicCall) selected).getOperator().toString());
                     valueParts.setFunctionParams(((SqlBasicCall) selected).getOperandList());
                     valueParts.setNode(selected);
@@ -268,7 +300,8 @@ public class CommSqlParser {
         private Queue<String> polandQueue;
 
         public ValueParts() {
-        }public void setNode(SqlNode node){
+        }
+        public void setNode(SqlNode node){
             this.node=node;
             this.sqlKind=node.getKind();
         }
@@ -313,6 +346,7 @@ public class CommSqlParser {
 
     public static void main(String[] args) {
         String sql = "select a1,a3,(b2+b3)/c1,substr(c4,1,3),case c3 when 1 then 'A' when 2 then 'B' else 'C' end as tag1 from test where ((((a1+a2)+a9)/10>a3 and a4>a5) or a7 in (1,2,3)) or (not ((a3-a6)/a8<b1))";
+        String groupSql="select max(a1),min(a2),sum(a6),c3 from test where ((a1+a2)*a9)/10>a3 group by c3 having sum(c4)>100";
         try {
             DataCollectionMeta.Builder builder=new DataCollectionMeta.Builder();
             DataCollectionMeta meta=builder.addColumn("a1",Const.META_TYPE_DOUBLE).addColumn("a2",Const.META_TYPE_DOUBLE)
@@ -341,10 +375,11 @@ public class CommSqlParser {
             map.put("c2",1.0);
             map.put("c3",2);
             map.put("c4","Asdassdasdasd");
-            if(CommRecordGenerator.recordAccessible(segment,map)){
+            /*if(CommRecordGenerator.recordAcceptable(segment,map)){
                 Map<String,Object> retMap=CommRecordGenerator.doCalculator(segment,map);
                 System.out.println(retMap);
-            }
+            }*/
+            CommSqlParser.parseGroupByAgg(groupSql,Lex.MYSQL,meta,"NCOLUMN");
 
         } catch (SqlParseException |ValidationException ex) {
             ex.printStackTrace();

@@ -2,6 +2,7 @@ package com.robin.comm.sql;
 
 import com.robin.core.fileaccess.meta.DataSetColumnMeta;
 import lombok.Data;
+import org.apache.calcite.sql.SqlIdentifier;
 import org.apache.calcite.sql.SqlNode;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -22,5 +23,7 @@ public class SqlSegment {
     private Map<String, Pair<Double, Double>> rangeMap = new HashMap<>();
     private Map<String, CommSqlParser.ValueParts> wherePartsMap;
     private Map<String, CommSqlParser.ValueParts> selectPartsMap;
+    private List<SqlNode> groupBy;
+    private List<CommSqlParser.ValueParts> having;
     private Map<String,DataSetColumnMeta> originSchemaMap;
 }

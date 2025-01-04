@@ -6,27 +6,15 @@ import org.apache.calcite.sql.util.ReflectiveSqlOperatorTable;
 public class CustomSqlOperatorTable extends ReflectiveSqlOperatorTable {
     private static CustomSqlOperatorTable instance;
 
-    @Deprecated
+
     public static final SqlFunction DECODE;
-    /**
-     * @deprecated
-     */
-    @Deprecated
+
     public static final SqlFunction NVL;
-    /**
-     * @deprecated
-     */
-    @Deprecated
+
     public static final SqlFunction LTRIM;
-    /**
-     * @deprecated
-     */
-    @Deprecated
+
     public static final SqlFunction RTRIM;
-    /**
-     * @deprecated
-     */
-    @Deprecated
+
     public static final SqlFunction SUBSTR;
     public static final SqlFunction IFNULL;
 
