@@ -1,8 +1,9 @@
 package com.robin.comm.fileaccess.iterator;
 
 import com.google.common.collect.Sets;
-import com.robin.comm.fileaccess.util.ByteBufferSeekableInputStream;
-import com.robin.comm.fileaccess.util.ParquetUtil;
+import com.google.protobuf.Descriptors;
+import com.google.protobuf.DynamicMessage;
+import com.robin.comm.fileaccess.util.*;
 import com.robin.comm.utils.SysUtils;
 import com.robin.core.base.exception.OperationNotSupportException;
 import com.robin.core.base.util.Const;
@@ -12,7 +13,7 @@ import com.robin.core.fileaccess.iterator.AbstractFileIterator;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.meta.DataSetColumnMeta;
 import com.robin.core.fileaccess.util.AvroUtils;
-import com.robin.core.fileaccess.util.CompareNode;
+import com.robin.comm.sql.CompareNode;
 import com.robin.core.fileaccess.util.ResourceUtil;
 import com.robin.hadoop.hdfs.HDFSUtil;
 import org.apache.avro.LogicalTypes;
@@ -37,6 +38,8 @@ import org.apache.parquet.hadoop.util.HadoopInputFile;
 import org.apache.parquet.io.InputFile;
 import org.apache.parquet.io.LocalInputFile;
 import org.apache.parquet.io.api.Binary;
+import org.apache.parquet.proto.ProtoParquetReader;
+import org.apache.parquet.proto.ProtoReadSupport;
 import org.apache.parquet.schema.MessageType;
 import org.apache.parquet.schema.Type;
 
@@ -63,14 +66,19 @@ import static org.apache.parquet.filter2.predicate.FilterApi.*;
 
 public class ParquetFileIterator extends AbstractFileIterator {
     private ParquetReader<GenericData.Record> preader;
+    private ParquetReader<DynamicMessage.Builder> protoReader;
     private Schema schema;
     private MessageType msgtype;
     private GenericData.Record record;
     private ParquetReader<Map<String, Object>> ireader;
     private boolean useAvroEncode = false;
+    private boolean useProtoBuffEncode=false;
     private MemorySegment segment;
     private Double allowOffHeapDumpLimit = ResourceConst.ALLOWOUFHEAPMEMLIMIT;
     private FilterCompat.Filter filter;
+    private DynamicMessage message;
+    private ProtoBufUtil.ProtoContainer container;
+
 
     public ParquetFileIterator() {
         identifier = Const.FILEFORMATSTR.PARQUET.getValue();
@@ -94,7 +102,6 @@ public class ParquetFileIterator extends AbstractFileIterator {
     }
 
     private List<Schema.Field> fields;
-    Map<String, Object> rsMap;
     private File tmpFile;
 
     @Override
@@ -103,20 +110,43 @@ public class ParquetFileIterator extends AbstractFileIterator {
         InputFile file;
         try {
             checkAccessUtil(null);
-            if (colmeta.getResourceCfgMap().containsKey("file.useAvroEncode") && "true".equalsIgnoreCase(colmeta.getResourceCfgMap().get("file.useAvroEncode").toString())) {
-                useAvroEncode = true;
+            if (colmeta.getResourceCfgMap().containsKey(ResourceConst.PARQUETFILEFORMAT)) {
+                if(ResourceConst.PARQUETSUPPORTFORMAT.AVRO.getValue().equalsIgnoreCase(colmeta.getResourceCfgMap().get(ResourceConst.PARQUETFILEFORMAT).toString())) {
+                    useAvroEncode = true;
+                }else if(ResourceConst.PARQUETSUPPORTFORMAT.PROTOBUF.getValue().equalsIgnoreCase(colmeta.getResourceCfgMap().get(ResourceConst.PARQUETFILEFORMAT).toString())){
+                    useProtoBuffEncode=true;
+                    container=ProtoBufUtil.initSchema(colmeta);
+                }
+            }
+            if (!ObjectUtils.isEmpty(rootNode) && !result.isHasFourOperations() && !result.isHasRightColumnCmp()) {
+                FilterPredicate predicate=walkCondition(rootNode);
+                filter= FilterCompat.get(predicate);
             }
 
             if (Const.FILESYSTEM.HDFS.getValue().equals(colmeta.getFsType())) {
                 conf = new HDFSUtil(colmeta).getConfig();
                 file = HadoopInputFile.fromPath(new Path(colmeta.getPath()), conf);
                 getSchema(file, false);
-                if (!useAvroEncode) {
-                    ParquetReader.Builder<Map<String, Object>> builder = ParquetReader.builder(new CustomReadSupport(), new Path(ResourceUtil.getProcessPath(colmeta.getPath()))).withConf(conf);
+                if (useAvroEncode) {
+                    ParquetReader.Builder<GenericData.Record>  avroBuilder= AvroParquetReader
+                            .<GenericData.Record>builder(HadoopInputFile.fromPath(new Path(ResourceUtil.getProcessPath(colmeta.getPath())), conf)).withConf(conf);
+                    if(filter==null) {
+                       avroBuilder.withFilter(filter);
+                    }
+                    preader=avroBuilder.build();
+                }else if(useProtoBuffEncode){
+                    ParquetReader.Builder<DynamicMessage.Builder> protoBuilder=ProtoParquetReader.<DynamicMessage.Builder>builder(HadoopInputFile.fromPath(new Path(ResourceUtil.getProcessPath(colmeta.getPath())), conf))
+                            .set(ProtoReadSupport.PB_CLASS,DynamicMessage.class.getName()).withConf(conf);
+                    if(filter==null) {
+                        protoBuilder.withFilter(filter);
+                    }
+                    protoReader=protoBuilder.build();
+                }else {
+                    ParquetReader.Builder<Map<String, Object>> builder = ParquetReader.builder(new CustomRowReadSupport(), new Path(ResourceUtil.getProcessPath(colmeta.getPath()))).withConf(conf);
+                    if(filter==null) {
+                        builder.withFilter(filter);
+                    }
                     ireader = builder.build();
-                } else {
-                    preader = AvroParquetReader
-                            .<GenericData.Record>builder(HadoopInputFile.fromPath(new Path(ResourceUtil.getProcessPath(colmeta.getPath())), conf)).withConf(conf).build();
                 }
             } else {
                 // no hdfs input source
@@ -148,18 +178,26 @@ public class ParquetFileIterator extends AbstractFileIterator {
                 }
                 getSchema(file, true);
 
-                if (!useAvroEncode) {
-                    ParquetReader.Builder builder = CustomParquetReader.builder(file, colmeta);
-                    if (filter != null) {
-                        builder.withFilter(filter);
-                    }
-                    ireader = builder.build();
-                } else {
+                if (useAvroEncode) {
                     ParquetReader.Builder<GenericData.Record> builder = AvroParquetReader.<GenericData.Record>builder(file);
                     if (filter != null) {
                         builder.withFilter(filter);
                     }
                     preader = builder.build();
+                }else if(useProtoBuffEncode){
+                    ParquetReader.Builder<DynamicMessage.Builder> builder=ProtoParquetReader.builder(file);
+                    builder.set(ProtoReadSupport.PB_CLASS,DynamicMessage.class.getName()).set(ProtoReadSupport.PB_DESCRIPTOR,container.getSchema().toString());
+                    if (filter != null) {
+                        builder.withFilter(filter);
+                    }
+                    protoReader=builder.build();
+                }
+                else {
+                    ParquetReader.Builder builder = CustomParquetReader.builder(file, colmeta);
+                    if (filter != null) {
+                        builder.withFilter(filter);
+                    }
+                    ireader = builder.build();
                 }
             }
             fields = schema.getFields();
@@ -186,28 +224,48 @@ public class ParquetFileIterator extends AbstractFileIterator {
 
     @Override
     public boolean hasNext() {
-        try {
-            if (useAvroEncode) {
-                record = null;
-                record = preader.read();
-                return record != null;
-            } else {
-                rsMap = ireader.read();
-                return rsMap != null;
-            }
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            return false;
+        if(!ObjectUtils.isEmpty(rootNode) && !result.isHasFourOperations() && !result.isHasRightColumnCmp()){
+            pullNext();
+            return !CollectionUtils.isEmpty(cachedValue);
+        }else{
+            return super.hasNext();
         }
     }
 
     @Override
     protected void pullNext() {
-        throw new OperationNotSupportException("can not use pullNext Method");
+        try {
+            cachedValue.clear();
+            if (useAvroEncode) {
+                record = null;
+                record = preader.read();
+                if(record!=null){
+                    for (Schema.Field field : fields) {
+                        Object value = record.get(field.name());
+                        if (LogicalTypes.timestampMillis().equals(field.schema().getLogicalType())) {
+                            value = new Timestamp((Long) value);
+                        }
+                        cachedValue.put(field.name(), value);
+                    }
+                }
+            }else if(useProtoBuffEncode){
+                message=protoReader.read().build();
+                if(message!=null){
+                    for (Descriptors.FieldDescriptor descriptor : container.getSchema().getMessageDescriptor(colmeta.getValueClassName()).getFields()) {
+                        cachedValue.put(descriptor.getName(), message.getField(descriptor));
+                    }
+                }
+            }
+            else {
+                cachedValue = ireader.read();
+            }
+        } catch (Exception ex) {
+            throw new OperationNotSupportException(ex);
+        }
     }
 
-    @Override
-    public Map<String, Object> next() {
+
+    public Map<String, Object> next1() {
         if (useAvroEncode) {
             Map<String, Object> retMap = new HashMap<>();
             if (record == null) {
@@ -221,19 +279,13 @@ public class ParquetFileIterator extends AbstractFileIterator {
                 retMap.put(field.name(), value);
             }
             return retMap;
-        } else {
-            return rsMap;
+        }else if(useProtoBuffEncode){
+            return cachedValue;
+        }else {
+            return cachedValue;
         }
     }
 
-    @Override
-    public void withFilterSql(String filterSql) {
-        super.withFilterSql(filterSql);
-        if (!hasFourOperations && !hasRightColumnCmp) {
-            FilterPredicate predicate=walkCondition(rootNode);
-            filter= FilterCompat.get(predicate);
-        }
-    }
 
     private FilterPredicate walkCondition(CompareNode node) {
         if (node.getRightNode() != null && node.getLeftNode() != null) {
@@ -331,30 +383,38 @@ public class ParquetFileIterator extends AbstractFileIterator {
                 break;
             case "in":
                 if (Const.META_TYPE_INTEGER.equals(meta.getColumnType())) {
-                    predicate = in(intColumn(columnName), Sets.newHashSet(inPartMap.get(columnName).stream().map(Integer::valueOf).collect(Collectors.toList())));
+                    predicate = in(intColumn(columnName), Sets.newHashSet(result.getInPartMap().get(columnName).stream().map(Integer::valueOf).collect(Collectors.toList())));
                 } else if (Const.META_TYPE_DOUBLE.equals(meta.getColumnType()) || Const.META_TYPE_DECIMAL.equals(meta.getColumnType())) {
-                    predicate = in(doubleColumn(columnName), Sets.newHashSet(inPartMap.get(columnName).stream().map(Double::valueOf).collect(Collectors.toList())));
+                    predicate = in(doubleColumn(columnName), Sets.newHashSet(result.getInPartMap().get(columnName).stream().map(Double::valueOf).collect(Collectors.toList())));
                 } else if (Const.META_TYPE_BIGINT.equals(meta.getColumnType()) || Const.META_TYPE_TIMESTAMP.equals(meta.getColumnType())) {
-                    predicate = in(longColumn(columnName), Sets.newHashSet(inPartMap.get(columnName).stream().map(Long::valueOf).collect(Collectors.toList())));
+                    predicate = in(longColumn(columnName), Sets.newHashSet(result.getInPartMap().get(columnName).stream().map(Long::valueOf).collect(Collectors.toList())));
                 } else if (Const.META_TYPE_STRING.equals(meta.getColumnType())) {
-                    predicate = in(binaryColumn(columnName), Sets.newHashSet(inPartMap.get(columnName).stream().map(Binary::fromString).collect(Collectors.toList())));
+                    predicate = in(binaryColumn(columnName), Sets.newHashSet(result.getInPartMap().get(columnName).stream().map(Binary::fromString).collect(Collectors.toList())));
                 } else {
                     throw new OperationNotSupportException("type not support");
                 }
                 break;
             case "not in":
                 if (Const.META_TYPE_INTEGER.equals(meta.getColumnType())) {
-                    predicate = notIn(intColumn(columnName), Sets.newHashSet(inPartMap.get(columnName).stream().map(Integer::valueOf).collect(Collectors.toList())));
+                    predicate = notIn(intColumn(columnName), Sets.newHashSet(result.getInPartMap().get(columnName).stream().map(Integer::valueOf).collect(Collectors.toList())));
                 } else if (Const.META_TYPE_DOUBLE.equals(meta.getColumnType()) || Const.META_TYPE_DECIMAL.equals(meta.getColumnType())) {
-                    predicate = notIn(doubleColumn(columnName), Sets.newHashSet(inPartMap.get(columnName).stream().map(Double::valueOf).collect(Collectors.toList())));
+                    predicate = notIn(doubleColumn(columnName), Sets.newHashSet(result.getInPartMap().get(columnName).stream().map(Double::valueOf).collect(Collectors.toList())));
                 } else if (Const.META_TYPE_BIGINT.equals(meta.getColumnType()) || Const.META_TYPE_TIMESTAMP.equals(meta.getColumnType())) {
-                    predicate = notIn(longColumn(columnName), Sets.newHashSet(inPartMap.get(columnName).stream().map(Long::valueOf).collect(Collectors.toList())));
+                    predicate = notIn(longColumn(columnName), Sets.newHashSet(result.getInPartMap().get(columnName).stream().map(Long::valueOf).collect(Collectors.toList())));
                 } else if (Const.META_TYPE_STRING.equals(meta.getColumnType())) {
-                    predicate = notIn(binaryColumn(columnName), Sets.newHashSet(inPartMap.get(columnName).stream().map(Binary::fromString).collect(Collectors.toList())));
+                    predicate = notIn(binaryColumn(columnName), Sets.newHashSet(result.getInPartMap().get(columnName).stream().map(Binary::fromString).collect(Collectors.toList())));
                 } else {
                     throw new OperationNotSupportException("type not support");
                 }
                 break;
+            case "like":
+                if (Const.META_TYPE_STRING.equals(meta.getColumnType())){
+                    predicate=FilterApi.userDefined(FilterApi.binaryColumn(columnName),new CharLikePredicate(value.toString()));
+                }else {
+                    throw new OperationNotSupportException("type not support");
+                }
+                break;
+
             default:
                 throw new OperationNotSupportException(" not supported!");
 

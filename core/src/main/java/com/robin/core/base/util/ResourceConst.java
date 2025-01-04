@@ -17,6 +17,7 @@ public class ResourceConst {
     public static final String DEFAULTSTORAGEUPLOADTHREADKEY="storage.defaultUploadThread";
     public static final int DEFAULTSTORAGEUPLOADTHREAD=4;
     public static final String STORAGEFILTERSQL="storage.FilterSql";
+    public static final String PARQUETFILEFORMAT="parquet.file.format";
 
     public enum IngestType {
         TYPE_HDFS(1L,"HDFS"),
@@ -118,6 +119,21 @@ public class ResourceConst {
         }
         @Override
         public String toString() {
+            return value;
+        }
+    }
+    public enum PARQUETSUPPORTFORMAT{
+        NORMAL("normal"),
+        AVRO("avro"),
+        PROTOBUF("proto");
+
+        PARQUETSUPPORTFORMAT(String value){
+            this.value=value;
+        }
+
+        private String value;
+
+        public String getValue() {
             return value;
         }
     }

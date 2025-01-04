@@ -1,17 +1,13 @@
 package com.robin.comm.fileaccess.iterator;
 
-import com.github.os72.protobuf.dynamic.DynamicSchema;
-import com.github.os72.protobuf.dynamic.MessageDefinition;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
 import com.robin.comm.fileaccess.util.ProtoBufUtil;
 import com.robin.core.base.util.Const;
 import com.robin.core.fileaccess.iterator.AbstractFileIterator;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
-import com.robin.core.fileaccess.meta.DataSetColumnMeta;
 import com.robin.core.fileaccess.util.ResourceUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.util.CollectionUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -19,11 +15,11 @@ import java.util.NoSuchElementException;
 
 @Slf4j
 public class ProtoBufFileIterator extends AbstractFileIterator {
-    private DynamicSchema schema;
+
     private DynamicMessage message;
-    //private ExtensionRegistry registry;
-    private DynamicSchema.Builder schemaBuilder;
-    private DynamicMessage.Builder mesgBuilder;
+
+
+    private ProtoBufUtil.ProtoContainer container;
     public ProtoBufFileIterator(){
         identifier= Const.FILEFORMATSTR.PROTOBUF.getValue();
     }
@@ -36,20 +32,8 @@ public class ProtoBufFileIterator extends AbstractFileIterator {
     @Override
     public void beforeProcess() {
         try {
-            if (!CollectionUtils.isEmpty(colmeta.getColumnList())) {
-                schemaBuilder = DynamicSchema.newBuilder();
-                schemaBuilder.setName(colmeta.getClassNamespace() + ".proto");
-                MessageDefinition.Builder msgBuilder = MessageDefinition.newBuilder(colmeta.getValueClassName());
-                for (int i = 0; i < colmeta.getColumnList().size(); i++) {
-                    DataSetColumnMeta column = colmeta.getColumnList().get(i);
-                    msgBuilder = msgBuilder.addField(column.isRequired() ? "required" : "optional", ProtoBufUtil.translateType(column), column.getColumnName(), i + 1);
-                }
-                MessageDefinition definition = msgBuilder.build();
-                schemaBuilder.addMessageDefinition(definition);
-                schema = schemaBuilder.build();
-                mesgBuilder = DynamicMessage.newBuilder(schema.getMessageDescriptor(colmeta.getValueClassName()));
-                //registry=getExtension(schema,colmeta);
-            }
+            container=ProtoBufUtil.initSchema(colmeta);
+
             checkAccessUtil(null);
             instream = accessUtil.getInResourceByStream(colmeta, ResourceUtil.getProcessPath(colmeta.getPath()));
         } catch (Exception ex) {
@@ -71,15 +55,15 @@ public class ProtoBufFileIterator extends AbstractFileIterator {
     protected void pullNext() {
         try {
             cachedValue.clear();
-            if (mesgBuilder.mergeDelimitedFrom(instream)) {
-                message = mesgBuilder.build();
+            if (container.getMesgBuilder().mergeDelimitedFrom(instream)) {
+                message = container.getMesgBuilder().build();
             } else {
                 message = null;
             }
             if (message == null) {
                 throw new NoSuchElementException("");
             }
-            for (Descriptors.FieldDescriptor descriptor : schema.getMessageDescriptor(colmeta.getValueClassName()).getFields()) {
+            for (Descriptors.FieldDescriptor descriptor : container.getSchema().getMessageDescriptor(colmeta.getValueClassName()).getFields()) {
                 cachedValue.put(descriptor.getName(), message.getField(descriptor));
             }
 
@@ -91,8 +75,8 @@ public class ProtoBufFileIterator extends AbstractFileIterator {
 
     public boolean hasNext1() {
         try {
-            if (mesgBuilder.mergeDelimitedFrom(instream)) {
-                message = mesgBuilder.build();
+            if (container.getMesgBuilder().mergeDelimitedFrom(instream)) {
+                message = container.getMesgBuilder().build();
                 return true;
             } else {
                 message = null;
@@ -110,7 +94,7 @@ public class ProtoBufFileIterator extends AbstractFileIterator {
             throw new NoSuchElementException("");
         }
         Map<String, Object> tmap = new HashMap<String, Object>();
-        for (Descriptors.FieldDescriptor descriptor : schema.getMessageDescriptor(colmeta.getValueClassName()).getFields()) {
+        for (Descriptors.FieldDescriptor descriptor : container.getSchema().getMessageDescriptor(colmeta.getValueClassName()).getFields()) {
             tmap.put(descriptor.getName(), message.getField(descriptor));
         }
         return tmap;
@@ -119,8 +103,8 @@ public class ProtoBufFileIterator extends AbstractFileIterator {
     @Override
     public void remove() {
         try {
-            if (mesgBuilder.mergeDelimitedFrom(instream, null)) {
-                mesgBuilder.build();
+            if (container.getMesgBuilder().mergeDelimitedFrom(instream, null)) {
+                container.getMesgBuilder().build();
             }
         } catch (Exception ex) {
 

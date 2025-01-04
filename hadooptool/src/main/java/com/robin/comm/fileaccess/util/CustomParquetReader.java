@@ -1,4 +1,4 @@
-package com.robin.comm.fileaccess.iterator;
+package com.robin.comm.fileaccess.util;
 
 
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
@@ -49,7 +49,7 @@ public class CustomParquetReader<T> extends ParquetReader<T> {
 
         @Override
         protected ReadSupport<Map<String,Object>> getReadSupport() {
-            return new CustomReadSupport();
+            return new CustomRowReadSupport();
         }
 
     }

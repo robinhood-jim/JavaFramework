@@ -1,8 +1,10 @@
 package com.robin.core.fileaccess.util;
 
 import cn.hutool.core.util.NumberUtil;
+import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.util.*;
@@ -14,6 +16,9 @@ public class PolandNotationUtil {
     private static Map<String,Integer> boolOperSymbolMap=new HashMap<>();
     private static String leftChar = "(";
     private static String rightChar = ")";
+    private static ThreadLocal<Double> leftVal=new ThreadLocal<>();
+    private static ThreadLocal<Double> rightVal=new ThreadLocal<>();
+    private static ThreadLocal<Queue<String>> calcuQueue=new ThreadLocal<>();
     static{
         operationSymbolMap.put(")",00); //右括号需匹配左括号，故优先级最低
         operationSymbolMap.put("+",10);
@@ -23,7 +28,6 @@ public class PolandNotationUtil {
         operationSymbolMap.put("(",30);
         boolOperSymbolMap.put(")",00);
         boolOperSymbolMap.put("&",10);
-
     }
     public static Queue<String> parsePre(String formula){
         Stack<String> preStack = new Stack<>();
@@ -34,7 +38,7 @@ public class PolandNotationUtil {
         while(i<chars.length && Objects.nonNull(chars[i])) {
             if(isOperator(chars[i])){
                 if(builder.length()>0){
-                    queue.add(builder.toString());
+                    queue.add(builder.toString().trim());
                     builder.delete(0,builder.length());
                 }
                 if(preStack.isEmpty()){
@@ -64,10 +68,10 @@ public class PolandNotationUtil {
             i++;
         }
         if(builder.length()>0){
-            queue.add(builder.toString());
+            queue.add(builder.toString().trim());
         }
         while (!preStack.isEmpty()) {
-            queue.add(preStack.pop());
+            queue.add(preStack.pop().trim());
         }
 
         return queue;
@@ -87,7 +91,7 @@ public class PolandNotationUtil {
 
     private static void appendTo(Queue queue, String s) {
         if(!s.equals(leftChar) && !s.equals(rightChar)) {
-            queue.add(s);
+            queue.add(s.trim());
         }
     }
 
@@ -101,63 +105,82 @@ public class PolandNotationUtil {
         return operationSymbolMap.get(start).compareTo(operationSymbolMap.get(to));
     }
 
+
     /**
      * 计算后缀表达式结果
      * @param queue
      * @return
      */
-    public static double computeResult(Queue<String> queue,Map<String,Object> valueMap) {
+    public static Double computeResult(Queue<String> queue,Map<String,Object> valueMap) {
         double result = 0.0;
-        if(Objects.isNull(queue)) {
-            return result;
+        if(CollectionUtils.isEmpty(queue)) {
+            return null;
         }
-        String s = queue.poll();
+        if(calcuQueue.get()==null) {
+            calcuQueue.set(new LinkedBlockingQueue());
+        }
+        calcuQueue.get().addAll(queue);
+        String s = calcuQueue.get().poll();
         Stack<Double> stack = new Stack();
-        double first = 0.0;
-        double second = 0.0;
-        while(Objects.nonNull(s)) {
-            if(!isOperator(s)) {
-                if(valueMap.get(s)!=null) {
-                    stack.push(Double.valueOf(valueMap.get(s).toString()));
-                }else{
-                    if(NumberUtil.isNumber(s)){
-                        stack.push(Double.valueOf(s));
-                    }else {
-                        stack.push(0.0);
+
+        try {
+            while (Objects.nonNull(s)) {
+                if (!isOperator(s)) {
+                    if (valueMap.get(s) != null) {
+                        stack.push(Double.valueOf(valueMap.get(s).toString()));
+                    } else {
+                        if (NumberUtil.isNumber(s)) {
+                            stack.push(Double.valueOf(s));
+                        } else {
+                            stack.push(0.0);
+                        }
+                    }
+                } else if (!StringUtils.isEmpty(s)) {
+                    switch (s) {
+                        case "+":
+                            leftVal.set(stack.pop());
+                            rightVal.set(stack.pop());
+                            result = leftVal.get() + rightVal.get();
+                            stack.push(result);
+                            break;
+                        case "-":
+                            leftVal.set(stack.pop());
+                            rightVal.set(stack.pop());
+                            result = rightVal.get() - leftVal.get();
+                            stack.push(result);
+                            break;
+                        case "*":
+                            leftVal.set(stack.pop());
+                            rightVal.set(stack.pop());
+                            result = leftVal.get() * rightVal.get();
+                            stack.push(result);
+                            break;
+                        case "/":
+                            leftVal.set(stack.pop());
+                            rightVal.set(stack.pop());
+                            Assert.isTrue(leftVal.get() != 0.0, "divided value is zero");
+                            result = rightVal.get() / leftVal.get();
+                            stack.push(result);
+                            break;
                     }
                 }
-            }else if(!StringUtils.isEmpty(s)) {
-                switch (s) {
-                    case "+" :
-                        first = stack.pop();
-                        second = stack.pop();
-                        result = first + second;
-                        stack.push(result);
-                        break;
-                    case "-" :
-                        first = stack.pop();
-                        second = stack.pop();
-                        result = second - first;
-                        stack.push(result);
-                        break;
-                    case "*" :
-                        first = stack.pop();
-                        second = stack.pop();
-                        result = first * second;
-                        stack.push(result);
-                        break;
-                    case "/" :
-                        first = stack.pop();
-                        second = stack.pop();
-                        Assert.isTrue(first!=0.0,"divided value is zero");
-                        result = second/first;
-                        stack.push(result);
-                        break;
-                }
+                s = calcuQueue.get().poll();
             }
-            s = queue.poll();
+        }catch (Exception ex){
+            ex.printStackTrace();
         }
         return result;
+    }
+    public static void freeMem(){
+        if(leftVal!=null) {
+            leftVal.remove();
+        }
+        if(rightVal!=null) {
+            rightVal.remove();
+        }
+        if(calcuQueue!=null) {
+            calcuQueue.remove();
+        }
     }
 
     /**

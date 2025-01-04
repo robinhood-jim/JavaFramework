@@ -1,6 +1,8 @@
 package com.robin.test;
 
 import com.robin.comm.fileaccess.fs.MinioFileSystemAccessor;
+import com.robin.comm.fileaccess.agg.ParquetVectorAggregator;
+import com.robin.comm.sql.FilterSqlParser;
 import com.robin.core.base.util.Const;
 import com.robin.core.base.util.ResourceConst;
 import com.robin.core.base.util.StringUtils;
@@ -16,6 +18,7 @@ import junit.framework.TestCase;
 import org.junit.Test;
 
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
@@ -40,8 +43,8 @@ public class TestCloudStorage extends TestCase {
         builder.addColumn("sno",Const.META_TYPE_INTEGER,null);
         builder.addColumn("price",Const.META_TYPE_DOUBLE,null);
 
-        builder.resourceCfg("file.useAvroEncode","true").fileFormat(Const.FILEFORMATSTR.PARQUET.getValue())
-                .resPath("tmp/bigdata2.parquet.gz")
+        builder.resourceCfg(ResourceConst.PARQUETFILEFORMAT,ResourceConst.PARQUETSUPPORTFORMAT.PROTOBUF.getValue()).fileFormat(Const.FILEFORMATSTR.PARQUET.getValue())
+                .resPath("tmp/bigdata3.parquet.gz")
                 //.resourceCfg(ResourceConst.USEASYNCUPLOAD,"true")
                 .resourceCfg(ResourceConst.DEFAULTCACHEOFFHEAPSIZEKEY,1000*1000*6);
         DataCollectionMeta colmeta=builder.build();
@@ -61,7 +64,7 @@ public class TestCloudStorage extends TestCase {
             Map<String, Object> recMap = new HashMap<>();
             Random random = new Random(123123123123L);
             for (int i = 0; i < 5000; i++) {
-                recMap.put("id", i);
+                recMap.put("id", Long.valueOf(i));
                 recMap.put("name", StringUtils.generateRandomChar(32));
                 recMap.put("description", StringUtils.generateRandomChar(128));
                 recMap.put("sno",random.nextInt(3000000));
@@ -75,7 +78,24 @@ public class TestCloudStorage extends TestCase {
             ex.printStackTrace();
         }
     }
+    public void testReadGroup(){
+        DataCollectionMeta.Builder builder=new DataCollectionMeta.Builder();
+        builder.resourceCfg("hostName", "127.0.0.1").resourceCfg("protocol", "ftp")
+                .resourceCfg("file.useAvroEncode","true")
+                .resourceCfg("port", 21).resourceCfg("userName", "test").resourceCfg("password", "test").fileFormat(Const.FILEFORMATSTR.PARQUET.getValue())
+                .resPath("tmp/bigdata6.parquet.gz").protocol(Const.VFS_PROTOCOL.FTP.getValue()).fsType(Const.FILESYSTEM.VFS.getValue());
 
+        DataCollectionMeta colmeta=builder.build();
+        MinioFileSystemAccessor.Builder builder1=new MinioFileSystemAccessor.Builder();
+        MinioFileSystemAccessor accessor=builder1.accessKey("jeason").secretKey("Jeason@1234").endpoint("http://36.158.32.29:18888")
+                .bucket("test").build();
+        try(ParquetVectorAggregator iterator= new ParquetVectorAggregator(colmeta,accessor)){
+            iterator.beforeProcess();
+            iterator.read();
+        }catch (IOException ex){
+            ex.printStackTrace();
+        }
+    }
     @Test
     public void testReadFromMinio(){
         DataCollectionMeta.Builder builder=new DataCollectionMeta.Builder();
@@ -85,10 +105,10 @@ public class TestCloudStorage extends TestCase {
         builder.addColumn("sno",Const.META_TYPE_INTEGER,null);
         builder.addColumn("price",Const.META_TYPE_DOUBLE,null);
 
-        builder.resourceCfg("file.useAvroEncode","true")
-                .resourceCfg(ResourceConst.STORAGEFILTERSQL,"(id>4097 and price>500)")
-                .fileFormat(Const.FILEFORMATSTR.PARQUET.getValue())
-                .resPath("tmp/bigdata2.parquet.gz");
+        builder.resourceCfg(ResourceConst.PARQUETFILEFORMAT,ResourceConst.PARQUETSUPPORTFORMAT.AVRO.getValue())
+                .resourceCfg(ResourceConst.STORAGEFILTERSQL,"id>4097 and price*4>500 and name like 'A%'")
+                .fileFormat(Const.FILEFORMATSTR.CSV.getValue())
+                .resPath("tmp/bigdata2.csv.gz");
         DataCollectionMeta colmeta=builder.build();
         MinioFileSystemAccessor.Builder builder1=new MinioFileSystemAccessor.Builder();
         MinioFileSystemAccessor accessor=builder1.accessKey("jeason").secretKey("Jeason@1234").endpoint("http://36.158.32.29:18888")
@@ -116,6 +136,22 @@ public class TestCloudStorage extends TestCase {
         }catch (Exception ex){
             ex.printStackTrace();
         }
+
+    }
+    @Test
+    public void test1(){
+        DataCollectionMeta.Builder builder=new DataCollectionMeta.Builder();
+        builder.addColumn("id",Const.META_TYPE_BIGINT,null);
+        builder.addColumn("name",Const.META_TYPE_STRING,null);
+        builder.addColumn("description",Const.META_TYPE_STRING,null);
+        builder.addColumn("sno",Const.META_TYPE_INTEGER,null);
+        builder.addColumn("price",Const.META_TYPE_DOUBLE,null);
+        FilterSqlParser.FilterSqlResult result= FilterSqlParser.doParse(builder.build(),"id>4097 and price*4>500 and name like 'A%'");
+        Map<String,Object> valueMap=new HashMap<>();
+        valueMap.put("id",5000);
+        valueMap.put("name","A888");
+        valueMap.put("price",200.0);
+        FilterSqlParser.walkTree(result,result.getRootNode(),valueMap);
 
     }
 }

@@ -10,7 +10,7 @@ import com.robin.core.fileaccess.fs.AbstractFileSystemAccessor;
 import com.robin.core.fileaccess.iterator.AbstractFileIterator;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.meta.DataSetColumnMeta;
-import com.robin.core.fileaccess.util.CompareNode;
+import com.robin.comm.sql.CompareNode;
 import com.robin.core.fileaccess.util.ResourceUtil;
 import com.robin.hadoop.hdfs.HDFSUtil;
 import org.apache.commons.io.FileUtils;
@@ -44,6 +44,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * Orc SearchArgument only filter row Groups,must use second filter
+ */
 public class OrcFileIterator extends AbstractFileIterator {
     private Configuration conf;
     private List<TypeDescription> fields;
@@ -103,9 +106,9 @@ public class OrcFileIterator extends AbstractFileIterator {
         }
     }
 
-    @Override
-    public boolean hasNext() {
-        if(hasFourOperations || hasRightColumnCmp){
+
+    public boolean hasNext1() {
+        if(!ObjectUtils.isEmpty(rootNode) && !result.isHasFourOperations() || !result.isHasRightColumnCmp()){
             return super.hasNext();
         }
         if(maxRow>0 && currentRow<maxRow){
@@ -122,8 +125,7 @@ public class OrcFileIterator extends AbstractFileIterator {
         return false;
     }
 
-    @Override
-    public Map<String, Object> next() {
+    /*public Map<String, Object> next1() {
         if(hasFourOperations || hasRightColumnCmp){
             return super.next();
         }
@@ -136,7 +138,7 @@ public class OrcFileIterator extends AbstractFileIterator {
         }
         currentRow++;
         return cachedValue;
-    }
+    }*/
     public void wrapValue(TypeDescription schema,String columnName, ColumnVector vector,int row,Map<String,Object> valueMap){
         if(vector.noNulls || !vector.isNull[row]){
             switch (schema.getCategory()){
@@ -183,8 +185,9 @@ public class OrcFileIterator extends AbstractFileIterator {
 
     private void walkCondition(CompareNode node, SearchArgument.Builder argumentBuilder){
         if (node.getRightNode() != null && node.getLeftNode() != null) {
-            if(node.getLeftNode().getKey()!=null || node.getRightNode().getKey()!=null){
-                throw new OperationNotSupportException("four operation not support");
+            if(node.getLeftNode().getKey()!=null || node.getRightNode().getKey()!=null || columnMap.containsKey(node.getRightNode().getValue())){
+                //skip four operation
+                return ;
             }
             parseOperator(node.getLeftNode().getValue(),node.getLinkOperator(),node.getRightNode().getValue(),argumentBuilder);
         } else {
@@ -226,7 +229,7 @@ public class OrcFileIterator extends AbstractFileIterator {
                 argumentBuilder.between(column, pair.getKey(), pair.getValue(),pair.getValue());
                 break;
             case "in":
-                argumentBuilder.in(column,pair.getKey(),inPartMap.get(column).stream().map(f-> returnWithType(columnMap.get(column),f)).collect(Collectors.toList()).toArray());
+                argumentBuilder.in(column,pair.getKey(),result.getInPartMap().get(column).stream().map(f-> returnWithType(columnMap.get(column),f)).collect(Collectors.toList()).toArray());
                 break;
             case "<>":
                 argumentBuilder.startNot();
@@ -343,7 +346,7 @@ public class OrcFileIterator extends AbstractFileIterator {
                 }
             }
             schema=OrcUtil.getSchema(colmeta);
-            if(!ObjectUtils.isEmpty(rootNode) && !hasFourOperations && !hasRightColumnCmp){
+            if(!ObjectUtils.isEmpty(rootNode)){
                 SearchArgument.Builder argumentBuilder=SearchArgumentFactory.newBuilder();
                 walkCondition(rootNode,argumentBuilder);
                 options= new Reader.Options().schema(schema).allowSARGToFilter(true)

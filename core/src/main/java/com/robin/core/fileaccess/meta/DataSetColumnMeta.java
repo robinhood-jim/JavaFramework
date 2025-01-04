@@ -23,6 +23,7 @@ public class DataSetColumnMeta implements Serializable {
     private boolean increment;
     private Integer length;
     private List<String> nominalValues;
+    private boolean flushOut=true;
 
 
     public DataSetColumnMeta(String columnName,String columnType,Object defaultNullValue){
@@ -33,6 +34,18 @@ public class DataSetColumnMeta implements Serializable {
         }else{
             this.defaultNullValue="";
         }
+    }
+    public DataSetColumnMeta(String columnName,String columnType){
+        this(columnName,columnType,null);
+    }
+    public DataSetColumnMeta(String columnName,String columnType,String algrithOper,boolean flushOut){
+        this(columnName,columnType,null);
+        this.algrithOper=algrithOper;
+        this.flushOut=flushOut;
+    }
+    public DataSetColumnMeta(String columnName,String columnType,boolean flushOut){
+        this(columnName,columnType,null);
+        this.flushOut=flushOut;
     }
     public DataSetColumnMeta(String columnName,String columnType,Object defaultNullValue,boolean required,String dateFormat){
         this.columnName=columnName;
