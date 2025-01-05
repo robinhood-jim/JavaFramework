@@ -20,6 +20,9 @@ import java.util.stream.Collectors;
  * Single Table schema record generator
  */
 public class CommRecordGenerator {
+    private CommRecordGenerator(){
+
+    }
     /**
      * Adjust input record (Map) fit Selected Condition
      * @param segment   SqlParseSegment
@@ -40,9 +43,8 @@ public class CommRecordGenerator {
      * @param inputRecord
      * @return
      */
-    public static Map<String,Object> doCalculator(SqlSegment segment,Map<String,Object> inputRecord){
-        Map<String,Object> retMap=new HashMap<>();
-
+    public static void doCalculator(SqlSegment segment,Map<String,Object> inputRecord,Map<String,Object> newRecord){
+        newRecord.clear();
         String columnName=null;
         for(int i=0;i<segment.getSelectColumns().size();i++){
             CommSqlParser.ValueParts parts=segment.getSelectColumns().get(i);
@@ -50,10 +52,10 @@ public class CommRecordGenerator {
             if(SqlKind.LISTAGG.equals(parts.getSqlKind())){
                 if(!CollectionUtils.isEmpty(parts.getPolandQueue())){
                     Double value=PolandNotationUtil.computeResult(parts.getPolandQueue(),inputRecord);
-                    retMap.put(columnName,value);
+                    newRecord.put(columnName,value);
                 }
             }else if(SqlKind.CASE.equals(parts.getSqlKind())){
-                Assert.isTrue(!CollectionUtils.isEmpty(parts.getCaseMap()));
+                Assert.isTrue(!CollectionUtils.isEmpty(parts.getCaseMap()),"case without switch");
                 String cmpValue=null;
                 if(!ObjectUtils.isEmpty(inputRecord.get(parts.getIdentifyColumn()))) {
                     cmpValue = inputRecord.get(parts.getIdentifyColumn()).toString();
@@ -61,15 +63,15 @@ public class CommRecordGenerator {
                     cmpValue = inputRecord.get(parts.getIdentifyColumn().toUpperCase()).toString();
                 }
                 if(ObjectUtils.isEmpty(cmpValue) && !ObjectUtils.isEmpty(parts.getCaseElseParts())){
-                    calculateNode(parts,columnName,inputRecord,retMap);
+                    calculateNode(parts,columnName,inputRecord,newRecord);
                 }else{
                     if(parts.getCaseMap().containsKey(cmpValue)){
-                        calculateNode(parts.getCaseMap().get(cmpValue),columnName,inputRecord,retMap);
+                        calculateNode(parts.getCaseMap().get(cmpValue),columnName,inputRecord,newRecord);
                     }else if(!ObjectUtils.isEmpty(parts.getCaseElseParts())){
-                        calculateNode(parts,columnName,inputRecord,retMap);
+                        calculateNode(parts,columnName,inputRecord,newRecord);
                     }
                 }
-            }else if(SqlKind.FUNCTION.equals(parts.getSqlKind()) ||SqlKind.OTHER_FUNCTION.equals(parts.getSqlKind())){
+            }else if(SqlKind.FUNCTION.contains(parts.getSqlKind())){
                 SqlBasicCall node=(SqlBasicCall) parts.getNode();
                 SqlOperator operator= node.getOperator();
                 SqlIdentifier identifier= operator.getNameAsId();
@@ -84,16 +86,16 @@ public class CommRecordGenerator {
                             throw new OperationNotSupportException("only string column can substr");
                         }
                         Integer fromPos=((Number)((SqlLiteral)sqlNodes.get(1)).getValue()).intValue();
-                        Integer toPos=((Number)((SqlLiteral)sqlNodes.get(1)).getValue()).intValue();
+                        Integer nums=((Number)((SqlLiteral)sqlNodes.get(2)).getValue()).intValue();
                         Object value=Optional.ofNullable(inputRecord.get(column)).orElse(inputRecord.get(column.toUpperCase()));
                         if(!ObjectUtils.isEmpty(value)){
                             if(value.toString().length()<=fromPos){
-                                retMap.put(columnName,"");
+                                newRecord.put(columnName,"");
                             }else {
-                                if (value.toString().length() < fromPos + toPos) {
-                                    toPos = value.toString().length() - fromPos;
+                                if (value.toString().length() < fromPos + nums) {
+                                    nums = value.toString().length() - fromPos;
                                 }
-                                retMap.put(columnName, value.toString().substring(fromPos, toPos));
+                                newRecord.put(columnName, value.toString().substring(fromPos, fromPos+nums));
                             }
                         }
                         break;
@@ -108,15 +110,14 @@ public class CommRecordGenerator {
             }
             else if(SqlKind.IDENTIFIER.equals(parts.getSqlKind())){
                 if (inputRecord.containsKey(parts.getIdentifyColumn())) {
-                    retMap.put(columnName,inputRecord.get(parts.getIdentifyColumn()));
+                    newRecord.put(columnName,inputRecord.get(parts.getIdentifyColumn()));
                 }else if(inputRecord.containsKey(parts.getIdentifyColumn().toUpperCase())){
-                    retMap.put(columnName,inputRecord.get(parts.getIdentifyColumn().toUpperCase()));
+                    newRecord.put(columnName,inputRecord.get(parts.getIdentifyColumn().toUpperCase()));
                 }
 
             }
 
         }
-        return retMap;
     }
     private static void calculateNode(CommSqlParser.ValueParts parts,String columnName,Map<String,Object> inputRecord,Map<String,Object> retMap){
         if(!ObjectUtils.isEmpty(parts.getConstantValue())){
@@ -171,74 +172,124 @@ public class CommRecordGenerator {
             processTag = true;
         }
         if (!processTag) {
-            if (SqlKind.GREATER_THAN.equals(node.getKind()) || SqlKind.LESS_THAN.equals(node.getKind()) || SqlKind.GREATER_THAN_OR_EQUAL.equals(node.getKind())
-                    || SqlKind.EQUALS.equals(node.getKind()) || SqlKind.LESS_THAN_OR_EQUAL.equals(node.getKind()) || SqlKind.NOT_EQUALS.equals(node.getKind())) {
-                SqlNode[] nodes = ((SqlBasicCall) node).getOperandList().toArray(new SqlNode[0]);
-                Object lefValue = null;
-                Object rightValue = null;
-                if (SqlBasicCall.class.isAssignableFrom(nodes[0].getClass())) {
-                    if (segment.getWherePartsMap().containsKey(nodes[0].toString())) {
-                        Queue<String> queue = segment.getWherePartsMap().get(nodes[0].toString()).getPolandQueue();
-                        lefValue = PolandNotationUtil.computeResult(queue, inputMap);
+            switch (node.getKind()){
+                case GREATER_THAN:
+                case LESS_THAN:
+                case GREATER_THAN_OR_EQUAL:
+                case EQUALS:
+                case LESS_THAN_OR_EQUAL:
+                case NOT_EQUALS:
+                    List<SqlNode> nodes = ((SqlBasicCall) node).getOperandList();
+                    Object leftValue = getValueWithCalculate(inputMap, segment, nodes.get(0));
+                    Object rightValue = getValueWithCalculate(inputMap,segment,nodes.get(1));
+                    if(!ObjectUtils.isEmpty(leftValue) && !ObjectUtils.isEmpty(rightValue)) {
+                        if (NumberUtil.isNumber(leftValue.toString())) {
+                            Assert.isTrue(NumberUtil.isNumber(leftValue.toString()) && NumberUtil.isNumber(rightValue.toString()), " only number allowed");
+                            return cmpNumber(node.getKind(), (Number) leftValue, (Number) rightValue);
+                        }
+                        return doCompare(segment,node, leftValue, rightValue);
+                    }
+                    break;
+                case IN:
+                case NOT_IN:
+                    List<SqlNode> sqlNodes = ((SqlBasicCall) node).getOperandList();
+                    SqlIdentifier identifier = (SqlIdentifier) sqlNodes.get(0);
+                    Set<String> inSets = segment.getInPartMap().computeIfAbsent(identifier.toString(), k -> {
+                        Set<String> sets = Sets.newHashSet();
+                        for (int i = 1; i < sqlNodes.size(); i++) {
+                            sets.add(sqlNodes.get(i).toString());
+                        }
+                        return sets;
+                    });
+                    if (inputMap.containsKey(identifier.toString())) {
+                        runValue= SqlKind.IN.equals(node.getKind()) ? inSets.contains(inputMap.get(identifier.toString())) : !inSets.contains(inputMap.get(identifier.toString()));
                     } else {
-                        throw new ConfigurationIncorrectException("");
+                        runValue= false;
                     }
-                } else if (SqlLiteral.class.isAssignableFrom(nodes[0].getClass())) {
-                    lefValue = ((SqlLiteral) nodes[0]).getValue();
-                } else if (SqlIdentifier.class.isAssignableFrom(nodes[0].getClass()) && inputMap.containsKey(nodes[0].toString())) {
-                    lefValue = inputMap.get(nodes[0].toString());
-                }
-                if (SqlBasicCall.class.isAssignableFrom(nodes[1].getClass())) {
-                    if (segment.getWherePartsMap().containsKey(nodes[1].toString())) {
-                        Queue<String> queue = segment.getWherePartsMap().get(nodes[1].toString()).getPolandQueue();
-                        rightValue = PolandNotationUtil.computeResult(queue, inputMap);
-                    } else {
-                        throw new ConfigurationIncorrectException("");
+                    break;
+                case LIKE:
+                    List<SqlNode> sqlNodes1 = ((SqlBasicCall) node).getOperandList();
+                    SqlIdentifier identifier1 = (SqlIdentifier) sqlNodes1.get(0);
+                    String likeStr=sqlNodes1.get(1).toString();
+                    String value=inputMap.containsValue(identifier1.toString())?inputMap.get(identifier1.toString()).toString()
+                            :inputMap.get(identifier1.toString().toUpperCase()).toString();
+                    if(!ObjectUtils.isEmpty(value)) {
+                        if (likeStr.startsWith("%")) {
+                            if (likeStr.endsWith("%")) {
+                                runValue =value.contains(likeStr.substring(1,likeStr.length()-1));
+                            }else{
+                                runValue=value.endsWith(likeStr.substring(1));
+                            }
+                        } else if (likeStr.endsWith("%")) {
+                            runValue=value.startsWith(likeStr.substring(0,likeStr.length()-1));
+                        }
                     }
-                } else if (SqlIdentifier.class.isAssignableFrom(nodes[1].getClass())) {
-                    if (inputMap.containsKey(nodes[1].toString())) {
-                        rightValue = inputMap.get(nodes[1].toString());
-                    }
-                } else if (SqlLiteral.class.isAssignableFrom(nodes[1].getClass())) {
-                    rightValue = ((SqlLiteral) nodes[1]).getValue();
-                }
-                if (NumberUtil.isNumber(lefValue.toString())) {
-                    Assert.isTrue(NumberUtil.isNumber(lefValue.toString()) && NumberUtil.isNumber(rightValue.toString()), " only number allowed");
-                    return cmpNumber((Number) lefValue, (Number) rightValue, node.getKind());
-                }
-                return doCompare(node.getKind(), lefValue, rightValue);
-            } else if (SqlKind.IN.equals(node.getKind()) || SqlKind.NOT_IN.equals(node.getKind())) {
-                List<SqlNode> sqlNodes = ((SqlBasicCall) node).getOperandList();
-                SqlIdentifier identifier = (SqlIdentifier) sqlNodes.get(0);
-                Set<String> inSets = segment.getInPartMap().computeIfAbsent(identifier.toString(), k -> {
-                    Set<String> sets = Sets.newHashSet();
-                    for (int i = 1; i < sqlNodes.size(); i++) {
-                        sets.add(sqlNodes.get(i).toString());
-                    }
-                    return sets;
-                });
-                if (inputMap.containsKey(identifier.toString())) {
-                    return SqlKind.IN.equals(node.getKind()) ? inSets.contains(inputMap.get(identifier.toString())) : !inSets.contains(inputMap.get(identifier.toString()));
-                } else {
-                    return false;
-                }
-            } else if (SqlKind.NOT.equals(node.getKind())) {
-                runValue = !walkTree(((SqlBasicCall) node).getOperandList().get(0), inputMap, segment);
+                    break;
+                case BETWEEN:
+                    break;
+                case IS_NULL:
+                case IS_NOT_NULL:
+                    String columnName=((SqlBasicCall)node).getOperandList().get(0).toString();
+                    runValue=!ObjectUtils.isEmpty(inputMap.get(columnName)) || !ObjectUtils.isEmpty(inputMap.get(columnName.toUpperCase()));
+                    return SqlKind.IS_NOT_NULL.equals(node.getKind())?runValue:!runValue;
+                case NOT:
+                    runValue = !walkTree(((SqlBasicCall) node).getOperandList().get(0), inputMap, segment);
+                    break;
+                default:
+                    throw new OperationNotSupportException("can not handle this opertator "+node.getKind());
             }
         }
         return runValue;
     }
 
-    private static boolean doCompare(SqlKind kind, Object leftValue, Object rightValue) {
-        boolean fit = false;
-        switch (kind) {
+    private static Object getValueWithCalculate(Map<String, Object> inputMap, SqlSegment segment, SqlNode nodes) {
+        Object value=null;
+        if (SqlBasicCall.class.isAssignableFrom(nodes.getClass())) {
+            if (segment.getWherePartsMap().containsKey(nodes.toString())) {
+                Queue<String> queue = segment.getWherePartsMap().get(nodes.toString()).getPolandQueue();
+                value = PolandNotationUtil.computeResult(queue, inputMap);
+            } else {
+                throw new ConfigurationIncorrectException("");
+            }
+        } else if (SqlLiteral.class.isAssignableFrom(nodes.getClass())) {
+            value = ((SqlLiteral) nodes).getValue();
+        } else if (SqlIdentifier.class.isAssignableFrom(nodes.getClass()) && inputMap.containsKey(nodes.toString())) {
+            value = inputMap.get(nodes.toString());
+        }
+        return value;
+    }
 
+    private static boolean doCompare(SqlSegment segment,SqlNode node, Object leftValue, Object rightValue) {
+        boolean fit = false;
+        switch (node.getKind()) {
+            case EQUALS:
+                if(!ObjectUtils.isEmpty(leftValue) && !ObjectUtils.isEmpty(rightValue)) {
+                    fit = leftValue.equals(rightValue);
+                }
+                break;
+            case NOT_EQUALS:
+                if(!ObjectUtils.isEmpty(leftValue) && !ObjectUtils.isEmpty(rightValue)) {
+                    fit = !leftValue.equals(rightValue);
+                }
+                break;
+            case IN:
+            case NOT_IN:
+                String columnName=leftValue.toString();
+                if(segment.getInPartMap().containsKey(columnName) && segment.getInPartMap().containsKey(rightValue.toString())){
+                    fit=SqlKind.IN.equals(node.getKind());
+                }
+                break;
+            case NOT:
+                fit=doCompare(segment,((SqlBasicCall)node).getOperandList().get(1),leftValue,rightValue);
+                break;
+            default:
+                throw new OperationNotSupportException("can not handle this opertator "+node.getKind());
 
         }
         return fit;
     }
 
-    public static boolean cmpNumber(Number left, Number right, SqlKind comparator) {
+    public static boolean cmpNumber( SqlKind comparator,Number left, Number right) {
         boolean retValue = false;
         if (Double.class.isAssignableFrom(left.getClass()) || Double.class.isAssignableFrom(right.getClass())) {
             switch (comparator) {

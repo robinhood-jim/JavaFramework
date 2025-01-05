@@ -18,6 +18,7 @@ public class SqlSegment {
     private List<CommSqlParser.ValueParts> whereColumns=new ArrayList<>();
     private String newColumnPrefix;
     private List<DataSetColumnMeta> calculateSchema;
+    private boolean includeAllOriginColumn=false;
 
     private Map<String, Set<String>> inPartMap = new HashMap<>();
     private Map<String, Pair<Double, Double>> rangeMap = new HashMap<>();

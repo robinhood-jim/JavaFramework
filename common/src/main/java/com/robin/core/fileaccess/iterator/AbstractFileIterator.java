@@ -16,6 +16,7 @@
 package com.robin.core.fileaccess.iterator;
 
 import com.robin.comm.dal.pool.ResourceAccessHolder;
+import com.robin.comm.sql.*;
 import com.robin.core.base.exception.MissingConfigException;
 import com.robin.core.base.util.Const;
 import com.robin.core.base.util.IOUtils;
@@ -28,6 +29,9 @@ import com.robin.comm.sql.CompareNode;
 import com.robin.comm.sql.FilterSqlParser;
 import com.robin.core.fileaccess.util.PolandNotationUtil;
 import com.robin.core.fileaccess.util.ResourceUtil;
+import org.apache.calcite.config.Lex;
+import org.apache.calcite.sql.parser.SqlParseException;
+import org.apache.calcite.tools.ValidationException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -56,10 +60,13 @@ public abstract class AbstractFileIterator implements IResourceIterator {
     protected String filterSql = "";
     protected boolean useFilter = false;
     protected Map<String, Object> cachedValue = new HashMap<>();
+    protected Map<String,Object> newRecord=new HashMap<>();
     // filterSql parse compare tree
     protected CompareNode rootNode = null;
+    protected String defaultNewColumnPrefix="N_COLUMN";
 
     protected FilterSqlParser.FilterSqlResult result;
+    protected SqlSegment segment;
 
     public AbstractFileIterator() {
 
@@ -71,7 +78,7 @@ public abstract class AbstractFileIterator implements IResourceIterator {
             columnList.add(meta.getColumnName());
             columnMap.put(meta.getColumnName(), meta);
             if(Const.META_TYPE_FORMULA.equals(meta.getColumnType())){
-
+                meta.setColumnType(Const.META_TYPE_DOUBLE);
             }
         }
         if(!CollectionUtils.isEmpty(colmeta.getResourceCfgMap()) && !ObjectUtils.isEmpty(colmeta.getResourceCfgMap().get(ResourceConst.STORAGEFILTERSQL))){
@@ -152,10 +159,8 @@ public abstract class AbstractFileIterator implements IResourceIterator {
         }
         PolandNotationUtil.freeMem();
         if (accessUtil != null) {
-            if (ApacheVfsFileSystemAccessor.class.isAssignableFrom(accessUtil.getClass())) {
-                if (!ObjectUtils.isEmpty(colmeta.getResourceCfgMap().get(Const.ITERATOR_PROCESSID))) {
-                    ((ApacheVfsFileSystemAccessor) accessUtil).closeWithProcessId(colmeta.getResourceCfgMap().get(Const.ITERATOR_PROCESSID).toString());
-                }
+            if (ApacheVfsFileSystemAccessor.class.isAssignableFrom(accessUtil.getClass()) && !ObjectUtils.isEmpty(colmeta.getResourceCfgMap().get(Const.ITERATOR_PROCESSID))) {
+                ((ApacheVfsFileSystemAccessor) accessUtil).closeWithProcessId(colmeta.getResourceCfgMap().get(Const.ITERATOR_PROCESSID).toString());
             }
         }
     }
@@ -180,6 +185,10 @@ public abstract class AbstractFileIterator implements IResourceIterator {
             while (!CollectionUtils.isEmpty(cachedValue) && useFilter && !FilterSqlParser.walkTree(result,rootNode, cachedValue)) {
                 pullNext();
             }
+            if(segment!=null && (!segment.isIncludeAllOriginColumn() && !CollectionUtils.isEmpty(segment.getSelectColumns()))){
+                newRecord.clear();
+                CommRecordGenerator.doCalculator(segment,cachedValue,newRecord);
+            }
             return !CollectionUtils.isEmpty(cachedValue);
         } catch (Exception ex) {
             throw new MissingConfigException(ex);
@@ -188,13 +197,21 @@ public abstract class AbstractFileIterator implements IResourceIterator {
 
     @Override
     public Map<String, Object> next() {
-        return cachedValue;
+        return useFilter && !CollectionUtils.isEmpty(newRecord)?newRecord:cachedValue;
     }
 
     public void withFilterSql(String filterSql) {
         this.filterSql = filterSql;
-        result=FilterSqlParser.doParse(colmeta,filterSql);
+        int pos=filterSql.toLowerCase().indexOf("where");
+        result=FilterSqlParser.doParse(colmeta,filterSql.substring(pos+6));
         rootNode=result.getRootNode();
+
+        try{
+            segment=CommSqlParser.parseSingleTableQuerySql(filterSql, Lex.MYSQL,colmeta,defaultNewColumnPrefix);
+        }catch (SqlParseException | ValidationException ex){
+
+        }
+
         useFilter = true;
     }
 

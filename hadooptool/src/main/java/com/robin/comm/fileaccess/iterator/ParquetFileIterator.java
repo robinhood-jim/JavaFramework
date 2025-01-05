@@ -4,6 +4,7 @@ import com.google.common.collect.Sets;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
 import com.robin.comm.fileaccess.util.*;
+import com.robin.comm.sql.CommRecordGenerator;
 import com.robin.comm.utils.SysUtils;
 import com.robin.core.base.exception.OperationNotSupportException;
 import com.robin.core.base.util.Const;
@@ -157,7 +158,7 @@ public class ParquetFileIterator extends AbstractFileIterator {
                     long size = accessUtil.getInputStreamSize(colmeta, ResourceUtil.getProcessPath(colmeta.getPath()));
                     Double freeMemory = SysUtils.getFreeMemory();
                     //file size too large ,can not store in ByteBuffer or freeMemory too low
-                    if (size >= ResourceConst.MAX_ARRAY_SIZE || freeMemory < allowOffHeapDumpLimit) {
+                    if (size >= ResourceConst.MAX_ARRAY_SIZE  || freeMemory < allowOffHeapDumpLimit) {
                         String tmpPath = com.robin.core.base.util.FileUtils.getWorkingPath(colmeta);
                         String tmpFilePath = "file:///" + tmpPath + ResourceUtil.getProcessFileName(colmeta.getPath());
                         tmpFile = new File(new URL(tmpFilePath).toURI());

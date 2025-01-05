@@ -56,7 +56,7 @@ public class CommSqlParser {
         }
         SqlNodeList selectLists = sqlSelect.getSelectList();
         Map<Integer,Integer> newColumnPosMap=new HashMap<>();
-        List<ValueParts> columns = parseSelectColumn(selectLists,newColumnPrefix,newColumnPosMap);
+        List<ValueParts> columns = parseSelectColumn(segment,selectLists,newColumnPrefix,newColumnPosMap);
         List<SqlNode> groupNodes= sqlSelect.getGroup();
         SqlNode havingNode= sqlSelect.getHaving();
         segment.setGroupBy(groupNodes);
@@ -88,7 +88,7 @@ public class CommSqlParser {
         segment.setNewColumnPrefix(newColumnPrefix);
         SqlNodeList selectLists = sqlSelect.getSelectList();
         Map<Integer,Integer> newColumnPosMap=new HashMap<>();
-        List<ValueParts> columns = parseSelectColumn(selectLists,newColumnPrefix,newColumnPosMap);
+        List<ValueParts> columns = parseSelectColumn(segment,selectLists,newColumnPrefix,newColumnPosMap);
         segment.setSelectColumns(columns);
         segment.setWhereCause(sqlSelect.getWhere());
         segment.setNewColumnPosMap(newColumnPosMap);
@@ -138,11 +138,13 @@ public class CommSqlParser {
         return columns;
     }
 
-    private static List<ValueParts> parseSelectColumn(SqlNodeList selectLists,String newColumnPrefix,Map<Integer,Integer> newColumnPosMap) {
+    private static List<ValueParts> parseSelectColumn(SqlSegment segment,SqlNodeList selectLists,String newColumnPrefix,Map<Integer,Integer> newColumnPosMap) {
         List<ValueParts> selectColumns = new ArrayList<>();
         for (SqlNode selected : selectLists) {
             ValueParts valueParts = new ValueParts();
-            if (SqlKind.IDENTIFIER.equals(selected.getKind())) {
+            if(SqlKind.ALL.equals(selected.getKind())){
+                segment.setIncludeAllOriginColumn(true);
+            }else if (SqlKind.IDENTIFIER.equals(selected.getKind())) {
                 valueParts.setIdentifyColumn(selected.toString());
             } else if (SqlKind.AS.equals(selected.getKind())) {
                 List<SqlNode> columnNodes = ((SqlBasicCall) selected).getOperandList();
@@ -375,11 +377,12 @@ public class CommSqlParser {
             map.put("c2",1.0);
             map.put("c3",2);
             map.put("c4","Asdassdasdasd");
-            /*if(CommRecordGenerator.recordAcceptable(segment,map)){
-                Map<String,Object> retMap=CommRecordGenerator.doCalculator(segment,map);
+            if(CommRecordGenerator.recordAcceptable(segment,map)){
+                Map<String,Object> retMap=new HashMap<>();
+                CommRecordGenerator.doCalculator(segment,map,retMap);
                 System.out.println(retMap);
-            }*/
-            CommSqlParser.parseGroupByAgg(groupSql,Lex.MYSQL,meta,"NCOLUMN");
+            }
+            //CommSqlParser.parseGroupByAgg(groupSql,Lex.MYSQL,meta,"NCOLUMN");
 
         } catch (SqlParseException |ValidationException ex) {
             ex.printStackTrace();

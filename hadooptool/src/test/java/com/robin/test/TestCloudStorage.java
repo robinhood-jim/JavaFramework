@@ -40,14 +40,17 @@ public class TestCloudStorage extends TestCase {
         builder.addColumn("description",Const.META_TYPE_STRING,null);
         builder.addColumn("sno",Const.META_TYPE_INTEGER,null);
         builder.addColumn("price",Const.META_TYPE_DOUBLE,null);
+        builder.addColumn("amount",Const.META_TYPE_INTEGER,null);
+        builder.addColumn("type",Const.META_TYPE_INTEGER,null);
 
         builder.resourceCfg(ResourceConst.PARQUETFILEFORMAT,ResourceConst.PARQUETSUPPORTFORMAT.PROTOBUF.getValue()).fileFormat(Const.FILEFORMATSTR.PARQUET.getValue())
                 .resPath("tmp/bigdata3.parquet.gz")
                 //.resourceCfg(ResourceConst.USEASYNCUPLOAD,"true")
                 .resourceCfg(ResourceConst.DEFAULTCACHEOFFHEAPSIZEKEY,1000*1000*6);
+        ResourceBundle bundle=ResourceBundle.getBundle("minio");
         DataCollectionMeta colmeta=builder.build();
         MinioFileSystemAccessor.Builder builder1=new MinioFileSystemAccessor.Builder();
-        MinioFileSystemAccessor accessor=builder1.accessKey("jeason").secretKey("Jeason@1234").endpoint("http://36.158.32.29:18889")
+        MinioFileSystemAccessor accessor=builder1.accessKey(bundle.getString("minio.accessKey")).secretKey(bundle.getString("minio.secretKey")).endpoint(bundle.getString("minio.endpoint"))
                 .bucket("test").build();
 		/*QiniuFileSystemAccessor.Builder builder1=new QiniuFileSystemAccessor.Builder();
 		ResourceBundle bundle=ResourceBundle.getBundle("qiniu");
@@ -61,13 +64,19 @@ public class TestCloudStorage extends TestCase {
             jwriter.beginWrite();
             Map<String, Object> recMap = new HashMap<>();
             Random random = new Random(123123123123L);
+            Map<Integer,Double> priceMap=new HashMap<>();
+            for (int i=1;i<11;i++){
+                priceMap.put(i,i*10.0);
+            }
+
             for (int i = 0; i < 5000; i++) {
                 recMap.put("id", Long.valueOf(i));
                 recMap.put("name", StringUtils.generateRandomChar(32));
-                recMap.put("description", StringUtils.generateRandomChar(128));
-                recMap.put("sno",random.nextInt(3000000));
-                recMap.put("price",random.nextDouble()*1000);
-                //System.out.println(recMap.get("price"));
+                recMap.put("description", StringUtils.generateRandomChar(32));
+                recMap.put("sno",random.nextInt(10)+1);
+                recMap.put("amount",random.nextInt(50)+1);
+                recMap.put("price",priceMap.get((Integer) recMap.get("sno")));
+                recMap.put("type",random.nextInt(2));
                 jwriter.writeRecord(recMap);
             }
             jwriter.flush();
@@ -85,14 +94,17 @@ public class TestCloudStorage extends TestCase {
         builder.addColumn("description",Const.META_TYPE_STRING,null);
         builder.addColumn("sno",Const.META_TYPE_INTEGER,null);
         builder.addColumn("price",Const.META_TYPE_DOUBLE,null);
+        builder.addColumn("amount",Const.META_TYPE_INTEGER,null);
+        builder.addColumn("type",Const.META_TYPE_INTEGER,null);
 
         builder.resourceCfg(ResourceConst.PARQUETFILEFORMAT,ResourceConst.PARQUETSUPPORTFORMAT.AVRO.getValue())
-                .resourceCfg(ResourceConst.STORAGEFILTERSQL,"id>4097 and price*4>500 and name like 'A%'")
-                .fileFormat(Const.FILEFORMATSTR.CSV.getValue())
-                .resPath("tmp/bigdata2.csv.gz");
+                .resourceCfg(ResourceConst.STORAGEFILTERSQL,"select name,sno,type,price*amount as totalFee from test where price*amount>500 and sno<7 and name like 'A%'")
+                .fileFormat(Const.FILEFORMATSTR.PARQUET.getValue()).tableName("test")
+                .resPath("tmp/bigdata3.parquet.gz");
+        ResourceBundle bundle=ResourceBundle.getBundle("minio");
         DataCollectionMeta colmeta=builder.build();
         MinioFileSystemAccessor.Builder builder1=new MinioFileSystemAccessor.Builder();
-        MinioFileSystemAccessor accessor=builder1.accessKey("jeason").secretKey("Jeason@1234").endpoint("http://36.158.32.29:18888")
+        MinioFileSystemAccessor accessor=builder1.accessKey(bundle.getString("minio.accessKey")).secretKey(bundle.getString("minio.secretKey")).endpoint(bundle.getString("minio.endpoint"))
                 .bucket("test").build();
         try(AbstractFileIterator iterator=(AbstractFileIterator) TextFileIteratorFactory.getProcessIteratorByType(colmeta,accessor)){
             int pos=0;
