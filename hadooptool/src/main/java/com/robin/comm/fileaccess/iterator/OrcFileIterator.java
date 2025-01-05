@@ -107,38 +107,7 @@ public class OrcFileIterator extends AbstractFileIterator {
     }
 
 
-    public boolean hasNext1() {
-        if(!ObjectUtils.isEmpty(rootNode) && !result.isHasFourOperations() || !result.isHasRightColumnCmp()){
-            return super.hasNext();
-        }
-        if(maxRow>0 && currentRow<maxRow){
-            return true;
-        }
-        try{
-            currentRow=0;
-            boolean exist= rows.nextBatch(batch);
-            maxRow=batch.size;
-            return exist;
-        }catch (IOException ex){
-            ex.printStackTrace();
-        }
-        return false;
-    }
 
-    /*public Map<String, Object> next1() {
-        if(hasFourOperations || hasRightColumnCmp){
-            return super.next();
-        }
-        List<String> fieldNames=schema.getFieldNames();
-        cachedValue.clear();
-        if(!CollectionUtils.isEmpty(fields)){
-            for(int i=0;i<fields.size();i++){
-                wrapValue(fields.get(i),fieldNames.get(i),batch.cols[i],currentRow,cachedValue);
-            }
-        }
-        currentRow++;
-        return cachedValue;
-    }*/
     public void wrapValue(TypeDescription schema,String columnName, ColumnVector vector,int row,Map<String,Object> valueMap){
         if(vector.noNulls || !vector.isNull[row]){
             switch (schema.getCategory()){
@@ -229,7 +198,7 @@ public class OrcFileIterator extends AbstractFileIterator {
                 argumentBuilder.between(column, pair.getKey(), pair.getValue(),pair.getValue());
                 break;
             case "in":
-                argumentBuilder.in(column,pair.getKey(),result.getInPartMap().get(column).stream().map(f-> returnWithType(columnMap.get(column),f)).collect(Collectors.toList()).toArray());
+                argumentBuilder.in(column,pair.getKey(),super.segment.getInPartMap().get(column).stream().map(f-> returnWithType(columnMap.get(column),f)).collect(Collectors.toList()).toArray());
                 break;
             case "<>":
                 argumentBuilder.startNot();

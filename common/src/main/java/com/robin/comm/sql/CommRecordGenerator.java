@@ -12,6 +12,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
+import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -147,19 +148,19 @@ public class CommRecordGenerator {
     private static boolean walkTree(SqlNode node, Map<String, Object> inputMap, SqlSegment segment) {
         boolean runValue = false;
         boolean processTag = false;
-        if (SqlBasicCall.class.isAssignableFrom(node.getClass()) && SqlKind.AND.equals(node.getKind()) || SqlKind.OR.equals(node.getKind())) {
-            List<SqlNode> sqlNodes = ((SqlBasicCall) node).getOperandList();
-            if (sqlNodes.size() == 2 && !SqlKind.AND.equals(sqlNodes.get(1).getKind()) && !SqlKind.OR.equals(sqlNodes.get(1).getKind())) {
-                runValue = walkTree(sqlNodes.get(1), inputMap, segment);
+        List<SqlNode> childNodes = ((SqlBasicCall) node).getOperandList();
+        if (SqlBasicCall.class.isAssignableFrom(node.getClass()) && (SqlKind.AND.equals(node.getKind()) || SqlKind.OR.equals(node.getKind()))) {
+            if (childNodes.size() == 2 && !SqlKind.AND.equals(childNodes.get(1).getKind()) && !SqlKind.OR.equals(childNodes.get(1).getKind())) {
+                runValue = walkTree(childNodes.get(1), inputMap, segment);
                 if (SqlKind.AND.equals(node.getKind()) && !runValue) {
                     return false;
                 }
                 if (SqlKind.OR.equals(node.getKind()) && runValue) {
                     return true;
                 }
-                runValue = walkTree(sqlNodes.get(0), inputMap, segment);
+                runValue = walkTree(childNodes.get(0), inputMap, segment);
             } else {
-                for (SqlNode node1 : sqlNodes) {
+                for (SqlNode node1 : childNodes) {
                     runValue = walkTree(node1, inputMap, segment);
                     if (SqlKind.AND.equals(node.getKind()) && !runValue) {
                         return false;
@@ -180,12 +181,12 @@ public class CommRecordGenerator {
                 case LESS_THAN_OR_EQUAL:
                 case NOT_EQUALS:
                     List<SqlNode> nodes = ((SqlBasicCall) node).getOperandList();
-                    Object leftValue = getValueWithCalculate(inputMap, segment, nodes.get(0));
-                    Object rightValue = getValueWithCalculate(inputMap,segment,nodes.get(1));
+                    WeakReference<Object> leftValue=new WeakReference<>(getValueWithCalculate(inputMap, segment, nodes.get(0)));
+                    WeakReference<Object> rightValue = new WeakReference<>(getValueWithCalculate(inputMap,segment,nodes.get(1)));
                     if(!ObjectUtils.isEmpty(leftValue) && !ObjectUtils.isEmpty(rightValue)) {
                         if (NumberUtil.isNumber(leftValue.toString())) {
                             Assert.isTrue(NumberUtil.isNumber(leftValue.toString()) && NumberUtil.isNumber(rightValue.toString()), " only number allowed");
-                            return cmpNumber(node.getKind(), (Number) leftValue, (Number) rightValue);
+                            return cmpNumber(node.getKind(), (Number) leftValue.get(), (Number) rightValue.get());
                         }
                         return doCompare(segment,node, leftValue, rightValue);
                     }
@@ -210,22 +211,32 @@ public class CommRecordGenerator {
                 case LIKE:
                     List<SqlNode> sqlNodes1 = ((SqlBasicCall) node).getOperandList();
                     SqlIdentifier identifier1 = (SqlIdentifier) sqlNodes1.get(0);
-                    String likeStr=sqlNodes1.get(1).toString();
-                    String value=inputMap.containsValue(identifier1.toString())?inputMap.get(identifier1.toString()).toString()
-                            :inputMap.get(identifier1.toString().toUpperCase()).toString();
+                    WeakReference<String> likeStr=new WeakReference<>(sqlNodes1.get(1).toString());
+                    WeakReference<String> value=new WeakReference<>(inputMap.containsValue(identifier1.toString())?inputMap.get(identifier1.toString()).toString()
+                            :inputMap.get(identifier1.toString().toUpperCase()).toString());
                     if(!ObjectUtils.isEmpty(value)) {
-                        if (likeStr.startsWith("%")) {
-                            if (likeStr.endsWith("%")) {
-                                runValue =value.contains(likeStr.substring(1,likeStr.length()-1));
+                        if (likeStr.get().startsWith("%")) {
+                            if (likeStr.get().endsWith("%")) {
+                                runValue =value.get().contains(likeStr.get().substring(1,likeStr.get().length()-1));
                             }else{
-                                runValue=value.endsWith(likeStr.substring(1));
+                                runValue=value.get().endsWith(likeStr.get().substring(1));
                             }
-                        } else if (likeStr.endsWith("%")) {
-                            runValue=value.startsWith(likeStr.substring(0,likeStr.length()-1));
+                        } else if (likeStr.get().endsWith("%")) {
+                            runValue=value.get().startsWith(likeStr.get().substring(0,likeStr.get().length()-1));
                         }
                     }
                     break;
                 case BETWEEN:
+                    Assert.isTrue(childNodes.size()==3,"between must have two values");
+                    WeakReference<String> cmpColumn=new WeakReference<>(childNodes.get(0).toString());
+                    checkColumnNumeric(segment,cmpColumn.get());
+                    if(!ObjectUtils.isEmpty(inputMap.get(cmpColumn))) {
+                        WeakReference<Number> minVal = new WeakReference<>((Number) ((SqlLiteral) childNodes.get(1)).getValue());
+                        WeakReference<Number> manVal = new WeakReference<>((Number) ((SqlLiteral) childNodes.get(2)).getValue());
+                        runValue = (Double)inputMap.get(cmpColumn)>=minVal.get().doubleValue() && (Double)inputMap.get(cmpColumn)<=manVal.get().doubleValue();
+                    }else{
+                        runValue=false;
+                    }
                     break;
                 case IS_NULL:
                 case IS_NOT_NULL:
@@ -240,6 +251,11 @@ public class CommRecordGenerator {
             }
         }
         return runValue;
+    }
+    protected static void checkColumnNumeric(SqlSegment segment,String columnName){
+        Assert.isTrue(Const.META_TYPE_INTEGER.equals(segment.getOriginSchemaMap().get(columnName))
+                    || Const.META_TYPE_BIGINT.equals(segment.getOriginSchemaMap().get(columnName))
+                    || Const.META_TYPE_DOUBLE.equals(segment.getOriginSchemaMap().get(columnName)),"require numeric column");
     }
 
     private static Object getValueWithCalculate(Map<String, Object> inputMap, SqlSegment segment, SqlNode nodes) {

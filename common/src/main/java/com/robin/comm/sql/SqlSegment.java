@@ -27,4 +27,8 @@ public class SqlSegment {
     private List<SqlNode> groupBy;
     private List<CommSqlParser.ValueParts> having;
     private Map<String,DataSetColumnMeta> originSchemaMap;
+    // if filterSql has four operations,orc and parquet can not use filter directly
+    private boolean hasFourOperations = false;
+    // if filterSql compare right hand is column,orc and parquet can not use filter directly
+    private boolean hasRightColumnCmp = false;
 }

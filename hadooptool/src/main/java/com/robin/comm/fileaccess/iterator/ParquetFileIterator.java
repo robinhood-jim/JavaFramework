@@ -4,7 +4,6 @@ import com.google.common.collect.Sets;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
 import com.robin.comm.fileaccess.util.*;
-import com.robin.comm.sql.CommRecordGenerator;
 import com.robin.comm.utils.SysUtils;
 import com.robin.core.base.exception.OperationNotSupportException;
 import com.robin.core.base.util.Const;
@@ -14,12 +13,12 @@ import com.robin.core.fileaccess.iterator.AbstractFileIterator;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.meta.DataSetColumnMeta;
 import com.robin.core.fileaccess.util.AvroUtils;
-import com.robin.comm.sql.CompareNode;
 import com.robin.core.fileaccess.util.ResourceUtil;
 import com.robin.hadoop.hdfs.HDFSUtil;
 import org.apache.avro.LogicalTypes;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
+import org.apache.calcite.sql.*;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.flink.core.memory.MemorySegment;
@@ -43,7 +42,6 @@ import org.apache.parquet.proto.ProtoParquetReader;
 import org.apache.parquet.proto.ProtoReadSupport;
 import org.apache.parquet.schema.MessageType;
 import org.apache.parquet.schema.Type;
-
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
@@ -119,8 +117,9 @@ public class ParquetFileIterator extends AbstractFileIterator {
                     container=ProtoBufUtil.initSchema(colmeta);
                 }
             }
-            if (!ObjectUtils.isEmpty(rootNode) && !result.isHasFourOperations() && !result.isHasRightColumnCmp()) {
-                FilterPredicate predicate=walkCondition(rootNode);
+            if (!ObjectUtils.isEmpty(super.segment) && !super.segment.isHasFourOperations() && !super.segment.isHasRightColumnCmp()) {
+                //FilterPredicate predicate=walkCondition(rootNode);
+                FilterPredicate predicate=walkCondition(super.segment.getWhereCause());
                 filter= FilterCompat.get(predicate);
             }
 
@@ -225,7 +224,7 @@ public class ParquetFileIterator extends AbstractFileIterator {
 
     @Override
     public boolean hasNext() {
-        if(!ObjectUtils.isEmpty(rootNode) && !result.isHasFourOperations() && !result.isHasRightColumnCmp()){
+        if(!ObjectUtils.isEmpty(super.segment) && !super.segment.isHasFourOperations() && !super.segment.isHasRightColumnCmp()){
             pullNext();
             return !CollectionUtils.isEmpty(cachedValue);
         }else{
@@ -288,25 +287,31 @@ public class ParquetFileIterator extends AbstractFileIterator {
     }
 
 
-    private FilterPredicate walkCondition(CompareNode node) {
-        if (node.getRightNode() != null && node.getLeftNode() != null) {
-            if (node.getLeftNode().getKey() != null || node.getRightNode().getKey() != null) {
-                throw new OperationNotSupportException("four operation not support");
+
+    private FilterPredicate walkCondition(SqlNode node) {
+        if(SqlBasicCall.class.isAssignableFrom(node.getClass())){
+            List<SqlNode> nodes=((SqlBasicCall)node).getOperandList();
+            if(SqlIdentifier.class.isAssignableFrom(nodes.get(0).getClass()) && SqlLiteral.class.isAssignableFrom(nodes.get(1).getClass())){
+                return parseOperator(node);
+            }else{
+                FilterPredicate left= walkCondition(nodes.get(0));
+                FilterPredicate right=walkCondition(nodes.get(1));
+                if(SqlKind.OR.equals(node.getKind())){
+                    return or(left,right);
+                }else {
+                    return and(left,right);
+                }
             }
-            FilterPredicate predicate= parseOperator(node.getLeftNode().getValue(), node.getLinkOperator(), node.getRightNode().getValue());
-            return predicate;
-        } else {
-            FilterPredicate left= walkCondition(node.getLeft());
-            FilterPredicate right=walkCondition(node.getRight());
-            if("or".equalsIgnoreCase(node.getRight().getComparator())){
-                return or(left,right);
-            }else {
-                return and(left,right);
-            }
+        }else{
+            return null;
         }
     }
-
-    private FilterPredicate parseOperator(String columnName, String operator, Object value) {
+    private FilterPredicate parseOperator(SqlNode node){
+        List<SqlNode> nodes=((SqlBasicCall)node).getOperandList();
+        Object cmpValue=((SqlLiteral)nodes.get(1)).getValue();
+        return parseOperator(nodes.get(0).toString(),node.getKind(),cmpValue);
+    }
+    private FilterPredicate parseOperator(String columnName, SqlKind operator, Object value) {
         FilterPredicate predicate;
         DataSetColumnMeta meta = columnMap.get(columnName);
 
@@ -314,7 +319,7 @@ public class ParquetFileIterator extends AbstractFileIterator {
             meta = columnMap.get(columnName.toUpperCase());
         }
         switch (operator) {
-            case ">":
+            case GREATER_THAN:
                 if (Const.META_TYPE_INTEGER.equals(meta.getColumnType())) {
                     predicate = gt(intColumn(columnName), Integer.parseInt(value.toString()));
                 } else if (Const.META_TYPE_DOUBLE.equals(meta.getColumnType()) || Const.META_TYPE_DECIMAL.equals(meta.getColumnType())) {
@@ -325,7 +330,7 @@ public class ParquetFileIterator extends AbstractFileIterator {
                     throw new OperationNotSupportException("type not support");
                 }
                 break;
-            case ">=":
+            case GREATER_THAN_OR_EQUAL:
                 if (Const.META_TYPE_INTEGER.equals(meta.getColumnType())) {
                     predicate = gtEq(intColumn(columnName), Integer.parseInt(value.toString()));
                 } else if (Const.META_TYPE_DOUBLE.equals(meta.getColumnType()) || Const.META_TYPE_DECIMAL.equals(meta.getColumnType())) {
@@ -336,7 +341,7 @@ public class ParquetFileIterator extends AbstractFileIterator {
                     throw new OperationNotSupportException("type not support");
                 }
                 break;
-            case "=":
+            case EQUALS:
                 if (Const.META_TYPE_INTEGER.equals(meta.getColumnType())) {
                     predicate = eq(intColumn(columnName), Integer.parseInt(value.toString()));
                 } else if (Const.META_TYPE_DOUBLE.equals(meta.getColumnType()) || Const.META_TYPE_DECIMAL.equals(meta.getColumnType())) {
@@ -349,7 +354,7 @@ public class ParquetFileIterator extends AbstractFileIterator {
                     throw new OperationNotSupportException("type not support");
                 }
                 break;
-            case "<":
+            case LESS_THAN:
                 if (Const.META_TYPE_INTEGER.equals(meta.getColumnType())) {
                     predicate = lt(intColumn(columnName), Integer.parseInt(value.toString()));
                 } else if (Const.META_TYPE_DOUBLE.equals(meta.getColumnType()) || Const.META_TYPE_DECIMAL.equals(meta.getColumnType())) {
@@ -360,7 +365,7 @@ public class ParquetFileIterator extends AbstractFileIterator {
                     throw new OperationNotSupportException("type not support");
                 }
                 break;
-            case "<=":
+            case LESS_THAN_OR_EQUAL:
                 if (Const.META_TYPE_INTEGER.equals(meta.getColumnType())) {
                     predicate = ltEq(intColumn(columnName), Integer.parseInt(value.toString()));
                 } else if (Const.META_TYPE_DOUBLE.equals(meta.getColumnType()) || Const.META_TYPE_DECIMAL.equals(meta.getColumnType())) {
@@ -371,7 +376,7 @@ public class ParquetFileIterator extends AbstractFileIterator {
                     throw new OperationNotSupportException("type not support");
                 }
                 break;
-            case "<>":
+            case NOT_EQUALS:
                 if (Const.META_TYPE_INTEGER.equals(meta.getColumnType())) {
                     predicate = notEq(intColumn(columnName), Integer.parseInt(value.toString()));
                 } else if (Const.META_TYPE_DOUBLE.equals(meta.getColumnType()) || Const.META_TYPE_DECIMAL.equals(meta.getColumnType())) {
@@ -382,33 +387,33 @@ public class ParquetFileIterator extends AbstractFileIterator {
                     throw new OperationNotSupportException("type not support");
                 }
                 break;
-            case "in":
+            case IN:
                 if (Const.META_TYPE_INTEGER.equals(meta.getColumnType())) {
-                    predicate = in(intColumn(columnName), Sets.newHashSet(result.getInPartMap().get(columnName).stream().map(Integer::valueOf).collect(Collectors.toList())));
+                    predicate = in(intColumn(columnName), Sets.newHashSet(super.segment.getInPartMap().get(columnName).stream().map(Integer::valueOf).collect(Collectors.toList())));
                 } else if (Const.META_TYPE_DOUBLE.equals(meta.getColumnType()) || Const.META_TYPE_DECIMAL.equals(meta.getColumnType())) {
-                    predicate = in(doubleColumn(columnName), Sets.newHashSet(result.getInPartMap().get(columnName).stream().map(Double::valueOf).collect(Collectors.toList())));
+                    predicate = in(doubleColumn(columnName), Sets.newHashSet(super.segment.getInPartMap().get(columnName).stream().map(Double::valueOf).collect(Collectors.toList())));
                 } else if (Const.META_TYPE_BIGINT.equals(meta.getColumnType()) || Const.META_TYPE_TIMESTAMP.equals(meta.getColumnType())) {
-                    predicate = in(longColumn(columnName), Sets.newHashSet(result.getInPartMap().get(columnName).stream().map(Long::valueOf).collect(Collectors.toList())));
+                    predicate = in(longColumn(columnName), Sets.newHashSet(super.segment.getInPartMap().get(columnName).stream().map(Long::valueOf).collect(Collectors.toList())));
                 } else if (Const.META_TYPE_STRING.equals(meta.getColumnType())) {
-                    predicate = in(binaryColumn(columnName), Sets.newHashSet(result.getInPartMap().get(columnName).stream().map(Binary::fromString).collect(Collectors.toList())));
+                    predicate = in(binaryColumn(columnName), Sets.newHashSet(super.segment.getInPartMap().get(columnName).stream().map(Binary::fromString).collect(Collectors.toList())));
                 } else {
                     throw new OperationNotSupportException("type not support");
                 }
                 break;
-            case "not in":
+            case NOT_IN:
                 if (Const.META_TYPE_INTEGER.equals(meta.getColumnType())) {
-                    predicate = notIn(intColumn(columnName), Sets.newHashSet(result.getInPartMap().get(columnName).stream().map(Integer::valueOf).collect(Collectors.toList())));
+                    predicate = notIn(intColumn(columnName), Sets.newHashSet(super.segment.getInPartMap().get(columnName).stream().map(Integer::valueOf).collect(Collectors.toList())));
                 } else if (Const.META_TYPE_DOUBLE.equals(meta.getColumnType()) || Const.META_TYPE_DECIMAL.equals(meta.getColumnType())) {
-                    predicate = notIn(doubleColumn(columnName), Sets.newHashSet(result.getInPartMap().get(columnName).stream().map(Double::valueOf).collect(Collectors.toList())));
+                    predicate = notIn(doubleColumn(columnName), Sets.newHashSet(super.segment.getInPartMap().get(columnName).stream().map(Double::valueOf).collect(Collectors.toList())));
                 } else if (Const.META_TYPE_BIGINT.equals(meta.getColumnType()) || Const.META_TYPE_TIMESTAMP.equals(meta.getColumnType())) {
-                    predicate = notIn(longColumn(columnName), Sets.newHashSet(result.getInPartMap().get(columnName).stream().map(Long::valueOf).collect(Collectors.toList())));
+                    predicate = notIn(longColumn(columnName), Sets.newHashSet(super.segment.getInPartMap().get(columnName).stream().map(Long::valueOf).collect(Collectors.toList())));
                 } else if (Const.META_TYPE_STRING.equals(meta.getColumnType())) {
-                    predicate = notIn(binaryColumn(columnName), Sets.newHashSet(result.getInPartMap().get(columnName).stream().map(Binary::fromString).collect(Collectors.toList())));
+                    predicate = notIn(binaryColumn(columnName), Sets.newHashSet(super.segment.getInPartMap().get(columnName).stream().map(Binary::fromString).collect(Collectors.toList())));
                 } else {
                     throw new OperationNotSupportException("type not support");
                 }
                 break;
-            case "like":
+            case LIKE:
                 if (Const.META_TYPE_STRING.equals(meta.getColumnType())){
                     predicate=FilterApi.userDefined(FilterApi.binaryColumn(columnName),new CharLikePredicate(value.toString()));
                 }else {
@@ -422,6 +427,8 @@ public class ParquetFileIterator extends AbstractFileIterator {
         }
         return predicate;
     }
+
+
 
 
     private void parseSchemaByType() {
