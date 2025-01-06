@@ -1,28 +1,46 @@
 package com.robin.comm.sql;
 
+
 import cn.hutool.core.util.NumberUtil;
-import com.google.common.collect.Sets;
+
+
+import com.google.common.util.concurrent.*;
 import com.robin.core.base.exception.ConfigurationIncorrectException;
+import com.robin.core.base.exception.GenericException;
 import com.robin.core.base.exception.MissingConfigException;
 import com.robin.core.base.exception.OperationNotSupportException;
 import com.robin.core.base.util.Const;
-import com.robin.core.fileaccess.util.PolandNotationUtil;
+import com.robin.core.fileaccess.util.*;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.calcite.sql.*;
+import org.apache.commons.pool2.impl.GenericObjectPool;
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
 import java.lang.ref.WeakReference;
 import java.util.*;
+import java.util.concurrent.Executors;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
  * Single Table schema record generator
  */
+@Slf4j
 public class CommRecordGenerator {
-    private CommRecordGenerator(){
+    private static GenericObjectPool<Calculator> caPool;
+    private static ListeningExecutorService pool;
+    static {
+        CalculatorPoolFactory factory=new CalculatorPoolFactory();
+        GenericObjectPoolConfig config = new GenericObjectPoolConfig();
+        config.setMaxTotal(100);
+        caPool = new GenericObjectPool<>(factory, config);
+        pool = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(50));
+    }
 
+    private CommRecordGenerator(){
     }
     /**
      * Adjust input record (Map) fit Selected Condition
@@ -30,12 +48,83 @@ public class CommRecordGenerator {
      * @param inputRecord   inputRecord
      * @return
      */
-    public static boolean recordAcceptable(SqlSegment segment, Map<String, Object> inputRecord) {
+    static boolean recordAcceptable(SqlSegment segment, Map<String, Object> inputRecord) {
         SqlNode whereNode = segment.getWhereCause();
         if (CollectionUtils.isEmpty(segment.getWherePartsMap())) {
             segment.setWherePartsMap(segment.getWhereColumns().stream().collect(Collectors.toMap(CommSqlParser.ValueParts::getNodeString, Function.identity())));
         }
         return walkTree(whereNode, inputRecord, segment);
+    }
+    public static boolean doesRecordAcceptable(SqlSegment segment, Map<String, Object> inputRecord) {
+        SqlNode whereNode = segment.getWhereCause();
+        if (CollectionUtils.isEmpty(segment.getWherePartsMap())) {
+            segment.setWherePartsMap(segment.getWhereColumns().stream().collect(Collectors.toMap(CommSqlParser.ValueParts::getNodeString, Function.identity())));
+        }
+        Calculator calculator=null;
+        try{
+            calculator=caPool.borrowObject();
+            calculator.setSegment(segment);
+            calculator.setInputRecord(inputRecord);
+            return calculator.walkTree(whereNode);
+        }catch (Exception ex){
+            log.error("{}",ex.getMessage());
+        }finally {
+            if(calculator!=null) {
+                caPool.returnObject(calculator);
+            }
+        }
+        return false;
+    }
+
+    /**
+     * do Calculate async using ListenableFuture
+     * @param segment
+     * @param inputRecord
+     * @param newRecord
+     * @throws Exception
+     */
+    public static void doAsyncCalculator(SqlSegment segment,Map<String,Object> inputRecord,Map<String,Object> newRecord) throws Exception{
+        newRecord.clear();
+        List<ListenableFuture<Boolean>> futures=new ArrayList<>();
+        try {
+            Map<Integer,Throwable> exMap=new HashMap<>();
+            for (int i = 0; i < segment.getSelectColumns().size(); i++) {
+                Calculator calculator = caPool.borrowObject();
+                calculator.clear();
+                calculator.setValueParts(segment.getSelectColumns().get(i));
+                calculator.setInputRecord(inputRecord);
+                calculator.setOutputRecord(newRecord);
+                calculator.setSegment(segment);
+                ListenableFuture<Boolean> future = pool.submit(new CalculatorCallable(calculator));
+                Futures.addCallback(future, new FutureCallback<Boolean>() {
+                            @Override
+                            public void onSuccess(Boolean aBoolean) {
+                                caPool.returnObject(calculator);
+                            }
+                            @Override
+                            public void onFailure(Throwable throwable) {
+                                caPool.returnObject(calculator);
+                                exMap.put(1,throwable);
+                            }
+                        }
+                ,pool);
+                futures.add(future);
+            }
+            for(ListenableFuture<Boolean> future:futures){
+                future.get();
+            }
+            if(exMap.get(1)!=null){
+                throw new GenericException(exMap.get(1).getMessage());
+            }
+        }catch (Exception ex){
+            log.error("{}",ex);
+            throw new GenericException(ex);
+        }
+    }
+    public static void closePool(){
+        if(!ObjectUtils.isEmpty(caPool)) {
+            caPool.close();
+        }
     }
 
     /**
@@ -44,7 +133,7 @@ public class CommRecordGenerator {
      * @param inputRecord
      * @return
      */
-    public static void doCalculator(SqlSegment segment,Map<String,Object> inputRecord,Map<String,Object> newRecord){
+    static void doCalculator(SqlSegment segment,Map<String,Object> inputRecord,Map<String,Object> newRecord){
         newRecord.clear();
         String columnName=null;
         for(int i=0;i<segment.getSelectColumns().size();i++){
@@ -147,7 +236,6 @@ public class CommRecordGenerator {
 
     private static boolean walkTree(SqlNode node, Map<String, Object> inputMap, SqlSegment segment) {
         boolean runValue = false;
-        boolean processTag = false;
         List<SqlNode> childNodes = ((SqlBasicCall) node).getOperandList();
         if (SqlBasicCall.class.isAssignableFrom(node.getClass()) && (SqlKind.AND.equals(node.getKind()) || SqlKind.OR.equals(node.getKind()))) {
             if (childNodes.size() == 2 && !SqlKind.AND.equals(childNodes.get(1).getKind()) && !SqlKind.OR.equals(childNodes.get(1).getKind())) {
@@ -170,9 +258,7 @@ public class CommRecordGenerator {
                     }
                 }
             }
-            processTag = true;
-        }
-        if (!processTag) {
+        }else  {
             switch (node.getKind()){
                 case GREATER_THAN:
                 case LESS_THAN:
@@ -186,22 +272,17 @@ public class CommRecordGenerator {
                     if(!ObjectUtils.isEmpty(leftValue) && !ObjectUtils.isEmpty(rightValue)) {
                         if (NumberUtil.isNumber(leftValue.toString())) {
                             Assert.isTrue(NumberUtil.isNumber(leftValue.toString()) && NumberUtil.isNumber(rightValue.toString()), " only number allowed");
-                            return cmpNumber(node.getKind(), (Number) leftValue.get(), (Number) rightValue.get());
+                            runValue= cmpNumber(node.getKind(), (Number) leftValue.get(), (Number) rightValue.get());
+                        }else {
+                            runValue = doCompare(segment, node, leftValue, rightValue);
                         }
-                        return doCompare(segment,node, leftValue, rightValue);
                     }
                     break;
                 case IN:
                 case NOT_IN:
                     List<SqlNode> sqlNodes = ((SqlBasicCall) node).getOperandList();
                     SqlIdentifier identifier = (SqlIdentifier) sqlNodes.get(0);
-                    Set<String> inSets = segment.getInPartMap().computeIfAbsent(identifier.toString(), k -> {
-                        Set<String> sets = Sets.newHashSet();
-                        for (int i = 1; i < sqlNodes.size(); i++) {
-                            sets.add(sqlNodes.get(i).toString());
-                        }
-                        return sets;
-                    });
+                    Set<String> inSets = segment.getInPartMap().get(identifier.toString());
                     if (inputMap.containsKey(identifier.toString())) {
                         runValue= SqlKind.IN.equals(node.getKind()) ? inSets.contains(inputMap.get(identifier.toString())) : !inSets.contains(inputMap.get(identifier.toString()));
                     } else {

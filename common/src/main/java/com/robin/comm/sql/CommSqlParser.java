@@ -1,6 +1,7 @@
 package com.robin.comm.sql;
 
 
+import com.google.common.collect.Sets;
 import com.robin.core.base.exception.GenericException;
 import com.robin.core.base.exception.OperationNotSupportException;
 import com.robin.core.base.util.Const;
@@ -166,7 +167,16 @@ public class CommSqlParser {
                     valueParts.setFunctionName(((SqlBasicCall) columnNodes.get(0)).getOperator().toString());
                     valueParts.setFunctionParams(funcNodes);
                     setAliasName(newColumnPrefix, newColumnPosMap, valueParts);
-                } else if (SqlBasicCall.class.isAssignableFrom(columnNodes.get(0).getClass())) {
+                }else if(SqlKind.IN.equals(columnNodes.get(0).getKind()) || SqlKind.NOT_IN.equals(columnNodes.get(0).getKind())){
+                    List<SqlNode> sqlNodes = ((SqlBasicCall) columnNodes.get(0)).getOperandList();
+                    SqlIdentifier identifier = (SqlIdentifier) sqlNodes.get(0);
+                    Set<String> sets = Sets.newHashSet();
+                    for (int i = 1; i < sqlNodes.size(); i++) {
+                        sets.add(sqlNodes.get(i).toString());
+                    }
+                    segment.getInPartMap().put(identifier.toString(),sets);
+                }
+                else if (SqlBasicCall.class.isAssignableFrom(columnNodes.get(0).getClass())) {
                     valueParts.setNodeString(columnNodes.get(0).toString());
                     valueParts.setCalculator(columnNodes.get(0));
                     segment.setHasFourOperations(true);

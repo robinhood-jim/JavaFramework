@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 public abstract class AbstractFileIterator implements IResourceIterator {
@@ -59,7 +60,8 @@ public abstract class AbstractFileIterator implements IResourceIterator {
     protected String filterSql = "";
     protected boolean useFilter = false;
     protected Map<String, Object> cachedValue = new HashMap<>();
-    protected Map<String, Object> newRecord = new HashMap<>();
+    //calculate column run async, so use concurrent
+    protected Map<String, Object> newRecord = new ConcurrentHashMap<>();
     // filterSql parse compare tree
     protected CompareNode rootNode = null;
     protected String defaultNewColumnPrefix = "N_COLUMN";
@@ -181,12 +183,12 @@ public abstract class AbstractFileIterator implements IResourceIterator {
     public boolean hasNext() {
         try {
             pullNext();
-            while (!CollectionUtils.isEmpty(cachedValue) && useFilter && !CommRecordGenerator.recordAcceptable(segment, cachedValue)) {
+            while (!CollectionUtils.isEmpty(cachedValue) && useFilter && !CommRecordGenerator.doesRecordAcceptable(segment, cachedValue)) {
                 pullNext();
             }
             if (segment != null && (!segment.isIncludeAllOriginColumn() && !CollectionUtils.isEmpty(segment.getSelectColumns()))) {
                 newRecord.clear();
-                CommRecordGenerator.doCalculator(segment, cachedValue, newRecord);
+                CommRecordGenerator.doAsyncCalculator(segment, cachedValue, newRecord);
             }
             return !CollectionUtils.isEmpty(cachedValue);
         } catch (Exception ex) {
