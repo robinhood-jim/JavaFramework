@@ -48,6 +48,7 @@ public class ConvertUtil {
     public static final DateTimeFormatter ymdSecondformatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
     public static final DateTimeFormatter ymdSepSecondformatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     public static final DateTimeFormatter ymdEupformatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
+    private static ThreadLocal<DateTimeFormatter> currentFormatter=new ThreadLocal<>();
 
     private ConvertUtil() {
 
@@ -471,14 +472,16 @@ public class ConvertUtil {
 
     public static Object convertStringToTargetObject(String value, DataSetColumnMeta meta){
         Object retObj;
-        DateTimeFormatter dateformat ;
-        String dateformatstr = meta.getDateFormat();
-        if (dateformatstr == null || StringUtils.isEmpty(dateformatstr)) {
-            dateformatstr = Const.DEFAULT_DATETIME_FORMAT;
+        if(currentFormatter.get()==null) {
+            String dateformatstr = meta.getDateFormat();
+            if (dateformatstr == null || StringUtils.isEmpty(dateformatstr)) {
+                dateformatstr = Const.DEFAULT_DATETIME_FORMAT;
+            }
+            currentFormatter.set(DateTimeFormatter.ofPattern(dateformatstr));
         }
-        dateformat = DateTimeFormatter.ofPattern(dateformatstr);
         String columnType = meta.getColumnType();
-        retObj = translateValue(value, columnType, meta.getColumnName(), dateformat);
+        DateTimeFormatter useFormatter=Const.META_TYPE_TIMESTAMP.equals(meta.getColumnType()) || Const.META_TYPE_DATE.equals(meta.getColumnType())?currentFormatter.get():null;
+        retObj = translateValue(value, columnType, meta.getColumnName(), useFormatter);
         if (retObj == null && meta.getDefaultNullValue() != null) {
             retObj = meta.getDefaultNullValue();
         }
