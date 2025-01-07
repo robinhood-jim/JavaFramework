@@ -158,6 +158,7 @@ public abstract class AbstractFileIterator implements IResourceIterator {
         if (instream != null) {
             instream.close();
         }
+        CommRecordGenerator.close();
         PolandNotationUtil.freeMem();
         if (accessUtil != null) {
             if (ApacheVfsFileSystemAccessor.class.isAssignableFrom(accessUtil.getClass()) && !ObjectUtils.isEmpty(colmeta.getResourceCfgMap().get(Const.ITERATOR_PROCESSID))) {

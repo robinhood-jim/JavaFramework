@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit;
 
 @Slf4j
 public class CalculatorPool implements Closeable {
-    private Pool<Calculator> pool;
+    private BlazePool<Calculator> pool;
     private CalculatorAllocator allocator;
     public CalculatorPool(){
         allocator=new CalculatorAllocator();
@@ -22,7 +22,7 @@ public class CalculatorPool implements Closeable {
 
     }
     public void close() {
-        
+        pool.shutdown();
     }
     public Calculator borrowObject() {
         try {

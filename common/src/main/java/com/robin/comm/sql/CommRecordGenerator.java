@@ -2,19 +2,18 @@ package com.robin.comm.sql;
 
 
 import cn.hutool.core.util.NumberUtil;
-
-
 import com.google.common.util.concurrent.*;
 import com.robin.core.base.exception.ConfigurationIncorrectException;
 import com.robin.core.base.exception.GenericException;
 import com.robin.core.base.exception.MissingConfigException;
 import com.robin.core.base.exception.OperationNotSupportException;
 import com.robin.core.base.util.Const;
-import com.robin.core.fileaccess.util.*;
+import com.robin.core.fileaccess.util.Calculator;
+import com.robin.core.fileaccess.util.CalculatorCallable;
+import com.robin.core.fileaccess.util.CalculatorPool;
+import com.robin.core.fileaccess.util.PolandNotationUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.calcite.sql.*;
-import org.apache.commons.pool2.impl.GenericObjectPool;
-import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
@@ -31,15 +30,14 @@ import java.util.stream.Collectors;
 @Slf4j
 public class CommRecordGenerator {
     //private static GenericObjectPool<Calculator> caPool;
-    private static CalculatorPool caPool;
-    private static ListeningExecutorService pool;
+    private static ThreadLocal<CalculatorPool> caPool=new ThreadLocal<>();
+    private static ThreadLocal<ListeningExecutorService> pool=new ThreadLocal<>();
     static {
-        CalculatorPoolFactory factory=new CalculatorPoolFactory();
+        /*CalculatorPoolFactory factory=new CalculatorPoolFactory();
         GenericObjectPoolConfig config = new GenericObjectPoolConfig();
         config.setMaxTotal(100);
-        caPool=new CalculatorPool();
-        //caPool = new GenericObjectPool<>(factory, config);
-        pool = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(50));
+        caPool = new GenericObjectPool<>(factory, config);*/
+
     }
 
     private CommRecordGenerator(){
@@ -64,7 +62,10 @@ public class CommRecordGenerator {
         }
         Calculator calculator=null;
         try{
-            calculator=caPool.borrowObject();
+            if(caPool.get()==null){
+                caPool.set(new CalculatorPool());
+            }
+            calculator=caPool.get().borrowObject();
             calculator.setSegment(segment);
             calculator.setInputRecord(inputRecord);
             return calculator.walkTree(whereNode);
@@ -72,7 +73,7 @@ public class CommRecordGenerator {
             log.error("{}",ex.getMessage());
         }finally {
             if(calculator!=null) {
-                caPool.returnObject(calculator);
+                caPool.get().returnObject(calculator);
             }
         }
         return false;
@@ -89,27 +90,31 @@ public class CommRecordGenerator {
         newRecord.clear();
         List<ListenableFuture<Boolean>> futures=new ArrayList<>();
         try {
+            if(pool.get()==null) {
+                pool.set(MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(20)));
+            }
+            if(caPool.get()==null){
+                caPool.set(new CalculatorPool());
+            }
             Map<Integer,Throwable> exMap=new HashMap<>();
             for (int i = 0; i < segment.getSelectColumns().size(); i++) {
-                Calculator calculator = caPool.borrowObject();
+                Calculator calculator = caPool.get().borrowObject();
                 calculator.clear();
                 calculator.setValueParts(segment.getSelectColumns().get(i));
                 calculator.setInputRecord(inputRecord);
                 calculator.setOutputRecord(newRecord);
                 calculator.setSegment(segment);
-                ListenableFuture<Boolean> future = pool.submit(new CalculatorCallable(calculator));
+                ListenableFuture<Boolean> future = pool.get().submit(new CalculatorCallable(calculator,caPool.get()));
                 Futures.addCallback(future, new FutureCallback<Boolean>() {
                             @Override
                             public void onSuccess(Boolean aBoolean) {
-                                caPool.returnObject(calculator);
                             }
                             @Override
                             public void onFailure(Throwable throwable) {
-                                caPool.returnObject(calculator);
                                 exMap.put(1,throwable);
                             }
                         }
-                ,pool);
+                ,pool.get());
                 futures.add(future);
             }
             for(ListenableFuture<Boolean> future:futures){
@@ -125,8 +130,11 @@ public class CommRecordGenerator {
     }
     public static void closePool(){
         if(!ObjectUtils.isEmpty(caPool)) {
-            caPool.close();
+            caPool.get().close();
         }
+    }
+    private static void returnObject(Calculator calculator){
+        caPool.get().returnObject(calculator);
     }
 
     /**
@@ -462,5 +470,14 @@ public class CommRecordGenerator {
             }
         }
         return retValue;
+    }
+    public static void close(){
+        System.out.println("shutdown executes");
+        if(pool.get()!=null) {
+            pool.get().shutdown();
+        }
+        if(caPool.get()!=null){
+            caPool.get().close();
+        }
     }
 }
