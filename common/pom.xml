@@ -319,6 +319,11 @@
             <artifactId>lz4-java</artifactId>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>com.github.chrisvest</groupId>
+            <artifactId>stormpot</artifactId>
+            <version>2.4.1</version>
+        </dependency>
     </dependencies>
     <build>
         <sourceDirectory>src/main/java</sourceDirectory>

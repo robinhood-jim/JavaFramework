@@ -30,13 +30,15 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 public class CommRecordGenerator {
-    private static GenericObjectPool<Calculator> caPool;
+    //private static GenericObjectPool<Calculator> caPool;
+    private static CalculatorPool caPool;
     private static ListeningExecutorService pool;
     static {
         CalculatorPoolFactory factory=new CalculatorPoolFactory();
         GenericObjectPoolConfig config = new GenericObjectPoolConfig();
         config.setMaxTotal(100);
-        caPool = new GenericObjectPool<>(factory, config);
+        caPool=new CalculatorPool();
+        //caPool = new GenericObjectPool<>(factory, config);
         pool = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(50));
     }
 

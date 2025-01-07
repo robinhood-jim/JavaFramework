@@ -5,6 +5,8 @@ import com.robin.comm.fileaccess.iterator.ParquetReaderUtil;
 import com.robin.comm.fileaccess.util.ByteBufferSeekableInputStream;
 import com.robin.comm.fileaccess.util.ParquetUtil;
 import com.robin.comm.fileaccess.util.ProtoBufUtil;
+import com.robin.comm.sql.CommSqlParser;
+import com.robin.comm.sql.SqlSegment;
 import com.robin.core.base.util.Const;
 import com.robin.core.base.util.ResourceConst;
 import com.robin.core.fileaccess.fs.AbstractFileSystemAccessor;
@@ -15,6 +17,9 @@ import com.robin.hadoop.hdfs.HDFSUtil;
 import lombok.Data;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
+import org.apache.calcite.config.Lex;
+import org.apache.calcite.sql.SqlKind;
+import org.apache.calcite.sql.SqlNode;
 import org.apache.commons.io.IOUtils;
 import org.apache.flink.core.memory.MemorySegment;
 import org.apache.flink.core.memory.MemorySegmentFactory;
@@ -47,7 +52,9 @@ import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ParquetVectorAggregator implements Closeable {
     private DataCollectionMeta colmeta;
@@ -65,9 +72,16 @@ public class ParquetVectorAggregator implements Closeable {
     private FilterCompat.Filter filter;
     private ProtoBufUtil.ProtoContainer container;
     private Aggregator aggregator;
+    private String filterSql;
+    private SqlSegment sqlSegment;
+    private List<String> groupColumns;
+    private Map<String,Integer> colPosMap=new HashMap<>();
 
     public ParquetVectorAggregator(DataCollectionMeta colmeta) {
         this.colmeta=colmeta;
+        for(int i=0;i<colmeta.getColumnList().size();i++){
+            colPosMap.put(colmeta.getColumnList().get(i).getColumnName(),i);
+        }
         checkAccessUtil(null);
     }
     public ParquetVectorAggregator(DataCollectionMeta colmeta, AbstractFileSystemAccessor accessor) {
@@ -130,6 +144,13 @@ public class ParquetVectorAggregator implements Closeable {
             ex.printStackTrace();
         }
     }
+    public void withFilterSql(String filterSql){
+        this.filterSql=filterSql;
+        sqlSegment=CommSqlParser.parseGroupByAgg(filterSql, Lex.MYSQL,colmeta,"N_COLUMN");
+        if(!ObjectUtils.isEmpty(sqlSegment.getGroupBy())){
+            sqlSegment.getGroupBy().stream().map(node->groupColumns.add(node.toString()));
+        }
+    }
 
     public void setAggregator(Aggregator aggregator) {
         this.aggregator = aggregator;
@@ -145,8 +166,6 @@ public class ParquetVectorAggregator implements Closeable {
                     long rowCount = store.getRowCount();
                     System.out.println(store.getRowIndexOffset().get());
 
-
-
                     ColumnReadStore store1=new ColumnReadStoreImpl(store,materializer.getRootConverter(),msgtype,"");
                     ColumnReader reader1=store1.getColumnReader(msgtype.getColumns().get(0));
 
@@ -159,6 +178,11 @@ public class ParquetVectorAggregator implements Closeable {
             }
         }catch (Exception ex){
             ex.printStackTrace();
+        }
+    }
+    private void readColumnGroup(CommSqlParser.ValueParts parts,ColumnReadStore store){
+        if(SqlKind.IDENTIFIER.equals(parts.getSqlKind())){
+
         }
     }
     private void parseSchemaByType() {

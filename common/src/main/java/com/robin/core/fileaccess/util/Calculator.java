@@ -5,6 +5,8 @@ import com.robin.comm.sql.SqlSegment;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.calcite.sql.SqlNode;
+import stormpot.Poolable;
+import stormpot.Slot;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -12,7 +14,7 @@ import java.util.Map;
 
 @Setter
 @Getter
-public class Calculator implements Closeable {
+public class Calculator implements Closeable, Poolable {
     private Object leftValue;
     private Object rightValue;
     private Boolean runValue;
@@ -23,9 +25,14 @@ public class Calculator implements Closeable {
     private Map<String,Object> inputRecord;
     private Map<String,Object> outputRecord;
     protected boolean busyTag=false;
+    private Slot slot;
+
 
     public Calculator(){
 
+    }
+    public Calculator(Slot slot){
+        this.slot=slot;
     }
     public boolean doCompare(SqlNode node){
         SqlContentResolver.doCompare(this,node);
@@ -71,5 +78,11 @@ public class Calculator implements Closeable {
 
     public boolean isBusyTag() {
         return busyTag;
+    }
+
+    @Override
+    public void release() {
+        setBusyTag(false);
+        slot.release(this);
     }
 }

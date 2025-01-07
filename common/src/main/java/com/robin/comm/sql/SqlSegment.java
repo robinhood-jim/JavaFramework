@@ -14,6 +14,7 @@ public class SqlSegment {
     private String tableName;
     private String tabAlias;
     private SqlNode whereCause;
+    private SqlNode havingCause;
     private Map<Integer,Integer> newColumnPosMap;
     private List<CommSqlParser.ValueParts> whereColumns=new ArrayList<>();
     private String newColumnPrefix;
@@ -25,7 +26,7 @@ public class SqlSegment {
     private Map<String, CommSqlParser.ValueParts> wherePartsMap;
     private Map<String, CommSqlParser.ValueParts> selectPartsMap;
     private List<SqlNode> groupBy;
-    private List<CommSqlParser.ValueParts> having;
+    private List<CommSqlParser.ValueParts> having=new ArrayList<>();
     private Map<String,DataSetColumnMeta> originSchemaMap;
     // if filterSql has four operations,orc and parquet can not use filter directly
     private boolean hasFourOperations = false;
