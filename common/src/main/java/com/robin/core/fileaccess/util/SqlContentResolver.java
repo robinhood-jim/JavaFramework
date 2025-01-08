@@ -54,7 +54,7 @@ public class SqlContentResolver {
             case LIKE:
                 List<SqlNode> sqlNodes1 = ((SqlBasicCall) node).getOperandList();
                 SqlIdentifier identifier1 = (SqlIdentifier) sqlNodes1.get(0);
-                calculator.setLeftValue(calculator.getStringLiteralMap().computeIfPresent(sqlNodes1.get(1).toString(),(k,v)->k.replace("'","")));
+                calculator.setLeftValue(calculator.getStringLiteralMap().computeIfAbsent(sqlNodes1.get(1).toString(),k->sqlNodes1.get(1).toString().replace("'","")));
                 calculator.setRightValue(calculator.getInputRecord().containsKey(identifier1.toString())?calculator.getInputRecord().get(identifier1.toString()).toString()
                         :calculator.getInputRecord().get(identifier1.toString().toUpperCase()).toString());
                 if(!ObjectUtils.isEmpty(calculator.getRightValue())) {
@@ -229,7 +229,7 @@ public class SqlContentResolver {
             if(!SqlCharStringLiteral.class.isAssignableFrom(parts.getConstantValue().getClass())){
                 retMap.put(columnName,parts.getConstantValue().getValue());
             }else{
-                retMap.put(columnName,ca.getStringLiteralMap().computeIfPresent(parts.getConstantValue().toString(), (k,v)->k.replace("'","")));
+                retMap.put(columnName,ca.getStringLiteralMap().computeIfAbsent(parts.getConstantValue().toString(), k->parts.getConstantValue().toString().replace("'","")));
             }
         }
         if(SqlKind.LISTAGG.equals(parts.getSqlKind())){
@@ -370,13 +370,13 @@ public class SqlContentResolver {
         } else if (SqlKind.LITERAL.equals(nodes.getKind())) {
             if(leftTag) {
                 if(SqlCharStringLiteral.class.isAssignableFrom(nodes.getClass())){
-                    calculator.setLeftValue(calculator.getStringLiteralMap().computeIfPresent(nodes.toString(),(k,v)->k.replace("'","")));
+                    calculator.setLeftValue(calculator.getStringLiteralMap().computeIfAbsent(nodes.toString(),k->nodes.toString().replace("'","")));
                 }else {
                     calculator.setRightValue(((SqlLiteral) nodes).getValue());
                 }
             }else{
                 if(SqlCharStringLiteral.class.isAssignableFrom(nodes.getClass())) {
-                    calculator.setRightValue(calculator.getStringLiteralMap().computeIfPresent(nodes.toString(),(k,v)->k.replace("'","")));
+                    calculator.setRightValue(calculator.getStringLiteralMap().computeIfAbsent(nodes.toString(),k->nodes.toString().replace("'","")));
                 }else{
                     calculator.setRightValue(((SqlLiteral) nodes).getValue());
                 }
