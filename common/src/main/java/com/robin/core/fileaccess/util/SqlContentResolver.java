@@ -54,7 +54,7 @@ public class SqlContentResolver {
             case LIKE:
                 List<SqlNode> sqlNodes1 = ((SqlBasicCall) node).getOperandList();
                 SqlIdentifier identifier1 = (SqlIdentifier) sqlNodes1.get(0);
-                calculator.setLeftValue(sqlNodes1.get(1).toString().replace("'",""));
+                calculator.setLeftValue(calculator.getStringLiteralMap().computeIfPresent(sqlNodes1.get(1).toString(),(k,v)->k.replace("'","")));
                 calculator.setRightValue(calculator.getInputRecord().containsKey(identifier1.toString())?calculator.getInputRecord().get(identifier1.toString()).toString()
                         :calculator.getInputRecord().get(identifier1.toString().toUpperCase()).toString());
                 if(!ObjectUtils.isEmpty(calculator.getRightValue())) {
@@ -141,12 +141,12 @@ public class SqlContentResolver {
                 ca.setLeftValue(ca.getInputRecord().get(valueParts.getIdentifyColumn().toUpperCase()).toString());
             }
             if(ObjectUtils.isEmpty(ca.getLeftValue()) && !ObjectUtils.isEmpty(valueParts.getCaseElseParts())){
-                calculateNode(valueParts.getCaseElseParts(),ca.getColumnName(),ca.getInputRecord(),ca.getOutputRecord());
+                calculateNode(ca,valueParts.getCaseElseParts(),ca.getColumnName(),ca.getInputRecord(),ca.getOutputRecord());
             }else{
                 if(valueParts.getCaseMap().containsKey(ca.getLeftValue().toString())){
-                    calculateNode(valueParts.getCaseMap().get(ca.getLeftValue().toString()),ca.getColumnName(),ca.getInputRecord(),ca.getOutputRecord());
+                    calculateNode(ca,valueParts.getCaseMap().get(ca.getLeftValue().toString()),ca.getColumnName(),ca.getInputRecord(),ca.getOutputRecord());
                 }else if(!ObjectUtils.isEmpty(valueParts.getCaseElseParts())){
-                    calculateNode(valueParts.getCaseElseParts(),ca.getColumnName(),ca.getInputRecord(),ca.getOutputRecord());
+                    calculateNode(ca,valueParts.getCaseElseParts(),ca.getColumnName(),ca.getInputRecord(),ca.getOutputRecord());
                 }
             }
         }else if(SqlKind.FUNCTION.contains(valueParts.getSqlKind())){
@@ -175,6 +175,36 @@ public class SqlContentResolver {
                         }
                     }
                     break;
+                case "trim":
+                    List<SqlNode> childNodes=node.getOperandList();
+                    if(SqlLiteral.class.isAssignableFrom(childNodes.get(0).getClass())){
+                        ca.getOutputRecord().put(ca.getColumnName(),childNodes.get(0).toString().trim());
+                    }else if(SqlIdentifier.class.isAssignableFrom(childNodes.get(0).getClass())){
+                        ca.getOutputRecord().put(ca.getColumnName(),ca.getInputRecord().get(childNodes.get(0).toString()).toString().trim());
+                    }
+                    break;
+                case "concat":
+                    List<SqlNode> childNodes1=node.getOperandList();
+                    if(ca.getBuilder().length()>0) {
+                        ca.getBuilder().delete(0,ca.getBuilder().length());
+                    }
+                    for(SqlNode tnode:childNodes1) {
+                        if (SqlLiteral.class.isAssignableFrom(tnode.getClass())) {
+                            ca.getBuilder().append(tnode.toString());
+                        } else if (SqlIdentifier.class.isAssignableFrom(tnode.getClass())) {
+                            ca.getBuilder().append(ca.getInputRecord().get(tnode.toString()).toString());
+                        }
+                    }
+                    ca.getOutputRecord().put(ca.getColumnName(),ca.getBuilder().toString());
+                case "abs":
+                    if(SqlLiteral.class.isAssignableFrom(node.getOperandList().get(0).getClass())){
+                        ca.getOutputRecord().put(ca.getColumnName(),Math.abs((Double) ((SqlLiteral)node.getOperandList().get(0)).getValue()));
+                    }else if(SqlIdentifier.class.isAssignableFrom(node.getOperandList().get(0).getClass())){
+                        checkColumnNumeric(ca.getSegment(),node.getOperandList().get(0).toString());
+                        ca.setCmpColumn(node.getOperandList().get(0).toString());
+                        ca.getOutputRecord().put(ca.getColumnName(),Math.abs((Double) ca.getInputRecord().get(ca.getCmpColumn())));
+                    }
+                    break;
                 case "decode":
                     break;
                 case "nvl":
@@ -194,12 +224,12 @@ public class SqlContentResolver {
         }
         return false;
     }
-    private static void calculateNode(CommSqlParser.ValueParts parts, String columnName, Map<String,Object> inputRecord, Map<String,Object> retMap){
+    private static void calculateNode(Calculator ca, CommSqlParser.ValueParts parts, String columnName, Map<String,Object> inputRecord, Map<String,Object> retMap){
         if(!ObjectUtils.isEmpty(parts.getConstantValue())){
             if(!SqlCharStringLiteral.class.isAssignableFrom(parts.getConstantValue().getClass())){
                 retMap.put(columnName,parts.getConstantValue().getValue());
             }else{
-                retMap.put(columnName,parts.getConstantValue().toString().replace("'",""));
+                retMap.put(columnName,ca.getStringLiteralMap().computeIfPresent(parts.getConstantValue().toString(), (k,v)->k.replace("'","")));
             }
         }
         if(SqlKind.LISTAGG.equals(parts.getSqlKind())){
@@ -337,16 +367,16 @@ public class SqlContentResolver {
             } else {
                 throw new ConfigurationIncorrectException("");
             }
-        } else if (SqlLiteral.class.isAssignableFrom(nodes.getClass())) {
+        } else if (SqlKind.LITERAL.equals(nodes.getKind())) {
             if(leftTag) {
                 if(SqlCharStringLiteral.class.isAssignableFrom(nodes.getClass())){
-                    calculator.setLeftValue(((SqlLiteral) nodes).getValue().toString().replace("'",""));
+                    calculator.setLeftValue(calculator.getStringLiteralMap().computeIfPresent(nodes.toString(),(k,v)->k.replace("'","")));
                 }else {
-                    calculator.setLeftValue(((SqlLiteral) nodes).getValue());
+                    calculator.setRightValue(((SqlLiteral) nodes).getValue());
                 }
             }else{
                 if(SqlCharStringLiteral.class.isAssignableFrom(nodes.getClass())) {
-                    calculator.setRightValue(((SqlLiteral) nodes).getValue().toString().replace("'",""));
+                    calculator.setRightValue(calculator.getStringLiteralMap().computeIfPresent(nodes.toString(),(k,v)->k.replace("'","")));
                 }else{
                     calculator.setRightValue(((SqlLiteral) nodes).getValue());
                 }

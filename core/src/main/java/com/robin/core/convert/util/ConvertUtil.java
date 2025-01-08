@@ -470,35 +470,17 @@ public class ConvertUtil {
         return false;
     }
 
-    public static Object convertStringToTargetObject(String value, DataSetColumnMeta meta){
+    public static Object convertStringToTargetObject(String value, DataSetColumnMeta meta, DateTimeFormatter formatter){
         Object retObj;
-        if(currentFormatter.get()==null) {
-            String dateformatstr = meta.getDateFormat();
-            if (dateformatstr == null || StringUtils.isEmpty(dateformatstr)) {
-                dateformatstr = Const.DEFAULT_DATETIME_FORMAT;
-            }
-            currentFormatter.set(DateTimeFormatter.ofPattern(dateformatstr));
-        }
         String columnType = meta.getColumnType();
-        DateTimeFormatter useFormatter=Const.META_TYPE_TIMESTAMP.equals(meta.getColumnType()) || Const.META_TYPE_DATE.equals(meta.getColumnType())?currentFormatter.get():null;
-        retObj = translateValue(value, columnType, meta.getColumnName(), useFormatter);
+        retObj = translateValue(value, columnType, meta.getColumnName(), formatter);
         if (retObj == null && meta.getDefaultNullValue() != null) {
             retObj = meta.getDefaultNullValue();
         }
         return retObj;
     }
 
-    public static Object convertStringToTargetObject(String value, String columnType, String columnName, String defaultDateTimefromat) {
-        Object retObj;
-        DateTimeFormatter dateformat = null;
-        String dateformatstr = defaultDateTimefromat;
-        if (dateformatstr == null || StringUtils.isEmpty(dateformatstr)) {
-            dateformatstr = Const.DEFAULT_DATETIME_FORMAT;
-        }
-        dateformat = DateTimeFormatter.ofPattern(dateformatstr);
-        retObj = translateValue(value, columnType, columnName, dateformat);
-        return retObj;
-    }
+
 
     public static Object wrapObjectByAutoDetect(Object object, String dateFormatStr) {
         Object retObj = null;

@@ -21,7 +21,6 @@ import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.fileaccess.fs.AbstractFileSystemAccessor;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.meta.DataSetColumnMeta;
-import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -82,7 +81,7 @@ public class JsonFileIterator extends AbstractFileIterator{
 						}
 					}
 					meta=columnMap.get(column);
-					cachedValue.put(column, ConvertUtil.convertStringToTargetObject(value, meta));
+					cachedValue.put(column, ConvertUtil.convertStringToTargetObject(value, meta, formatter));
 				}
 				jreader.endObject();
 			}
@@ -111,7 +110,7 @@ public class JsonFileIterator extends AbstractFileIterator{
 						}
 					}
 					meta=columnMap.get(column);
-					retmap.put(column, ConvertUtil.convertStringToTargetObject(value, meta));
+					retmap.put(column, ConvertUtil.convertStringToTargetObject(value, meta, formatter));
 				}
 				jreader.endObject();
 			}

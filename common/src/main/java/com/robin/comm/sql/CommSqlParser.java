@@ -301,6 +301,8 @@ public class CommSqlParser {
                         parts.setFunctionParams(nodes1);
                         parts.setSqlKind(node.getKind());
                         newColumns.add(parts);
+                    }else if(SqlKind.LITERAL.equals(node.getKind())){
+
                     }
                 }
             }

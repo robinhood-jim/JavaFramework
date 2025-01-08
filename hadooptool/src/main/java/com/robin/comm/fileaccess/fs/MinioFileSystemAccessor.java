@@ -10,6 +10,7 @@ import com.robin.dfs.minio.MinioUtils;
 import io.minio.MinioAsyncClient;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import okhttp3.OkHttpClient;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
@@ -17,6 +18,7 @@ import org.springframework.util.ObjectUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Field;
 
 /**
  * Minio FileSystemAccessor,must init individual
@@ -29,6 +31,7 @@ public class MinioFileSystemAccessor extends AbstractCloudStorageFileSystemAcces
     private String endpoint;
     private String region;
     private MinioAsyncClient client;
+    private OkHttpClient httpClient;
 
     private MinioFileSystemAccessor(){
         this.identifier= Const.FILESYSTEM.MINIO.getValue();
@@ -52,6 +55,13 @@ public class MinioFileSystemAccessor extends AbstractCloudStorageFileSystemAcces
             builder.region(region);
         }
         client=builder.build();
+        try{
+            Field field= client.getClass().getSuperclass().getDeclaredField("httpClient");
+            field.setAccessible(true);
+            httpClient=(OkHttpClient) field.get(client);
+        }catch (Exception ex){
+            log.error("{}",ex.getMessage());
+        }
     }
     public void init(){
         super.init();
@@ -63,6 +73,13 @@ public class MinioFileSystemAccessor extends AbstractCloudStorageFileSystemAcces
             builder.region(region);
         }
         client=builder.build();
+        try{
+            Field field= client.getClass().getSuperclass().getDeclaredField("httpClient");
+            field.setAccessible(true);
+            httpClient=(OkHttpClient) field.get(client);
+        }catch (Exception ex){
+            log.error("{}",ex.getMessage());
+        }
     }
 
     @Override
@@ -89,7 +106,11 @@ public class MinioFileSystemAccessor extends AbstractCloudStorageFileSystemAcces
             throw  new OperationNotSupportException(ex);
         }
     }
-
+    public void close(){
+        if(httpClient!=null){
+            httpClient.dispatcher().executorService().shutdown();
+        }
+    }
 
     @Override
     protected boolean putObject(String bucketName, DataCollectionMeta meta, InputStream inputStream,long size) throws IOException {

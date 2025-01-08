@@ -41,6 +41,7 @@ import org.springframework.util.ObjectUtils;
 
 import java.io.*;
 import java.net.URI;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -65,6 +66,7 @@ public abstract class AbstractFileIterator implements IResourceIterator {
     // filterSql parse compare tree
     protected CompareNode rootNode = null;
     protected String defaultNewColumnPrefix = "N_COLUMN";
+    protected DateTimeFormatter formatter=DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
 
     protected SqlSegment segment;
@@ -158,7 +160,6 @@ public abstract class AbstractFileIterator implements IResourceIterator {
         if (instream != null) {
             instream.close();
         }
-        CommRecordGenerator.close();
         PolandNotationUtil.freeMem();
         if (accessUtil != null) {
             if (ApacheVfsFileSystemAccessor.class.isAssignableFrom(accessUtil.getClass()) && !ObjectUtils.isEmpty(colmeta.getResourceCfgMap().get(Const.ITERATOR_PROCESSID))) {
@@ -207,7 +208,9 @@ public abstract class AbstractFileIterator implements IResourceIterator {
         segment = CommSqlParser.parseSingleTableQuerySql(filterSql, Lex.MYSQL, colmeta, defaultNewColumnPrefix);
         useFilter = true;
     }
-
+    public void setDateFormatter(DateTimeFormatter formatter){
+        this.formatter=formatter;
+    }
 
     protected abstract void pullNext();
 

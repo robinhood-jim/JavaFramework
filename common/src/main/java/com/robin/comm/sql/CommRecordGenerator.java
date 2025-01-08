@@ -29,15 +29,11 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 public class CommRecordGenerator {
-    //private static GenericObjectPool<Calculator> caPool;
-    private static ThreadLocal<CalculatorPool> caPool=new ThreadLocal<>();
-    private static ThreadLocal<ListeningExecutorService> pool=new ThreadLocal<>();
+    private static CalculatorPool caPool;
+    private static ListeningExecutorService pool;
     static {
-        /*CalculatorPoolFactory factory=new CalculatorPoolFactory();
-        GenericObjectPoolConfig config = new GenericObjectPoolConfig();
-        config.setMaxTotal(100);
-        caPool = new GenericObjectPool<>(factory, config);*/
-
+        caPool=new CalculatorPool();
+        pool=MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(20));
     }
 
     private CommRecordGenerator(){
@@ -62,10 +58,7 @@ public class CommRecordGenerator {
         }
         Calculator calculator=null;
         try{
-            if(caPool.get()==null){
-                caPool.set(new CalculatorPool());
-            }
-            calculator=caPool.get().borrowObject();
+            calculator=caPool.borrowObject();
             calculator.setSegment(segment);
             calculator.setInputRecord(inputRecord);
             return calculator.walkTree(whereNode);
@@ -73,7 +66,7 @@ public class CommRecordGenerator {
             log.error("{}",ex.getMessage());
         }finally {
             if(calculator!=null) {
-                caPool.get().returnObject(calculator);
+                caPool.returnObject(calculator);
             }
         }
         return false;
@@ -90,31 +83,28 @@ public class CommRecordGenerator {
         newRecord.clear();
         List<ListenableFuture<Boolean>> futures=new ArrayList<>();
         try {
-            if(pool.get()==null) {
-                pool.set(MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(20)));
-            }
-            if(caPool.get()==null){
-                caPool.set(new CalculatorPool());
-            }
+
             Map<Integer,Throwable> exMap=new HashMap<>();
             for (int i = 0; i < segment.getSelectColumns().size(); i++) {
-                Calculator calculator = caPool.get().borrowObject();
+                Calculator calculator = caPool.borrowObject();
                 calculator.clear();
                 calculator.setValueParts(segment.getSelectColumns().get(i));
                 calculator.setInputRecord(inputRecord);
                 calculator.setOutputRecord(newRecord);
                 calculator.setSegment(segment);
-                ListenableFuture<Boolean> future = pool.get().submit(new CalculatorCallable(calculator,caPool.get()));
+                ListenableFuture<Boolean> future = pool.submit(new CalculatorCallable(calculator));
                 Futures.addCallback(future, new FutureCallback<Boolean>() {
                             @Override
                             public void onSuccess(Boolean aBoolean) {
+                                caPool.returnObject(calculator);
                             }
                             @Override
                             public void onFailure(Throwable throwable) {
+                                caPool.returnObject(calculator);
                                 exMap.put(1,throwable);
                             }
                         }
-                ,pool.get());
+                ,pool);
                 futures.add(future);
             }
             for(ListenableFuture<Boolean> future:futures){
@@ -130,11 +120,8 @@ public class CommRecordGenerator {
     }
     public static void closePool(){
         if(!ObjectUtils.isEmpty(caPool)) {
-            caPool.get().close();
+            caPool.close();
         }
-    }
-    private static void returnObject(Calculator calculator){
-        caPool.get().returnObject(calculator);
     }
 
     /**
@@ -199,7 +186,25 @@ public class CommRecordGenerator {
                             }
                         }
                         break;
+                    case "trim":
+                        List<SqlNode> childNodes=node.getOperandList();
+                        if(SqlLiteral.class.isAssignableFrom(childNodes.get(0).getClass())){
+                            newRecord.put(columnName,childNodes.get(0).toString().trim());
+                        }else if(SqlIdentifier.class.isAssignableFrom(childNodes.get(0).getClass())){
+                            newRecord.put(columnName,inputRecord.get(childNodes.get(0).toString()).toString().trim());
+                        }
+                        break;
+                    case "concat":
+                        List<SqlNode> childNodes1=node.getOperandList();
+                        for(SqlNode tnode:childNodes1) {
+                            if (SqlLiteral.class.isAssignableFrom(tnode.getClass())) {
+                                newRecord.put(columnName, childNodes1.get(0).toString().trim());
+                            } else if (SqlIdentifier.class.isAssignableFrom(tnode.getClass())) {
+                                newRecord.put(columnName, inputRecord.get(tnode.toString()).toString().trim());
+                            }
+                        }
                     case "decode":
+
                         break;
                     case "nvl":
                         break;
@@ -214,7 +219,6 @@ public class CommRecordGenerator {
                 }else if(inputRecord.containsKey(parts.getIdentifyColumn().toUpperCase())){
                     newRecord.put(columnName,inputRecord.get(parts.getIdentifyColumn().toUpperCase()));
                 }
-
             }
 
         }
@@ -472,12 +476,11 @@ public class CommRecordGenerator {
         return retValue;
     }
     public static void close(){
-        System.out.println("shutdown executes");
-        if(pool.get()!=null) {
-            pool.get().shutdown();
+        if(pool!=null) {
+            pool.shutdown();
         }
-        if(caPool.get()!=null){
-            caPool.get().close();
+        if(caPool!=null){
+            caPool.close();
         }
     }
 }

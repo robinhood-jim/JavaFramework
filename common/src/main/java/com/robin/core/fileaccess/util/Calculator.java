@@ -11,6 +11,7 @@ import stormpot.Slot;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.Map;
+import java.util.WeakHashMap;
 
 @Setter
 @Getter
@@ -24,6 +25,8 @@ public class Calculator implements Closeable, Poolable {
     private CommSqlParser.ValueParts valueParts;
     private Map<String,Object> inputRecord;
     private Map<String,Object> outputRecord;
+    private StringBuilder builder;
+    private Map<String,String> stringLiteralMap=new WeakHashMap<>();
     protected boolean busyTag=false;
     private Slot slot;
 
