@@ -13,6 +13,7 @@ import com.robin.core.fileaccess.meta.DataSetColumnMeta;
 import com.robin.comm.sql.CompareNode;
 import com.robin.core.fileaccess.util.ResourceUtil;
 import com.robin.hadoop.hdfs.HDFSUtil;
+import org.apache.calcite.sql.*;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.flink.core.memory.MemorySegment;
@@ -30,6 +31,7 @@ import org.apache.orc.OrcFile;
 import org.apache.orc.Reader;
 import org.apache.orc.RecordReader;
 import org.apache.orc.TypeDescription;
+import org.apache.parquet.filter2.predicate.FilterPredicate;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
@@ -43,6 +45,9 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import static org.apache.parquet.filter2.predicate.FilterApi.and;
+import static org.apache.parquet.filter2.predicate.FilterApi.or;
 
 /**
  * Orc SearchArgument only filter row Groups,must use second filter
@@ -152,55 +157,65 @@ public class OrcFileIterator extends AbstractFileIterator {
         }
     }
 
-    private void walkCondition(CompareNode node, SearchArgument.Builder argumentBuilder){
-        if (node.getRightNode() != null && node.getLeftNode() != null) {
-            if(node.getLeftNode().getKey()!=null || node.getRightNode().getKey()!=null || columnMap.containsKey(node.getRightNode().getValue())){
-                //skip four operation
-                return ;
-            }
-            parseOperator(node.getLeftNode().getValue(),node.getLinkOperator(),node.getRightNode().getValue(),argumentBuilder);
-        } else {
-            if (node.getLeft() != null) {
-                if("or".equalsIgnoreCase(node.getRight().getComparator())){
-                    argumentBuilder.startOr();
-                }else if("and".equalsIgnoreCase(node.getRight().getComparator())){
-                    argumentBuilder.startAnd();
+    private void walkCondition(SqlNode node, SearchArgument.Builder argumentBuilder){
+        if(!super.segment.isConditionHasFunction() && !super.segment.isConditionHasFourOperations()) {
+            if (SqlBasicCall.class.isAssignableFrom(node.getClass())) {
+                List<SqlNode> nodes = ((SqlBasicCall) node).getOperandList();
+                if (SqlIdentifier.class.isAssignableFrom(nodes.get(0).getClass()) && SqlLiteral.class.isAssignableFrom(nodes.get(1).getClass())) {
+                    parseOperator(node,argumentBuilder);
+                } else {
+                    boolean canUse=false;
+                    List<SqlNode> nodes1=((SqlBasicCall) node).getOperandList();
+                    if(SqlKind.OR.equals(node.getKind())){
+                        argumentBuilder.startOr();
+                        canUse=true;
+                    }else if(SqlKind.AND.equals(node.getKind())){
+                        argumentBuilder.startAnd();
+                        canUse=true;
+                    }
+                    if(canUse) {
+                        walkCondition(nodes1.get(0), argumentBuilder);
+                        walkCondition(nodes1.get(0), argumentBuilder);
+                        argumentBuilder.end();
+                    }else{
+                        argumentBuilder.literal(SearchArgument.TruthValue.YES);
+                    }
+
                 }
-                walkCondition(node.getLeft(),argumentBuilder);
-                walkCondition(node.getRight(),argumentBuilder);
-                argumentBuilder.end();
             }
         }
     }
-    private void parseOperator(String column,String operator,Object value,SearchArgument.Builder argumentBuilder){
-        Pair<PredicateLeaf.Type,Object> pair=returnType(column,value);
-        switch (operator) {
-            case ">":
+    private void parseOperator(SqlNode node,SearchArgument.Builder argumentBuilder){
+        List<SqlNode> nodes=((SqlBasicCall)node).getOperandList();
+        String column=((SqlIdentifier)nodes.get(0)).getSimple();
+        Pair<PredicateLeaf.Type,Object> pair=returnType(column,((SqlLiteral)nodes.get(1)).getValue());
+        switch (node.getKind()) {
+            case GREATER_THAN:
                 argumentBuilder.startNot();
                 argumentBuilder.lessThanEquals(column,pair.getKey(),pair.getValue());
                 argumentBuilder.end();
                 break;
-            case ">=":
+            case GREATER_THAN_OR_EQUAL:
                 argumentBuilder.startNot();
                 argumentBuilder.lessThan(column,pair.getKey(),pair.getValue());
                 argumentBuilder.end();
                 break;
-            case "=":
+            case EQUALS:
                 argumentBuilder.nullSafeEquals(column, pair.getKey(), pair.getValue());
                 break;
-            case "<":
+            case LESS_THAN:
                 argumentBuilder.lessThan(column, pair.getKey(), pair.getValue());
                 break;
-            case "<=":
+            case LESS_THAN_OR_EQUAL:
                 argumentBuilder.lessThanEquals(column, pair.getKey(), pair.getValue());
                 break;
-            case "between":
+            case BETWEEN:
                 argumentBuilder.between(column, pair.getKey(), pair.getValue(),pair.getValue());
                 break;
-            case "in":
+            case IN:
                 argumentBuilder.in(column,pair.getKey(),super.segment.getInPartMap().get(column).stream().map(f-> returnWithType(columnMap.get(column),f)).collect(Collectors.toList()).toArray());
                 break;
-            case "<>":
+            case NOT_EQUALS:
                 argumentBuilder.startNot();
                 argumentBuilder.equals(column, pair.getKey(), pair.getValue());
                 argumentBuilder.end();
@@ -315,9 +330,9 @@ public class OrcFileIterator extends AbstractFileIterator {
                 }
             }
             schema=OrcUtil.getSchema(colmeta);
-            if(!ObjectUtils.isEmpty(rootNode)){
+            if(!ObjectUtils.isEmpty(super.segment.getWhereCause()) &&!super.segment.isConditionHasFunction() && !super.segment.isConditionHasFunction() && !super.segment.isHasRightColumnCmp()){
                 SearchArgument.Builder argumentBuilder=SearchArgumentFactory.newBuilder();
-                walkCondition(rootNode,argumentBuilder);
+                walkCondition(super.segment.getWhereCause(),argumentBuilder);
                 options= new Reader.Options().schema(schema).allowSARGToFilter(true)
                         .searchArgument(argumentBuilder.build(),columnList.toArray(new String[0]));
             }

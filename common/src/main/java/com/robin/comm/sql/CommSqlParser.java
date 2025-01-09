@@ -72,7 +72,6 @@ public class CommSqlParser {
             SqlNode havingNode = sqlSelect.getHaving();
             segment.setHavingCause(havingNode);
             parseWhereParts(segment, havingNode, segment.getHaving());
-            //List<DataSetColumnMeta> calculateSchema = getCalculateSchema(segment, meta);
             return segment;
         }catch (SqlParseException|ValidationException ex){
             throw new GenericException(ex);
@@ -184,7 +183,7 @@ public class CommSqlParser {
                 else if (SqlBasicCall.class.isAssignableFrom(columnNodes.get(0).getClass())) {
                     valueParts.setNodeString(columnNodes.get(0).toString());
                     valueParts.setCalculator(columnNodes.get(0));
-                    segment.setHasFourOperations(true);
+                    segment.setSelectHasFourOperations(true);
                     setAliasName(newColumnPrefix, newColumnPosMap, valueParts);
                 }
             } else if (SqlBasicCall.class.isAssignableFrom(selected.getClass())) {
@@ -286,13 +285,15 @@ public class CommSqlParser {
                 }
             } else {
                 List<SqlNode> nodes = ((SqlBasicCall) whereNode).getOperandList();
-                for (SqlNode node : nodes) {
+                for (int i=0;i<nodes.size();i++) {
+                    SqlNode node=nodes.get(i);
                     String calculator = node.toString().replace(Quoting.BACK_TICK.string, "");
                     if (FilterSqlParser.fourZeOper.matcher(calculator).find()) {
                         ValueParts parts = new ValueParts();
                         parts.setCalculator(node);
                         parts.setNodeString(node.toString());
                         parts.setAliasName(returnDefaultNewColumn(segment.getNewColumnPrefix(), segment.getNewColumnPosMap()));
+                        segment.setConditionHasFourOperations(true);
                         newColumns.add(parts);
                     }else if(SqlKind.FUNCTION.contains(node.getKind())){
                         List<SqlNode> nodes1=((SqlBasicCall)node).getOperandList();
@@ -300,9 +301,10 @@ public class CommSqlParser {
                         parts.setFunctionName(((SqlBasicCall) node).getOperator().getName());
                         parts.setFunctionParams(nodes1);
                         parts.setSqlKind(node.getKind());
+                        segment.setConditionHasFunction(true);
                         newColumns.add(parts);
-                    }else if(SqlKind.LITERAL.equals(node.getKind())){
-
+                    }else if(SqlKind.IDENTIFIER.equals(node.getKind()) && i==nodes.size()-1){
+                        segment.setHasRightColumnCmp(true);
                     }
                 }
             }

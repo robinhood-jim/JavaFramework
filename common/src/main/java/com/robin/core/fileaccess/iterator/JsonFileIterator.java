@@ -32,15 +32,18 @@ public class JsonFileIterator extends AbstractFileIterator{
 	private JsonReader jreader=null;
 	public JsonFileIterator(){
 		identifier= Const.FILEFORMATSTR.JSON.getValue();
+		useBufferedReader=true;
 	}
 	public JsonFileIterator(DataCollectionMeta metaList) {
 		super(metaList);
 		identifier= Const.FILEFORMATSTR.JSON.getValue();
+		useBufferedReader=true;
 	}
 	public JsonFileIterator(DataCollectionMeta metaList,AbstractFileSystemAccessor accessor) {
 		super(metaList);
 		identifier= Const.FILEFORMATSTR.JSON.getValue();
 		accessUtil=accessor;
+		useBufferedReader=true;
 	}
 	@Override
 	public void beforeProcess() {

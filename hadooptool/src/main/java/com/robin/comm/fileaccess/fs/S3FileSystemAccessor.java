@@ -63,6 +63,9 @@ public class S3FileSystemAccessor extends AbstractCloudStorageFileSystemAccessor
         client = AwsUtils.getClientByCredential(region,accessKey,secret);
         asyncClient = AwsUtils.getAsyncClientByCredential(region, accessKey, secret);
     }
+
+
+
     @Override
     public boolean exists(DataCollectionMeta meta, String resourcePath) throws IOException {
         return AwsUtils.exists(client,getBucketName(meta),meta.getPath());
