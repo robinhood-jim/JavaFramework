@@ -64,9 +64,10 @@ public abstract class AbstractFileIterator implements IResourceIterator {
     //calculate column run async, so use concurrent
     protected Map<String, Object> newRecord = new ConcurrentHashMap<>();
     // filterSql parse compare tree
-    protected CompareNode rootNode = null;
     protected String defaultNewColumnPrefix = "N_COLUMN";
     protected DateTimeFormatter formatter=DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    //if using BufferedReader as input.only csv json format must set this to true
+    protected boolean useBufferedReader=false;
 
 
     protected SqlSegment segment;
@@ -104,9 +105,14 @@ public abstract class AbstractFileIterator implements IResourceIterator {
         checkAccessUtil(colmeta.getPath());
         Assert.notNull(accessUtil, "ResourceAccessUtil is required!");
         try {
-            Pair<BufferedReader, InputStream> pair = accessUtil.getInResourceByReader(colmeta, ResourceUtil.getProcessPath(colmeta.getPath()));
-            this.reader = pair.getKey();
-            this.instream = pair.getValue();
+            if(useBufferedReader){
+                Pair<BufferedReader, InputStream> pair = accessUtil.getInResourceByReader(colmeta, ResourceUtil.getProcessPath(colmeta.getPath()));
+                this.reader = pair.getKey();
+                this.instream = pair.getValue();
+            }else{
+                this.instream=accessUtil.getInResourceByStream(colmeta,ResourceUtil.getProcessPath(colmeta.getPath()));
+            }
+
         } catch (Exception ex) {
             logger.error("{}", ex.getMessage());
         }

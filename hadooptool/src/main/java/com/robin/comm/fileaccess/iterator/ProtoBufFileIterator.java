@@ -4,10 +4,12 @@ import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
 import com.robin.comm.fileaccess.util.ProtoBufUtil;
 import com.robin.core.base.util.Const;
+import com.robin.core.fileaccess.fs.AbstractFileSystemAccessor;
 import com.robin.core.fileaccess.iterator.AbstractFileIterator;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.util.ResourceUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.math3.analysis.function.Abs;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -26,6 +28,11 @@ public class ProtoBufFileIterator extends AbstractFileIterator {
     public ProtoBufFileIterator(DataCollectionMeta colmeta) {
         super(colmeta);
         identifier= Const.FILEFORMATSTR.PROTOBUF.getValue();
+    }
+    public ProtoBufFileIterator(DataCollectionMeta colmeta, AbstractFileSystemAccessor accessor) {
+        super(colmeta);
+        identifier= Const.FILEFORMATSTR.PROTOBUF.getValue();
+        this.accessUtil=accessor;
     }
 
 

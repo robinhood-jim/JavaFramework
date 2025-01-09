@@ -2,7 +2,6 @@ package com.robin.comm.sql;
 
 import com.robin.core.fileaccess.meta.DataSetColumnMeta;
 import lombok.Data;
-import org.apache.calcite.sql.SqlIdentifier;
 import org.apache.calcite.sql.SqlNode;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -29,7 +28,9 @@ public class SqlSegment {
     private List<CommSqlParser.ValueParts> having=new ArrayList<>();
     private Map<String,DataSetColumnMeta> originSchemaMap;
     // if filterSql has four operations,orc and parquet can not use filter directly
-    private boolean hasFourOperations = false;
+    private boolean selectHasFourOperations = false;
+    private boolean conditionHasFourOperations=false;
+    private boolean conditionHasFunction=false;
     // if filterSql compare right hand is column,orc and parquet can not use filter directly
     private boolean hasRightColumnCmp = false;
 }

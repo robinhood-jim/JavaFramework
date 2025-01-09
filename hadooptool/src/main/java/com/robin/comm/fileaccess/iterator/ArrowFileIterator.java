@@ -8,6 +8,7 @@ import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import org.apache.arrow.memory.BufferAllocator;
 import org.apache.arrow.memory.RootAllocator;
 import org.apache.arrow.vector.*;
+import org.apache.arrow.vector.compression.CompressionCodec;
 import org.apache.arrow.vector.ipc.ArrowStreamReader;
 import org.apache.arrow.vector.types.pojo.Field;
 import org.apache.arrow.vector.types.pojo.Schema;
@@ -32,6 +33,7 @@ public class ArrowFileIterator extends AbstractFileIterator {
     public ArrowFileIterator() {
         identifier = Const.FILEFORMATSTR.ARROW.getValue();
     }
+
 
     public ArrowFileIterator(DataCollectionMeta colmeta) {
         super(colmeta);
@@ -83,9 +85,10 @@ public class ArrowFileIterator extends AbstractFileIterator {
                     wrapValue(fields.get(i),fields.get(i).getName(),colmeta.getColumnList().get(i).getColumnType(),currentbatchRow,cachedValue);
                 }
             }
+            currentbatchRow++;
             curpos++;
         }catch (Exception ex){
-
+            ex.printStackTrace();
         }
     }
     public void wrapValue(Field field, String columnName, String columnType, int row, Map<String,Object> valueMap) throws UnsupportedEncodingException {

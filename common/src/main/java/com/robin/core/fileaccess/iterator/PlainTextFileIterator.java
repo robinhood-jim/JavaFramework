@@ -31,17 +31,20 @@ public class PlainTextFileIterator extends AbstractFileIterator {
 
     public PlainTextFileIterator() {
         identifier = Const.FILEFORMATSTR.CSV.getValue();
+        useBufferedReader=true;
     }
 
     public PlainTextFileIterator(DataCollectionMeta metaList) {
         super(metaList);
         identifier = Const.FILEFORMATSTR.CSV.getValue();
+        useBufferedReader=true;
     }
 
     public PlainTextFileIterator(DataCollectionMeta metaList, AbstractFileSystemAccessor accessor) {
         super(metaList);
         identifier = Const.FILEFORMATSTR.CSV.getValue();
         accessUtil = accessor;
+        useBufferedReader=true;
     }
 
     @Override

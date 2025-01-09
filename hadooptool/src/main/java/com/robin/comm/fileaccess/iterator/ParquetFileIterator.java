@@ -117,7 +117,7 @@ public class ParquetFileIterator extends AbstractFileIterator {
                     container=ProtoBufUtil.initSchema(colmeta);
                 }
             }
-            if (!ObjectUtils.isEmpty(super.segment) && !super.segment.isHasFourOperations() && !super.segment.isHasRightColumnCmp()) {
+            if (!ObjectUtils.isEmpty(super.segment) && !super.segment.isSelectHasFourOperations() && !super.segment.isHasRightColumnCmp()) {
                 //FilterPredicate predicate=walkCondition(rootNode);
                 FilterPredicate predicate=walkCondition(super.segment.getWhereCause());
                 filter= FilterCompat.get(predicate);
@@ -224,7 +224,7 @@ public class ParquetFileIterator extends AbstractFileIterator {
 
     @Override
     public boolean hasNext() {
-        if(!ObjectUtils.isEmpty(super.segment) && !super.segment.isHasFourOperations() && !super.segment.isHasRightColumnCmp()){
+        if(!ObjectUtils.isEmpty(super.segment) && !super.segment.isSelectHasFourOperations() && !super.segment.isHasRightColumnCmp()){
             pullNext();
             return !CollectionUtils.isEmpty(cachedValue);
         }else{
@@ -289,20 +289,25 @@ public class ParquetFileIterator extends AbstractFileIterator {
 
 
     private FilterPredicate walkCondition(SqlNode node) {
-        if(SqlBasicCall.class.isAssignableFrom(node.getClass())){
-            List<SqlNode> nodes=((SqlBasicCall)node).getOperandList();
-            if(SqlIdentifier.class.isAssignableFrom(nodes.get(0).getClass()) && SqlLiteral.class.isAssignableFrom(nodes.get(1).getClass())){
-                return parseOperator(node);
-            }else{
-                FilterPredicate left= walkCondition(nodes.get(0));
-                FilterPredicate right=walkCondition(nodes.get(1));
-                if(SqlKind.OR.equals(node.getKind())){
-                    return or(left,right);
-                }else {
-                    return and(left,right);
+        //condition has four operation or function call column,FilterPredicate can not perform,otherwise can use
+        if(!super.segment.isConditionHasFunction() && !super.segment.isConditionHasFourOperations()) {
+            if (SqlBasicCall.class.isAssignableFrom(node.getClass())) {
+                List<SqlNode> nodes = ((SqlBasicCall) node).getOperandList();
+                if (SqlIdentifier.class.isAssignableFrom(nodes.get(0).getClass()) && SqlLiteral.class.isAssignableFrom(nodes.get(1).getClass())) {
+                    return parseOperator(node);
+                } else {
+                    FilterPredicate left = walkCondition(nodes.get(0));
+                    FilterPredicate right = walkCondition(nodes.get(1));
+                    if (SqlKind.OR.equals(node.getKind())) {
+                        return or(left, right);
+                    } else {
+                        return and(left, right);
+                    }
                 }
+            } else {
+                return null;
             }
-        }else{
+        }else {
             return null;
         }
     }
@@ -450,7 +455,19 @@ public class ParquetFileIterator extends AbstractFileIterator {
     @Override
     public void remove() {
         try {
-            reader.read();
+            if(!useFilter && !super.segment.isSelectHasFourOperations() && !super.segment.isHasRightColumnCmp()) {
+                if (ireader != null) {
+                    ireader.read();
+                }
+                if (preader != null) {
+                    preader.read();
+                }
+                if (protoReader != null) {
+                    protoReader.read();
+                }
+            }else{
+                super.hasNext();
+            }
         } catch (Exception ex) {
             ex.printStackTrace();
         }

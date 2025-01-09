@@ -109,7 +109,7 @@ public class ParquetStreamIterator extends AbstractFileIterator {
     @Override
     public void remove() {
         try {
-            reader.read();
+            preader.read();
         }catch (Exception ex){
             ex.printStackTrace();
         }

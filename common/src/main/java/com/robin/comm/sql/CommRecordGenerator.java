@@ -348,9 +348,9 @@ public class CommRecordGenerator {
         return runValue;
     }
     protected static void checkColumnNumeric(SqlSegment segment,String columnName){
-        Assert.isTrue(Const.META_TYPE_INTEGER.equals(segment.getOriginSchemaMap().get(columnName))
-                    || Const.META_TYPE_BIGINT.equals(segment.getOriginSchemaMap().get(columnName))
-                    || Const.META_TYPE_DOUBLE.equals(segment.getOriginSchemaMap().get(columnName)),"require numeric column");
+        Assert.isTrue(Const.META_TYPE_INTEGER.equals(segment.getOriginSchemaMap().get(columnName).getColumnType())
+                    || Const.META_TYPE_BIGINT.equals(segment.getOriginSchemaMap().get(columnName).getColumnType())
+                    || Const.META_TYPE_DOUBLE.equals(segment.getOriginSchemaMap().get(columnName).getColumnType()),"require numeric column");
     }
 
     private static Object getValueWithCalculate(Map<String, Object> inputMap, SqlSegment segment, SqlNode nodes) {
