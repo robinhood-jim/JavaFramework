@@ -16,15 +16,13 @@ import org.springframework.util.ObjectUtils;
 
 import java.io.FileNotFoundException;
 import java.io.*;
+import java.lang.ref.WeakReference;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ApacheVfsFileSystemAccessor extends AbstractFileSystemAccessor {
-    private final Map<String, FileObject> objectMap = new HashMap<>();
+    private final Map<String, FileObject> objectMap = Collections.synchronizedMap(new WeakHashMap<>());
 
     public ApacheVfsFileSystemAccessor() {
         this.identifier = Const.FILESYSTEM.VFS.getValue();

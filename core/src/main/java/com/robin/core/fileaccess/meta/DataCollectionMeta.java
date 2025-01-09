@@ -71,6 +71,10 @@ public class DataCollectionMeta implements Serializable {
 		this.columnList.add(new DataSetColumnMeta(columnName, columnType, defaultNullValue));
 		columnNameMap.put(columnName,1);
 	}
+	public void addColumnMeta(String columnName,String columnType,boolean flushOut){
+		this.columnList.add(new DataSetColumnMeta(columnName, columnType, flushOut));
+		columnNameMap.put(columnName,1);
+	}
 	public void addColumnMeta(String columnName,String columnType,String defaultNullValue,boolean required){
 		this.columnList.add(new DataSetColumnMeta(columnName, columnType, defaultNullValue,required));
 		columnNameMap.put(columnName,null);
@@ -122,6 +126,10 @@ public class DataCollectionMeta implements Serializable {
 			meta.addColumnMeta(columnName,columnType,defaultNullValue);
 			return this;
 		}
+		public DataCollectionMeta.Builder addColumn(String columnName,String columnType,boolean flushOut){
+			meta.addColumnMeta(columnName,columnType,flushOut);
+			return this;
+		}
 		public DataCollectionMeta.Builder dateFormatter(String formatter){
 			meta.setDefaultTimestampFormat(formatter);
 			return this;
@@ -164,6 +172,10 @@ public class DataCollectionMeta implements Serializable {
 		}
 		public DataCollectionMeta.Builder encode(String encode){
 			meta.setEncode(encode);
+			return this;
+		}
+		public DataCollectionMeta.Builder tableName(String tableName){
+			meta.setTableName(tableName);
 			return this;
 		}
 

@@ -16,26 +16,37 @@
 package com.robin.core.fileaccess.iterator;
 
 import com.robin.comm.dal.pool.ResourceAccessHolder;
+import com.robin.comm.sql.CommRecordGenerator;
+import com.robin.comm.sql.CommSqlParser;
+import com.robin.comm.sql.CompareNode;
+import com.robin.comm.sql.SqlSegment;
+import com.robin.core.base.exception.MissingConfigException;
 import com.robin.core.base.util.Const;
 import com.robin.core.base.util.IOUtils;
+import com.robin.core.base.util.ResourceConst;
 import com.robin.core.fileaccess.fs.AbstractFileSystemAccessor;
 import com.robin.core.fileaccess.fs.ApacheVfsFileSystemAccessor;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.meta.DataSetColumnMeta;
+import com.robin.core.fileaccess.util.PolandNotationUtil;
 import com.robin.core.fileaccess.util.ResourceUtil;
+import org.apache.calcite.config.Lex;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
 
 import java.io.*;
 import java.net.URI;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 public abstract class AbstractFileIterator implements IResourceIterator {
@@ -47,6 +58,18 @@ public abstract class AbstractFileIterator implements IResourceIterator {
     protected List<String> columnList = new ArrayList<>();
     protected Map<String, DataSetColumnMeta> columnMap = new HashMap<>();
     protected Logger logger = LoggerFactory.getLogger(getClass());
+    protected String filterSql = "";
+    protected boolean useFilter = false;
+    protected Map<String, Object> cachedValue = new HashMap<>();
+    //calculate column run async, so use concurrent
+    protected Map<String, Object> newRecord = new ConcurrentHashMap<>();
+    // filterSql parse compare tree
+    protected CompareNode rootNode = null;
+    protected String defaultNewColumnPrefix = "N_COLUMN";
+    protected DateTimeFormatter formatter=DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+
+    protected SqlSegment segment;
 
     public AbstractFileIterator() {
 
@@ -57,7 +80,14 @@ public abstract class AbstractFileIterator implements IResourceIterator {
         for (DataSetColumnMeta meta : colmeta.getColumnList()) {
             columnList.add(meta.getColumnName());
             columnMap.put(meta.getColumnName(), meta);
+            if (Const.META_TYPE_FORMULA.equals(meta.getColumnType())) {
+                meta.setColumnType(Const.META_TYPE_DOUBLE);
+            }
         }
+        if (!CollectionUtils.isEmpty(colmeta.getResourceCfgMap()) && !ObjectUtils.isEmpty(colmeta.getResourceCfgMap().get(ResourceConst.STORAGEFILTERSQL))) {
+            withFilterSql(colmeta.getResourceCfgMap().get(ResourceConst.STORAGEFILTERSQL).toString());
+        }
+
     }
 
     public AbstractFileIterator(DataCollectionMeta colmeta, AbstractFileSystemAccessor accessUtil) {
@@ -78,7 +108,7 @@ public abstract class AbstractFileIterator implements IResourceIterator {
             this.reader = pair.getKey();
             this.instream = pair.getValue();
         } catch (Exception ex) {
-            logger.error("{}",ex.getMessage());
+            logger.error("{}", ex.getMessage());
         }
     }
 
@@ -87,7 +117,7 @@ public abstract class AbstractFileIterator implements IResourceIterator {
         try {
             close();
         } catch (IOException ex) {
-            logger.error("{}",ex.getMessage());
+            logger.error("{}", ex.getMessage());
         }
     }
 
@@ -96,7 +126,7 @@ public abstract class AbstractFileIterator implements IResourceIterator {
         try {
             if (accessUtil == null) {
                 URI uri = new URI(StringUtils.isEmpty(inputPath) ? colmeta.getPath() : inputPath);
-                String schema = !ObjectUtils.isEmpty(colmeta.getFsType())?colmeta.getFsType():uri.getScheme();
+                String schema = !ObjectUtils.isEmpty(colmeta.getFsType()) ? colmeta.getFsType() : uri.getScheme();
                 accessUtil = ResourceAccessHolder.getAccessUtilByProtocol(schema.toLowerCase());
             }
         } catch (Exception ex) {
@@ -108,6 +138,7 @@ public abstract class AbstractFileIterator implements IResourceIterator {
     public void setReader(BufferedReader reader) {
         this.reader = reader;
     }
+
     @Override
     public void setInputStream(InputStream stream) {
         this.instream = stream;
@@ -129,23 +160,58 @@ public abstract class AbstractFileIterator implements IResourceIterator {
         if (instream != null) {
             instream.close();
         }
-        if(accessUtil!=null){
-            if(ApacheVfsFileSystemAccessor.class.isAssignableFrom(accessUtil.getClass())) {
-                if(!ObjectUtils.isEmpty(colmeta.getResourceCfgMap().get(Const.ITERATOR_PROCESSID))) {
-                    ((ApacheVfsFileSystemAccessor)accessUtil).closeWithProcessId(colmeta.getResourceCfgMap().get(Const.ITERATOR_PROCESSID).toString());
-                }
+        PolandNotationUtil.freeMem();
+        if (accessUtil != null) {
+            if (ApacheVfsFileSystemAccessor.class.isAssignableFrom(accessUtil.getClass()) && !ObjectUtils.isEmpty(colmeta.getResourceCfgMap().get(Const.ITERATOR_PROCESSID))) {
+                ((ApacheVfsFileSystemAccessor) accessUtil).closeWithProcessId(colmeta.getResourceCfgMap().get(Const.ITERATOR_PROCESSID).toString());
             }
         }
     }
+
     @Override
     public String getIdentifier() {
         return identifier;
     }
-    public AbstractFileSystemAccessor getFileSystemAccessor(){
+
+    public AbstractFileSystemAccessor getFileSystemAccessor() {
         return accessUtil;
     }
 
     public void setAccessUtil(AbstractFileSystemAccessor accessUtil) {
         this.accessUtil = accessUtil;
     }
+
+    @Override
+    public boolean hasNext() {
+        try {
+            pullNext();
+            while (!CollectionUtils.isEmpty(cachedValue) && useFilter && !CommRecordGenerator.doesRecordAcceptable(segment, cachedValue)) {
+                pullNext();
+            }
+            if (segment != null && (!segment.isIncludeAllOriginColumn() && !CollectionUtils.isEmpty(segment.getSelectColumns()))) {
+                newRecord.clear();
+                CommRecordGenerator.doAsyncCalculator(segment, cachedValue, newRecord);
+            }
+            return !CollectionUtils.isEmpty(cachedValue);
+        } catch (Exception ex) {
+            throw new MissingConfigException(ex);
+        }
+    }
+
+    @Override
+    public Map<String, Object> next() {
+        return useFilter && !CollectionUtils.isEmpty(newRecord) ? newRecord : cachedValue;
+    }
+
+    public void withFilterSql(String filterSql) {
+        this.filterSql = filterSql;
+        segment = CommSqlParser.parseSingleTableQuerySql(filterSql, Lex.MYSQL, colmeta, defaultNewColumnPrefix);
+        useFilter = true;
+    }
+    public void setDateFormatter(DateTimeFormatter formatter){
+        this.formatter=formatter;
+    }
+
+    protected abstract void pullNext();
+
 }

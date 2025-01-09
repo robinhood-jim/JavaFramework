@@ -48,6 +48,7 @@ public class ConvertUtil {
     public static final DateTimeFormatter ymdSecondformatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
     public static final DateTimeFormatter ymdSepSecondformatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     public static final DateTimeFormatter ymdEupformatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
+    private static ThreadLocal<DateTimeFormatter> currentFormatter=new ThreadLocal<>();
 
     private ConvertUtil() {
 
@@ -469,33 +470,17 @@ public class ConvertUtil {
         return false;
     }
 
-    public static Object convertStringToTargetObject(String value, DataSetColumnMeta meta){
+    public static Object convertStringToTargetObject(String value, DataSetColumnMeta meta, DateTimeFormatter formatter){
         Object retObj;
-        DateTimeFormatter dateformat ;
-        String dateformatstr = meta.getDateFormat();
-        if (dateformatstr == null || StringUtils.isEmpty(dateformatstr)) {
-            dateformatstr = Const.DEFAULT_DATETIME_FORMAT;
-        }
-        dateformat = DateTimeFormatter.ofPattern(dateformatstr);
         String columnType = meta.getColumnType();
-        retObj = translateValue(value, columnType, meta.getColumnName(), dateformat);
+        retObj = translateValue(value, columnType, meta.getColumnName(), formatter);
         if (retObj == null && meta.getDefaultNullValue() != null) {
             retObj = meta.getDefaultNullValue();
         }
         return retObj;
     }
 
-    public static Object convertStringToTargetObject(String value, String columnType, String columnName, String defaultDateTimefromat) {
-        Object retObj;
-        DateTimeFormatter dateformat = null;
-        String dateformatstr = defaultDateTimefromat;
-        if (dateformatstr == null || StringUtils.isEmpty(dateformatstr)) {
-            dateformatstr = Const.DEFAULT_DATETIME_FORMAT;
-        }
-        dateformat = DateTimeFormatter.ofPattern(dateformatstr);
-        retObj = translateValue(value, columnType, columnName, dateformat);
-        return retObj;
-    }
+
 
     public static Object wrapObjectByAutoDetect(Object object, String dateFormatStr) {
         Object retObj = null;

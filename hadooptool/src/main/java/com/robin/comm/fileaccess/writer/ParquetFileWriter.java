@@ -1,7 +1,11 @@
 package com.robin.comm.fileaccess.writer;
 
+import com.google.protobuf.Descriptors;
+import com.google.protobuf.DynamicMessage;
 import com.robin.comm.fileaccess.util.ParquetUtil;
+import com.robin.comm.fileaccess.util.ProtoBufUtil;
 import com.robin.core.base.util.Const;
+import com.robin.core.base.util.ResourceConst;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.util.AvroUtils;
 import com.robin.core.fileaccess.util.ResourceUtil;
@@ -18,6 +22,7 @@ import org.apache.parquet.hadoop.ParquetWriter;
 import org.apache.parquet.hadoop.metadata.CompressionCodecName;
 import org.apache.parquet.hadoop.util.HadoopOutputFile;
 import org.apache.parquet.io.OutputFile;
+import org.apache.parquet.proto.ProtoParquetWriter;
 import org.apache.parquet.schema.MessageType;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
@@ -25,7 +30,6 @@ import org.springframework.util.ObjectUtils;
 import javax.naming.OperationNotSupportedException;
 import java.io.IOException;
 import java.sql.Timestamp;
-import java.util.List;
 import java.util.Map;
 
 
@@ -33,11 +37,15 @@ public class ParquetFileWriter extends AbstractFileWriter {
     private Schema avroSchema;
     //private ParquetWriter pwriter;
     private ParquetWriter<GenericRecord> avroWriter;
+    private ParquetWriter<DynamicMessage> protoWriter;
     private ParquetWriter<Map<String,Object>> mapWriter;
     private MessageType schema;
     private boolean useAvroEncode=false;
+    private boolean useProtobufEncode=false;
     private ParquetProperties.WriterVersion writerVersion=ParquetProperties.WriterVersion.PARQUET_1_0;
     private int pageSize=ParquetWriter.DEFAULT_PAGE_SIZE;
+    private ProtoBufUtil.ProtoContainer container;
+
     public static final String PAGESIZECOLUMN="parquet.Pagesize";
     public static final String WRITEVERSION="parquet.writeVersion";
 
@@ -102,21 +110,32 @@ public class ParquetFileWriter extends AbstractFileWriter {
         if(out==null) {
             checkAccessUtil(null);
         }
-        if(colmeta.getResourceCfgMap().containsKey("file.useAvroEncode") && "true".equalsIgnoreCase(colmeta.getResourceCfgMap().get("file.useAvroEncode").toString())){
-            useAvroEncode=true;
+        if(colmeta.getResourceCfgMap().containsKey(ResourceConst.PARQUETFILEFORMAT)){
+            if(ResourceConst.PARQUETSUPPORTFORMAT.AVRO.getValue().equalsIgnoreCase(colmeta.getResourceCfgMap().get(ResourceConst.PARQUETFILEFORMAT).toString())) {
+                useAvroEncode = true;
+            }else if(ResourceConst.PARQUETSUPPORTFORMAT.PROTOBUF.getValue().equalsIgnoreCase(colmeta.getResourceCfgMap().get(ResourceConst.PARQUETFILEFORMAT).toString())){
+                useProtobufEncode=true;
+                container=ProtoBufUtil.initSchema(colmeta);
+            }
         }
         if(Const.FILESYSTEM.HDFS.getValue().equals(colmeta.getFsType())){
+            Configuration conf=new HDFSUtil(colmeta).getConfig();
             if(useAvroEncode) {
-                Configuration conf=new HDFSUtil(colmeta).getConfig();
                 OutputFile outputFile= HadoopOutputFile.fromPath(new Path(colmeta.getPath()),conf);
                 avroWriter = AvroParquetWriter.<GenericRecord>builder(outputFile).withSchema(avroSchema).withCompressionCodec(codecName).withConf(conf).build();
-            }else {
-                mapWriter =new CustomParquetWriter.Builder(new Path(colmeta.getPath()), schema).withPageSize(pageSize).withCompressionCodec(codecName).withDictionaryEncoding(false).withWriterVersion(writerVersion).build();
+            }else if(useProtobufEncode){
+                OutputFile outputFile= HadoopOutputFile.fromPath(new Path(colmeta.getPath()),conf);
+                protoWriter= ProtoParquetWriter.<DynamicMessage>builder(outputFile).withMessage(DynamicMessage.class).withCompressionCodec(codecName).withDescriptor(container.getMsgDesc()).withWriteMode(org.apache.parquet.hadoop.ParquetFileWriter.Mode.OVERWRITE).build();
+            }
+            else {
+                mapWriter =new CustomParquetWriter.Builder(new Path(colmeta.getPath()), schema).withConf(conf).withPageSize(pageSize).withCompressionCodec(codecName).withDictionaryEncoding(false).withWriterVersion(writerVersion).build();
             }
         }else{
             out=accessUtil.getRawOutputStream(colmeta, ResourceUtil.getProcessPath(colmeta.getPath()));
             if(useAvroEncode) {
                 avroWriter = AvroParquetWriter.<GenericRecord>builder(ParquetUtil.makeOutputFile(out, colmeta, ResourceUtil.getProcessPath(colmeta.getPath()))).withCompressionCodec(codecName).withSchema(avroSchema).build();
+            }else if(useProtobufEncode){
+                protoWriter=ProtoParquetWriter.<DynamicMessage>builder(ParquetUtil.makeOutputFile(out, colmeta, ResourceUtil.getProcessPath(colmeta.getPath()))).withCompressionCodec(codecName).withDescriptor(container.getMsgDesc()).withMessage(DynamicMessage.class).build();
             }else {
                 mapWriter = new CustomParquetWriter.Builder<Map<String, Object>>(ParquetUtil.makeOutputFile(out, colmeta, ResourceUtil.getProcessPath(colmeta.getPath())), schema).withPageSize(pageSize).withCompressionCodec(codecName).withDictionaryEncoding(false).withWriterVersion(writerVersion).build();
             }
@@ -145,21 +164,30 @@ public class ParquetFileWriter extends AbstractFileWriter {
             } catch (IOException ex) {
                 logger.error("", ex);
             }
-        }else {
+        }else if(useProtobufEncode){
+            container.getMesgBuilder().clear();
+            for (int i = 0; i < colmeta.getColumnList().size(); i++) {
+                String name = colmeta.getColumnList().get(i).getColumnName();
+                Object value = getMapValueByMeta(map, name);
+                Descriptors.FieldDescriptor des=container.getMsgDesc().findFieldByName(name);
+                container.getMesgBuilder().setField(des,value);
+            }
+            protoWriter.write(container.getMesgBuilder().build());
+        }
+        else {
             mapWriter.write(map);
         }
     }
 
-    @Override
-    public void writeRecord(List<Object> map) throws IOException,OperationNotSupportedException {
-
-    }
 
 
     @Override
     public void finishWrite() throws IOException {
         if(avroWriter!=null){
             avroWriter.close();
+        }
+        if(protoWriter!=null){
+            protoWriter.close();
         }
         if(mapWriter!=null){
             mapWriter.close();

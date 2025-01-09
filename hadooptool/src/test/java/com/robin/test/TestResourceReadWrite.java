@@ -1,7 +1,6 @@
 package com.robin.test;
 
-import com.qiniu.storage.Region;
-import com.robin.comm.fileaccess.fs.QiniuFileSystemAccessor;
+import com.robin.comm.fileaccess.fs.MinioFileSystemAccessor;
 import com.robin.core.base.dao.SimpleJdbcDao;
 import com.robin.core.base.datameta.BaseDataBaseMeta;
 import com.robin.core.base.datameta.DataBaseMetaFactory;
@@ -23,7 +22,6 @@ import java.sql.Connection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.ResourceBundle;
 
 @Slf4j
 public class TestResourceReadWrite extends TestCase {
@@ -43,13 +41,15 @@ public class TestResourceReadWrite extends TestCase {
 			builder.resourceCfg("hostName", "127.0.0.1").resourceCfg("protocol", "ftp")
 					.resourceCfg("file.useAvroEncode","true")
 					.resourceCfg("port", 21).resourceCfg("userName", "test").resourceCfg("password", "test").fileFormat(Const.FILEFORMATSTR.PARQUET.getValue())
-							.resPath("tmp/test2.parquet.gz").protocol(Const.VFS_PROTOCOL.FTP.getValue());
-			QiniuFileSystemAccessor.Builder builder1=new QiniuFileSystemAccessor.Builder();
+							.resPath("file:///e:/tmp/test2.praquet").protocol(Const.VFS_PROTOCOL.FTP.getValue()).fsType(Const.FILESYSTEM.LOCAL.getValue());
+			/*QiniuFileSystemAccessor.Builder builder1=new QiniuFileSystemAccessor.Builder();
 			ResourceBundle bundle=ResourceBundle.getBundle("qiniu");
 
 			builder1.domain(bundle.getString("domain")).region(Region.autoRegion()).bucket(bundle.getString("bucket"))
 					.accessKey(bundle.getString("accessKey")).secretKey(bundle.getString("secretKey"));
-			//QiniuFileSystemAccessor accessor=builder1.build();
+			QiniuFileSystemAccessor accessor=builder1.build();*/
+			MinioFileSystemAccessor.Builder builder1=new MinioFileSystemAccessor.Builder();
+			//MinioFileSystemAccessor accessor=builder1.accessKey("jeason").secretKey("Jeason@1234").endpoint("http://36.158.32.29:18888").bucket("test").build();
 			DataCollectionMeta colmeta=builder.build();
 			final AbstractFileWriter jwriter=(AbstractFileWriter) TextFileWriterFactory.getWriterByType(colmeta);
 
@@ -82,13 +82,17 @@ public class TestResourceReadWrite extends TestCase {
 			ex.printStackTrace();
 		}
 	}
-	@Test
-	public void testReadFromQiniu(){
 
-	}
+
 	@Test
 	public void testRead(){
 		DataCollectionMeta.Builder builder = new DataCollectionMeta.Builder();
+		builder.addColumn("param_sn",Const.META_TYPE_INTEGER,null);
+		builder.addColumn("weixin_order_id",Const.META_TYPE_STRING,null);
+		builder.addColumn("open_id",Const.META_TYPE_STRING,null);
+		builder.addColumn("total_money",Const.META_TYPE_INTEGER,null);
+		builder.addColumn("subscribe_id",Const.META_TYPE_STRING,null);
+		builder.addColumn("product_name",Const.META_TYPE_STRING,null);
 
 		builder.resourceCfg("hostName", "127.0.0.1").resourceCfg("protocol", "ftp")
 				.resourceCfg("port", 21).resourceCfg("userName", "test").resourceCfg("password", "test").fileFormat(Const.FILEFORMATSTR.PARQUET.getValue())

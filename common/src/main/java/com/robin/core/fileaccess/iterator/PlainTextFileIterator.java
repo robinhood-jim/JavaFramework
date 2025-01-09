@@ -16,17 +16,14 @@
 package com.robin.core.fileaccess.iterator;
 
 import com.robin.core.base.util.Const;
-import com.robin.core.base.util.StringUtils;
 import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.fileaccess.fs.AbstractFileSystemAccessor;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.meta.DataSetColumnMeta;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.ObjectUtils;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 
 public class PlainTextFileIterator extends AbstractFileIterator{
 	protected String readLineStr=null;
@@ -44,49 +41,40 @@ public class PlainTextFileIterator extends AbstractFileIterator{
 		accessUtil=accessor;
 	}
 
-
 	@Override
-	public boolean hasNext() {
-		boolean hasNext=false;
+	protected void pullNext() {
 		try{
-			if(reader!=null){
-				do{
+			cachedValue.clear();
+			try{
+				if(reader!=null){
 					readLineStr=reader.readLine();
-				} while(ObjectUtils.isEmpty(readLineStr));
-				if(!ObjectUtils.isEmpty(readLineStr)) {
-                    hasNext=true;
-                }
+					if(!ObjectUtils.isEmpty(readLineStr)) {
+						String[] arr = StringUtils.split(readLineStr, split.charAt(0));
+						if (arr.length >= colmeta.getColumnList().size()) {
+							for (int i = 0; i < colmeta.getColumnList().size(); i++) {
+								DataSetColumnMeta meta = colmeta.getColumnList().get(i);
+								cachedValue.put(meta.getColumnName(), ConvertUtil.convertStringToTargetObject(arr[i], meta, formatter));
+							}
+						}
+					}
+				}
+			}catch(IOException ex){
+				logger.error("{0}",ex.getMessage());
 			}
-		}catch(IOException ex){
-			logger.error("{0}",ex);
-		}
-		return hasNext;
-	}
 
-	@Override
-	public Map<String, Object> next(){
-		Map<String,Object> map=new HashMap<>();
-		String[] arr=StringUtils.split(readLineStr, split.charAt(0));
-		try{
-		if(arr.length>=colmeta.getColumnList().size()){
-			for (int i=0;i<colmeta.getColumnList().size();i++) {
-				DataSetColumnMeta meta=colmeta.getColumnList().get(i);
-				map.put(meta.getColumnName(), ConvertUtil.convertStringToTargetObject(arr[i], meta));
-			}
-			return map;
-		}else{
-			return Collections.emptyMap();
-		}
 		}catch(Exception ex){
 			logger.error("{}",ex.getMessage());
-			return Collections.emptyMap();
 		}
 	}
 
 	@Override
 	public void remove() {
 		try{
-			reader.readLine();
+			if(useFilter) {
+				hasNext();
+			}else{
+				reader.readLine();
+			}
 		}catch(Exception ex){
 			
 		}
@@ -95,6 +83,6 @@ public class PlainTextFileIterator extends AbstractFileIterator{
 	public void setSplit(String split) {
 		this.split = split;
 	}
-	
+
 	
 }

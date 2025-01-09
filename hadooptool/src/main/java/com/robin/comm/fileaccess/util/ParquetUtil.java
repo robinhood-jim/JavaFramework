@@ -223,19 +223,7 @@ public class ParquetUtil {
         };
     }
 
-    public  static InputFile makeInputFile(SeekableInputStream inputStream,Long length){
-        return new InputFile() {
-            @Override
-            public long getLength() throws IOException {
-                return length;
-            }
 
-            @Override
-            public SeekableInputStream newStream() throws IOException {
-                return inputStream;
-            }
-        };
-    }
 
     private static int readDirectBuffer(ByteBuffer byteBufr, byte[] tmpBuf, InputStream rdr) throws IOException {
         int nextReadLength = Math.min(byteBufr.remaining(), tmpBuf.length);
