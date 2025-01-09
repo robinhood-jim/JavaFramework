@@ -285,7 +285,8 @@ public class CommSqlParser {
                 }
             } else {
                 List<SqlNode> nodes = ((SqlBasicCall) whereNode).getOperandList();
-                for (SqlNode node : nodes) {
+                for (int i=0;i<nodes.size();i++) {
+                    SqlNode node=nodes.get(i);
                     String calculator = node.toString().replace(Quoting.BACK_TICK.string, "");
                     if (FilterSqlParser.fourZeOper.matcher(calculator).find()) {
                         ValueParts parts = new ValueParts();
@@ -302,8 +303,8 @@ public class CommSqlParser {
                         parts.setSqlKind(node.getKind());
                         segment.setConditionHasFunction(true);
                         newColumns.add(parts);
-                    }else if(SqlKind.LITERAL.equals(node.getKind())){
-
+                    }else if(SqlKind.IDENTIFIER.equals(node.getKind()) && i==nodes.size()-1){
+                        segment.setHasRightColumnCmp(true);
                     }
                 }
             }

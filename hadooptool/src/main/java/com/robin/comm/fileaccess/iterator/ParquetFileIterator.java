@@ -117,7 +117,7 @@ public class ParquetFileIterator extends AbstractFileIterator {
                     container=ProtoBufUtil.initSchema(colmeta);
                 }
             }
-            if (!ObjectUtils.isEmpty(super.segment) && !super.segment.isSelectHasFourOperations() && !super.segment.isHasRightColumnCmp()) {
+            if (!ObjectUtils.isEmpty(super.segment) && !super.segment.isConditionHasFourOperations() && !super.segment.isHasRightColumnCmp()) {
                 //FilterPredicate predicate=walkCondition(rootNode);
                 FilterPredicate predicate=walkCondition(super.segment.getWhereCause());
                 filter= FilterCompat.get(predicate);
