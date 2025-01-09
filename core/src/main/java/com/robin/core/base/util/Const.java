@@ -435,7 +435,7 @@ public class Const {
         PLAIN("txt"),
         CSV("csv"),
         PROTOBUF("proto"),
-
+        ARROW("arrow"),
         ARFF("arff");
         private String value;
         FILEFORMATSTR(String value){

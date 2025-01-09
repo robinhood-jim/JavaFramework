@@ -3,4 +3,4 @@ com.robin.comm.fileaccess.iterator.OrcFileIterator
 com.robin.comm.fileaccess.iterator.ParquetFileIterator
 com.robin.comm.fileaccess.iterator.ParquetStreamIterator
 com.robin.comm.fileaccess.iterator.ProtoBufFileIterator
-
+com.robin.comm.fileaccess.iterator.ArrowFileIterator

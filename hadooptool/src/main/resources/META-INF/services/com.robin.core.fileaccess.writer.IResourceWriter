@@ -2,3 +2,4 @@ com.robin.comm.fileaccess.writer.AvroFileWriter
 com.robin.comm.fileaccess.writer.ParquetFileWriter
 com.robin.comm.fileaccess.writer.ProtoBufFileWriter
 com.robin.comm.fileaccess.writer.OrcFileWriter
+com.robin.comm.fileaccess.writer.ArrowFileWriter
