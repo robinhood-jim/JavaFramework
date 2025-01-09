@@ -265,32 +265,13 @@ public class ParquetFileIterator extends AbstractFileIterator {
     }
 
 
-    public Map<String, Object> next1() {
-        if (useAvroEncode) {
-            Map<String, Object> retMap = new HashMap<>();
-            if (record == null) {
-                throw new NoSuchElementException("");
-            }
-            for (Schema.Field field : fields) {
-                Object value = record.get(field.name());
-                if (LogicalTypes.timestampMillis().equals(field.schema().getLogicalType())) {
-                    value = new Timestamp((Long) value);
-                }
-                retMap.put(field.name(), value);
-            }
-            return retMap;
-        }else if(useProtoBuffEncode){
-            return cachedValue;
-        }else {
-            return cachedValue;
-        }
-    }
+
 
 
 
     private FilterPredicate walkCondition(SqlNode node) {
         //condition has four operation or function call column,FilterPredicate can not perform,otherwise can use
-        if(!super.segment.isConditionHasFunction() && !super.segment.isConditionHasFourOperations()) {
+        if(!super.segment.isConditionHasFunction() && !super.segment.isConditionHasFourOperations() && !super.segment.isHasRightColumnCmp()) {
             if (SqlBasicCall.class.isAssignableFrom(node.getClass())) {
                 List<SqlNode> nodes = ((SqlBasicCall) node).getOperandList();
                 if (SqlIdentifier.class.isAssignableFrom(nodes.get(0).getClass()) && SqlLiteral.class.isAssignableFrom(nodes.get(1).getClass())) {

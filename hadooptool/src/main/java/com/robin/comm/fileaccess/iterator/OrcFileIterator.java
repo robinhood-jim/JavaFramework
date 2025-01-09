@@ -330,9 +330,8 @@ public class OrcFileIterator extends AbstractFileIterator {
                 }
             }
             schema=OrcUtil.getSchema(colmeta);
-            if(!ObjectUtils.isEmpty(super.segment.getWhereCause())){
+            if(!ObjectUtils.isEmpty(super.segment.getWhereCause()) &&!super.segment.isConditionHasFunction() && !super.segment.isConditionHasFunction() && !super.segment.isHasRightColumnCmp()){
                 SearchArgument.Builder argumentBuilder=SearchArgumentFactory.newBuilder();
-
                 walkCondition(super.segment.getWhereCause(),argumentBuilder);
                 options= new Reader.Options().schema(schema).allowSARGToFilter(true)
                         .searchArgument(argumentBuilder.build(),columnList.toArray(new String[0]));
