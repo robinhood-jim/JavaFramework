@@ -6,8 +6,10 @@ import io.etcd.jetcd.election.CampaignResponse;
 import io.etcd.jetcd.election.LeaderKey;
 import io.etcd.jetcd.election.LeaderResponse;
 import io.etcd.jetcd.kv.GetResponse;
+import io.etcd.jetcd.kv.PutResponse;
 import io.etcd.jetcd.lease.LeaseKeepAliveResponse;
 import io.etcd.jetcd.options.PutOption;
+import io.etcd.jetcd.options.WatchOption;
 import io.etcd.jetcd.watch.WatchResponse;
 import io.grpc.stub.StreamObserver;
 import lombok.extern.slf4j.Slf4j;
@@ -48,15 +50,16 @@ public class ServiceDiscovery {
         electionClient = client.getElectionClient();
     }
 
-    public boolean registerInstance(String mainPath, String serverName,boolean takeLeaderShip) {
+    public boolean registerInstance(String mainPath,String serverNamePath, String serverName,boolean takeLeaderShip) {
         ByteSequence electName = ByteSequence.from(mainPath, StandardCharsets.UTF_8);
         ByteSequence proposal = ByteSequence.from(serverName, StandardCharsets.UTF_8);
+        ByteSequence key=ByteSequence.from(serverNamePath,StandardCharsets.UTF_8);
         try {
             long leaseId = leaseClient.grant(60, 60, TimeUnit.SECONDS).get().getID();
             leaseClient.keepAlive(leaseId, new StreamObserver<LeaseKeepAliveResponse>() {
                 @Override
                 public void onNext(LeaseKeepAliveResponse leaseKeepAliveResponse) {
-                    log.debug("refresh lease");
+                    log.debug(serverName+"refresh lease");
                 }
 
                 @Override
@@ -70,7 +73,7 @@ public class ServiceDiscovery {
                 }
             });
             PutOption option=PutOption.newBuilder().withLeaseId(leaseId).build();
-            kvClient.put(electName,proposal,option);
+            kvClient.put(key,proposal,option);
 
             if (takeLeaderShip) {
                 CampaignResponse response = electionClient.campaign(electName, leaseId, proposal).get(OPERATION_TIMEOUT, TimeUnit.SECONDS);
@@ -91,7 +94,8 @@ public class ServiceDiscovery {
     public Watch.Watcher watchInstance(String groupPath, Consumer<WatchResponse> onNext){
         ByteSequence watchKey=ByteSequence.from(groupPath, StandardCharsets.UTF_8);
         Watch watch=client.getWatchClient();
-        return watch.watch(watchKey, onNext);
+        WatchOption option = WatchOption.newBuilder().withRange(watchKey).build();
+        return watch.watch(watchKey,option, onNext);
     }
     public boolean isServerMaster(String mainPath,String serverName){
         try{
@@ -101,14 +105,21 @@ public class ServiceDiscovery {
 
         }
         return false;
-
-
+    }
+    public KeyValue getLeader(String mainPath){
+        try{
+            LeaderResponse response=electionClient.leader(ByteSequence.from(mainPath,StandardCharsets.UTF_8)).get(3,TimeUnit.SECONDS);
+            return  response.getKv();
+        }catch (Exception ex){
+            ex.printStackTrace();
+        }
+        return null;
     }
     public List<ByteSequence> getWorkers(String workerPath){
         try {
             GetResponse response = kvClient.get(ByteSequence.from(workerPath, StandardCharsets.UTF_8)).get(3, TimeUnit.SECONDS);
             if(response!=null && !CollectionUtils.isEmpty(response.getKvs())){
-               return response.getKvs().stream().map(KeyValue::getValue).collect(Collectors.toList());
+               return response.getKvs().stream().map(KeyValue::getKey).collect(Collectors.toList());
             }
         }catch (Exception ex){
 
@@ -134,6 +145,30 @@ public class ServiceDiscovery {
             log.error("{}",ex.getMessage());
             return false;
         }
+    }
+    public String getData(String dataPath){
+        try {
+            GetResponse getResponse = kvClient.get(ByteSequence.from(dataPath, StandardCharsets.UTF_8)).get(3, TimeUnit.SECONDS);
+            if(getResponse.getKvs().isEmpty()){
+                return getResponse.getKvs().get(0).getValue().toString();
+            }else{
+                return null;
+            }
+        }catch (Exception ex){
+            log.error("{}",ex.getMessage());
+            return null;
+        }
+    }
+    public KeyValue putData(String dataPath,String value){
+        try{
+            PutResponse putResponse=kvClient.put(ByteSequence.from(dataPath,StandardCharsets.UTF_8),ByteSequence.from(value,StandardCharsets.UTF_8)).get(3,TimeUnit.SECONDS);
+            if(putResponse!=null){
+                return putResponse.getPrevKv();
+            }
+        }catch (Exception ex){
+
+        }
+        return null;
     }
 
     public void watchService(String groupPath) {
@@ -173,6 +208,10 @@ public class ServiceDiscovery {
             discovery.init();
             return discovery;
         }
+    }
+    public  static  void main(String[] args){
+
+
     }
 
 }
