@@ -50,8 +50,8 @@ public class ServiceDiscovery {
         electionClient = client.getElectionClient();
     }
 
-    public boolean registerInstance(String mainPath,String serverNamePath, String serverName,boolean takeLeaderShip) {
-        ByteSequence electName = ByteSequence.from(mainPath, StandardCharsets.UTF_8);
+    public boolean registerInstance(String serverNamePath, String serverName,String electPath,String masterPath,boolean takeLeaderShip) {
+
         ByteSequence proposal = ByteSequence.from(serverName, StandardCharsets.UTF_8);
         ByteSequence key=ByteSequence.from(serverNamePath,StandardCharsets.UTF_8);
         try {
@@ -76,8 +76,10 @@ public class ServiceDiscovery {
             kvClient.put(key,proposal,option);
 
             if (takeLeaderShip) {
+                ByteSequence electName = ByteSequence.from(electPath, StandardCharsets.UTF_8);
                 CampaignResponse response = electionClient.campaign(electName, leaseId, proposal).get(OPERATION_TIMEOUT, TimeUnit.SECONDS);
                 if(response!=null) {
+                    kvClient.put(ByteSequence.from(masterPath,StandardCharsets.UTF_8),proposal);
                     leaseIdMap.put(serverName, leaseId);
                     leaderKeyMap.put(serverName, response.getLeader());
                     return response.getLeader().getLease() == leaseId;
@@ -94,7 +96,7 @@ public class ServiceDiscovery {
     public Watch.Watcher watchInstance(String groupPath, Consumer<WatchResponse> onNext){
         ByteSequence watchKey=ByteSequence.from(groupPath, StandardCharsets.UTF_8);
         Watch watch=client.getWatchClient();
-        WatchOption option = WatchOption.newBuilder().withRange(watchKey).build();
+        WatchOption option = WatchOption.newBuilder().isPrefix(true).build();
         return watch.watch(watchKey,option, onNext);
     }
     public boolean isServerMaster(String mainPath,String serverName){
@@ -209,9 +211,9 @@ public class ServiceDiscovery {
             return discovery;
         }
     }
-    public  static  void main(String[] args){
-
-
+    public static void main(String[] args){
+        //ServiceDiscovery discovery1=ServiceDiscovery.Builder.newBuilder().withEndPoint("http://127.0.0.1:2379").build();
+        //discovery1.registerInstance("/tmp/mainPath","/tmp/server","server01",true);
     }
 
 }
