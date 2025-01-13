@@ -12,6 +12,7 @@ import lombok.Data;
 import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
+import java.io.InputStream;
 
 
 public class ProtoBufUtil {
@@ -64,6 +65,10 @@ public class ProtoBufUtil {
             throw new OperationNotSupportException(ex);
         }
     }
+    public DynamicSchema getSchema(InputStream inputStream) throws Descriptors.DescriptorValidationException,IOException{
+        return DynamicSchema.parseFrom(inputStream);
+    }
+
     @Data
     public static class ProtoContainer{
         private DynamicSchema schema;

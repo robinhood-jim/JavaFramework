@@ -1,6 +1,8 @@
 package com.robin.raft;
 
 import com.google.common.collect.Sets;
+import com.robin.core.base.exception.GenericException;
+import com.robin.core.base.exception.MissingConfigException;
 import io.etcd.jetcd.*;
 import io.etcd.jetcd.election.CampaignResponse;
 import io.etcd.jetcd.election.LeaderKey;
@@ -8,6 +10,7 @@ import io.etcd.jetcd.election.LeaderResponse;
 import io.etcd.jetcd.kv.GetResponse;
 import io.etcd.jetcd.kv.PutResponse;
 import io.etcd.jetcd.lease.LeaseKeepAliveResponse;
+import io.etcd.jetcd.options.GetOption;
 import io.etcd.jetcd.options.PutOption;
 import io.etcd.jetcd.options.WatchOption;
 import io.etcd.jetcd.watch.WatchResponse;
@@ -17,10 +20,8 @@ import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -55,6 +56,7 @@ public class ServiceDiscovery {
         ByteSequence proposal = ByteSequence.from(serverName, StandardCharsets.UTF_8);
         ByteSequence key=ByteSequence.from(serverNamePath,StandardCharsets.UTF_8);
         try {
+
             long leaseId = leaseClient.grant(60, 60, TimeUnit.SECONDS).get().getID();
             leaseClient.keepAlive(leaseId, new StreamObserver<LeaseKeepAliveResponse>() {
                 @Override
@@ -172,6 +174,24 @@ public class ServiceDiscovery {
         }
         return null;
     }
+    public List<String> listPath(String prefixPath){
+        List<String> workers=new ArrayList<>();
+        GetOption option = GetOption.newBuilder().withSortField(GetOption.SortTarget.KEY).withSortOrder(GetOption.SortOrder.DESCEND)
+                .isPrefix(true).build();
+        try {
+            CompletableFuture<GetResponse> getFeature = kvClient.get(ByteSequence.from(prefixPath, StandardCharsets.UTF_8), option);
+            GetResponse response = getFeature.get(3,TimeUnit.SECONDS);
+            if(!CollectionUtils.isEmpty(response.getKvs())){
+                for(KeyValue kv:response.getKvs()){
+                    workers.add(kv.getValue().toString(StandardCharsets.UTF_8));
+                }
+            }
+            return workers;
+        }catch (Exception ex){
+            throw new GenericException(ex);
+        }
+    }
+
 
     public void watchService(String groupPath) {
         watchInstance(groupPath,watchResponse -> {

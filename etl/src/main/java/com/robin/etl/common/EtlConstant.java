@@ -57,6 +57,7 @@ public class EtlConstant {
             return Integer.valueOf(this.value);
         }
     }
+    public static final String FILESTORAGETYPE="cloud.storageType";
     public static final String FLOWPARAM="flowParam";
     public static final String CYCLEPARAM="cycleType";
     public static final List<String> WORKNODECMDPARAM= Arrays.asList(new String[]{"command","operation","jobId","taskId","deplayTs"});
