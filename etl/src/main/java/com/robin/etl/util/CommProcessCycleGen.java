@@ -24,7 +24,7 @@ public class CommProcessCycleGen extends AbstractProcessCycleGen {
     }
 
     @Override
-    public Pair<Boolean, String> genRunCycleByTypeAndStartTime(@NonNull EtlConstant.CYCLE_TYPE cycleType,@NonNull LocalDateTime dateTime) {
+    public Pair<Boolean, String> genRunCycleByTypeAndStartTime(@NonNull Integer cycleType,@NonNull LocalDateTime dateTime) {
         Assert.notNull(dateTime,"");
         boolean runTag = false;
         StringBuilder cycle = new StringBuilder();
@@ -38,11 +38,11 @@ public class CommProcessCycleGen extends AbstractProcessCycleGen {
         int hour = dateTime.getHour();
         int minutes = dateTime.getMinute();
 
-        if (cycleType.equals(EtlConstant.CYCLE_TYPE.YEAR)) {
+        if (EtlConstant.CYCLE_TYPE.YEAR.getInt().equals(cycleType)) {
             //年任务，读取指定的执行日期,执行周期为上一个年度
             cycle.append(year - 1);
             runTag = true;
-        } else if (cycleType.equals(EtlConstant.CYCLE_TYPE.QUARTER)) {
+        } else if (EtlConstant.CYCLE_TYPE.QUARTER.getInt().equals(cycleType)) {
             //季度,下一个季度第一个月开始判断
             int caculateYear = year;
             if (month % 3 == 1) {
@@ -54,7 +54,7 @@ public class CommProcessCycleGen extends AbstractProcessCycleGen {
                 cycle.append(caculateYear).append("Q").append(quarter);
             }
             runTag = true;
-        } else if (cycleType.equals(EtlConstant.CYCLE_TYPE.MONTH)) {
+        } else if (EtlConstant.CYCLE_TYPE.MONTH.getInt().equals(cycleType)) {
             //每月的某一天
             LocalDateTime tmpTime = dateTime;
             //前一月
@@ -63,7 +63,7 @@ public class CommProcessCycleGen extends AbstractProcessCycleGen {
             if (null == runCycle || !runCycle.equals(cycle)) {
                 runTag = true;
             }
-        } else if (cycleType.equals(EtlConstant.CYCLE_TYPE.XUN)) {
+        } else if (EtlConstant.CYCLE_TYPE.XUN.getInt().equals(cycleType)) {
             LocalDateTime tmpTime = dateTime;
             //前一月
             tmpTime = tmpTime.minusMonths(1);
@@ -75,7 +75,7 @@ public class CommProcessCycleGen extends AbstractProcessCycleGen {
                 xunNum++;
             }
             cycle.append("X"+xunNum);
-        } else if (cycleType.equals(EtlConstant.CYCLE_TYPE.WEEK)) {
+        } else if (EtlConstant.CYCLE_TYPE.WEEK.getInt().equals(cycleType)) {
             //上一周范围
             LocalDateTime tmpDatetime = dateTime.minusWeeks(1);
             DayOfWeek dayOfWeek = tmpDatetime.getDayOfWeek();
@@ -83,11 +83,11 @@ public class CommProcessCycleGen extends AbstractProcessCycleGen {
             cycle.append(year+"W"+value);
             runTag=true;
 
-        } else if (cycleType.equals(EtlConstant.CYCLE_TYPE.DAY.getInt())) {
+        } else if (EtlConstant.CYCLE_TYPE.DAY.getInt().equals(cycleType)) {
             LocalDateTime tmpTs=dateTime.minusDays(1);
             cycle.append(dayFormatter.format(tmpTs));
             runTag=true;
-        }else if(cycleType.equals(EtlConstant.CYCLE_TYPE.HOUR)){
+        }else if(EtlConstant.CYCLE_TYPE.HOUR.getInt().equals(cycleType)){
             LocalDateTime tmpTs=dateTime.minusHours(1);
             cycle.append(hourFormatter.format(tmpTs));
             runTag=true;
@@ -96,30 +96,30 @@ public class CommProcessCycleGen extends AbstractProcessCycleGen {
     }
 
     @Override
-    public Pair<String,LocalDateTime> getNextRunningCycle(EtlConstant.CYCLE_TYPE cycleType, LocalDateTime dateTime) {
+    public Pair<String,LocalDateTime> getNextRunningCycle(Integer cycleType, LocalDateTime dateTime) {
         Assert.notNull(dateTime,"");
         String cycle=null;
         LocalDateTime tmpTs=null;
-        if (EtlConstant.CYCLE_TYPE.YEAR.equals(cycleType)) {
+        if (EtlConstant.CYCLE_TYPE.YEAR.getInt().equals(cycleType)) {
             tmpTs= dateTime.plusYears(1);
             cycle=yearFormatter.format(tmpTs);
-        }else if(EtlConstant.CYCLE_TYPE.QUARTER.equals(cycleType)){
+        }else if(EtlConstant.CYCLE_TYPE.QUARTER.getInt().equals(cycleType)){
             tmpTs=dateTime.plusMonths(3);
             int month = tmpTs.getMonthValue();
             int quarter = month / 3+1;
             cycle=yearFormatter.format(tmpTs)+"Q"+quarter;
-        }else if(EtlConstant.CYCLE_TYPE.MONTH.equals(cycleType)){
+        }else if(EtlConstant.CYCLE_TYPE.MONTH.getInt().equals(cycleType)){
             tmpTs=dateTime.minusMonths(1);
             cycle=monthFormatter.format(tmpTs);
         }
-        else if(EtlConstant.CYCLE_TYPE.XUN.equals(cycleType)){
+        else if(EtlConstant.CYCLE_TYPE.XUN.getInt().equals(cycleType)){
             tmpTs=dateTime.plusDays(10);
             int xun=tmpTs.getDayOfMonth()/10+1;
             if(xun==4){
                 xun=3;
             }
             cycle=monthFormatter.format(tmpTs)+"X"+xun;
-        }else if(EtlConstant.CYCLE_TYPE.DAY.equals(cycleType)){
+        }else if(EtlConstant.CYCLE_TYPE.DAY.getInt().equals(cycleType)){
             tmpTs=dateTime.plusDays(1);
             cycle=dayFormatter.format(tmpTs);
         }

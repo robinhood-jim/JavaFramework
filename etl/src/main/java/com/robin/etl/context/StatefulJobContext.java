@@ -13,6 +13,7 @@ public class StatefulJobContext {
     private Long sourceId;
     private DataCollectionMeta inputMeta;
     private DataCollectionMeta outputMeta;
+    private DataCollectionMeta workingMeta;
     private Long outputSourceId;
     private Map<String,Object> jobParam;
 

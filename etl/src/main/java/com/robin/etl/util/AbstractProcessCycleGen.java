@@ -12,8 +12,8 @@ public abstract class AbstractProcessCycleGen {
     protected static DateTimeFormatter dayFormatter = DateTimeFormatter.ofPattern("yyyyMMdd");
     protected static DateTimeFormatter hourFormatter = DateTimeFormatter.ofPattern("yyyyMMddHH");
 
-    abstract Pair<Boolean,String> genRunCycleByTypeAndStartTime(EtlConstant.CYCLE_TYPE runCycle, LocalDateTime dateTime);
-    abstract Pair<String,LocalDateTime> getNextRunningCycle(EtlConstant.CYCLE_TYPE cycleType,LocalDateTime dateTime);
-    abstract void finishCycle(String runCycle);
-    abstract LocalDateTime parseTimeByType(String cycle,Integer cycleType);
+    public abstract Pair<Boolean,String> genRunCycleByTypeAndStartTime(Integer runCycle, LocalDateTime dateTime);
+    public abstract Pair<String,LocalDateTime> getNextRunningCycle(Integer cycleType,LocalDateTime dateTime);
+    public abstract void finishCycle(String runCycle);
+    public abstract LocalDateTime parseTimeByType(String cycle,Integer cycleType);
 }

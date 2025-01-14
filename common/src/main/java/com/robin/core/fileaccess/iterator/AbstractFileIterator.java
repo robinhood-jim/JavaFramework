@@ -18,7 +18,6 @@ package com.robin.core.fileaccess.iterator;
 import com.robin.comm.dal.pool.ResourceAccessHolder;
 import com.robin.comm.sql.CommRecordGenerator;
 import com.robin.comm.sql.CommSqlParser;
-import com.robin.comm.sql.CompareNode;
 import com.robin.comm.sql.SqlSegment;
 import com.robin.core.base.exception.MissingConfigException;
 import com.robin.core.base.util.Const;

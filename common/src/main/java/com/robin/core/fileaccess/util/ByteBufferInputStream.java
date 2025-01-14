@@ -45,4 +45,7 @@ public class ByteBufferInputStream  extends InputStream {
     public int read(byte[] b) throws IOException {
         return read(b, 0, b.length);
     }
+    public int capacity(){
+        return count;
+    }
 }
