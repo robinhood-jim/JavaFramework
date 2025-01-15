@@ -4,12 +4,14 @@ import com.robin.raft.ServiceDiscovery;
 import lombok.extern.slf4j.Slf4j;
 
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 @Slf4j
 public class TestEtcdWorker {
     public static void main(String[] args){
         ServiceDiscovery discovery1=ServiceDiscovery.Builder.newBuilder().withEndPoint("http://127.0.0.1:2379").build();
         discovery1.registerInstance("/tmp/worker/server02","server02",null,null,false);
+        List<String> workers=discovery1.listPath("/tmp/worker/");
         discovery1.watchInstance("/tmp/ack/server02",onNext->{
             onNext.getEvents().forEach(action->{
                 switch (action.getEventType()){

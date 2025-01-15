@@ -8,10 +8,12 @@ import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.LongBuffer;
 import java.nio.charset.Charset;
+import java.sql.Timestamp;
 
 public class ByteBufferOutputStream extends OutputStream {
     private ByteBuffer byteBuffer;
     private int count;
+    private static final byte nullByte=(byte) 0xff;
     public ByteBufferOutputStream(ByteBuffer byteBuffer){
         this.byteBuffer=byteBuffer;
     }
@@ -38,12 +40,19 @@ public class ByteBufferOutputStream extends OutputStream {
         return count;
     }
     public void writeLong(long value) throws IOException{
-        for(byte bt:GenericByteConvertor.longToBytesLittle(value)){
-            write(bt);
-        }
+        byteBuffer.putLong(value);
     }
     public void writeGap() throws IOException{
         write(0);
+    }
+    public void writeNullTag() throws IOException{
+        //overwrite 0x00 with 0xff
+        byteBuffer.position(byteBuffer.position()-1);
+        byteBuffer.put(nullByte);
+        writeGap();
+    }
+    public void writeDouble(Double value) throws IOException{
+        byteBuffer.putDouble(value);
     }
     public void writeLeft(int length,int input) throws IOException{
         for(int i=0;i<length;i++){
@@ -51,47 +60,48 @@ public class ByteBufferOutputStream extends OutputStream {
         }
     }
     public void writeInt(int value) throws IOException{
-        for(byte bt:GenericByteConvertor.intToByteLittle(value)){
-            write(bt);
-        }
+       byteBuffer.putInt(value);
     }
     public void writeShort(short value) throws IOException{
-        for(byte bt:GenericByteConvertor.shortToByteLittle(value)){
-            write(bt);
-        }
+        byteBuffer.putShort(value);
     }
     public void writeDouble(double value) throws IOException{
-        for(byte bt:GenericByteConvertor.double2Bytes(value)){
-            write(bt);
-        }
+        byteBuffer.putDouble(value);
     }
     public void writeBytes(byte[] bytes) throws IOException{
-        for(byte bt:bytes){
-            write(bt);
-        }
+        byteBuffer.put(bytes);
     }
-    public int writePrimitive(@NonNull Object obj,int startPos, Charset charset) throws IOException{
+    public void writePrimitive(@NonNull Object obj,boolean lastColumn, Charset charset) throws IOException{
         Assert.notNull(obj,"");
-        int nextPos=startPos;
         if(Integer.class.isAssignableFrom(obj.getClass())){
             writeInt((Integer)obj);
-            nextPos+=5;
+
         }else if(Short.class.isAssignableFrom(obj.getClass())){
             writeShort((Short)obj);
-            nextPos+=3;
         }else if(Long.class.isAssignableFrom(obj.getClass())){
             writeLong((Long)obj);
-            nextPos+=9;
-        }else if(String.class.isAssignableFrom(obj.getClass())){
+
+        }else if(Double.class.isAssignableFrom(obj.getClass())){
+            writeDouble((Double)obj);
+        }
+        else if(String.class.isAssignableFrom(obj.getClass())){
             byte[] bytes=obj.toString().getBytes(charset);
-            nextPos+=bytes.length+1;
             writeBytes(bytes);
-        }else{
+        }else if(Timestamp.class.isAssignableFrom(obj.getClass())){
+            writeLong(((Timestamp)obj).getTime());
+        }
+        else{
             throw new IOException("no primitive type support");
         }
-        writeGap();
-        return nextPos;
+        if(!lastColumn) {
+            writeGap();
+        }
     }
-
+    public int getPosition(){
+        return byteBuffer.position();
+    }
+    public void seek(int pos){
+        byteBuffer.position(pos);
+    }
 
 }

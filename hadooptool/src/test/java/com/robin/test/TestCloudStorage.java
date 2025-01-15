@@ -43,8 +43,8 @@ public class TestCloudStorage extends TestCase {
         builder.addColumn("amount",Const.META_TYPE_INTEGER,null);
         builder.addColumn("type",Const.META_TYPE_INTEGER,null);
 
-        builder.resourceCfg(ResourceConst.PARQUETFILEFORMAT,ResourceConst.PARQUETSUPPORTFORMAT.PROTOBUF.getValue()).fileFormat(Const.FILEFORMATSTR.PARQUET.getValue())
-                .resPath("tmp/bigdata3.parquet.gz")
+        builder.resourceCfg(ResourceConst.PARQUETFILEFORMAT,ResourceConst.PARQUETSUPPORTFORMAT.PROTOBUF.getValue()).fileFormat(Const.FILEFORMATSTR.ARROW.getValue())
+                .resPath("tmp/bigdata3.arrow")
                 //.resourceCfg(ResourceConst.USEASYNCUPLOAD,"true")
                 .resourceCfg(ResourceConst.DEFAULTCACHEOFFHEAPSIZEKEY,1000*1000*6);
         ResourceBundle bundle=ResourceBundle.getBundle("minio");
@@ -69,7 +69,7 @@ public class TestCloudStorage extends TestCase {
                 priceMap.put(i,i*10.0);
             }
 
-            for (int i = 0; i < 5000; i++) {
+            for (int i = 0; i < 50000; i++) {
                 recMap.put("id", Long.valueOf(i));
                 recMap.put("name", StringUtils.generateRandomChar(32));
                 recMap.put("description", StringUtils.generateRandomChar(32));
@@ -99,8 +99,8 @@ public class TestCloudStorage extends TestCase {
 
         builder.resourceCfg(ResourceConst.PARQUETFILEFORMAT,ResourceConst.PARQUETSUPPORTFORMAT.AVRO.getValue())
                 .resourceCfg(ResourceConst.STORAGEFILTERSQL,"select name,sno,type,price*amount as totalFee from test where price*amount>500 and sno<7 and name like 'A%'")
-                .fileFormat(Const.FILEFORMATSTR.PARQUET.getValue()).tableName("test")
-                .resPath("tmp/bigdata3.parquet.gz");
+                .fileFormat(Const.FILEFORMATSTR.CSV.getValue()).tableName("test")
+                .resPath("tmp/bigdata3.CSV.gz");
         ResourceBundle bundle=ResourceBundle.getBundle("minio");
         DataCollectionMeta colmeta=builder.build();
         MinioFileSystemAccessor.Builder builder1=new MinioFileSystemAccessor.Builder();
