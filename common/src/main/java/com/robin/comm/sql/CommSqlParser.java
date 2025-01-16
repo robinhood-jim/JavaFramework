@@ -24,6 +24,7 @@ import org.apache.calcite.tools.FrameworkConfig;
 import org.apache.calcite.tools.Frameworks;
 import org.apache.calcite.tools.Planner;
 import org.apache.calcite.tools.ValidationException;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
@@ -49,7 +50,14 @@ public class CommSqlParser {
         String tabName = null;
         String tabAlias = null;
         try {
-            SqlSelect sqlSelect = parseWithLex(sql, lex, meta);
+            SqlNode sqlNode = parseWithLex(sql, lex, meta);
+            SqlSelect sqlSelect=null;
+            if(SqlKind.ORDER_BY.equals(sqlNode.getKind())){
+                sqlSelect=(SqlSelect) ((SqlOrderBy)sqlNode).query;
+                extractOrderBy(segment, (SqlOrderBy) sqlNode);
+            }else{
+                sqlSelect=(SqlSelect) sqlNode;
+            }
             if (SqlKind.AS.equals(sqlSelect.getFrom().getKind())) {
                 List<SqlNode> tableNode = ((SqlBasicCall) sqlSelect.getFrom()).getOperandList();
                 tabName = tableNode.get(0).toString();
@@ -78,13 +86,42 @@ public class CommSqlParser {
         }
     }
 
+    private static void extractOrderBy(SqlSegment segment, SqlOrderBy sqlNode) {
+        SqlNodeList orderList= sqlNode.orderList;
+        Iterator<SqlNode> orderiter=orderList.iterator();
+        while ((orderiter.hasNext())){
+            SqlNode oNode= orderiter.next();
+            if(SqlBasicCall.class.isAssignableFrom(oNode.getClass())) {
+                SqlBasicCall orderBy = (SqlBasicCall) oNode;
+                SqlOperator operator = orderBy.getOperator();
+                List<SqlNode> orderOpers = orderBy.getOperandList();
+                if (SqlKind.DESCENDING.equals(operator.getKind()) || SqlIdentifier.class.isAssignableFrom(orderBy.getClass())) {
+                    for (SqlNode orderOper : orderOpers) {
+                        segment.getOrderBys().add(Pair.of(orderOper, !SqlKind.DESCENDING.equals(operator.getKind())));
+                    }
+                } else {
+                    segment.getOrderBys().add(Pair.of(orderBy, true));
+                }
+            }else{
+                segment.getOrderBys().add(Pair.of(oNode,true));
+            }
+        }
+    }
+
     public static SqlSegment parseSingleTableQuerySql(String sql, Lex lex, DataCollectionMeta meta, String newColumnPrefix) {
         SqlSegment segment = new SqlSegment();
         String tabName = null;
         String tabAlias = null;
 
         try {
-            SqlSelect sqlSelect = parseWithLex(sql, lex, meta);
+            SqlNode sqlNode = parseWithLex(sql, lex, meta);
+            SqlSelect sqlSelect=null;
+            if(SqlKind.ORDER_BY.equals(sqlNode.getKind())){
+                sqlSelect=(SqlSelect) ((SqlOrderBy)sqlNode).query;
+                extractOrderBy(segment, (SqlOrderBy) sqlNode);
+            }else{
+                sqlSelect=(SqlSelect) sqlNode;
+            }
             if (SqlKind.AS.equals(sqlSelect.getFrom().getKind())) {
                 List<SqlNode> tableNode = ((SqlBasicCall) sqlSelect.getFrom()).getOperandList();
                 tabName = tableNode.get(0).toString();
@@ -111,7 +148,7 @@ public class CommSqlParser {
         }
     }
 
-    private static SqlSelect parseWithLex(String sql, Lex lex, DataCollectionMeta meta) throws SqlParseException, ValidationException {
+    private static SqlNode parseWithLex(String sql, Lex lex, DataCollectionMeta meta) throws SqlParseException, ValidationException {
         DataMetaCalciteTable table = new DataMetaCalciteTable(meta);
         rootSchema.add(meta.getTableName(), table);
         FrameworkConfig workConfig = Frameworks.newConfigBuilder().defaultSchema(rootSchema).parserConfig(SqlParser.configBuilder().setLex(lex).build()).operatorTable(SqlOperatorTables.chain(SqlStdOperatorTable.instance(), CustomSqlOperatorTable.instance())).build();
@@ -122,10 +159,14 @@ public class CommSqlParser {
         SqlParser.Config config = SqlParser.configBuilder().setLex(lex).build();
         SqlParser parser = SqlParser.create(sql, config);
         SqlNode sqlNode = parser.parseQuery();
-        Assert.isTrue(SqlKind.SELECT.equals(sqlNode.getKind()), "can only parse select Sql");
-        SqlSelect sqlSelect = (SqlSelect) sqlNode;
-        Assert.isTrue(!SqlKind.JOIN.equals(sqlSelect.getFrom().getKind()), "only support single table query");
-        return sqlSelect;
+        if(SqlKind.ORDER_BY.equals(sqlNode.getKind())){
+            SqlOrderBy orderBy=(SqlOrderBy) sqlNode;
+            Assert.isTrue(!SqlKind.JOIN.equals(((SqlSelect)orderBy.query).getFrom().getKind()), "only support single table query");
+        }else {
+            Assert.isTrue(SqlKind.SELECT.equals(sqlNode.getKind()), "can only parse select Sql");
+            Assert.isTrue(!SqlKind.JOIN.equals(((SqlSelect) sqlNode).getFrom().getKind()), "only support single table query");
+        }
+        return sqlNode;
     }
 
     public static List<DataSetColumnMeta> getCalculateSchema(SqlSegment segment, DataCollectionMeta meta) {
@@ -194,6 +235,11 @@ public class CommSqlParser {
                     valueParts.setFunctionName(((SqlBasicCall) selected).getOperator().toString());
                     valueParts.setFunctionParams(((SqlBasicCall) selected).getOperandList());
                     valueParts.setNode(selected);
+                    if(SqlBasicCall.class.isAssignableFrom(valueParts.getFunctionParams().get(0).getClass())){
+                        valueParts.setNodeString(valueParts.getFunctionParams().get(0).toString());
+                        valueParts.setCalculator(valueParts.getFunctionParams().get(0));
+                        segment.setSelectHasFourOperations(true);
+                    }
                     setAliasName(newColumnPrefix, newColumnPosMap, valueParts);
                 } else {
                     valueParts.setCalculator(selected);
@@ -298,7 +344,7 @@ public class CommSqlParser {
                     }else if(SqlKind.FUNCTION.contains(node.getKind())){
                         List<SqlNode> nodes1=((SqlBasicCall)node).getOperandList();
                         ValueParts parts = new ValueParts();
-                        parts.setFunctionName(((SqlBasicCall) node).getOperator().getName());
+                        parts.setFunctionName(((SqlBasicCall) node).getOperator().getName().toLowerCase());
                         parts.setFunctionParams(nodes1);
                         parts.setSqlKind(node.getKind());
                         segment.setConditionHasFunction(true);
@@ -385,7 +431,7 @@ public class CommSqlParser {
 
     public static void main(String[] args) {
         String sql = "select a1,a3,(b2+b3)/c1,substr(c4,1,3),case c3 when 1 then 'A' when 2 then 'B' else 'C' end as tag1 from test where ((((a1+a2)+a9)/10>a3 and a4>a5) or a7 in (1,2,3)) or (not ((a3-a6)/a8<b1))";
-        String groupSql = "select max(a1),min(a2),sum(c1),c3 from test where ((a1+a2)*a9)/10>a3 group by c3 having sum(c1)>100";
+        String groupSql = "select max(a1),min(a2),sum(c1),c3 from test where ((a1+a2)*a9)/10>a3 group by c3 having sum(c1)>100 order by c3 desc,sum(c1) asc";
 
         DataCollectionMeta.Builder builder = new DataCollectionMeta.Builder();
         DataCollectionMeta meta = builder.addColumn("a1", Const.META_TYPE_DOUBLE).addColumn("a2", Const.META_TYPE_DOUBLE)

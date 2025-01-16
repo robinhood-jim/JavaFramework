@@ -3,6 +3,7 @@ package com.robin.comm.sql;
 import com.robin.core.fileaccess.meta.DataSetColumnMeta;
 import lombok.Data;
 import org.apache.calcite.sql.SqlNode;
+import org.apache.calcite.sql.SqlOrderBy;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.*;
@@ -33,4 +34,5 @@ public class SqlSegment {
     private boolean conditionHasFunction=false;
     // if filterSql compare right hand is column,orc and parquet can not use filter directly
     private boolean hasRightColumnCmp = false;
+    private List<Pair<SqlNode,Boolean>> orderBys=new ArrayList<>();
 }
