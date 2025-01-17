@@ -77,6 +77,7 @@ public class CommSqlParser {
             segment.setWhereCause(sqlSelect.getWhere());
             segment.setNewColumnPosMap(newColumnPosMap);
             parseWhereParts(segment, segment.getWhereCause(), segment.getWhereColumns());
+            segment.setGroupBy(sqlSelect.getGroup());
             SqlNode havingNode = sqlSelect.getHaving();
             segment.setHavingCause(havingNode);
             parseWhereParts(segment, havingNode, segment.getHaving());
@@ -139,6 +140,12 @@ public class CommSqlParser {
             segment.setWhereCause(sqlSelect.getWhere());
             segment.setNewColumnPosMap(newColumnPosMap);
             parseWhereParts(segment, segment.getWhereCause(),segment.getWhereColumns());
+            segment.setGroupBy(sqlSelect.getGroup());
+            SqlNode havingNode = sqlSelect.getHaving();
+            if(havingNode!=null) {
+                segment.setHavingCause(havingNode);
+                parseWhereParts(segment, havingNode, segment.getHaving());
+            }
             List<DataSetColumnMeta> calculateSchema = getCalculateSchema(segment, meta);
             segment.setCalculateSchema(calculateSchema);
             segment.setOriginSchemaMap(meta.getColumnList().stream().collect(Collectors.toMap(DataSetColumnMeta::getColumnName, Function.identity())));
@@ -211,6 +218,12 @@ public class CommSqlParser {
                     List<SqlNode> funcNodes = ((SqlBasicCall) columnNodes.get(0)).getOperandList();
                     valueParts.setFunctionName(((SqlBasicCall) columnNodes.get(0)).getOperator().toString());
                     valueParts.setFunctionParams(funcNodes);
+                    if(SqlBasicCall.class.isAssignableFrom(funcNodes.get(0).getClass())){
+                        valueParts.setNodeString(funcNodes.get(0).toString());
+                        valueParts.setCalculator(funcNodes.get(0));
+                        segment.setSelectHasFourOperations(true);
+                    }
+                    valueParts.setSqlKind(columnNodes.get(0).getKind());
                     setAliasName(newColumnPrefix, newColumnPosMap, valueParts);
                 }else if(SqlKind.IN.equals(columnNodes.get(0).getKind()) || SqlKind.NOT_IN.equals(columnNodes.get(0).getKind())){
                     List<SqlNode> sqlNodes = ((SqlBasicCall) columnNodes.get(0)).getOperandList();

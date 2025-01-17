@@ -70,10 +70,10 @@ public abstract class AbstractFileIterator implements IResourceIterator {
     protected boolean useBufferedReader=false;
     protected boolean useOrderBy=false;
     protected boolean useGroupBy=false;
-    protected LinkedHashMap<byte[],Map<String,Object>> groupByMap=new LinkedHashMap<>();
+    protected Map<String,Map<String,Object>> groupByMap=new HashMap<>();
 
     protected SqlSegment segment;
-    protected Iterator<Map.Entry<byte[],Map<String,Object>>> groupIter;
+    protected Iterator<Map.Entry<String,Map<String,Object>>> groupIter;
 
     public AbstractFileIterator() {
 
@@ -117,8 +117,9 @@ public abstract class AbstractFileIterator implements IResourceIterator {
             }
             if(useOrderBy || useGroupBy){
                 //pool all record through OffHeap
-                ByteBuffer buffer=ByteBuffer.allocate(512);
+                //ByteBuffer buffer=ByteBuffer.allocate(512);
                 pullNext();
+                StringBuilder builder=new StringBuilder();
                 while (!CollectionUtils.isEmpty(cachedValue)){
                     while (!CollectionUtils.isEmpty(cachedValue) && useFilter && !CommRecordGenerator.doesRecordAcceptable(segment, cachedValue)) {
                         pullNext();
@@ -128,16 +129,21 @@ public abstract class AbstractFileIterator implements IResourceIterator {
                         CommRecordGenerator.doAsyncCalculator(segment, cachedValue, newRecord);
                     }
                     //get group by column
-                    buffer.position(0);
+                    //buffer.position(0);
+
                     if(!CollectionUtils.isEmpty(segment.getGroupBy())){
+                        if(builder.length()>0){
+                            builder.delete(0,builder.length());
+                        }
                         for(SqlNode tnode:segment.getGroupBy()) {
                             String columnName=((SqlIdentifier)tnode).getSimple();
                             if (!ObjectUtils.isEmpty(newRecord.get(columnName))) {
-                                ByteBufferUtils.fillPrimitive(buffer,newRecord.get(columnName), StandardCharsets.UTF_8);
+                                builder.append(newRecord.get(columnName)).append("|");
+                                //ByteBufferUtils.fillPrimitive(buffer,newRecord.get(columnName), StandardCharsets.UTF_8);
                             }
-                            ByteBufferUtils.fillGap(buffer);
+                            //ByteBufferUtils.fillGap(buffer);
                         }
-                        doGroupAgg(ByteBufferUtils.getContent(buffer));
+                        doGroupAgg(builder.toString());//ByteBufferUtils.getContent(buffer)
                     }
                     pullNext();
                 }
@@ -148,21 +154,26 @@ public abstract class AbstractFileIterator implements IResourceIterator {
             logger.error("{}", ex.getMessage());
         }
     }
-    private void doGroupAgg(byte[] key){
+    private void doGroupAgg(String key){
+        Calculator calculator=null;
         try{
             for (int i = 0; i < segment.getSelectColumns().size(); i++) {
                 CommSqlParser.ValueParts parts=segment.getSelectColumns().get(i);
-                if(SqlKind.LISTAGG.equals(parts.getSqlKind())){
-                    Calculator calculator = CommRecordGenerator.getCalculatePool().borrowObject();
+                if(SqlKind.FUNCTION.contains(parts.getSqlKind())){
+                    calculator = CommRecordGenerator.getCalculatePool().borrowObject();
                     calculator.clear();
                     calculator.setValueParts(segment.getSelectColumns().get(i));
                     calculator.setInputRecord(cachedValue);
                     calculator.setSegment(segment);
-                    SqlContentResolver.doAggregate(calculator,parts,key,groupByMap);
+                    SqlContentResolver.doAggregate(calculator,parts,key,groupByMap,newRecord);
                 }
             }
         }catch (Exception ex){
-
+            ex.printStackTrace();
+        }finally {
+            if(calculator!=null){
+                CommRecordGenerator.getCalculatePool().returnObject(calculator);
+            }
         }
     }
 
@@ -239,7 +250,7 @@ public abstract class AbstractFileIterator implements IResourceIterator {
     public boolean hasNext() {
         try {
             // no order by
-            if(!useOrderBy) {
+            if(!useOrderBy && !useGroupBy) {
                 pullNext();
                 while (!CollectionUtils.isEmpty(cachedValue) && useFilter && !CommRecordGenerator.doesRecordAcceptable(segment, cachedValue)) {
                     pullNext();
@@ -251,11 +262,11 @@ public abstract class AbstractFileIterator implements IResourceIterator {
                 return !CollectionUtils.isEmpty(cachedValue);
             }else{
                 //capture all record to offHeap
-                cachedValue.clear();
+                newRecord.clear();
                 if(groupIter.hasNext()) {
-                    cachedValue.putAll(groupIter.next().getValue());
+                    newRecord.putAll(groupIter.next().getValue());
                 }
-                return !CollectionUtils.isEmpty(cachedValue);
+                return !CollectionUtils.isEmpty(newRecord);
             }
         } catch (Exception ex) {
             throw new MissingConfigException(ex);
@@ -264,7 +275,7 @@ public abstract class AbstractFileIterator implements IResourceIterator {
 
     @Override
     public Map<String, Object> next() {
-        return useFilter && !CollectionUtils.isEmpty(newRecord) ? newRecord : cachedValue;
+        return !CollectionUtils.isEmpty(newRecord) ? newRecord : cachedValue;
     }
 
     public void withFilterSql(String filterSql) {

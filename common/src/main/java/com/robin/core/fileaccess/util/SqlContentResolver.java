@@ -7,6 +7,7 @@ import com.robin.core.base.exception.ConfigurationIncorrectException;
 import com.robin.core.base.exception.MissingConfigException;
 import com.robin.core.base.exception.OperationNotSupportException;
 import com.robin.core.base.util.Const;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.calcite.sql.*;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
@@ -14,6 +15,7 @@ import org.springframework.util.ObjectUtils;
 
 import java.util.*;
 
+@Slf4j
 public class SqlContentResolver {
     private SqlContentResolver() {
 
@@ -226,7 +228,7 @@ public class SqlContentResolver {
         return false;
     }
 
-    public static void doAggregate(Calculator ca, CommSqlParser.ValueParts valueParts, byte[] key, Map<byte[], Map<String, Object>> groupMap) {
+    public static void doAggregate(Calculator ca, CommSqlParser.ValueParts valueParts, String key, Map<String, Map<String, Object>> groupMap,Map<String,Object> newRecordMap) {
         ca.setColumnName(!ObjectUtils.isEmpty(valueParts.getAliasName()) ? valueParts.getAliasName() : valueParts.getIdentifyColumn());
         if (SqlKind.FUNCTION.contains(valueParts.getSqlKind())) {
             ca.setCmpColumn(valueParts.getFunctionName());
@@ -244,6 +246,7 @@ public class SqlContentResolver {
                             v.put(ca.getColumnName(), (Double) ca.getLeftValue() + (Double) v.get(ca.getColumnName()));
                             return v;
                         });
+                        groupMap.get(key).putAll(newRecordMap);
                     }
                     break;
                 case "max":
@@ -279,6 +282,20 @@ public class SqlContentResolver {
                     }
                     break;
                 case "avg":
+                    extractValue(ca, valueParts, nodes);
+                    if (!ObjectUtils.isEmpty(ca.getLeftValue())) {
+                        groupMap.computeIfAbsent(key, k -> {
+                            Map<String, Object> retMap = new HashMap<>();
+                            retMap.put(ca.getColumnName(), ca.getLeftValue());
+                            retMap.put(ca.getColumnName()+"cou",1);
+                            return retMap;
+                        });
+                        groupMap.computeIfPresent(key, (k, v) -> {
+                            v.put(ca.getColumnName(), (Double) ca.getLeftValue() + (Double) v.get(ca.getColumnName()));
+                            v.put(ca.getColumnName()+"cou",(Integer)v.get(ca.getColumnName()+"cou")+1);
+                            return v;
+                        });
+                    }
                     break;
                 case "count":
                     groupMap.computeIfAbsent(key, k -> {
