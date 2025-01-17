@@ -144,7 +144,7 @@ public class CommSqlParser {
             SqlNode havingNode = sqlSelect.getHaving();
             if(havingNode!=null) {
                 segment.setHavingCause(havingNode);
-                parseWhereParts(segment, havingNode, segment.getHaving());
+                parseWhereParts(segment, ((SqlBasicCall)havingNode).getOperandList().get(0), segment.getHaving());
             }
             List<DataSetColumnMeta> calculateSchema = getCalculateSchema(segment, meta);
             segment.setCalculateSchema(calculateSchema);
@@ -265,6 +265,13 @@ public class CommSqlParser {
         }
         return selectColumns;
     }
+    private static void parseHaving(SqlNode havingNode){
+        SqlOperator operator= ((SqlBasicCall)havingNode).getOperator();
+        List<SqlNode> havingNodes=((SqlBasicCall)havingNode).getOperandList();
+        if(SqlKind.FUNCTION.contains(havingNodes.get(0))){
+
+        }
+    }
 
     private static void setAliasName(String newColumnPrefix, Map<Integer, Integer> newColumnPosMap, ValueParts valueParts) {
         if (ObjectUtils.isEmpty(valueParts.getAliasName())) {
@@ -343,28 +350,38 @@ public class CommSqlParser {
                     parseWhereParts(segment, node,newColumns);
                 }
             } else {
-                List<SqlNode> nodes = ((SqlBasicCall) whereNode).getOperandList();
-                for (int i=0;i<nodes.size();i++) {
-                    SqlNode node=nodes.get(i);
-                    String calculator = node.toString().replace(Quoting.BACK_TICK.string, "");
-                    if (FilterSqlParser.fourZeOper.matcher(calculator).find()) {
-                        ValueParts parts = new ValueParts();
-                        parts.setCalculator(node);
-                        parts.setNodeString(node.toString());
-                        parts.setAliasName(returnDefaultNewColumn(segment.getNewColumnPrefix(), segment.getNewColumnPosMap()));
-                        segment.setConditionHasFourOperations(true);
-                        newColumns.add(parts);
-                    }else if(SqlKind.FUNCTION.contains(node.getKind())){
-                        List<SqlNode> nodes1=((SqlBasicCall)node).getOperandList();
-                        ValueParts parts = new ValueParts();
-                        parts.setFunctionName(((SqlBasicCall) node).getOperator().getName().toLowerCase());
-                        parts.setFunctionParams(nodes1);
-                        parts.setSqlKind(node.getKind());
-                        segment.setConditionHasFunction(true);
-                        newColumns.add(parts);
-                    }else if(SqlKind.IDENTIFIER.equals(node.getKind()) && i==nodes.size()-1){
-                        segment.setHasRightColumnCmp(true);
+                if(!SqlKind.FUNCTION.contains(whereNode.getKind())) {
+                    List<SqlNode> nodes = ((SqlBasicCall) whereNode).getOperandList();
+                    for (int i = 0; i < nodes.size(); i++) {
+                        SqlNode node = nodes.get(i);
+                        String calculator = node.toString().replace(Quoting.BACK_TICK.string, "");
+                        if (FilterSqlParser.fourZeOper.matcher(calculator).find()) {
+                            ValueParts parts = new ValueParts();
+                            parts.setCalculator(node);
+                            parts.setNodeString(node.toString());
+                            parts.setAliasName(returnDefaultNewColumn(segment.getNewColumnPrefix(), segment.getNewColumnPosMap()));
+                            segment.setConditionHasFourOperations(true);
+                            newColumns.add(parts);
+                        } else if (SqlKind.FUNCTION.contains(node.getKind())) {
+                            List<SqlNode> nodes1 = ((SqlBasicCall) node).getOperandList();
+                            ValueParts parts = new ValueParts();
+                            parts.setFunctionName(((SqlBasicCall) node).getOperator().getName().toLowerCase());
+                            parts.setFunctionParams(nodes1);
+                            parts.setSqlKind(node.getKind());
+                            segment.setConditionHasFunction(true);
+                            newColumns.add(parts);
+                        } else if (SqlKind.IDENTIFIER.equals(node.getKind()) && i == nodes.size() - 1) {
+                            segment.setHasRightColumnCmp(true);
+                        }
                     }
+                }else{
+                    ValueParts parts = new ValueParts();
+                    parts.setFunctionName(((SqlBasicCall) whereNode).getOperator().getName().toLowerCase());
+                    parts.setFunctionParams(((SqlBasicCall) whereNode).getOperandList());
+                    parts.setSqlKind(whereNode.getKind());
+                    parts.setCalculator(parts.getFunctionParams().get(0));
+                    segment.setConditionHasFunction(true);
+                    newColumns.add(parts);
                 }
             }
         } else {

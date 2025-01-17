@@ -27,11 +27,12 @@ import com.robin.core.fileaccess.fs.AbstractFileSystemAccessor;
 import com.robin.core.fileaccess.fs.ApacheVfsFileSystemAccessor;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.meta.DataSetColumnMeta;
-import com.robin.core.fileaccess.util.*;
+import com.robin.core.fileaccess.util.Calculator;
+import com.robin.core.fileaccess.util.PolandNotationUtil;
+import com.robin.core.fileaccess.util.ResourceUtil;
+import com.robin.core.fileaccess.util.SqlContentResolver;
 import org.apache.calcite.config.Lex;
-import org.apache.calcite.sql.SqlIdentifier;
-import org.apache.calcite.sql.SqlKind;
-import org.apache.calcite.sql.SqlNode;
+import org.apache.calcite.sql.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -42,8 +43,7 @@ import org.springframework.util.ObjectUtils;
 
 import java.io.*;
 import java.net.URI;
-import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
+import java.sql.Timestamp;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -129,8 +129,6 @@ public abstract class AbstractFileIterator implements IResourceIterator {
                         CommRecordGenerator.doAsyncCalculator(segment, cachedValue, newRecord);
                     }
                     //get group by column
-                    //buffer.position(0);
-
                     if(!CollectionUtils.isEmpty(segment.getGroupBy())){
                         if(builder.length()>0){
                             builder.delete(0,builder.length());
@@ -138,14 +136,24 @@ public abstract class AbstractFileIterator implements IResourceIterator {
                         for(SqlNode tnode:segment.getGroupBy()) {
                             String columnName=((SqlIdentifier)tnode).getSimple();
                             if (!ObjectUtils.isEmpty(newRecord.get(columnName))) {
-                                builder.append(newRecord.get(columnName)).append("|");
-                                //ByteBufferUtils.fillPrimitive(buffer,newRecord.get(columnName), StandardCharsets.UTF_8);
+                                appendByType(builder,newRecord.get(columnName));
                             }
-                            //ByteBufferUtils.fillGap(buffer);
                         }
                         doGroupAgg(builder.toString());//ByteBufferUtils.getContent(buffer)
                     }
                     pullNext();
+                }
+                //calculate avg
+                for(CommSqlParser.ValueParts parts:segment.getSelectColumns()){
+                    if("avg".equalsIgnoreCase(parts.getFunctionName())){
+                        groupByMap.entrySet().forEach(entry->{
+                            if(!ObjectUtils.isEmpty(entry.getValue().get(parts.getAliasName())) &&
+                                    !ObjectUtils.isEmpty(entry.getValue().get(parts.getAliasName()+"cou"))){
+                                entry.getValue().put(parts.getAliasName(),(Double)entry.getValue().get(parts.getAliasName())/(Integer)entry.getValue().get(parts.getAliasName()+"cou"));
+                                entry.getValue().remove(parts.getAliasName()+"cou");
+                            }
+                        });
+                    }
                 }
                 groupIter=groupByMap.entrySet().iterator();
             }
@@ -226,10 +234,8 @@ public abstract class AbstractFileIterator implements IResourceIterator {
             instream.close();
         }
         PolandNotationUtil.freeMem();
-        if (accessUtil != null) {
-            if (ApacheVfsFileSystemAccessor.class.isAssignableFrom(accessUtil.getClass()) && !ObjectUtils.isEmpty(colmeta.getResourceCfgMap().get(Const.ITERATOR_PROCESSID))) {
-                ((ApacheVfsFileSystemAccessor) accessUtil).closeWithProcessId(colmeta.getResourceCfgMap().get(Const.ITERATOR_PROCESSID).toString());
-            }
+        if (accessUtil != null && (ApacheVfsFileSystemAccessor.class.isAssignableFrom(accessUtil.getClass()) && !ObjectUtils.isEmpty(colmeta.getResourceCfgMap().get(Const.ITERATOR_PROCESSID)))) {
+            ((ApacheVfsFileSystemAccessor) accessUtil).closeWithProcessId(colmeta.getResourceCfgMap().get(Const.ITERATOR_PROCESSID).toString());
         }
     }
 
@@ -264,7 +270,15 @@ public abstract class AbstractFileIterator implements IResourceIterator {
                 //capture all record to offHeap
                 newRecord.clear();
                 if(groupIter.hasNext()) {
+
                     newRecord.putAll(groupIter.next().getValue());
+                    if(!CollectionUtils.isEmpty(segment.getHaving())) {
+                        Number baseVal=(Number)((SqlLiteral)((SqlBasicCall)segment.getHavingCause()).getOperandList().get(1)).getValue();
+                        while (!CommRecordGenerator.cmpNumber(segment.getHavingCause().getKind(),(Number) newRecord.get(getHavingColumnName()),baseVal)){
+                            newRecord.clear();
+                            newRecord.putAll(groupIter.next().getValue());
+                        }
+                    }
                 }
                 return !CollectionUtils.isEmpty(newRecord);
             }
@@ -288,9 +302,28 @@ public abstract class AbstractFileIterator implements IResourceIterator {
     public void setDateFormatter(DateTimeFormatter formatter){
         this.formatter=formatter;
     }
+    private String getHavingColumnName(){
+        String aliasName=null;
+        if(!CollectionUtils.isEmpty(segment.getHaving())){
+            for(CommSqlParser.ValueParts parts:segment.getSelectColumns()){
+                if(!ObjectUtils.isEmpty(parts.getFunctionName()) && parts.getFunctionName().equals(segment.getHaving().get(0).getFunctionName()) && parts.getCalculator().equals(segment.getHaving().get(0).getCalculator())){
+                    aliasName= parts.getAliasName();
+                    break;
+                }
+            }
+        }
+        return aliasName;
+    }
 
     protected abstract void pullNext();
     public DataCollectionMeta getCollectionMeta(){
         return colmeta;
+    }
+    private void appendByType(StringBuilder builder,Object value){
+        if(Timestamp.class.isAssignableFrom(value.getClass())){
+            builder.append(((Timestamp)value).getTime()).append("|");
+        }else {
+            builder.append(value).append("|");
+        }
     }
 }

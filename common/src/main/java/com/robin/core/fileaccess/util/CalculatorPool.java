@@ -17,7 +17,7 @@ public class CalculatorPool implements Closeable {
     private CalculatorAllocator allocator;
     public CalculatorPool(){
         allocator=new CalculatorAllocator();
-        Config<Calculator> config = new Config<Calculator>().setSize(300).setAllocator(allocator);
+        Config<Calculator> config = new Config<Calculator>().setSize(40).setAllocator(allocator);
         pool = new BlazePool<>(config);
 
     }

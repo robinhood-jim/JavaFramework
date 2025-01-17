@@ -8,6 +8,7 @@ import com.robin.core.base.exception.MissingConfigException;
 import com.robin.core.base.exception.OperationNotSupportException;
 import com.robin.core.base.util.Const;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.calcite.avatica.util.Quoting;
 import org.apache.calcite.sql.*;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
@@ -21,7 +22,7 @@ public class SqlContentResolver {
 
     }
 
-    public static void doCompare(Calculator calculator, SqlNode node) {
+    public static void doCompare(SqlSegment segment,Calculator calculator, SqlNode node) {
         calculator.setRunValue(false);
         switch (node.getKind()) {
             case GREATER_THAN:
@@ -31,8 +32,10 @@ public class SqlContentResolver {
             case LESS_THAN_OR_EQUAL:
             case NOT_EQUALS:
                 List<SqlNode> nodes = ((SqlBasicCall) node).getOperandList();
-                getValueBySide(calculator, nodes.get(0), true);
-                getValueBySide(calculator, nodes.get(1), false);
+                segment.getNodeStringMap().computeIfAbsent(nodes.get(0).hashCode(),code->nodes.get(0).toString());
+                segment.getNodeStringMap().computeIfAbsent(nodes.get(1).hashCode(),code->nodes.get(1).toString());
+                getValueBySide(calculator, nodes.get(0),segment.getNodeStringMap().get(nodes.get(0).hashCode()), true);
+                getValueBySide(calculator, nodes.get(1),segment.getNodeStringMap().get(nodes.get(1).hashCode()), false);
                 if (!ObjectUtils.isEmpty(calculator.getLeftValue()) && !ObjectUtils.isEmpty(calculator.getRightValue())) {
                     if (NumberUtil.isNumber(calculator.getLeftValue().toString())) {
                         Assert.isTrue(NumberUtil.isNumber(calculator.getLeftValue().toString()) && NumberUtil.isNumber(calculator.getRightValue().toString()), " only number allowed");
@@ -46,9 +49,10 @@ public class SqlContentResolver {
             case NOT_IN:
                 List<SqlNode> sqlNodes = ((SqlBasicCall) node).getOperandList();
                 SqlIdentifier identifier = (SqlIdentifier) sqlNodes.get(0);
-                Set<String> inSets = calculator.getSegment().getInPartMap().get(identifier.toString());
+                segment.getNodeStringMap().computeIfAbsent(identifier.hashCode(),code->identifier.toString());
+                Set<String> inSets = calculator.getSegment().getInPartMap().get(segment.getNodeStringMap().get(identifier.hashCode()));
                 if (calculator.getInputRecord().containsKey(identifier.toString())) {
-                    calculator.setRunValue(SqlKind.IN.equals(node.getKind()) ? inSets.contains(calculator.getInputRecord().get(identifier.toString())) : !inSets.contains(calculator.getInputRecord().get(identifier.toString())));
+                    calculator.setRunValue(SqlKind.IN.equals(node.getKind()) ? inSets.contains(calculator.getInputRecord().get(segment.getNodeStringMap().get(identifier.hashCode()))) : !inSets.contains(calculator.getInputRecord().get(segment.getNodeStringMap().get(identifier.hashCode()))));
                 } else {
                     calculator.setRunValue(false);
                 }
@@ -56,9 +60,11 @@ public class SqlContentResolver {
             case LIKE:
                 List<SqlNode> sqlNodes1 = ((SqlBasicCall) node).getOperandList();
                 SqlIdentifier identifier1 = (SqlIdentifier) sqlNodes1.get(0);
-                calculator.setLeftValue(calculator.getStringLiteralMap().computeIfAbsent(sqlNodes1.get(1).toString(), k -> sqlNodes1.get(1).toString().replace("'", "")));
-                calculator.setRightValue(calculator.getInputRecord().containsKey(identifier1.toString()) ? calculator.getInputRecord().get(identifier1.toString()).toString()
-                        : calculator.getInputRecord().get(identifier1.toString().toUpperCase()).toString());
+                segment.getNodeStringMap().computeIfAbsent(identifier1.hashCode(),code->identifier1.toString());
+                segment.getNodeStringMap().computeIfAbsent(sqlNodes1.get(1).hashCode(),code->sqlNodes1.get(1).toString());
+                calculator.setLeftValue(calculator.getStringLiteralMap().computeIfAbsent(segment.getNodeStringMap().get(sqlNodes1.get(1).hashCode()), k -> k.replace("'", "")));
+                calculator.setRightValue(calculator.getInputRecord().containsKey(segment.getNodeStringMap().get(identifier1.hashCode())) ? calculator.getInputRecord().get(segment.getNodeStringMap().get(identifier1.hashCode())).toString()
+                        : calculator.getInputRecord().get(segment.getNodeStringMap().get(identifier1.hashCode()).toUpperCase()).toString());
                 if (!ObjectUtils.isEmpty(calculator.getRightValue())) {
                     if (calculator.getLeftValue().toString().startsWith("%")) {
                         if (calculator.getLeftValue().toString().endsWith("%")) {
@@ -92,29 +98,29 @@ public class SqlContentResolver {
                 calculator.setRunValue(SqlKind.IS_NOT_NULL.equals(node.getKind()) ? calculator.getRunValue() : !calculator.getRunValue());
                 break;
             case NOT:
-                calculator.setRunValue(!walkTree(calculator, ((SqlBasicCall) node).getOperandList().get(0)));
+                calculator.setRunValue(!walkTree(segment,calculator, ((SqlBasicCall) node).getOperandList().get(0)));
                 break;
             default:
                 throw new OperationNotSupportException("can not handle this opertator " + node.getKind());
         }
     }
 
-    public static boolean walkTree(Calculator ca, SqlNode node) {
+    public static boolean walkTree(SqlSegment segment,Calculator ca, SqlNode node) {
         boolean cmpOkFlag = false;
         List<SqlNode> childNodes = ((SqlBasicCall) node).getOperandList();
         if (SqlBasicCall.class.isAssignableFrom(node.getClass()) && (SqlKind.AND.equals(node.getKind()) || SqlKind.OR.equals(node.getKind()))) {
             if (childNodes.size() == 2 && !SqlKind.AND.equals(childNodes.get(1).getKind()) && !SqlKind.OR.equals(childNodes.get(1).getKind())) {
-                cmpOkFlag = walkTree(ca, childNodes.get(1));
+                cmpOkFlag = walkTree(segment,ca, childNodes.get(1));
                 if (SqlKind.AND.equals(node.getKind()) && !cmpOkFlag) {
                     return false;
                 }
                 if (SqlKind.OR.equals(node.getKind()) && cmpOkFlag) {
                     return true;
                 }
-                cmpOkFlag = walkTree(ca, childNodes.get(0));
+                cmpOkFlag = walkTree(segment,ca, childNodes.get(0));
             } else {
                 for (SqlNode node1 : childNodes) {
-                    cmpOkFlag = walkTree(ca, node1);
+                    cmpOkFlag = walkTree(segment,ca, node1);
                     if (SqlKind.AND.equals(node.getKind()) && !cmpOkFlag) {
                         return false;
                     }
@@ -124,7 +130,7 @@ public class SqlContentResolver {
                 }
             }
         } else {
-            doCompare(ca, node);
+            doCompare(segment,ca, node);
             cmpOkFlag = ca.getRunValue();
         }
         return cmpOkFlag;
@@ -240,13 +246,13 @@ public class SqlContentResolver {
                         groupMap.computeIfAbsent(key, k -> {
                             Map<String, Object> retMap = new HashMap<>();
                             retMap.put(ca.getColumnName(), ca.getLeftValue());
+                            retMap.putAll(newRecordMap);
                             return retMap;
                         });
                         groupMap.computeIfPresent(key, (k, v) -> {
                             v.put(ca.getColumnName(), (Double) ca.getLeftValue() + (Double) v.get(ca.getColumnName()));
                             return v;
                         });
-                        groupMap.get(key).putAll(newRecordMap);
                     }
                     break;
                 case "max":
@@ -255,6 +261,7 @@ public class SqlContentResolver {
                         groupMap.computeIfAbsent(key, k -> {
                             Map<String, Object> retMap = new HashMap<>();
                             retMap.put(ca.getColumnName(), ca.getLeftValue());
+                            retMap.putAll(newRecordMap);
                             return retMap;
                         });
                         groupMap.computeIfPresent(key, (k, v) -> {
@@ -271,6 +278,7 @@ public class SqlContentResolver {
                         groupMap.computeIfAbsent(key, k -> {
                             Map<String, Object> retMap = new HashMap<>();
                             retMap.put(ca.getColumnName(), ca.getLeftValue());
+                            retMap.putAll(newRecordMap);
                             return retMap;
                         });
                         groupMap.computeIfPresent(key, (k, v) -> {
@@ -288,6 +296,7 @@ public class SqlContentResolver {
                             Map<String, Object> retMap = new HashMap<>();
                             retMap.put(ca.getColumnName(), ca.getLeftValue());
                             retMap.put(ca.getColumnName()+"cou",1);
+                            retMap.putAll(newRecordMap);
                             return retMap;
                         });
                         groupMap.computeIfPresent(key, (k, v) -> {
@@ -466,10 +475,10 @@ public class SqlContentResolver {
         return fit;
     }
 
-    private static void getValueBySide(Calculator calculator, SqlNode nodes, boolean leftTag) {
+    private static void getValueBySide(Calculator calculator, SqlNode nodes,String nodeString, boolean leftTag) {
         if (SqlBasicCall.class.isAssignableFrom(nodes.getClass())) {
-            if (calculator.getSegment().getWherePartsMap().containsKey(nodes.toString())) {
-                Queue<String> queue = calculator.getSegment().getWherePartsMap().get(nodes.toString()).getPolandQueue();
+            if (calculator.getSegment().getWherePartsMap().containsKey(nodeString)) {
+                Queue<String> queue = calculator.getSegment().getWherePartsMap().get(nodeString).getPolandQueue();
                 if (leftTag) {
                     calculator.setLeftValue(PolandNotationUtil.computeResult(queue, calculator.getInputRecord()));
                 } else {
@@ -481,22 +490,22 @@ public class SqlContentResolver {
         } else if (SqlKind.LITERAL.equals(nodes.getKind())) {
             if (leftTag) {
                 if (SqlCharStringLiteral.class.isAssignableFrom(nodes.getClass())) {
-                    calculator.setLeftValue(calculator.getStringLiteralMap().computeIfAbsent(nodes.toString(), k -> nodes.toString().replace("'", "")));
+                    calculator.setLeftValue(calculator.getStringLiteralMap().computeIfAbsent(nodeString, k -> nodeString.replace("'", "")));
                 } else {
                     calculator.setRightValue(((SqlLiteral) nodes).getValue());
                 }
             } else {
                 if (SqlCharStringLiteral.class.isAssignableFrom(nodes.getClass())) {
-                    calculator.setRightValue(calculator.getStringLiteralMap().computeIfAbsent(nodes.toString(), k -> nodes.toString().replace("'", "")));
+                    calculator.setRightValue(calculator.getStringLiteralMap().computeIfAbsent(nodeString, k ->nodeString.replace("'", "")));
                 } else {
                     calculator.setRightValue(((SqlLiteral) nodes).getValue());
                 }
             }
-        } else if (SqlIdentifier.class.isAssignableFrom(nodes.getClass()) && calculator.getInputRecord().containsKey(nodes.toString())) {
+        } else if (SqlIdentifier.class.isAssignableFrom(nodes.getClass()) && calculator.getInputRecord().containsKey(nodeString)) {
             if (leftTag) {
-                calculator.setLeftValue(calculator.getInputRecord().get(nodes.toString()));
+                calculator.setLeftValue(calculator.getInputRecord().get(nodeString));
             } else {
-                calculator.setRightValue(calculator.getInputRecord().get(nodes.toString()));
+                calculator.setRightValue(calculator.getInputRecord().get(nodeString));
             }
         }
     }

@@ -35,4 +35,5 @@ public class SqlSegment {
     // if filterSql compare right hand is column,orc and parquet can not use filter directly
     private boolean hasRightColumnCmp = false;
     private List<Pair<SqlNode,Boolean>> orderBys=new ArrayList<>();
+    private Map<Integer,String> nodeStringMap=new HashMap<>();
 }
