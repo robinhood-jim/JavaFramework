@@ -196,14 +196,14 @@ public class ConvertUtil {
         }
     }
 
-    public static void convertToModel(BaseObject target, Map<String, String> src, String... defaultDateTimeFormatter) throws Exception {
+    public static void convertToModel(BaseObject target, Map<String, Object> src, String... defaultDateTimeFormatter) throws Exception {
         if (target == null || src == null) {
             return;
         }
 
         Map<String, Method> map = ReflectUtils.returnSetMethods(target.getClass());
 
-        for (Map.Entry<String, String> entry : src.entrySet()) {
+        for (Map.Entry<String, Object> entry : src.entrySet()) {
             String field = entry.getKey();
             Method setMethod = map.get(field);
             if (setMethod != null) {

@@ -39,8 +39,8 @@ public class InputStreamHolder extends AbstractResourceHolder {
 		URI uri=new URI(colmeta.getPath());
 		String schema=uri.getScheme();
 		String path=uri.getPath();
-		AbstractFileSystemAccessor util= ResourceAccessHolder.getAccessUtilByProtocol(schema.toLowerCase());
-		in=util.getInResourceByStream(colmeta, path);
+		AbstractFileSystemAccessor util= ResourceAccessHolder.getAccessUtilByProtocol(schema.toLowerCase(), colmeta);
+		in=util.getInResourceByStream(path);
 	}
 
 	public InputStream getInputStream(){

@@ -24,7 +24,6 @@ import com.robin.core.base.util.Const;
 import com.robin.core.base.util.IOUtils;
 import com.robin.core.base.util.ResourceConst;
 import com.robin.core.fileaccess.fs.AbstractFileSystemAccessor;
-import com.robin.core.fileaccess.fs.ApacheVfsFileSystemAccessor;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.meta.DataSetColumnMeta;
 import com.robin.core.fileaccess.util.Calculator;
@@ -109,11 +108,11 @@ public abstract class AbstractFileIterator implements IResourceIterator {
         Assert.notNull(accessUtil, "ResourceAccessUtil is required!");
         try {
             if(useBufferedReader){
-                Pair<BufferedReader, InputStream> pair = accessUtil.getInResourceByReader(colmeta, ResourceUtil.getProcessPath(colmeta.getPath()));
+                Pair<BufferedReader, InputStream> pair = accessUtil.getInResourceByReader(ResourceUtil.getProcessPath(colmeta.getPath()));
                 this.reader = pair.getKey();
                 this.instream = pair.getValue();
             }else{
-                this.instream=accessUtil.getInResourceByStream(colmeta,ResourceUtil.getProcessPath(colmeta.getPath()));
+                this.instream=accessUtil.getInResourceByStream(ResourceUtil.getProcessPath(colmeta.getPath()));
             }
             if(useOrderBy || useGroupBy){
                 //pool all record through OffHeap
@@ -200,7 +199,7 @@ public abstract class AbstractFileIterator implements IResourceIterator {
             if (accessUtil == null) {
                 URI uri = new URI(StringUtils.isEmpty(inputPath) ? colmeta.getPath() : inputPath);
                 String schema = !ObjectUtils.isEmpty(colmeta.getFsType()) ? colmeta.getFsType() : uri.getScheme();
-                accessUtil = ResourceAccessHolder.getAccessUtilByProtocol(schema.toLowerCase());
+                accessUtil = ResourceAccessHolder.getAccessUtilByProtocol(schema.toLowerCase(), colmeta);
             }
         } catch (Exception ex) {
             logger.error("{}", ex.getMessage());
@@ -234,9 +233,7 @@ public abstract class AbstractFileIterator implements IResourceIterator {
             instream.close();
         }
         PolandNotationUtil.freeMem();
-        if (accessUtil != null && (ApacheVfsFileSystemAccessor.class.isAssignableFrom(accessUtil.getClass()) && !ObjectUtils.isEmpty(colmeta.getResourceCfgMap().get(Const.ITERATOR_PROCESSID)))) {
-            ((ApacheVfsFileSystemAccessor) accessUtil).closeWithProcessId(colmeta.getResourceCfgMap().get(Const.ITERATOR_PROCESSID).toString());
-        }
+        accessUtil.finishReadOrWrite();
     }
 
     @Override

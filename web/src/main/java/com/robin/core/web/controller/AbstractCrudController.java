@@ -86,7 +86,7 @@ public abstract class AbstractCrudController<O extends BaseObject, P extends Ser
         }
         return retMap;
     }
-    protected Map<String, Object> doSave(Map<String,String> paramMap) {
+    protected Map<String, Object> doSave(Map<String,Object> paramMap) {
         Map<String, Object> retMap = new HashMap<>();
         try {
             O object=this.objectType.newInstance();
@@ -128,7 +128,7 @@ public abstract class AbstractCrudController<O extends BaseObject, P extends Ser
         return retMap;
     }
 
-    protected Map<String, Object> doUpdate(Map<String,String> paramMap,P id) {
+    protected Map<String, Object> doUpdate(Map<String,Object> paramMap,P id) {
         Map<String, Object> retMap = new HashMap<>();
         try {
             O originObj= this.objectType.newInstance();

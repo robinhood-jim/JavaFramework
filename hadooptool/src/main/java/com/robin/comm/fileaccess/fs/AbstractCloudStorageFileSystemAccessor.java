@@ -35,40 +35,40 @@ public abstract class AbstractCloudStorageFileSystemAccessor extends AbstractFil
     }
 
     @Override
-    public synchronized Pair<BufferedReader, InputStream> getInResourceByReader(DataCollectionMeta meta, String resourcePath) throws IOException {
-        InputStream inputStream = getInputStreamByConfig(meta);
-        return Pair.of(getReaderByPath(resourcePath, inputStream, meta.getEncode()), inputStream);
+    public synchronized Pair<BufferedReader, InputStream> getInResourceByReader(String resourcePath) throws IOException {
+        InputStream inputStream = getInputStreamByConfig(resourcePath);
+        return Pair.of(getReaderByPath(resourcePath, inputStream, colmetaLocal.get().getEncode()), inputStream);
     }
 
     @Override
-    public synchronized Pair<BufferedWriter, OutputStream> getOutResourceByWriter(DataCollectionMeta meta, String resourcePath) throws IOException {
-        OutputStream outputStream = getOutputStream(meta);
-        return Pair.of(getWriterByPath(meta.getPath(), outputStream, meta.getEncode()), outputStream);
+    public synchronized Pair<BufferedWriter, OutputStream> getOutResourceByWriter(String resourcePath) throws IOException {
+        OutputStream outputStream = getOutputStream(resourcePath);
+        return Pair.of(getWriterByPath(resourcePath, outputStream, colmetaLocal.get().getEncode()), outputStream);
     }
 
     @Override
-    public synchronized OutputStream getRawOutputStream(DataCollectionMeta meta, String resourcePath) throws IOException {
-        return getOutputStream(meta);
+    public synchronized OutputStream getRawOutputStream(String resourcePath) throws IOException {
+        return getOutputStream(resourcePath);
     }
 
     @Override
-    public synchronized OutputStream getOutResourceByStream(DataCollectionMeta meta, String resourcePath) throws IOException {
-        return getOutputStreamByPath(resourcePath, getOutputStream(meta));
+    public synchronized OutputStream getOutResourceByStream(String resourcePath) throws IOException {
+        return getOutputStreamByPath(resourcePath, getOutputStream(resourcePath));
     }
 
     @Override
-    public synchronized InputStream getInResourceByStream(DataCollectionMeta meta, String resourcePath) throws IOException {
-        InputStream inputStream = getInputStreamByConfig(meta);
+    public synchronized InputStream getInResourceByStream(String resourcePath) throws IOException {
+        InputStream inputStream = getInputStreamByConfig(resourcePath);
         return getInputStreamByPath(resourcePath, inputStream);
     }
 
     @Override
-    public synchronized InputStream getRawInputStream(DataCollectionMeta meta, String resourcePath) throws IOException {
-        return getInputStreamByConfig(meta);
+    public synchronized InputStream getRawInputStream(String resourcePath) throws IOException {
+        return getInputStreamByConfig(resourcePath);
     }
 
     @Override
-    public synchronized void finishWrite(DataCollectionMeta meta, OutputStream outputStream) {
+    public synchronized void finishWrite(OutputStream outputStream) {
         if (!ObjectUtils.isEmpty(segment)) {
             segment.free();
             segment = null;
@@ -79,8 +79,8 @@ public abstract class AbstractCloudStorageFileSystemAccessor extends AbstractFil
 
     }
 
-    protected InputStream getInputStreamByConfig(DataCollectionMeta meta) {
-        return getObject(getBucketName(meta), meta.getPath());
+    protected InputStream getInputStreamByConfig(String path) {
+        return getObject(getBucketName(colmetaLocal.get()), path);
     }
 
     protected String getBucketName(DataCollectionMeta meta) {
@@ -90,11 +90,10 @@ public abstract class AbstractCloudStorageFileSystemAccessor extends AbstractFil
     /**
      * Cloud storage now only support ingest InputStream ,So use OffHeap ByteBuffer or use temp file to store data temporary
      *
-     * @param meta
      * @return
      * @throws IOException
      */
-    protected abstract OutputStream getOutputStream(DataCollectionMeta meta) throws IOException;
+    protected abstract OutputStream getOutputStream(String path) throws IOException;
 
 
     /*protected boolean uploadStorage(String bucketName, DataCollectionMeta meta, OutputStream outputStream) {

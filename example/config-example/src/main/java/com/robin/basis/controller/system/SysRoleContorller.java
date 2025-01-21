@@ -48,9 +48,9 @@ public class SysRoleContorller extends AbstractCrudDhtmlxController<SysRole,Long
 	@ResponseBody
 	public String saveRole(HttpServletRequest request,
 			HttpServletResponse response){
-		Map<String, String>  retmap=new HashMap<String,String>();
+		Map<String, String>  retmap=new HashMap<>();
 		try{
-			Map<String,String> map=wrapRequest(request);
+			Map<String,Object> map=wrapRequest(request);
 			SysRole user=new SysRole();
 			ConvertUtil.convertToModel(user, map);
 			Long id=service.saveEntity(user);
@@ -70,7 +70,7 @@ public class SysRoleContorller extends AbstractCrudDhtmlxController<SysRole,Long
 			HttpServletResponse response){
 		Map<String, Object>  retmap=new HashMap<String,Object>();
 		try{
-			Map<String,String> map=wrapRequest(request);
+			Map<String,Object> map=wrapRequest(request);
 			Long id=Long.valueOf(request.getParameter("id"));
 			SysRole user=service.getEntity(id);
 			SysRole tmpuser=new SysRole();

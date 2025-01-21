@@ -19,7 +19,6 @@ import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 import org.apache.calcite.config.Lex;
 import org.apache.calcite.sql.SqlKind;
-import org.apache.calcite.sql.SqlNode;
 import org.apache.commons.io.IOUtils;
 import org.apache.flink.core.memory.MemorySegment;
 import org.apache.flink.core.memory.MemorySegmentFactory;
@@ -101,7 +100,7 @@ public class ParquetVectorAggregator implements Closeable {
             if (accessUtil == null) {
                 URI uri = new URI(StringUtils.isEmpty(inputPath) ? colmeta.getPath() : inputPath);
                 String schema = !ObjectUtils.isEmpty(colmeta.getFsType())?colmeta.getFsType():uri.getScheme();
-                accessUtil = ResourceAccessHolder.getAccessUtilByProtocol(schema.toLowerCase());
+                accessUtil = ResourceAccessHolder.getAccessUtilByProtocol(schema.toLowerCase(), colmeta);
             }
         } catch (Exception ex) {
 
@@ -116,8 +115,8 @@ public class ParquetVectorAggregator implements Closeable {
                 if (Const.FILESYSTEM.LOCAL.getValue().equals(colmeta.getFsType())) {
                     file = new LocalInputFile(Paths.get(colmeta.getPath()));
                 } else {
-                    instream = accessUtil.getRawInputStream(colmeta, ResourceUtil.getProcessPath(colmeta.getPath()));
-                    long size = accessUtil.getInputStreamSize(colmeta, ResourceUtil.getProcessPath(colmeta.getPath()));
+                    instream = accessUtil.getRawInputStream( ResourceUtil.getProcessPath(colmeta.getPath()));
+                    long size = accessUtil.getInputStreamSize(ResourceUtil.getProcessPath(colmeta.getPath()));
                     segment= MemorySegmentFactory.allocateOffHeapUnsafeMemory((int)size,this,new Thread(){});
                     ByteBuffer byteBuffer=segment.getOffHeapBuffer();
                     try(ReadableByteChannel channel= Channels.newChannel(instream)) {

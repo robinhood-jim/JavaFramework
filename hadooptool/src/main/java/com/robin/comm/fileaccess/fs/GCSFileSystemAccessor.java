@@ -68,17 +68,17 @@ public class GCSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
     }
 
     @Override
-    public boolean exists(DataCollectionMeta meta, String resourcePath) throws IOException {
-        checkStorage(meta);
-        BlobId blobId=BlobId.of(getBucketName(meta),meta.getPath());
+    public boolean exists(String resourcePath) throws IOException {
+        checkStorage(colmetaLocal.get());
+        BlobId blobId=BlobId.of(getBucketName(colmetaLocal.get()),resourcePath);
         Blob blob=storage.get(blobId);
         return blob.exists();
     }
 
     @Override
-    public long getInputStreamSize(DataCollectionMeta meta, String resourcePath) throws IOException {
-        checkStorage(meta);
-        BlobId blobId=BlobId.of(getBucketName(meta),meta.getPath());
+    public long getInputStreamSize(String resourcePath) throws IOException {
+        checkStorage(colmetaLocal.get());
+        BlobId blobId=BlobId.of(getBucketName(colmetaLocal.get()),resourcePath);
         Blob blob=storage.get(blobId);
         if(blob.exists()){
             return blob.getSize();
@@ -153,19 +153,19 @@ public class GCSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
     }
 
     @Override
-    protected OutputStream getOutputStream(DataCollectionMeta meta) throws IOException {
+    protected OutputStream getOutputStream(String path) throws IOException {
         OutputStream outputStream;
-        if (!ObjectUtils.isEmpty(meta.getResourceCfgMap().get(ResourceConst.USETMPFILETAG)) && "true".equalsIgnoreCase(meta.getResourceCfgMap().get(ResourceConst.USETMPFILETAG).toString())) {
-            String tmpPath = com.robin.core.base.util.FileUtils.getWorkingPath(meta);
-            tmpFilePath = tmpPath + ResourceUtil.getProcessFileName(meta.getPath());
+        if (!ObjectUtils.isEmpty(colmetaLocal.get().getResourceCfgMap().get(ResourceConst.USETMPFILETAG)) && "true".equalsIgnoreCase(colmetaLocal.get().getResourceCfgMap().get(ResourceConst.USETMPFILETAG).toString())) {
+            String tmpPath = com.robin.core.base.util.FileUtils.getWorkingPath(colmetaLocal.get());
+            tmpFilePath = tmpPath + ResourceUtil.getProcessFileName(path);
             outputStream = Files.newOutputStream(Paths.get(tmpFilePath));
             useFileCache = true;
         } else {
             if (!ObjectUtils.isEmpty(segment)) {
                 throw new OperationNotSupportException("Off Heap Segment is still in used! try later");
             }
-            if (!ObjectUtils.isEmpty(meta.getResourceCfgMap().get(ResourceConst.DUMPEDOFFHEAPSIZEKEY))) {
-                dumpOffHeapSize = Integer.parseInt(meta.getResourceCfgMap().get(ResourceConst.DUMPEDOFFHEAPSIZEKEY).toString());
+            if (!ObjectUtils.isEmpty(colmetaLocal.get().getResourceCfgMap().get(ResourceConst.DUMPEDOFFHEAPSIZEKEY))) {
+                dumpOffHeapSize = Integer.parseInt(colmetaLocal.get().getResourceCfgMap().get(ResourceConst.DUMPEDOFFHEAPSIZEKEY).toString());
             }
             segment = MemorySegmentFactory.allocateOffHeapUnsafeMemory(dumpOffHeapSize, this, new Thread() {});
             outputStream = new ByteBufferOutputStream(segment.getOffHeapBuffer());

@@ -1,6 +1,5 @@
 package com.robin.comm.dal.pool;
 
-import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.AbstractScheduledService;
 import com.robin.comm.dal.holder.FsRecordIteratorHolder;
 import com.robin.comm.dal.holder.RecordWriterHolder;
@@ -20,7 +19,6 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.env.Environment;
 
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -31,7 +29,6 @@ public class ResourceAccessHolder implements InitializingBean {
 	private int bufferedReaderNum =0;
 	private int bufferedWriterNum=0;
 	private int jdbcHolderNum=10;
-	private static final Map<String, AbstractFileSystemAccessor> resouceAccessUtilMap=new LinkedHashMap<>();
 	private Map<Long, DbConnectionHolder> connectionHolderCache= new LinkedHashMap<>();
 	private Map<Long,JdbcResourceHolder> jdbcResourceHolderMap=new LinkedHashMap<>();
 	private GenericObjectPool<InputStreamHolder> inputStreamPool=null;
@@ -44,24 +41,16 @@ public class ResourceAccessHolder implements InitializingBean {
 	private boolean hasRecReaderLimit =false;
 	private boolean hasRecWriterLimit =false;
 	private DbPoolMonitorService monitorService=null;
-	private static final List<String> prefixList= Lists.newArrayList(new String[]{"hdfs","ftp","sftp","http","https","file"});
-	private static final List<String> processClassList= Lists.newArrayList(new String[]{"Hdfs","ApacheVfs","ApacheVfs","ApacheVfs","ApacheVfs","Local"});
 
 	public ResourceAccessHolder() {
 
 	}
 
 
-	public static AbstractFileSystemAccessor getAccessUtilByProtocol(String protocol){
-		if(resouceAccessUtilMap.containsKey(protocol)){
-			return resouceAccessUtilMap.get(protocol);
-		}else{
-			AbstractFileSystemAccessor util= FileSystemAccessorFactory.getResourceAccessorByType(protocol);
-			if(util!=null) {
-                resouceAccessUtilMap.put(protocol,util);
-            }
-			return util;
-		}
+	public static AbstractFileSystemAccessor getAccessUtilByProtocol(String protocol, DataCollectionMeta colmeta){
+		AbstractFileSystemAccessor accessor= FileSystemAccessorFactory.getResourceAccessorByType(protocol);
+		accessor.init(colmeta);
+		return accessor;
 	}
 
 	@Override

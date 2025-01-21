@@ -86,14 +86,14 @@ public class QiniuFileSystemAccessor extends AbstractCloudStorageFileSystemAcces
     }
 
     @Override
-    public boolean exists(DataCollectionMeta meta, String resourcePath) throws IOException {
-        String bucketName= getBucketName(meta);
+    public boolean exists(String resourcePath) throws IOException {
+        String bucketName= getBucketName(colmetaLocal.get());
         return isKeyExist(bucketName,resourcePath);
     }
 
     @Override
-    public long getInputStreamSize(DataCollectionMeta meta, String resourcePath) throws IOException {
-        return getSize(getBucketName(meta),resourcePath);
+    public long getInputStreamSize(String resourcePath) throws IOException {
+        return getSize(getBucketName(colmetaLocal.get()),resourcePath);
     }
 
     private boolean isKeyExist(String bucketName,String key) {
@@ -124,8 +124,8 @@ public class QiniuFileSystemAccessor extends AbstractCloudStorageFileSystemAcces
     }
 
     @Override
-    protected synchronized OutputStream getOutputStream(DataCollectionMeta meta) throws IOException {
-        return new QiniuOutputStream(client,uploadManager,meta,auth,getBucketName(meta),meta.getPath(),urlPrefix);
+    protected synchronized OutputStream getOutputStream(String path) throws IOException {
+        return new QiniuOutputStream(client,uploadManager,colmetaLocal.get(),auth,getBucketName(colmetaLocal.get()),path,urlPrefix);
     }
 
     protected InputStream getObject(@NonNull String bucketName, @NonNull String key) {

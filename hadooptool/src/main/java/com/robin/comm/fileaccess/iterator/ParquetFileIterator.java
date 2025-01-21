@@ -153,8 +153,8 @@ public class ParquetFileIterator extends AbstractFileIterator {
                 if (Const.FILESYSTEM.LOCAL.getValue().equals(colmeta.getFsType())) {
                     file = new LocalInputFile(Paths.get(colmeta.getPath()));
                 } else {
-                    instream = accessUtil.getRawInputStream(colmeta, ResourceUtil.getProcessPath(colmeta.getPath()));
-                    long size = accessUtil.getInputStreamSize(colmeta, ResourceUtil.getProcessPath(colmeta.getPath()));
+                    instream = accessUtil.getRawInputStream(ResourceUtil.getProcessPath(colmeta.getPath()));
+                    long size = accessUtil.getInputStreamSize(ResourceUtil.getProcessPath(colmeta.getPath()));
                     Double freeMemory = SysUtils.getFreeMemory();
                     //file size too large ,can not store in ByteBuffer or freeMemory too low
                     if (size >= ResourceConst.MAX_ARRAY_SIZE  || freeMemory < allowOffHeapDumpLimit) {

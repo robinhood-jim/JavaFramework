@@ -41,7 +41,7 @@ public class SysOrgController extends AbstractCrudDhtmlxController<SysOrg, Long,
     @ResponseBody
     public Map<String, Object> updateOrg(HttpServletRequest request,
                                          HttpServletResponse response) {
-        Map<String, String> valueMap = wrapRequest(request);
+        Map<String, Object> valueMap = wrapRequest(request);
         return doUpdate(valueMap, Long.valueOf(request.getParameter("id")));
     }
 

@@ -27,8 +27,8 @@ public class RecordWriterHolder extends AbstractResourceHolder {
         URI uri=new URI(colmeta.getPath());
         String schema=uri.getScheme();
         String path=uri.getPath();
-        AbstractFileSystemAccessor util = ResourceAccessHolder.getAccessUtilByProtocol(schema.toLowerCase());
-        OutputStream outStream = util.getOutResourceByStream(colmeta, path);
+        AbstractFileSystemAccessor util = ResourceAccessHolder.getAccessUtilByProtocol(schema.toLowerCase(), colmeta);
+        OutputStream outStream = util.getOutResourceByStream(path);
         if(!colmeta.isFsTag()) {
             writer = TextFileWriterFactory.getWriterByPath(colmeta, outStream);
         } else{

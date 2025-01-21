@@ -59,14 +59,14 @@ public class BOSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
     }
 
     @Override
-    public boolean exists(DataCollectionMeta meta, String resourcePath) throws IOException {
-        return client.doesObjectExist(getBucketName(meta),resourcePath);
+    public boolean exists(String resourcePath) throws IOException {
+        return client.doesObjectExist(getBucketName(colmetaLocal.get()),resourcePath);
     }
 
     @Override
-    public long getInputStreamSize(DataCollectionMeta meta, String resourcePath) throws IOException {
-        if(exists(meta,resourcePath)){
-            BosObject object=client.getObject(getBucketName(meta),resourcePath);
+    public long getInputStreamSize(String resourcePath) throws IOException {
+        if(exists(resourcePath)){
+            BosObject object=client.getObject(getBucketName(colmetaLocal.get()),resourcePath);
             return object.getObjectMetadata().getContentLength();
         }
         return 0;
@@ -95,8 +95,8 @@ public class BOSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
     }
 
     @Override
-    protected OutputStream getOutputStream(DataCollectionMeta meta) throws IOException {
-        return new BOSOutputStream(client,meta,bucketName, meta.getPath());
+    protected OutputStream getOutputStream(String path) throws IOException {
+        return new BOSOutputStream(client,colmetaLocal.get(),bucketName, path);
     }
 
     public static class Builder{

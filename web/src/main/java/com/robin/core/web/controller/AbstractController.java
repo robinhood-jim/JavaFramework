@@ -301,9 +301,9 @@ public abstract class AbstractController
         return retmap;
     }
 
-    public static Map<String, String> wrapRequest(HttpServletRequest request)
+    public static Map<String, Object> wrapRequest(HttpServletRequest request)
     {
-        Map<String, String> map = new HashMap<>();
+        Map<String, Object> map = new HashMap<>();
         for (String key : (Iterable<String>) request.getParameterMap().keySet()) {
             map.put(key, request.getParameter(key));
         }

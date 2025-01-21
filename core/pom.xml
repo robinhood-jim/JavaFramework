@@ -369,7 +369,11 @@
                     <injarNotExistsSkip>true</injarNotExistsSkip>
                     <proguardInclude>${project.basedir}/../config/proguard.cfg</proguardInclude>
                     <libs>
-                        <lib>${java.home}/lib/rt.jar</lib>
+                        <lib>${java.home}/jmods/java.base.jmod</lib>
+                        <lib>${java.home}/jmods/java.datatransfer.jmod</lib>
+                        <lib>${java.home}/jmods/java.prefs.jmod</lib>
+                        <lib>${java.home}/jmods/java.xml.jmod</lib>
+                        <lib>${java.home}/jmods/java.desktop.jmod</lib>
                     </libs>
                     <options> <!-- Detail see ProGuard Config -->
                     </options>

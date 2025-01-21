@@ -57,14 +57,14 @@ public class OBSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
     }
 
     @Override
-    public boolean exists(DataCollectionMeta meta, String resourcePath) throws IOException {
-        return client.doesObjectExist(getBucketName(meta),resourcePath);
+    public boolean exists(String resourcePath) throws IOException {
+        return client.doesObjectExist(getBucketName(colmetaLocal.get()),resourcePath);
     }
 
     @Override
-    public long getInputStreamSize(DataCollectionMeta meta, String resourcePath) throws IOException {
-        if(exists(meta,resourcePath)){
-            ObsObject object=client.getObject(getBucketName(meta),resourcePath);
+    public long getInputStreamSize(String resourcePath) throws IOException {
+        if(exists(resourcePath)){
+            ObsObject object=client.getObject(getBucketName(colmetaLocal.get()),resourcePath);
             return object.getMetadata().getContentLength();
         }
         return 0;
@@ -138,7 +138,7 @@ public class OBSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
     }
 
     @Override
-    protected OutputStream getOutputStream(DataCollectionMeta meta) throws IOException {
+    protected OutputStream getOutputStream(String path) throws IOException {
         return null;
     }
 
