@@ -11,7 +11,6 @@ import com.qcloud.cos.transfer.TransferManager;
 import com.qcloud.cos.transfer.TransferManagerConfiguration;
 import com.qcloud.cos.transfer.Upload;
 import com.robin.comm.fileaccess.fs.outputstream.COSOutputStream;
-import com.robin.core.base.exception.OperationNotSupportException;
 import com.robin.core.base.exception.ResourceNotAvailableException;
 import com.robin.core.base.util.Const;
 import com.robin.core.base.util.ResourceConst;
@@ -73,13 +72,13 @@ public class COSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
 
     @Override
     public boolean exists(String resourcePath) throws IOException {
-        return exists(getBucketName(colmetaLocal.get()),resourcePath);
+        return exists(getBucketName(colmeta),resourcePath);
     }
 
     @Override
     public long getInputStreamSize(String resourcePath) throws IOException {
-        if(exists(getBucketName(colmetaLocal.get()),resourcePath)){
-            ObjectMetadata metadata=cosClient.getObjectMetadata(getBucketName(colmetaLocal.get()),resourcePath);
+        if(exists(getBucketName(colmeta),resourcePath)){
+            ObjectMetadata metadata=cosClient.getObjectMetadata(getBucketName(colmeta),resourcePath);
             if(!ObjectUtils.isEmpty(metadata)){
                 return metadata.getContentLength();
             }
@@ -140,7 +139,7 @@ public class COSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
 
     @Override
     protected OutputStream getOutputStream(String path) throws IOException {
-        return new COSOutputStream(cosClient,colmetaLocal.get(),getBucketName(colmetaLocal.get()),path,regionName);
+        return new COSOutputStream(cosClient, colmeta,getBucketName(colmeta),path,regionName);
     }
 
     public static class Builder{

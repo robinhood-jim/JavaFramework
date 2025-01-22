@@ -16,7 +16,7 @@ import java.io.*;
  */
 public class HdfsFileSystemAccessor extends AbstractFileSystemAccessor {
     private static final Logger logger = LoggerFactory.getLogger(HdfsFileSystemAccessor.class);
-    private ThreadLocal<HDFSUtil> localUtils = new ThreadLocal<>();
+    private HDFSUtil hdfsUtil;
 
     public HdfsFileSystemAccessor() {
         this.identifier = Const.FILESYSTEM.HDFS.getValue();
@@ -25,30 +25,27 @@ public class HdfsFileSystemAccessor extends AbstractFileSystemAccessor {
     @Override
     public void init(DataCollectionMeta meta) {
         super.init(meta);
-        HDFSUtil util = getHdfsUtil(meta);
-        localUtils.set(util);
+        hdfsUtil = getHdfsUtil(meta);
     }
 
     @Override
     public Pair<BufferedReader, InputStream> getInResourceByReader(String resourcePath)
             throws IOException {
-        HDFSUtil util = localUtils.get();
-        InputStream stream = util.getHDFSDataByRawInputStream(resourcePath);
-        return Pair.of(getReaderByPath(resourcePath, stream, colmetaLocal.get().getEncode()), stream);
+        InputStream stream = hdfsUtil.getHDFSDataByRawInputStream(resourcePath);
+        return Pair.of(getReaderByPath(resourcePath, stream, colmeta.getEncode()), stream);
     }
 
     @Override
     public Pair<BufferedWriter, OutputStream> getOutResourceByWriter(String resourcePath)
             throws IOException {
-        HDFSUtil util = localUtils.get();
         OutputStream outputStream = null;
         try {
-            if (util.exists(resourcePath)) {
+            if (hdfsUtil.exists(resourcePath)) {
                 logger.error("output file {}  exist!,remove it", resourcePath);
-                util.delete(colmetaLocal.get().getPath());
+                hdfsUtil.delete(colmeta.getPath());
             }
-            outputStream = util.getHDFSRawOutputStream(resourcePath);
-            return Pair.of(getWriterByPath(resourcePath, outputStream, colmetaLocal.get().getEncode()), outputStream);
+            outputStream = hdfsUtil.getHDFSRawOutputStream(resourcePath);
+            return Pair.of(getWriterByPath(resourcePath, outputStream, colmeta.getEncode()), outputStream);
         } catch (Exception ex) {
             throw new IOException(ex);
         }
@@ -57,13 +54,12 @@ public class HdfsFileSystemAccessor extends AbstractFileSystemAccessor {
     @Override
     public OutputStream getOutResourceByStream(String resourcePath)
             throws IOException {
-        HDFSUtil util = localUtils.get();
         try {
-            if (util.exists(resourcePath)) {
+            if (hdfsUtil.exists(resourcePath)) {
                 logger.error("output file {} exist!,remove it", resourcePath);
-                util.delete(resourcePath);
+                hdfsUtil.delete(resourcePath);
             }
-            return getOutputStreamByPath(resourcePath, util.getHDFSDataByOutputStream(resourcePath));
+            return getOutputStreamByPath(resourcePath, hdfsUtil.getHDFSDataByOutputStream(resourcePath));
         } catch (Exception ex) {
             throw new IOException(ex);
         }
@@ -71,13 +67,12 @@ public class HdfsFileSystemAccessor extends AbstractFileSystemAccessor {
 
     @Override
     public OutputStream getRawOutputStream(String resourcePath) throws IOException {
-        HDFSUtil util = localUtils.get();
         try {
-            if (util.exists(resourcePath)) {
+            if (hdfsUtil.exists(resourcePath)) {
                 logger.error("output file {}  exist!,remove it", resourcePath);
-                util.delete(resourcePath);
+                hdfsUtil.delete(resourcePath);
             }
-            return util.getHDFSRawOutputStream(resourcePath);
+            return hdfsUtil.getHDFSRawOutputStream(resourcePath);
         } catch (Exception ex) {
             throw new IOException(ex);
         }
@@ -85,10 +80,9 @@ public class HdfsFileSystemAccessor extends AbstractFileSystemAccessor {
 
     @Override
     public InputStream getRawInputStream(String resourcePath) throws IOException {
-        HDFSUtil util = localUtils.get();
         try {
-            if (util.exists(resourcePath)) {
-                return util.getHDFSDataByRawInputStream(resourcePath);
+            if (hdfsUtil.exists(resourcePath)) {
+                return hdfsUtil.getHDFSDataByRawInputStream(resourcePath);
             } else {
                 throw new IOException("path " + resourcePath + " not found");
             }
@@ -100,13 +94,12 @@ public class HdfsFileSystemAccessor extends AbstractFileSystemAccessor {
     @Override
     public InputStream getInResourceByStream(String resourcePath)
             throws IOException {
-        HDFSUtil util = localUtils.get();
         try {
-            if (util.exists(resourcePath)) {
+            if (hdfsUtil.exists(resourcePath)) {
                 logger.error("output file {}  exist!,remove it", resourcePath);
-                util.delete(resourcePath);
+                hdfsUtil.delete(resourcePath);
             }
-            return getInputStreamByPath(resourcePath, util.getHDFSDataByInputStream(resourcePath));
+            return getInputStreamByPath(resourcePath, hdfsUtil.getHDFSDataByInputStream(resourcePath));
         } catch (Exception ex) {
             throw new IOException(ex);
         }
@@ -122,9 +115,8 @@ public class HdfsFileSystemAccessor extends AbstractFileSystemAccessor {
 
     @Override
     public boolean exists(String resourcePath) throws IOException {
-        HDFSUtil util = localUtils.get();
         try {
-            return util.exists(resourcePath);
+            return hdfsUtil.exists(resourcePath);
         } catch (Exception ex) {
             throw new IOException(ex);
         }
@@ -132,10 +124,9 @@ public class HdfsFileSystemAccessor extends AbstractFileSystemAccessor {
 
     @Override
     public long getInputStreamSize(String resourcePath) throws IOException {
-        HDFSUtil util = localUtils.get();
         try {
-            if (util.exists(resourcePath)) {
-                return util.getHDFSFileSize(resourcePath);
+            if (hdfsUtil.exists(resourcePath)) {
+                return hdfsUtil.getHDFSFileSize(resourcePath);
             } else {
                 throw new IOException("path " + resourcePath + " not found");
             }

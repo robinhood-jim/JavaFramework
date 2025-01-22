@@ -16,6 +16,7 @@ import org.springframework.util.ObjectUtils;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.concurrent.CompletableFuture;
 
@@ -100,25 +101,29 @@ public class MinioOutputStream extends AbstractUploadPartOutputStream {
     }
 
     @Override
-    protected void uploadAsync(WeakReference<byte[]> writeBytesRef,int partNumber,int byteSize) throws IOException {
-        futures.add(guavaExecutor.submit(new MinioUploadPartCallable(writeBytesRef,partNumber,position,new WeakReference<>(client.getPartUploadUrl(bucketName,path,uploadId,partNumber)))));
+    protected void uploadAsync(ByteBuffer buffer,int partNumber,int byteSize) throws IOException {
+        futures.add(guavaExecutor.submit(new MinioUploadPartCallable(buffer,partNumber,position,new WeakReference<>(client.getPartUploadUrl(bucketName,path,uploadId,partNumber)))));
     }
 
     class MinioUploadPartCallable extends AbstractUploadPartCallable{
         private WeakReference<Request> request;
         private WeakReference<RequestBody> body;
 
-        MinioUploadPartCallable(WeakReference<byte[]> content, Integer partNum,int byteSize, WeakReference<String> partUrl){
-            super(content,partNum,byteSize);
+        MinioUploadPartCallable(ByteBuffer buffer, Integer partNum, int byteSize, WeakReference<String> partUrl){
+            super(buffer,partNum,byteSize);
             this.partNumber=partNum;
+            WeakReference<byte[]> content=new WeakReference<>(new byte[byteSize]);
+            buffer.get(content.get(),0,byteSize);
             body=new WeakReference<>(RequestBody.create(content.get()));
             Request.Builder builder = new Request.Builder().url(partUrl.get()).put(body.get());
             builder.header("Accept-Encoding", "identity");
             request=new WeakReference<>(builder.build());
         }
-        MinioUploadPartCallable(WeakReference<byte[]> content, Integer partNum,int byteSize, WeakReference<String> partUrl, int retryNum){
-            super(content,partNum,byteSize);
+        MinioUploadPartCallable(ByteBuffer buffer, Integer partNum,int byteSize, WeakReference<String> partUrl, int retryNum){
+            super(buffer,partNum,byteSize);
             this.retryNum=retryNum;
+            WeakReference<byte[]> content=new WeakReference<>(new byte[byteSize]);
+            buffer.get(content.get(),0,byteSize);
             body=new WeakReference<>(RequestBody.create(content.get()));
             Request.Builder builder = new Request.Builder().url(partUrl.get()).put(body.get());
 

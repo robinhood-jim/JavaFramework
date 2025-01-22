@@ -87,13 +87,13 @@ public class QiniuFileSystemAccessor extends AbstractCloudStorageFileSystemAcces
 
     @Override
     public boolean exists(String resourcePath) throws IOException {
-        String bucketName= getBucketName(colmetaLocal.get());
+        String bucketName= getBucketName(colmeta);
         return isKeyExist(bucketName,resourcePath);
     }
 
     @Override
     public long getInputStreamSize(String resourcePath) throws IOException {
-        return getSize(getBucketName(colmetaLocal.get()),resourcePath);
+        return getSize(getBucketName(colmeta),resourcePath);
     }
 
     private boolean isKeyExist(String bucketName,String key) {
@@ -125,7 +125,7 @@ public class QiniuFileSystemAccessor extends AbstractCloudStorageFileSystemAcces
 
     @Override
     protected synchronized OutputStream getOutputStream(String path) throws IOException {
-        return new QiniuOutputStream(client,uploadManager,colmetaLocal.get(),auth,getBucketName(colmetaLocal.get()),path,urlPrefix);
+        return new QiniuOutputStream(client,uploadManager, colmeta,auth,getBucketName(colmeta),path,urlPrefix);
     }
 
     protected InputStream getObject(@NonNull String bucketName, @NonNull String key) {

@@ -1,23 +1,15 @@
 package com.robin.comm.fileaccess.fs;
 
-import com.robin.core.fileaccess.util.ByteBufferInputStream;
-import com.robin.core.fileaccess.util.ByteBufferOutputStream;
-import com.robin.core.base.exception.MissingConfigException;
-import com.robin.core.base.exception.OperationNotSupportException;
 import com.robin.core.base.util.ResourceConst;
 import com.robin.core.fileaccess.fs.AbstractFileSystemAccessor;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
-import com.robin.core.fileaccess.util.ResourceUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.flink.core.memory.MemorySegment;
-import org.apache.flink.core.memory.MemorySegmentFactory;
 import org.springframework.util.ObjectUtils;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
 /**
  * Cloud Storage FileSystemAccessor Abstract super class,not singleton,must init individual
@@ -37,13 +29,13 @@ public abstract class AbstractCloudStorageFileSystemAccessor extends AbstractFil
     @Override
     public synchronized Pair<BufferedReader, InputStream> getInResourceByReader(String resourcePath) throws IOException {
         InputStream inputStream = getInputStreamByConfig(resourcePath);
-        return Pair.of(getReaderByPath(resourcePath, inputStream, colmetaLocal.get().getEncode()), inputStream);
+        return Pair.of(getReaderByPath(resourcePath, inputStream, colmeta.getEncode()), inputStream);
     }
 
     @Override
     public synchronized Pair<BufferedWriter, OutputStream> getOutResourceByWriter(String resourcePath) throws IOException {
         OutputStream outputStream = getOutputStream(resourcePath);
-        return Pair.of(getWriterByPath(resourcePath, outputStream, colmetaLocal.get().getEncode()), outputStream);
+        return Pair.of(getWriterByPath(resourcePath, outputStream, colmeta.getEncode()), outputStream);
     }
 
     @Override
@@ -80,7 +72,7 @@ public abstract class AbstractCloudStorageFileSystemAccessor extends AbstractFil
     }
 
     protected InputStream getInputStreamByConfig(String path) {
-        return getObject(getBucketName(colmetaLocal.get()), path);
+        return getObject(getBucketName(colmeta), path);
     }
 
     protected String getBucketName(DataCollectionMeta meta) {

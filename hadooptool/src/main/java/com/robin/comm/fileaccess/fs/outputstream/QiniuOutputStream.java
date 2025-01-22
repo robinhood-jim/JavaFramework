@@ -19,6 +19,7 @@ import org.springframework.util.ObjectUtils;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -82,8 +83,8 @@ public class QiniuOutputStream extends AbstractUploadPartOutputStream {
     }
 
     @Override
-    protected void uploadAsync(WeakReference<byte[]> writeBytesRef,int partNumber,int byteSize) throws IOException {
-        futures.add(guavaExecutor.submit(new QiniuUploadPartCallable(writeBytesRef,partNumber,byteSize,getToken())));
+    protected void uploadAsync(ByteBuffer buffer,int partNumber,int byteSize) throws IOException {
+        futures.add(guavaExecutor.submit(new QiniuUploadPartCallable(buffer,partNumber,byteSize,getToken())));
     }
 
     @Override
@@ -141,8 +142,8 @@ public class QiniuOutputStream extends AbstractUploadPartOutputStream {
 
     class QiniuUploadPartCallable extends AbstractUploadPartCallable {
         private String token;
-        public QiniuUploadPartCallable(WeakReference<byte[]> content, int partNumber,int byteSize,String token) {
-            super(content,partNumber,byteSize);
+        public QiniuUploadPartCallable(ByteBuffer buffer, int partNumber, int byteSize, String token) {
+            super(buffer,partNumber,byteSize);
             this.token=token;
         }
 
@@ -151,7 +152,7 @@ public class QiniuOutputStream extends AbstractUploadPartOutputStream {
             ApiUploadV2UploadPart part = new ApiUploadV2UploadPart(client);
             ApiUploadV2UploadPart.Request request = new ApiUploadV2UploadPart.Request(urlPrefix, token, uploadId, partNumber)
                     .setKey(path)
-                    .setUploadData(content.get(), 0, byteSize, getContentType(meta));
+                    .setUploadData(new ByteBufferInputStream(buffer,byteSize), getContentType(meta),byteSize);
             try {
                 ApiUploadV2UploadPart.Response response = part.request(request);
                 etagsMap.put(partNumber, response.getEtag());

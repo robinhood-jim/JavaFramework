@@ -1,7 +1,6 @@
 package com.robin.core.fileaccess.fs;
 
 import com.robin.core.base.util.Const;
-import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -9,8 +8,12 @@ import java.io.*;
 import java.net.URI;
 
 public class LocalFileSystemAccessor extends AbstractFileSystemAccessor {
+	private static LocalFileSystemAccessor accessor=new LocalFileSystemAccessor();
 	public LocalFileSystemAccessor(){
 		this.identifier= Const.FILESYSTEM.LOCAL.getValue();
+	}
+	public static LocalFileSystemAccessor getInstance(){
+		return accessor;
 	}
 
 
@@ -24,7 +27,7 @@ public class LocalFileSystemAccessor extends AbstractFileSystemAccessor {
 			throw new IOException("input file "+resourcePath+" does not exist!");
 		}
 		stream=FileUtils.openInputStream(file);
-		reader= getReaderByPath(getProcessPath(resourcePath), stream, colmetaLocal.get().getEncode());
+		reader= getReaderByPath(getProcessPath(resourcePath), stream, colmeta.getEncode());
 		return Pair.of(reader,stream);
 	}
 	
@@ -37,7 +40,7 @@ public class LocalFileSystemAccessor extends AbstractFileSystemAccessor {
 			FileUtils.forceDelete(file);
 		}
 		outputStream=FileUtils.openOutputStream(file);
-		writer= getWriterByPath(getProcessPath(resourcePath), outputStream, colmetaLocal.get().getEncode());
+		writer= getWriterByPath(getProcessPath(resourcePath), outputStream, colmeta.getEncode());
 		return Pair.of(writer,outputStream);
 	}
 	@Override

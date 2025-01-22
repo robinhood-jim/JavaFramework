@@ -26,9 +26,12 @@ import java.io.*;
  */
 public abstract class AbstractFileSystemAccessor implements IFileSystemAccessor {
 	protected String identifier;
-	protected ThreadLocal<DataCollectionMeta> colmetaLocal=new ThreadLocal<>();
+	protected DataCollectionMeta colmeta ;
 	protected AbstractFileSystemAccessor(){
 
+	}
+	protected AbstractFileSystemAccessor(DataCollectionMeta colmeta){
+		this.colmeta=colmeta;
 	}
 
 
@@ -100,7 +103,7 @@ public abstract class AbstractFileSystemAccessor implements IFileSystemAccessor 
 	
 	@Override
 	public void init(DataCollectionMeta meta){
-		colmetaLocal.set(meta);
+		this.colmeta=meta;
 	}
 	public void finishWrite(OutputStream outputStream) {
 
@@ -113,7 +116,7 @@ public abstract class AbstractFileSystemAccessor implements IFileSystemAccessor 
 
 	@Override
 	public void close() throws IOException {
-		colmetaLocal.remove();
+
 	}
 
 	@Override

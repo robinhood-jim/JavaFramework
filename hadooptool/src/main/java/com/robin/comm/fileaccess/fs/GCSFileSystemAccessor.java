@@ -69,16 +69,16 @@ public class GCSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
 
     @Override
     public boolean exists(String resourcePath) throws IOException {
-        checkStorage(colmetaLocal.get());
-        BlobId blobId=BlobId.of(getBucketName(colmetaLocal.get()),resourcePath);
+        checkStorage(colmeta);
+        BlobId blobId=BlobId.of(getBucketName(colmeta),resourcePath);
         Blob blob=storage.get(blobId);
         return blob.exists();
     }
 
     @Override
     public long getInputStreamSize(String resourcePath) throws IOException {
-        checkStorage(colmetaLocal.get());
-        BlobId blobId=BlobId.of(getBucketName(colmetaLocal.get()),resourcePath);
+        checkStorage(colmeta);
+        BlobId blobId=BlobId.of(getBucketName(colmeta),resourcePath);
         Blob blob=storage.get(blobId);
         if(blob.exists()){
             return blob.getSize();
@@ -155,8 +155,8 @@ public class GCSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
     @Override
     protected OutputStream getOutputStream(String path) throws IOException {
         OutputStream outputStream;
-        if (!ObjectUtils.isEmpty(colmetaLocal.get().getResourceCfgMap().get(ResourceConst.USETMPFILETAG)) && "true".equalsIgnoreCase(colmetaLocal.get().getResourceCfgMap().get(ResourceConst.USETMPFILETAG).toString())) {
-            String tmpPath = com.robin.core.base.util.FileUtils.getWorkingPath(colmetaLocal.get());
+        if (!ObjectUtils.isEmpty(colmeta.getResourceCfgMap().get(ResourceConst.USETMPFILETAG)) && "true".equalsIgnoreCase(colmeta.getResourceCfgMap().get(ResourceConst.USETMPFILETAG).toString())) {
+            String tmpPath = com.robin.core.base.util.FileUtils.getWorkingPath(colmeta);
             tmpFilePath = tmpPath + ResourceUtil.getProcessFileName(path);
             outputStream = Files.newOutputStream(Paths.get(tmpFilePath));
             useFileCache = true;
@@ -164,8 +164,8 @@ public class GCSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
             if (!ObjectUtils.isEmpty(segment)) {
                 throw new OperationNotSupportException("Off Heap Segment is still in used! try later");
             }
-            if (!ObjectUtils.isEmpty(colmetaLocal.get().getResourceCfgMap().get(ResourceConst.DUMPEDOFFHEAPSIZEKEY))) {
-                dumpOffHeapSize = Integer.parseInt(colmetaLocal.get().getResourceCfgMap().get(ResourceConst.DUMPEDOFFHEAPSIZEKEY).toString());
+            if (!ObjectUtils.isEmpty(colmeta.getResourceCfgMap().get(ResourceConst.DUMPEDOFFHEAPSIZEKEY))) {
+                dumpOffHeapSize = Integer.parseInt(colmeta.getResourceCfgMap().get(ResourceConst.DUMPEDOFFHEAPSIZEKEY).toString());
             }
             segment = MemorySegmentFactory.allocateOffHeapUnsafeMemory(dumpOffHeapSize, this, new Thread() {});
             outputStream = new ByteBufferOutputStream(segment.getOffHeapBuffer());

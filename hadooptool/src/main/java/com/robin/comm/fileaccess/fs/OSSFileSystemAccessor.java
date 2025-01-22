@@ -67,18 +67,18 @@ public class OSSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
 
     @Override
     protected synchronized OutputStream getOutputStream(String path) throws IOException {
-        return new OSSOutputStream(ossClient,colmetaLocal.get(),getBucketName(colmetaLocal.get()),path,region);
+        return new OSSOutputStream(ossClient, colmeta,getBucketName(colmeta),path,region);
     }
 
     @Override
     public boolean exists(String resourcePath) throws IOException {
-        String bucketName= getBucketName(colmetaLocal.get());
+        String bucketName= getBucketName(colmeta);
         return ossClient.doesObjectExist(bucketName,resourcePath);
     }
 
     @Override
     public long getInputStreamSize(String resourcePath) throws IOException {
-        String bucketName= getBucketName(colmetaLocal.get());
+        String bucketName= getBucketName(colmeta);
         if(exists(resourcePath)){
             OSSObject object=ossClient.getObject(bucketName,resourcePath);
             return object.getObjectMetadata().getContentLength();

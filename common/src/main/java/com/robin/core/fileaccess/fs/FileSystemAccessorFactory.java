@@ -1,6 +1,8 @@
 package com.robin.core.fileaccess.fs;
 
 import com.robin.core.base.exception.MissingConfigException;
+import com.robin.core.fileaccess.meta.DataCollectionMeta;
+import lombok.NonNull;
 import org.springframework.util.ObjectUtils;
 
 import java.util.HashMap;
@@ -9,31 +11,42 @@ import java.util.Map;
 import java.util.ServiceLoader;
 
 public class FileSystemAccessorFactory {
-    private static Map<String,Class<? extends IFileSystemAccessor>> accessorMap =new HashMap<>();
-    private static final Map<String, AbstractFileSystemAccessor> resouceAccessUtilMap=new LinkedHashMap<>();
+    private static Map<String, Class<? extends IFileSystemAccessor>> accessorMap = new HashMap<>();
     static {
         discoverAccessor(accessorMap);
     }
-    public static AbstractFileSystemAccessor getResourceAccessorByType(String resType) throws MissingConfigException {
-        AbstractFileSystemAccessor accessor=null;
+
+    public static AbstractFileSystemAccessor getResourceAccessorByType(@NonNull String resType) throws MissingConfigException {
+        AbstractFileSystemAccessor accessor = null;
         try {
-            if(resouceAccessUtilMap.containsKey(resType)){
-                accessor=resouceAccessUtilMap.get(resType);
-            }else {
-                Class<? extends IFileSystemAccessor> clazz=accessorMap.get(resType);
-                if (!ObjectUtils.isEmpty(clazz)) {
-                    accessor = (AbstractFileSystemAccessor) clazz.getConstructor().newInstance();
-                }
-                resouceAccessUtilMap.put(resType,accessor);
+            Class<? extends IFileSystemAccessor> clazz = accessorMap.get(resType);
+            if (!ObjectUtils.isEmpty(clazz)) {
+                accessor = (AbstractFileSystemAccessor) clazz.getConstructor().newInstance();
             }
-        }catch (Exception ex){
+        } catch (Exception ex) {
+            throw new MissingConfigException(ex);
+        }
+        return accessor;
+    }
+    public static AbstractFileSystemAccessor getResourceAccessorByType(@NonNull String resType, @NonNull DataCollectionMeta colmeta) throws MissingConfigException {
+        AbstractFileSystemAccessor accessor = null;
+        try {
+            Class<? extends IFileSystemAccessor> clazz = accessorMap.get(resType);
+            if (!ObjectUtils.isEmpty(clazz)) {
+                accessor = (AbstractFileSystemAccessor) clazz.getConstructor().newInstance();
+                if(!ObjectUtils.isEmpty(colmeta)){
+                    accessor.init(colmeta);
+                }
+            }
+        } catch (Exception ex) {
             throw new MissingConfigException(ex);
         }
         return accessor;
     }
 
-    private static void discoverAccessor(Map<String,Class<? extends IFileSystemAccessor>> accessorMap){
-        ServiceLoader.load(IFileSystemAccessor.class).iterator().forEachRemaining(i->{
-                accessorMap.put(i.getIdentifier(),i.getClass());});
+    private static void discoverAccessor(Map<String, Class<? extends IFileSystemAccessor>> accessorMap) {
+        ServiceLoader.load(IFileSystemAccessor.class).iterator().forEachRemaining(i -> {
+            accessorMap.put(i.getIdentifier(), i.getClass());
+        });
     }
 }

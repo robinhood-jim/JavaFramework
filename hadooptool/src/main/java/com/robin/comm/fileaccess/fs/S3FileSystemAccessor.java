@@ -68,12 +68,12 @@ public class S3FileSystemAccessor extends AbstractCloudStorageFileSystemAccessor
 
     @Override
     public boolean exists(String resourcePath) throws IOException {
-        return AwsUtils.exists(client,getBucketName(colmetaLocal.get()),resourcePath);
+        return AwsUtils.exists(client,getBucketName(colmeta),resourcePath);
     }
 
     @Override
     public long getInputStreamSize(String resourcePath) throws IOException {
-        return AwsUtils.size(client,getBucketName(colmetaLocal.get()),resourcePath);
+        return AwsUtils.size(client,getBucketName(colmeta),resourcePath);
     }
 
     @Override
@@ -83,7 +83,7 @@ public class S3FileSystemAccessor extends AbstractCloudStorageFileSystemAccessor
 
     @Override
     protected synchronized OutputStream getOutputStream(String path) throws IOException {
-        return new S3OutputStream(client,colmetaLocal.get(),getBucketName(colmetaLocal.get()),path);
+        return new S3OutputStream(client, colmeta,getBucketName(colmeta),path);
     }
 
     @Override

@@ -9,6 +9,7 @@ import org.springframework.util.ObjectUtils;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -42,12 +43,12 @@ public class BOSOutputStream extends AbstractUploadPartOutputStream {
     }
 
     @Override
-    protected void uploadAsync(WeakReference<byte[]> writeBytesRef, int partNumber, int byteSize) throws IOException {
-        futures.add(guavaExecutor.submit(new AbstractUploadPartCallable(writeBytesRef, partNumber, byteSize) {
+    protected void uploadAsync(ByteBuffer buffer, int partNumber, int byteSize) throws IOException {
+        futures.add(guavaExecutor.submit(new AbstractUploadPartCallable(buffer, partNumber, byteSize) {
             @Override
             protected boolean uploadPartAsync() throws IOException {
                 try {
-                    UploadPartRequest request = new UploadPartRequest(bucketName, path, uploadId, partNumber, byteSize, new ByteArrayInputStream(writeBytesRef.get()));
+                    UploadPartRequest request = new UploadPartRequest(bucketName, path, uploadId, partNumber, byteSize, new ByteBufferInputStream(buffer,byteSize));
                     UploadPartResponse response = client.uploadPart(request);
                     if (!ObjectUtils.isEmpty(response)) {
                         eTagMap.put(partNumber, response.getPartETag());

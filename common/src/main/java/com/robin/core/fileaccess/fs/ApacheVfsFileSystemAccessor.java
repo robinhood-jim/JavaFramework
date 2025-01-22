@@ -17,15 +17,13 @@ import org.springframework.util.ObjectUtils;
 
 import java.io.FileNotFoundException;
 import java.io.*;
-import java.lang.ref.WeakReference;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
 
 public class ApacheVfsFileSystemAccessor extends AbstractFileSystemAccessor {
     private ThreadLocal<FileObject> local = new ThreadLocal<>();
-    //private StandardFileSystemManager manager = null;
-    private ThreadLocal<StandardFileSystemManager> managerLocal=new ThreadLocal<>();
+    private StandardFileSystemManager manager;
 
     public ApacheVfsFileSystemAccessor() {
         this.identifier = Const.FILESYSTEM.VFS.getValue();
@@ -35,10 +33,9 @@ public class ApacheVfsFileSystemAccessor extends AbstractFileSystemAccessor {
     public void init(DataCollectionMeta meta) {
         super.init(meta);
         try {
-            StandardFileSystemManager manager = new StandardFileSystemManager();
+            manager = new StandardFileSystemManager();
             logger.info(" manager {} ", manager);
             manager.init();
-            managerLocal.set(manager);
         } catch (Exception ex) {
             logger.error("", ex);
         }
@@ -52,11 +49,11 @@ public class ApacheVfsFileSystemAccessor extends AbstractFileSystemAccessor {
         VfsParam param = new VfsParam();
         InputStream stream;
         try {
-            ConvertUtil.convertToTarget(param, colmetaLocal.get().getResourceCfgMap());
-            FileObject fileObject = managerLocal.get().resolveFile(getUriByParam(param, resourcePath).toString(), getOptions(param));
+            ConvertUtil.convertToTarget(param, colmeta.getResourceCfgMap());
+            FileObject fileObject = manager.resolveFile(getUriByParam(param, resourcePath).toString(), getOptions(param));
             checkAndSetFileObject(fileObject);
-            stream = getInResource(fileObject, colmetaLocal.get());
-            return Pair.of(new BufferedReader(new InputStreamReader(stream, colmetaLocal.get().getEncode())), stream);
+            stream = getInResource(fileObject, colmeta);
+            return Pair.of(new BufferedReader(new InputStreamReader(stream, colmeta.getEncode())), stream);
         } catch (Exception ex) {
             throw new IOException(ex);
         }
@@ -68,10 +65,10 @@ public class ApacheVfsFileSystemAccessor extends AbstractFileSystemAccessor {
         BufferedWriter writer;
         OutputStream outputStream;
         try {
-            FileObject fileObject = createNotExists(colmetaLocal.get(), resourcePath);
+            FileObject fileObject = createNotExists(colmeta, resourcePath);
             checkAndSetFileObject(fileObject);
             outputStream = fileObject.getContent().getOutputStream();
-            writer = getWriterByPath(resourcePath, outputStream, colmetaLocal.get().getEncode());
+            writer = getWriterByPath(resourcePath, outputStream, colmeta.getEncode());
             return Pair.of(writer, outputStream);
         } catch (Exception ex) {
             throw new IOException(ex);
@@ -82,7 +79,7 @@ public class ApacheVfsFileSystemAccessor extends AbstractFileSystemAccessor {
     public OutputStream getOutResourceByStream(String resourcePath) throws IOException {
         OutputStream out;
         try {
-            FileObject fileObject = createNotExists(colmetaLocal.get(), resourcePath);
+            FileObject fileObject = createNotExists(colmeta, resourcePath);
             checkAndSetFileObject(fileObject);
             out = getOutputStreamByPath(resourcePath, fileObject.getContent().getOutputStream());
             return out;
@@ -95,10 +92,10 @@ public class ApacheVfsFileSystemAccessor extends AbstractFileSystemAccessor {
     public InputStream getInResourceByStream(String resourcePath) throws IOException {
         VfsParam param = new VfsParam();
         try {
-            ConvertUtil.convertToTarget(param, colmetaLocal.get().getResourceCfgMap());
-            FileObject fileObject =  managerLocal.get().resolveFile(getUriByParam(param, resourcePath).toString(), getOptions(param));
+            ConvertUtil.convertToTarget(param, colmeta.getResourceCfgMap());
+            FileObject fileObject =  manager.resolveFile(getUriByParam(param, resourcePath).toString(), getOptions(param));
             checkAndSetFileObject(fileObject);
-            return getInResource(fileObject, colmetaLocal.get());
+            return getInResource(fileObject, colmeta);
         } catch (Exception ex) {
             throw new IOException(ex);
         }
@@ -146,7 +143,7 @@ public class ApacheVfsFileSystemAccessor extends AbstractFileSystemAccessor {
 
     public List<String> listFilePath(VfsParam param, String path) {
         List<String> list = new ArrayList<>();
-        try (FileObject fo =  managerLocal.get().resolveFile(getUriByParam(param, path).toString(), getOptions(param))) {
+        try (FileObject fo =  manager.resolveFile(getUriByParam(param, path).toString(), getOptions(param))) {
             if (FileType.FOLDER.equals(fo.getType())) {
                 FileObject[] object = fo.getChildren();
                 if (!ObjectUtils.isEmpty(object)) {
@@ -166,7 +163,7 @@ public class ApacheVfsFileSystemAccessor extends AbstractFileSystemAccessor {
     public FileObject createNotExists(DataCollectionMeta meta, String resourcePath) throws Exception {
         VfsParam param = new VfsParam();
         ConvertUtil.convertToTarget(param, meta.getResourceCfgMap());
-        try (FileObject fo =  managerLocal.get().resolveFile(getUriByParam(param, resourcePath).toString(), getOptions(param))) {
+        try (FileObject fo =  manager.resolveFile(getUriByParam(param, resourcePath).toString(), getOptions(param))) {
             if (fo.exists()) {
                 if (FileType.FOLDER.equals(fo.getType())) {
                     logger.error("File {} is a directory！", resourcePath);
@@ -188,7 +185,7 @@ public class ApacheVfsFileSystemAccessor extends AbstractFileSystemAccessor {
     }
 
     public boolean checkFileExist(VfsParam param, String resourcePath) throws Exception {
-        try (FileObject fo =  managerLocal.get().resolveFile(getUriByParam(param, resourcePath).toString(), getOptions(param))) {
+        try (FileObject fo =  manager.resolveFile(getUriByParam(param, resourcePath).toString(), getOptions(param))) {
             return fo.exists();
         } catch (FileSystemException ex) {
             throw ex;
@@ -199,7 +196,7 @@ public class ApacheVfsFileSystemAccessor extends AbstractFileSystemAccessor {
     public OutputStream getRawOutputStream(String resourcePath) throws IOException {
         OutputStream out;
         try {
-            FileObject fileObject = createNotExists(colmetaLocal.get(), resourcePath);
+            FileObject fileObject = createNotExists(colmeta, resourcePath);
             checkAndSetFileObject(fileObject);
             out = fileObject.getContent().getOutputStream();
             return out;
@@ -212,10 +209,10 @@ public class ApacheVfsFileSystemAccessor extends AbstractFileSystemAccessor {
     public InputStream getRawInputStream(String resourcePath) throws IOException {
         VfsParam param = new VfsParam();
         try {
-            ConvertUtil.convertToTarget(param, colmetaLocal.get().getResourceCfgMap());
-            FileObject fileObject =  managerLocal.get().resolveFile(getUriByParam(param, resourcePath).toString(), getOptions(param));
+            ConvertUtil.convertToTarget(param, colmeta.getResourceCfgMap());
+            FileObject fileObject =  manager.resolveFile(getUriByParam(param, resourcePath).toString(), getOptions(param));
             checkAndSetFileObject(fileObject);
-            return getRawInResource(fileObject, colmetaLocal.get());
+            return getRawInResource(fileObject, colmeta);
         } catch (Exception ex) {
             throw new IOException(ex);
         }
@@ -287,11 +284,11 @@ public class ApacheVfsFileSystemAccessor extends AbstractFileSystemAccessor {
     public boolean exists(String resourcePath) throws IOException {
         VfsParam param = new VfsParam();
         try {
-            ConvertUtil.convertToTarget(param, colmetaLocal.get().getResourceCfgMap());
+            ConvertUtil.convertToTarget(param, colmeta.getResourceCfgMap());
         } catch (Exception ex) {
             throw new IOException(ex);
         }
-        try (FileObject fo =  managerLocal.get().resolveFile(getUriByParam(param, resourcePath).toString(), getOptions(param))) {
+        try (FileObject fo =  manager.resolveFile(getUriByParam(param, resourcePath).toString(), getOptions(param))) {
             return fo.exists();
         } catch (Exception ex) {
             throw new IOException(ex);
@@ -302,11 +299,11 @@ public class ApacheVfsFileSystemAccessor extends AbstractFileSystemAccessor {
     public long getInputStreamSize(String resourcePath) throws IOException {
         VfsParam param = new VfsParam();
         try {
-            ConvertUtil.convertToTarget(param, colmetaLocal.get().getResourceCfgMap());
+            ConvertUtil.convertToTarget(param, colmeta.getResourceCfgMap());
         } catch (Exception ex) {
             throw new IOException(ex);
         }
-        try (FileObject fileObject =  managerLocal.get().resolveFile(getUriByParam(param, resourcePath).toString(), getOptions(param))) {
+        try (FileObject fileObject =  manager.resolveFile(getUriByParam(param, resourcePath).toString(), getOptions(param))) {
             return fileObject.getContent().getSize();
         } catch (Exception ex) {
             throw new IOException(ex);
@@ -330,9 +327,8 @@ public class ApacheVfsFileSystemAccessor extends AbstractFileSystemAccessor {
 
     @Override
     public void close() throws IOException {
-        if( managerLocal.get()!=null){
-            managerLocal.get().close();
-            managerLocal.remove();
+        if( manager!=null){
+            manager.close();
         }
     }
 }
