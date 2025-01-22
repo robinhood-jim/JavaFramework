@@ -319,10 +319,10 @@ public class ApacheVfsFileSystemAccessor extends AbstractFileSystemAccessor {
 
     @Override
     public void finishReadOrWrite() throws IOException {
-        if (local.get() != null) {
+        if (local.get() != null && local.get().isContentOpen()) {
             local.get().close();
-            local.remove();
         }
+        local.remove();
     }
 
     @Override

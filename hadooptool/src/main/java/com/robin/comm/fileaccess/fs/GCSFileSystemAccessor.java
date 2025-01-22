@@ -37,6 +37,7 @@ public class GCSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
 
     @Override
     public void init(DataCollectionMeta meta) {
+        super.init(meta);
         Assert.notNull(meta.getResourceCfgMap().get(ResourceConst.GCSPARAM.CREDENTIALSFILE.getValue()), "must provide credentialsFile");
         credentialsFile=meta.getResourceCfgMap().get(ResourceConst.GCSPARAM.CREDENTIALSFILE.getValue()).toString();
         if(!ObjectUtils.isEmpty(meta.getResourceCfgMap().get(ResourceConst.GCSPARAM.SCOPES.getValue()))){

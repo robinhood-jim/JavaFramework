@@ -195,16 +195,17 @@ public class ConvertUtil {
         Map<String, Method> srcmap = ReflectUtils.returnGetMethods(src.getClass());
         Map<String, Method> targetMap = ReflectUtils.returnSetMethods(target.getClass());
 
-        List<String> dirtyColumnList = src.getDirtyColumn();
-        for (String s : dirtyColumnList) {
-            Method setMethod = targetMap.get(s);
-            if (setMethod != null) {
-                Method getMethod = srcmap.get(s);
-                Object value = getMethod.invoke(src, (Object[]) null);
-                if (value != null) {
-                    setMethod.invoke(target, value);
-                } else {
-                    setMethod.invoke(target);
+        if(!ObjectUtils.isEmpty(src.getDirtyColumn())) {
+            for (String s : src.getDirtyColumn()) {
+                Method setMethod = targetMap.get(s);
+                if (setMethod != null) {
+                    Method getMethod = srcmap.get(s);
+                    Object value = getMethod.invoke(src, (Object[]) null);
+                    if (value != null) {
+                        setMethod.invoke(target, value);
+                    } else {
+                        setMethod.invoke(target);
+                    }
                 }
             }
         }
@@ -629,8 +630,13 @@ public class ConvertUtil {
     public static void setDateFormat(String formatStr) {
         currentFormatter.set(DateTimeFormatter.ofPattern(formatStr));
     }
+    public static void setDateFormat(DateTimeFormatter formatter){
+        currentFormatter.set(formatter);
+    }
 
     public static void finishConvert() {
-        currentFormatter.remove();
+        if(currentFormatter.get()!=null) {
+            currentFormatter.remove();
+        }
     }
 }

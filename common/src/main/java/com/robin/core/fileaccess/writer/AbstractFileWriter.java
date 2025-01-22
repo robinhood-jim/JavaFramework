@@ -119,6 +119,7 @@ public abstract class AbstractFileWriter implements IResourceWriter {
 			writer.close();
 		}
 		accessUtil.finishWrite(out);
+		accessUtil.finishReadOrWrite();
 		if(out!=null){
 			out.close();
 		}

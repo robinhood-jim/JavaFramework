@@ -74,7 +74,7 @@ public class QiniuOutputStream extends AbstractUploadPartOutputStream {
     protected String uploadSingle() throws IOException {
         String token = getToken();
 
-        Response result = manager.put(new ByteBufferInputStream(buffer, position), position, meta.getPath(), token, null, getContentType(meta), true);
+        Response result = manager.put(new ByteBufferInputStream(buffer, position), position, path, token, null, getContentType(meta), true);
         DefaultPutRet putRet = gson.fromJson(result.bodyString(), DefaultPutRet.class);
         if (!ObjectUtils.isEmpty(putRet)) {
             log.info("upload success {}", putRet.key);

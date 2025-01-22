@@ -176,7 +176,7 @@ public abstract class AbstractUploadPartOutputStream extends OutputStream {
     }
 
     protected void initHeap() {
-        int initLength = !ObjectUtils.isEmpty(meta.getResourceCfgMap().get(ResourceConst.DEFAULTCACHEOFFHEAPSIZEKEY))
+        int initLength =!ObjectUtils.isEmpty(meta) && !ObjectUtils.isEmpty(meta.getResourceCfgMap().get(ResourceConst.DEFAULTCACHEOFFHEAPSIZEKEY))
                 ? Integer.parseInt(meta.getResourceCfgMap().get(ResourceConst.DEFAULTCACHEOFFHEAPSIZEKEY).toString()) : ResourceConst.DEFAULTCACHEOFFHEAPSIZE;
         segment = MemorySegmentFactory.allocateOffHeapUnsafeMemory(initLength, this, new Thread() {
         });

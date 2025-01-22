@@ -88,31 +88,6 @@ public abstract class AbstractCloudStorageFileSystemAccessor extends AbstractFil
     protected abstract OutputStream getOutputStream(String path) throws IOException;
 
 
-    /*protected boolean uploadStorage(String bucketName, DataCollectionMeta meta, OutputStream outputStream) {
-        try {
-            if (!useFileCache) {
-                ByteBufferOutputStream out1=(ByteBufferOutputStream) outputStream;
-                out1.reset();
-                ByteBufferInputStream inputStream = new ByteBufferInputStream(out1.getByteBuffer(),out1.getCount());
-                return putObject(bucketName, meta, inputStream, out1.getCount());
-            } else {
-                outputStream.close();
-                return putObject(bucketName, meta, Files.newInputStream(Paths.get(tmpFilePath)), Files.size(Paths.get(tmpFilePath)));
-            }
-        } catch (IOException ex) {
-            log.error("{}", ex.getMessage());
-        }finally {
-            try {
-                if (!ObjectUtils.isEmpty(outputStream)) {
-                    outputStream.close();
-                }
-            }catch (IOException ex){
-
-            }
-        }
-        return false;
-    }*/
-
     protected String getContentType(DataCollectionMeta meta) {
         return !ObjectUtils.isEmpty(meta.getContent()) && !ObjectUtils.isEmpty(meta.getContent().getContentType()) ? meta.getContent().getContentType() : ResourceConst.DEFAULTCONTENTTYPE;
     }
