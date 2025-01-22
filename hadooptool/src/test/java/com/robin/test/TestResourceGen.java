@@ -6,6 +6,7 @@ import com.robin.core.base.datameta.BaseDataBaseMeta;
 import com.robin.core.base.datameta.DataBaseMetaFactory;
 import com.robin.core.base.datameta.DataBaseParam;
 import com.robin.core.base.util.Const;
+import com.robin.core.fileaccess.fs.FileSystemAccessorFactory;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.writer.AbstractFileWriter;
 import com.robin.core.fileaccess.writer.TextFileWriterFactory;
@@ -51,7 +52,7 @@ public class TestResourceGen {
 			List<Map<String, Object>> list=SimpleJdbcDao.queryString(conn, "select config_name as name,config_value as value from t_hadoop_cluster_config where cluster_id=4");
 			conn=SimpleJdbcDao.getConnection(meta1);
 			List<Map<String, Object>> resultlist=SimpleJdbcDao.queryString(conn, "select info_id,url,title,content from shw_internet_info_dtl");
-			HdfsFileSystemAccessor util=new HdfsFileSystemAccessor();
+			HdfsFileSystemAccessor util= (HdfsFileSystemAccessor) FileSystemAccessorFactory.getResourceAccessorByType("hdfs");
 			Map<String, Object> hdfsparam=new HashMap<String, Object>();
 			for (Map<String, Object> tmap:list) {
 				hdfsparam.put(tmap.get("name").toString(), tmap.get("value"));
@@ -59,7 +60,7 @@ public class TestResourceGen {
 			colmeta.setResourceCfgMap(hdfsparam);
 			colmeta.setPath("/testdata/test1.gz");
 			colmeta.setEncode("UTF-8");
-			pair=util.getOutResourceByWriter(colmeta, colmeta.getPath());
+			pair=util.getOutResourceByWriter(colmeta.getPath());
 			colmeta.setFileFormat(Const.FILETYPE_JSON);
 			AbstractFileWriter jwriter=(AbstractFileWriter) TextFileWriterFactory.getWriterByType(colmeta, pair.getKey());
 			System.out.println(new Date());

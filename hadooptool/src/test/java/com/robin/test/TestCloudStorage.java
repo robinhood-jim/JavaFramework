@@ -43,23 +43,19 @@ public class TestCloudStorage extends TestCase {
         builder.addColumn("amount",Const.META_TYPE_INTEGER,null);
         builder.addColumn("type",Const.META_TYPE_INTEGER,null);
 
-        builder.resourceCfg(ResourceConst.PARQUETFILEFORMAT,ResourceConst.PARQUETSUPPORTFORMAT.PROTOBUF.getValue()).fileFormat(Const.FILEFORMATSTR.ARROW.getValue())
-                .resPath("tmp/bigdata3.arrow")
+        builder.resourceCfg(ResourceConst.PARQUETFILEFORMAT,ResourceConst.PARQUETSUPPORTFORMAT.PROTOBUF.getValue()).fileFormat(Const.FILEFORMATSTR.CSV.getValue())
+                .resPath("/tmp/bigdata3.csv.gz").resourceCfg("protocol",Const.VFS_PROTOCOL.FTP.getValue())
+                .resourceCfg("hostName","127.0.0.1").resourceCfg("userName","test").resourceCfg("password","test").protocol(Const.VFS_PROTOCOL.FTP.getValue()).fsType(Const.FILESYSTEM.VFS.getValue())
                 //.resourceCfg(ResourceConst.USEASYNCUPLOAD,"true")
                 .resourceCfg(ResourceConst.DEFAULTCACHEOFFHEAPSIZEKEY,1000*1000*6);
         ResourceBundle bundle=ResourceBundle.getBundle("minio");
         DataCollectionMeta colmeta=builder.build();
-        MinioFileSystemAccessor.Builder builder1=new MinioFileSystemAccessor.Builder();
+        /*MinioFileSystemAccessor.Builder builder1=new MinioFileSystemAccessor.Builder();
         MinioFileSystemAccessor accessor=builder1.accessKey(bundle.getString("minio.accessKey")).secretKey(bundle.getString("minio.secretKey")).endpoint(bundle.getString("minio.endpoint"))
-                .bucket("test").build();
-		/*QiniuFileSystemAccessor.Builder builder1=new QiniuFileSystemAccessor.Builder();
-		ResourceBundle bundle=ResourceBundle.getBundle("qiniu");
+                .bucket("test").build();*/
 
-		builder1.domain(bundle.getString("domain")).region(Region.autoRegion()).bucket(bundle.getString("bucket"))
-				.accessKey(bundle.getString("accessKey")).urlPrefix(bundle.getString("urlPrefix")).secretKey(bundle.getString("secretKey"));
-		QiniuFileSystemAccessor accessor=builder1.build();*/
 
-        try (AbstractFileWriter jwriter = (AbstractFileWriter) TextFileWriterFactory.getWriterByType(colmeta, accessor)){
+        try (AbstractFileWriter jwriter = (AbstractFileWriter) TextFileWriterFactory.getWriterByType(colmeta)){
             System.out.println(new Date());
             jwriter.beginWrite();
             Map<String, Object> recMap = new HashMap<>();
@@ -69,7 +65,7 @@ public class TestCloudStorage extends TestCase {
                 priceMap.put(i,i*10.0);
             }
 
-            for (int i = 0; i < 50000; i++) {
+            for (int i = 0; i < 10000; i++) {
                 recMap.put("id", Long.valueOf(i));
                 recMap.put("name", StringUtils.generateRandomChar(32));
                 recMap.put("description", StringUtils.generateRandomChar(32));
@@ -98,9 +94,10 @@ public class TestCloudStorage extends TestCase {
         builder.addColumn("type",Const.META_TYPE_INTEGER,null);
 
         builder.resourceCfg(ResourceConst.PARQUETFILEFORMAT,ResourceConst.PARQUETSUPPORTFORMAT.AVRO.getValue())
-                .resourceCfg(ResourceConst.STORAGEFILTERSQL,"select name,sno,type,price*amount as totalFee from test where price*amount>500 and sno<7 and name like 'A%'")
+                //.resourceCfg(ResourceConst.STORAGEFILTERSQL,"select name,sno,type,price*amount as totalFee from test where price*amount>500 and sno<7 and name like 'A%'")
+                .resourceCfg(ResourceConst.STORAGEFILTERSQL,"select type,sno,sum(price*amount) as totalFee from test where price*amount>500 group by sno,type having sum(price*amount)>100000.0")
                 .fileFormat(Const.FILEFORMATSTR.CSV.getValue()).tableName("test")
-                .resPath("tmp/bigdata3.CSV.gz");
+                .resPath("tmp/bigdata3.csv.gz");
         ResourceBundle bundle=ResourceBundle.getBundle("minio");
         DataCollectionMeta colmeta=builder.build();
         MinioFileSystemAccessor.Builder builder1=new MinioFileSystemAccessor.Builder();
