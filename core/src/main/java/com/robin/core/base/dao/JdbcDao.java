@@ -277,7 +277,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
             List<Object> objList = new ArrayList<>();
             StringBuilder buffer = getQueryPartByCondition(type, condition, objList);
             String sumSQL = sqlGen.generateCountSql(buffer.toString());
-            return getJdbcTemplate().queryForObject(sumSQL, objList.toArray(), Integer.class);
+            return returnTemplate().queryForObject(sumSQL, objList.toArray(), Integer.class);
         }catch (Exception ex){
             throw new DAOException(ex);
         }
@@ -734,7 +734,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
     @Override
     public <T extends BaseObject> T getEntity(Class<T> clazz, Serializable id) throws DAOException {
         try {
-            T obj = clazz.newInstance();
+            T obj = clazz.getDeclaredConstructor().newInstance();
             EntityMappingUtil.SelectSegment segment = EntityMappingUtil.getSelectPkSegment(clazz, id, sqlGen, this);
             List<Map<String, Object>> list1 = queryBySql(segment.getSelectSql(), segment.getAvailableFields(), segment.getValues().toArray());
             if (!CollectionUtils.isEmpty(list1)) {
@@ -884,7 +884,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
                         field.getSetMethod().invoke(obj, ConvertUtil.parseParameter(field.getGetMethod().getReturnType(), map.get(field.getPropertyName().toUpperCase())));
                     }
                 } else {
-                    Object pkObj = field.getGetMethod().getReturnType().newInstance();
+                    Object pkObj = field.getGetMethod().getReturnType().getDeclaredConstructor().newInstance();
                     field.getSetMethod().invoke(obj, pkObj);
                     for (FieldContent pkField : field.getPrimaryKeys()) {
                         pkField.getSetMethod().invoke(pkObj, ConvertUtil.parseParameter(pkField.getGetMethod().getReturnType(), map.get(pkField.getPropertyName())));
@@ -974,7 +974,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
 
     private <T extends BaseObject> void wrapList(Class<T> type, List<T> retlist, List<FieldContent> fields, List<Map<String, Object>> rsList) throws Exception {
         for (Map<String, Object> map : rsList) {
-            T obj = type.newInstance();
+            T obj = type.getDeclaredConstructor().newInstance();
             wrapResultToModel(obj, map, fields);
             retlist.add(obj);
         }
