@@ -42,18 +42,22 @@ public class S3FileSystemAccessor extends AbstractCloudStorageFileSystemAccessor
     public void init(DataCollectionMeta meta) {
         Assert.notNull(meta, "");
         if (!CollectionUtils.isEmpty(meta.getResourceCfgMap())) {
-            if (meta.getResourceCfgMap().containsKey(ResourceConst.S3PARAM.ACCESSKEY.getValue()) &&
-                    meta.getResourceCfgMap().containsKey(ResourceConst.S3PARAM.SECRET.getValue())) {
-                regionName = meta.getResourceCfgMap().get(ResourceConst.S3PARAM.REGION.getValue()).toString();
-                region = ObjectUtils.isEmpty(regionName) ? Region.US_EAST_1 : Region.of(regionName);
-                client = AwsUtils.getClientByCredential(region, meta.getResourceCfgMap().get(ResourceConst.S3PARAM.ACCESSKEY.getValue()).toString(), meta.getResourceCfgMap().get(ResourceConst.S3PARAM.SECRET.getValue()).toString());
-                asyncClient = AwsUtils.getAsyncClientByCredential(region, meta.getResourceCfgMap().get(ResourceConst.S3PARAM.ACCESSKEY.getValue()).toString(), meta.getResourceCfgMap().get(ResourceConst.S3PARAM.SECRET.getValue()).toString());
-            }else{
-                throw new MissingConfigException("resource config missing!");
+            if(accessKey==null && meta.getResourceCfgMap().containsKey(ResourceConst.S3PARAM.ACCESSKEY.getValue())){
+                accessKey=meta.getResourceCfgMap().get(ResourceConst.S3PARAM.ACCESSKEY.getValue()).toString();
+            }
+            if(secret!=null && meta.getResourceCfgMap().containsKey(ResourceConst.S3PARAM.SECRET.getValue())){
+                secret=meta.getResourceCfgMap().get(ResourceConst.S3PARAM.SECRET.getValue()).toString();
+            }
+            if(regionName!=null && meta.getResourceCfgMap().containsKey(ResourceConst.S3PARAM.REGION.getValue())){
+                regionName=meta.getResourceCfgMap().get(ResourceConst.S3PARAM.REGION.getValue()).toString();
             }
         }else{
             throw new MissingConfigException("resource config must provided!");
         }
+        region = ObjectUtils.isEmpty(regionName) ? Region.US_EAST_1 : Region.of(regionName);
+        client = AwsUtils.getClientByCredential(region, accessKey, secret);
+        asyncClient = AwsUtils.getAsyncClientByCredential(region, accessKey, secret);
+
     }
     public void init(){
         Assert.notNull(accessKey,"accessKey name required!");

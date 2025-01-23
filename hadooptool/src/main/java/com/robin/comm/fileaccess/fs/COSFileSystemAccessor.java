@@ -44,17 +44,23 @@ public class COSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
     @Override
     public void init(DataCollectionMeta meta) {
         Assert.isTrue(!CollectionUtils.isEmpty(meta.getResourceCfgMap()),"config map is empty!");
-        Assert.notNull(meta.getResourceCfgMap().get(ResourceConst.COSPARAM.HTTPPROTOCOL.getValue()),"must provide protocol");
-        Assert.notNull(meta.getResourceCfgMap().get(ResourceConst.COSPARAM.REGION.getValue()),"must provide region");
-        Assert.notNull(meta.getResourceCfgMap().get(ResourceConst.COSPARAM.ACESSSKEY.getValue()),"must provide accessKey");
-        Assert.notNull(meta.getResourceCfgMap().get(ResourceConst.COSPARAM.SECURITYKEY.getValue()),"must provide securityKey");
-        Region region=new Region(meta.getResourceCfgMap().get(ResourceConst.COSPARAM.REGION.getValue()).toString());
+        if(ObjectUtils.isEmpty(protocol) && meta.getResourceCfgMap().containsKey(ResourceConst.COSPARAM.REGION.getValue())){
+            protocol="https".equalsIgnoreCase(meta.getResourceCfgMap().get(ResourceConst.COSPARAM.HTTPPROTOCOL.getValue()).toString())?
+                    HttpProtocol.https:HttpProtocol.http;
+        }
+        if(ObjectUtils.isEmpty(regionName) && meta.getResourceCfgMap().containsKey(ResourceConst.COSPARAM.REGION.getValue()) ){
+            regionName=meta.getResourceCfgMap().get(ResourceConst.COSPARAM.REGION.getValue()).toString();
+        }
+        if(ObjectUtils.isEmpty(accessKey) && meta.getResourceCfgMap().containsKey(ResourceConst.COSPARAM.ACESSSKEY.getValue())){
+            accessKey=meta.getResourceCfgMap().get(ResourceConst.COSPARAM.REGION.getValue()).toString();
+        }
+        if(ObjectUtils.isEmpty(securityKey) && meta.getResourceCfgMap().containsKey(ResourceConst.COSPARAM.SECURITYKEY.getValue())){
+            securityKey=meta.getResourceCfgMap().get(ResourceConst.COSPARAM.SECURITYKEY.getValue()).toString();
+        }
+        Region region=new Region(regionName);
         ClientConfig config=new ClientConfig(region);
-        HttpProtocol protocol="https".equalsIgnoreCase(meta.getResourceCfgMap().get(ResourceConst.COSPARAM.HTTPPROTOCOL.getValue()).toString())?
-                HttpProtocol.https:HttpProtocol.http;
         config.setHttpProtocol(protocol);
-        COSCredentials cosCredentials = new BasicCOSCredentials(meta.getResourceCfgMap().get(ResourceConst.COSPARAM.ACESSSKEY.getValue()).toString(),
-                meta.getResourceCfgMap().get(ResourceConst.COSPARAM.SECURITYKEY.getValue()).toString());
+        COSCredentials cosCredentials = new BasicCOSCredentials(accessKey, securityKey);
         cosClient = new COSClient(cosCredentials, config);
     }
     public void init(){
