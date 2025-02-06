@@ -108,8 +108,7 @@ public class AvroFileIterator extends AbstractFileIterator {
                     input = new SeekableByteBufferInputStream(segment.getOffHeapBuffer());
                 }
             } else {
-                tmpFile = new File(ResourceUtil.getProcessPath(colmeta.getPath()));
-                input = new SeekableFileInput(tmpFile);
+                input = new SeekableFileInput(new File(ResourceUtil.getProcessPath(colmeta.getPath())));
             }
         }
         Assert.notNull(input, "Seekable input is null");
@@ -179,6 +178,9 @@ public class AvroFileIterator extends AbstractFileIterator {
         }
         if (!ObjectUtils.isEmpty(tmpFile)) {
             FileUtils.deleteQuietly(tmpFile);
+        }
+        if(!ObjectUtils.isEmpty(segment)){
+            segment.free();
         }
         super.close();
     }
