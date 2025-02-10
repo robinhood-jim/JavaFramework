@@ -461,7 +461,7 @@
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-handler</artifactId>
-            <version>4.1.110.Final</version>
+            <version>4.1.118.Final</version>
         </dependency>
         <!-- FileSystem dependency begin -->
         <dependency>
