@@ -993,5 +993,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
         }
     }
 
-
+    public BaseSqlGen getSqlGen() {
+        return sqlGen;
+    }
 }

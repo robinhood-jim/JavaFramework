@@ -169,7 +169,7 @@ public abstract class AbstractController
     {
         Map<String, Object> tmap = new HashMap<>();
         tmap.put("value", "");
-        String message=Translator.toLocale("combo.NullDisplay");
+        String message=messageUtils.getMessage("combo.NullDisplay");
         tmap.put("text", message);
         list.add(tmap);
     }
@@ -200,11 +200,11 @@ public abstract class AbstractController
         }
         Map<String, Object> tmap = new HashMap<>();
         tmap.put("value", Const.VALID);
-        tmap.put("text", Translator.toLocale("combo.yesDisplay"));
+        tmap.put("text", messageUtils.getMessage("combo.yesDisplay"));
         list.add(tmap);
         Map<String, Object> tmap1 = new HashMap<>();
         tmap1.put("value", "0");
-        tmap1.put("text", Translator.toLocale("combo.noDisplay"));
+        tmap1.put("text", messageUtils.getMessage("combo.noDisplay"));
         list.add(tmap1);
         return list;
     }

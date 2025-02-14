@@ -33,4 +33,5 @@ public @interface MappingField {
 	int scale() default 0;
 	int length() default 0;
 	boolean exclude() default false;
+	boolean keyword() default false;
 }

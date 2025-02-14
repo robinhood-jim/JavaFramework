@@ -1,6 +1,9 @@
 package com.robin.core.base.dao.util;
 
+import cn.hutool.core.util.ObjectUtil;
+import com.robin.core.base.annotation.MappingField;
 import lombok.Data;
+import org.springframework.util.ObjectUtils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -16,6 +19,7 @@ public class FieldContent {
     private boolean increment;
     private boolean sequential;
     private boolean primary;
+    private boolean keyword;
     private Field field;
     private Method getMethod;
     private Method setMethod;
@@ -99,6 +103,39 @@ public class FieldContent {
         }
         public Builder setDefaultValue(String value){
             content.setDefaultValue(value);
+            return this;
+        }
+        public Builder withMappingField(MappingField mapfield){
+            String fieldName=null;
+
+            if(!ObjectUtil.isEmpty(mapfield)) {
+                String colfield = mapfield.value();
+                if (!ObjectUtils.isEmpty(colfield)) {
+                    fieldName = colfield;
+                }
+                if (mapfield.precise() != 0) {
+                    content.setPrecise(mapfield.precise());
+                }
+                if (mapfield.scale() != 0) {
+                    content.setScale(mapfield.scale());
+                }
+                if (mapfield.length() != 0) {
+                    content.setLength(mapfield.length());
+                }
+                if (mapfield.increment()) {
+                    content.setIncrement(true);
+                }
+                if (mapfield.primary()) {
+                    content.setPrimary(true);
+                }
+                if (!ObjectUtils.isEmpty(mapfield.sequenceName())) {
+                    content.setSequential(true);
+                    content.setSequenceName(mapfield.sequenceName());
+                }
+                content.setPropertyName(fieldName);
+                content.setKeyword(mapfield.keyword());
+                content.setDataType(mapfield.datatype());
+            }
             return this;
         }
         public FieldContent build(){

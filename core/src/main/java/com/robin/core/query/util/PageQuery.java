@@ -127,8 +127,12 @@ public class  PageQuery<T> implements Serializable {
 			setPageCount(0);
 		}
 	}
-	public void addQueryParameter(Object value){
-		queryParameters.add(value);
+	public void addQueryParameter(Object[] values){
+		if(values.length>0) {
+			for(Object value:values) {
+				queryParameters.add(value);
+			}
+		}
 	}
 	public void addQueryParameter(Collection<Object> values){
 		queryParameters.addAll(values);
@@ -167,7 +171,7 @@ public class  PageQuery<T> implements Serializable {
 			pageQuery.addQueryParameter(collection);
 			return this;
 		}
-		public Builder<T> addQueryParameter(Object obj){
+		public Builder<T> addQueryParameter(Object[] obj){
 			pageQuery.addQueryParameter(obj);
 			return this;
 		}

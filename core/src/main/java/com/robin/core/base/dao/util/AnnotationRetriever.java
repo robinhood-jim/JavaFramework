@@ -425,7 +425,7 @@ public class AnnotationRetriever {
             String fieldName = null;
             String datatype = null;
             FieldContent.Builder builder = new FieldContent.Builder();
-            builder.setGetMethod(getMethod).setSetMethod(setMethod).setField(field).setPropertyName(field.getName());
+            builder.withMappingField(mapfield).setGetMethod(getMethod).setSetMethod(setMethod).setField(field).setPropertyName(field.getName());
             if (mapfield != null) {
                 String colfield = mapfield.value();
                 datatype = mapfield.datatype();
