@@ -54,7 +54,7 @@ public class  PageQuery<T> implements Serializable {
 
 	private List<Condition>				conditions;
 
-	private List<T>	recordSet;
+	private List<T>	recordSet=new ArrayList<>();
 	
 	protected String 					querySql;			
 

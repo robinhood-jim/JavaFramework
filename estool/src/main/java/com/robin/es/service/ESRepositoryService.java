@@ -395,7 +395,7 @@ public abstract class ESRepositoryService<V extends BaseObject, P extends Serial
             sourceBuilder.query(queryBuilder);
             searchRequest.source(sourceBuilder);
             if (!ObjectUtils.isEmpty(page) && page.getPageSize()!=0) {
-                sourceBuilder.from(Integer.valueOf(String.valueOf(page.getPageNumber()*page.getPageSize()))).size(page.getPageSize());
+                sourceBuilder.from(Integer.valueOf(String.valueOf((page.getPageNumber()-1)*page.getPageSize()))).size(page.getPageSize());
             }
             SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
             if (null != response.getHits()) {
@@ -404,7 +404,7 @@ public abstract class ESRepositoryService<V extends BaseObject, P extends Serial
                 if (!ObjectUtils.isEmpty(hits) && hits.length > 0) {
                     for (SearchHit hit : hits) {
                         Map<String, Object> map = hit.getSourceAsMap();
-                        map.put("id",map.get("_id"));
+                        map.put("id",hit.getId());
                         page.getRecordSet().add(map);
                     }
                 }
