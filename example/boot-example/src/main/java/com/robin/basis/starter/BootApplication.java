@@ -8,7 +8,6 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @SpringBootApplication(exclude = {FreeMarkerAutoConfiguration.class})
 @EnableTransactionManagement(proxyTargetClass = true)
-
 @ComponentScan("com.robin")
 public class BootApplication {
     public static  void main(String[] args) throws Exception{

@@ -1,10 +1,13 @@
 package com.robin.basis.config;
 
+import com.robin.basis.service.system.LoginService;
+import com.robin.basis.utils.Md5PasswordEncoder;
 import com.robin.core.base.dao.JdbcDao;
 import com.robin.core.base.spring.SpringContextHolder;
 import com.robin.core.query.util.QueryFactory;
 import com.robin.core.sql.util.BaseSqlGen;
 import com.robin.core.sql.util.MysqlSqlGen;
+import com.robin.core.web.service.ILoginService;
 import com.zaxxer.hikari.HikariDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,10 +16,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.jdbc.DataSourceBuilder;
+import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.*;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.jdbc.support.lob.DefaultLobHandler;
 import org.springframework.jdbc.support.lob.LobHandler;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import javax.sql.DataSource;
 
@@ -73,8 +78,8 @@ public class DbConfig {
         dao.setSqlGen(sqlGen);
         return dao;
     }
-    @Bean
-    public ResourceBundleMessageSource getMessageSource(){
+    //@Bean
+    public MessageSource getMessageSource(){
         ResourceBundleMessageSource messageSource=new ResourceBundleMessageSource();
         messageSource.setBasename("messages");
         messageSource.setDefaultEncoding("UTF-8");
@@ -82,11 +87,19 @@ public class DbConfig {
         return messageSource;
     }
     @Bean
+    public ILoginService getLoginService(){
+        return new LoginService();
+    }
+
+    @Bean
     @Lazy(value = false)
     public SpringContextHolder getHolder(){
         return new SpringContextHolder();
     }
-
+    @Bean
+    public PasswordEncoder getEncoder(){
+        return new Md5PasswordEncoder();
+    }
 
 
 
