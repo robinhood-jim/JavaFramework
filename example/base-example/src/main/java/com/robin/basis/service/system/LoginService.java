@@ -151,7 +151,7 @@ public class LoginService implements ILoginService {
     public void getUserRightsByRole(Session session) {
         Map<String, Object> retMap = new HashMap<>();
         //get userRole
-        PageQuery.Builder<Map<String,Object>> userBuilder = new PageQuery.Builder<>();
+        /*PageQuery.Builder<Map<String,Object>> userBuilder = new PageQuery.Builder<>();
         userBuilder.setPageSize(0).setSelectedId("GETUSER_ROLE").addQueryParameterArr(session.getUserId());
         PageQuery<Map<String,Object>> query = userBuilder.build();
         jdbcDao.queryBySelectId(query);
@@ -167,9 +167,8 @@ public class LoginService implements ILoginService {
             //未配置使用缺省角色
             roleIds.add(Const.ROLEDEF.NORMAL.getId());
             roleCodes.add(Const.ROLEDEF.NORMAL.getCode());
-            //throw new ServiceException("user " + session.getUserId() + " does not have any role");
         }
-        retMap.put("roles", roleCodes);
+        retMap.put("roles", roleCodes);*/
         //get user org info
         PageQuery.Builder<Map<String,Object>> builder=new PageQuery.Builder<>();
         builder.setPageSize(0).setSelectedId("GETUSERORGINFO").addQueryParameterArr(new Object[]{session.getUserId()});
@@ -186,7 +185,7 @@ public class LoginService implements ILoginService {
         //get user access resources
         PageQuery.Builder resourceBuilder = new PageQuery.Builder();
         resourceBuilder.setPageSize(0).setSelectedId("GET_RESOURCEINFO")
-                .putNamedParameter("userId", session.getUserId()).putNamedParameter("roleIds", roleIds);
+                .putNamedParameter("userId", session.getUserId());
         PageQuery query1 = resourceBuilder.build();
         jdbcDao.queryBySelectId(query1);
         if (!query1.getRecordSet().isEmpty()) {

@@ -17,6 +17,8 @@ package com.robin.basis.controller.user;
 
 import cn.hutool.jwt.JWTPayload;
 import cn.hutool.jwt.JWTUtil;
+import com.robin.basis.dto.SysMenuDTO;
+import com.robin.basis.service.system.SysResourceService;
 import com.robin.core.base.dao.JdbcDao;
 import com.robin.core.base.exception.MissingConfigException;
 import com.robin.core.base.spring.SpringContextHolder;
@@ -54,6 +56,8 @@ public class LoginController extends AbstractController {
     private JdbcDao jdbcDao;
     @Resource
     private RedisTemplate<String,Object> template;
+    @Resource
+    private SysResourceService resourceService;
 
 
     @PostMapping("/login")
@@ -203,6 +207,19 @@ public class LoginController extends AbstractController {
         Map<String,Object> retMap=new HashMap<>();
         retMap.put("user",session);
         retMap.put("roles",session.getRoles().keySet().toArray());
+        return retMap;
+    }
+    @GetMapping("/getRouters")
+    @ResponseBody
+    public Map<String,Object> getRouter(HttpServletRequest request){
+        Map<String,Object> retMap=new HashMap<>();
+        if (request.getSession().getAttribute(Const.SESSION) != null) {
+            Session session = (Session) request.getSession().getAttribute(Const.SESSION);
+            List<SysMenuDTO> routers=resourceService.getMenuList(session.getUserId());
+            retMap=wrapObject(routers);
+        }else {
+            wrapError(retMap,"not login");
+        }
         return retMap;
     }
     

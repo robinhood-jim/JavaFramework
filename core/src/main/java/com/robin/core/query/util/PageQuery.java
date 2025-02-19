@@ -134,6 +134,9 @@ public class  PageQuery<T> implements Serializable {
 			}
 		}
 	}
+	public void addNamedParameter(String key,Object value){
+		namedParameters.put(key,value);
+	}
 	public void addQueryParameter(Collection<Object> values){
 		queryParameters.addAll(values);
 	}

@@ -1,7 +1,6 @@
 package com.robin.basis.config;
 
 import com.robin.basis.service.system.LoginService;
-import com.robin.basis.utils.Md5PasswordEncoder;
 import com.robin.core.base.dao.JdbcDao;
 import com.robin.core.base.spring.SpringContextHolder;
 import com.robin.core.query.util.QueryFactory;
@@ -21,7 +20,6 @@ import org.springframework.context.annotation.*;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.jdbc.support.lob.DefaultLobHandler;
 import org.springframework.jdbc.support.lob.LobHandler;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 import javax.sql.DataSource;
 
@@ -96,10 +94,7 @@ public class DbConfig {
     public SpringContextHolder getHolder(){
         return new SpringContextHolder();
     }
-    @Bean
-    public PasswordEncoder getEncoder(){
-        return new Md5PasswordEncoder();
-    }
+
 
 
 
