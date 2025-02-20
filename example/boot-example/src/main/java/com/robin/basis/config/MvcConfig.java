@@ -4,12 +4,14 @@ package com.robin.basis.config;
 import com.google.code.kaptcha.impl.DefaultKaptcha;
 import com.google.code.kaptcha.util.Config;
 import com.robin.basis.interceptor.LoginInterceptor;
+import com.robin.basis.utils.Md5PasswordEncoder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 
 import org.springframework.context.support.ResourceBundleMessageSource;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -49,7 +51,7 @@ public class MvcConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(getLoginInterceptor()).addPathPatterns("/**");
+        //registry.addInterceptor(getLoginInterceptor()).addPathPatterns("/**");
         //registry.addInterceptor(new SsoInterceptor(ignoreUrls,ignoreResources,oauthUrl)).addPathPatterns("/**");
         registry.addInterceptor(localeChangeInterceptor());
 
@@ -80,6 +82,10 @@ public class MvcConfig implements WebMvcConfigurer {
         Config config = new Config(properties);
         defaultKaptcha.setConfig(config);
         return defaultKaptcha;
+    }
+    @Bean
+    public PasswordEncoder getEncoder(){
+        return new Md5PasswordEncoder();
     }
 
 

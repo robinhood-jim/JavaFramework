@@ -10,14 +10,14 @@ import java.util.List;
 @Data
 public class SysOrgDTO {
     private Long id;
-    private String orgName;
+    private String label;
     private Long upOrgId;
-    private String treeCode;
-    private String orderNo;
     private List<SysOrgDTO> children=new ArrayList<>();
     public static SysOrgDTO fromVO(SysOrg org){
         SysOrgDTO dto=new SysOrgDTO();
-        BeanUtils.copyProperties(org,dto);
+        dto.setId(org.getId());
+        dto.setUpOrgId(org.getUpOrgId());
+        dto.setLabel(org.getOrgName());
         return dto;
     }
 }

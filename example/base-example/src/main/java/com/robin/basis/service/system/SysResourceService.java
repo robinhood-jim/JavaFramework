@@ -128,7 +128,6 @@ public class SysResourceService extends BaseAnnotationJdbcService<SysResource, L
         List<SysResource> allList = getAllValidate();
         List<SysMenuDTO> dtoList = allList.stream().map(SysMenuDTO::fromVO).collect(Collectors.toList());
         Map<Long, SysMenuDTO> dtoMap = dtoList.stream().collect(Collectors.toMap(SysMenuDTO::getId, Function.identity()));
-        //Map<Long, List<SysMenuDTO>> parentMap = dtoList.stream().collect(Collectors.groupingBy(SysMenuDTO::getPid));
         SysMenuDTO root = new SysMenuDTO();
         dtoMap.put(0L, root);
         Map<Long, Integer> readMap = new HashMap<>();
@@ -136,8 +135,6 @@ public class SysResourceService extends BaseAnnotationJdbcService<SysResource, L
         PageQuery<Map<String, Object>> query1 = new PageQuery();
         query1.setPageSize(0);
         query1.setSelectParamId("GET_RESOURCEINFO");
-        Map<String, Object> paramMap = new HashMap<>();
-        paramMap.put("userId", userId);
         query1.addNamedParameter("userId", userId);
         jdbcDao.queryBySelectId(query1);
         try {

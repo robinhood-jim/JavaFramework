@@ -326,7 +326,7 @@ public abstract class AbstractController
     protected PageQuery<Map<String,Object>> wrapPageQuery(HttpServletRequest request)
     {
         PageQuery<Map<String,Object>> query = new PageQuery<>();
-        Map map = request.getParameterMap();
+        Map<String,String[]> map = request.getParameterMap();
         Iterator<String> iter = map.keySet().iterator();
         Map<String, Object> tmpmap = new HashMap<>();
         while (iter.hasNext())
@@ -337,6 +337,9 @@ public abstract class AbstractController
         try
         {
             ConvertUtil.mapToObject(query, tmpmap);
+            if(!ObjectUtils.isEmpty(tmpmap.get("pageNum"))){
+                query.setPageNumber(Integer.parseInt(tmpmap.get("pageNum").toString()));
+            }
         }
         catch (Exception ex)
         {

@@ -47,6 +47,7 @@ public class SysUser extends BaseObject {
     private String phoneNum;
     private String avatar;
     private String nickName;
+    private String sex;
 
 
 }
