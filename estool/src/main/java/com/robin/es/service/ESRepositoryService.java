@@ -42,6 +42,7 @@ import org.elasticsearch.index.reindex.BulkByScrollResponse;
 import org.elasticsearch.index.reindex.DeleteByQueryRequest;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.elasticsearch.search.sort.SortOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
@@ -66,6 +67,7 @@ public abstract class ESRepositoryService<V extends BaseObject, P extends Serial
     private RestHighLevelClient client;
     protected Gson gson = GsonUtil.getGson();
     protected Map<String, FieldContent> fieldsMap;
+    protected List<FieldContent> fieldContents;
 
     protected ESRepositoryService() {
         Type genericSuperClass = getClass().getGenericSuperclass();
@@ -84,6 +86,7 @@ public abstract class ESRepositoryService<V extends BaseObject, P extends Serial
         }
         client = SpringContextHolder.getBean(RestHighLevelClient.class);
         fieldsMap = AnnotationRetriever.getMappingFieldsMapCache(type);
+        fieldContents=AnnotationRetriever.getMappingFieldsCache(type);
     }
 
     @Override
@@ -196,14 +199,13 @@ public abstract class ESRepositoryService<V extends BaseObject, P extends Serial
 
     private void extractValue(V obj, Map.Entry<String, Object> entry) throws Exception {
         String key = entry.getKey();
-        //String columnName = StringUtils.returnCamelCaseByFieldName(key);
         if (fieldsMap.containsKey(key)) {
             Method method = fieldsMap.get(key).getSetMethod();
             Class<?> paramType = method.getParameterTypes()[0];
             method.invoke(obj, ConvertUtil.parseParameter(paramType, entry.getValue()));
         }
         if (key.equalsIgnoreCase("_id")) {
-            Method method = fieldsMap.get("id").getSetMethod();
+            Method method = AnnotationRetriever.getPrimaryField(fieldContents).getSetMethod();
             Class<?> paramType = method.getParameterTypes()[0];
             method.invoke(obj, ConvertUtil.parseParameter(paramType, entry.getValue()));
         }
@@ -362,30 +364,36 @@ public abstract class ESRepositoryService<V extends BaseObject, P extends Serial
             if (!ObjectUtils.isEmpty(page) && page.getPageSize()!=0) {
                 sourceBuilder.from(Integer.valueOf(String.valueOf(page.getPageNumber()*page.getPageSize()))).size(page.getPageSize());
             }
-            SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
-            if (null != response.getHits()) {
-                SearchHit[] hits = response.getHits().getHits();
-                page.setRecordCount(Integer.valueOf(String.valueOf(response.getHits().getTotalHits().value)));
-                if (!ObjectUtils.isEmpty(hits) && hits.length > 0) {
-                    retList = new ArrayList<>();
-                    for (SearchHit hit : hits) {
-                        Map<String, Object> map = hit.getSourceAsMap();
-                        Iterator<Map.Entry<String, Object>> citer = map.entrySet().iterator();
-                        V obj = type.getDeclaredConstructor().newInstance();
-                        while (citer.hasNext()) {
-                            Map.Entry<String, Object> entry = citer.next();
-                            extractValue(obj, entry);
-                        }
-                        retList.add(obj);
-                    }
-                }
-
-            }
+            doQuery(page, retList, searchRequest);
         } catch (Exception ex) {
             throw new ServiceException(ex);
         }
         return retList;
     }
+
+
+    private void doQuery(PageQuery<Map<String, Object>> page, List<V> retList, SearchRequest searchRequest) throws Exception {
+        SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
+        if (null != response.getHits()) {
+            SearchHit[] hits = response.getHits().getHits();
+            page.setRecordCount(Integer.valueOf(String.valueOf(response.getHits().getTotalHits().value)));
+            if (!ObjectUtils.isEmpty(hits) && hits.length > 0) {
+                retList = new ArrayList<>();
+                for (SearchHit hit : hits) {
+                    Map<String, Object> map = hit.getSourceAsMap();
+                    Iterator<Map.Entry<String, Object>> citer = map.entrySet().iterator();
+                    V obj = type.getDeclaredConstructor().newInstance();
+                    while (citer.hasNext()) {
+                        Map.Entry<String, Object> entry = citer.next();
+                        extractValue(obj, entry);
+                    }
+                    retList.add(obj);
+                }
+            }
+
+        }
+    }
+
     public void searchByQueryMap(Consumer<BoolQueryBuilder> consumer,PageQuery<Map<String,Object>> page){
         try {
             SearchRequest searchRequest = new SearchRequest(entityContent.getTableName());
@@ -397,23 +405,43 @@ public abstract class ESRepositoryService<V extends BaseObject, P extends Serial
             if (!ObjectUtils.isEmpty(page) && page.getPageSize()!=0) {
                 sourceBuilder.from(Integer.valueOf(String.valueOf((page.getPageNumber()-1)*page.getPageSize()))).size(page.getPageSize());
             }
-            SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
-            if (null != response.getHits()) {
-                SearchHit[] hits = response.getHits().getHits();
-                page.setRecordCount(Integer.valueOf(String.valueOf(response.getHits().getTotalHits().value)));
-                if (!ObjectUtils.isEmpty(hits) && hits.length > 0) {
-                    for (SearchHit hit : hits) {
-                        Map<String, Object> map = hit.getSourceAsMap();
-                        map.put("id",hit.getId());
-                        page.getRecordSet().add(map);
-                    }
-                }
-
+            if(!ObjectUtils.isEmpty(page.getOrder())){
+                sourceBuilder.sort(page.getOrder(),"desc".equals(page.getOrderDirection())? SortOrder.DESC:SortOrder.ASC);
             }
+            SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
+            wrapRsMap(page, response);
         } catch (Exception ex) {
+            logger.error("{}",ex.getMessage());
             throw new ServiceException(ex);
         }
     }
+    public void searchByCondition(Consumer<SearchSourceBuilder> consumer,PageQuery<Map<String,Object>> page) throws ServiceException {
+        try {
+            SearchRequest searchRequest = new SearchRequest(entityContent.getTableName());
+            SearchSourceBuilder sourceBuilder = SearchSourceBuilder.searchSource();
+            consumer.accept(sourceBuilder);
+            SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
+            wrapRsMap(page, response);
+        } catch (Exception ex) {
+            logger.error("{}",ex.getMessage());
+            throw new ServiceException(ex);
+        }
+    }
+
+    private static void wrapRsMap(PageQuery<Map<String, Object>> page, SearchResponse response) {
+        if (null != response.getHits()) {
+            SearchHit[] hits = response.getHits().getHits();
+            page.setRecordCount(Integer.valueOf(String.valueOf(response.getHits().getTotalHits().value)));
+            if (!ObjectUtils.isEmpty(hits) && hits.length > 0) {
+                for (SearchHit hit : hits) {
+                    Map<String, Object> map = hit.getSourceAsMap();
+                    map.put("id",hit.getId());
+                    page.getRecordSet().add(map);
+                }
+            }
+        }
+    }
+
     public long countByQuery(Consumer<BoolQueryBuilder> consumer) {
         SearchSourceBuilder sourceBuilder = SearchSourceBuilder.searchSource();
         BoolQueryBuilder queryBuilder = QueryBuilders.boolQuery();
@@ -441,7 +469,7 @@ public abstract class ESRepositoryService<V extends BaseObject, P extends Serial
             for (Map.Entry<String, FieldContent> entry : fieldsMap.entrySet()) {
                 String key = entry.getKey();
                 Object value = entry.getValue().getGetMethod().invoke(vo);
-                if (key.equalsIgnoreCase("id") && !ObjectUtils.isEmpty(value)) {
+                if (entry.getValue().isPrimary() && !ObjectUtils.isEmpty(value)) {
                     id=value.toString();
                 } else {
                     retMap.put(entry.getKey(), entry.getValue().getGetMethod().invoke(vo));

@@ -16,6 +16,7 @@ public class Session implements Serializable {
     private String telephone;
     private String moblie;
     private String email;
+    private String avatar;
     private String description;
     private Long orgId;
     private String orgCode;

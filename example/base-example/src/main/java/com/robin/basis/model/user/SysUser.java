@@ -45,6 +45,8 @@ public class SysUser extends BaseObject {
     private String email;
     @MappingField
     private String phoneNum;
+    private String avatar;
+    private String nickName;
 
 
 }

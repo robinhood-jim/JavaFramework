@@ -16,8 +16,11 @@
 package com.robin.core.web.codeset;
 
 import lombok.Data;
+import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 
 import java.io.Serializable;
+import java.util.Map;
 
 @Data
 public class Code implements Serializable {
@@ -42,6 +45,13 @@ public class Code implements Serializable {
     }
     public Code(){
 
+    }
+    public static Code constructFromMap(Map<String,Object> map,String keyName,String valueName){
+        Code code=new Code();
+        Assert.isTrue(!ObjectUtils.isEmpty(map.get(keyName)) && !ObjectUtils.isEmpty(map.get(valueName)),"");
+        code.setCodeName(map.get(valueName).toString());
+        code.setValue(map.get(keyName).toString());
+        return code;
     }
 
 }
