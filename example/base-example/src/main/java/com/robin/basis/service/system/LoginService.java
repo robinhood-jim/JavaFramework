@@ -258,6 +258,14 @@ public class LoginService implements ILoginService {
     private Session returnSession(SysUser queryUser) {
         Session session = getSession(queryUser);
 
+        SysUserRole userRole=new SysUserRole();
+        userRole.setUserId(queryUser.getId());
+        userRole.setStatus(Const.VALID);
+        List<SysUserRole> userRoles=jdbcDao.queryByVO(SysUserRole.class,userRole,"id");
+        if(!CollectionUtils.isEmpty(userRoles)){
+            session.setRoles(userRoles.stream().map(SysUserRole::getRoleId).collect(Collectors.toList()));
+        }
+
         if (!session.getAccountType().equals(WebConstant.ACCOUNT_TYPE.ORGUSER.toString())) {
             getRights(session);
         } else {

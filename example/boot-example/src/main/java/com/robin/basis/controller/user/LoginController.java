@@ -206,7 +206,7 @@ public class LoginController extends AbstractController {
         Session session = (Session) request.getSession().getAttribute(Const.SESSION);
         Map<String,Object> retMap=new HashMap<>();
         retMap.put("user",session);
-        retMap.put("roles",session.getRoles().keySet().toArray());
+        retMap.put("roles",session.getRoles());
         return retMap;
     }
     @GetMapping("/getRouters")

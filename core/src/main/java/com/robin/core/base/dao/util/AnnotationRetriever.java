@@ -206,7 +206,7 @@ public class AnnotationRetriever {
         if (flag) {
             MappingEntity entity = clazz.getAnnotation(MappingEntity.class);
             String tableName = entity.value();
-            String schema = entity.schema();
+            String schema = !ObjectUtils.isEmpty(entity.schema())?entity.schema():null;
             String jdbcDao = entity.jdbcDao();
             content = getEntityContent(clazz,tableName, schema, false, false);
             if (!ObjectUtils.isEmpty(jdbcDao)) {
@@ -221,7 +221,7 @@ public class AnnotationRetriever {
                 String schema = null;
                 if (!ObjectUtils.isEmpty(table)) {
                     tableName = table.name();
-                    schema = table.schema();
+                    schema = !ObjectUtils.isEmpty(table.schema())?table.schema():null;
                 } else {
                     tableName = entity.name();
                 }
@@ -234,7 +234,7 @@ public class AnnotationRetriever {
                     if (Objects.isNull(tableName)) {
                         tableName = StringUtils.returnCamelCaseByFieldName(clazz.getName());
                     }
-                    content = getEntityContent(clazz,tableName, table.schema(), false, true);
+                    content = getEntityContent(clazz,tableName, !ObjectUtils.isEmpty(table.schema())?table.schema():null, false, true);
                 } else {
                     throw new DAOException("must using MappingEntity or JPA or MybatisPlus annotation");
                 }

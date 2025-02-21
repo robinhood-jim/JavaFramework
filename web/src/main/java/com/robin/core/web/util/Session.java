@@ -31,14 +31,14 @@ public class Session implements Serializable {
     private Date loginTime;
     private String cityCode;
     private String accountType;
-    private Map<Integer, String> roles = new HashMap<>();
+    private List<Long> roles = new ArrayList<>();
     private List<Long> responsiblitys = new ArrayList<>();
     private Map<Integer, String> modules = new HashMap<>();
     private Map<Long, List<Map<String, Object>>> privileges = new HashMap<>();
     public boolean hasRole(String key)
     {
         if (key != null) {
-            return this.roles.containsKey(Integer.valueOf(key));
+            return this.roles.contains(Long.valueOf(key));
         }
         return false;
     }

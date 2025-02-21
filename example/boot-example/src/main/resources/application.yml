@@ -1,0 +1,39 @@
+server:
+  port: 8099
+  servlet:
+    context-path: /web
+spring:
+  profiles:
+    active: dev
+  main:
+    allow-bean-definition-overriding: true
+  messages:
+    basename: i18n/messages
+  thymeleaf:
+    prefix: classpath:/templates/
+    check-template-location: true
+    suffix: .html
+    encoding: UTF-8
+
+  datasource:
+    url: jdbc:mysql://localhost:3316/vueframe?useUnicode=true&characterEncoding=UTF-8&rewriteBatchedStatements=true
+    driverClassName: com.mysql.jdbc.Driver
+    username: vue
+    password: vue
+logging:
+  level:
+    root: INFO
+
+
+core:
+  query:
+    xmlConfig: true
+
+project:
+  queryConfigPath: classpath:/queryConfig
+
+jwt:
+  salt: 123456
+login:
+  ignoreUrls: /main/login,/user/login,/main/index,/login,/logout
+  ignoreResources: gif,bmp,png,jpg,js,flash,css,swf,flv,metaget
