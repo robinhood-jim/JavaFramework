@@ -1,0 +1,61 @@
+syntax = "proto3";
+
+option java_package = "com.robin.rpc.server";
+option java_multiple_files = true;
+
+message ServerRequest {
+  optional string serverName = 1;
+  optional string command=2;
+  optional string content=3;
+}
+message WorkRequest{
+  optional string workerName=1;
+  optional string command=2;
+  optional string content=3;
+}
+message WorkResponse{
+  optional string workerName=1;
+  optional string command=2;
+  optional string content=3;
+}
+
+message TaskRequest {
+  string workerName = 1;
+  TaskStep taskStep=2;
+  optional string param=3;
+}
+message TaskResponse {
+  string workName = 1;
+  string status=2;
+}
+message JobStatusRequest{
+  string workerName=1;
+  repeated TaskStatus jobs=2;
+}
+
+message JobStatusResponse{
+  string workName=1;
+  repeated TaskStatus jobs=2;
+}
+message TaskStatus{
+  TaskStep taskStep=1;
+  string param=5;
+}
+message TaskStep{
+  uint64 jobId=1;
+  uint64 stepId=2;
+  uint64 taskId=3;
+  uint64 taskStepId=4;
+}
+
+service ServerService {
+  rpc connectWorker(WorkRequest) returns (WorkResponse);
+  rpc reportTask(JobStatusRequest) returns(stream JobStatusResponse);
+}
+service WorkerService{
+  rpc startTask(TaskRequest) returns ( TaskResponse);
+  rpc pauseTask(TaskRequest) returns ( TaskResponse);
+  rpc stopTask(TaskRequest) returns ( TaskResponse);
+  rpc reportTask(JobStatusRequest) returns(stream JobStatusResponse);
+  rpc reportAll(WorkRequest) returns (stream JobStatusResponse);
+}

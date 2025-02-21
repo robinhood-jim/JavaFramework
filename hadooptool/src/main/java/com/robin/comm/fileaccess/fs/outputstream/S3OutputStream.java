@@ -8,6 +8,7 @@ import software.amazon.awssdk.services.s3.model.*;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.nio.ByteBuffer;
 
 public class S3OutputStream extends AbstractUploadPartOutputStream {
     private S3Client client;
@@ -58,8 +59,8 @@ public class S3OutputStream extends AbstractUploadPartOutputStream {
     }
 
     @Override
-    protected void uploadAsync(WeakReference<byte[]> writeBytesRef, int partNumber, int byteSize) throws IOException {
-        futures.add(guavaExecutor.submit(new AbstractUploadPartCallable(writeBytesRef,partNumber,byteSize) {
+    protected void uploadAsync(ByteBuffer buffer, int partNumber, int byteSize) throws IOException {
+        futures.add(guavaExecutor.submit(new AbstractUploadPartCallable(buffer,partNumber,byteSize) {
             @Override
             protected boolean uploadPartAsync() throws IOException {
                 try{
@@ -70,7 +71,7 @@ public class S3OutputStream extends AbstractUploadPartOutputStream {
                             .partNumber(partNumber)
                             .contentLength((long) byteSize)
                             .build();
-                    RequestBody requestBody = RequestBody.fromBytes(writeBytesRef.get());
+                    RequestBody requestBody = RequestBody.fromInputStream(new ByteBufferInputStream(buffer,byteSize),byteSize);
                     UploadPartResponse uploadPartResponse = client.uploadPart(uploadRequest, requestBody);
                     etagsMap.put(partNumber,uploadPartResponse.eTag());
                     return true;

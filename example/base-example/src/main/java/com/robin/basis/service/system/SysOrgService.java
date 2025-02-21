@@ -15,15 +15,19 @@
  */
 package com.robin.basis.service.system;
 
-import com.robin.core.base.model.BaseObject;
+import com.robin.basis.dto.SysOrgDTO;
+import com.robin.basis.model.system.SysOrg;
 import com.robin.core.base.service.BaseAnnotationJdbcService;
 import com.robin.core.base.service.IBaseAnnotationJdbcService;
-import com.robin.basis.model.system.SysOrg;
 import com.robin.core.base.util.Const;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Component("sysOrgService")
 @Scope(value="singleton")
@@ -43,6 +47,26 @@ public class SysOrgService extends BaseAnnotationJdbcService<SysOrg, Long> imple
             return orgId.toString();
         }else{
             return builder.substring(0,builder.length()-1);
+        }
+    }
+    public List<SysOrgDTO> getOrgTree(Long pid){
+        List<SysOrgDTO> orgList=queryAll().stream().filter(f->Const.VALID.equals(f.getOrgStatus())).map(SysOrgDTO::fromVO).collect(Collectors.toList());
+        Map<Long,List<SysOrgDTO>> parentMap=orgList.stream().collect(Collectors.groupingBy(SysOrgDTO::getUpOrgId));
+        Map<Long,SysOrgDTO> idMap=orgList.stream().collect(Collectors.toMap(SysOrgDTO::getId, Function.identity()));
+        SysOrgDTO root = new SysOrgDTO();
+        idMap.put(0L, root);
+        for(SysOrgDTO dto:orgList){
+            idMap.get(dto.getUpOrgId()).getChildren().add(dto);
+            walkOrg(idMap,parentMap,dto);
+        }
+        return idMap.get(pid).getChildren();
+    }
+    private void walkOrg(Map<Long,SysOrgDTO> idMap,Map<Long,List<SysOrgDTO>> parentMap,SysOrgDTO dto) {
+        if (!CollectionUtils.isEmpty(parentMap.get(dto.getId()))) {
+            for (SysOrgDTO childs : parentMap.get(dto.getId())) {
+                idMap.get(dto.getUpOrgId()).getChildren().add(childs);
+                walkOrg(idMap, parentMap, childs);
+            }
         }
     }
 

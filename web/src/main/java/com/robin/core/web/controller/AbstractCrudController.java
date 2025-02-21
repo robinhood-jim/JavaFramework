@@ -16,6 +16,7 @@
 package com.robin.core.web.controller;
 
 import com.robin.core.base.exception.ServiceException;
+import com.robin.core.base.exception.WebException;
 import com.robin.core.base.model.BaseObject;
 import com.robin.core.base.service.IBaseAnnotationJdbcService;
 import com.robin.core.base.spring.SpringContextHolder;
@@ -86,10 +87,11 @@ public abstract class AbstractCrudController<O extends BaseObject, P extends Ser
         }
         return retMap;
     }
-    protected Map<String, Object> doSave(Map<String,String> paramMap) {
+    protected Map<String, Object> doSave(Map<String,Object> paramMap) {
         Map<String, Object> retMap = new HashMap<>();
         try {
             O object=this.objectType.newInstance();
+            ConvertUtil.setDateFormat(ConvertUtil.ymdSepformatter);
             ConvertUtil.convertToModel(object,paramMap);
             P pk=this.service.saveEntity(object);
             constructRetMap(retMap);
@@ -97,6 +99,8 @@ public abstract class AbstractCrudController<O extends BaseObject, P extends Ser
         } catch (Exception ex) {
             this.log.error("{0}", ex);
             wrapResponse(retMap, ex);
+        }finally {
+            ConvertUtil.finishConvert();
         }
         return retMap;
     }
@@ -128,32 +132,42 @@ public abstract class AbstractCrudController<O extends BaseObject, P extends Ser
         return retMap;
     }
 
-    protected Map<String, Object> doUpdate(Map<String,String> paramMap,P id) {
+    protected Map<String, Object> doUpdate(Map<String,Object> paramMap,P id) {
         Map<String, Object> retMap = new HashMap<>();
         try {
             O originObj= this.objectType.newInstance();
+            ConvertUtil.setDateFormat(ConvertUtil.ymdSepformatter);
             ConvertUtil.convertToModel(originObj,paramMap);
             updateWithOrigin(id, retMap, originObj);
         } catch (Exception ex) {
             log.error("{0}", ex);
             wrapFailed(retMap, ex);
+        }finally {
+            ConvertUtil.finishConvert();
         }
         return retMap;
     }
 
-    private void updateWithOrigin(P id, Map<String, Object> retMap, O originObj) throws Exception {
-        O updateObj = service.getEntity(id);
-        ConvertUtil.convertToModelForUpdate(updateObj, originObj);
-        service.updateEntity(updateObj);
-        doAfterUpdate(updateObj, retMap);
-        constructRetMap(retMap);
+    private void updateWithOrigin(P id, Map<String, Object> retMap, O originObj) throws WebException {
+        try {
+            O updateObj = service.getEntity(id);
+            ConvertUtil.setDateFormat(ConvertUtil.ymdSepformatter);
+            ConvertUtil.convertToModelForUpdate(updateObj, originObj);
+            service.updateEntity(updateObj);
+            doAfterUpdate(updateObj, retMap);
+            constructRetMap(retMap);
+        }catch (Exception ex){
+            throw new WebException(ex);
+        }finally {
+            ConvertUtil.finishConvert();
+        }
     }
 
     protected Map<String, Object> doUpdate(O base,P id) {
         Map<String, Object> retMap = new HashMap<>();
         try {
             updateWithOrigin(id, retMap, base);
-        } catch (Exception ex) {
+        } catch (WebException ex) {
             log.error("{0}", ex);
             wrapFailed(retMap, ex);
         }

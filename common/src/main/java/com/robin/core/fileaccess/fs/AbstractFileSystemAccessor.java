@@ -15,24 +15,23 @@
  */
 package com.robin.core.fileaccess.fs;
 
-import com.robin.core.base.util.ResourceConst;
 import com.robin.core.compress.util.CompressDecoder;
 import com.robin.core.compress.util.CompressEncoder;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
-import com.robin.core.fileaccess.util.ResourceUtil;
-import org.springframework.util.ObjectUtils;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
 /**
  * abstract resource system access Utils (Local/Hdfs/ApacheVFS(including ftp sftp)/S3/Tencent cloud/aliyun)
  */
 public abstract class AbstractFileSystemAccessor implements IFileSystemAccessor {
 	protected String identifier;
+	protected DataCollectionMeta colmeta ;
 	protected AbstractFileSystemAccessor(){
 
+	}
+	protected AbstractFileSystemAccessor(DataCollectionMeta colmeta){
+		this.colmeta=colmeta;
 	}
 
 
@@ -104,9 +103,9 @@ public abstract class AbstractFileSystemAccessor implements IFileSystemAccessor 
 	
 	@Override
 	public void init(DataCollectionMeta meta){
-
+		this.colmeta=meta;
 	}
-	public void finishWrite(DataCollectionMeta meta,OutputStream outputStream) {
+	public void finishWrite(OutputStream outputStream) {
 
 	}
 
@@ -115,4 +114,13 @@ public abstract class AbstractFileSystemAccessor implements IFileSystemAccessor 
 		return identifier;
 	}
 
+	@Override
+	public void close() throws IOException {
+
+	}
+
+	@Override
+	public void finishReadOrWrite()  throws IOException{
+
+	}
 }

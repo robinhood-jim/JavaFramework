@@ -104,7 +104,7 @@ public abstract class AbstractFileWriter implements IResourceWriter {
 	public void beginWrite() throws IOException{
 		if(out==null){
 			checkAccessUtil(colmeta.getPath());
-			out = accessUtil.getOutResourceByStream(colmeta, ResourceUtil.getProcessPath(colmeta.getPath()));
+			out = accessUtil.getOutResourceByStream(ResourceUtil.getProcessPath(colmeta.getPath()));
 			writer=new BufferedWriter(new OutputStreamWriter(out));
 		}
 		logger.info("using Writer {}",getClass().getCanonicalName());
@@ -118,7 +118,8 @@ public abstract class AbstractFileWriter implements IResourceWriter {
 		if(writer!=null){
 			writer.close();
 		}
-		accessUtil.finishWrite(colmeta,out);
+		accessUtil.finishWrite(out);
+		accessUtil.finishReadOrWrite();
 		if(out!=null){
 			out.close();
 		}
@@ -155,7 +156,7 @@ public abstract class AbstractFileWriter implements IResourceWriter {
 			if (accessUtil == null) {
 				URI uri = new URI(StringUtils.isEmpty(outputPath)?colmeta.getPath():outputPath);
 				String schema = !ObjectUtils.isEmpty(colmeta.getFsType())?colmeta.getFsType():uri.getScheme();
-				accessUtil = ResourceAccessHolder.getAccessUtilByProtocol(schema.toLowerCase());
+				accessUtil = ResourceAccessHolder.getAccessUtilByProtocol(schema.toLowerCase(), colmeta);
 			}
 		}catch (Exception ex){
 

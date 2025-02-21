@@ -1,11 +1,10 @@
 package com.robin.comm.fileaccess.fs;
 
-import com.baidubce.auth.DefaultBceCredentials;
-import com.baidubce.services.bos.BosClientConfiguration;
 import com.obs.services.ObsClient;
 import com.obs.services.model.ObjectMetadata;
 import com.obs.services.model.ObsObject;
 import com.obs.services.model.PutObjectResult;
+import com.robin.comm.fileaccess.fs.outputstream.OBSOutputStream;
 import com.robin.core.base.exception.MissingConfigException;
 import com.robin.core.base.util.Const;
 import com.robin.core.base.util.ResourceConst;
@@ -36,16 +35,15 @@ public class OBSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
     @Override
     public void init(DataCollectionMeta meta) {
         Assert.isTrue(!CollectionUtils.isEmpty(meta.getResourceCfgMap()), "config map is empty!");
-        Assert.notNull(meta.getResourceCfgMap().get(ResourceConst.OBSPARAM.ENDPOIN.getValue()), "must provide endpoint");
-        Assert.notNull(meta.getResourceCfgMap().get(ResourceConst.OBSPARAM.ACESSSKEYID.getValue()), "must provide accessKey");
-        Assert.notNull(meta.getResourceCfgMap().get(ResourceConst.OBSPARAM.SECURITYACCESSKEY.getValue()), "must provide securityAccessKey");
-
-        endpoint = meta.getResourceCfgMap().get(ResourceConst.OBSPARAM.ENDPOIN.getValue()).toString();
-        accessKeyId = meta.getResourceCfgMap().get(ResourceConst.OBSPARAM.ACESSSKEYID.getValue()).toString();
-        securityAccessKey = meta.getResourceCfgMap().get(ResourceConst.OBSPARAM.SECURITYACCESSKEY.getValue()).toString();
-        BosClientConfiguration config = new BosClientConfiguration();
-        config.setCredentials(new DefaultBceCredentials(accessKeyId, securityAccessKey));
-        config.setEndpoint(endpoint);
+        if(ObjectUtils.isEmpty(endpoint) && meta.getResourceCfgMap().containsKey(ResourceConst.OBSPARAM.ENDPOIN.getValue())) {
+            endpoint = meta.getResourceCfgMap().get(ResourceConst.OBSPARAM.ENDPOIN.getValue()).toString();
+        }
+        if(ObjectUtils.isEmpty(accessKeyId) && meta.getResourceCfgMap().containsKey(ResourceConst.OBSPARAM.ACESSSKEYID.getValue())) {
+            accessKeyId = meta.getResourceCfgMap().get(ResourceConst.OBSPARAM.ACESSSKEYID.getValue()).toString();
+        }
+        if(ObjectUtils.isEmpty(securityAccessKey) && meta.getResourceCfgMap().containsKey(ResourceConst.OBSPARAM.SECURITYACCESSKEY.getValue())) {
+            securityAccessKey = meta.getResourceCfgMap().get(ResourceConst.OBSPARAM.SECURITYACCESSKEY.getValue()).toString();
+        }
         client = new ObsClient(accessKeyId, securityAccessKey, endpoint);
     }
 
@@ -57,14 +55,14 @@ public class OBSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
     }
 
     @Override
-    public boolean exists(DataCollectionMeta meta, String resourcePath) throws IOException {
-        return client.doesObjectExist(getBucketName(meta),resourcePath);
+    public boolean exists(String resourcePath) throws IOException {
+        return client.doesObjectExist(getBucketName(colmeta),resourcePath);
     }
 
     @Override
-    public long getInputStreamSize(DataCollectionMeta meta, String resourcePath) throws IOException {
-        if(exists(meta,resourcePath)){
-            ObsObject object=client.getObject(getBucketName(meta),resourcePath);
+    public long getInputStreamSize(String resourcePath) throws IOException {
+        if(exists(resourcePath)){
+            ObsObject object=client.getObject(getBucketName(colmeta),resourcePath);
             return object.getMetadata().getContentLength();
         }
         return 0;
@@ -138,8 +136,8 @@ public class OBSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
     }
 
     @Override
-    protected OutputStream getOutputStream(DataCollectionMeta meta) throws IOException {
-        return null;
+    protected OutputStream getOutputStream(String path) throws IOException {
+        return new OBSOutputStream(client,colmeta,bucketName,path);
     }
 
     public ObsClient getClient() {

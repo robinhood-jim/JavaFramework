@@ -1,7 +1,6 @@
 package com.robin.core.fileaccess.fs;
 
 import com.robin.core.base.util.Const;
-import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -9,13 +8,17 @@ import java.io.*;
 import java.net.URI;
 
 public class LocalFileSystemAccessor extends AbstractFileSystemAccessor {
+	private static LocalFileSystemAccessor accessor=new LocalFileSystemAccessor();
 	public LocalFileSystemAccessor(){
 		this.identifier= Const.FILESYSTEM.LOCAL.getValue();
+	}
+	public static LocalFileSystemAccessor getInstance(){
+		return accessor;
 	}
 
 
 	@Override
-    public Pair<BufferedReader,InputStream> getInResourceByReader(DataCollectionMeta meta, String resourcePath) throws IOException{
+    public Pair<BufferedReader,InputStream> getInResourceByReader(String resourcePath) throws IOException{
 		BufferedReader reader;
 		InputStream stream;
 
@@ -24,12 +27,12 @@ public class LocalFileSystemAccessor extends AbstractFileSystemAccessor {
 			throw new IOException("input file "+resourcePath+" does not exist!");
 		}
 		stream=FileUtils.openInputStream(file);
-		reader= getReaderByPath(getProcessPath(resourcePath), stream, meta.getEncode());
+		reader= getReaderByPath(getProcessPath(resourcePath), stream, colmeta.getEncode());
 		return Pair.of(reader,stream);
 	}
 	
 	@Override
-    public Pair<BufferedWriter,OutputStream> getOutResourceByWriter(DataCollectionMeta meta, String resourcePath) throws IOException{
+    public Pair<BufferedWriter,OutputStream> getOutResourceByWriter(String resourcePath) throws IOException{
 		BufferedWriter writer;
 		OutputStream outputStream;
 		File file=new File(getProcessPath(resourcePath));
@@ -37,11 +40,11 @@ public class LocalFileSystemAccessor extends AbstractFileSystemAccessor {
 			FileUtils.forceDelete(file);
 		}
 		outputStream=FileUtils.openOutputStream(file);
-		writer= getWriterByPath(getProcessPath(resourcePath), outputStream, meta.getEncode());
+		writer= getWriterByPath(getProcessPath(resourcePath), outputStream, colmeta.getEncode());
 		return Pair.of(writer,outputStream);
 	}
 	@Override
-    public OutputStream getOutResourceByStream(DataCollectionMeta meta, String resourcePath) throws IOException{
+    public OutputStream getOutResourceByStream(String resourcePath) throws IOException{
 		File file=new File(getProcessPath(resourcePath));
 		if(file.exists()){
 			FileUtils.forceDelete(file);
@@ -49,7 +52,7 @@ public class LocalFileSystemAccessor extends AbstractFileSystemAccessor {
 		return getOutputStreamByPath(getProcessPath(resourcePath),FileUtils.openOutputStream(file));
 	}
 	@Override
-    public InputStream getInResourceByStream(DataCollectionMeta meta, String resourcePath) throws IOException{
+    public InputStream getInResourceByStream(String resourcePath) throws IOException{
 		File file=new File(getProcessPath(resourcePath));
 		if(!file.exists()){
 			throw new IOException("file "+resourcePath+" not exist!");
@@ -59,7 +62,7 @@ public class LocalFileSystemAccessor extends AbstractFileSystemAccessor {
 	}
 
 	@Override
-	public OutputStream getRawOutputStream(DataCollectionMeta meta, String resourcePath) throws IOException {
+	public OutputStream getRawOutputStream(String resourcePath) throws IOException {
 		File file=new File(getProcessPath(resourcePath));
 		if(file.exists()){
 			FileUtils.forceDelete(file);
@@ -68,7 +71,7 @@ public class LocalFileSystemAccessor extends AbstractFileSystemAccessor {
 	}
 
 	@Override
-	public InputStream getRawInputStream(DataCollectionMeta meta, String resourcePath) throws IOException {
+	public InputStream getRawInputStream(String resourcePath) throws IOException {
 		File file=new File(getProcessPath(resourcePath));
 		if(!file.exists()){
 			throw new IOException("file "+resourcePath+" not exist!");
@@ -77,13 +80,13 @@ public class LocalFileSystemAccessor extends AbstractFileSystemAccessor {
 	}
 
 	@Override
-	public boolean exists(DataCollectionMeta meta, String resourcePath) throws IOException {
+	public boolean exists(String resourcePath) throws IOException {
 		File file=new File(getProcessPath(resourcePath));
 		return file.exists();
 	}
 
 	@Override
-	public long getInputStreamSize(DataCollectionMeta meta, String resourcePath) throws IOException {
+	public long getInputStreamSize(String resourcePath) throws IOException {
 		File file=new File(getProcessPath(resourcePath));
 		if(!file.exists()){
 			throw new IOException("file "+resourcePath+" not exist!");

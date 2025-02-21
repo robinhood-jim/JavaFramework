@@ -89,8 +89,8 @@ public class AvroFileIterator extends AbstractFileIterator {
         } else {
             // no hdfs input source
             if (!ResourceConst.IngestType.TYPE_LOCAL.getValue().equals(colmeta.getSourceType())) {
-                instream = accessUtil.getRawInputStream(colmeta, ResourceUtil.getProcessPath(resourcePath));
-                long size = accessUtil.getInputStreamSize(colmeta, ResourceUtil.getProcessPath(colmeta.getPath()));
+                instream = accessUtil.getRawInputStream(ResourceUtil.getProcessPath(resourcePath));
+                long size = accessUtil.getInputStreamSize(ResourceUtil.getProcessPath(colmeta.getPath()));
                 Double freeMemory = SysUtils.getFreeMemory();
                 //file size too large ,can not store in ByteBuffer or freeMemory too low
                 if (size >=ResourceConst.MAX_ARRAY_SIZE || freeMemory < allowOffHeapDumpLimit) {
@@ -108,8 +108,7 @@ public class AvroFileIterator extends AbstractFileIterator {
                     input = new SeekableByteBufferInputStream(segment.getOffHeapBuffer());
                 }
             } else {
-                tmpFile = new File(ResourceUtil.getProcessPath(colmeta.getPath()));
-                input = new SeekableFileInput(tmpFile);
+                input = new SeekableFileInput(new File(ResourceUtil.getProcessPath(colmeta.getPath())));
             }
         }
         Assert.notNull(input, "Seekable input is null");
@@ -179,6 +178,9 @@ public class AvroFileIterator extends AbstractFileIterator {
         }
         if (!ObjectUtils.isEmpty(tmpFile)) {
             FileUtils.deleteQuietly(tmpFile);
+        }
+        if(!ObjectUtils.isEmpty(segment)){
+            segment.free();
         }
         super.close();
     }

@@ -37,8 +37,8 @@ public class OutputStreamHolder extends AbstractResourceHolder {
 		URI uri=new URI(colmeta.getPath());
 		String schema=uri.getScheme();
 		String path=uri.getPath();
-		AbstractFileSystemAccessor util= ResourceAccessHolder.getAccessUtilByProtocol(schema.toLowerCase());
-		out=util.getOutResourceByStream(colmeta,path );
+		AbstractFileSystemAccessor util= ResourceAccessHolder.getAccessUtilByProtocol(schema.toLowerCase(), colmeta);
+		out=util.getOutResourceByStream(path);
 
 	}
 

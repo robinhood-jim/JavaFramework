@@ -1,5 +1,7 @@
 package com.robin.core.web.international;
 
+import com.robin.core.base.spring.SpringContextHolder;
+import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.context.support.ResourceBundleMessageSource;
 
@@ -19,13 +21,8 @@ import java.util.Locale;
  */
 public class Translator {
 
-    private static ResourceBundleMessageSource messageSource;
-
-    public Translator(ResourceBundleMessageSource messageSource){
-        this.messageSource=messageSource;
-    }
     public static String toLocale(String msgCode) {
         Locale locale = LocaleContextHolder.getLocale();
-        return messageSource.getMessage(msgCode, null, locale);
+        return SpringContextHolder.getBean("messageSource",MessageSource.class).getMessage(msgCode, null, locale);
     }
 }

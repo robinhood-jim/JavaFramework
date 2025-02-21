@@ -165,8 +165,8 @@ public abstract class AbstractUploadPartOutputStream extends OutputStream {
             if (!ObjectUtils.isEmpty(guavaExecutor)) {
                 WeakReference<byte[]> writeBytesRef = new WeakReference<>(new byte[(int) position]);
                 buffer.position(0);
-                buffer.get(writeBytesRef.get(), 0, position);
-                uploadAsync(writeBytesRef, partNum, position);
+                //buffer.get(writeBytesRef.get(), 0, position);
+                uploadAsync(buffer, partNum, position);
             }
         }
     }
@@ -176,7 +176,7 @@ public abstract class AbstractUploadPartOutputStream extends OutputStream {
     }
 
     protected void initHeap() {
-        int initLength = !ObjectUtils.isEmpty(meta.getResourceCfgMap().get(ResourceConst.DEFAULTCACHEOFFHEAPSIZEKEY))
+        int initLength =!ObjectUtils.isEmpty(meta) && !ObjectUtils.isEmpty(meta.getResourceCfgMap().get(ResourceConst.DEFAULTCACHEOFFHEAPSIZEKEY))
                 ? Integer.parseInt(meta.getResourceCfgMap().get(ResourceConst.DEFAULTCACHEOFFHEAPSIZEKEY).toString()) : ResourceConst.DEFAULTCACHEOFFHEAPSIZE;
         segment = MemorySegmentFactory.allocateOffHeapUnsafeMemory(initLength, this, new Thread() {
         });
@@ -187,7 +187,7 @@ public abstract class AbstractUploadPartOutputStream extends OutputStream {
 
     protected abstract void uploadPart() throws IOException;
 
-    protected abstract void uploadAsync(WeakReference<byte[]> writeBytesRef, int partNumber, int byteSize) throws IOException;
+    protected abstract void uploadAsync(ByteBuffer buffer, int partNumber, int byteSize) throws IOException;
 
     protected abstract String completeMultiUpload() throws IOException;
 
@@ -196,11 +196,11 @@ public abstract class AbstractUploadPartOutputStream extends OutputStream {
     abstract class AbstractUploadPartCallable implements Callable<Boolean> {
         protected int retryNum = 4;
         protected int partNumber;
-        protected WeakReference<byte[]> content;
+        protected ByteBuffer buffer;
         protected int byteSize;
 
-        AbstractUploadPartCallable(WeakReference<byte[]> content, int partNumber, int byteSize) {
-            this.content = content;
+        AbstractUploadPartCallable(ByteBuffer buffer, int partNumber, int byteSize) {
+            this.buffer = buffer;
             this.partNumber = partNumber;
             this.byteSize = byteSize;
         }

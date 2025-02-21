@@ -35,7 +35,7 @@ public class ProtoBufFileWriter extends AbstractFileWriter {
         try {
             container=ProtoBufUtil.initSchema(colmeta);
             checkAccessUtil(null);
-            out=accessUtil.getRawOutputStream(colmeta,ResourceUtil.getProcessPath(colmeta.getPath()));
+            out=accessUtil.getRawOutputStream(ResourceUtil.getProcessPath(colmeta.getPath()));
             wrapOutputStream = CompressEncoder.getOutputStreamByCompressType(ResourceUtil.getProcessPath(colmeta.getPath()),out); //accessUtil.getOutResourceByStream(colmeta, ResourceUtil.getProcessPath(colmeta.getPath()));
             getCompressType();
         }catch (Exception ex){

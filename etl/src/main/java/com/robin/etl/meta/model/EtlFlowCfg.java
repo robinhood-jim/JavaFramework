@@ -41,6 +41,8 @@ public class EtlFlowCfg extends BaseObject {
 	private String cronTrigger;
 	@MappingField
 	private Integer priority;
+	@MappingField
+	private String stepDefinition;
 
 
 }

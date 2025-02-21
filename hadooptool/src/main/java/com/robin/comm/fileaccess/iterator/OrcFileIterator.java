@@ -307,8 +307,8 @@ public class OrcFileIterator extends AbstractFileIterator {
                     fs=FileSystem.get(new Configuration());
                     readPath=new File(readPath).toURI().toString();
                 }else {
-                    instream = accessUtil.getRawInputStream(colmeta, ResourceUtil.getProcessPath(colmeta.getPath()));
-                    long size = accessUtil.getInputStreamSize(colmeta, ResourceUtil.getProcessPath(colmeta.getPath()));
+                    instream = accessUtil.getRawInputStream(ResourceUtil.getProcessPath(colmeta.getPath()));
+                    long size = accessUtil.getInputStreamSize(ResourceUtil.getProcessPath(colmeta.getPath()));
                     Double freeMemory= SysUtils.getFreeMemory();
                     if (size < ResourceConst.MAX_ARRAY_SIZE && freeMemory>allowOffHeapDumpLimit) {
                         //use flink memory utils to use offHeapMemory to dump file content

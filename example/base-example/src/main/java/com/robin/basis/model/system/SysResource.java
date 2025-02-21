@@ -44,7 +44,7 @@ public class SysResource extends BaseObject {
 	@MappingField
 	private Long pid;
 	@MappingField
-	private String seqNo;
+	private Integer seqNo;
 	@MappingField
 	private String remark;
 	@MappingField

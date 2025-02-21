@@ -15,6 +15,7 @@
  */
 package com.robin.core.convert.util;
 
+import com.google.common.collect.Lists;
 import com.robin.core.base.datameta.DataBaseColumnMeta;
 import com.robin.core.base.exception.GenericException;
 import com.robin.core.base.model.BaseObject;
@@ -48,26 +49,35 @@ public class ConvertUtil {
     public static final DateTimeFormatter ymdSecondformatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
     public static final DateTimeFormatter ymdSepSecondformatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     public static final DateTimeFormatter ymdEupformatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
-    private static ThreadLocal<DateTimeFormatter> currentFormatter=new ThreadLocal<>();
+    private static ThreadLocal<DateTimeFormatter> currentFormatter = new ThreadLocal<>();
 
     private ConvertUtil() {
 
     }
 
-    public static void convertToTargetObj(Object target, Object src, String... defaultDateTimeFormatter) throws Exception {
+    public static void convertToTargetObj(Object target, Object src, String... ignoreColumns) throws Exception {
         if (target == null || src == null) {
             return;
         }
 
         Map<String, Method> srcmap = ReflectUtils.returnGetMethods(src.getClass());
         Map<String, Method> targetMap = ReflectUtils.returnSetMethods(target.getClass());
+        List<String> ignoreColumnList = getIgnoreColumns(ignoreColumns);
 
         for (Map.Entry<String, Method> entry : srcmap.entrySet()) {
-            if (targetMap.containsKey(entry.getKey())) {
-                Object value = parseParameter(targetMap.get(entry.getKey()).getParameterTypes()[0], srcmap.get(entry.getKey()).invoke(src, (Object[]) null), defaultDateTimeFormatter);
+            if (targetMap.containsKey(entry.getKey()) && (ObjectUtils.isEmpty(ignoreColumnList) || !ignoreColumnList.contains(entry.getKey()))) {
+                Object value = parseParameter(targetMap.get(entry.getKey()).getParameterTypes()[0], srcmap.get(entry.getKey()).invoke(src, (Object[]) null));
                 targetMap.get(entry.getKey()).invoke(target, value);
             }
         }
+    }
+
+    private static List<String> getIgnoreColumns(String[] ignoreColumns) {
+        List<String> ignoreColumnList = null;
+        if (ignoreColumns.length > 0) {
+            ignoreColumnList = Lists.newArrayList(ignoreColumns);
+        }
+        return ignoreColumnList;
     }
 
     public static void objectToMap(Map<String, String> target, Object src) throws IllegalAccessException, IllegalArgumentException,
@@ -98,24 +108,25 @@ public class ConvertUtil {
         }
     }
 
-    public static void mapToObject(BaseObject target, Map<String, String> src, String... defaultDateTimeFormatter) throws Exception {
+    public static void mapToObject(BaseObject target, Map<String, String> src, String... ignoreColumns) throws Exception {
         if (src == null || target == null) {
             return;
         }
         Iterator<Map.Entry<String, String>> it = src.entrySet().iterator();
         Map<String, Method> methodMap = ReflectUtils.returnSetMethods(target.getClass());
+        List<String> ignoreColumnList = getIgnoreColumns(ignoreColumns);
         while (it.hasNext()) {
             Map.Entry<String, String> entry = it.next();
             String key = entry.getKey();
             String value = entry.getValue();
-            if (methodMap.containsKey(key)) {
+            if (methodMap.containsKey(key) && (ObjectUtils.isEmpty(ignoreColumnList) || !ignoreColumnList.contains(key))) {
                 target.addDirtyColumn(key);
                 Class<?> type = methodMap.get(key).getParameterTypes()[0];
                 Object retValue;
                 if (StringUtils.isEmpty(value)) {
                     retValue = null;
                 } else {
-                    retValue = parseParameter(type, value, defaultDateTimeFormatter);
+                    retValue = parseParameter(type, value);
                 }
                 methodMap.get(key).invoke(target, retValue);
             }
@@ -123,24 +134,24 @@ public class ConvertUtil {
 
     }
 
-    public static void mapToObject(Object target, Map<String, Object> src, String... defaultDateTimeFormatter) throws Exception {
+    public static void mapToObject(Object target, Map<String, Object> src, String... ignoreColumns) throws Exception {
         if (src == null || target == null) {
             return;
         }
-
         Iterator<Map.Entry<String, Object>> it = src.entrySet().iterator();
         Map<String, Method> targetMap = ReflectUtils.returnSetMethods(target.getClass());
+        List<String> ignoreColumnList = getIgnoreColumns(ignoreColumns);
         while (it.hasNext()) {
             Map.Entry<String, Object> entry = it.next();
             String key = entry.getKey();
             Object value = entry.getValue();
-            if (targetMap.containsKey(key)) {
+            if (targetMap.containsKey(key) && (ObjectUtils.isEmpty(ignoreColumnList) || !ignoreColumnList.contains(key))) {
                 Class<?> type = targetMap.get(key).getParameterTypes()[0];
                 Object retValue;
                 if (ObjectUtils.isEmpty(value)) {
                     retValue = null;
                 } else {
-                    retValue = parseParameter(type, value, defaultDateTimeFormatter);
+                    retValue = parseParameter(type, value);
                 }
                 targetMap.get(key).invoke(target, retValue);
             }
@@ -152,7 +163,7 @@ public class ConvertUtil {
         return value.substring(0, 1).toUpperCase() + value.substring(1);
     }
 
-    public static void convertSerializableForUpdate(Serializable target, Serializable src, String... defaultDateTime) throws Exception {
+    public static void convertSerializableForUpdate(Serializable target, Serializable src, String... ignoreColumns) throws Exception {
         if (target == null || src == null) {
             return;
         }
@@ -160,12 +171,15 @@ public class ConvertUtil {
             throw new GenericException("source and target class mismatch");
         }
         Map<String, Method> srcmap = ReflectUtils.returnGetMethods(src.getClass());
+        List<String> ignoreColumnList = getIgnoreColumns(ignoreColumns);
         for (Map.Entry<String, Method> entry : srcmap.entrySet()) {
             String field = entry.getKey();
-            Method setMethod = entry.getValue();
-            Object value = entry.getValue().invoke(null);
-            if (value != null && setMethod != null) {
-                setObjectValue(target, value, field, setMethod, defaultDateTime);
+            if (ObjectUtils.isEmpty(ignoreColumnList) || !ignoreColumnList.contains(field)) {
+                Method setMethod = entry.getValue();
+                Object value = entry.getValue().invoke(null);
+                if (value != null && setMethod != null) {
+                    setObjectValue(target, value, setMethod);
+                }
             }
         }
     }
@@ -181,68 +195,68 @@ public class ConvertUtil {
         Map<String, Method> srcmap = ReflectUtils.returnGetMethods(src.getClass());
         Map<String, Method> targetMap = ReflectUtils.returnSetMethods(target.getClass());
 
-        List<String> dirtyColumnList = src.getDirtyColumn();
-        for (String s : dirtyColumnList) {
-            Method setMethod = targetMap.get(s);
-            if (setMethod != null) {
-                Method getMethod = srcmap.get(s);
-                Object value = getMethod.invoke(src, (Object[]) null);
-                if (value != null) {
-                    setMethod.invoke(target, value);
-                } else {
-                    setMethod.invoke(target);
+        if(!ObjectUtils.isEmpty(src.getDirtyColumn())) {
+            for (String s : src.getDirtyColumn()) {
+                Method setMethod = targetMap.get(s);
+                if (setMethod != null) {
+                    Method getMethod = srcmap.get(s);
+                    Object value = getMethod.invoke(src, (Object[]) null);
+                    if (value != null) {
+                        setMethod.invoke(target, value);
+                    } else {
+                        setMethod.invoke(target);
+                    }
                 }
             }
         }
     }
 
-    public static void convertToModel(BaseObject target, Map<String, String> src, String... defaultDateTimeFormatter) throws Exception {
+    public static void convertToModel(BaseObject target, Map<String, Object> src, String... ignoreColumns) throws Exception {
         if (target == null || src == null) {
             return;
         }
-
         Map<String, Method> map = ReflectUtils.returnSetMethods(target.getClass());
-
-        for (Map.Entry<String, String> entry : src.entrySet()) {
+        List<String> ignoreColumnList = getIgnoreColumns(ignoreColumns);
+        for (Map.Entry<String, Object> entry : src.entrySet()) {
             String field = entry.getKey();
-            Method setMethod = map.get(field);
-            if (setMethod != null) {
-                setBaseObjectValue(target, entry.getValue(), field, setMethod, defaultDateTimeFormatter);
+            if (ObjectUtils.isEmpty(ignoreColumnList) || !ignoreColumnList.contains(field)) {
+                Method setMethod = map.get(field);
+                if (setMethod != null) {
+                    setBaseObjectValue(target, entry.getValue(), field, setMethod);
+                }
             }
         }
     }
 
-    private static void setBaseObjectValue(BaseObject target, Object value, String field, Method setMethod, String... defaultDateTimeFormatter) throws Exception {
+    private static void setBaseObjectValue(BaseObject target, Object value, String field, Method setMethod) throws Exception {
         if (!ObjectUtils.isEmpty(value)) {
             target.addDirtyColumn(field);
             Class<?> type = setMethod.getParameterTypes()[0];
-            Object retValue = parseParameter(type, value, defaultDateTimeFormatter);
+            Object retValue = parseParameter(type, value);
             setMethod.invoke(target, retValue);
-        }else if(target.getDirtyColumn().contains(field)){
+        } else if (target.getDirtyColumn().contains(field)) {
             setMethod.invoke(target);
         }
     }
 
-    private static void setObjectValue(Serializable target, Object value, String field, Method setMethod, String... defaultDateTimeFormatter) throws Exception {
-        if (value != null) {
+    private static void setObjectValue(Serializable target, Object value, Method setMethod) throws Exception {
+        if (!ObjectUtils.isEmpty(value)) {
             Class<?> type = setMethod.getParameterTypes()[0];
-            if (!"java.lang.String".equalsIgnoreCase(type.getName()) && "".equals(value)) {
-                setMethod.invoke(target);
-            } else {
-                Object retValue = parseParameter(type, value, defaultDateTimeFormatter);
-                if(retValue!=null) {
-                    setMethod.invoke(target, retValue);
-                }
+            Object retValue = parseParameter(type, value);
+            if (retValue != null) {
+                setMethod.invoke(target, retValue);
             }
         }
     }
+
     @SuppressWarnings("unchecked")
-    public static void convertToTarget(Object target, Object src, String... defaultDateTimeFormatter) throws Exception {
+    public static void convertToTarget(Object target, Object src, String... ignoreColumns) throws Exception {
         if (target == null || src == null) {
             return;
         }
         Map<String, Method> targetMethodMap = ReflectUtils.returnSetMethods(target.getClass());
         Map<String, Method> sourceMethodMap = ReflectUtils.returnGetMethods(src.getClass());
+        List<String> ignoreColumnList = getIgnoreColumns(ignoreColumns);
         if (Map.class.isAssignableFrom(src.getClass())) {
             Map<String, Object> vMap = (Map<String, Object>) src;
             for (Map.Entry<String, Object> entry : vMap.entrySet()) {
@@ -252,9 +266,9 @@ public class ConvertUtil {
                     if (target instanceof BaseObject) {
                         setBaseObjectValue((BaseObject) target, entry.getValue(), field, setMethod);
                     } else {
-                        if (targetMethodMap.containsKey(field)) {
-                            Object retValue = parseParameter(targetMethodMap.get(field).getParameterTypes()[0], entry.getValue(), defaultDateTimeFormatter);
-                            if(retValue!=null) {
+                        if (targetMethodMap.containsKey(field) && (ObjectUtils.isEmpty(ignoreColumnList) || !ignoreColumnList.contains(field))) {
+                            Object retValue = parseParameter(targetMethodMap.get(field).getParameterTypes()[0], entry.getValue());
+                            if (retValue != null) {
                                 setObjectValue(targetMethodMap.get(field), target, retValue);
                             }
                         }
@@ -264,7 +278,7 @@ public class ConvertUtil {
         } else {
             for (Map.Entry<String, Method> entry : sourceMethodMap.entrySet()) {
                 if (targetMethodMap.containsKey(entry.getKey()) && entry.getValue().getParameterTypes().length == 0) {
-                    Object retValue = parseParameter(targetMethodMap.get(entry.getKey()).getParameterTypes()[0], entry.getValue().invoke(src), defaultDateTimeFormatter);
+                    Object retValue = parseParameter(targetMethodMap.get(entry.getKey()).getParameterTypes()[0], entry.getValue().invoke(src));
                     if (null != retValue) {
                         setObjectValue(targetMethodMap.get(entry.getKey()), target, retValue);
                     }
@@ -277,7 +291,7 @@ public class ConvertUtil {
         setMethod.invoke(target, value);
     }
 
-    public static Object parseParameter(DataBaseColumnMeta meta, Object strValue, String... defaultDateTimeFormatter) {
+    public static Object parseParameter(DataBaseColumnMeta meta, Object strValue) {
         if (strValue == null) {
             return null;
         }
@@ -296,11 +310,7 @@ public class ConvertUtil {
                 ret = Short.valueOf(strValue.toString());
             } else if (Types.TIME == meta.getDataType() || Types.DATE == meta.getDataType() || Types.TIMESTAMP == meta.getDataType()) {
                 String value = strValue.toString().trim();
-                if (defaultDateTimeFormatter.length == 0) {
-                    formatter = getFormatter(value);
-                } else {
-                    formatter = DateTimeFormatter.ofPattern(defaultDateTimeFormatter[0]);
-                }
+                formatter = getFormatter(value);
                 if (null != formatter) {
                     LocalDateTime localDateTime = LocalDateTime.parse(value, formatter);
                     if (Types.DATE == meta.getDataType()) {
@@ -318,7 +328,8 @@ public class ConvertUtil {
         }
         return ret;
     }
-    public static Object parseParameter(DataSetColumnMeta meta, Object strValue, String... defaultDateTimeFormatter) {
+
+    public static Object parseParameter(DataSetColumnMeta meta, Object strValue) {
         if (strValue == null) {
             return null;
         }
@@ -337,11 +348,7 @@ public class ConvertUtil {
                 ret = Short.valueOf(strValue.toString());
             } else if (Const.META_TYPE_DATE.equals(meta.getColumnType()) || Const.META_TYPE_TIMESTAMP.equals(meta.getColumnType())) {
                 String value = strValue.toString().trim();
-                if (defaultDateTimeFormatter.length == 0) {
-                    formatter = getFormatter(value);
-                } else {
-                    formatter = DateTimeFormatter.ofPattern(defaultDateTimeFormatter[0]);
-                }
+                formatter = getFormatter(value);
                 if (null != formatter) {
                     LocalDateTime localDateTime = LocalDateTime.parse(value, formatter);
                     if (Const.META_TYPE_DATE.equals(meta.getColumnType())) {
@@ -361,7 +368,7 @@ public class ConvertUtil {
     }
 
 
-    public static Object parseParameter(Class<?> type, Object strValue, String... defaultDateTimeFormatter) throws Exception {
+    public static Object parseParameter(Class<?> type, Object strValue) throws Exception {
         if (Objects.isNull(strValue)) {
             return null;
         }
@@ -392,7 +399,7 @@ public class ConvertUtil {
                     if (java.util.Date.class.isAssignableFrom(strValue.getClass())) {
                         ret = strValue;
                     } else {
-                        formatter = getFormatter(defaultDateTimeFormatter, strValue.toString());
+                        formatter = !ObjectUtils.isEmpty(currentFormatter.get()) ? currentFormatter.get() : getFormatter(strValue.toString());
                         LocalDateTime localDateTime = LocalDateTime.parse(strValue.toString(), formatter);
                         ret = new java.util.Date(localDateTime.toInstant(ZoneOffset.ofHours(8)).toEpochMilli());
                     }
@@ -400,7 +407,7 @@ public class ConvertUtil {
                     if (Timestamp.class.isAssignableFrom(strValue.getClass())) {
                         ret = strValue;
                     } else {
-                        formatter = getFormatter(defaultDateTimeFormatter, strValue.toString());
+                        formatter = !ObjectUtils.isEmpty(currentFormatter.get()) ? currentFormatter.get() : getFormatter(strValue.toString());
                         LocalDateTime localDateTime = LocalDateTime.parse(strValue.toString(), formatter);
                         ret = new Timestamp(localDateTime.toInstant(ZoneOffset.ofHours(8)).toEpochMilli());
                     }
@@ -408,7 +415,7 @@ public class ConvertUtil {
                     if (LocalDateTime.class.isAssignableFrom(strValue.getClass())) {
                         ret = strValue;
                     } else {
-                        formatter = getFormatter(defaultDateTimeFormatter, strValue.toString());
+                        formatter = !ObjectUtils.isEmpty(currentFormatter.get()) ? currentFormatter.get() : getFormatter(strValue.toString());
                         ret = LocalDateTime.parse(strValue.toString(), formatter);
                     }
                 }
@@ -433,29 +440,21 @@ public class ConvertUtil {
         return ret;
     }
 
-    private static DateTimeFormatter getFormatter(String[] defaultDateTimeFormatter, String value) {
-        DateTimeFormatter formatter;
-        if (defaultDateTimeFormatter.length == 0) {
-            formatter = getFormatter(value);
-        } else {
-            formatter = DateTimeFormatter.ofPattern(defaultDateTimeFormatter[0]);
-        }
-        return formatter;
-    }
-
-
     public static DateTimeFormatter getFormatter(String value) {
-        DateTimeFormatter retFormatter = null;
-        if (isFormatterFit(value, ymdformatter)) {
-            retFormatter = ymdformatter;
-        } else if (isFormatterFit(value, ymdSepformatter)) {
-            retFormatter = ymdSepformatter;
-        } else if (isFormatterFit(value, ymdSecondformatter)) {
-            retFormatter = ymdSecondformatter;
-        } else if (isFormatterFit(value, ymdSepSecondformatter)) {
-            retFormatter = ymdSepSecondformatter;
-        } else if (isFormatterFit(value, ymdEupformatter)) {
-            retFormatter = ymdEupformatter;
+        DateTimeFormatter retFormatter = currentFormatter.get();
+        if (ObjectUtils.isEmpty(retFormatter)) {
+            if (isFormatterFit(value, ymdformatter)) {
+                retFormatter = ymdformatter;
+            } else if (isFormatterFit(value, ymdSepformatter)) {
+                retFormatter = ymdSepformatter;
+            } else if (isFormatterFit(value, ymdSecondformatter)) {
+                retFormatter = ymdSecondformatter;
+            } else if (isFormatterFit(value, ymdSepSecondformatter)) {
+                retFormatter = ymdSepSecondformatter;
+            } else if (isFormatterFit(value, ymdEupformatter)) {
+                retFormatter = ymdEupformatter;
+            }
+            currentFormatter.set(retFormatter);
         }
         return retFormatter;
     }
@@ -470,7 +469,7 @@ public class ConvertUtil {
         return false;
     }
 
-    public static Object convertStringToTargetObject(String value, DataSetColumnMeta meta, DateTimeFormatter formatter){
+    public static Object convertStringToTargetObject(String value, DataSetColumnMeta meta, DateTimeFormatter formatter) {
         Object retObj;
         String columnType = meta.getColumnType();
         retObj = translateValue(value, columnType, meta.getColumnName(), formatter);
@@ -479,7 +478,6 @@ public class ConvertUtil {
         }
         return retObj;
     }
-
 
 
     public static Object wrapObjectByAutoDetect(Object object, String dateFormatStr) {
@@ -502,8 +500,8 @@ public class ConvertUtil {
                         }
                     } else {
                         try {
-                            LocalDateTime date = LocalDateTime.parse(object.toString(),dateFormat);
-                            retObj =Timestamp.valueOf(date);
+                            LocalDateTime date = LocalDateTime.parse(object.toString(), dateFormat);
+                            retObj = Timestamp.valueOf(date);
                         } catch (DateTimeParseException ex) {
                             retObj = object;
                         }
@@ -533,9 +531,9 @@ public class ConvertUtil {
             } else if (columnType.equals(Const.META_TYPE_DOUBLE)) {
                 retObj = Double.valueOf(value);
             } else if (columnType.equals(Const.META_TYPE_DATE)) {
-                retObj = new java.util.Date(LocalDateTime.parse(value,dateformat).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
+                retObj = new java.util.Date(LocalDateTime.parse(value, dateformat).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
             } else if (columnType.equals(Const.META_TYPE_TIMESTAMP)) {
-                retObj = new Timestamp(LocalDateTime.parse(value,dateformat).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
+                retObj = new Timestamp(LocalDateTime.parse(value, dateformat).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
             } else {
                 retObj = value;
             }
@@ -544,29 +542,31 @@ public class ConvertUtil {
         }
         return retObj;
     }
+
     public static <T> T wrapVoObject(Object obj, IModelConvert<T> convert, Class<T> voType, String... ignoreKeys) {
         T voObj;
         if (convert != null) {
             voObj = convert.doConvert(obj);
         } else {
-            if(obj.getClass().getSuperclass().getInterfaces().length>0 &&  Map.class.isAssignableFrom(obj.getClass())){
-                voObj=(T)ConvertUtil.sourceToTargetWithMap((Map)obj,voType,ignoreKeys);
-            }else {
+            if (obj.getClass().getSuperclass().getInterfaces().length > 0 && Map.class.isAssignableFrom(obj.getClass())) {
+                voObj = (T) ConvertUtil.sourceToTargetWithMap((Map) obj, voType, ignoreKeys);
+            } else {
                 voObj = BeanUtils.instantiateClass(voType);
-                BeanUtils.copyProperties(obj, voObj,ignoreKeys);
+                BeanUtils.copyProperties(obj, voObj, ignoreKeys);
             }
         }
         return voObj;
     }
-    public static <T> T sourceToTargetWithMap(Map<String, Object> map, Class<T> target,String... ignoreColumns) {
+
+    public static <T> T sourceToTargetWithMap(Map<String, Object> map, Class<T> target, String... ignoreColumns) {
         if (map == null || map.isEmpty()) {
             return null;
         }
-        Set<String> ignoreKeys=new HashSet<>();
-        boolean hasIgnore=false;
-        if(ignoreColumns.length>0){
+        Set<String> ignoreKeys = new HashSet<>();
+        boolean hasIgnore = false;
+        if (ignoreColumns.length > 0) {
             ignoreKeys.addAll(Arrays.asList(ignoreColumns));
-            hasIgnore=true;
+            hasIgnore = true;
         }
         T targetObject = null;
         Map<String, Method> methodMap = ReflectUtils.returnSetMethods(target);
@@ -574,10 +574,8 @@ public class ConvertUtil {
             targetObject = target.newInstance();
             for (Map.Entry<String, Object> entry : map.entrySet()) {
                 if (entry.getValue() != null) {
-                    if (entry.getValue() instanceof String) {
-                        if (StringUtils.isEmpty(entry.getValue().toString())) {
-                            continue;
-                        }
+                    if (ObjectUtils.isEmpty(entry.getValue())) {
+                        continue;
                     }
                     if (methodMap.containsKey(entry.getKey()) && (!hasIgnore || !ignoreKeys.contains(entry.getKey()))) {
                         setFields(targetObject, methodMap.get(entry.getKey()), entry.getValue());
@@ -601,11 +599,12 @@ public class ConvertUtil {
             ex.printStackTrace();
         }
     }
-    public static <T> void sourceToMap(Map<String, Object> map, T sourceObj,String defaultTimeFormat, String... ignoreKeys) {
+
+    public static <T> void sourceToMap(Map<String, Object> map, T sourceObj, String defaultTimeFormat, String... ignoreKeys) {
         Map<String, Method> methodMap = ReflectUtils.returnGetMethods(sourceObj.getClass());
         Iterator<Map.Entry<String, Method>> iterator = methodMap.entrySet().iterator();
         List<String> ignoreList = new ArrayList<>();
-        DateTimeFormatter timeFormatter=!ObjectUtils.isEmpty(defaultTimeFormat)?DateTimeFormatter.ofPattern(defaultTimeFormat):ymdSecondformatter;
+        DateTimeFormatter timeFormatter = !ObjectUtils.isEmpty(defaultTimeFormat) ? DateTimeFormatter.ofPattern(defaultTimeFormat) : ymdSecondformatter;
         if (ignoreKeys != null && ignoreKeys.length > 0) {
             for (int i = 0; i < ignoreKeys.length; i++) {
                 ignoreList.addAll(Arrays.asList(ignoreKeys[i]));
@@ -616,15 +615,28 @@ public class ConvertUtil {
                 Map.Entry<String, Method> entry = iterator.next();
                 Object value = entry.getValue().invoke(sourceObj);
                 if (!ignoreList.contains(entry.getKey()) && value != null) {
-                    if(value.getClass().isAssignableFrom(LocalDateTime.class)){
-                        map.put(entry.getKey(),timeFormatter.format((LocalDateTime) value));
-                    }else {
+                    if (value.getClass().isAssignableFrom(LocalDateTime.class)) {
+                        map.put(entry.getKey(), timeFormatter.format((LocalDateTime) value));
+                    } else {
                         map.put(entry.getKey(), value);
                     }
                 }
             } catch (Exception ex) {
                 log.error("{}", ex);
             }
+        }
+    }
+
+    public static void setDateFormat(String formatStr) {
+        currentFormatter.set(DateTimeFormatter.ofPattern(formatStr));
+    }
+    public static void setDateFormat(DateTimeFormatter formatter){
+        currentFormatter.set(formatter);
+    }
+
+    public static void finishConvert() {
+        if(currentFormatter.get()!=null) {
+            currentFormatter.remove();
         }
     }
 }

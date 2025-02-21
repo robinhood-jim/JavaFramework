@@ -53,21 +53,25 @@ public class QiniuFileSystemAccessor extends AbstractCloudStorageFileSystemAcces
 
     @Override
     public void init(DataCollectionMeta meta) {
+        super.init(meta);
         Assert.isTrue(!CollectionUtils.isEmpty(meta.getResourceCfgMap()),"config map is empty!");
-        Assert.notNull(meta.getResourceCfgMap().get(ResourceConst.QINIUPARAM.DOMAIN.getValue()),"must provide domain");
-        Assert.notNull(meta.getResourceCfgMap().get(ResourceConst.QINIUPARAM.REGION.getValue()),"must provide region");
-        Assert.notNull(meta.getResourceCfgMap().get(ResourceConst.QINIUPARAM.ACESSSKEY.getValue()),"must provide accessKey");
-        Assert.notNull(meta.getResourceCfgMap().get(ResourceConst.QINIUPARAM.SECURITYKEY.getValue()),"must provide securityKey");
-        Assert.notNull(meta.getResourceCfgMap().get(ResourceConst.QINIUPARAM.DOWNDOMAIN.getValue()),"must provide downDomain");
-        Assert.notNull(meta.getResourceCfgMap().get(ResourceConst.QINIUPARAM.URLPREFIX.getValue()),"must provide urlPrefix");
-        accessKey=meta.getResourceCfgMap().get(ResourceConst.QINIUPARAM.ACESSSKEY.getValue()).toString();
-        secretKey=meta.getResourceCfgMap().get(ResourceConst.QINIUPARAM.SECURITYKEY.getValue()).toString();
-        domain=meta.getResourceCfgMap().get(ResourceConst.QINIUPARAM.DOMAIN.getValue()).toString();
+        if(ObjectUtils.isEmpty(accessKey) &&  meta.getResourceCfgMap().containsKey(ResourceConst.QINIUPARAM.ACESSSKEY.getValue())) {
+            accessKey = meta.getResourceCfgMap().get(ResourceConst.QINIUPARAM.ACESSSKEY.getValue()).toString();
+        }
+        if(ObjectUtils.isEmpty(secretKey) && meta.getResourceCfgMap().containsKey(ResourceConst.QINIUPARAM.SECURITYKEY.getValue())) {
+            secretKey = meta.getResourceCfgMap().get(ResourceConst.QINIUPARAM.SECURITYKEY.getValue()).toString();
+        }
+        if(ObjectUtils.isEmpty(domain) && meta.getResourceCfgMap().containsKey(ResourceConst.QINIUPARAM.DOMAIN.getValue())) {
+            domain = meta.getResourceCfgMap().get(ResourceConst.QINIUPARAM.DOMAIN.getValue()).toString();
+        }
         auth= Auth.create(accessKey,secretKey);
         region=Region.autoRegion();
-        urlPrefix=meta.getResourceCfgMap().get(ResourceConst.QINIUPARAM.URLPREFIX.getValue()).toString();
-
-        downDomain=meta.getResourceCfgMap().get(ResourceConst.QINIUPARAM.DOWNDOMAIN.getValue()).toString();
+        if(ObjectUtils.isEmpty(urlPrefix) && meta.getResourceCfgMap().containsKey(ResourceConst.QINIUPARAM.URLPREFIX.getValue())) {
+            urlPrefix = meta.getResourceCfgMap().get(ResourceConst.QINIUPARAM.URLPREFIX.getValue()).toString();
+        }
+        if(ObjectUtils.isEmpty(downDomain) && meta.getResourceCfgMap().containsKey(ResourceConst.QINIUPARAM.DOWNDOMAIN.getValue())) {
+            downDomain = meta.getResourceCfgMap().get(ResourceConst.QINIUPARAM.DOWNDOMAIN.getValue()).toString();
+        }
         Configuration cfg=new Configuration(region);
         cfg.resumableUploadAPIVersion=Configuration.ResumableUploadAPIVersion.V2;
         client=new Client(cfg);
@@ -86,14 +90,14 @@ public class QiniuFileSystemAccessor extends AbstractCloudStorageFileSystemAcces
     }
 
     @Override
-    public boolean exists(DataCollectionMeta meta, String resourcePath) throws IOException {
-        String bucketName= getBucketName(meta);
+    public boolean exists(String resourcePath) throws IOException {
+        String bucketName= getBucketName(colmeta);
         return isKeyExist(bucketName,resourcePath);
     }
 
     @Override
-    public long getInputStreamSize(DataCollectionMeta meta, String resourcePath) throws IOException {
-        return getSize(getBucketName(meta),resourcePath);
+    public long getInputStreamSize(String resourcePath) throws IOException {
+        return getSize(getBucketName(colmeta),resourcePath);
     }
 
     private boolean isKeyExist(String bucketName,String key) {
@@ -124,8 +128,8 @@ public class QiniuFileSystemAccessor extends AbstractCloudStorageFileSystemAcces
     }
 
     @Override
-    protected synchronized OutputStream getOutputStream(DataCollectionMeta meta) throws IOException {
-        return new QiniuOutputStream(client,uploadManager,meta,auth,getBucketName(meta),meta.getPath(),urlPrefix);
+    protected synchronized OutputStream getOutputStream(String path) throws IOException {
+        return new QiniuOutputStream(client,uploadManager, colmeta,auth,getBucketName(colmeta),path,urlPrefix);
     }
 
     protected InputStream getObject(@NonNull String bucketName, @NonNull String key) {

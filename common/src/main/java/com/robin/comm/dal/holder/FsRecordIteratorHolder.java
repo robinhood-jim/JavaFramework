@@ -40,8 +40,8 @@ public class FsRecordIteratorHolder extends AbstractResourceHolder {
         URI uri=new URI(colmeta.getPath());
         String schema=uri.getScheme();
         String path=uri.getPath();
-        AbstractFileSystemAccessor util = ResourceAccessHolder.getAccessUtilByProtocol(schema.toLowerCase());
-        InputStream inputStream = util.getInResourceByStream(colmeta, path);
+        AbstractFileSystemAccessor util = ResourceAccessHolder.getAccessUtilByProtocol(schema.toLowerCase(), colmeta);
+        InputStream inputStream = util.getInResourceByStream(path);
         iterator = TextFileIteratorFactory.getProcessIteratorByPath(colmeta, inputStream);
     }
 

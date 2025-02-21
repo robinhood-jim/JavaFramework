@@ -31,6 +31,7 @@ public class Calculator implements Closeable, Poolable {
     private Slot slot;
 
 
+
     public Calculator(){
 
     }
@@ -38,14 +39,14 @@ public class Calculator implements Closeable, Poolable {
         this.slot=slot;
     }
     public boolean doCompare(SqlNode node){
-        SqlContentResolver.doCompare(this,node);
+        SqlContentResolver.doCompare(segment,this,node);
         return runValue;
     }
     public boolean doCalculate(CommSqlParser.ValueParts valueParts){
         return SqlContentResolver.doCalculate(this,valueParts);
     }
     public boolean walkTree(SqlNode node){
-        return SqlContentResolver.walkTree(this,node);
+        return SqlContentResolver.walkTree(segment,this,node);
     }
     public void clear(){
         leftValue=null;

@@ -8,6 +8,7 @@ import org.springframework.core.env.Environment;
 
 import java.util.Locale;
 
+
 public class MessageUtils {
     private static MessageSource messageSource;
     private static Environment environment;
@@ -15,6 +16,9 @@ public class MessageUtils {
 
     static {
         messageSource = SpringContextHolder.getBean(MessageSource.class);
+        if(messageSource==null){
+            messageSource=SpringContextHolder.getBean("messageSource", MessageSource.class);
+        }
         environment=SpringContextHolder.getBean(Environment.class);
     }
     public static String getMessage(int errCode){

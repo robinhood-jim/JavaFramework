@@ -40,6 +40,8 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 /**
  * <p>Description:<b>Auto wired Service With defalut methold</b></p>
@@ -54,7 +56,12 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 	protected Class<P> pkType;
 	protected Logger logger=LoggerFactory.getLogger(getClass());
 	protected AnnotationRetriever.EntityContent<V> entityContent;
-
+	protected Consumer<V> saveBeforeFunction;
+	protected BiConsumer<V,P> saveAfterFunction;
+	protected Consumer<V> updateBeforeFunction;
+	protected Consumer<V> updateAfterFunction;
+	protected Consumer<P[]>deleteBeforeFunction;
+	protected Consumer<P[]> deleteAfterFunction;
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public BaseAnnotationJdbcService(){
@@ -90,7 +97,14 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
     @Transactional(propagation=Propagation.REQUIRED,rollbackFor=RuntimeException.class)
 	public P saveEntity(V vo) throws ServiceException{
 		try{
-			return jdbcDao.createVO(vo,pkType);
+			if(saveBeforeFunction!=null){
+				saveBeforeFunction.accept(vo);
+			}
+			P id= jdbcDao.createVO(vo,pkType);
+			if(saveAfterFunction!=null){
+				saveAfterFunction.accept(vo,id);
+			}
+			return id;
 		}catch (DAOException e) {
 			throw new ServiceException(e);
 		}
@@ -99,7 +113,14 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
     @Transactional(propagation=Propagation.REQUIRED,rollbackFor=RuntimeException.class)
 	public int updateEntity(V vo) throws ServiceException{
 		try{
-			return jdbcDao.updateByKey(type,vo);
+			if(updateBeforeFunction!=null){
+				updateBeforeFunction.accept(vo);
+			}
+			int ret= jdbcDao.updateByKey(type,vo);
+			if(updateAfterFunction!=null){
+				updateAfterFunction.accept(vo);
+			}
+			return ret;
 		}catch (DAOException e) {
 			throw new ServiceException(e);
 		}
@@ -108,7 +129,14 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
     @Transactional(propagation=Propagation.REQUIRED,rollbackFor=RuntimeException.class)
 	public int deleteEntity(P [] vo) throws ServiceException{
 		try{
-			return jdbcDao.deleteVO(type,vo);
+			if(deleteBeforeFunction!=null){
+				deleteBeforeFunction.accept(vo);
+			}
+			int ret= jdbcDao.deleteVO(type,vo);
+			if(deleteAfterFunction!=null){
+				deleteAfterFunction.accept(vo);
+			}
+			return ret;
 		}catch (DAOException e) {
 			throw new ServiceException(e);
 		}

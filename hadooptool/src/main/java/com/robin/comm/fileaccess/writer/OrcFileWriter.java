@@ -87,7 +87,7 @@ public class OrcFileWriter extends AbstractFileWriter {
         } else {
             conf = new Configuration(false);
             checkAccessUtil(null);
-            out = accessUtil.getRawOutputStream(colmeta, ResourceUtil.getProcessPath(colmeta.getPath()));
+            out = accessUtil.getRawOutputStream(ResourceUtil.getProcessPath(colmeta.getPath()));
             fs = new MockFileSystem(colmeta, out);
         }
         schema = OrcUtil.getSchema(colmeta);

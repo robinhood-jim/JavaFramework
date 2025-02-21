@@ -42,7 +42,7 @@ public class ProtoBufFileIterator extends AbstractFileIterator {
             container=ProtoBufUtil.initSchema(colmeta);
 
             checkAccessUtil(null);
-            instream = accessUtil.getInResourceByStream(colmeta, ResourceUtil.getProcessPath(colmeta.getPath()));
+            instream = accessUtil.getInResourceByStream(ResourceUtil.getProcessPath(colmeta.getPath()));
         } catch (Exception ex) {
             ex.printStackTrace();
         }

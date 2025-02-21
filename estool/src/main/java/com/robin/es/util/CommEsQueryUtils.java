@@ -3,12 +3,15 @@ package com.robin.es.util;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.robin.comm.util.http.HttpUtils;
-import com.robin.comm.util.json.GsonUtil;
+import com.robin.core.base.dao.util.AnnotationRetriever;
+import com.robin.core.base.dao.util.FieldContent;
 import com.robin.core.base.exception.ServiceException;
 import com.robin.core.base.reflect.ReflectUtils;
 import com.robin.core.base.spring.SpringContextHolder;
+import com.robin.core.base.util.Const;
 import com.robin.core.base.util.StringUtils;
 import com.robin.core.convert.util.ConvertUtil;
+import com.robin.comm.util.json.GsonUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
@@ -182,7 +185,7 @@ public class CommEsQueryUtils {
                             contents.add(obj);
                         }
                     }
-                    retPage = new PageImpl(contents, pageable, response.getHits().getTotalHits());
+                    retPage = new PageImpl(contents, pageable, response.getHits().getTotalHits().value);
                 }
             } catch (Exception ex) {
                 throw new ServiceException(ex);
@@ -226,6 +229,31 @@ public class CommEsQueryUtils {
             wrapDecimalFormat(queryBuilder, fieldType, columnName, value);
         }
 
+    }
+
+
+
+    private static FieldType getByFieldType(String columnType) {
+        FieldType type = FieldType.Auto;
+        switch (columnType) {
+            case Const.META_TYPE_BIGINT:
+                type = FieldType.Long;
+                break;
+            case Const.META_TYPE_FLOAT:
+                type = FieldType.Double;
+                break;
+            case Const.META_TYPE_INTEGER:
+                type = FieldType.Integer;
+                break;
+            case Const.META_TYPE_SHORT:
+                type = FieldType.Short;
+                break;
+            case Const.META_TYPE_DATE:
+            case Const.META_TYPE_TIMESTAMP:
+                type = FieldType.Date;
+                break;
+        }
+        return type;
     }
 
     private static void wrapDecimalFormat(BoolQueryBuilder queryBuilders, FieldType fieldType, String columnName, String value) {
@@ -278,8 +306,8 @@ public class CommEsQueryUtils {
     }
 
     private static boolean rangeCheck(Object fromVal, Object toVal) {
-        Assert.notNull(fromVal,"");
-        Assert.notNull(toVal,"");
+        Assert.notNull(fromVal, "");
+        Assert.notNull(toVal, "");
         if (fromVal.getClass().isAssignableFrom(Double.class)) {
             return ((Double) fromVal) < (Double) toVal;
         } else if (fromVal.getClass().isAssignableFrom(Float.class)) {
@@ -303,6 +331,68 @@ public class CommEsQueryUtils {
         return value;
     }
 
+    private static Object parseValue(@NonNull String columnType, String value) {
+        Object retVal = null;
+        if (!ObjectUtils.isEmpty(value)) {
+            switch (columnType) {
+                case Const.META_TYPE_DOUBLE:
+                    retVal = Double.valueOf(value);
+                    break;
+                case Const.META_TYPE_INTEGER:
+                    retVal = Integer.valueOf(value);
+                    break;
+                case Const.META_TYPE_BIGINT:
+                    retVal = Long.valueOf(value);
+                    break;
+                case Const.META_TYPE_FLOAT:
+                    retVal = Float.valueOf(value);
+                    break;
+                default:
+                    retVal = value;
+            }
+        }
+        return retVal;
+    }
+
+    public static void getCondition(BoolQueryBuilder queryBuilders, FieldContent content, Const.OPERATOR operator, Object[] value) {
+        String columnName = content.getPropertyName();
+        String columnType = AnnotationRetriever.getFieldType(content);
+        Assert.isTrue(value!=null && value.length>1,"");
+        switch (operator) {
+            case GE:
+                queryBuilders.must(QueryBuilders.rangeQuery(columnName).gte(parseValue(columnType, value[0].toString())));
+                break;
+            case GT:
+                queryBuilders.must(QueryBuilders.rangeQuery(columnName).gt(parseValue(columnType, value[0].toString())));
+                break;
+            case LE:
+                queryBuilders.must(QueryBuilders.rangeQuery(columnName).lte(parseValue(columnType, value[0].toString())));
+            case LT:
+                queryBuilders.must(QueryBuilders.rangeQuery(columnName).lt(parseValue(columnType, value[0].toString())));
+                break;
+            case NE:
+                queryBuilders.mustNot(QueryBuilders.termQuery(columnName, parseValue(columnType, value[0].toString())));
+                break;
+            case NULL:
+                queryBuilders.mustNot(QueryBuilders.existsQuery(columnName));
+                break;
+            case NOTNULL:
+                queryBuilders.must(QueryBuilders.existsQuery(columnName));
+                break;
+            case LLIKE:
+            case RLIKE:
+            case LIKE:
+                queryBuilders.must(QueryBuilders.wildcardQuery(columnName, value[0].toString()));
+                break;
+            case BETWEEN:
+                Assert.isTrue(value.length==2,"between must have two parameters");
+                queryBuilders.must(QueryBuilders.rangeQuery(columnName).gte(parseValue(columnType, value[0].toString())).lte(parseValue(columnType,value[1].toString())));
+                break;
+            default:
+                queryBuilders.must(QueryBuilders.termQuery(columnName, value[0]));
+        }
+
+    }
 
     private static void wrapStringFormat(BoolQueryBuilder queryBuilders, String columnName, String value) {
         String[] rangeArr = value.split(",");

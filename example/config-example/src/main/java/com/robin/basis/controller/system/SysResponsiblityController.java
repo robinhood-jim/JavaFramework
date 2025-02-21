@@ -80,9 +80,9 @@ public class SysResponsiblityController extends AbstractCrudDhtmlxController<Sys
     @ResponseBody
     public String saveRole(HttpServletRequest request,
                            HttpServletResponse response){
-        Map<String, String>  retmap=new HashMap<String,String>();
+        Map<String, Object>  retmap=new HashMap<>();
         try{
-            Map<String,String> map=wrapRequest(request);
+            Map<String,Object> map=wrapRequest(request);
             SysResponsibility user=new SysResponsibility();
             ConvertUtil.convertToModel(user, map);
             Long id=service.saveEntity(user);
@@ -100,9 +100,9 @@ public class SysResponsiblityController extends AbstractCrudDhtmlxController<Sys
     @ResponseBody
     public Map<String, Object> updateRole(HttpServletRequest request,
                                           HttpServletResponse response){
-        Map<String, Object>  retmap=new HashMap<String,Object>();
+        Map<String, Object>  retmap=new HashMap<>();
         try{
-            Map<String,String> map=wrapRequest(request);
+            Map<String,Object> map=wrapRequest(request);
             Long id=Long.valueOf(request.getParameter("id"));
             SysResponsibility user=service.getEntity(id);
             SysRole tmpuser=new SysRole();

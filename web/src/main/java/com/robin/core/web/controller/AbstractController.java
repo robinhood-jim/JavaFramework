@@ -169,7 +169,7 @@ public abstract class AbstractController
     {
         Map<String, Object> tmap = new HashMap<>();
         tmap.put("value", "");
-        String message=Translator.toLocale("combo.NullDisplay");
+        String message=messageUtils.getMessage("combo.NullDisplay");
         tmap.put("text", message);
         list.add(tmap);
     }
@@ -200,11 +200,11 @@ public abstract class AbstractController
         }
         Map<String, Object> tmap = new HashMap<>();
         tmap.put("value", Const.VALID);
-        tmap.put("text", Translator.toLocale("combo.yesDisplay"));
+        tmap.put("text", messageUtils.getMessage("combo.yesDisplay"));
         list.add(tmap);
         Map<String, Object> tmap1 = new HashMap<>();
         tmap1.put("value", "0");
-        tmap1.put("text", Translator.toLocale("combo.noDisplay"));
+        tmap1.put("text", messageUtils.getMessage("combo.noDisplay"));
         list.add(tmap1);
         return list;
     }
@@ -301,9 +301,9 @@ public abstract class AbstractController
         return retmap;
     }
 
-    public static Map<String, String> wrapRequest(HttpServletRequest request)
+    public static Map<String, Object> wrapRequest(HttpServletRequest request)
     {
-        Map<String, String> map = new HashMap<>();
+        Map<String, Object> map = new HashMap<>();
         for (String key : (Iterable<String>) request.getParameterMap().keySet()) {
             map.put(key, request.getParameter(key));
         }
@@ -326,7 +326,7 @@ public abstract class AbstractController
     protected PageQuery<Map<String,Object>> wrapPageQuery(HttpServletRequest request)
     {
         PageQuery<Map<String,Object>> query = new PageQuery<>();
-        Map map = request.getParameterMap();
+        Map<String,String[]> map = request.getParameterMap();
         Iterator<String> iter = map.keySet().iterator();
         Map<String, Object> tmpmap = new HashMap<>();
         while (iter.hasNext())
@@ -337,6 +337,9 @@ public abstract class AbstractController
         try
         {
             ConvertUtil.mapToObject(query, tmpmap);
+            if(!ObjectUtils.isEmpty(tmpmap.get("pageNum"))){
+                query.setPageNumber(Integer.parseInt(tmpmap.get("pageNum").toString()));
+            }
         }
         catch (Exception ex)
         {

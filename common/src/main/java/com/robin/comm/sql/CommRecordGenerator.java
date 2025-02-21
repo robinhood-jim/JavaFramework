@@ -83,7 +83,6 @@ public class CommRecordGenerator {
         newRecord.clear();
         List<ListenableFuture<Boolean>> futures=new ArrayList<>();
         try {
-
             Map<Integer,Throwable> exMap=new HashMap<>();
             for (int i = 0; i < segment.getSelectColumns().size(); i++) {
                 Calculator calculator = caPool.borrowObject();
@@ -118,6 +117,8 @@ public class CommRecordGenerator {
             throw new GenericException(ex);
         }
     }
+
+
     public static void closePool(){
         if(!ObjectUtils.isEmpty(caPool)) {
             caPool.close();
@@ -482,5 +483,9 @@ public class CommRecordGenerator {
         if(caPool!=null){
             caPool.close();
         }
+    }
+
+    public static CalculatorPool getCalculatePool() {
+        return caPool;
     }
 }

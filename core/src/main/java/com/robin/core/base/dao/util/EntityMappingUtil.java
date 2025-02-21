@@ -353,8 +353,9 @@ public class EntityMappingUtil {
             if (obj != null) {
                 builder.append(field.getFieldName()).append("=?");
                 params.add(obj);
+                builder.append(" and ");
             }
-            builder.append(" and ");
+
         }
         String sql = builder.substring(0, builder.length() - 5);
         if (orderByStr != null && !orderByStr.isEmpty()) {

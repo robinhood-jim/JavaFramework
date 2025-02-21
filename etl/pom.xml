@@ -2,10 +2,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.2.4.RELEASE</version>
-        <relativePath/>
+        <artifactId>example</artifactId>
+        <groupId>com.robin</groupId>
+        <version>1.0-SNAPSHOT</version>
     </parent>
     <artifactId>etl</artifactId>
     <packaging>jar</packaging>
@@ -17,20 +16,18 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <spring.boot.version>2.2.4.RELEASE</spring.boot.version>
         <spring.cloud.version>2.1.2.RELEASE</spring.cloud.version>
-        <jetcd.version>0.5.0</jetcd.version>
+        <jetcd.version>0.8.3</jetcd.version>
         <swagger.version>2.7.0</swagger.version>
         <quartz.version>2.3.2</quartz.version>
+        <protobuf-java.version>3.25.3</protobuf-java.version>
+        <io-grpc.version>1.66.0</io-grpc.version>
+        <os.detected.classifier>windows-x86_64</os.detected.classifier>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
     </properties>
     
 
     <dependencies>
-        <dependency>
-            <groupId>com.robin</groupId>
-            <artifactId>frame</artifactId>
-            <version>1.0-SNAPSHOT</version>
-            <type>pom</type>
-            <scope>import</scope>
-        </dependency>
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
@@ -45,7 +42,7 @@
         
         <dependency>
             <groupId>com.robin</groupId>
-            <artifactId>common</artifactId>
+            <artifactId>hadooptool</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
         <dependency>
@@ -102,6 +99,7 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-jdbc</artifactId>
+            <version>2.2.4.RELEASE</version>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -112,10 +110,12 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-redis</artifactId>
+            <version>2.2.4.RELEASE</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
+            <version>2.2.4.RELEASE</version>
         </dependency>
         <dependency>
             <groupId>org.apache.zookeeper</groupId>
@@ -199,7 +199,12 @@
             <groupId>org.quartz-scheduler</groupId>
             <artifactId>quartz</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
+            <version>3.25.3</version>
+            <optional>true</optional>
+        </dependency>
        
 
     </dependencies>
@@ -223,6 +228,29 @@
                     </archive>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.xolstice.maven.plugins</groupId>
+                <artifactId>protobuf-maven-plugin</artifactId>
+                <version>0.6.1</version>
+                <extensions>true</extensions>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>compile</goal>
+                            <goal>test-compile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <clearOutputDirectory>false</clearOutputDirectory>
+                    <protoSourceRoot>${project.basedir}/src/main/proto</protoSourceRoot>
+                    <outputDirectory>${project.basedir}/src/main/java</outputDirectory>
+                    <protocArtifact>com.google.protobuf:protoc:${protobuf-java.version}:exe:${os.detected.classifier}</protocArtifact>
+                    <pluginId>grpc-java</pluginId>
+                    <pluginArtifact>io.grpc:protoc-gen-grpc-java:${io-grpc.version}:exe:${os.detected.classifier}</pluginArtifact>
+                </configuration>
+            </plugin>
+
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

@@ -41,13 +41,16 @@ public class MinioFileSystemAccessor extends AbstractCloudStorageFileSystemAcces
     public void init(DataCollectionMeta meta) {
         super.init(meta);
         Assert.isTrue(!CollectionUtils.isEmpty(meta.getResourceCfgMap()),"config map is empty!");
-        Assert.notNull(meta.getResourceCfgMap().get(ResourceConst.MINIO.ENDPOINT.getValue()),"must provide endpoint");
-        Assert.notNull(meta.getResourceCfgMap().get(ResourceConst.MINIO.ACESSSKEY.getValue()),"must provide accessKey");
-        Assert.notNull(meta.getResourceCfgMap().get(ResourceConst.MINIO.SECURITYKEY.getValue()),"must provide securityKey");
-        endpoint=meta.getResourceCfgMap().get(ResourceConst.MINIO.ENDPOINT.getValue()).toString();
-        accessKey=meta.getResourceCfgMap().get(ResourceConst.MINIO.ACESSSKEY.getValue()).toString();
-        secretKey=meta.getResourceCfgMap().get(ResourceConst.MINIO.SECURITYKEY.getValue()).toString();
-        if(!ObjectUtils.isEmpty(meta.getResourceCfgMap().get(ResourceConst.MINIO.REGION.getValue()))){
+        if(ObjectUtils.isEmpty(endpoint) && meta.getResourceCfgMap().containsKey(ResourceConst.MINIO.ENDPOINT.getValue())) {
+            endpoint = meta.getResourceCfgMap().get(ResourceConst.MINIO.ENDPOINT.getValue()).toString();
+        }
+        if(ObjectUtils.isEmpty(accessKey) && meta.getResourceCfgMap().containsKey(ResourceConst.MINIO.ACESSSKEY.getValue())) {
+            accessKey = meta.getResourceCfgMap().get(ResourceConst.MINIO.ACESSSKEY.getValue()).toString();
+        }
+        if(ObjectUtils.isEmpty(secretKey) && meta.getResourceCfgMap().containsKey(ResourceConst.MINIO.SECURITYKEY.getValue())) {
+            secretKey = meta.getResourceCfgMap().get(ResourceConst.MINIO.SECURITYKEY.getValue()).toString();
+        }
+        if(ObjectUtils.isEmpty(region) && meta.getResourceCfgMap().containsKey(ResourceConst.MINIO.REGION.getValue())){
             region=meta.getResourceCfgMap().get(ResourceConst.MINIO.REGION.getValue()).toString();
         }
         MinioAsyncClient.Builder builder=MinioAsyncClient.builder().endpoint(endpoint).credentials(accessKey,secretKey);
@@ -83,20 +86,20 @@ public class MinioFileSystemAccessor extends AbstractCloudStorageFileSystemAcces
     }
 
     @Override
-    protected synchronized OutputStream getOutputStream(DataCollectionMeta meta) throws IOException {
-        return new MinioOutputStream(new CustomMinioClient(client),meta,bucketName,meta.getPath(),region);
+    protected synchronized OutputStream getOutputStream(String path) throws IOException {
+        return new MinioOutputStream(new CustomMinioClient(client), colmeta,bucketName,path,region);
     }
 
 
 
     @Override
-    public boolean exists(DataCollectionMeta meta, String resourcePath) throws IOException {
-        return MinioUtils.exists(client,getBucketName(meta),resourcePath);
+    public boolean exists(String resourcePath) throws IOException {
+        return MinioUtils.exists(client,getBucketName(colmeta),resourcePath);
     }
 
     @Override
-    public long getInputStreamSize(DataCollectionMeta meta, String resourcePath) throws IOException {
-        return MinioUtils.size(client,getBucketName(meta),resourcePath);
+    public long getInputStreamSize(String resourcePath) throws IOException {
+        return MinioUtils.size(client,getBucketName(colmeta),resourcePath);
     }
 
     protected InputStream getObject(String bucketName,String objectName) {

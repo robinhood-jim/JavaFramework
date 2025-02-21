@@ -220,7 +220,7 @@ public abstract class AbstractAutoController<O extends BaseObject, P extends Ser
     private FilterCondition getCondition(Map<String,Object> paramMap) throws SQLException {
         AnnotationRetriever.EntityContent<O> tableDef = AnnotationRetriever.getMappingTableByCache(potype);
         Map<String,FieldContent> contentMap= AnnotationRetriever.getMappingFieldsMapCache(potype);
-        Map<String, DataBaseColumnMeta> columnMetaMap= EntityMappingUtil.returnMetaMap(potype,SpringContextHolder.getBean(BaseSqlGen.class),service.getJdbcDao(),tableDef);
+        Map<String, DataBaseColumnMeta> columnMetaMap= EntityMappingUtil.returnMetaMap(potype,service.getJdbcDao().getSqlGen(),service.getJdbcDao(),tableDef);
         Iterator<Map.Entry<String,Object>> iterator=paramMap.entrySet().iterator();
         FilterConditionBuilder builder=new FilterConditionBuilder();
 

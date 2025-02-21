@@ -54,7 +54,7 @@ public class AvroFileWriter extends AbstractFileWriter {
 	
 	@Override
 	public void beginWrite() throws IOException {
-		out = accessUtil.getRawOutputStream(colmeta, ResourceUtil.getProcessPath(colmeta.getPath()));
+		out = accessUtil.getRawOutputStream(ResourceUtil.getProcessPath(colmeta.getPath()));
 		dwriter=new GenericDatumWriter<>(schema);
 		fileWriter=new DataFileWriter<>(dwriter);
 		Const.CompressType type= getCompressType();

@@ -44,9 +44,9 @@ public class TestProtobufWriter extends TestCase {
             colmeta.setFileFormat(Const.FILESUFFIX_PROTOBUF);
 
             colmeta.setPath("d:/tmp/luoming/1.proto.gz");
-            AbstractFileSystemAccessor util= FileSystemAccessorFactory.getResourceAccessorByType(Const.FILESYSTEM.LOCAL.getValue());
+            AbstractFileSystemAccessor util= FileSystemAccessorFactory.getResourceAccessorByType(Const.FILESYSTEM.LOCAL.getValue(),colmeta);
 
-            final AbstractFileWriter jwriter= (AbstractFileWriter) TextFileWriterFactory.getOutputStreamByType(colmeta,util.getOutResourceByStream(colmeta,colmeta.getPath()));
+            final AbstractFileWriter jwriter= (AbstractFileWriter) TextFileWriterFactory.getOutputStreamByType(colmeta,util.getOutResourceByStream(colmeta.getPath()));
             jwriter.beginWrite();
             SimpleJdbcDao.executeOperationWithQuery(connection, "select id,cs_id,item_name,item_value from t_sys_code", null, false, new ResultSetOperationExtractor() {
                 @Override

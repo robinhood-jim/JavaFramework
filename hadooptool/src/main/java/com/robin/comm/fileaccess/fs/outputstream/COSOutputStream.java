@@ -10,6 +10,7 @@ import org.springframework.util.ObjectUtils;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -80,15 +81,15 @@ public class COSOutputStream extends AbstractUploadPartOutputStream {
     }
 
     @Override
-    protected void uploadAsync(WeakReference<byte[]> writeBytesRef, int partNumber, int byteSize) throws IOException {
-        futures.add(guavaExecutor.submit(new AbstractUploadPartCallable(writeBytesRef,partNumber,byteSize) {
+    protected void uploadAsync(ByteBuffer buffer, int partNumber, int byteSize) throws IOException {
+        futures.add(guavaExecutor.submit(new AbstractUploadPartCallable(buffer,partNumber,byteSize) {
             @Override
             protected boolean uploadPartAsync() throws IOException {
                 try {
                     UploadPartRequest request = new UploadPartRequest();
                     request.setUploadId(uploadId);
                     request.setKey(path);
-                    request.setInputStream(new ByteArrayInputStream(writeBytesRef.get()));
+                    request.setInputStream(new ByteBufferInputStream(buffer,byteSize));
                     request.setPartNumber(partNumber);
                     UploadPartResult result = client.uploadPart(request);
                     if (!ObjectUtils.isEmpty(result)) {

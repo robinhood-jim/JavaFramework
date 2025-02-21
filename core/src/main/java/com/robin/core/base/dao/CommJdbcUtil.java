@@ -385,60 +385,6 @@ public class CommJdbcUtil {
         }
     }
 
-    @SuppressWarnings({"rawtypes", "unchecked"})
-    static void queryByPreparedParamter(JdbcTemplate jdbcTemplate, NamedParameterJdbcTemplate namedParameterJdbcTemplate, LobHandler lobHandler, BaseSqlGen sqlGen, QueryString qs, PageQuery pageQuery) throws DAOException {
-        List list;
-        try {
-            String querySQL = getReplacementSql(sqlGen, qs, pageQuery);
-            if (pageQuery.getPageSize() > 0) {
-                String sumSQL;
-                if (qs.getCountSql() == null || StringUtils.isEmpty(qs.getCountSql().trim())) {
-                    sumSQL = sqlGen.generateCountSql(querySQL);
-                } else {
-                    sumSQL = sqlGen.getCountSqlByConfig(qs, pageQuery);
-                }
-
-                int total;
-                if (CollectionUtils.isEmpty(pageQuery.getNamedParameters()) && !CollectionUtils.isEmpty(pageQuery.getQueryParameters())) {
-                    total = jdbcTemplate.queryForObject(sumSQL, pageQuery.getQueryParameters().toArray(), Integer.class);
-                } else {
-                    total = namedParameterJdbcTemplate.queryForObject(sumSQL, pageQuery.getNamedParameters(), Integer.class);
-                }
-                pageQuery.setRecordCount(total);
-                String pageSQL = sqlGen.generatePageSql(querySQL, pageQuery);
-                if (logger.isDebugEnabled()) {
-                    logger.debug("sumSQL: {}", sumSQL);
-                    logger.debug("pageSQL: {}", pageSQL);
-                }
-                if (total > 0) {
-                    int pages = total / pageQuery.getPageSize();
-                    if (total % pageQuery.getPageSize() != 0) {
-                        pages++;
-                    }
-                    pageQuery.setPageCount(pages);
-                    list = getResultItemsByPreparedSimple(jdbcTemplate, namedParameterJdbcTemplate, lobHandler, sqlGen, qs, pageQuery, pageSQL);
-                } else {
-                    list = new ArrayList();
-                    pageQuery.setPageCount(0);
-                }
-            } else {
-                list = getResultItemsByPreparedSimple(jdbcTemplate, namedParameterJdbcTemplate, lobHandler, sqlGen, qs, pageQuery, querySQL);
-                int len1 = list.size();
-                pageQuery.setRecordCount(len1);
-                pageQuery.setPageCount(1);
-            }
-        } catch (Exception e) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Encounter Error", e);
-            } else {
-                logger.error("Encounter Error", e);
-            }
-            throw new DAOException(e);
-        }
-        pageQuery.setRecordSet(list);
-
-    }
-
     @SuppressWarnings({"unchecked", "rawtypes"})
     static void queryBySql(JdbcTemplate jdbcTemplate, LobHandler lobHandler, BaseSqlGen sqlGen, String querySQL, String countSql, String[] displayname, PageQuery<Map<String, Object>> pageQuery) throws DAOException {
         String sumSQL;
@@ -536,6 +482,60 @@ public class CommJdbcUtil {
             }
             throw new DAOException(e);
         }
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    static void queryByPreparedParamter(JdbcTemplate jdbcTemplate, NamedParameterJdbcTemplate namedParameterJdbcTemplate, LobHandler lobHandler, BaseSqlGen sqlGen, QueryString qs, PageQuery pageQuery) throws DAOException {
+        List list;
+        try {
+            String querySQL = getReplacementSql(sqlGen, qs, pageQuery);
+            if (pageQuery.getPageSize() > 0) {
+                String sumSQL;
+                if (qs.getCountSql() == null || StringUtils.isEmpty(qs.getCountSql().trim())) {
+                    sumSQL = sqlGen.generateCountSql(querySQL);
+                } else {
+                    sumSQL = sqlGen.getCountSqlByConfig(qs, pageQuery);
+                }
+
+                int total;
+                if (CollectionUtils.isEmpty(pageQuery.getNamedParameters()) && !CollectionUtils.isEmpty(pageQuery.getQueryParameters())) {
+                    total = jdbcTemplate.queryForObject(sumSQL, pageQuery.getQueryParameters().toArray(), Integer.class);
+                } else {
+                    total = namedParameterJdbcTemplate.queryForObject(sumSQL, pageQuery.getNamedParameters(), Integer.class);
+                }
+                pageQuery.setRecordCount(total);
+                String pageSQL = sqlGen.generatePageSql(querySQL, pageQuery);
+                if (logger.isDebugEnabled()) {
+                    logger.debug("sumSQL: {}", sumSQL);
+                    logger.debug("pageSQL: {}", pageSQL);
+                }
+                if (total > 0) {
+                    int pages = total / pageQuery.getPageSize();
+                    if (total % pageQuery.getPageSize() != 0) {
+                        pages++;
+                    }
+                    pageQuery.setPageCount(pages);
+                    list = getResultItemsByPreparedSimple(jdbcTemplate, namedParameterJdbcTemplate, lobHandler, sqlGen, qs, pageQuery, pageSQL);
+                } else {
+                    list = new ArrayList();
+                    pageQuery.setPageCount(0);
+                }
+            } else {
+                list = getResultItemsByPreparedSimple(jdbcTemplate, namedParameterJdbcTemplate, lobHandler, sqlGen, qs, pageQuery, querySQL);
+                int len1 = list.size();
+                pageQuery.setRecordCount(len1);
+                pageQuery.setPageCount(1);
+            }
+        } catch (Exception e) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("Encounter Error", e);
+            } else {
+                logger.error("Encounter Error", e);
+            }
+            throw new DAOException(e);
+        }
+        pageQuery.setRecordSet(list);
+
     }
 
     private static Integer doBatchWithSize(JdbcTemplate template, String sql, BoundedPreparedStatementSetter setter, int batchSize) {

@@ -17,6 +17,7 @@ package com.robin.meta.service.resource;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.robin.comm.dal.pool.ResourceAccessHolder;
 import com.robin.comm.fileaccess.fs.HdfsFileSystemAccessor;
 import com.robin.comm.fileaccess.iterator.AvroFileIterator;
 import com.robin.comm.fileaccess.iterator.ParquetFileIterator;
@@ -51,7 +52,6 @@ import org.springframework.util.ObjectUtils;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.sql.Connection;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -167,13 +167,13 @@ public class GlobalResourceService extends BaseAnnotationJdbcService<GlobalResou
             if (resource.getResType().equals(ResourceConst.ResourceType.TYPE_DB.getValue()) || resource.getResType().equals(ResourceConst.ResourceType.TYPE_ES.getValue())) {
                 schema = AvroUtils.getSchemaFromMeta(colmeta);
             } else if (resource.getResType().equals(ResourceConst.ResourceType.TYPE_HDFSFILE.getValue())) {
-                HdfsFileSystemAccessor util = new HdfsFileSystemAccessor();
+                HdfsFileSystemAccessor util = (HdfsFileSystemAccessor) ResourceAccessHolder.getAccessUtilByProtocol(resource.getProtocol(), colmeta);;;
                 HDFSUtil dfsutil = new HDFSUtil(colmeta);
                 List<String> fileList = dfsutil.listFile(sourceParamInput);
                 colmeta.setPath(fileList.get(0));
                 schema = getFileSchema(util, colmeta, resource, maxReadLines);
             } else if (resource.getResType().equals(ResourceConst.ResourceType.TYPE_FTPFILE.getValue()) || resource.getResType().equals(ResourceConst.ResourceType.TYPE_SFTPFILE.getValue())) {
-                ApacheVfsFileSystemAccessor util = new ApacheVfsFileSystemAccessor();
+                ApacheVfsFileSystemAccessor util = (ApacheVfsFileSystemAccessor) ResourceAccessHolder.getAccessUtilByProtocol(resource.getProtocol(), colmeta);;
                 VfsParam param = util.returnFtpParam(resource.getHostName(), resource.getPort(), resource.getUserName(), resource.getPassword(), resource.getProtocol());
                 String inputPath = sourceParamInput.endsWith("/") ? sourceParamInput : sourceParamInput + "/";
                 List<String> fileList = util.listFilePath(param, inputPath);
@@ -207,7 +207,7 @@ public class GlobalResourceService extends BaseAnnotationJdbcService<GlobalResou
         //read Header 10000 Line
         int readLines = maxReadLines > 0 ? maxReadLines : 10000;
 
-        Pair<BufferedReader, InputStream> pair = util.getInResourceByReader(meta, meta.getPath());
+        Pair<BufferedReader, InputStream> pair = util.getInResourceByReader(meta.getPath());
 
         if (fileFormat.equalsIgnoreCase(Const.FILESUFFIX_CSV)) {
             SourceFileExplorer.exploreCsv(pair.getKey(), meta, resource.getRecordContent() == null ? null : resource.getRecordContent().split(","), readLines);

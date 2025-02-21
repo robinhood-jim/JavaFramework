@@ -78,6 +78,6 @@ public class EtlFlowCfgService extends BaseAnnotationJdbcService<EtlFlowCfg, Lon
         } catch (Exception ex) {
 
         }
-        return null;
+        return retMap;
     }
 }

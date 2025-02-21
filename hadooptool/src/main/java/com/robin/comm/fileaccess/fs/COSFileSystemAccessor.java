@@ -11,7 +11,6 @@ import com.qcloud.cos.transfer.TransferManager;
 import com.qcloud.cos.transfer.TransferManagerConfiguration;
 import com.qcloud.cos.transfer.Upload;
 import com.robin.comm.fileaccess.fs.outputstream.COSOutputStream;
-import com.robin.core.base.exception.OperationNotSupportException;
 import com.robin.core.base.exception.ResourceNotAvailableException;
 import com.robin.core.base.util.Const;
 import com.robin.core.base.util.ResourceConst;
@@ -45,17 +44,23 @@ public class COSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
     @Override
     public void init(DataCollectionMeta meta) {
         Assert.isTrue(!CollectionUtils.isEmpty(meta.getResourceCfgMap()),"config map is empty!");
-        Assert.notNull(meta.getResourceCfgMap().get(ResourceConst.COSPARAM.HTTPPROTOCOL.getValue()),"must provide protocol");
-        Assert.notNull(meta.getResourceCfgMap().get(ResourceConst.COSPARAM.REGION.getValue()),"must provide region");
-        Assert.notNull(meta.getResourceCfgMap().get(ResourceConst.COSPARAM.ACESSSKEY.getValue()),"must provide accessKey");
-        Assert.notNull(meta.getResourceCfgMap().get(ResourceConst.COSPARAM.SECURITYKEY.getValue()),"must provide securityKey");
-        Region region=new Region(meta.getResourceCfgMap().get(ResourceConst.COSPARAM.REGION.getValue()).toString());
+        if(ObjectUtils.isEmpty(protocol) && meta.getResourceCfgMap().containsKey(ResourceConst.COSPARAM.REGION.getValue())){
+            protocol="https".equalsIgnoreCase(meta.getResourceCfgMap().get(ResourceConst.COSPARAM.HTTPPROTOCOL.getValue()).toString())?
+                    HttpProtocol.https:HttpProtocol.http;
+        }
+        if(ObjectUtils.isEmpty(regionName) && meta.getResourceCfgMap().containsKey(ResourceConst.COSPARAM.REGION.getValue()) ){
+            regionName=meta.getResourceCfgMap().get(ResourceConst.COSPARAM.REGION.getValue()).toString();
+        }
+        if(ObjectUtils.isEmpty(accessKey) && meta.getResourceCfgMap().containsKey(ResourceConst.COSPARAM.ACESSSKEY.getValue())){
+            accessKey=meta.getResourceCfgMap().get(ResourceConst.COSPARAM.REGION.getValue()).toString();
+        }
+        if(ObjectUtils.isEmpty(securityKey) && meta.getResourceCfgMap().containsKey(ResourceConst.COSPARAM.SECURITYKEY.getValue())){
+            securityKey=meta.getResourceCfgMap().get(ResourceConst.COSPARAM.SECURITYKEY.getValue()).toString();
+        }
+        Region region=new Region(regionName);
         ClientConfig config=new ClientConfig(region);
-        HttpProtocol protocol="https".equalsIgnoreCase(meta.getResourceCfgMap().get(ResourceConst.COSPARAM.HTTPPROTOCOL.getValue()).toString())?
-                HttpProtocol.https:HttpProtocol.http;
         config.setHttpProtocol(protocol);
-        COSCredentials cosCredentials = new BasicCOSCredentials(meta.getResourceCfgMap().get(ResourceConst.COSPARAM.ACESSSKEY.getValue()).toString(),
-                meta.getResourceCfgMap().get(ResourceConst.COSPARAM.SECURITYKEY.getValue()).toString());
+        COSCredentials cosCredentials = new BasicCOSCredentials(accessKey, securityKey);
         cosClient = new COSClient(cosCredentials, config);
     }
     public void init(){
@@ -72,14 +77,14 @@ public class COSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
 
 
     @Override
-    public boolean exists(DataCollectionMeta meta, String resourcePath) throws IOException {
-        return exists(getBucketName(meta),resourcePath);
+    public boolean exists(String resourcePath) throws IOException {
+        return exists(getBucketName(colmeta),resourcePath);
     }
 
     @Override
-    public long getInputStreamSize(DataCollectionMeta meta, String resourcePath) throws IOException {
-        if(exists(getBucketName(meta),resourcePath)){
-            ObjectMetadata metadata=cosClient.getObjectMetadata(getBucketName(meta),resourcePath);
+    public long getInputStreamSize(String resourcePath) throws IOException {
+        if(exists(getBucketName(colmeta),resourcePath)){
+            ObjectMetadata metadata=cosClient.getObjectMetadata(getBucketName(colmeta),resourcePath);
             if(!ObjectUtils.isEmpty(metadata)){
                 return metadata.getContentLength();
             }
@@ -139,8 +144,8 @@ public class COSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
     }
 
     @Override
-    protected OutputStream getOutputStream(DataCollectionMeta meta) throws IOException {
-        return new COSOutputStream(cosClient,meta,getBucketName(meta),meta.getPath(),regionName);
+    protected OutputStream getOutputStream(String path) throws IOException {
+        return new COSOutputStream(cosClient, colmeta,getBucketName(colmeta),path,regionName);
     }
 
     public static class Builder{

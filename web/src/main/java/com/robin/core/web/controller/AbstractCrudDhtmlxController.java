@@ -36,7 +36,7 @@ import java.util.Map;
 /**
  * use Chinese Alter msg.Later will change to i18n
  */
-    public abstract class AbstractCrudDhtmlxController<O extends BaseObject, P extends Serializable, S extends IBaseAnnotationJdbcService<O,P>> extends AbstractCrudController<O, P, S> {
+public abstract class AbstractCrudDhtmlxController<O extends BaseObject, P extends Serializable, S extends IBaseAnnotationJdbcService<O, P>> extends AbstractCrudController<O, P, S> {
 
 
     protected Map<String, Object> wrapComobo(List<Map<String, Object>> rsList, String keyColumn, String valueColumn, boolean insertNullVal) {
@@ -74,7 +74,6 @@ import java.util.Map;
     }
 
 
-
     protected Map<String, Object> wrapDhtmlxGridOutputWithNoCheck(List<Map<String, String>> list, String queryKeys, String idColumn) {
         return wrapDhtmlxGridOutputWithCheck(list, queryKeys, idColumn, false);
     }
@@ -93,7 +92,7 @@ import java.util.Map;
                 for (String key : fieldNames) {
                     if (withcheck && key.equals(idColumn)) {
                         tmpList.add("0");
-                    } else if (map.containsKey(key) && map.get(key)!=null) {
+                    } else if (map.containsKey(key) && map.get(key) != null) {
                         tmpList.add(map.get(key));
                     }
                 }
@@ -103,7 +102,7 @@ import java.util.Map;
                 retList.add(tmap);
             }
             retMap.put("rows", retList);
-            wrapPageQuery(tquery,retMap);
+            wrapPageQuery(tquery, retMap);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -119,7 +118,7 @@ import java.util.Map;
         Map<String, Object> retmap = new HashMap<>();
         List<Map<String, String>> list = new ArrayList<>();
         CodeSetService util = SpringContextHolder.getBean(CodeSetService.class);
-        List<Code> codeList =getCodeList(util.getCacheCode(codeSetNo));
+        List<Code> codeList = getCodeList(util.getCacheCode(codeSetNo));
         if (codeList != null) {
             if (allowNulls) {
                 list.add(addNullSelection());
@@ -138,7 +137,7 @@ import java.util.Map;
     private Map<String, String> addNullSelection() {
         Map<String, String> map = new HashMap<>();
         map.put("value", "");
-        map.put("text", Translator.toLocale("message.NullDisplay"));
+        map.put("text", messageUtils.getMessage("message.NullDisplay"));
         return map;
     }
 
@@ -177,7 +176,7 @@ import java.util.Map;
                     if (key.equals(idColumn)) {
                         tmpList.add("0");
                     } else if (map.containsKey(key)) {
-                        if (map.get(key)!=null) {
+                        if (map.get(key) != null) {
                             tmpList.add(map.get(key).toString());
                         } else {
                             tmpList.add("");
@@ -189,21 +188,22 @@ import java.util.Map;
                 retList.add(tmap);
             }
             retMap.put("rows", retList);
-            wrapPageQuery(query,retMap);
+            wrapPageQuery(query, retMap);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
         return retMap;
     }
-    protected void wrapPageQuery(PageQuery pageQuery,Map<String,Object> retMap){
 
-        if(pageQuery!=null){
-            retMap.put("pageSize",pageQuery.getPageSize());
-            retMap.put("pageNumber",pageQuery.getPageNumber());
-            retMap.put("pageCount",pageQuery.getPageCount());
-            retMap.put("recordCount",pageQuery.getRecordCount());
-            retMap.put("order",pageQuery.getOrder());
-            retMap.put("orderDirection",pageQuery.getOrderDirection());
+    protected void wrapPageQuery(PageQuery pageQuery, Map<String, Object> retMap) {
+
+        if (pageQuery != null) {
+            retMap.put("pageSize", pageQuery.getPageSize());
+            retMap.put("pageNumber", pageQuery.getPageNumber());
+            retMap.put("pageCount", pageQuery.getPageCount());
+            retMap.put("recordCount", pageQuery.getRecordCount());
+            retMap.put("order", pageQuery.getOrder());
+            retMap.put("orderDirection", pageQuery.getOrderDirection());
         }
     }
 

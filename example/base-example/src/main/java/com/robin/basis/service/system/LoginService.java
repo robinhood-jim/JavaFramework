@@ -22,6 +22,7 @@ import com.robin.basis.service.user.SysUserResponsiblityService;
 import com.robin.basis.service.user.SysUserService;
 import com.robin.core.base.dao.JdbcDao;
 import com.robin.core.base.exception.ServiceException;
+import com.robin.core.base.spring.SpringContextHolder;
 import com.robin.core.base.util.Const;
 import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.query.util.PageQuery;
@@ -35,7 +36,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.lang.NonNull;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.RestClientException;
 
@@ -59,11 +60,11 @@ public class LoginService implements ILoginService {
     private SysUserResponsiblityService sysUserResponsiblityService;
     @Resource
     private SysUserRoleService sysUserRoleService;
-    private BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
 
     public static final String VERIFIED = "1";
     public static final String NEEDVERIFY = "0";
+
 
     @Override
     public Session doLogin(String accountName, String password) throws ServiceException {
@@ -150,7 +151,7 @@ public class LoginService implements ILoginService {
     public void getUserRightsByRole(Session session) {
         Map<String, Object> retMap = new HashMap<>();
         //get userRole
-        PageQuery.Builder<Map<String,Object>> userBuilder = new PageQuery.Builder<>();
+        /*PageQuery.Builder<Map<String,Object>> userBuilder = new PageQuery.Builder<>();
         userBuilder.setPageSize(0).setSelectedId("GETUSER_ROLE").addQueryParameterArr(session.getUserId());
         PageQuery<Map<String,Object>> query = userBuilder.build();
         jdbcDao.queryBySelectId(query);
@@ -166,9 +167,8 @@ public class LoginService implements ILoginService {
             //未配置使用缺省角色
             roleIds.add(Const.ROLEDEF.NORMAL.getId());
             roleCodes.add(Const.ROLEDEF.NORMAL.getCode());
-            //throw new ServiceException("user " + session.getUserId() + " does not have any role");
         }
-        retMap.put("roles", roleCodes);
+        retMap.put("roles", roleCodes);*/
         //get user org info
         PageQuery.Builder<Map<String,Object>> builder=new PageQuery.Builder<>();
         builder.setPageSize(0).setSelectedId("GETUSERORGINFO").addQueryParameterArr(new Object[]{session.getUserId()});
@@ -185,7 +185,7 @@ public class LoginService implements ILoginService {
         //get user access resources
         PageQuery.Builder resourceBuilder = new PageQuery.Builder();
         resourceBuilder.setPageSize(0).setSelectedId("GET_RESOURCEINFO")
-                .putNamedParameter("userId", session.getUserId()).putNamedParameter("roleIds", roleIds);
+                .putNamedParameter("userId", session.getUserId());
         PageQuery query1 = resourceBuilder.build();
         jdbcDao.queryBySelectId(query1);
         if (!query1.getRecordSet().isEmpty()) {
@@ -245,7 +245,11 @@ public class LoginService implements ILoginService {
         }
         SysUser queryUser = users.get(0);
         String dbPwd = queryUser.getUserPassword();
-        if (!password.equalsIgnoreCase(dbPwd)) {//!encoder.matches(password,dbPwd)
+        String cmpPassword=password;
+        if(SpringContextHolder.getBean(PasswordEncoder.class)!=null){
+            cmpPassword=SpringContextHolder.getBean(PasswordEncoder.class).encode(password);
+        }
+        if (!cmpPassword.equalsIgnoreCase(dbPwd)) {//!encoder.matches(password,dbPwd)
             throw new ServiceException("password mismatch");
         }
         return queryUser;
@@ -253,6 +257,14 @@ public class LoginService implements ILoginService {
 
     private Session returnSession(SysUser queryUser) {
         Session session = getSession(queryUser);
+
+        SysUserRole userRole=new SysUserRole();
+        userRole.setUserId(queryUser.getId());
+        userRole.setStatus(Const.VALID);
+        List<SysUserRole> userRoles=jdbcDao.queryByVO(SysUserRole.class,userRole,"id");
+        if(!CollectionUtils.isEmpty(userRoles)){
+            session.setRoles(userRoles.stream().map(SysUserRole::getRoleId).collect(Collectors.toList()));
+        }
 
         if (!session.getAccountType().equals(WebConstant.ACCOUNT_TYPE.ORGUSER.toString())) {
             getRights(session);
