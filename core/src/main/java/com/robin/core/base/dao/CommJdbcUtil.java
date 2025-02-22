@@ -37,6 +37,7 @@ import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.support.lob.LobHandler;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 
 import java.lang.reflect.Method;
 import java.sql.Date;
@@ -46,12 +47,15 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @SuppressWarnings("unused")
 public class CommJdbcUtil {
     private static final Logger logger = LoggerFactory.getLogger(CommJdbcUtil.class);
     private static final DateTimeFormatter dayFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private static final DateTimeFormatter timeFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private static final Pattern pattern=Pattern.compile("\\$\\{\\w+\\}");
 
 
     @SuppressWarnings({"unchecked", "rawtypes"})
@@ -193,33 +197,26 @@ public class CommJdbcUtil {
     private static String getReplacementSql(BaseSqlGen sqlGen, QueryString qs, PageQuery<Map<String, Object>> pageQuery) {
         String querySQL = sqlGen.generateSqlBySelectId(qs, pageQuery);
 
-        Map<String, String> params = pageQuery.getParameters();
-        if (!CollectionUtils.isEmpty(params)) {
 
-            for (Map.Entry<String, String> entry : params.entrySet()) {
-                String key = entry.getKey();
-                String replacestr = "\\$\\{" + key + "\\}";
-                String value = entry.getValue();
-                if (value != null) {
-                    querySQL = querySQL.replaceAll(replacestr, value);
-                } else {
-                    querySQL = querySQL.replaceAll(replacestr, "");
-                }
+        Map<String, String> params = pageQuery.getParameters();
+
+        StringBuffer buffer=new StringBuffer();
+        Matcher matcher=pattern.matcher(querySQL);
+        while (matcher.find()){
+            String word=matcher.group();
+            String v_word = word.substring(2,word.length()-1);
+            if(!ObjectUtils.isEmpty(params.get(v_word))) {
+                matcher.appendReplacement(buffer, params.get(v_word));
+            }else if(pageQuery.getConditionMap().containsKey(v_word)){
+                String value = sqlGen.toSQLWithType(pageQuery.getConditionMap().get(v_word));
+                matcher.appendReplacement(buffer, value);
+            }else{
+                matcher.appendReplacement(buffer, "");
             }
         }
-        if (!CollectionUtils.isEmpty(pageQuery.getConditionMap())) {
-            for (Map.Entry<String, FilterCondition> entry : pageQuery.getConditionMap().entrySet()) {
-                String key = entry.getKey();
-                String replacestr = "\\$\\{" + key + "\\}";
-                String value = sqlGen.toSQLWithType(entry.getValue());
-                if (value != null) {
-                    querySQL = querySQL.replaceAll(replacestr, entry.getValue().getLinkOper().getSignal() + value);
-                } else {
-                    querySQL = querySQL.replaceAll(replacestr, "");
-                }
-            }
-        }
-        return querySQL;
+        matcher.appendTail(buffer);
+
+        return buffer.toString();
     }
 
     private static List<Map<String,Object>> getResultItems(JdbcTemplate jdbcTemplate, LobHandler lobHandler, BaseSqlGen sqlGen, final PageQuery<Map<String, Object>> query, final QueryString qs, final String pageSQL) {

@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+
+    <link rel="stylesheet" type="text/css" th:href="@{/component/dhtmlxSuite/skins/skyblue/dhtmlx.css}"/>
+    <link rel="stylesheet" type="text/css" th:href="@{/component/dhtmlxSuite/codebase/dhtmlx.css}" />
+    <link rel="stylesheet" type="text/css" th:href="@{/component/dhtmlxSuite/codebase/fonts/font_roboto/roboto.css}"/>
+    <script th:src="@{/component/dhtmlxSuite/codebase/dhtmlx.js}"></script>
+    <script th:src="@{/resources/js/jquery.js}"></script>
+    <script language="javascript" th:src="@{/resources/js/control.js}"></script>
+    <link rel="stylesheet" type="text/css" th:href="@{/resources/css/main.css}"/>
+
+    <title></title>
+    <style type="text/css">
+        div#layoutObj {
+            position: relative;
+            margin-top: 10px;
+            margin-left: 10px;
+            margin-right:10px;
+            margin-bottom:10px;
+            width: 95%;
+            height: 95%;
+        }
+        html, body {
+            width: 100%;
+            height: 100%;
+            margin: 10px;
+            overflow: hidden;
+        }
+
+    </style>
+</head>
+<body>
+<script type="text/javascript" th:src="@{/resources/js/crud.js}"></script>
+<script type="text/javascript">
+    var ctx = getcontentPath("[[${#httpServletRequest.getContextPath()}]]");
+    var imgPath=ctx+"component/dhtmlxSuite/dhtmlx/imgs/icon/";
+    var dhxLayout = new dhtmlXLayoutObject(document.body, "2E");
+    var topPanel = dhxLayout.cells("a");
+    var bottomPanel = dhxLayout.cells("b");
+    var orgId = '[[${orgId}]]';
+    var resps = '[[${resps}]]';
+    var addTag='[[${addTag}]]';
+    var allowButton = '[[${allowButtons}]]';
+    var orgSelect = undefined;
+    var myForm = topPanel.attachForm();
+    var cwidth = document.body.clientWidth;
+    var cheight = document.body.clientHeight;
+    var queryUrl = ctx + "system/org/listUser";
+    var userFrm = [
+        {
+            type: "block", lable: "[[#{sysUser.info}]]", width: cwidth - 40, list: [
+                {type: "settings", position: "label-left", labelWidth: 120, inputWidth: 120, offsetLeft: 10},
+                {
+                    type: "fieldset", labelAlign: "left", label: "[[#{sysUser.info}]]", inputWidth: cwidth - 80, list: [
+                        {type: "hidden", name: "query.order", value: ""},
+                        {type: "hidden", name: "query.orderDirection", value: ""},
+                        {type: "hidden", name: "query.pageCount", value: ""},
+                        {type: "hidden", name: "query.pageNumber", value: "1"},
+                        {type: "hidden", name: "query.pageSize", value: "10"},
+                        {type: "hidden", name: "orgId", value: ""},
+                        {type: "hidden", name: "addTag", value: ""},
+                        {type: "input", label: "[[#{sysUser.accountName}]]", name: "userName", offsetTop: 10},
+                        {type: "newcolumn", offset: 20},
+                        {
+                            type: "select",
+                            label: "[[#{sysUser.accountType}]]",
+                            name: "accountType",
+                            connector: ctx + "system/codeset/select?codeSetNo=ACCOUNTTYPE&allowNull=true"
+                        }
+                    ]
+                }, {
+                    type: "block", inputWidth: cwidth - 80, list: [
+                        {type: "settings", offsetTop: 5},
+                        {type: "button", name: "submit", value: "[[#{btn.submit}]]", offsetLeft: cwidth / 2 - 220},
+                        {type: "newcolumn"},
+                        {type: "button", name: "reset", value: "[[#{btn.clear}]]"}
+                    ]
+                }
+            ]
+        }
+    ];
+    topPanel.hideHeader();
+    bottomPanel.hideHeader();
+    topPanel.fixSize(true, true);
+    myForm.loadStruct(userFrm);
+
+
+    if (orgId != undefined && orgId!='null') {
+        myForm.setItemValue("orgId", orgId);
+    }
+    if (addTag != undefined && addTag!='null') {
+        myForm.setItemValue("addTag", addTag);
+    }
+
+    myForm.attachEvent("onButtonClick", function (name) {
+        if (name == 'submit') {
+            this.send(ctx + "system/user/list", function (loader, response) {
+                var tobj = eval('(' + response + ')');
+                myGrid.clearAll();
+                myGrid.parse(tobj, "json");
+                statusbar.setText(constructPaging(tobj));
+            });
+        } else if (name == 'reset') {
+            this.reset();
+        }
+    });
+    var statusbar = bottomPanel.attachStatusBar({height: 36});
+    statusbar.setText("<div id='recinfoArea'></div>");
+
+    var myGrid = bottomPanel.attachGrid();
+    myGrid.setImagePath(ctx + "component/dhtmlxSuite/codebase/imgs/");
+    myGrid.setHeader("#master_checkbox,img:[" + ctx + "resources/images/icon/men.gif]<b>[[#{sysUser.userName}]]</b>,[[#{sysUser.accountName}]],[[#{sysUser.accountType}]],[[#{sysUser.Org}]]", null,["text-align:center", "text-align:center", "text-align:center", "text-align:center", "text-align:center"]);//the headers of columns
+    myGrid.setInitWidths("35,150,200,200,200");          //the widths of columns
+    myGrid.setColAlign("center,center,center,center,center");       //the alignment of columns
+    myGrid.setColTypes("ch,ro,ro,ro,ro");                //the types of columns
+    myGrid.setColSorting("int,str,str,str,str");          //the sorting types
+    myGrid.enableAutoWidth(true);
+    myGrid.enableAutoHeight(true);
+    myGrid.init();
+
+    var dhxToobar = bottomPanel.attachToolbar();
+
+    dhxToobar.setIconsPath(ctx + "component/dhtmlxSuite/comm/imgsmat/");
+    dhxToobar.addButton("add", 0, "加入组织", "new.gif", "new_dis.gif");
+    dhxToobar.addButton("remove", 1, "移出组织", "close.gif", "close_dis.gif");
+    dhxToobar.attachEvent("onClick", function (id) {
+        if (id == 'add') {
+            goAdd();
+        } else if (id == 'remove') {
+            goRemove();
+        }
+    });
+    if(addTag=='0'){
+        dhxToobar.hideItem("add");
+    }else if(addTag=='1'){
+        dhxToobar.hideItem("remove");
+    }
+
+    function goRemove() {
+        var list = myGrid.getCheckedRows(0);
+        if (list == '') {
+            openMsgDialog("移出组织", "[[#{message.alertSelectAtLeastOneRow}]]", 300, 200);
+        } else {
+            dhtmlx.confirm({title: "移出组织", type:"confirm-warning", text:"[[#{message.confirmDelete}]]",
+                callback:function (result) {
+                    if (result) {
+                        $.ajax({
+                            type: "get",
+                            url: ctx + "system/org/removeUser?ids=" + list+"&orgId="+myForm.getItemValue("orgId"),
+                            dataType: "json",
+                            success: function (data) {
+                                var obj = eval(data);
+                                if (obj.success == true) {
+                                    dhtmlx.message({text: "[[#{message.deleteSuccess}]]", expire: 10});
+                                    reload();
+                                } else {
+                                    openMsgDialog("[[#{message.deleteFailed}]]", "[[#{message.errorMsg}]]:" + obj.message, 300, 200);
+                                }
+                            }
+                        });
+                    }
+                }
+            });
+        }
+    }
+    function goAdd() {
+        var list = myGrid.getCheckedRows(0);
+        if (list == '') {
+            openMsgDialog("加入组织", "[[#{message.alertSelectAtLeastOneRow}]]", 300, 200);
+        } else {
+            dhtmlx.confirm({title: "加入组织", type:"confirm-warning", text:"确认选中用户添加入组织",
+                callback:function (result) {
+                    if (result) {
+                        $.ajax({
+                            type: "get",
+                            url: ctx + "system/org/joinUser?ids=" + list+"&orgId="+myForm.getItemValue("orgId"),
+                            dataType: "json",
+                            success: function (data) {
+                                var obj = eval(data);
+                                if (obj.success == true) {
+                                    dhtmlx.message({text: "[[#{message.addSuccess}]]", expire: 10});
+                                    reload();
+                                } else {
+                                    openMsgDialog("[[#{message.deleteFailed}]]", "[[#{message.errorMsg}]]:" + obj.message, 300, 200);
+                                }
+                            }
+                        });
+                    }
+                }
+            });
+        }
+    }
+
+
+    function goSearch() {
+        myForm.send(ctx + "system/user/list", function (loader, response) {
+            var tobj = eval('(' + response + ')');
+            myGrid.clearAll();
+            myGrid.parse(tobj, "json");
+            statusbar.setText(constructPaging(tobj.query));
+        });
+
+    }
+
+
+
+</script>
+
+</body>
+</html>

@@ -113,6 +113,11 @@
 		<FROMSQL>from t_sys_user_info a,t_sys_user_org_r b,t_sys_org_info c  where a.id=b.user_id and b.org_id=c.id ${queryCondition}</FROMSQL>
 		<FIELD>a.id as id,a.user_name as userName,a.nick_name as nickName,b.org_id as orgId,c.org_name as orgName,a.phone_num as phoneNum,a.email as email,a.sex as sex</FIELD>
 	</SQLSCRIPT>
+	<SQLSCRIPT ID="GET_SYSUSERNOTINORG">
+		<FROMSQL>from t_sys_user_info a where a.id!=1 ${userCondition} and id not in (select b.user_id from t_sys_user_org_r b,t_sys_org_info c  where a.id=b.user_id and b.org_id=c.id ${queryCondition})</FROMSQL>
+		<FIELD>a.id as id,a.user_name as userName,a.nick_name as nickName,a.phone_num as phoneNum,a.email as email,a.sex as sex</FIELD>
+	</SQLSCRIPT>
+
 	<SQLSCRIPT ID="$_GETCODESET">
 		<FROMSQL> from t_sys_code a,t_sys_codeset b where a.CS_ID=b.ID and en_name=? order by order_no</FROMSQL>
 		<FIELD>a.ITEM_NAME as ITEMNAME,a.ITEM_VALUE as ITEMVALUE</FIELD>

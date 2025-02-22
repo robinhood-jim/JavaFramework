@@ -35,7 +35,8 @@ public class MysqlSqlGen extends AbstractSqlGen implements BaseSqlGen{
 		str=str.replace("\\n", "");
 		str=str.replace("\\r", "");
 		String sqllow=str.toLowerCase();
-		int nFromPos = sqllow.lastIndexOf(" from ");
+		boolean containSub=sqllow.contains("(select") || sqllow.contains("( select");
+		int nFromPos = containSub?sqllow.indexOf(" from "):sqllow.lastIndexOf(" from ");
 		int nOrderPos = sqllow.lastIndexOf(" order by ");
 		int nGroupByPos=sqllow.lastIndexOf("group by");
 		if(nGroupByPos==-1) {
