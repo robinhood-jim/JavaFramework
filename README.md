@@ -97,6 +97,12 @@ Slightly Framework design to  support Spring based java or Bigdata program.
 		f.support Hadoop plateform
         g. Excel read write utils support auto merge columns and customer header define.
 
+    XI.Develop Requirement
+        open JDK 11 or above installed
+        Spring 5.2.22
+        Spring boot 2.5.14
+        Other jar dependency see parent pom
+
 
 3.Development
  

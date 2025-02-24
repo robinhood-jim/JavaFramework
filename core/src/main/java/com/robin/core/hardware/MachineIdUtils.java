@@ -54,7 +54,7 @@ public class MachineIdUtils {
                     reader.close();
                 }
             } catch (Exception ex) {
-
+                ex.printStackTrace();
             }
         }
     }
