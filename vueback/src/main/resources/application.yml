@@ -1,0 +1,34 @@
+server:
+  port: 8099
+  servlet:
+    context-path: /
+spring:
+  profiles:
+    active: dev
+  main:
+    allow-bean-definition-overriding: true
+  messages:
+    basename: i18n/messages
+
+  datasource:
+    url: jdbc:mysql://localhost:3316/vueframe?useUnicode=true&characterEncoding=UTF-8&rewriteBatchedStatements=true
+    driverClassName: com.mysql.jdbc.Driver
+    username: vue
+    password: vue
+logging:
+  level:
+    root: DEBUG
+
+
+core:
+  query:
+    xmlConfig: true
+
+project:
+  queryConfigPath: classpath:/queryConfig
+
+jwt:
+  salt: 123456
+login:
+  ignoreUrls: /index,/login,/logout,/captchaImage
+  ignoreResources: gif,bmp,png,jpg,js,flash,css,swf,flv,metaget
