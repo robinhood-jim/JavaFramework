@@ -122,24 +122,13 @@
             <version>${jackson.version}</version>
             <optional>true</optional>
         </dependency>
-        <!-- <dependency>
-             <groupId>org.ow2.asm</groupId>
-             <artifactId>asm</artifactId>
-             <version>6.1</version>
-             <optional>true</optional>
-         </dependency>-->
+
         <dependency>
             <groupId>org.javassist</groupId>
             <artifactId>javassist</artifactId>
             <version>3.23.2-GA</version>
             <optional>true</optional>
         </dependency>
-        <!--<dependency>
-            <groupId>org.ow2.asm</groupId>
-            <artifactId>asm-util</artifactId>
-            <version>6.2</version>
-            <optional>true</optional>
-        </dependency>-->
 
         <dependency>
             <groupId>junit</groupId>
@@ -322,24 +311,6 @@
                     <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>
-           <!-- <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>copy</id>
-                        <phase>install</phase>
-                        <goals>
-                            <goal>copy-dependencies</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>
-                                ${project.build.directory}/lib
-                            </outputDirectory>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>-->
             <plugin>
                 <groupId>com.github.wvengen</groupId>
                 <artifactId>proguard-maven-plugin</artifactId>
@@ -369,7 +340,11 @@
                     <injarNotExistsSkip>true</injarNotExistsSkip>
                     <proguardInclude>${project.basedir}/../config/proguard.cfg</proguardInclude>
                     <libs>
-                        <lib>${java.home}/lib/rt.jar</lib>
+                        <lib>${java.home}/jmods/java.base.jmod</lib>
+                        <lib>${java.home}/jmods/java.datatransfer.jmod</lib>
+                        <lib>${java.home}/jmods/java.prefs.jmod</lib>
+                        <lib>${java.home}/jmods/java.xml.jmod</lib>
+                        <lib>${java.home}/jmods/java.desktop.jmod</lib>
                     </libs>
                     <options> <!-- Detail see ProGuard Config -->
                     </options>

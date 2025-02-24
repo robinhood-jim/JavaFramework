@@ -56,8 +56,7 @@ public class DataBaseParam implements Serializable {
 				StringBuffer builder=new StringBuffer();
 				while(matcher.find()){
 					String word=matcher.group();
-					String v_word = word.replaceFirst("\\[", "");
-					v_word = v_word.replaceFirst("\\]", "");
+					String v_word = word.substring(1,word.length()-1);
 					matcher.appendReplacement(builder, paramMap.get(v_word));
 				}
 				matcher.appendTail(builder);

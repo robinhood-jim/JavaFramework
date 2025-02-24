@@ -16,13 +16,13 @@ spring:
     encoding: UTF-8
 
   datasource:
-    url: jdbc:mysql://localhost:3316/vueframe?useUnicode=true&characterEncoding=UTF-8&rewriteBatchedStatements=true
+    url: jdbc:mysql://localhost:3316/frameset?useUnicode=true&characterEncoding=UTF-8&rewriteBatchedStatements=true
     driverClassName: com.mysql.jdbc.Driver
-    username: vue
-    password: vue
+    username: frame
+    password: frame
 logging:
   level:
-    root: INFO
+    root: DEBUG
 
 
 core:

@@ -10,6 +10,12 @@
 #### 软件架构
 软件架构说明
 
+开发环境及工具
+
+    1.open JDK11 以上
+    2.Spring 5.2.22
+    3.Spring boot 2.5.14
+
 目前框架由8个模块组成
 
     1.Core：核心包，包含Model/DAO/Service及ORM的基础类及DB Dialect。数据库Dump和Import的工具包等，支持JAVA基本框架的内容

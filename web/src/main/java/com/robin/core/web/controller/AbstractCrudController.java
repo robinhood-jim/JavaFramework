@@ -217,7 +217,6 @@ public abstract class AbstractCrudController<O extends BaseObject, P extends Ser
     protected Map<String, Object> doQuery(HttpServletRequest request,Map<String,String> params, PageQuery query) {
         Map<String, Object> retMap = new HashMap<>();
         try {
-            wrapQuery(request,query);
             if (query.getParameters().isEmpty() && params!=null) {
                 query.setParameters(params);
             }
