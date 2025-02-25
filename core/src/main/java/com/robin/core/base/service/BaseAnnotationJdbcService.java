@@ -363,6 +363,16 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 		}
 		return pageQuery.getRecordSet();
 	}
+	@Override
+	@Transactional(rollbackFor = RuntimeException.class)
+	public int batchUpdate(List<V> list){
+		try {
+			return jdbcDao.batchUpdate(list,type);
+		}catch (DAOException ex){
+			throw new ServiceException(ex);
+		}
+	}
+
 	public int countByCondition(FilterCondition filterCondition){
 		try {
 			return getJdbcDao().countByCondition(type,filterCondition);

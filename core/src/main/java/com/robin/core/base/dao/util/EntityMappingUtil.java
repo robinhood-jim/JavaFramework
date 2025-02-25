@@ -155,6 +155,30 @@ public class EntityMappingUtil {
         }
         return insertSegment;
     }
+    public static String getInsertSqlIgnoreValue(Class<? extends BaseObject> clazz, BaseSqlGen sqlGen, JdbcDao jdbcDao,List<FieldContent> fields){
+        AnnotationRetriever.EntityContent<? extends BaseObject> tableDef = AnnotationRetriever.getMappingTableByCache(clazz);
+        StringBuilder buffer = new StringBuilder();
+        buffer.append(Const.SQL_INSERTINTO);
+        if (tableDef.getSchema() != null && !tableDef.getSchema().isEmpty()) {
+            buffer.append(sqlGen.getSchemaName(tableDef.getSchema())).append(".");
+        }
+        buffer.append(tableDef.getTableName());
+        StringBuilder fieldBuffer = new StringBuilder();
+        StringBuilder valueBuffer = new StringBuilder();
+        for (FieldContent content : fields) {
+            if(content.isPrimary()){
+                if(content.isSequential()){
+                    fieldBuffer.append(content.getFieldName()).append(",");
+                    valueBuffer.append(sqlGen.getSequenceScript(content.getSequenceName())).append(",");
+                }
+            }else{
+                fieldBuffer.append(content.getFieldName()).append(",");
+                valueBuffer.append("?,");
+            }
+        }
+        buffer.append("(").append(fieldBuffer.substring(0, fieldBuffer.length() - 1)).append(") values (").append(valueBuffer.substring(0, valueBuffer.length() - 1)).append(")");
+        return buffer.toString();
+    }
 
     public static  Map<String, DataBaseColumnMeta> returnMetaMap(Class<? extends BaseObject> clazz, BaseSqlGen sqlGen, JdbcDao jdbcDao, AnnotationRetriever.EntityContent<? extends BaseObject> tableDef) throws SQLException {
         Map<String, DataBaseColumnMeta> columnMetaMap;

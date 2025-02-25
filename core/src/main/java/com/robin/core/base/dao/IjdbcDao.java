@@ -141,7 +141,8 @@ public interface IjdbcDao {
      */
     List<Map<String, Object>> queryBySql(String sqlstr, Object... obj) throws DAOException;
     Map<String,Object> getBySql(String querySQL,Object ... objects) throws DAOException;
-
+    int countByNameParam(String nameSql,Map<String,Object> paramMap);
+    <T extends BaseObject> int batchUpdate(List<T> list,Class<T> clazz);
     /**
      * Query With PageQuery
      *

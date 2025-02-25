@@ -1,0 +1,91 @@
+package com.robin.basis.sercurity;
+
+
+import cn.hutool.core.util.StrUtil;
+import com.robin.basis.model.user.SysUser;
+import com.robin.core.base.util.Const;
+import lombok.Data;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+@Data
+public class SysLoginUser implements UserDetails {
+    private Long id;
+    private List<Long> roles;
+    private List<String> permissions;
+    private String userName;
+    private String displayName;
+    private String password;
+    private String userStatus;
+    private SysLoginUser(){
+
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return Stream.concat(roles.stream().map(f->"role_"+f),permissions.stream()).filter(StrUtil::isNotBlank)
+                .map(SimpleGrantedAuthority::new).collect(Collectors.toList());
+    }
+
+    @Override
+    public String getPassword() {
+        return password;
+    }
+
+    @Override
+    public String getUsername() {
+        return userName;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return Const.VALID.equals(userStatus);
+    }
+    public static class Builder{
+        private static SysLoginUser loginUser=new SysLoginUser();
+        public static Builder newBuilder(){
+            return new Builder();
+        }
+        public Builder withSysUser(SysUser user){
+            loginUser.setId(user.getId());
+            loginUser.setUserName(user.getUserAccount());
+            loginUser.setDisplayName(user.getUserName());
+            loginUser.setUserStatus(user.getUserStatus());
+            loginUser.setPassword(user.getUserPassword());
+            return this;
+        }
+        public Builder withRoles(List<Long> roles){
+            loginUser.setRoles(roles);
+            return this;
+        }
+        public Builder withPermission(List<String> permissions){
+            loginUser.setPermissions(permissions);
+            return this;
+        }
+        public SysLoginUser build(){
+            return loginUser;
+        }
+    }
+
+}

@@ -212,4 +212,9 @@ public class MongoRepositoryService <V extends BaseObject, P extends Serializabl
     public int countByCondition(FilterCondition filterCondition) {
         return 0;
     }
+
+    @Override
+    public int batchUpdate(List<V> list) {
+        return 0;
+    }
 }

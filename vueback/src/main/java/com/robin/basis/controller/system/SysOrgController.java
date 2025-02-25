@@ -1,34 +1,36 @@
 package com.robin.basis.controller.system;
 
-import com.google.gson.Gson;
+import com.robin.basis.dto.SysOrgDTO;
 import com.robin.basis.model.system.SysOrg;
 import com.robin.basis.service.system.SysOrgService;
+import com.robin.basis.service.system.SysUserOrgService;
+import com.robin.core.base.dao.JdbcDao;
+import com.robin.core.base.spring.SpringContextHolder;
 import com.robin.core.base.util.Const;
 import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.query.util.PageQuery;
+import com.robin.core.sql.util.FilterConditionBuilder;
 import com.robin.core.web.controller.AbstractCrudDhtmlxController;
-import com.robin.core.web.util.Session;
-import com.robin.core.web.util.WebConstant;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.support.ResourceBundleMessageSource;
-import org.springframework.stereotype.Controller;
+import org.springframework.context.MessageSource;
+import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-@Controller
+@RestController
 @RequestMapping("/system/org")
 public class SysOrgController extends AbstractCrudDhtmlxController<SysOrg, Long, SysOrgService> {
     @Autowired
-    private ResourceBundleMessageSource messageSource;
-    private Gson gson=new Gson();
-
-    @GetMapping("/show")
-    public String showSchema(HttpServletRequest request, HttpServletResponse response) {
-        return "/org/org_list";
-    }
+    private MessageSource messageSource;
+    @Resource
+    private SysOrgService orgService;
 
     @GetMapping("/edit/{id}")
     @ResponseBody
@@ -36,6 +38,20 @@ public class SysOrgController extends AbstractCrudDhtmlxController<SysOrg, Long,
                                        HttpServletResponse response, @PathVariable Long id) {
         return doEdit(id);
     }
+    @GetMapping("/listUser")
+    public Map<String, Object> listUser(HttpServletRequest request, HttpServletResponse response) {
+        PageQuery query = wrapPageQuery(request);
+        String addTag=request.getParameter("addTag");
+        if(Const.VALID.equals(addTag)){
+            query.setSelectParamId("GET_SYSUSERNOTINORG");
+        }else {
+            query.setSelectParamId("GET_SYSUSERINFOINORG");
+        }
+        wrapQuery(request,query);
+
+        return doQuery(request,null, query);
+    }
+
 
     @PostMapping("/update")
     @ResponseBody
@@ -78,63 +94,41 @@ public class SysOrgController extends AbstractCrudDhtmlxController<SysOrg, Long,
         return retMap;
     }
 
-    @GetMapping("/listjson")
+    @GetMapping("/list")
     @ResponseBody
-    public Map<String, Object> getdeptJson(HttpServletRequest request, HttpServletResponse response) {
-        String allowNull = request.getParameter("allowNull");
-        boolean insertNullVal = true;
-        if (allowNull != null && !allowNull.isEmpty() && "false".equalsIgnoreCase(allowNull)) {
-            insertNullVal = false;
+    public Map<String, Object> getdeptJson(Map<String, Object> reqMap) {
+        FilterConditionBuilder builder=new FilterConditionBuilder();
+        if(!ObjectUtils.isEmpty(reqMap.get("deptId"))){
+            builder.addEq(SysOrg::getId,Long.valueOf(reqMap.get("deptId").toString()));
         }
+        if(!ObjectUtils.isEmpty(reqMap.get("deptName"))){
+            builder.addFilter(SysOrg::getOrgName, Const.OPERATOR.LIKE,reqMap.get("deptName").toString());
+        }
+        if(!ObjectUtils.isEmpty(reqMap.get("parentId"))){
+            builder.addEq(SysOrg::getPid,Long.valueOf(reqMap.get("parentId").toString()));
+        }
+        if(!ObjectUtils.isEmpty(reqMap.get("status"))){
+            builder.addEq(SysOrg::getOrgStatus,reqMap.get("status").toString());
+        }
+
         PageQuery query = new PageQuery();
-        query.setSelectParamId("GET_ORGINFO");
+
         query.setPageSize(0);
-        service.queryBySelectId(query);
-        Map<String, Object> map = new HashMap<String, Object>();
-        List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
-        if (insertNullVal) {
-            insertNullSelect(list);
-        }
-        list.addAll(query.getRecordSet());
-        map.put("options", list);
-        return map;
+        service.queryByCondition(builder.build(),query);
+        return wrapObject(query.getRecordSet());
+    }
+    @PostMapping("/join/")
+    public Map<String,Object> joinOrg(@RequestBody Map<String,Object> reqMap){
+        Assert.notNull(reqMap.get("orgId"),"");
+        Assert.notNull(reqMap.get("userIds"),"");
+        Long orgId=Long.valueOf(reqMap.get("orgId").toString());
+        List<Long> uids= Stream.of(reqMap.get("userIds").toString().split(",")).map(Long::valueOf).collect(Collectors.toList());;
+        int count= orgService.joinOrg(orgId,uids);
+        return wrapObject(count);
     }
 
 
 
-    @GetMapping(value = "/listAll")
-    @ResponseBody
-    public List<Map<String,Object>> getAllOrgByUser(HttpServletRequest request, HttpServletResponse response) {
-        Long id = Long.valueOf(request.getParameter("id"));
-        Session session = (Session) request.getSession().getAttribute(Const.SESSION);
-        Long parentId=id;
-        Map<String,Object> retMap=new HashMap<>();
-        List<Map<String,Object>> list=new ArrayList<>();
-
-        if(id==0L){
-            if(!session.getAccountType().equals(WebConstant.ACCOUNT_TYPE.SYSUSER.toString())){
-                parentId=session.getOrgId();
-                SysOrg org=service.getEntity(parentId);
-                Map<String,Object> map=new HashMap<>();
-                fillMap(map,org);
-                list.add(map);
-            }else{
-                getSubList(list,parentId);
-            }
-        }else{
-            getSubList(list,parentId);
-        }
-
-        if(id==0L){
-            return list;
-        }else{
-            retMap.put("id",parentId);
-            retMap.put("items",list);
-            List<Map<String,Object>> tList=new ArrayList<>();
-            tList.add(retMap);
-            return tList;
-        }
-    }
     private void getSubList(List<Map<String,Object>> list,Long parentId){
         List<SysOrg> orgList=service.queryByField(SysOrg::getPid, Const.OPERATOR.EQ,parentId);
         if(!orgList.isEmpty()){
@@ -152,7 +146,6 @@ public class SysOrgController extends AbstractCrudDhtmlxController<SysOrg, Long,
     }
 
     @GetMapping("/tree")
-    @ResponseBody
     public Map<String, Object> getOrgTree(HttpServletRequest request, HttpServletResponse response) {
         String id = request.getParameter("id");
         String displayName = "机构树";
@@ -197,6 +190,17 @@ public class SysOrgController extends AbstractCrudDhtmlxController<SysOrg, Long,
         }
         return retmap;
     }
+    @GetMapping("/deptTree")
+    @ResponseBody
+    public Map<String,Object> deptTree(@RequestParam(required = false) Long pid){
+        Long upId=pid;
+        if(ObjectUtils.isEmpty(upId)){
+            upId=0L;
+        }
+        List<SysOrgDTO> list=service.getOrgTree(upId);
+        Map<String,Object> retMap=wrapObject(list);
+        return retMap;
+    }
 
     @GetMapping("/getuporg")
     @ResponseBody
@@ -213,6 +217,9 @@ public class SysOrgController extends AbstractCrudDhtmlxController<SysOrg, Long,
         }
         return map;
     }
+
+
+
 
     @Override
     protected String wrapQuery(HttpServletRequest request, PageQuery query) {

@@ -17,13 +17,18 @@ package com.robin.basis.service.system;
 
 import com.robin.basis.dto.SysOrgDTO;
 import com.robin.basis.model.system.SysOrg;
+import com.robin.basis.model.user.SysUserOrg;
 import com.robin.core.base.service.BaseAnnotationJdbcService;
 import com.robin.core.base.service.IBaseAnnotationJdbcService;
 import com.robin.core.base.util.Const;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -49,14 +54,31 @@ public class SysOrgService extends BaseAnnotationJdbcService<SysOrg, Long> imple
             return builder.substring(0,builder.length()-1);
         }
     }
+    @Transactional(rollbackFor = RuntimeException.class)
+    public int joinOrg(Long orgId,List<Long> uids){
+        Assert.isTrue(!CollectionUtils.isEmpty(uids),"");
+        Map<String,Object> map=new HashMap<>();
+        map.put("ids",uids);
+        Integer existCount=jdbcDao.countByNameParam("select count(1) from t_sys_user_info where id in (:ids) and user_status='1'",map);
+        Assert.isTrue(existCount==uids.size(),"");
+        List<SysUserOrg> list=new ArrayList<>();
+        for(Long uid:uids){
+            SysUserOrg userOrg=new SysUserOrg();
+            userOrg.setUserId(uid);
+            userOrg.setOrgId(orgId);
+            userOrg.setStatus(Const.VALID);
+            list.add(userOrg);
+        }
+       return jdbcDao.batchUpdate(list,SysUserOrg.class);
+    }
     public List<SysOrgDTO> getOrgTree(Long pid){
         List<SysOrgDTO> orgList=queryAll().stream().filter(f->Const.VALID.equals(f.getOrgStatus())).map(SysOrgDTO::fromVO).collect(Collectors.toList());
-        Map<Long,List<SysOrgDTO>> parentMap=orgList.stream().collect(Collectors.groupingBy(SysOrgDTO::getUpOrgId));
+        Map<Long,List<SysOrgDTO>> parentMap=orgList.stream().collect(Collectors.groupingBy(SysOrgDTO::getPid));
         Map<Long,SysOrgDTO> idMap=orgList.stream().collect(Collectors.toMap(SysOrgDTO::getId, Function.identity()));
         SysOrgDTO root = new SysOrgDTO();
         idMap.put(0L, root);
         for(SysOrgDTO dto:orgList){
-            idMap.get(dto.getUpOrgId()).getChildren().add(dto);
+            idMap.get(dto.getPid()).getChildren().add(dto);
             walkOrg(idMap,parentMap,dto);
         }
         return idMap.get(pid).getChildren();
@@ -64,7 +86,7 @@ public class SysOrgService extends BaseAnnotationJdbcService<SysOrg, Long> imple
     private void walkOrg(Map<Long,SysOrgDTO> idMap,Map<Long,List<SysOrgDTO>> parentMap,SysOrgDTO dto) {
         if (!CollectionUtils.isEmpty(parentMap.get(dto.getId()))) {
             for (SysOrgDTO childs : parentMap.get(dto.getId())) {
-                idMap.get(dto.getUpOrgId()).getChildren().add(childs);
+                idMap.get(dto.getPid()).getChildren().add(childs);
                 walkOrg(idMap, parentMap, childs);
             }
         }

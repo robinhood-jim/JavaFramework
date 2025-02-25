@@ -18,6 +18,7 @@ package com.robin.core.base.dao;
 import com.google.common.collect.Lists;
 import com.robin.core.base.dao.handler.MetaObjectHandler;
 import com.robin.core.base.dao.util.*;
+import com.robin.core.base.datameta.DataBaseColumnMeta;
 import com.robin.core.base.exception.DAOException;
 import com.robin.core.base.exception.MissingConfigException;
 import com.robin.core.base.exception.QueryConfgNotFoundException;
@@ -26,6 +27,7 @@ import com.robin.core.base.reflect.MetaObject;
 import com.robin.core.base.reflect.ReflectUtils;
 import com.robin.core.base.spring.SpringContextHolder;
 import com.robin.core.base.util.Const;
+import com.robin.core.base.util.IUserUtils;
 import com.robin.core.base.util.LicenseUtils;
 import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
@@ -50,6 +52,9 @@ import org.springframework.util.ObjectUtils;
 
 import javax.sql.DataSource;
 import java.io.Serializable;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.*;
 
 @Slf4j
@@ -278,6 +283,16 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
             StringBuilder buffer = getQueryPartByCondition(type, condition, objList);
             String sumSQL = sqlGen.generateCountSql(buffer.toString());
             return returnTemplate().queryForObject(sumSQL, objList.toArray(), Integer.class);
+        }catch (Exception ex){
+            throw new DAOException(ex);
+        }
+    }
+    public  int countByNameParam(String nameSql,Map<String,Object> paramMap){
+        try {
+            if (log.isDebugEnabled()) {
+                log.debug("count sql", nameSql);
+            }
+            return getNamedJdbcTemplate().queryForObject(nameSql,paramMap,Integer.class);
         }catch (Exception ex){
             throw new DAOException(ex);
         }
@@ -563,6 +578,43 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
             throw new DAOException(ex);
         }
         return retObj;
+    }
+    public <T extends BaseObject> int batchUpdate(List<T> list,Class<T> clazz){
+        try{
+            Assert.isTrue(!CollectionUtils.isEmpty(list),"");
+            List<FieldContent> fields = AnnotationRetriever.getMappingFieldsCache(clazz);
+            AnnotationRetriever.EntityContent<? extends BaseObject> tableDef = AnnotationRetriever.getMappingTableByCache(clazz);
+            Map<String, DataBaseColumnMeta> columnMetaMap = EntityMappingUtil.returnMetaMap(clazz, sqlGen, this, tableDef);
+            String insertSql=EntityMappingUtil.getInsertSqlIgnoreValue(clazz, sqlGen, this, fields);
+            MetaObjectHandler handler = SpringContextHolder.getBean(MetaObjectHandler.class);
+            int[][] rs=getJdbcTemplate().batchUpdate(insertSql, list, 1000, (ps, t) -> {
+                if (!ObjectUtils.isEmpty(handler)) {
+                    Map<String, FieldContent> fieldContentMap = AnnotationRetriever.getMappingFieldsMapCache(clazz);
+                    handler.insertFill(new MetaObject(t, fieldContentMap));
+                }
+                int pos=1;
+                try {
+                    for (FieldContent content : fields) {
+                        if (!content.isIncrement() && !content.isSequential()) {
+                            Object obj=content.getGetMethod().invoke(t);
+                            if(!ObjectUtils.isEmpty(obj)) {
+                                ps.setObject(pos, obj);
+                            }else{
+                                DataBaseColumnMeta columnMeta=Optional.ofNullable(columnMetaMap.get(content.getFieldName().toLowerCase())).orElse(columnMetaMap.get(content.getFieldName().toUpperCase()));
+                                ps.setNull(pos,columnMeta.getDataType());
+                            }
+                            pos++;
+                        }
+                    }
+
+                }catch (Exception ex){
+                    ex.printStackTrace();
+                }
+            });
+            return Arrays.stream(rs[0]).sum();
+        }catch (Exception ex){
+            throw new DAOException(ex);
+        }
     }
 
     @Override
