@@ -62,11 +62,11 @@ public class SysOrgController extends AbstractCrudDhtmlxController<SysOrg, Long,
                 Integer codeNum = 10000 + Integer.parseInt(orgCode.substring(orgCode.length() - 4, orgCode.length())) + 1;
                 vo.setTreeCode(orgCode.substring(0, orgCode.length() - 4) + String.valueOf(codeNum).substring(1, 5));
             } else {
-                SysOrg porg = service.getEntity(Long.valueOf(vo.getUpOrgId()));
+                SysOrg porg = service.getEntity(Long.valueOf(vo.getPid()));
                 vo.setTreeCode(porg.getTreeCode() + "0001");
             }
-            if (!vo.getUpOrgId().equals(0L)) {
-                SysOrg porg = service.getEntity(Long.valueOf(vo.getUpOrgId()));
+            if (!vo.getPid().equals(0L)) {
+                SysOrg porg = service.getEntity(Long.valueOf(vo.getPid()));
                 vo.setTreeLevel(porg.getTreeLevel() + 1);
             } else {
                 vo.setTreeLevel(1);
@@ -136,7 +136,7 @@ public class SysOrgController extends AbstractCrudDhtmlxController<SysOrg, Long,
         }
     }
     private void getSubList(List<Map<String,Object>> list,Long parentId){
-        List<SysOrg> orgList=service.queryByField(SysOrg::getUpOrgId, Const.OPERATOR.EQ,parentId);
+        List<SysOrg> orgList=service.queryByField(SysOrg::getPid, Const.OPERATOR.EQ,parentId);
         if(!orgList.isEmpty()){
             for(SysOrg org:orgList){
                 Map<String,Object> map=new HashMap<>();
