@@ -1,32 +1,36 @@
 package com.robin.basis.controller.system;
 
-import com.google.gson.Gson;
 import com.robin.basis.dto.SysOrgDTO;
 import com.robin.basis.model.system.SysOrg;
 import com.robin.basis.service.system.SysOrgService;
+import com.robin.basis.service.system.SysUserOrgService;
+import com.robin.core.base.dao.JdbcDao;
+import com.robin.core.base.spring.SpringContextHolder;
 import com.robin.core.base.util.Const;
 import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.query.util.PageQuery;
 import com.robin.core.sql.util.FilterConditionBuilder;
 import com.robin.core.web.controller.AbstractCrudDhtmlxController;
-import com.robin.core.web.util.Session;
-import com.robin.core.web.util.WebConstant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
-import org.springframework.stereotype.Controller;
+import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @RestController
 @RequestMapping("/system/org")
 public class SysOrgController extends AbstractCrudDhtmlxController<SysOrg, Long, SysOrgService> {
     @Autowired
     private MessageSource messageSource;
+    @Resource
+    private SysOrgService orgService;
 
     @GetMapping("/edit/{id}")
     @ResponseBody
@@ -34,6 +38,20 @@ public class SysOrgController extends AbstractCrudDhtmlxController<SysOrg, Long,
                                        HttpServletResponse response, @PathVariable Long id) {
         return doEdit(id);
     }
+    @GetMapping("/listUser")
+    public Map<String, Object> listUser(HttpServletRequest request, HttpServletResponse response) {
+        PageQuery query = wrapPageQuery(request);
+        String addTag=request.getParameter("addTag");
+        if(Const.VALID.equals(addTag)){
+            query.setSelectParamId("GET_SYSUSERNOTINORG");
+        }else {
+            query.setSelectParamId("GET_SYSUSERINFOINORG");
+        }
+        wrapQuery(request,query);
+
+        return doQuery(request,null, query);
+    }
+
 
     @PostMapping("/update")
     @ResponseBody
@@ -99,42 +117,18 @@ public class SysOrgController extends AbstractCrudDhtmlxController<SysOrg, Long,
         service.queryByCondition(builder.build(),query);
         return wrapObject(query.getRecordSet());
     }
-
-
-
-    @GetMapping(value = "/listAll")
-    @ResponseBody
-    public List<Map<String,Object>> getAllOrgByUser(HttpServletRequest request, HttpServletResponse response) {
-        Long id = Long.valueOf(request.getParameter("id"));
-        Session session = (Session) request.getSession().getAttribute(Const.SESSION);
-        Long parentId=id;
-        Map<String,Object> retMap=new HashMap<>();
-        List<Map<String,Object>> list=new ArrayList<>();
-
-        if(id==0L){
-            if(!session.getAccountType().equals(WebConstant.ACCOUNT_TYPE.SYSUSER.toString())){
-                parentId=session.getOrgId();
-                SysOrg org=service.getEntity(parentId);
-                Map<String,Object> map=new HashMap<>();
-                fillMap(map,org);
-                list.add(map);
-            }else{
-                getSubList(list,parentId);
-            }
-        }else{
-            getSubList(list,parentId);
-        }
-
-        if(id==0L){
-            return list;
-        }else{
-            retMap.put("id",parentId);
-            retMap.put("items",list);
-            List<Map<String,Object>> tList=new ArrayList<>();
-            tList.add(retMap);
-            return tList;
-        }
+    @PostMapping("/join/")
+    public Map<String,Object> joinOrg(@RequestBody Map<String,Object> reqMap){
+        Assert.notNull(reqMap.get("orgId"),"");
+        Assert.notNull(reqMap.get("userIds"),"");
+        Long orgId=Long.valueOf(reqMap.get("orgId").toString());
+        List<Long> uids= Stream.of(reqMap.get("userIds").toString().split(",")).map(Long::valueOf).collect(Collectors.toList());;
+        int count= orgService.joinOrg(orgId,uids);
+        return wrapObject(count);
     }
+
+
+
     private void getSubList(List<Map<String,Object>> list,Long parentId){
         List<SysOrg> orgList=service.queryByField(SysOrg::getPid, Const.OPERATOR.EQ,parentId);
         if(!orgList.isEmpty()){
@@ -223,12 +217,7 @@ public class SysOrgController extends AbstractCrudDhtmlxController<SysOrg, Long,
         }
         return map;
     }
-    @GetMapping("/listUser")
-    public String listUser(HttpServletRequest request,HttpServletResponse response){
-        request.setAttribute("orgId",request.getParameter("orgId"));
-        request.setAttribute("addTag",request.getParameter("addTag"));
-        return "org/org_user";
-    }
+
 
 
 

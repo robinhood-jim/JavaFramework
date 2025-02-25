@@ -32,7 +32,7 @@ public class SysOrg extends BaseObject
     @MappingField(value ="org_status")
     private String orgStatus;
     @MappingField(value ="up_org_id")
-    private Long upOrgId;
+    private Long pid;
     @MappingField(value ="org_code")
     private String orgCode;
     @MappingField(value ="org_name")

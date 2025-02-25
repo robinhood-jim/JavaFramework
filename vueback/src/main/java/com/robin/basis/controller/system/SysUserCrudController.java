@@ -50,8 +50,6 @@ public class SysUserCrudController extends AbstractCrudDhtmlxController<SysUser,
     private MessageSource messageSource;
 
 
-
-
     @GetMapping("/list")
     public Map<String, Object> listUser(HttpServletRequest request, HttpServletResponse response) {
         PageQuery query = wrapPageQuery(request);

@@ -450,6 +450,11 @@ public class SpringAutoCreateService<B extends BaseObject, P extends Serializabl
         }
     }
 
+    @Override
+    public int batchUpdate(List<B> list) {
+        return jdbcDao.batchUpdate(list,potype);
+    }
+
     public static JdbcDao getJdbcDao() {
         return jdbcDao;
     }

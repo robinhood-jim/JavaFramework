@@ -378,7 +378,6 @@ public abstract class ESRepositoryService<V extends BaseObject, P extends Serial
             SearchHit[] hits = response.getHits().getHits();
             page.setRecordCount(Integer.valueOf(String.valueOf(response.getHits().getTotalHits().value)));
             if (!ObjectUtils.isEmpty(hits) && hits.length > 0) {
-                retList = new ArrayList<>();
                 for (SearchHit hit : hits) {
                     Map<String, Object> map = hit.getSourceAsMap();
                     Iterator<Map.Entry<String, Object>> citer = map.entrySet().iterator();
@@ -548,6 +547,11 @@ public abstract class ESRepositoryService<V extends BaseObject, P extends Serial
         settingsMap.put("number_of_shards", "1");
         settingsMap.put("number_of_replicas", "0");
         return settingsMap;
+    }
+
+    @Override
+    public int batchUpdate(List<V> list) {
+        return 0;
     }
 
     protected boolean indexExists() {
