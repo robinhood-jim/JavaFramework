@@ -108,7 +108,7 @@
                 var tobj = eval('(' + response + ')');
                 myGrid.clearAll();
                 myGrid.parse(tobj, "json");
-                sb.setText(constructPaging(tobj.query));
+                sb.setText(constructPaging(tobj));
             });
         } else if (name == "cmdReset") {
             this.reset();
@@ -298,8 +298,7 @@
             var tobj = eval('(' + response + ')');
             myGrid.clearAll();
             myGrid.parse(tobj, "json");
-            var barstr = tobj.query.pageToolBar;
-            sb.setText(barstr);
+            sb.setText(constructPaging(tobj));
         });
     }
 </script>

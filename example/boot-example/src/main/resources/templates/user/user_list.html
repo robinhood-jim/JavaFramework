@@ -114,8 +114,7 @@
                 var tobj = eval('(' + response + ')');
                 myGrid.clearAll();
                 myGrid.parse(tobj, "json");
-                var barstr = tobj.query.pageToolBar;
-                statusbar.setText(constructPaging(tobj.query));
+                statusbar.setText(constructPaging(tobj));
             });
         } else if (name == 'reset') {
             this.reset();

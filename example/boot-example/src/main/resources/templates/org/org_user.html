@@ -200,7 +200,7 @@
             var tobj = eval('(' + response + ')');
             myGrid.clearAll();
             myGrid.parse(tobj, "json");
-            statusbar.setText(constructPaging(tobj.query));
+            statusbar.setText(constructPaging(tobj));
         });
 
     }

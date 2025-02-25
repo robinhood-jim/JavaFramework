@@ -9,7 +9,7 @@
     <script type="text/javascript" th:src="@{/component/dhtmlxSuite/codebase/dhtmlx.js}"></script>
     <script type="text/javascript" th:src="@{/resources/js/jquery.js}"></script>
     <script language="javascript" th:src="@{/resources/js/Array.js}"></script>
-    <script type="text/javascript" th:src="@{/resources/js/jsLib.js}"></script>
+    <script language="javascript" th:src="@{/resources/js/control.js}"></script>
 
     <style type="text/css">
         html, body {
@@ -46,10 +46,10 @@
     leftPanel.setText("");
 
     var dhxTree = leftPanel.attachTree();
-    var projid = '${param.projId}';
+    var projid = '[[${param.projId}]]';
     dhxTree.setImagePath(contextpath+"component/dhtmlxSuite/codebase/imgs/dhxtree_material/");
     dhxTree.setXMLAutoLoading(contextpath + "system/datamapping/listtable?projId=" + projid);
-    dhxTree.load(contextpath + "system/datamapping/listschema?projId=" + projid + "&id=0", "xml");
+    dhxTree.load(contextpath + "system/datamapping/listschema/" + projid , "xml");
 
     dhxTree.attachEvent("onClick", function (id) {
         var txt = dhxTree.getItemText(id);

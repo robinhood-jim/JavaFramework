@@ -37,11 +37,11 @@
 
 <script type="text/javascript">
     var ctx =  getcontentPath("[[${#httpServletRequest.getContextPath()}]]");
-    var projId = '${param.projId}';
-    var schema = '${param.schema}';
-    var tableName = '${param.table}';
-    var sourceId = '${sourceId}';
-    var mappingId = '${mappingId}';
+    var projId = '[[${param.projId}]]';
+    var schema = '[[${param.schema}]]';
+    var tableName = '[[${param.table}]]';
+    var sourceId = '[[${sourceId}]]';
+    var mappingId = '[[${mappingId}]]';
     var imgPath = ctx+"component/dhtmlxSuite/dhtmlx/imgs/icon/";
     var dhxLayout = new dhtmlXLayoutObject(document.body, "2E");
     var topPanel = dhxLayout.cells("a");
@@ -258,15 +258,15 @@
         });
     }
 </script>
-<script type="text/javascript" th:each=" type : ${typeList}">
-    combotype.put('${type.value}', '${type.codeName}');
+<script type="text/javascript" th:each="type:${typeList}">
+    combotype.put("[[${type.value}]]", "[[${type.codeName}]]");
 </script>
 
 <script type="text/javascript" th:each=" display:${displayList}">
-    combodisplay.put('${display.value}', '${display.codeName}');
+    combodisplay.put("[[${display.value}]]", "[[${display.codeName}]]");
 </script>
-<script type="text/javascript" src="<%=CONTEXT_PATH%>resources/js/crud.js"></script>
-<script type="text/javascript" src="<%=CONTEXT_PATH%>resources/js/window.js"></script>
+<script type="text/javascript" th:src="@{/resources/js/crud.js}"></script>
+<script type="text/javascript" th:src="@{/resources/js/window.js}"></script>
 
 
 </body>

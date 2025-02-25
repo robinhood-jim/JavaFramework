@@ -22,7 +22,7 @@ spring:
     password: frame
 logging:
   level:
-    root: DEBUG
+    root: INFO
 
 
 core:
