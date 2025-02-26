@@ -441,20 +441,20 @@
                 success: function (data) {
                     var obj = eval(data);
                     form.setItemValue("id", obj.id);
-                    form.setItemValue("projType", obj.projType);
-                    form.setItemValue("projName", obj.projName);
-                    form.setItemValue("webFrameId", obj.webFrameId);
-                    form.setItemValue("presistType", obj.presistType);
-                    form.setItemValue("company", obj.company);
-                    form.setItemValue("useAnnotation", obj.useAnnotation);
-                    form.setItemValue("useMvc", obj.useMvc);
-                    form.setItemValue("projCode", obj.projCode);
-                    form.setItemValue("projBasePath", obj.projBasePath);
-                    form.setItemValue("webBasePath", obj.webBasePath);
-                    form.setItemValue("dataSourceId", obj.dataSourceId);
-                    form.setItemValue("annotationPackage", obj.annotationPackage);
-                    form.setItemValue("teamType", obj.teamType);
-                    form.setItemValue("teamUrl", obj.Url);
+                    form.setItemValue("projType", obj.data.projType);
+                    form.setItemValue("projName", obj.data.projName);
+                    form.setItemValue("webFrameId", obj.data.webFrameId);
+                    form.setItemValue("presistType", obj.data.presistType);
+                    form.setItemValue("company", obj.data.company);
+                    form.setItemValue("useAnnotation", obj.data.useAnnotation);
+                    form.setItemValue("useMvc", obj.data.useMvc);
+                    form.setItemValue("projCode", obj.data.projCode);
+                    form.setItemValue("projBasePath", obj.data.projBasePath);
+                    form.setItemValue("webBasePath", obj.data.webBasePath);
+                    form.setItemValue("dataSourceId", obj.data.dataSourceId);
+                    form.setItemValue("annotationPackage", obj.data.annotationPackage);
+                    form.setItemValue("teamType", obj.data.teamType);
+                    form.setItemValue("teamUrl", obj.data.Url);
                 }
             });
         }

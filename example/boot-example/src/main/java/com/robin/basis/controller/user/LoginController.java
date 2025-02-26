@@ -116,7 +116,7 @@ public class LoginController extends AbstractController {
                     throw new MissingConfigException("code验证失败或失效");
                 }
             }
-            Session session = this.loginService.doLogin(accountName, password.toUpperCase());
+            Session session = this.loginService.simpleLogin(accountName, password.toUpperCase());
 
             Map<String, Object> sessionMap = new HashMap<>();
             Map<String, Object> headerMap = new HashMap<>();
@@ -162,7 +162,7 @@ public class LoginController extends AbstractController {
     public String logOut(HttpServletRequest request, HttpServletResponse response) {
         request.getSession().removeAttribute(Const.SESSION);
         CookieUtils.delCookie(request, response, "/", Arrays.asList(Const.TOKEN, "orgName", "userName", "accountType"));
-        return "../login";
+        return "login";
     }
 
     @PostMapping(value = "/setDefaultOrg")

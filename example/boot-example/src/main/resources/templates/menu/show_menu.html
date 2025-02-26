@@ -4,7 +4,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
     <link rel="stylesheet" type="text/css" th:href="@{/component/dhtmlxSuite/skins/skyblue/dhtmlx.css}"/>
-    <link rel="stylesheet" type="text/css" th:href="@{/component/dhtmlxSuite/codebase/dhtmlx.css}}]]
+    <link rel="stylesheet" type="text/css" th:href="@{/component/dhtmlxSuite/codebase/dhtmlx.css}" />
     <link rel="stylesheet" type="text/css" th:href="@{/component/dhtmlxSuite/codebase/fonts/font_roboto/roboto.css}"/>
     <link rel="stylesheet" type="text/css" th:href="@{/resources/css/main.css}"/>
     <script th:src="@{/component/dhtmlxSuite/codebase/dhtmlx.js}"></script>
@@ -33,7 +33,7 @@
     </style>
 </head>
 <body>
-<script language="javascript" th:src="@{resources/js/crud.js}"></script>
+<script language="javascript" th:src="@{/resources/js/crud.js}"></script>
 <script type="text/javascript">
     dhtmlx.message.defPosition="bottom";
     var ctx = getcontentPath("[[${#httpServletRequest.getContextPath()}]]/");
@@ -46,12 +46,12 @@
     dhxToobar.addButton("new", 0, '[[#{btn.add}]]', "new.gif", "new_dis.gif");
     dhxToobar.addButton("edit", 1, '[[#{btn.modi}]]',"open.gif", "open_dis.gif");
     dhxToobar.addButton("delete", 2, '[[#{btn.delete}]]',"close.gif", "close_dis.gif");
-    dhxToobar.addButton("assign", 3, '[[#{btn.add}]]',"open.gif", "open_dis.gif");
+    dhxToobar.addButton("assign", 3, '赋权',"open.gif", "open_dis.gif");
     var dhxTree=dhxLayout.cells("a").attachTree();
     dhxTree.setImagePath(ctx+"component/dhtmlxSuite/codebase/imgs/dhxtree_material/");
     dhxTree.enableTreeLines(true);
-    dhxTree.setImageArrays("plus", "plus2.gif", "plus3.gif", "plus4.gif", "plus.gif", "plus5.gif");
-    dhxTree.setImageArrays("minus", "minus2.gif", "minus3.gif", "minus4.gif", "minus.gif", "minus5.gif");
+    dhxTree.setImageArrays("plus", "plus.gif", "plus.gif", "plus.gif", "plus.gif", "plus.gif");
+    dhxTree.setImageArrays("minus", "minus.gif", "minus.gif", "minus.gif", "minus.gif", "minus.gif");
     dhxTree.setStdImages("leaf.gif", "folderOpen.gif", "folderClosed.gif");
     dhxTree.setDataMode("json");
 
@@ -73,18 +73,18 @@
         {type:"settings", position:"label-left",lableWidth: 100,inputWidth: 120},
         {type: "fieldset", label: "菜单信息",offsetLeft:10, inputWidth: 520, lableWidth: 100,list:[
                 {type: "hidden", name:"id", value:""},
-                {type: "hidden", name:"parentId", value:""},
-                {type:"input", name:"resName", label:"菜单名:",validate:"NotEmpty"},
-                {type:"input", name:"resCode", label:"编码:",validate:"NotEmpty"},
+                {type: "hidden", name:"pid", value:""},
+                {type:"input", name:"name", label:"菜单名:",validate:"NotEmpty"},
+                {type:"input", name:"code", label:"编码:",validate:"NotEmpty"},
                 {type:"newcolumn",offset:20},
-                {type:"input", name:"actionUrl", label:"URL:",validate:"NotEmpty"},
-                {type:"input", name:"orderNo", label:"序号:",validate:"NotEmpty"}
+                {type:"input", name:"url", label:"URL:",validate:"NotEmpty"},
+                {type:"input", name:"seqNo", label:"序号:",validate:"NotEmpty"}
             ]},
         {type: "block", inputWidth: 510, list: [
                 {type: "settings", offsetTop: 10},
-                {type:"button", name:"cmdOK",width:30, value:"确定",offsetLeft: 150},
+                {type:"button", name:"cmdOK",width:40, value:"确定",offsetLeft: 150},
                 {type: "newcolumn"},
-                {type:"button", name:"cmdCancel",width:30, value:"取消"}
+                {type:"button", name:"cmdCancel",width:40, value:"取消"}
             ]}
     ];
     function addInit(form){
@@ -152,15 +152,16 @@
             //form.load(ctx+"system/sysuser/edit?id="+list);
             $.ajax({
                 type:"get",
-                url:ctx+"system/menu/edit?id="+id,
+                url:ctx+"system/menu/edit/"+id,
                 dataType: "json",
                 success:function(data){
                     var obj=eval(data);
-                    form.setItemValue("id",obj.model.id);
-                    form.setItemValue("resName",obj.model.resName);
-                    form.setItemValue("resCode",obj.model.resCode);
-                    form.setItemValue("actionUrl",obj.model.actionUrl);
-                    form.setItemValue("orderNo",obj.model.orderNo);
+                    form.setItemValue("id",obj.data.id);
+                    form.setItemValue("pid",obj.data.pid);
+                    form.setItemValue("name",obj.data.name);
+                    form.setItemValue("code",obj.data.code);
+                    form.setItemValue("url",obj.data.url);
+                    form.setItemValue("seqNo",obj.data.seqNo);
                 }
             });
         }
@@ -172,7 +173,7 @@
         }else if(id.indexOf(",")!=-1){
             openMsgDialog("菜单赋权","[[#{message.alertSelectMutilRow}]]",300,150);
         }else{
-            var form=openWindow("菜单角色赋权",ctx+"system/menu/showrole?id="+id,600,450);
+            var form=openWindow("菜单角色赋权",ctx+"system/menu/showrole/"+id,600,450);
         }
     }
 

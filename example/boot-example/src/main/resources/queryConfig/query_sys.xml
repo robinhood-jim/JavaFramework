@@ -110,12 +110,16 @@
 		<FIELD>max(tree_code) as code</FIELD>
 	</SQLSCRIPT>
 	<SQLSCRIPT ID="GET_SYSUSERINFO">
-		<FROMSQL>from t_sys_user_info a,t_sys_user_org_r b,t_sys_org_info c  where a.id=b.user_id and b.org_id=c.id ${queryCondition}</FROMSQL>
-		<FIELD>a.id as id,a.user_name as userName,a.nick_name as nickName,b.org_id as orgId,c.org_name as orgName,a.phone_num as phoneNum,a.email as email,a.sex as sex</FIELD>
+		<FROMSQL>from t_sys_user_info a where 1=1 ${queryCondition}</FROMSQL>
+		<FIELD>a.id as id,a.user_name as userName,a.user_account as account,a.account_type as accountType,a.org_id as orgId,a.user_status as userStatus,a.nick_name as nickName,a.phone_num as phoneNum,a.email as email,a.sex as sex</FIELD>
 	</SQLSCRIPT>
 	<SQLSCRIPT ID="GET_SYSUSERNOTINORG">
 		<FROMSQL>from t_sys_user_info a where a.id!=1 ${userCondition} and id not in (select b.user_id from t_sys_user_org_r b,t_sys_org_info c  where a.id=b.user_id and b.org_id=c.id ${queryCondition})</FROMSQL>
-		<FIELD>a.id as id,a.user_name as userName,a.nick_name as nickName,a.phone_num as phoneNum,a.email as email,a.sex as sex</FIELD>
+		<FIELD>a.id as id,a.user_name as userName,a.user_account as account,a.account_type as accountType,c.org_name as orgName</FIELD>
+	</SQLSCRIPT>
+	<SQLSCRIPT ID="GET_SYSUSERINFOINORG">
+		<FROMSQL>from t_sys_user_info a,t_sys_user_org_r b,t_sys_org_info c  where a.id=b.user_id and b.org_id=c.id ${queryCondition}</FROMSQL>
+		<FIELD>a.id as id,a.user_name as userName,a.user_account as account,a.account_type as accountType,c.org_name as orgName</FIELD>
 	</SQLSCRIPT>
 
 	<SQLSCRIPT ID="$_GETCODESET">

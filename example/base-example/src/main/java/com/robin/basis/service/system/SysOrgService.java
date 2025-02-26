@@ -21,6 +21,7 @@ import com.robin.basis.model.user.SysUserOrg;
 import com.robin.core.base.service.BaseAnnotationJdbcService;
 import com.robin.core.base.service.IBaseAnnotationJdbcService;
 import com.robin.core.base.util.Const;
+import com.robin.core.sql.util.FilterConditionBuilder;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -70,6 +71,18 @@ public class SysOrgService extends BaseAnnotationJdbcService<SysOrg, Long> imple
             list.add(userOrg);
         }
        return jdbcDao.batchUpdate(list,SysUserOrg.class);
+    }
+    @Transactional(rollbackFor = RuntimeException.class)
+    public int removeOrg(Long orgId,List<Long> uids){
+        Assert.isTrue(!CollectionUtils.isEmpty(uids),"");
+        Map<String,Object> map=new HashMap<>();
+        map.put("ids",uids);
+        Integer existCount=jdbcDao.countByNameParam("select count(1) from t_sys_user_info where id in (:ids) and user_status='1'",map);
+        Assert.isTrue(existCount==uids.size(),"");
+        FilterConditionBuilder builder=new FilterConditionBuilder();
+        builder.addEq(SysUserOrg::getOrgId,orgId);
+        builder.addFilter(SysUserOrg::getUserId, Const.OPERATOR.IN,uids);
+        return jdbcDao.deleteByCondition(SysUserOrg.class,builder.build());
     }
     public List<SysOrgDTO> getOrgTree(Long pid){
         List<SysOrgDTO> orgList=queryAll().stream().filter(f->Const.VALID.equals(f.getOrgStatus())).map(SysOrgDTO::fromVO).collect(Collectors.toList());

@@ -204,7 +204,7 @@ public class FilterCondition {
                             }
                             sbSQLStr.append("?");
                         }
-                        params.add(values);
+                        params.addAll(values);
                     } else if (!CollectionUtils.isEmpty(getConditions())) {
                         parseConditions(sbSQLStr, params);
                     }

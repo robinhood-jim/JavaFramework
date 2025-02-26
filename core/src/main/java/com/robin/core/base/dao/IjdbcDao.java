@@ -236,6 +236,7 @@ public interface IjdbcDao {
      */
     <T extends BaseObject> int deleteByField(Class<T> clazz, String field, Object value) throws DAOException;
     <T extends BaseObject> int deleteByField(Class<T> clazz, PropertyFunction<T,?> function, Object value) throws DAOException;
+    <T extends BaseObject, P extends Serializable> int deleteByCondition(Class<T> clazz,FilterCondition condition);
     <T extends BaseObject,P extends Serializable> int deleteByLogic(Class<T> clazz,List<P> pkObjs,String statusColumn,String statusValue) throws DAOException;
     <T extends BaseObject> List<T> queryByVO(Class<T> type, BaseObject vo, String orderByStr);
     List<Map<String, Object>> queryByNamedParam(String executeSql, Map<String, List<Object>> parmaMap) throws DAOException;

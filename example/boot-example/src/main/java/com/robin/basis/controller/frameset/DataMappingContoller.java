@@ -54,7 +54,7 @@ public class DataMappingContoller extends AbstractCrudDhtmlxController<ProjectIn
 
     @GetMapping("/showschema")
     public String showSchema(HttpServletRequest request, HttpServletResponse response) {
-        return "/datamapping/mapping_tree";
+        return "datamapping/mapping_tree";
     }
 
     @GetMapping("/showfields")
@@ -81,7 +81,7 @@ public class DataMappingContoller extends AbstractCrudDhtmlxController<ProjectIn
         request.setAttribute("ynList", findCodeSetArr("YNTYPE"));
         request.setAttribute("typeList", findCodeSetArr("FIELDMAP"));
         request.setAttribute("displayList", findCodeSetArr("FIELDDISPLAY"));
-        return "/datamapping/mapping_fields";
+        return "datamapping/mapping_fields";
     }
 
     @GetMapping("/listschema/{id}")

@@ -15,6 +15,7 @@
  */
 package com.robin.basis.controller.system;
 
+import com.robin.basis.model.system.SysOrg;
 import com.robin.basis.model.system.SysResource;
 import com.robin.basis.model.user.SysUser;
 import com.robin.basis.service.system.SysOrgService;
@@ -57,7 +58,7 @@ public class SysUserCrudController extends AbstractCrudDhtmlxController<SysUser,
             request.setAttribute("orgId",session.getOrgId());
         }
         request.setAttribute("resps",StringUtils.join(session.getResponsiblitys().toArray(),","));
-        return "/user/user_list";
+        return "user/user_list";
     }
 
     @RequestMapping("/list")
@@ -75,6 +76,8 @@ public class SysUserCrudController extends AbstractCrudDhtmlxController<SysUser,
         doQuery(request,null, query);
 
         setCode("ACCOUNTTYPE,YNTYPE");
+        List<SysOrg> orgList = sysOrgService.queryByField("orgStatus", Const.OPERATOR.EQ, Const.VALID);
+        setCode("ORG", orgList, "orgName", "id");
         filterListByCodeSet(query, "accountType", "ACCOUNTTYPE",null);
         filterListByCodeSet(query, "userStatus", "YNTYPE",null);
         filterListByCodeSet(query, "orgId", "ORG",messageSource.getMessage("title.defaultOrg",null,Locale.getDefault()));
@@ -114,7 +117,7 @@ public class SysUserCrudController extends AbstractCrudDhtmlxController<SysUser,
         return null;
     }
 
-    @GetMapping("/edit/{id]")
+    @GetMapping("/edit/{id}")
     @ResponseBody
     public Map<String, Object> editUser(HttpServletRequest request,
                                         @PathVariable String id) {

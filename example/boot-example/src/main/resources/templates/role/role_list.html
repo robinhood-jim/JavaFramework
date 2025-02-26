@@ -7,11 +7,11 @@
     <link rel="stylesheet" type="text/css" th:href="@{/component/dhtmlxSuite/skins/skyblue/dhtmlx.css}"/>
     <link rel="stylesheet" type="text/css" th:href="@{/component/dhtmlxSuite/codebase/dhtmlx.css/}"/>
     <link rel="stylesheet" type="text/css"
-          th:href="@{/component/dhtmlxSuite/codebase/fonts/font_roboto/roboto.css/)"/>
+          th:href="@{/component/dhtmlxSuite/codebase/fonts/font_roboto/roboto.css/}"/>
     <link rel="stylesheet" type="text/css" th:href="@{/resources/css/main.css}"/>
     <script th:src="@{/component/dhtmlxSuite/codebase/dhtmlx.js}"></script>
     <script language="javascript" th:src="@{/resources/js/control.js}"></script>
-    <script type="text/javascript" th:src="@(/resources/js/jquery.js}"></script>
+    <script type="text/javascript" th:src="@{/resources/js/jquery.js}"></script>
 
     <title></title>
     <style type="text/css">
@@ -278,7 +278,7 @@
             var form = openWindowForEdit("修改角色", editFormContent, 530, 270, editInit);
             $.ajax({
                 type: "get",
-                url: contextpath + "system/role/edit?id=" + list,
+                url: contextpath + "system/role/edit/" + list,
                 dataType: "json",
                 success: function (data) {
                     var obj = eval(data);

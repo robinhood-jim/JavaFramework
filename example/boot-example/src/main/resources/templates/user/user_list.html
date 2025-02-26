@@ -445,16 +445,16 @@
             var form = openWindowForEdit("[[#{title.editUser}]]", editFormContent, 530, 270, editInit);
             $.ajax({
                 type: "get",
-                url: ctx + "system/user/edit?id=" + list,
+                url: ctx + "system/user/edit/" + list,
                 dataType: "json",
                 success: function (data) {
                     var obj = eval(data);
-                    form.setItemValue("id", obj.model.id);
-                    form.setItemValue("userName", obj.model.userName);
-                    form.setItemValue("userAccount", obj.model.userAccount);
-                    form.setItemValue("deptId", obj.model.deptId);
-                    form.setItemValue("accountType", obj.model.accountType);
-                    form.setItemValue("orgId", obj.model.orgId);
+                    form.setItemValue("id", obj.data.id);
+                    form.setItemValue("userName", obj.data.userName);
+                    form.setItemValue("userAccount", obj.data.userAccount);
+                    form.setItemValue("deptId", obj.data.deptId);
+                    form.setItemValue("accountType", obj.data.accountType);
+                    form.setItemValue("orgId", obj.data.orgId);
                 }
             });
         }
