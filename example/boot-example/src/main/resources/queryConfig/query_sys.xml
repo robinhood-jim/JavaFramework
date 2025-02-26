@@ -115,11 +115,11 @@
 	</SQLSCRIPT>
 	<SQLSCRIPT ID="GET_SYSUSERNOTINORG">
 		<FROMSQL>from t_sys_user_info a where a.id!=1 ${userCondition} and id not in (select b.user_id from t_sys_user_org_r b,t_sys_org_info c  where a.id=b.user_id and b.org_id=c.id ${queryCondition})</FROMSQL>
-		<FIELD>a.id as id,a.user_name as userName,a.user_account as account,a.account_type as accountType,c.org_name as orgName</FIELD>
+		<FIELD>a.id as id,a.user_name as userName,a.user_account as account,a.account_type as accountType</FIELD>
 	</SQLSCRIPT>
 	<SQLSCRIPT ID="GET_SYSUSERINFOINORG">
 		<FROMSQL>from t_sys_user_info a,t_sys_user_org_r b,t_sys_org_info c  where a.id=b.user_id and b.org_id=c.id ${queryCondition}</FROMSQL>
-		<FIELD>a.id as id,a.user_name as userName,a.user_account as account,a.account_type as accountType,c.org_name as orgName</FIELD>
+		<FIELD>a.id as id,a.user_name as userName,a.user_account as account,a.account_type as accountType</FIELD>
 	</SQLSCRIPT>
 
 	<SQLSCRIPT ID="$_GETCODESET">
