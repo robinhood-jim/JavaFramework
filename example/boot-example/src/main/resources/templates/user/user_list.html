@@ -102,11 +102,6 @@
     bottomPanel.hideHeader();
     topPanel.fixSize(true, true);
     myForm.loadStruct(userFrm);
-    if (orgId != undefined && orgId!='null') {
-        myForm.setItemValue("orgId", orgId);
-    }
-
-
 
     myForm.attachEvent("onButtonClick", function (name) {
         if (name == 'submit') {
@@ -184,16 +179,6 @@
         }
     });
 
-
-    function goSearch() {
-        myForm.send(ctx + "system/user/list", function (loader, response) {
-            var tobj = eval('(' + response + ')');
-            myGrid.clearAll();
-            myGrid.parse(tobj, "json");
-            statusbar.setText(constructPaging(tobj.query));
-        });
-
-    }
 
 
     var editFormContent = [

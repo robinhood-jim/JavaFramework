@@ -35,9 +35,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.lang.NonNull;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.client.RestClientException;
 
 import javax.annotation.Resource;
@@ -60,6 +62,9 @@ public class LoginService implements ILoginService {
     private SysUserResponsiblityService sysUserResponsiblityService;
     @Resource
     private SysUserRoleService sysUserRoleService;
+    @Resource
+    private RedisTemplate<String,Object> redisTemplate;
+
 
 
     public static final String VERIFIED = "1";
@@ -149,26 +154,18 @@ public class LoginService implements ILoginService {
     }
 
     public void getUserRightsByRole(Session session) {
-        Map<String, Object> retMap = new HashMap<>();
-        //get userRole
-        /*PageQuery.Builder<Map<String,Object>> userBuilder = new PageQuery.Builder<>();
-        userBuilder.setPageSize(0).setSelectedId("GETUSER_ROLE").addQueryParameterArr(session.getUserId());
-        PageQuery<Map<String,Object>> query = userBuilder.build();
-        jdbcDao.queryBySelectId(query);
-        List<Long> roleIds = new ArrayList<>();
-        List<String> roleCodes = new ArrayList<>();
-        if (!query.getRecordSet().isEmpty()) {
-            query.getRecordSet().forEach(f -> {
-                roleIds.add(Long.parseLong(f.get("role_id").toString()));
-                roleCodes.add(f.get("code").toString());
-            });
+        if(WebConstant.ACCOUNT_TYPE.SYSUSER.toString().equals(session.getAccountType())){
+            session.setTenantId(0L);
+        }else if(!ObjectUtils.isEmpty(session.getOrgId())){
+            TenantInfo query=new TenantInfo();
+            query.setStatus(Const.VALID);
+            query.setOrgId(session.getOrgId());
+            List<TenantInfo> tenantInfos=jdbcDao.queryByVO(TenantInfo.class,query,"id");
+            if(CollectionUtils.isEmpty(tenantInfos)){
+                session.setTenantId(tenantInfos.get(0).getId());
+            }
         }
-        if (roleIds.isEmpty()) {
-            //未配置使用缺省角色
-            roleIds.add(Const.ROLEDEF.NORMAL.getId());
-            roleCodes.add(Const.ROLEDEF.NORMAL.getCode());
-        }
-        retMap.put("roles", roleCodes);*/
+
         //get user org info
         PageQuery.Builder<Map<String,Object>> builder=new PageQuery.Builder<>();
         builder.setPageSize(0).setSelectedId("GETUSERORGINFO").addQueryParameterArr(new Object[]{session.getUserId()});
@@ -185,7 +182,8 @@ public class LoginService implements ILoginService {
         //get user access resources
         PageQuery.Builder resourceBuilder = new PageQuery.Builder();
         resourceBuilder.setPageSize(0).setSelectedId("GET_RESOURCEINFO")
-                .putNamedParameter("userId", session.getUserId());
+                .putNamedParameter("userId", session.getUserId())
+                .putNamedParameter("tenantId",session.getTenantId());
         PageQuery query1 = resourceBuilder.build();
         jdbcDao.queryBySelectId(query1);
         if (!query1.getRecordSet().isEmpty()) {
@@ -195,13 +193,14 @@ public class LoginService implements ILoginService {
 
                 List<Map<String, Object>> list = query1.getRecordSet();
                 Map<Long, List<Map<String, Object>>> privMap = new HashMap();
-                Map<String, Integer> idMap = new HashMap<>();
+                Map<Long, Integer> idMap = new HashMap<>();
                 if (!CollectionUtils.isEmpty(list)) {
                     for (Map<String, Object> map : list) {
                         fillRights(Long.valueOf(map.get("id").toString()), resmap, privMap, map, idMap);
                     }
                 }
-                session.setPrivileges(privMap);
+                redisTemplate.opsForValue().set("SESSION:priv:"+session.getUserId(),privMap);
+                //session.setPrivileges(privMap);
             } catch (Exception ex) {
                 throw new ServiceException(" internal error");
             }
@@ -344,19 +343,20 @@ public class LoginService implements ILoginService {
         this.jdbcDao.queryBySelectId(query);
         List<Map<String, Object>> list = query.getRecordSet();
         Map<Long, List<Map<String, Object>>> privMap = new HashMap();
-        Map<String, Integer> idMap = new HashMap<>();
+        Map<Long, Integer> idMap = new HashMap<>();
         if (!CollectionUtils.isEmpty(list)) {
             for (Map<String, Object> map : list) {
                 fillRights(Long.valueOf(map.get("id").toString()), resmap, privMap, map, idMap);
             }
         }
-        session.setPrivileges(privMap);
+        redisTemplate.opsForValue().set("SESSION:priv:"+session.getUserId(),privMap);
+        //session.setPrivileges(privMap);
         if (orgId != 0L) {
             //get menu from Organization
         }
     }
 
-    private void fillRights(Long id, @NonNull Map<Long, SysResource> resMap, Map<Long, List<Map<String, Object>>> privMap, Map<String, Object> vmap, Map<String, Integer> idMap) {
+    private void fillRights(Long id, @NonNull Map<Long, SysResource> resMap, Map<Long, List<Map<String, Object>>> privMap, Map<String, Object> vmap, Map<Long, Integer> idMap) {
         try {
             if (resMap.containsKey(id)) {
                 Long pid = resMap.get(id).getPid();
@@ -377,8 +377,8 @@ public class LoginService implements ILoginService {
                     tmap.put("assignType", "0");
                     fillRights(pid, resMap, privMap, tmap, idMap);
                 }
-                idMap.put(id.toString(), 1);
-                idMap.put(pid.toString(), 1);
+                idMap.put(id, 1);
+                idMap.put(pid, 1);
             }
         } catch (Exception ex) {
             log.error("", ex);

@@ -44,6 +44,7 @@ import java.net.URLEncoder;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 @Controller
 public class LoginController extends AbstractController {
@@ -65,7 +66,7 @@ public class LoginController extends AbstractController {
     public Map<String, Object> login(HttpServletRequest request, HttpServletResponse response, @RequestParam String accountName, @RequestParam String password) {
         Map<String, Object> map = new HashMap();
         try {
-            Session session = this.loginService.doLogin(accountName, password.toUpperCase());
+            Session session = this.loginService.simpleLogin(accountName, password.toUpperCase());
 
             Map<String, Object> sessionMap = new HashMap<>();
             Map<String, Object> headerMap = new HashMap<>();
@@ -160,8 +161,13 @@ public class LoginController extends AbstractController {
 
     @GetMapping("/logout")
     public String logOut(HttpServletRequest request, HttpServletResponse response) {
+        Session session=(Session)request.getSession().getAttribute(Const.SESSION);
+        if(!ObjectUtils.isEmpty(session)) {
+            template.delete("SESSION:priv:" + session.getUserId());
+        }
         request.getSession().removeAttribute(Const.SESSION);
         CookieUtils.delCookie(request, response, "/", Arrays.asList(Const.TOKEN, "orgName", "userName", "accountType"));
+
         return "login";
     }
 

@@ -13,13 +13,13 @@ public class TenantInfo extends AbstractModel {
     @MappingField(increment = true,primary = true)
     private Long id;
     @MappingField
-    private String name;
+    private String tenantName;
     @MappingField
-    private Long custId;
+    private Long orgId;
     @MappingField
-    private LocalDateTime subscribeTm;
+    private LocalDateTime regTime;
     @MappingField
-    private LocalDateTime terminateTm;
+    private LocalDateTime auditTime;
     @MappingField
     private String status;
 }

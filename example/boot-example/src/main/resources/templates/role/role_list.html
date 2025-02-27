@@ -230,7 +230,7 @@
         } else if (list.indexOf(",") != -1) {
             openMsgDialog("用户赋权", "只能修改一个用户", 300, 150);
         } else {
-            var form = openWindow("用户菜单赋权", contextpath + "system/user/showright?userId=" + list, 550, 400);
+            var form = openWindow("角色菜单赋权", contextpath + "system/role/showright/" + list, 550, 400);
         }
     }
 

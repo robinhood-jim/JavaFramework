@@ -15,10 +15,16 @@
  */
 package com.robin.basis.controller.main;
 
+import com.robin.basis.service.system.SysResourceService;
+import com.robin.core.base.service.IBaseAnnotationJdbcService;
 import com.robin.core.base.util.Const;
 import com.robin.core.web.util.Session;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -34,17 +40,19 @@ import java.util.Map;
 @Controller
 @RequestMapping("/menu")
 public class MenuController {
+	@Autowired
+	@Qualifier("sysResourceService")
+	private SysResourceService sysResourceService;
 	@Resource
 	private RedisTemplate<String,Object> redisTemplate;
 
-
-	@PostMapping("/list")
+	@GetMapping("/list")
 	@ResponseBody
 	public Map<String,Object> getMenu(HttpServletRequest request,HttpServletResponse response){
 		String id=request.getParameter("id");
 		Session session=(Session) request.getSession().getAttribute(Const.SESSION);
-		Map<Long,List<Map<String,Object>>> privMap= (Map<Long, List<Map<String, Object>>>) redisTemplate.opsForValue().get("SESSION:priv:"+session.getUserId());
-		List<Map<String,Object>> privList=privMap.get(Long.valueOf(id));
+		Map<String,List<Map<String,Object>>> privMap= (Map<String, List<Map<String, Object>>>) redisTemplate.opsForValue().get("SESSION:priv:"+session.getUserId());
+		List<Map<String,Object>> privList=privMap.get(id);
 		Map<String,Object> map=new HashMap<>();
 		map.put("id", id);
 		List<Map<String,Object>> itemlist=new ArrayList<>();

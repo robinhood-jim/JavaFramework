@@ -11,22 +11,20 @@ public class Session implements Serializable {
     private String userCode;
     private String userName;
     private String userAccount;
-    private String address;
-    private String zipCode;
+
     private String telephone;
     private String moblie;
     private String email;
     private String avatar;
-    private String description;
     private Long orgId;
     private String orgCode;
     private String orgName;
     private String orgShortName;
-    private String orgNumber;
     //Oauth2 Authorize code
     private String authCode;
     private String regionCode;
     private String storeCode;
+    private Long tenantId;
 
     private Date loginTime;
     private String cityCode;
@@ -51,9 +49,5 @@ public class Session implements Serializable {
         return false;
     }
 
-    public boolean hasPrivilege(String key)
-    {
-        return this.privileges.containsKey(key);
-    }
 
 }

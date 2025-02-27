@@ -29,10 +29,12 @@ import com.robin.core.collection.util.CollectionBaseConvert;
 import com.robin.core.query.util.PageQuery;
 import com.robin.core.web.controller.AbstractCrudDhtmlxController;
 import com.robin.core.web.util.Session;
+import com.robin.core.web.util.WebConstant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -86,9 +88,13 @@ public class SysUserCrudController extends AbstractCrudDhtmlxController<SysUser,
 
     @Override
     protected String wrapQuery(HttpServletRequest request, PageQuery query) {
+        Session session=(Session)request.getSession().getAttribute(Const.SESSION);
+        Assert.isTrue(WebConstant.ACCOUNT_TYPE.ORGUSER.toString().equals(session.getAccountType()) || WebConstant.ACCOUNT_TYPE.SYSUSER.toString().equals(session.getAccountType()),"only sysadmin or orgadmin can use this ");
         String orgIds = null;
         if (request.getParameter("orgId") != null && !request.getParameter("orgId").isEmpty()) {
             orgIds = sysOrgService.getSubIdByParentOrgId(Long.valueOf(request.getParameter("orgId")));
+        }else if(WebConstant.ACCOUNT_TYPE.ORGUSER.toString().equals(session.getAccountType())){
+            orgIds=sysOrgService.getSubIdByParentOrgId(session.getOrgId());
         }
         String addTag=request.getParameter("addTag");
         StringBuilder builder = new StringBuilder();
@@ -108,13 +114,13 @@ public class SysUserCrudController extends AbstractCrudDhtmlxController<SysUser,
             }
         }
         if (orgIds != null && !orgIds.isEmpty()) {
-            builder.append(" and b.org_id in (" + orgIds + ")");
+            builder.append(" and a.org_id in (" + orgIds + ")");
         }
         query.getParameters().put("queryCondition", builder.toString());
         if(userBuilder.length()>0){
             query.getParameters().put("userCondition",userBuilder.toString());
         }
-        return null;
+        return builder.toString();
     }
 
     @GetMapping("/edit/{id}")
@@ -285,19 +291,16 @@ public class SysUserCrudController extends AbstractCrudDhtmlxController<SysUser,
     @GetMapping("listright")
     @ResponseBody
     public Map<String, Object> listUserRight(HttpServletRequest request, HttpServletResponse response) {
-        Session session=(Session) request.getSession().getAttribute(Const.SESSION);
         String userId = request.getParameter("userId");
-        List<Map<String, Object>> retList = new ArrayList<Map<String, Object>>();
-        String sql = "select distinct(a.id) as id,a.res_name as name from t_sys_resource_info a,t_sys_resource_role_r b,t_sys_user_role_r c where a.id=b.res_id and b.role_id=c.role_id and c.user_id=? ORDER BY a.RES_CODE";
-        List<Long> resIdList = new ArrayList<Long>();
+        List<Map<String, Object>> retList = new ArrayList<>();
+        List<Long> resIdList = new ArrayList<>();
         try {
             PageQuery query=new PageQuery();
             query.setPageSize(0);
-            if(session.getOrgId()==null){
-                query.setSelectParamId("GET_SYSRESOURCEBYRESP");
-            }else{
-                query.setSelectParamId("GET_ORGRESOURCEBYRESP");
-            }
+
+            query.setSelectParamId("GET_SYSRESOURCEBYUSER");
+            //query.setSelectParamId("GET_ORGRESOURCEBYRESP");
+
             query.addQueryParameter(new Object[]{Long.parseLong(userId)});
             service.queryBySelectId(query);
             List<Map<String, Object>> list = query.getRecordSet();
@@ -378,17 +381,13 @@ public class SysUserCrudController extends AbstractCrudDhtmlxController<SysUser,
         Session session=(Session) request.getSession().getAttribute(Const.SESSION);
         String[] ids = request.getParameter("ids").split(",");
         String userId = request.getParameter("userId");
-        String sql = "select distinct(a.id) as id,a.res_name as name from t_sys_resource_info a,t_sys_resource_role_r b,t_sys_user_role_r c where a.id=b.res_id and b.role_id=c.role_id and c.user_id=? ORDER BY a.RES_CODE";
-
         Map<String, Object> retMaps = new HashMap<String, Object>();
         try {
             PageQuery query=new PageQuery();
             query.setPageSize(0);
-            if(session.getOrgId()==null){
-                query.setSelectParamId("GET_SYSRESOURCEBYRESP");
-            }else{
-                query.setSelectParamId("GET_ORGRESOURCEBYRESP");
-            }
+
+            query.setSelectParamId("GET_SYSRESOURCEBYRESP");
+
             query.addQueryParameter(new Object[]{Long.parseLong(userId)});
             service.queryBySelectId(query);
             List<Map<String, Object>> list = query.getRecordSet();

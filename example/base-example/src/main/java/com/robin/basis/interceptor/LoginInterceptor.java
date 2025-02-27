@@ -13,6 +13,7 @@ import com.robin.core.web.util.Session;
 import com.robin.core.web.util.URIUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.env.Environment;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
@@ -55,6 +56,11 @@ public class LoginInterceptor extends HandlerInterceptorAdapter {
             JSONObject payloads = jwt.getPayloads();
             LocalDateTime expTs = payloads.getLocalDateTime(JWTPayload.EXPIRES_AT, LocalDateTimeUtil.of(1));
             if (!expTs.isAfter(LocalDateTime.now())) {
+                Session session=(Session) request.getSession().getAttribute(Const.SESSION);
+                RedisTemplate<String,Object> redisTemplate=SpringContextHolder.getBean(RedisTemplate.class);
+                if(!ObjectUtils.isEmpty(redisTemplate)) {
+                    redisTemplate.delete("SESSION:priv:" + session.getUserId());
+                }
                 request.getSession().removeAttribute(Const.SESSION);
                 log.error("token expire");
                 response.sendRedirect(loginUrl + "?redirect_url=" + request.getRequestURL());

@@ -40,6 +40,8 @@
     var dhxLayout = new dhtmlXLayoutObject(document.body, "2E");
     var topPanel = dhxLayout.cells("a");
     var bottomPanel = dhxLayout.cells("b");
+    topPanel.setHeight(130);
+    topPanel.setText("");
     var orgId = '[[${orgId}]]';
     var resps = '[[${resps}]]';
     var addTag='[[${addTag}]]';
