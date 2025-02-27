@@ -23,6 +23,7 @@ public class SysLoginUser implements UserDetails {
     private String displayName;
     private String password;
     private String userStatus;
+    private String avatar;
     private SysLoginUser(){
 
     }
@@ -73,6 +74,7 @@ public class SysLoginUser implements UserDetails {
             loginUser.setDisplayName(user.getUserName());
             loginUser.setUserStatus(user.getUserStatus());
             loginUser.setPassword(user.getUserPassword());
+            loginUser.setAvatar(user.getAvatar());
             return this;
         }
         public Builder withRoles(List<Long> roles){

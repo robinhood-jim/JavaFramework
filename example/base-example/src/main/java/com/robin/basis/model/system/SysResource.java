@@ -52,6 +52,7 @@ public class SysResource extends BaseObject {
 	@MappingField
 	private String permission;
 	private Long tenantId;
+	private String icon;
 	
 
 }
