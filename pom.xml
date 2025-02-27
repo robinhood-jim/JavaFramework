@@ -5,7 +5,7 @@
     <groupId>com.robin</groupId>
     <artifactId>frame</artifactId>
     <packaging>pom</packaging>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0</version>
     <name>frame</name>
     <description>Simple Java Frame.</description>
     <url>https://github.com/robinhood-jim/JavaFrameWork</url>
@@ -104,7 +104,7 @@
         <jcl.version>2.6</jcl.version>
         <hibernate.version>5.2.0.Final</hibernate.version>
         <poi.version>4.1.2</poi.version>
-        <frm.version>1.0-SNAPSHOT</frm.version>
+        <frm.version>1.0</frm.version>
         <jsonlib.version>2.4</jsonlib.version>
         <itext.version>2.1.4</itext.version>
         <guava.version>29.0-jre</guava.version>

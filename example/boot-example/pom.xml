@@ -4,14 +4,14 @@
 	<groupId>com.robin</groupId>
 	<artifactId>boot-example</artifactId>
 	<packaging>jar</packaging>
-	<version>1.0-SNAPSHOT</version>
+	<version>1.0</version>
 
 	<name>boot-example</name>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<spring.cloud.version>2.1.0.RELEASE</spring.cloud.version>
-		<frm.version>1.0-SNAPSHOT</frm.version>
+		<frm.version>1.0</frm.version>
 		<spring.boot.version>2.5.14</spring.boot.version>
 		<logback.version>1.2.2</logback.version>
 		<maven.compiler.source>1.8</maven.compiler.source>
