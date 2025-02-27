@@ -187,7 +187,7 @@
                         </exclusion>
                     </exclusions>
                     <proguardVersion>7.1.0</proguardVersion>
-                    <injar>estool-1.0-SNAPSHOT.jar</injar>
+                    <injar>estool-1.0.jar</injar>
                     <proguardInclude>${project.basedir}/../config/proguard.cfg</proguardInclude>
                     <!--<attach>true</attach>-->
                     <!--<attachArtifactClassifier>pg</attachArtifactClassifier>-->

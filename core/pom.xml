@@ -335,7 +335,7 @@
                         </exclusion>
                     </exclusions>
                     <proguardVersion>7.1.0</proguardVersion>
-                    <injar>core-1.0-SNAPSHOT.jar</injar>
+                    <injar>core-1.0.jar</injar>
                     <addMavenDescriptor>true</addMavenDescriptor>
                     <injarNotExistsSkip>true</injarNotExistsSkip>
                     <proguardInclude>${project.basedir}/../config/proguard.cfg</proguardInclude>
