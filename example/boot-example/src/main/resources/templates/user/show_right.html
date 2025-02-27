@@ -54,9 +54,8 @@
     });
 
     $.ajax({
-        type: "post",
-        data: {"userId": userId},
-        url: ctx + "system/user/listright",
+        type: "get",
+        url: ctx + "system/user/listright?userId="+userId,
         dataType: "json",
         success: function (data) {
             var obj = eval(data);

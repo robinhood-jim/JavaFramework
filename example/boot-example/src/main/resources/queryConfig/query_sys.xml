@@ -72,6 +72,20 @@
 			distinct(a.id) as id,a.res_name as name,a.res_code
 		</FIELD>
 	</SQLSCRIPT>
+	<SQLSCRIPT ID="GET_SYSRESOURCEBYROLE">
+		<FROMSQL>from t_sys_resource_info a,t_sys_resource_role_r b,t_sys_role_info c
+			where a.id=b.res_id and b.role_id=c.id and c.id=? ORDER BY a.RES_CODE</FROMSQL>
+		<FIELD>
+			distinct(a.id) as id,a.res_name as name,a.res_code
+		</FIELD>
+	</SQLSCRIPT>
+	<SQLSCRIPT ID="GET_SYSRESOURCEBYUSER">
+		<FROMSQL>from t_sys_resource_info a,t_sys_resource_role_r b,t_sys_user_role_r c
+			where a.id=b.res_id and b.role_id=c.role_id and c.user_id=? ORDER BY a.RES_CODE</FROMSQL>
+		<FIELD>
+			distinct(a.id) as id,a.res_name as name,a.res_code
+		</FIELD>
+	</SQLSCRIPT>
 	<SQLSCRIPT ID="GET_ORGRESOURCEBYRESP">
 		<FROMSQL>from t_sys_resource_info a,t_org_resource_resp_r b,t_org_user_resp_r c
 			where a.id=b.res_id and b.resp_id=c.resp_id and c.user_id=? ORDER BY a.RES_CODE</FROMSQL>
@@ -80,9 +94,9 @@
 		</FIELD>
 	</SQLSCRIPT>
 	<SQLSCRIPT ID="GET_RESOURCEINFO">
-		<FROMSQL> from (select a.*,0 as assign_type from t_sys_resource_info a,t_sys_resource_role_r b,t_sys_role_info c,t_sys_user_role_r d where a.status='1' and b.status='1' and a.ID=b.RES_ID and b.role_id=c.id and c.id=d.role_id and d.user_id=:userId and a.STATUS='1' and b.status='1'
+		<FROMSQL> from (select a.*,0 as assign_type from t_sys_resource_info a,t_sys_resource_role_r b,t_sys_role_info c,t_sys_user_role_r d where a.status='1' and b.status='1' and a.ID=b.RES_ID and b.role_id=c.id and c.id=d.role_id and a.tenant_id=:tenantId and d.user_id=:userId and a.STATUS='1' and b.status='1'
 			union 
-			select c.*,d.assign_type from t_sys_resource_info c,t_sys_resource_user_r d where c.id=d.res_id and d.USER_ID=:userId and c.STATUS=1)e order by res_code,seq_no,assign_type desc
+			select c.*,d.assign_type from t_sys_resource_info c,t_sys_resource_user_r d where c.id=d.res_id and d.USER_ID=:userId and c.STATUS='1' and d.status='1' )e order by res_code,seq_no,assign_type desc
 		</FROMSQL>
 			<FIELD>id,res_type as type,res_name as name,url,is_leaf as leafTag,res_code as code,pid,seq_no as seqNo,assign_type as assignType</FIELD>
 	</SQLSCRIPT>
@@ -110,12 +124,16 @@
 		<FIELD>max(tree_code) as code</FIELD>
 	</SQLSCRIPT>
 	<SQLSCRIPT ID="GET_SYSUSERINFO">
-		<FROMSQL>from t_sys_user_info a,t_sys_user_org_r b,t_sys_org_info c  where a.id=b.user_id and b.org_id=c.id ${queryCondition}</FROMSQL>
-		<FIELD>a.id as id,a.user_name as userName,a.nick_name as nickName,b.org_id as orgId,c.org_name as orgName,a.phone_num as phoneNum,a.email as email,a.sex as sex</FIELD>
+		<FROMSQL>from t_sys_user_info a where 1=1 ${queryCondition}</FROMSQL>
+		<FIELD>a.id as id,a.user_name as userName,a.user_account as account,a.account_type as accountType,a.org_id as orgId,a.user_status as userStatus,a.nick_name as nickName,a.phone_num as phoneNum,a.email as email,a.sex as sex</FIELD>
 	</SQLSCRIPT>
 	<SQLSCRIPT ID="GET_SYSUSERNOTINORG">
 		<FROMSQL>from t_sys_user_info a where a.id!=1 ${userCondition} and id not in (select b.user_id from t_sys_user_org_r b,t_sys_org_info c  where a.id=b.user_id and b.org_id=c.id ${queryCondition})</FROMSQL>
-		<FIELD>a.id as id,a.user_name as userName,a.nick_name as nickName,a.phone_num as phoneNum,a.email as email,a.sex as sex</FIELD>
+		<FIELD>a.id as id,a.user_name as userName,a.user_account as account,a.account_type as accountType</FIELD>
+	</SQLSCRIPT>
+	<SQLSCRIPT ID="GET_SYSUSERINFOINORG">
+		<FROMSQL>from t_sys_user_info a,t_sys_user_org_r b,t_sys_org_info c  where a.id=b.user_id and b.org_id=c.id ${queryCondition}</FROMSQL>
+		<FIELD>a.id as id,a.user_name as userName,a.user_account as account,a.account_type as accountType</FIELD>
 	</SQLSCRIPT>
 
 	<SQLSCRIPT ID="$_GETCODESET">

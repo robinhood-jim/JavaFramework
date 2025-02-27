@@ -22,7 +22,7 @@ spring:
     password: frame
 logging:
   level:
-    root: DEBUG
+    root: INFO
 
 
 core:
@@ -35,5 +35,6 @@ project:
 jwt:
   salt: 123456
 login:
-  ignoreUrls: /main/login,/user/login,/main/index,/login,/logout
+  ignoreUrls: /login,/logout,/index,/web/index
   ignoreResources: gif,bmp,png,jpg,js,flash,css,swf,flv,metaget
+  loginUrl: /login

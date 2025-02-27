@@ -223,6 +223,8 @@ public abstract class AbstractCrudController<O extends BaseObject, P extends Ser
             this.service.queryBySelectId(query);
             doAfterQuery(query, retMap);
             constructRetMap(retMap);
+            retMap.put("rows",query.getRecordSet());
+            retMap.put("total",query.getRecordCount());
         } catch (Exception ex) {
             wrapFailed(retMap, ex);
         }

@@ -4,7 +4,7 @@
     <parent>
         <groupId>com.robin</groupId>
         <artifactId>frame</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <version>1.0</version>
     </parent>
     <artifactId>common</artifactId>
     <packaging>jar</packaging>
@@ -385,7 +385,7 @@
                         </exclusion>
                     </exclusions>
                     <proguardVersion>7.1.0</proguardVersion>
-                    <injar>common-1.0-SNAPSHOT.jar</injar>
+                    <injar>common-1.0.jar</injar>
                     <proguardInclude>${project.basedir}/../config/proguard.cfg</proguardInclude>
                     <libs>
                         <lib>${java.home}/jmods/java.base.jmod</lib>

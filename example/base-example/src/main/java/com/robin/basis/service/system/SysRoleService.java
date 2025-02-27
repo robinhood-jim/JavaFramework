@@ -25,6 +25,11 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Component(value="sysRoleService")
 @Scope(value="singleton")
@@ -33,14 +38,18 @@ public class SysRoleService extends BaseAnnotationJdbcService<SysRole, Long> imp
 	public void saveRoleRigth(String[] ids,String resId) throws ServiceException {
 		try{
 			this.getJdbcDao().deleteByField(SysResourceRole.class, SysResourceRole::getResId, Long.valueOf(resId));
+			List<SysResourceRole> resourceRoles=new ArrayList<>();
 			for (int i = 0; i < ids.length; i++) {
-				if(!"".equals(ids[i])){
+				if(!ObjectUtils.isEmpty(ids[i])){
 					SysResourceRole resRole=new SysResourceRole();
 					resRole.setResId(Integer.valueOf(resId));
 					resRole.setRoleId(Integer.valueOf(ids[i]));
 					resRole.setStatus("1");
-					this.getJdbcDao().createVO(resRole,Long.class);
+					resourceRoles.add(resRole);
 				}
+			}
+			if(!CollectionUtils.isEmpty(resourceRoles)){
+				getJdbcDao().batchUpdate(resourceRoles,SysResourceRole.class);
 			}
 		}catch(DAOException ex){
 			ex.printStackTrace();

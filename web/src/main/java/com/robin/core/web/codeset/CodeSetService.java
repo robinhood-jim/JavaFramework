@@ -62,7 +62,7 @@ public class CodeSetService {
     }
 
 
-    @Cacheable(value = "codeSetCache", key = "#codeSetNo")
+    @Cacheable(value = "codeSetCache", key = "'SYSCODE_'+#codeSetNo")
     public Map<String,String> setCode(String codeSetNo, List<?> codes, String label, String value) {
         if (codes == null) {
             return null;

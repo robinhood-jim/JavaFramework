@@ -40,6 +40,8 @@
     var dhxLayout = new dhtmlXLayoutObject(document.body, "2E");
     var topPanel = dhxLayout.cells("a");
     var bottomPanel = dhxLayout.cells("b");
+    topPanel.setHeight(130);
+    topPanel.setText("");
     var orgId = '[[${orgId}]]';
     var resps = '[[${resps}]]';
     var addTag='[[${addTag}]]';
@@ -48,7 +50,7 @@
     var myForm = topPanel.attachForm();
     var cwidth = document.body.clientWidth;
     var cheight = document.body.clientHeight;
-    var queryUrl = ctx + "system/org/listUser";
+    var queryUrl = ctx + "system/org/showOrgUser";
     var userFrm = [
         {
             type: "block", lable: "[[#{sysUser.info}]]", width: cwidth - 40, list: [
@@ -97,7 +99,7 @@
 
     myForm.attachEvent("onButtonClick", function (name) {
         if (name == 'submit') {
-            this.send(ctx + "system/user/list", function (loader, response) {
+            this.send(ctx + "system/org/showOrgUser", function (loader, response) {
                 var tobj = eval('(' + response + ')');
                 myGrid.clearAll();
                 myGrid.parse(tobj, "json");
@@ -149,7 +151,7 @@
                     if (result) {
                         $.ajax({
                             type: "get",
-                            url: ctx + "system/org/removeUser?ids=" + list+"&orgId="+myForm.getItemValue("orgId"),
+                            url: ctx + "system/org/removeUser?userIds=" + list+"&orgId="+myForm.getItemValue("orgId"),
                             dataType: "json",
                             success: function (data) {
                                 var obj = eval(data);
@@ -176,7 +178,7 @@
                     if (result) {
                         $.ajax({
                             type: "get",
-                            url: ctx + "system/org/joinUser?ids=" + list+"&orgId="+myForm.getItemValue("orgId"),
+                            url: ctx + "system/org/joinUser?userIds=" + list+"&orgId="+myForm.getItemValue("orgId"),
                             dataType: "json",
                             success: function (data) {
                                 var obj = eval(data);
@@ -192,17 +194,6 @@
                 }
             });
         }
-    }
-
-
-    function goSearch() {
-        myForm.send(ctx + "system/user/list", function (loader, response) {
-            var tobj = eval('(' + response + ')');
-            myGrid.clearAll();
-            myGrid.parse(tobj, "json");
-            statusbar.setText(constructPaging(tobj.query));
-        });
-
     }
 
 

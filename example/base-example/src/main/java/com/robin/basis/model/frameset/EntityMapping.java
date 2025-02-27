@@ -34,13 +34,13 @@ public class EntityMapping extends BaseObject {
 	private String webPackage;
 	@MappingField
 	private String daoConfigPath;
-	@MappingField("service_configpath")
-	private String serviceconfigPath;
-	@MappingField("web_configpath")
-	private String webconfigPath;
-	@MappingField("web_path")
+	@MappingField
+	private String serviceConfigPath;
+	@MappingField
+	private String webConfigPath;
+	@MappingField
 	private String webPath;
-	@MappingField("page_path")
+	@MappingField
 	private String pagePath;
 	@MappingField
 	private String pkType;

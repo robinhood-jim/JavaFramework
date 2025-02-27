@@ -28,6 +28,8 @@ public class MvcConfig implements WebMvcConfigurer {
     private String ignoreUrls;
     @Value("${login.ignoreResources}")
     private String ignoreResources;
+    @Value("${login.loginUrl}")
+    private String loginUrl;
 
 
     @Bean
@@ -41,6 +43,7 @@ public class MvcConfig implements WebMvcConfigurer {
         LoginInterceptor interceptor = new LoginInterceptor();
         interceptor.setIgnoreUrls(ignoreUrls);
         interceptor.setIgnoreResources(ignoreResources);
+        interceptor.setLoginUrl(loginUrl);
         return interceptor;
     }
     @Bean
@@ -51,7 +54,7 @@ public class MvcConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        //registry.addInterceptor(getLoginInterceptor()).addPathPatterns("/**");
+        registry.addInterceptor(getLoginInterceptor()).addPathPatterns("/**");
         //registry.addInterceptor(new SsoInterceptor(ignoreUrls,ignoreResources,oauthUrl)).addPathPatterns("/**");
         registry.addInterceptor(localeChangeInterceptor());
 

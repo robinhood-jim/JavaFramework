@@ -782,6 +782,28 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
         String fieldName = AnnotationRetriever.getFieldName(function);
         return deleteByField(clazz, fieldName, value);
     }
+    @Override
+    public <T extends BaseObject, P extends Serializable> int deleteByCondition(Class<T> clazz,FilterCondition condition){
+        try {
+            List<Object> objList = new ArrayList<>();
+            AnnotationRetriever.EntityContent<T> tableDef = AnnotationRetriever.getMappingTableByCache(clazz);
+            List<FieldContent> fields = AnnotationRetriever.getMappingFieldsCache(clazz);
+            Map<String, FieldContent> fieldsMap = AnnotationRetriever.getMappingFieldsMapCache(clazz);
+            StringBuilder buffer = new StringBuilder();
+            buffer.append("delete from ");
+            appendSchemaAndTable(tableDef, buffer);
+            buffer.append(Const.SQL_WHERE);
+            extractQueryParts(condition, objList,buffer);
+            String deleteSql =buffer.toString();
+            if (log.isDebugEnabled()) {
+                log.debug("delete sql= {}", deleteSql);
+            }
+            return executeUpdate(deleteSql, objList.toArray());
+        }catch (Exception ex){
+            throw new DAOException(ex);
+        }
+    }
+
 
     @Override
     public <T extends BaseObject> T getEntity(Class<T> clazz, Serializable id) throws DAOException {
@@ -839,6 +861,11 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
     private <T extends BaseObject> StringBuilder getQueryPartByCondition(Class<T> type, FilterCondition condition,List<Object> objList){
         StringBuilder buffer = new StringBuilder();
         buffer.append(getWholeSelectSql(type)).append(Const.SQL_WHERE);
+        extractQueryParts(condition, objList, buffer);
+        return buffer;
+    }
+
+    private static void extractQueryParts(FilterCondition condition, List<Object> objList, StringBuilder buffer) {
         if (!CollectionUtils.isEmpty(condition.getConditions())) {
             if (condition.getConditions().size() == 1) {
                 buffer.append(condition.getConditions().get(0).toPreparedSQLPart(objList));
@@ -848,7 +875,6 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
         } else {
             buffer.append(condition.toPreparedSQLPart(objList));
         }
-        return buffer;
     }
 
     private List<Map<String, Object>> queryItemList(final PageQuery<Map<String, Object>> qs, final String pageSQL) throws DAOException {

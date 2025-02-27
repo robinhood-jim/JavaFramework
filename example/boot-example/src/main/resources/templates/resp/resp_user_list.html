@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <title><spring:message code="title.userContr" /> </title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta http-equiv="pragma" content="no-cache">
+    <meta http-equiv="cache-control" content="no-cache">
+    <meta http-equiv="expires" content="0">
+    <link rel="stylesheet" type="text/css" th:href="@{/component/dhtmlxSuite/skins/skyblue/dhtmlx.css}"/>
+    <link rel="stylesheet" type="text/css" th:href="@{/component/dhtmlxSuite/codebase/dhtmlx.css}"/>
+    <link rel="stylesheet" type="text/css"
+          th:href="@{/component/dhtmlxSuite/codebase/fonts/font_roboto/roboto.css}"/>
+    <link rel="stylesheet" type="text/css" th:href="@{/resources/css/main.css}"/>
+    <script src="<%=CONTEXT_PATH%>component/dhtmlxSuite/codebase/dhtmlx.js"></script>
+    <script type="text/javascript" th:src="@{/resources/js/jquery.js}"></script>
+    <script type="text/javascript" th:src="@{/resources/js/Array.js}"></script>
+    <script type="text/javascript" th:src="@{/resources/js/control.js}"></script>
+    <script th:src="@{/resources/js/validate.js}"></script>
+    <style type="text/css">
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            border: none;
+            overflow: hidden;
+        }
+        div#orgDiv {
+            position: relative;
+            width: auto;
+            height: 200px;
+            margin: 20px;
+            border: #c0c0c0 1px solid;
+        }
+
+    </style>
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+        });
+    </script>
+
+</head>
+
+<body onload="">
+
+<script type="text/javascript" th:src="@{/resources/js/crud.js}"></script>
+<script type="text/javascript">
+    var ctx = getcontentPath("[[${#httpServletRequest.getContextPath()}]]");
+    var imgPath = ctx+"component/dhtmlxSuite/dhtmlx/imgs/icon/";
+    var dhxLayout = new dhtmlXLayoutObject(document.body, "2E");
+    var topPanel = dhxLayout.cells("a");
+    var bottomPanel = dhxLayout.cells("b");
+    var orgId='${orgId}';
+    var selectResp='${selectResp}';
+    var allowButton='${allowButtons}';
+    var orgSelect=undefined;
+
+    topPanel.setHeight(130);
+    topPanel.setText("");
+
+    var myForm = topPanel.attachForm();
+    var cwidth = document.body.clientWidth;
+    var queryUrl = ctx + "system/responsiblity/listuser";
+    var userFrm = [
+        {
+            type: "block", lable: "[[#{sysUser.info}]]", width: cwidth-40, list: [
+                {type: "settings", position: "label-left", labelWidth: 120, inputWidth: 120, offsetLeft: 10},
+                {
+                    type: "fieldset", labelAlign: "left", label: "<spring:message code="sysUser.info" />", inputWidth: cwidth-80, list: [
+                        {type: "hidden", name: "query.order", value: ""},
+                        {type: "hidden", name: "query.orderDirection", value: ""},
+                        {type: "hidden", name: "query.pageCount", value: ""},
+                        {type: "hidden", name: "query.pageNumber", value: "1"},
+                        {type: "hidden", name: "query.pageSize", value: "10"},
+                        {type: "hidden", name: "orgId", value: ""},
+                        {type: "hidden", name: "respId", value: ""},
+                        {type: "input", label: "[[#{sysUser.accountName}]]", name: "userName", offsetTop: 10},
+                        {type: "newcolumn", offset: 20},
+                        {type: "select", label: "[[#{sysUser.accountType}]]", name: "accountType",connector:ctx + "system/codeset/select?codeSetNo=ACCOUNTTYPE&allowNull=true"},
+                        {type: "newcolumn", offset: 20},
+                        {type: "input", label: "[[#{sysUser.Org}]]", name: "orgName",readonly:true},
+
+                    ]
+                }, {
+                    type: "block", inputWidth: cwidth-80, list: [
+                        {type: "settings", offsetTop: 5},
+                        {type: "button", name: "submit", value: "[[#{btn.submit}]]",offsetLeft:cwidth/2-220},
+                        {type: "newcolumn"},
+                        {type: "button", name: "reset", value: "[[#{btn.clear}]]"}
+                    ]
+                }
+            ]
+        }
+    ];
+    topPanel.hideHeader();
+    bottomPanel.hideHeader();
+    topPanel.fixSize(true, true);
+    myForm.loadStruct(userFrm);
+    if(orgId!=undefined){
+        myForm.setItemValue("orgId",orgId);
+    }
+    myForm.setItemValue("respId",selectResp);
+
+
+    myForm.attachEvent("onButtonClick", function (name) {
+        if (name == 'submit') {
+            this.send(ctx + "system/responsiblity/listUser", function (loader, response) {
+                var tobj = eval('(' + response + ')');
+                myGrid.clearAll();
+                myGrid.parse(tobj, "json");
+                var barstr = tobj.query.pageToolBar;
+                statusbar.setText(constructPaging(tobj.query));
+            });
+        } else if (name == 'reset' ) {
+            this.reset();
+        }
+    });
+    myForm.attachEvent("onFocus", function(name, value){
+       if(name=='orgName'){
+           orgSelect=openWindowForTreeview(ctx+"system/org/listAll?id={id}",myForm.getInput(name).offsetParent.offsetLeft+myForm.getInput(name).offsetLeft,myForm.getInput(name).offsetParent.offsetTop+myForm.getInput(name).offsetTop+40,200,150);
+           orgSelect.attachEvent("onSelect",function (id,mode) {
+               var txt=orgSelect.getItemText(id);
+               myForm.setItemValue("orgName",txt);
+               myForm.setItemValue("orgId",id);
+               closedialog(false);
+           });
+       }
+    });
+
+
+    var statusbar = bottomPanel.attachStatusBar({height: 36});
+    statusbar.setText("<div id='recinfoArea'></div>");
+
+    var myGrid = bottomPanel.attachGrid();
+    myGrid.setImagePath(ctx + "component/dhtmlxSuite/codebase/imgs/");
+    myGrid.setHeader("#master_checkbox,img:[" + ctx + "resources/images/icon/men.gif]<b><spring:message code="sysUser.userName" /></b>,<spring:message code="sysUser.accountName" />,<spring:message code="sysUser.accountType" />,<spring:message code="sysUser.Org" />", null, ["text-align:center", "text-align:center", "text-align:center", "text-align:center", "text-align:center"]);//the headers of columns
+    myGrid.setInitWidths("35,150,200,200,200");          //the widths of columns
+    myGrid.setColAlign("center,center,center,center,center");       //the alignment of columns
+    myGrid.setColTypes("ch,ro,ro,ro,ro");                //the types of columns
+    myGrid.setColSorting("int,str,str,str,str");          //the sorting types
+    myGrid.enableAutoWidth(true);
+    myGrid.enableAutoHeight(true);
+    myGrid.init();
+
+    var dhxToobar = bottomPanel.attachToolbar();
+
+    dhxToobar.setIconsPath(ctx + "component/dhtmlxSuite/comm/imgsmat/");
+    dhxToobar.addButton("new", 0, "<spring:message code="btn.add" />", "new.gif", "new_dis.gif");
+    dhxToobar.addButton("delete", 2, "<spring:message code="btn.delete" />", "close.gif", "close_dis.gif");
+
+
+
+    dhxToobar.attachEvent("onClick", function (id) {
+        if (id == 'new') {
+            goAdd();
+        }else if (id == 'delete') {
+            goDelete();
+        }
+    });
+
+
+    function goSearch() {
+        myForm.send(ctx + "system/user/list", function (loader, response) {
+            var tobj = eval('(' + response + ')');
+            myGrid.clearAll();
+            myGrid.parse(tobj, "json");
+            statusbar.setText(constructPaging(tobj.query));
+        });
+
+    }
+
+
+    var editFormContent = [
+        {type: "settings", position: "label-left", lableWidth: 120, inputWidth: 120},
+        {
+            type: "fieldset", label: "<spring:message code="sysUser.info" />", offsetLeft: 10,offsetRight: 20, inputWidth: 495, lableWidth: 100, list: [
+                {type: "hidden", name: "id", value: ""},
+                {type: "hidden", name: "respId", value: ""},
+                {type: "input", name: "userName", label: "<spring:message code="sysUser.userName" />:", validate: "NotEmpty"},
+                {type: "select", name: "accountType", label: "<spring:message code="sysUser.accountType" />:", validate: "NotEmpty",connector: ctx + "system/codecombo?codeSetNo=ACCOUNTTYPE"},
+                {type: "input", name: "userAccount", label: "<spring:message code="sysUser.accountName" />:", validate: "NotEmpty"},
+                {type: "newcolumn", offset: 20},
+                {type: "select", name: "orgId", label: "<spring:message code="sysUser.Org" />:", validate: "NotEmpty",connector:ctx + "system/org/listjson?allowNull=false"}
+            ]
+        },
+        {
+            type: "block", inputWidth: 490, list: [
+                {type: "settings", offsetTop: 10},
+                {type: "button", name: "cmdOK", value: "<spring:message code="btn.confirm" />", offsetLeft: 175},
+                {type: "newcolumn"},
+                {type: "button", name: "cmdCancel", value: "<spring:message code="btn.cancel" />"}
+            ]
+        }
+    ];
+
+    function addInit(form) {
+
+        form.attachEvent("onButtonClick", function (name, command) {
+            form.validate();
+            if (name == "cmdOK") {
+                this.send(ctx + "system/user/save", function (loader, response) {
+                    var tobj = eval('(' + response + ')');
+                    if (tobj.success == true) {
+                        dhtmlx.message({
+                            text: "<spring:message code="message.saveSuccess" />",
+                            expire: -1
+                        });
+                        closedialog(true);
+                        reload();
+                    } else {
+                        openMsgDialog("<spring:message code="message.saveFailed" />", "<spring:message code="message.errorMsg" />:" + tobj.message);
+                    }
+                });
+            } else if (name == 'cmdCancel') {
+                closedialog(false);
+            }
+        });
+    }
+
+    function editInit(form) {
+
+        form.attachEvent("onButtonClick", function (name, command) {
+            if (name == "cmdOK") {
+                this.send(ctx + "system/user/update", function (loader, response) {
+                    var tobj = eval('(' + response + ')');
+                    if (tobj.success == true) {
+                        dhtmlx.message({
+                            text: "[[#{message.updateSuccess}]]",
+                            expire: -1
+                        });
+                        closedialog(true);
+                        reload();
+                    } else {
+                        openMsgDialog("[[#{message.updateFailed}]]", "[[#{message.errorMsg}]]:" + tobj.message);
+                    }
+                });
+            } else if (name == 'cmdCancel') {
+                closedialog(false);
+            }
+        });
+    }
+
+    function goAdd() {
+        openWindowForAdd("添加职位", editFormContent, 520, 270, addInit);
+    }
+
+    function goAssign() {
+        var list = myGrid.getCheckedRows(0);
+        if (list == '') {
+            openMsgDialog("[[#{sysUser.AssignRight}]]", "[[#{message.alertSelectAtLeastOneRow}]]");
+        } else if (list.indexOf(",") != -1) {
+            openMsgDialog("<spring:message code="sysUser.AssignRight" />", "<spring:message code="message.alertSelectMutilRow" />");
+        } else {
+            var form = openWindow("<spring:message code="sysUser.AssignRight" />", ctx + "system/user/showright?userId=" + list, 550, 400);
+        }
+    }
+
+    function goDelete() {
+        var list = myGrid.getCheckedRows(0);
+        if (list == '') {
+            openMsgDialog("<spring:message code="title.delUser" />", "<spring:message code="message.alertSelectAtLeastOneRow" />", 300, 200);
+        } else {
+            dhtmlx.confirm({
+                title: "<spring:message code="title.del" />",
+                type: "confirm-warning",
+                text: "<spring:message code="message.confirmDelete" />",
+                callback: function (result) {
+                    if (result) {
+                        $.ajax({
+                            type: "get",
+                            url: ctx + "system/user/delete?ids=" + list,
+                            dataType: "json",
+                            success: function (data) {
+                                var obj = eval(data);
+                                if (obj.success == true) {
+                                    dhtmlx.message({
+                                        text: "<spring:message code="message.deleteSuccess" />",
+                                        expire: 10
+                                    });
+                                    reload();
+                                } else {
+                                    openMsgDialog("<spring:message code="message.deleteFailed" />", "<spring:message code="message.errorMsg" />:" + obj.message, 300, 200);
+                                }
+                            }
+                        });
+                    }
+                }
+            });
+        }
+    }
+    function goActive() {
+        var list = myGrid.getCheckedRows(0);
+        if (list == '') {
+            openMsgDialog("[[#{title.activeUser}]]", "[[#{message.alertSelectAtLeastOneRow}]]", 300, 200);
+        }
+        else if (list.indexOf(",") != -1) {
+            openMsgDialog("[[#{title.activeUser}]]", "[[#{message.alertSelectMutilRow}]]", 300, 150);
+        }
+        else {
+            dhtmlx.confirm({
+                title: "[[#{title.activeUser}]]",
+                type: "confirm-warning",
+                text: "[[#{message.confirm)]]",
+                callback: function (result) {
+                    if (result) {
+                        $.ajax({
+                            type: "get",
+                            url: ctx + "system/user/active?id=" + list,
+                            dataType: "json",
+                            success: function (data) {
+                                var obj = eval(data);
+                                if (obj.success == true) {
+                                    dhtmlx.message({
+                                        text: "[[#{message.saveSuccess}]]",
+                                        expire: 10
+                                    });
+                                    reload();
+                                } else {
+                                    openMsgDialog("[[#{message.SaveFailed}]]", "[[#{message.errorMsg}]]:" + obj.message, 300, 200);
+                                }
+                            }
+                        });
+                    }
+                }
+            });
+        }
+    }
+    function goChangePwd(){
+
+        var haspasswd=true;
+        var list = myGrid.getCheckedRows(0);
+        if (list == '') {
+            openMsgDialog("[[#{title.editUser}]]", "[[#{message.alertSelectAtLeastOneRow}]]", 300, 150);
+        } else if (list.indexOf(",") != -1) {
+            openMsgDialog("[[#{title.editUser}]]", "[[#{message.alertSelectMutilRow}]]", 300, 150);
+        } else {
+            $.ajax({
+                type: "get",
+                url: ctx + "system/user/edit?id=" + list,
+                dataType: "json",
+                success: function (data) {
+                    var obj = eval(data);
+                    if (obj.success == true) {
+                        if(obj.model.userPassword==null || obj.model.userPassword==''){
+                            haspasswd=false;
+                        }
+                    }
+                    var content=constructChangePwdForm(list,haspasswd)
+                    openWindowForAdd("[[#{title.changePwd}]]", content, 520, 250, changePwd);
+                }
+            });
+
+        }
+
+    }
+    function constructChangePwdForm(id,haspasswd) {
+        var content='[{type: "settings", position: "label-left", lableWidth: 120, inputWidth: 120},{'
+            +'type: "fieldset", label: "[[#{sysUser.info}]]", offsetLeft: 10,offsetRight: 20, inputWidth: 495, lableWidth: 100, list: ['
+        +'{type: "hidden", name: "id", value: "'+id+'"},';
+        if(haspasswd)
+            content+='{type: "input", name: "orgPwd", label: "[[#{sysUser.orgPwd}]]:", validate: "NotEmpty"},';
+
+        content+='{type: "input", name: "newPwd", label: "[[#{sysUser.newPwd}]]:", validate: "NotEmpty"},'
+        +'{type: "input", name: "confirmPwd", label: "[[#{sysUser.confirmPwd}]]:", validate: "NotEmpty"},'
+    +']},{'
+        +'type: "block", inputWidth: 490, list: ['
+        +'{type: "settings", offsetTop: 10},'
+        +'{type: "button", name: "cmdOK", value: "[[#{btn.confirm}]]", offsetLeft: 175},'
+        +'{type: "newcolumn"},'
+        +'{type: "button", name: "cmdCancel", value: "[[#{btn.cancel}]]"}'
+    +']}]';
+        return content;
+    }
+    function changePwd(form) {
+        form.attachEvent("onButtonClick", function (name, command) {
+            if (name == "cmdOK") {
+                if(this.getItemValue("newPwd")!=null && this.getItemValue("confirmPwd")!=null && this.getItemValue("newPwd")==this.getItemValue("confirmPwd")) {
+                    this.send(ctx + "system/user/changepwd", function (loader, response) {
+                        var tobj = eval('(' + response + ')');
+                        if (tobj.success == true) {
+                            dhtmlx.message({
+                                text: "[[#{message.saveSuccess}]]",
+                                expire: -1
+                            });
+                            closedialog(true);
+                            reload();
+                        } else {
+                            openMsgDialog("[[#{message.SaveFailed}]]", "[[#{message.errorMsg}]]:" + tobj.message);
+                        }
+
+                    });
+                }else{
+                    openMsgDialog("[[#{title.changePwd}]]", "[[#{message.passwordNotMatch}]]", 300, 200);
+                }
+            }
+        });
+    }
+
+    function goEdit() {
+        var list = myGrid.getCheckedRows(0);
+        if (list == '') {
+            openMsgDialog("[[#{title.editUser}]]", "[[#{message.alertSelectAtLeastOneRow}]]", 300, 150);
+        } else if (list.indexOf(",") != -1) {
+            openMsgDialog("[[#{title.editUser}]]", "[[#{message.alertSelectMutilRow}]]", 300, 150);
+        } else {
+            var form = openWindowForEdit("[[#{title.editUser}]]", editFormContent, 530, 270, editInit);
+            $.ajax({
+                type: "get",
+                url: ctx + "system/user/edit?id=" + list,
+                dataType: "json",
+                success: function (data) {
+                    var obj = eval(data);
+                    form.setItemValue("id", obj.data.id);
+                    form.setItemValue("userName", obj.data.userName);
+                    form.setItemValue("userAccount", obj.data.userAccount);
+                    form.setItemValue("deptId", obj.data.deptId);
+                    form.setItemValue("accountType", obj.data.accountType);
+                    form.setItemValue("orgId", obj.data.orgId);
+                }
+            });
+        }
+    }
+</script>
+
+</body>
+</html>

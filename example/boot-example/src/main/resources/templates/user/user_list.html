@@ -102,11 +102,6 @@
     bottomPanel.hideHeader();
     topPanel.fixSize(true, true);
     myForm.loadStruct(userFrm);
-    if (orgId != undefined && orgId!='null') {
-        myForm.setItemValue("orgId", orgId);
-    }
-
-
 
     myForm.attachEvent("onButtonClick", function (name) {
         if (name == 'submit') {
@@ -114,8 +109,7 @@
                 var tobj = eval('(' + response + ')');
                 myGrid.clearAll();
                 myGrid.parse(tobj, "json");
-                var barstr = tobj.query.pageToolBar;
-                statusbar.setText(constructPaging(tobj.query));
+                statusbar.setText(constructPaging(tobj));
             });
         } else if (name == 'reset') {
             this.reset();
@@ -185,16 +179,6 @@
         }
     });
 
-
-    function goSearch() {
-        myForm.send(ctx + "system/user/list", function (loader, response) {
-            var tobj = eval('(' + response + ')');
-            myGrid.clearAll();
-            myGrid.parse(tobj, "json");
-            statusbar.setText(constructPaging(tobj.query));
-        });
-
-    }
 
 
     var editFormContent = [
@@ -446,16 +430,16 @@
             var form = openWindowForEdit("[[#{title.editUser}]]", editFormContent, 530, 270, editInit);
             $.ajax({
                 type: "get",
-                url: ctx + "system/user/edit?id=" + list,
+                url: ctx + "system/user/edit/" + list,
                 dataType: "json",
                 success: function (data) {
                     var obj = eval(data);
-                    form.setItemValue("id", obj.model.id);
-                    form.setItemValue("userName", obj.model.userName);
-                    form.setItemValue("userAccount", obj.model.userAccount);
-                    form.setItemValue("deptId", obj.model.deptId);
-                    form.setItemValue("accountType", obj.model.accountType);
-                    form.setItemValue("orgId", obj.model.orgId);
+                    form.setItemValue("id", obj.data.id);
+                    form.setItemValue("userName", obj.data.userName);
+                    form.setItemValue("userAccount", obj.data.userAccount);
+                    form.setItemValue("deptId", obj.data.deptId);
+                    form.setItemValue("accountType", obj.data.accountType);
+                    form.setItemValue("orgId", obj.data.orgId);
                 }
             });
         }

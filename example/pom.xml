@@ -23,13 +23,14 @@
 	<parent>
 		<artifactId>frame</artifactId>
 		<groupId>com.robin</groupId>
-		<version>1.0-SNAPSHOT</version>
+		<version>1.0</version>
 	</parent>
 
 	<artifactId>example</artifactId>
 	<packaging>pom</packaging>
 
 	<name>example</name>
+	<version>1.0</version>
 	<description>example</description>
 
 	<modules>

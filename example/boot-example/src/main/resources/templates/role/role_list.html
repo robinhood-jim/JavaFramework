@@ -7,11 +7,11 @@
     <link rel="stylesheet" type="text/css" th:href="@{/component/dhtmlxSuite/skins/skyblue/dhtmlx.css}"/>
     <link rel="stylesheet" type="text/css" th:href="@{/component/dhtmlxSuite/codebase/dhtmlx.css/}"/>
     <link rel="stylesheet" type="text/css"
-          th:href="@{/component/dhtmlxSuite/codebase/fonts/font_roboto/roboto.css/)"/>
+          th:href="@{/component/dhtmlxSuite/codebase/fonts/font_roboto/roboto.css/}"/>
     <link rel="stylesheet" type="text/css" th:href="@{/resources/css/main.css}"/>
     <script th:src="@{/component/dhtmlxSuite/codebase/dhtmlx.js}"></script>
     <script language="javascript" th:src="@{/resources/js/control.js}"></script>
-    <script type="text/javascript" th:src="@(/resources/js/jquery.js}"></script>
+    <script type="text/javascript" th:src="@{/resources/js/jquery.js}"></script>
 
     <title></title>
     <style type="text/css">
@@ -108,7 +108,7 @@
                 var tobj = eval('(' + response + ')');
                 myGrid.clearAll();
                 myGrid.parse(tobj, "json");
-                sb.setText(constructPaging(tobj.query));
+                sb.setText(constructPaging(tobj));
             });
         } else if (name == "cmdReset") {
             this.reset();
@@ -230,7 +230,7 @@
         } else if (list.indexOf(",") != -1) {
             openMsgDialog("用户赋权", "只能修改一个用户", 300, 150);
         } else {
-            var form = openWindow("用户菜单赋权", contextpath + "system/user/showright?userId=" + list, 550, 400);
+            var form = openWindow("角色菜单赋权", contextpath + "system/role/showright/" + list, 550, 400);
         }
     }
 
@@ -278,7 +278,7 @@
             var form = openWindowForEdit("修改角色", editFormContent, 530, 270, editInit);
             $.ajax({
                 type: "get",
-                url: contextpath + "system/role/edit?id=" + list,
+                url: contextpath + "system/role/edit/" + list,
                 dataType: "json",
                 success: function (data) {
                     var obj = eval(data);
@@ -298,8 +298,7 @@
             var tobj = eval('(' + response + ')');
             myGrid.clearAll();
             myGrid.parse(tobj, "json");
-            var barstr = tobj.query.pageToolBar;
-            sb.setText(barstr);
+            sb.setText(constructPaging(tobj));
         });
     }
 </script>
