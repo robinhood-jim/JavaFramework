@@ -4,17 +4,15 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.robin.basis.model.system.SysResource;
 import com.robin.core.base.util.Const;
 import com.robin.core.convert.util.ConvertUtil;
-import com.robin.core.web.util.WebConstant;
 import lombok.Data;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.ObjectUtils;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 @Data
-public class SysMenuDTO {
+public class RouterDTO {
     private Long id;
     private String name;
     private String path;
@@ -25,9 +23,9 @@ public class SysMenuDTO {
     private String component="Layout";
     private String assignType;
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    private List<SysMenuDTO> children;
-    public static SysMenuDTO fromVO(SysResource source){
-        SysMenuDTO dto=new SysMenuDTO();
+    private List<RouterDTO> children;
+    public static RouterDTO fromVO(SysResource source){
+        RouterDTO dto=new RouterDTO();
         BeanUtils.copyProperties(source,dto);
         dto.setAssignType(Const.RESOURCE_ASSIGN_ACCESS);
         dto.getMeta().setTitle(source.getName());
@@ -38,8 +36,8 @@ public class SysMenuDTO {
         }
         return dto;
     }
-    public static SysMenuDTO fromMap(Map<String,Object> map){
-        SysMenuDTO dto=new SysMenuDTO();
+    public static RouterDTO fromMap(Map<String,Object> map){
+        RouterDTO dto=new RouterDTO();
         try{
             ConvertUtil.mapToObject(dto,map);
             dto.setAssignType(map.get("assignType").toString());

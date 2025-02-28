@@ -53,6 +53,6 @@ public class SysResource extends BaseObject {
 	private String permission;
 	private Long tenantId;
 	private String icon;
-	
+	private String routePath;
 
 }

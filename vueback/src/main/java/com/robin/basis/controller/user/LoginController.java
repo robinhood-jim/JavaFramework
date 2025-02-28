@@ -18,7 +18,7 @@ package com.robin.basis.controller.user;
 import cn.hutool.jwt.JWTPayload;
 import cn.hutool.jwt.JWTUtil;
 import com.robin.basis.dto.LoginUserDTO;
-import com.robin.basis.dto.SysMenuDTO;
+import com.robin.basis.dto.RouterDTO;
 import com.robin.basis.model.system.SysResource;
 import com.robin.basis.sercurity.SysLoginUser;
 import com.robin.basis.service.system.SysResourceService;
@@ -168,18 +168,18 @@ public class LoginController extends AbstractController {
         Map<String, Object> retMap = new HashMap<>();
         SysLoginUser loginUser=SecurityUtils.getLoginUser();
         if (loginUser != null) {
-            List<SysMenuDTO> routers = getMenuList(loginUser.getId());
+            List<RouterDTO> routers = getMenuList(loginUser.getId());
             retMap = wrapObject(routers);
         } else {
             wrapError(retMap, "not login");
         }
         return retMap;
     }
-    public List<SysMenuDTO> getMenuList(Long userId) {
+    public List<RouterDTO> getMenuList(Long userId) {
         List<SysResource> allList = resourceService.getAllValidate();
-        List<SysMenuDTO> dtoList = allList.stream().map(SysMenuDTO::fromVO).collect(Collectors.toList());
-        Map<Long, SysMenuDTO> dtoMap = dtoList.stream().collect(Collectors.toMap(SysMenuDTO::getId, Function.identity()));
-        SysMenuDTO root = new SysMenuDTO();
+        List<RouterDTO> dtoList = allList.stream().map(RouterDTO::fromVO).collect(Collectors.toList());
+        Map<Long, RouterDTO> dtoMap = dtoList.stream().collect(Collectors.toMap(RouterDTO::getId, Function.identity()));
+        RouterDTO root = new RouterDTO();
         dtoMap.put(0L, root);
         Map<Long, Integer> readMap = new HashMap<>();
 
@@ -190,11 +190,11 @@ public class LoginController extends AbstractController {
         jdbcDao.queryBySelectId(query1);
         try {
             if (!query1.getRecordSet().isEmpty()) {
-                Map<Long, List<SysMenuDTO>> aMap = query1.getRecordSet().stream().map(SysMenuDTO::fromMap).collect(Collectors.groupingBy(SysMenuDTO::getPid, Collectors.toList()));
+                Map<Long, List<RouterDTO>> aMap = query1.getRecordSet().stream().map(RouterDTO::fromMap).collect(Collectors.groupingBy(RouterDTO::getPid, Collectors.toList()));
 
-                List<SysMenuDTO> tops = aMap.get(0L);
-                tops.sort(Comparator.comparing(SysMenuDTO::getSeqNo));
-                for (SysMenuDTO dto : tops) {
+                List<RouterDTO> tops = aMap.get(0L);
+                tops.sort(Comparator.comparing(RouterDTO::getSeqNo));
+                for (RouterDTO dto : tops) {
                     if (!readMap.containsKey(dto.getId()) && !dto.getAssignType().equals(Const.RESOURCE_ASSIGN_DENIED)) {
                         if(dtoMap.get(dto.getPid()).getChildren()==null){
                             dtoMap.get(dto.getPid()).setChildren(new ArrayList<>());
@@ -212,10 +212,10 @@ public class LoginController extends AbstractController {
         return dtoMap.get(0L).getChildren();
     }
 
-    private void doScanChildren(Map<Long, SysMenuDTO> cmap, Map<Long, List<SysMenuDTO>> pMap, SysMenuDTO dto, Map<Long, Integer> readMap) {
+    private void doScanChildren(Map<Long, RouterDTO> cmap, Map<Long, List<RouterDTO>> pMap, RouterDTO dto, Map<Long, Integer> readMap) {
         if (!CollectionUtils.isEmpty(pMap.get(dto.getId()))) {
-            pMap.get(dto.getId()).sort(Comparator.comparing(SysMenuDTO::getSeqNo));
-            for (SysMenuDTO childs : pMap.get(dto.getId())) {
+            pMap.get(dto.getId()).sort(Comparator.comparing(RouterDTO::getSeqNo));
+            for (RouterDTO childs : pMap.get(dto.getId())) {
                 if (!readMap.containsKey(childs.getId()) && !childs.getAssignType().equals(Const.RESOURCE_ASSIGN_DENIED)) {
                     if(cmap.get(childs.getPid()).getChildren()==null){
                         cmap.get(childs.getPid()).setChildren(new ArrayList<>());

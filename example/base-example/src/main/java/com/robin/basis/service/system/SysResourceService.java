@@ -15,6 +15,7 @@
  */
 package com.robin.basis.service.system;
 
+import com.robin.basis.dto.SysMenuDTO;
 import com.robin.basis.model.system.SysResource;
 import com.robin.basis.model.user.SysResourceUser;
 import com.robin.core.base.exception.ServiceException;
@@ -119,7 +120,52 @@ public class SysResourceService extends BaseAnnotationJdbcService<SysResource, L
         }
         return retMap;
     }
+    public List<SysMenuDTO> getMenuList(Long userId) {
+        List<SysResource> allList = getAllValidate();
+        List<SysMenuDTO> dtoList = allList.stream().map(SysMenuDTO::fromVO).collect(Collectors.toList());
+        Map<Long, SysMenuDTO> dtoMap = dtoList.stream().collect(Collectors.toMap(SysMenuDTO::getId, Function.identity()));
+        SysMenuDTO root = new SysMenuDTO();
+        dtoMap.put(0L, root);
+        Map<Long, Integer> readMap = new HashMap<>();
 
+        PageQuery<Map<String, Object>> query1 = new PageQuery();
+        query1.setPageSize(0);
+        query1.setSelectParamId("GET_RESOURCEINFO");
+        query1.addNamedParameter("userId", userId);
+        jdbcDao.queryBySelectId(query1);
+        try {
+            if (!query1.getRecordSet().isEmpty()) {
+                Map<Long, List<SysMenuDTO>> aMap = query1.getRecordSet().stream().map(SysMenuDTO::fromMap).collect(Collectors.groupingBy(SysMenuDTO::getPid, Collectors.toList()));
+
+                List<SysMenuDTO> tops = aMap.get(0L);
+                tops.sort(Comparator.comparing(SysMenuDTO::getSeqNo));
+                for (SysMenuDTO dto : tops) {
+                    if (!readMap.containsKey(dto.getId()) && !dto.getAssignType().equals(Const.RESOURCE_ASSIGN_DENIED)) {
+                        dtoMap.get(dto.getPid()).getChildren().add(dtoMap.get(dto.getId()));
+                        doScanChildren(dtoMap, aMap, dto, readMap);
+                    }
+                    readMap.put(dto.getId(), 0);
+                }
+
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return dtoMap.get(0L).getChildren();
+    }
+
+    private void doScanChildren(Map<Long, SysMenuDTO> cmap, Map<Long, List<SysMenuDTO>> pMap, SysMenuDTO dto, Map<Long, Integer> readMap) {
+        if (!CollectionUtils.isEmpty(pMap.get(dto.getId()))) {
+            pMap.get(dto.getId()).sort(Comparator.comparing(SysMenuDTO::getSeqNo));
+            for (SysMenuDTO childs : pMap.get(dto.getId())) {
+                if (!readMap.containsKey(childs.getId()) && !childs.getAssignType().equals(Const.RESOURCE_ASSIGN_DENIED)) {
+                    cmap.get(childs.getPid()).getChildren().add(cmap.get(childs.getId()));
+                    doScanChildren(cmap, pMap, childs, readMap);
+                }
+                readMap.put(childs.getId(), 0);
+            }
+        }
+    }
 
 
 
