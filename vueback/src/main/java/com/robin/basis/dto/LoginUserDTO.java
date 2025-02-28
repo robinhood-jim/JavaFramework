@@ -24,6 +24,4 @@ public class LoginUserDTO implements Serializable {
         dto.setPhone(loginUser.getPhone());
         return dto;
     }
-
-
 }

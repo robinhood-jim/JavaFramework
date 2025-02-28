@@ -30,7 +30,7 @@ public class RouterDTO {
         dto.setAssignType(Const.RESOURCE_ASSIGN_ACCESS);
         dto.getMeta().setTitle(source.getName());
         dto.getMeta().setIcon(source.getIcon());
-        dto.setPath(source.getUrl());
+        dto.setPath(source.getRouterPath());
         if(Const.VALID.equals(source.getLeafTag().toString())){
             dto.setComponent(source.getUrl());
         }
@@ -42,7 +42,7 @@ public class RouterDTO {
             ConvertUtil.mapToObject(dto,map);
             dto.setAssignType(map.get("assignType").toString());
             dto.getMeta().setTitle(map.get("name").toString());
-            dto.setPath(map.get("url").toString());
+            dto.setPath(map.get("routerPath").toString());
             if(!ObjectUtils.isEmpty(map.get("icon"))) {
                 dto.getMeta().setIcon(map.get("icon").toString());
             }

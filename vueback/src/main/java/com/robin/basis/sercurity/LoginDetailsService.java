@@ -2,10 +2,12 @@ package com.robin.basis.sercurity;
 
 import com.robin.basis.model.user.SysUser;
 import com.robin.basis.model.user.SysUserRole;
+import com.robin.basis.model.user.TenantInfo;
 import com.robin.basis.service.user.SysUserService;
 import com.robin.core.base.dao.JdbcDao;
 import com.robin.core.base.util.Const;
 import com.robin.core.query.util.PageQuery;
+import com.robin.core.web.util.WebConstant;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -38,6 +40,18 @@ public class LoginDetailsService implements UserDetailsService {
         if(!ObjectUtils.isEmpty(users)){
             SysUser selectUser=users.get(0);
             builder.withSysUser(selectUser);
+            //getTenantId
+            if(WebConstant.ACCOUNT_TYPE.SYSUSER.toString().equals(selectUser.getAccountType())){
+                builder.tenantId(0L);
+            }else if(!ObjectUtils.isEmpty(selectUser.getOrgId())){
+                TenantInfo query=new TenantInfo();
+                query.setStatus(Const.VALID);
+                query.setOrgId(selectUser.getOrgId());
+                List<TenantInfo> tenantInfos=jdbcDao.queryByVO(TenantInfo.class,query,"id");
+                if(CollectionUtils.isEmpty(tenantInfos)){
+                    builder.tenantId(tenantInfos.get(0).getId());
+                }
+            }
             SysUserRole userRole=new SysUserRole();
             userRole.setUserId(selectUser.getId());
             userRole.setStatus(Const.VALID);

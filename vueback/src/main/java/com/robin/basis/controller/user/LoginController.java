@@ -17,9 +17,12 @@ package com.robin.basis.controller.user;
 
 import cn.hutool.jwt.JWTPayload;
 import cn.hutool.jwt.JWTUtil;
+import com.google.common.collect.Lists;
 import com.robin.basis.dto.LoginUserDTO;
+import com.robin.basis.dto.RoleDTO;
 import com.robin.basis.dto.RouterDTO;
 import com.robin.basis.model.system.SysResource;
+import com.robin.basis.model.user.SysRole;
 import com.robin.basis.sercurity.SysLoginUser;
 import com.robin.basis.service.system.SysResourceService;
 import com.robin.basis.utils.SecurityUtils;
@@ -158,10 +161,24 @@ public class LoginController extends AbstractController {
         SysLoginUser loginUser= SecurityUtils.getLoginUser();
         Map<String, Object> retMap = new HashMap<>();
         retMap.put("info", LoginUserDTO.fromLoginUsers(loginUser));
-        retMap.put("roles", loginUser.getRoles());
-        retMap.put("permission",loginUser.getPermissions());
+        List<SysRole> roles=jdbcDao.queryByField(SysRole.class,SysRole::getId, Const.OPERATOR.IN,loginUser.getRoles().toArray());
+        if(!CollectionUtils.isEmpty(roles)) {
+            retMap.put("roles", roles.stream().map(f-> RoleDTO.fromVO(f,loginUser.getTenantId())).collect(Collectors.toList()));
+        }
+        retMap.put("permissions",constructPermissionMap(loginUser));
         return wrapObject(retMap);
     }
+    private List<Map<String,Object>> constructPermissionMap(SysLoginUser loginUser){
+        if(!CollectionUtils.isEmpty(loginUser.getPermissions())){
+            return loginUser.getPermissions().stream().map(f->{
+                Map<String,Object> tmap=new HashMap<>();
+                tmap.put("permission",f);
+                return tmap;
+            }).collect(Collectors.toList());
+        }
+        return Lists.newArrayList();
+    }
+
 
     @GetMapping("/getRouters")
     public Map<String, Object> getRouter(HttpServletRequest request) {
