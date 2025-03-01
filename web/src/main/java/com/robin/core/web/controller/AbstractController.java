@@ -23,7 +23,6 @@ import com.robin.core.base.util.MessageUtils;
 import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.query.util.PageQuery;
 import com.robin.core.web.codeset.Code;
-import com.robin.core.web.international.Translator;
 import com.robin.core.web.codeset.CodeSetService;
 
 
@@ -338,7 +337,7 @@ public abstract class AbstractController
         {
             ConvertUtil.mapToObject(query, tmpmap);
             if(!ObjectUtils.isEmpty(tmpmap.get("pageNum"))){
-                query.setPageNumber(Integer.parseInt(tmpmap.get("pageNum").toString()));
+                query.setCurrentPage(Integer.parseInt(tmpmap.get("pageNum").toString()));
             }
         }
         catch (Exception ex)

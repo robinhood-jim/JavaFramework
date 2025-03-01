@@ -11,7 +11,6 @@ import com.robin.core.base.spring.SpringContextHolder;
 import com.robin.core.base.util.Const;
 import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.query.util.PageQuery;
-import com.robin.core.sql.util.BaseSqlGen;
 import com.robin.core.sql.util.FilterCondition;
 import com.robin.core.sql.util.FilterConditionBuilder;
 import com.robin.core.web.annotation.WebControllerConfig;
@@ -282,7 +281,7 @@ public abstract class AbstractAutoController<O extends BaseObject, P extends Ser
 
     protected void wrapPageQuery(PageQuery<?> pageQuery, Map<String, Object> retMap) {
         retMap.put("pageSize", pageQuery.getPageSize());
-        retMap.put("pageNumber", pageQuery.getPageNumber());
+        retMap.put("pageNumber", pageQuery.getCurrentPage());
         retMap.put("pageCount", pageQuery.getPageCount());
         retMap.put("order", pageQuery.getOrder());
         retMap.put("orderDir", pageQuery.getOrderDirection());

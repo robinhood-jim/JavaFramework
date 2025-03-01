@@ -111,7 +111,7 @@
 	</SQLSCRIPT>
 	<SQLSCRIPT ID="GET_SYSUSERINFO">
 		<FROMSQL>from t_sys_user_info a  where 1=1 ${queryCondition}</FROMSQL>
-		<FIELD>a.id as id,a.user_name as userName,a.nick_name as nickName,a.phone_num as phoneNum,a.email as email,a.sex as sex</FIELD>
+		<FIELD>a.id as id,a.user_name as userName,a.nick_name as nickName,a.phone_num as phoneNum,a.email as email,a.sex as sex,create_time as createTime,update_time as updateTime</FIELD>
 	</SQLSCRIPT>
 
 	<SQLSCRIPT ID="GET_SYSUSERINFOINORG">

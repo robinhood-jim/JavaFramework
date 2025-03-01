@@ -27,7 +27,6 @@ import com.robin.core.base.reflect.MetaObject;
 import com.robin.core.base.reflect.ReflectUtils;
 import com.robin.core.base.spring.SpringContextHolder;
 import com.robin.core.base.util.Const;
-import com.robin.core.base.util.IUserUtils;
 import com.robin.core.base.util.LicenseUtils;
 import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
@@ -52,9 +51,6 @@ import org.springframework.util.ObjectUtils;
 
 import javax.sql.DataSource;
 import java.io.Serializable;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.util.*;
 
 @Slf4j
@@ -93,7 +89,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
         try {
             String sumSQL = sqlGen.generateCountSql(querySQL);
             int total = this.returnTemplate().queryForObject(sumSQL, Integer.class);
-            pageQuery.setRecordCount(total);
+            pageQuery.setTotal(total);
             if (pageQuery.getPageSize() > 0) {
                 String pageSQL = sqlGen.generatePageSql(querySQL, pageQuery);
                 if (pageQuery.getOrder() != null && !"".equals(pageQuery.getOrder())) {
@@ -112,7 +108,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
                 }
             } else {
                 list = queryItemList(pageQuery, querySQL);
-                pageQuery.setRecordCount(!CollectionUtils.isEmpty(list) ? list.size() : 0);
+                pageQuery.setTotal(!CollectionUtils.isEmpty(list) ? list.size() : 0);
                 pageQuery.setPageCount(1);
             }
             pageQuery.setRecordSet(list);
@@ -878,7 +874,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
     }
 
     private List<Map<String, Object>> queryItemList(final PageQuery<Map<String, Object>> qs, final String pageSQL) throws DAOException {
-        int pageNum = qs.getPageNumber();
+        int pageNum = qs.getCurrentPage();
         int pageSize = qs.getPageSize();
         int start = 0;
         int end = 0;

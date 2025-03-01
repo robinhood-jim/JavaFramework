@@ -1,26 +1,28 @@
 package com.robin.basis.controller.system;
 
 import com.google.gson.Gson;
+import com.robin.basis.dto.SysRoleDTO;
+import com.robin.core.base.util.Const;
 import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.query.util.PageQuery;
 import com.robin.core.web.controller.AbstractCrudDhtmlxController;
 import com.robin.basis.model.user.SysRole;
 import com.robin.basis.service.system.SysRoleService;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.ModelMap;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-@Controller
+import java.util.stream.Collectors;
+
+@RestController
 @RequestMapping("/system/role")
 public class SysRoleContorller extends AbstractCrudDhtmlxController<SysRole,Long, SysRoleService> {
 
 	@PostMapping("/list")
-	@ResponseBody
 	public Map<String,Object> listRole(HttpServletRequest request,
 			HttpServletResponse response) {
 		PageQuery query=wrapPageQuery(request);
@@ -29,19 +31,17 @@ public class SysRoleContorller extends AbstractCrudDhtmlxController<SysRole,Long
 		service.queryBySelectId(query);
 		Map<String,Object> retMap=new HashMap<>();
 		retMap.put("rows",query.getRecordSet());
-		retMap.put("total",query.getRecordCount());
+		retMap.put("total",query.getTotal());
 		return retMap;
 	}
 
 	@GetMapping("/edit/{id}")
-	@ResponseBody
 	public SysRole queryRole(HttpServletRequest request,
 							 @PathVariable String id){
 		SysRole user=service.getEntity(Long.valueOf(id));
 		return user;
 	}
 	@PostMapping("/save")
-	@ResponseBody
 	public String saveRole(HttpServletRequest request,
 			HttpServletResponse response){
 		Map<String, String>  retmap=new HashMap<>();
@@ -61,7 +61,6 @@ public class SysRoleContorller extends AbstractCrudDhtmlxController<SysRole,Long
 		return gson.toJson(retmap);
 	}
 	@PostMapping("/update")
-	@ResponseBody
 	public Map<String, Object> updateRole(HttpServletRequest request,
 			HttpServletResponse response){
 		Map<String, Object>  retmap=new HashMap<String,Object>();
@@ -83,6 +82,16 @@ public class SysRoleContorller extends AbstractCrudDhtmlxController<SysRole,Long
 		
 		return retmap;
 	}
+	@GetMapping("/all")
+	public Map<String,Object> showAllRole(){
+		try{
+			List<SysRole> roles=service.queryByField(SysRole::getStatus, Const.OPERATOR.EQ,Const.VALID);
+			return wrapObject(roles.stream().map(SysRoleDTO::fromVO).collect(Collectors.toList()));
+		}catch (Exception ex){
+			return wrapError(ex);
+		}
+	}
+
 	@GetMapping("/delete")
 	@ResponseBody
 	public Map<String,String> deleteRole(HttpServletRequest request,

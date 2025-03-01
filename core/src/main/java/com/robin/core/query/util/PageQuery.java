@@ -35,13 +35,13 @@ public class  PageQuery<T> implements Serializable {
 
 	protected Integer							pageSize;
 
-	protected Integer							pageNumber;
+	protected Integer 					   currentPage;
 
-	protected Integer							recordCount;
+	protected Integer 						total;
 
-	protected Integer							pageCount;
+	protected Integer 						pageCount;
 
-	protected String								selectParamId;
+	protected String							selectParamId;
 
 	protected String							order;				
 
@@ -55,26 +55,11 @@ public class  PageQuery<T> implements Serializable {
 	private List<Condition>				conditions;
 
 	private List<T>	recordSet=new ArrayList<>();
-	
-	protected String 					querySql;			
-
-
-	protected String                         pageToolBar;
-	protected String dateFormatString="yyyy-MM-dd";
-	protected String timestampFormatString="yyyy-MM-dd HH:mm:ss";
-	protected SimpleDateFormat dateFormater=null;
-	protected SimpleDateFormat timestampFormater=null;
 
 	private Map<String, FilterCondition> conditionMap=new HashMap<>();
 
-	public static final String						ASC	= "asc";
-
-	public static final String						DESC	= "desc";
-	public static final String DEFAULTQUERYSTRING="queryString";
-
-
 	public PageQuery() {
-		pageNumber = 1;
+		currentPage = 1;
 		pageSize = 10;
 	}
 	public PageQuery(String order, String orderDirection){
@@ -85,7 +70,7 @@ public class  PageQuery<T> implements Serializable {
 		this.order=order;
 		this.orderDirection=orderDirection;
 		this.pageSize=pageSize;
-		this.pageNumber=pageNumber;
+		this.currentPage =pageNumber;
 	}
 
 	public void setParameterWithKey(String key,String value){
@@ -96,23 +81,13 @@ public class  PageQuery<T> implements Serializable {
 		namedParameters.put(key,value);
 	}
 
-	public SimpleDateFormat getDateFormater(){
-		if(dateFormater==null){
-			dateFormater=new SimpleDateFormat(dateFormatString);
-		}
-		return dateFormater;
-	}
-	public SimpleDateFormat getTimestampFormater(){
-		if(timestampFormater==null){
-			timestampFormater=new SimpleDateFormat(timestampFormatString);
-		}
-		return timestampFormater;
-	}
+
+
 	public Map<String,Object> toMap(){
 		Map<String,Object> retMap=new HashMap<>();
 		retMap.put("pageSize",getPageSize());
-		retMap.put("pageNo",getPageNumber());
-		retMap.put("pageCount",getPageCount());
+		retMap.put("pageNo", getCurrentPage());
+		retMap.put("pageCount", getPageCount());
 		Optional.ofNullable(getRecordSet()).map(f->retMap.put("values",getRecordSet()));
 		return retMap;
 	}
@@ -154,8 +129,8 @@ public class  PageQuery<T> implements Serializable {
 			pageQuery.setSelectParamId(selectedId);
 			return this;
 		}
-		public Builder<T> setPageNumber(Integer pageNumber){
-			pageQuery.setPageNumber(pageNumber);
+		public Builder<T> setCurrentPage(Integer pageNumber){
+			pageQuery.setCurrentPage(pageNumber);
 			return this;
 		}
 		public Builder<T> setOrder(String order){

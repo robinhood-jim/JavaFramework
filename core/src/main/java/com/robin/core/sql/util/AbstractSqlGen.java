@@ -624,10 +624,10 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
     }
 
     protected Integer[] getStartEndRecord(PageQuery<?> pageQuery) {
-        int nBegin = (pageQuery.getPageNumber() - 1) * pageQuery.getPageSize();
+        int nBegin = (pageQuery.getCurrentPage() - 1) * pageQuery.getPageSize();
         int tonums = nBegin + pageQuery.getPageSize();
-        if (!ObjectUtils.isEmpty(pageQuery.getRecordCount()) && pageQuery.getRecordCount() < tonums) {
-            tonums = pageQuery.getRecordCount();
+        if (!ObjectUtils.isEmpty(pageQuery.getTotal()) && pageQuery.getTotal() < tonums) {
+            tonums = pageQuery.getTotal();
         }
         return new Integer[]{nBegin, tonums};
     }

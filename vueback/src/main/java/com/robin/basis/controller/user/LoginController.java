@@ -76,7 +76,7 @@ public class LoginController extends AbstractController {
     private AuthenticationManager authenticationManager;
 
     @PostMapping("/login")
-    public Map<String, Object> ajaxlogin(HttpServletRequest request, HttpServletResponse response, @RequestBody Map<String, Object> reqMap) {
+    public Map<String, Object> login(HttpServletRequest request, HttpServletResponse response, @RequestBody Map<String, Object> reqMap) {
         Map<String, Object> map = new HashMap();
         try {
             Environment environment = SpringContextHolder.getBean(Environment.class);

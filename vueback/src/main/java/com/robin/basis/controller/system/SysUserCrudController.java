@@ -20,6 +20,7 @@ import com.robin.basis.model.user.SysUser;
 import com.robin.basis.service.system.SysOrgService;
 import com.robin.basis.service.system.SysResourceService;
 import com.robin.basis.service.user.SysUserService;
+import com.robin.basis.utils.WebUtils;
 import com.robin.core.base.exception.ServiceException;
 import com.robin.core.base.exception.WebException;
 import com.robin.core.base.util.Const;
@@ -28,13 +29,10 @@ import com.robin.core.collection.util.CollectionBaseConvert;
 import com.robin.core.query.util.PageQuery;
 import com.robin.core.web.controller.AbstractCrudDhtmlxController;
 import com.robin.core.web.util.Session;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
-import org.springframework.context.support.ResourceBundleMessageSource;
-import org.springframework.stereotype.Controller;
-import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.*;
@@ -42,16 +40,16 @@ import java.util.*;
 @RestController
 @RequestMapping("/system/user")
 public class SysUserCrudController extends AbstractCrudDhtmlxController<SysUser, Long, SysUserService> {
-    @Autowired
+    @Resource
     private SysOrgService sysOrgService;
-    @Autowired
+    @Resource
     private SysResourceService sysResourceService;
-    @Autowired
+    @Resource
     private MessageSource messageSource;
 
 
-    @GetMapping("/list")
-    public Map<String, Object> listUser(HttpServletRequest request, HttpServletResponse response) {
+    @GetMapping
+    public Map<String, Object> listUser(HttpServletRequest request) {
         PageQuery query = wrapPageQuery(request);
         String addTag=request.getParameter("addTag");
         if(Const.VALID.equals(addTag)){
@@ -60,8 +58,7 @@ public class SysUserCrudController extends AbstractCrudDhtmlxController<SysUser,
             query.setSelectParamId("GET_SYSUSERINFO");
         }
         wrapQuery(request,query);
-
-        return doQuery(request,null, query);
+        return wrapObject(WebUtils.doQuery(service,null, query));
     }
 
     @Override
@@ -73,11 +70,11 @@ public class SysUserCrudController extends AbstractCrudDhtmlxController<SysUser,
         String addTag=request.getParameter("addTag");
         StringBuilder builder = new StringBuilder();
         StringBuilder userBuilder=new StringBuilder();
-        if (request.getParameter("userName") != null && !"".equals(request.getParameter("userName"))) {
+        if (request.getParameter("username") != null && !"".equals(request.getParameter("username"))) {
             if(Const.VALID.equals(addTag)){
-                userBuilder.append(" and a.user_name like '%" + request.getParameter("userName") + "%'");
+                userBuilder.append(" and a.user_name like '%" + request.getParameter("username") + "%'");
             }else {
-                builder.append(" and a.user_name like '%" + request.getParameter("userName") + "%'");
+                builder.append(" and a.user_name like '%" + request.getParameter("username") + "%'");
             }
         }
         if (request.getParameter("accountType") != null && !"".equals(request.getParameter("accountType"))) {
@@ -86,6 +83,9 @@ public class SysUserCrudController extends AbstractCrudDhtmlxController<SysUser,
             }else {
                 builder.append(" and a.account_type =" + request.getParameter("accountType"));
             }
+        }
+        if (request.getParameter("phone") != null && !"".equals(request.getParameter("phone"))) {
+            builder.append(" and a.phone like '%" + request.getParameter("phone")+"%'");
         }
         if (orgIds != null && !orgIds.isEmpty()) {
             builder.append(" and b.org_id in (" + orgIds + ")");
@@ -103,27 +103,25 @@ public class SysUserCrudController extends AbstractCrudDhtmlxController<SysUser,
         return doEdit(Long.valueOf(id));
     }
 
-    @PostMapping("/save")
-    public Map<String, Object> saveUser(HttpServletRequest request,
-                                        HttpServletResponse response){
+    @PostMapping
+    public Map<String, Object> saveUser(@RequestBody Map<String,Object> reqMap){
 
         //check userAccount unique
-        List<SysUser> list = this.service.queryByField("userAccount", Const.OPERATOR.EQ, request.getParameter("userAccount"));
+        List<SysUser> list = this.service.queryByField("userAccount", Const.OPERATOR.EQ, reqMap.get("userAccount").toString());
         if (!list.isEmpty()) {
             return wrapError(new WebException(messageSource.getMessage("message.userNameExists", null, Locale.getDefault())));
         } else {
-            return doSave(wrapRequest(request));
+            return doSave(reqMap);
         }
     }
 
-    @PostMapping("/update")
-    public Map<String, Object> updateUser(HttpServletRequest request,
-                                          HttpServletResponse response) {
-        Long id = Long.valueOf(request.getParameter("id"));
+    @PutMapping
+    public Map<String, Object> updateUser(@RequestBody Map<String,Object> reqMap) {
+        Long id = Long.valueOf(reqMap.get("id").toString());
         //check userAccount unique
-        List<SysUser> list = this.service.queryByField("userAccount", Const.OPERATOR.EQ, request.getParameter("userAccount"));
+        List<SysUser> list = this.service.queryByField("userAccount", Const.OPERATOR.EQ, reqMap.get("userAccount").toString());
         if ((list.size() == 1 && id.equals(list.get(0).getId())) || list.isEmpty()) {
-            return doUpdate(wrapRequest(request), id);
+            return doUpdate(reqMap, id);
         } else {
             return wrapError(new WebException(messageSource.getMessage("message.userNameExists", null, Locale.getDefault())));
         }
@@ -150,13 +148,11 @@ public class SysUserCrudController extends AbstractCrudDhtmlxController<SysUser,
     }
 
 
-    @GetMapping("/delete")
-    public Map<String, Object> deleteUser(HttpServletRequest request,
-                                          HttpServletResponse response) {
+    @DeleteMapping
+    public Map<String, Object> deleteUser(@RequestBody Set<Long> ids) {
         Map<String,Object> retMap=new HashMap<>();
         try{
-            Long[] ids = parseId(request.getParameter("ids"));
-            service.deleteUsers(ids);
+            service.deleteUsers(ids.toArray(new Long[]{}));
             constructRetMap(retMap);
         }catch (Exception ex){
             wrapFailed(retMap,ex);
@@ -241,10 +237,6 @@ public class SysUserCrudController extends AbstractCrudDhtmlxController<SysUser,
         }
     }
 
-    public String wrapQuery(HttpServletRequest request, String orgIds) {
-
-        return null;
-    }
 
 
 

@@ -190,8 +190,8 @@ public abstract class AbstractCrudController<O extends BaseObject, P extends Ser
     }
 
     protected void doAfterQuery(PageQuery query, Map<String, Object> retMap) {
-        retMap.put("recordCount", query.getRecordCount());
-        retMap.put("pageNumber", query.getPageNumber());
+        retMap.put("recordCount", query.getTotal());
+        retMap.put("pageNumber", query.getCurrentPage());
         retMap.put("pageCount", query.getPageCount());
         retMap.put("pageSize", query.getPageSize());
         retMap.put("data",query.getRecordSet());
@@ -224,7 +224,7 @@ public abstract class AbstractCrudController<O extends BaseObject, P extends Ser
             doAfterQuery(query, retMap);
             constructRetMap(retMap);
             retMap.put("rows",query.getRecordSet());
-            retMap.put("total",query.getRecordCount());
+            retMap.put("total",query.getTotal());
         } catch (Exception ex) {
             wrapFailed(retMap, ex);
         }

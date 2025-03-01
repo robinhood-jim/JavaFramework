@@ -29,8 +29,8 @@ public class SysResourceContorller extends AbstractCrudDhtmlxController<SysResou
 	public Map<String,Object> list(HttpServletRequest request,
 			HttpServletResponse response) {
 		List<Map<String,Object>> list=service.queryBySql("select id,res_name as name,url,pid from t_sys_resource_info where RES_TYPE='1' ORDER BY RES_CODE,PID,SEQ_NO");
-		List<Map<String,Object>> retList=new ArrayList<Map<String,Object>>();
-		Map<String,Object> rmap=new HashMap<String, Object>();
+		List<Map<String,Object>> retList=new ArrayList<>();
+		Map<String,Object> rmap=new HashMap<>();
 		for (Map<String,Object> map:list) {
 			String pid=map.get("pid").toString();
 			if("0".equals(pid)){
@@ -53,7 +53,7 @@ public class SysResourceContorller extends AbstractCrudDhtmlxController<SysResou
 					t2map.put("userdata", userdataList);
 					
 					if(!tmpmap.containsKey("item")){
-						List<Map<String, Object>> list1=new ArrayList<Map<String,Object>>();
+						List<Map<String, Object>> list1=new ArrayList<>();
 						list1.add(t2map);
 						tmpmap.put("item", list1);
 					}else{
@@ -63,7 +63,7 @@ public class SysResourceContorller extends AbstractCrudDhtmlxController<SysResou
 				}
 			}
 		}
-		Map<String, Object> retMaps=new HashMap<String,Object>();
+		Map<String, Object> retMaps=new HashMap<>();
 		retMaps.put("id", "0");
 		retMaps.put("text", "菜单");
 		retMaps.put("item", retList);
@@ -122,7 +122,7 @@ public class SysResourceContorller extends AbstractCrudDhtmlxController<SysResou
 	@PostMapping("/assignrole")
 	public Map<String, Object> assignRole(HttpServletRequest request,HttpServletResponse response){
 		String[] ids=request.getParameter("selRoleIds").split(",");
-		Map<String, Object> retmap=new HashMap<String,Object>();
+		Map<String, Object> retmap=new HashMap<>();
 		try{
 			sysRoleService.saveRoleRigth(ids, request.getParameter("resId"));
 		

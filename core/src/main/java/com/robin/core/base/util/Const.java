@@ -471,18 +471,7 @@ public class Const {
      * 排序方式
      */
     public static final String ORDER = "order";
-    public enum ACCOUNTTYPE{
-        ADMIN("1"),
-        NORMAL("2");
-        private String value;
-        ACCOUNTTYPE(String value){
-            this.value=value;
-        }
 
-        public String getValue() {
-            return value;
-        }
-    }
     public enum JOINTYPE{
         INNER("INNER"),
         LEFT("LEFT"),
