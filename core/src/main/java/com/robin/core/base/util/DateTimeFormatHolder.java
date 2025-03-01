@@ -27,16 +27,16 @@ public class DateTimeFormatHolder {
         return timestampFormatter.get();
     }
     public static DateTimeFormatter getYmdFormatter(){
-        if(ObjectUtils.isEmpty(timestampFormatter.get())){
-            timestampFormatter.set(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        if(ObjectUtils.isEmpty(ymdFormatter.get())){
+            ymdFormatter.set(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
         }
-        return timestampFormatter.get();
+        return ymdFormatter.get();
     }
     public static DateTimeFormatter getYearFormatter(){
-        if(ObjectUtils.isEmpty(timestampFormatter.get())){
-            timestampFormatter.set(DateTimeFormatter.ofPattern("yyyy"));
+        if(ObjectUtils.isEmpty(yearFormatter.get())){
+            yearFormatter.set(DateTimeFormatter.ofPattern("yyyy"));
         }
-        return timestampFormatter.get();
+        return yearFormatter.get();
     }
 
 }

@@ -58,7 +58,7 @@ public class SysUserCrudController extends AbstractCrudDhtmlxController<SysUser,
             query.setSelectParamId("GET_SYSUSERINFO");
         }
         wrapQuery(request,query);
-        return wrapObject(WebUtils.doQuery(service,null, query));
+        return wrapObject(WebUtils.doQuery(service,null, query,map->{map.put("status",Const.VALID.equals(map.get("status")));return map;}));
     }
 
     @Override
@@ -119,7 +119,7 @@ public class SysUserCrudController extends AbstractCrudDhtmlxController<SysUser,
     public Map<String, Object> updateUser(@RequestBody Map<String,Object> reqMap) {
         Long id = Long.valueOf(reqMap.get("id").toString());
         //check userAccount unique
-        List<SysUser> list = this.service.queryByField("userAccount", Const.OPERATOR.EQ, reqMap.get("userAccount").toString());
+        List<SysUser> list = this.service.queryByField(SysUser::getUserAccount, Const.OPERATOR.EQ, reqMap.get("userName").toString());
         if ((list.size() == 1 && id.equals(list.get(0).getId())) || list.isEmpty()) {
             return doUpdate(reqMap, id);
         } else {

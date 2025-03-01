@@ -5,24 +5,27 @@ import com.robin.core.base.exception.WebException;
 import com.robin.core.base.service.IBaseAnnotationJdbcService;
 import com.robin.core.base.util.MessageUtils;
 import com.robin.core.query.util.PageQuery;
+import org.springframework.util.ObjectUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class WebUtils {
     protected static final String COL_MESSAGE="message";
     protected static final String COL_SUCCESS="success";
     protected static final String COL_COED="code";
     protected static final String COL_DATA="data";
-    public static   Map<String, Object> doQuery(IBaseAnnotationJdbcService service, Map<String,String> params, PageQuery query) {
+    public static   Map<String, Object> doQuery(IBaseAnnotationJdbcService service, Map<String,String> params, PageQuery query, Function<Map<String,Object>,?> mapFunction) {
         Map<String, Object> retMap = new HashMap<>();
         try {
             if (query.getParameters().isEmpty() && params!=null) {
                 query.setParameters(params);
             }
             service.queryBySelectId(query);
-            retMap.put("records",query.getRecordSet());
+            retMap.put("records",!ObjectUtils.isEmpty(mapFunction)?query.getRecordSet().stream().map(mapFunction).collect(Collectors.toList()):query.getRecordSet());
             retMap.put("total",query.getTotal());
             retMap.put("current",query.getCurrentPage());
             retMap.put("pages",query.getPageCount());

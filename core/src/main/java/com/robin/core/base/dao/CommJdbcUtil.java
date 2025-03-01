@@ -247,11 +247,11 @@ public class CommJdbcUtil {
                         putValue(fields, i, columnName, null, map);
                     } else if ("DATE".equalsIgnoreCase(typeName)) {
                         Date date = rs.getDate(i + 1);
-                        String datestr = DateTimeFormatHolder.getYmdFormatter().format(date.toInstant());
+                        String datestr = DateTimeFormatHolder.getYmdFormatter().format(date.toLocalDate());
                         putValue(fields, i, columnName, datestr, map);
                     } else if ("TIMESTAMP".equalsIgnoreCase(typeName)) {
                         Timestamp stamp = rs.getTimestamp(i + 1);
-                        String datestr = DateTimeFormatHolder.getTimestampFormatter().format(stamp.toInstant());
+                        String datestr = DateTimeFormatHolder.getTimestampFormatter().format(stamp.toLocalDateTime());
                         putValue(fields, i, columnName, datestr, map);
                     } else if (className.toLowerCase().contains("clob")) {
                         if (lobHandler != null) {

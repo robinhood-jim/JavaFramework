@@ -20,6 +20,8 @@ import com.robin.core.base.annotation.MappingField;
 import com.robin.core.base.model.BaseObject;
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 @MappingEntity(value = "t_sys_user_info")
 @Data
 public class SysUser extends BaseObject {
@@ -48,6 +50,7 @@ public class SysUser extends BaseObject {
     private String avatar;
     private String nickName;
     private String sex;
-
+    private LocalDateTime createTime;
+    private LocalDateTime updateTime;
 
 }
