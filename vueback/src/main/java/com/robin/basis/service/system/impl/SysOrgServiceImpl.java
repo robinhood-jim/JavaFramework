@@ -45,7 +45,7 @@ public class SysOrgServiceImpl extends AbstractMybatisService<SysOrgMapper,SysOr
         Assert.isTrue(!CollectionUtils.isEmpty(uids),"");
         Map<String,Object> map=new HashMap<>();
         map.put("ids",uids);
-        Integer existCount=jdbcDao.countByNameParam("select count(1) from t_sys_user_info where id in (:ids) and user_status='1'",map);
+        Integer existCount=getJdbcDao().countByNameParam("select count(1) from t_sys_user_info where id in (:ids) and user_status='1'",map);
         Assert.isTrue(existCount==uids.size(),"");
         List<SysUserOrg> list=new ArrayList<>();
         for(Long uid:uids){
@@ -55,19 +55,19 @@ public class SysOrgServiceImpl extends AbstractMybatisService<SysOrgMapper,SysOr
             userOrg.setStatus(Const.VALID);
             list.add(userOrg);
         }
-        return jdbcDao.batchUpdate(list,SysUserOrg.class);
+        return getJdbcDao().batchUpdate(list,SysUserOrg.class);
     }
     @Transactional(rollbackFor = RuntimeException.class)
     public int removeOrg(Long orgId,List<Long> uids){
         Assert.isTrue(!CollectionUtils.isEmpty(uids),"");
         Map<String,Object> map=new HashMap<>();
         map.put("ids",uids);
-        Integer existCount=jdbcDao.countByNameParam("select count(1) from t_sys_user_info where id in (:ids) and user_status='1'",map);
+        Integer existCount=getJdbcDao().countByNameParam("select count(1) from t_sys_user_info where id in (:ids) and user_status='1'",map);
         Assert.isTrue(existCount==uids.size(),"");
         FilterConditionBuilder builder=new FilterConditionBuilder();
         builder.addEq(SysUserOrg::getOrgId,orgId);
         builder.addFilter(SysUserOrg::getUserId, Const.OPERATOR.IN,uids);
-        return jdbcDao.deleteByCondition(SysUserOrg.class,builder.build());
+        return getJdbcDao().deleteByCondition(SysUserOrg.class,builder.build());
     }
     public List<SysOrgDTO> getOrgTree(Long pid){
         List<SysOrgDTO> orgList=list().stream().filter(f->Const.VALID.equals(f.getOrgStatus())).map(SysOrgDTO::fromVO).collect(Collectors.toList());

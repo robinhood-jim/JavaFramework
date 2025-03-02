@@ -38,13 +38,13 @@ public class SysUserServiceImpl extends AbstractMybatisService<SysUserMapper, Sy
         try {
             for (Long id : ids) {
                 //delete responsilbity
-                jdbcDao.deleteByField(SysUserResponsiblity.class,SysUserResponsiblity::getUserId, id);
+                getJdbcDao().deleteByField(SysUserResponsiblity.class,SysUserResponsiblity::getUserId, id);
                 //delete SysResource User right
-                jdbcDao.deleteByField(SysResourceUser.class,SysResourceUser::getUserId,id);
+                getJdbcDao().deleteByField(SysResourceUser.class,SysResourceUser::getUserId,id);
                 //delete SysOrg user
-                jdbcDao.deleteByField(SysUserOrg.class,SysUserOrg::getUserId,id);
+                getJdbcDao().deleteByField(SysUserOrg.class,SysUserOrg::getUserId,id);
             }
-            jdbcDao.deleteVO(SysUser.class, ids);
+            getJdbcDao().deleteVO(SysUser.class, ids);
         }catch (DAOException ex){
             throw new ServiceException(ex);
         }

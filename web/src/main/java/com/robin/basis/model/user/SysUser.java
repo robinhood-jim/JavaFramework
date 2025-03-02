@@ -55,6 +55,6 @@ public class SysUser extends BaseObject {
     private String avatar;
     private String nickName;
     private String sex;
-    private LocalDateTime createTm;
-    private LocalDateTime updateTm;
+    private LocalDateTime createTime;
+    private LocalDateTime updateTime;
 }

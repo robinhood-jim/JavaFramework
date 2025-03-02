@@ -4,10 +4,11 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.google.common.collect.Maps;
 import com.robin.basis.mapper.SysRoleMapper;
-import com.robin.basis.mapper.SysUserRoleMapper;
+
 import com.robin.basis.model.user.SysResourceRole;
 import com.robin.basis.model.user.SysRole;
 import com.robin.basis.model.user.SysUserRole;
+import com.robin.basis.service.system.ISysUserRoleService;
 import com.robin.core.base.exception.DAOException;
 import com.robin.core.base.exception.ServiceException;
 import com.robin.core.base.service.AbstractMybatisService;
@@ -28,13 +29,13 @@ import java.util.stream.Collectors;
 @Service
 public class SysRoleServiceImpl extends AbstractMybatisService<SysRoleMapper, SysRole,Long> implements ISysRoleService {
     @Resource
-    private SysUserRoleMapper roleMapper;
+    private ISysUserRoleService roleService;
 
     public Map<Long,List<SysUserRole>> getRoleIdByUser(List<Long> userId){
         LambdaQueryWrapper<SysUserRole> wrapper=new QueryWrapper<SysUserRole>().lambda();
         wrapper.in(SysUserRole::getUserId,userId);
         wrapper.eq(SysUserRole::getStatus, Const.VALID);
-        List<SysUserRole> userRoles=roleMapper.selectList(wrapper);
+        List<SysUserRole> userRoles=roleService.list(wrapper);
         if(!CollectionUtils.isEmpty(userRoles)){
             return userRoles.stream().collect(Collectors.groupingBy(SysUserRole::getUserId));
         }else{
@@ -44,7 +45,7 @@ public class SysRoleServiceImpl extends AbstractMybatisService<SysRoleMapper, Sy
     @Transactional(propagation= Propagation.REQUIRED,rollbackFor=RuntimeException.class)
     public void saveRoleRigth(String[] ids,String resId) throws ServiceException {
         try{
-            jdbcDao.deleteByField(SysResourceRole.class, SysResourceRole::getResId, Long.valueOf(resId));
+            getJdbcDao().deleteByField(SysResourceRole.class, SysResourceRole::getResId, Long.valueOf(resId));
             List<SysResourceRole> resourceRoles=new ArrayList<>();
             for (int i = 0; i < ids.length; i++) {
                 if(!ObjectUtils.isEmpty(ids[i])){
@@ -56,7 +57,7 @@ public class SysRoleServiceImpl extends AbstractMybatisService<SysRoleMapper, Sy
                 }
             }
             if(!CollectionUtils.isEmpty(resourceRoles)){
-                jdbcDao.batchUpdate(resourceRoles,SysResourceRole.class);
+                getJdbcDao().batchUpdate(resourceRoles,SysResourceRole.class);
             }
         }catch(DAOException ex){
             ex.printStackTrace();

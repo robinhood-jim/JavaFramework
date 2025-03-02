@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 public class SysResourceServiceImpl extends AbstractMybatisService<SysResourceMapper, SysResource,Long> implements ISysResourceService {
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = RuntimeException.class)
     public void updateUserResourceRight(String userId, List<String> addList, List<String> delList) {
-        jdbcDao.deleteByField(SysResourceUser.class, SysResourceUser::getUserId, Integer.valueOf(userId));
+        getJdbcDao().deleteByField(SysResourceUser.class, SysResourceUser::getUserId, Integer.valueOf(userId));
         //Add Right
         if (addList != null && !addList.isEmpty()) {
             for (String addId : addList) {
@@ -35,7 +35,7 @@ public class SysResourceServiceImpl extends AbstractMybatisService<SysResourceMa
                 vo.setResId(Integer.valueOf(addId));
                 vo.setAssignType(SysResourceUser.ASSIGN_ADD);
                 vo.setStatus("1");
-                jdbcDao.createVO(vo, Long.class);
+                getJdbcDao().createVO(vo, Long.class);
             }
         }
         //Delete Right
@@ -46,7 +46,7 @@ public class SysResourceServiceImpl extends AbstractMybatisService<SysResourceMa
                 vo.setResId(Integer.valueOf(delId));
                 vo.setAssignType(SysResourceUser.ASSIGN_DEL);
                 vo.setStatus("1");
-                jdbcDao.createVO(vo, Long.class);
+                getJdbcDao().createVO(vo, Long.class);
             }
         }
 
@@ -56,13 +56,13 @@ public class SysResourceServiceImpl extends AbstractMybatisService<SysResourceMa
         SysResource queryVO = new SysResource();
         queryVO.setStatus(Const.VALID);
         queryVO.setOrgId(orgId);
-        return jdbcDao.queryByVO(voType, queryVO, null);
+        return getJdbcDao().queryByVO(voType, queryVO, null);
     }
 
     public List<SysResource> getAllValidate() {
         SysResource queryVO = new SysResource();
         queryVO.setStatus(Const.VALID);
-        return jdbcDao.queryByVO(voType,queryVO, null);
+        return getJdbcDao().queryByVO(voType,queryVO, null);
     }
 
     public Map<String, Object> getUserRights(Long userId) {
@@ -76,7 +76,7 @@ public class SysResourceServiceImpl extends AbstractMybatisService<SysResourceMa
         Map<String, Object> paramMap = new HashMap<>();
         paramMap.put("userId", userId);
         query1.addNamedParameter("userId", userId);
-        jdbcDao.queryBySelectId(query1);
+        getJdbcDao().queryBySelectId(query1);
         if (!query1.getRecordSet().isEmpty()) {
             try {
                 Map<String, List<Map<String, Object>>> resTypeMap = CollectionMapConvert.convertToMapByParentMapKey(query1.getRecordSet(), "assignType");
@@ -119,7 +119,7 @@ public class SysResourceServiceImpl extends AbstractMybatisService<SysResourceMa
         query1.setPageSize(0);
         query1.setSelectParamId("GET_RESOURCEINFO");
         query1.addNamedParameter("userId", userId);
-        jdbcDao.queryBySelectId(query1);
+        getJdbcDao().queryBySelectId(query1);
         try {
             if (!query1.getRecordSet().isEmpty()) {
                 Map<Long, List<RouterDTO>> aMap = query1.getRecordSet().stream().map(RouterDTO::fromMap).collect(Collectors.groupingBy(RouterDTO::getPid, Collectors.toList()));

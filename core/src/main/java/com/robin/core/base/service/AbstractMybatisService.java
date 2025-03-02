@@ -36,8 +36,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.mybatis.spring.SqlSessionUtils;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
@@ -53,9 +51,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 @Slf4j
-public abstract class AbstractMybatisService<M extends BaseMapper<T>, T extends BaseObject, P extends Serializable> extends ServiceImpl<M, T> implements IMybatisBaseService<T, P>, InitializingBean {
-    @Autowired
-    protected M baseDao;
+public abstract class AbstractMybatisService<M extends BaseMapper<T>, T extends BaseObject, P extends Serializable> extends ServiceImpl<M, T> implements IMybatisBaseService<T, P> {
     protected Class<M> mapperType;
     protected Class<T> voType;
     protected Class<P> pkType;
@@ -77,7 +73,7 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>, T extends 
     protected Method getDeleteMethod = null;
     protected Integer invalidValue = Integer.valueOf(Const.INVALID);
     protected Map<String, Class<?>> fieldTypeMap = new HashMap<>();
-    protected JdbcDao jdbcDao;
+
 
     public AbstractMybatisService() {
         Type genericSuperClass = getClass().getGenericSuperclass();
@@ -127,10 +123,6 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>, T extends 
             log.error("{}", ex.getMessage());
         }
     }
-    @Override
-    public void afterPropertiesSet() {
-        jdbcDao= SpringContextHolder.getBean("jdbcDao",JdbcDao.class);
-    }
 
     @Override
     @Transactional(rollbackFor = RuntimeException.class)
@@ -179,35 +171,35 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>, T extends 
     public List<T> selectByField(String columName, Object value) {
         QueryWrapper<T> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq(columName, value);
-        return baseDao.selectList(queryWrapper);
+        return list(queryWrapper);
     }
 
     @Override
     public T selectOneByField(String columnName, Object value) {
         QueryWrapper<T> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq(columnName, value);
-        return baseDao.selectOne(queryWrapper);
+        return selectOne(queryWrapper);
     }
 
     @Override
     public List<T> selectInByField(String columnName, Object value) {
         QueryWrapper<T> queryWrapper = new QueryWrapper<>();
         queryWrapper.in(columnName, value);
-        return baseDao.selectList(queryWrapper);
+        return baseMapper.selectList(queryWrapper);
     }
 
     @Override
     public List<T> selectNeByField(String columnName, Object value) {
         QueryWrapper<T> queryWrapper = new QueryWrapper<>();
         queryWrapper.ne(columnName, value);
-        return baseDao.selectList(queryWrapper);
+        return baseMapper.selectList(queryWrapper);
     }
 
     @Override
     public List<T> selectBetweenByField(String columnName, Object fromValue, Object toValue) {
         QueryWrapper<T> queryWrapper = new QueryWrapper<>();
         queryWrapper.between(columnName, fromValue, toValue);
-        return baseDao.selectList(queryWrapper);
+        return baseMapper.selectList(queryWrapper);
     }
 
     @Override
@@ -353,13 +345,13 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>, T extends 
     @Override
     @Transactional(rollbackFor = RuntimeException.class)
     public boolean update(T entity, Wrapper<T> updateWrapper) {
-        return SqlHelper.retBool(baseDao.update(entity, updateWrapper));
+        return SqlHelper.retBool(baseMapper.update(entity, updateWrapper));
     }
 
     @Override
     @Transactional(rollbackFor = RuntimeException.class)
     public boolean delete(Wrapper<T> deleteWrapper) {
-        return SqlHelper.retBool(baseDao.delete(deleteWrapper));
+        return SqlHelper.retBool(baseMapper.delete(deleteWrapper));
     }
 
     @Override
@@ -375,7 +367,7 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>, T extends 
         } catch (Exception ex) {
             throw new ServiceException(ex);
         }
-        return SqlHelper.retBool(baseDao.update(valueObj, wrapper));
+        return SqlHelper.retBool(baseMapper.update(valueObj, wrapper));
     }
 
     @Override
@@ -426,14 +418,14 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>, T extends 
 
     @Override
     public T selectOne(Wrapper<T> wrapper) {
-        return baseDao.selectOne(wrapper);
+        return baseMapper.selectOne(wrapper);
     }
 
     @Transactional(rollbackFor = RuntimeException.class)
     public boolean deleteWithRequest(Object queryObject) {
         try {
             QueryWrapper<T> wrapper = wrapWithEntity(queryObject);
-            return SqlHelper.retBool(baseDao.delete(wrapper));
+            return SqlHelper.retBool(baseMapper.delete(wrapper));
         } catch (Exception ex) {
             throw new ServiceException(ex);
         }
@@ -443,7 +435,7 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>, T extends 
     public boolean updateWithRequest(T model, Object queryObject) {
         try {
             QueryWrapper<T> wrapper = wrapWithEntity(queryObject);
-            return SqlHelper.retBool(baseDao.update(model, wrapper));
+            return SqlHelper.retBool(baseMapper.update(model, wrapper));
         } catch (Exception ex) {
             throw new ServiceException(ex);
         }
@@ -477,7 +469,7 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>, T extends 
                     }
                 }
             }
-            baseDao.insert(obj);
+            baseMapper.insert(obj);
             return true;
         } catch (Exception ex) {
             throw new ServiceException(ex);
@@ -732,7 +724,7 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>, T extends 
     @Transactional(readOnly=true)
     public void queryBySelectId(PageQuery<Map<String,Object>> query) throws ServiceException{
         try{
-            jdbcDao.queryBySelectId(query);
+            getJdbcDao().queryBySelectId(query);
         }catch(DAOException ex){
             throw new ServiceException(ex);
         }
@@ -740,16 +732,19 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>, T extends 
 
     @Override
     public List<Map<String, Object>> queryBySql(String sqlstr, Object... objects) throws ServiceException {
-        return jdbcDao.queryBySql(sqlstr,objects);
+        return getJdbcDao().queryBySql(sqlstr,objects);
     }
     @Override
     @Transactional(readOnly=true)
     public void queryByCondition(FilterCondition condition, PageQuery<T> pageQuery)
             throws ServiceException {
         try{
-            jdbcDao.queryByCondition(voType, condition, pageQuery);
+            getJdbcDao().queryByCondition(voType, condition, pageQuery);
         }catch (DAOException e) {
             throw new ServiceException(e);
         }
+    }
+    protected JdbcDao getJdbcDao(){
+        return SpringContextHolder.getBean("jdbcDao",JdbcDao.class);
     }
 }

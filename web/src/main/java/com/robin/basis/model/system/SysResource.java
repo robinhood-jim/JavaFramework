@@ -16,6 +16,7 @@
 package com.robin.basis.model.system;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.robin.core.base.annotation.MappingEntity;
@@ -31,18 +32,22 @@ public class SysResource extends BaseObject {
 	@TableId(type = IdType.AUTO)
 	private Long id;
 	@MappingField(value ="res_name")
+	@TableField("res_name")
 	private String name;
 	@MappingField(value ="res_type")
+	@TableField("res_type")
 	private String type;
 	@MappingField
 	private String url;
 	@MappingField
 	private Long powerId;
 	@MappingField(value = "is_leaf")
+	@TableField("is_leaf")
 	private Integer leafTag;
 	@MappingField
 	private String status;
 	@MappingField(value ="res_code")
+	@TableField("res_code")
 	private String code;
 	@MappingField
 	private String resId;

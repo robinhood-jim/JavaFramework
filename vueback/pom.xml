@@ -195,14 +195,8 @@
 		</dependency>
 		<dependency>
 			<groupId>com.baomidou</groupId>
-			<artifactId>mybatis-plus-core</artifactId>
-			<version>3.4.3</version>
-		</dependency>
-
-		<dependency>
-			<groupId>com.baomidou</groupId>
-			<artifactId>mybatis-plus-extension</artifactId>
-			<version>3.4.3</version>
+			<artifactId>mybatis-plus-boot-starter</artifactId>
+			<version>3.4.2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.dom4j</groupId>
