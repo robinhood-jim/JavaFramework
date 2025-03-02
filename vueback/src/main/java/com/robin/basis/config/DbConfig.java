@@ -1,12 +1,11 @@
 package com.robin.basis.config;
 
-import com.robin.basis.service.system.LoginService;
+
 import com.robin.core.base.dao.JdbcDao;
 import com.robin.core.base.spring.SpringContextHolder;
 import com.robin.core.query.util.QueryFactory;
 import com.robin.core.sql.util.BaseSqlGen;
 import com.robin.core.sql.util.MysqlSqlGen;
-import com.robin.core.web.service.ILoginService;
 import com.zaxxer.hikari.HikariDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,7 +15,10 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.MessageSource;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.context.annotation.Primary;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.jdbc.support.lob.DefaultLobHandler;
 import org.springframework.jdbc.support.lob.LobHandler;
@@ -84,10 +86,7 @@ public class DbConfig {
         messageSource.setUseCodeAsDefaultMessage(true);
         return messageSource;
     }
-    @Bean
-    public ILoginService getLoginService(){
-        return new LoginService();
-    }
+
 
     @Bean
     @Lazy(value = false)

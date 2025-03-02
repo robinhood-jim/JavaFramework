@@ -16,24 +16,32 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
 import com.google.common.collect.Lists;
+import com.robin.core.base.dao.JdbcDao;
 import com.robin.core.base.dto.PageDTO;
+import com.robin.core.base.exception.DAOException;
 import com.robin.core.base.exception.ServiceException;
 import com.robin.core.base.exception.WebException;
 import com.robin.core.base.model.BaseModel;
+import com.robin.core.base.model.BaseObject;
 import com.robin.core.base.reflect.ReflectUtils;
+import com.robin.core.base.spring.SpringContextHolder;
 import com.robin.core.base.util.Const;
 import com.robin.core.base.util.LicenseUtils;
 import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.query.util.Condition;
+import com.robin.core.query.util.PageQuery;
+import com.robin.core.sql.util.FilterCondition;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.mybatis.spring.SqlSessionUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
@@ -45,7 +53,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 @Slf4j
-public abstract class AbstractMybatisService<M extends BaseMapper<T>, T extends Serializable, P extends Serializable> extends ServiceImpl<M, T> implements IMybatisBaseService<T, P> {
+public abstract class AbstractMybatisService<M extends BaseMapper<T>, T extends BaseObject, P extends Serializable> extends ServiceImpl<M, T> implements IMybatisBaseService<T, P>, InitializingBean {
     @Autowired
     protected M baseDao;
     protected Class<M> mapperType;
@@ -69,6 +77,7 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>, T extends 
     protected Method getDeleteMethod = null;
     protected Integer invalidValue = Integer.valueOf(Const.INVALID);
     protected Map<String, Class<?>> fieldTypeMap = new HashMap<>();
+    protected JdbcDao jdbcDao;
 
     public AbstractMybatisService() {
         Type genericSuperClass = getClass().getGenericSuperclass();
@@ -117,6 +126,10 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>, T extends 
         } catch (Exception ex) {
             log.error("{}", ex.getMessage());
         }
+    }
+    @Override
+    public void afterPropertiesSet() {
+        jdbcDao= SpringContextHolder.getBean("jdbcDao",JdbcDao.class);
     }
 
     @Override
@@ -253,6 +266,8 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>, T extends 
         }
         if (pageDTO.getLimit() != null) {
             limit = pageDTO.getLimit();
+        }else if(pageDTO.getSize()!=null){
+            limit=pageDTO.getSize();
         }
 
         //分页对象
@@ -293,11 +308,13 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>, T extends 
         long curPage = 1;
         long limit = 10;
 
-        if (params.get(Const.PAGE) != null) {
+        if (!ObjectUtils.isEmpty(params.get(Const.PAGE))) {
             curPage = Long.parseLong(params.get(Const.PAGE).toString());
         }
         if (params.get(Const.LIMIT) != null) {
             limit = Long.parseLong(params.get(Const.LIMIT).toString());
+        }else if(!ObjectUtils.isEmpty(params.get(Const.SIZE))){
+            limit = Long.parseLong(params.get(Const.SIZE).toString());
         }
 
         //分页对象
@@ -449,7 +466,7 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>, T extends 
         try {
             T obj = voType.newInstance();
             if (requsetObj.getClass().getInterfaces().length > 0 && requsetObj.getClass().getInterfaces()[0].isAssignableFrom(Map.class)) {
-                ConvertUtil.mapToObject(obj, (HashMap) requsetObj);
+                ConvertUtil.mapToBaseObject(obj, (HashMap) requsetObj);
             } else {
                 Map<String, Method> modelGetMetholds = ReflectUtils.returnGetMethods(requsetObj.getClass());
                 Iterator<Map.Entry<String, Method>> iter = modelGetMetholds.entrySet().iterator();
@@ -711,5 +728,28 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>, T extends 
             log.error("{0}", ex);
         }
     }
+    @Override
+    @Transactional(readOnly=true)
+    public void queryBySelectId(PageQuery<Map<String,Object>> query) throws ServiceException{
+        try{
+            jdbcDao.queryBySelectId(query);
+        }catch(DAOException ex){
+            throw new ServiceException(ex);
+        }
+    }
 
+    @Override
+    public List<Map<String, Object>> queryBySql(String sqlstr, Object... objects) throws ServiceException {
+        return jdbcDao.queryBySql(sqlstr,objects);
+    }
+    @Override
+    @Transactional(readOnly=true)
+    public void queryByCondition(FilterCondition condition, PageQuery<T> pageQuery)
+            throws ServiceException {
+        try{
+            jdbcDao.queryByCondition(voType, condition, pageQuery);
+        }catch (DAOException e) {
+            throw new ServiceException(e);
+        }
+    }
 }

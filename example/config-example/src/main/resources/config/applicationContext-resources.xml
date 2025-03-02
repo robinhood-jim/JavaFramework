@@ -63,6 +63,7 @@
     </bean>
     <bean id="messageUtils" class="com.robin.core.base.util.MessageUtils">
     </bean>
+    <bean id="loginService" class="com.robin.basis.service.system.LoginService" autowire="byName" />
     <bean id="messageSource" class="org.springframework.context.support.ResourceBundleMessageSource"  lazy-init="false">
         <property name="basename" value="messages" />
         <property name="defaultEncoding" value="UTF-8" />

@@ -150,7 +150,7 @@ public abstract class AbstractAutoController<O extends BaseObject, P extends Ser
         Map<String, Object> retMap = new HashMap<>();
         try {
             O vo = potype.newInstance();
-            ConvertUtil.mapToObject(vo, reqMap);
+            ConvertUtil.mapToBaseObject(vo, reqMap);
             P p = service.getSaveFunction().apply(vo);
             retMap.put(WebConstant.DATA, p);
             constructRetMap(retMap);
@@ -178,7 +178,7 @@ public abstract class AbstractAutoController<O extends BaseObject, P extends Ser
         Map<String, Object> retmap = new HashMap<>();
         try {
             O vo = potype.newInstance();
-            ConvertUtil.mapToObject(vo, reqMap);
+            ConvertUtil.mapToBaseObject(vo, reqMap);
             this.service.updateEntity(vo);
             retmap.put(WebConstant.SUCCESS, true);
         } catch (Exception e) {

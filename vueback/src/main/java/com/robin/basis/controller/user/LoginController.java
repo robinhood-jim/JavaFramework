@@ -24,7 +24,7 @@ import com.robin.basis.dto.RouterDTO;
 import com.robin.basis.model.system.SysResource;
 import com.robin.basis.model.user.SysRole;
 import com.robin.basis.sercurity.SysLoginUser;
-import com.robin.basis.service.system.SysResourceService;
+import com.robin.basis.service.system.ISysResourceService;
 import com.robin.basis.utils.SecurityUtils;
 import com.robin.core.base.dao.JdbcDao;
 import com.robin.core.base.exception.MissingConfigException;
@@ -33,10 +33,8 @@ import com.robin.core.base.util.Const;
 import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.query.util.PageQuery;
 import com.robin.core.web.controller.AbstractController;
-import com.robin.core.web.service.ILoginService;
 import com.robin.core.web.util.CookieUtils;
 import com.robin.core.web.util.Session;
-import org.springframework.context.MessageSource;
 import org.springframework.core.env.Environment;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -61,17 +59,13 @@ import java.util.stream.Collectors;
 
 @RestController
 public class LoginController extends AbstractController {
-    @Resource
-    private ILoginService loginService;
 
-    @Resource
-    private MessageSource messageSource;
     @Resource
     private JdbcDao jdbcDao;
     @Resource
     private RedisTemplate<String, Object> template;
     @Resource
-    private SysResourceService resourceService;
+    private ISysResourceService resourceService;
     @Resource
     private AuthenticationManager authenticationManager;
 
@@ -193,7 +187,7 @@ public class LoginController extends AbstractController {
         return retMap;
     }
     public List<RouterDTO> getMenuList(Long userId) {
-        List<SysResource> allList = resourceService.getAllValidate();
+        List<SysResource> allList = resourceService.queryByField(SysResource::getStatus, Const.OPERATOR.EQ,Const.VALID);
         List<RouterDTO> dtoList = allList.stream().map(RouterDTO::fromVO).collect(Collectors.toList());
         Map<Long, RouterDTO> dtoMap = dtoList.stream().collect(Collectors.toMap(RouterDTO::getId, Function.identity()));
         RouterDTO root = new RouterDTO();

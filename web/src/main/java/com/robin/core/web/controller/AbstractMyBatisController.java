@@ -6,13 +6,16 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.robin.core.base.dto.PageDTO;
 import com.robin.core.base.exception.ServiceException;
 import com.robin.core.base.exception.WebException;
+import com.robin.core.base.model.BaseObject;
 import com.robin.core.base.service.IMybatisBaseService;
 import com.robin.core.base.spring.SpringContextHolder;
 import com.robin.core.convert.util.ConvertUtil;
+import com.robin.core.query.util.PageQuery;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
@@ -34,7 +37,7 @@ import java.util.Map;
  * @author robinjim
  * @version 1.0
  */
-public abstract class AbstractMyBatisController<S extends IMybatisBaseService<T,P>,M extends BaseMapper<T>,T extends Serializable,P extends Serializable> extends AbstractController {
+public abstract class AbstractMyBatisController<S extends IMybatisBaseService<T,P>,M extends BaseMapper<T>,T extends BaseObject,P extends Serializable> extends AbstractController {
     protected Class<T> voType;
     protected Class<P> pkType;
     protected Class<S> serviceType;
@@ -133,6 +136,88 @@ public abstract class AbstractMyBatisController<S extends IMybatisBaseService<T,
         }catch (ServiceException ex){
             throw new WebException(ex);
         }
+    }
+    protected Map<String, Object> doSave(Map<String,Object> paramMap) {
+        Map<String, Object> retMap = new HashMap<>();
+        try {
+            T object=this.voType.newInstance();
+            ConvertUtil.setDateFormat(ConvertUtil.ymdSepformatter);
+            ConvertUtil.convertToModel(object,paramMap);
+            this.service.saveEntity(object);
+            constructRetMap(retMap);
+        } catch (Exception ex) {
+            this.log.error("{0}", ex);
+            wrapResponse(retMap, ex);
+        }finally {
+            ConvertUtil.finishConvert();
+        }
+        return retMap;
+    }
+    protected Map<String, Object> doSave(T obj) {
+        Map<String, Object> retMap = new HashMap<>();
+        try {
+            this.service.saveEntity(obj);
+            constructRetMap(retMap);
+        } catch (ServiceException ex) {
+            this.log.error("{0}", ex);
+            wrapResponse(retMap, ex);
+        }
+        return retMap;
+    }
+    protected Map<String, Object> doUpdate(Map<String,Object> paramMap,P id) {
+        Map<String, Object> retMap = new HashMap<>();
+        try {
+            T originObj= this.voType.newInstance();
+            ConvertUtil.setDateFormat(ConvertUtil.ymdSepformatter);
+            ConvertUtil.convertToModel(originObj,paramMap);
+            updateWithOrigin(id, retMap, originObj);
+        } catch (Exception ex) {
+            log.error("{0}", ex);
+            wrapFailed(retMap, ex);
+        }finally {
+            ConvertUtil.finishConvert();
+        }
+        return retMap;
+    }
+
+    private void updateWithOrigin(P id, Map<String, Object> retMap, T originObj) throws WebException {
+        try {
+            T updateObj = service.get(id);
+            ConvertUtil.setDateFormat(ConvertUtil.ymdSepformatter);
+            ConvertUtil.convertToModelForUpdate(updateObj, originObj);
+            service.updateById(updateObj);
+            constructRetMap(retMap);
+        }catch (Exception ex){
+            throw new WebException(ex);
+        }finally {
+            ConvertUtil.finishConvert();
+        }
+    }
+    protected Map<String, Object> doQuery(Map<String,String> params, PageQuery query) {
+        Map<String, Object> retMap = new HashMap<>();
+        try {
+            if (query.getParameters().isEmpty() && params!=null) {
+                query.setParameters(params);
+            }
+            this.service.queryBySelectId(query);
+            constructRetMap(retMap);
+            retMap.put("rows",query.getRecordSet());
+            retMap.put("total",query.getTotal());
+        } catch (Exception ex) {
+            wrapFailed(retMap, ex);
+        }
+        return retMap;
+    }
+
+    protected Map<String, Object> doUpdate(T base,P id) {
+        Map<String, Object> retMap = new HashMap<>();
+        try {
+            updateWithOrigin(id, retMap, base);
+        } catch (WebException ex) {
+            log.error("{0}", ex);
+            wrapFailed(retMap, ex);
+        }
+        return retMap;
     }
 
 }

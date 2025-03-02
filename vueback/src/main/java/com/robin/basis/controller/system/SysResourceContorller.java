@@ -1,15 +1,12 @@
 package com.robin.basis.controller.system;
 
-import com.robin.core.base.exception.ServiceException;
-import com.robin.core.convert.util.ConvertUtil;
-import com.robin.core.query.util.PageQuery;
-import com.robin.core.web.controller.AbstractCrudDhtmlxController;
+import com.robin.basis.mapper.SysResourceMapper;
 import com.robin.basis.model.system.SysResource;
-import com.robin.basis.service.system.SysResourceService;
-import com.robin.basis.service.system.SysRoleService;
+import com.robin.basis.service.system.ISysResourceService;
+import com.robin.basis.service.system.ISysRoleService;
+import com.robin.core.base.exception.ServiceException;
+import com.robin.core.web.controller.AbstractMyBatisController;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -21,10 +18,10 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/system/menu")
-public class SysResourceContorller extends AbstractCrudDhtmlxController<SysResource,Long, SysResourceService> {
+public class SysResourceContorller extends AbstractMyBatisController<ISysResourceService, SysResourceMapper,SysResource,Long> {
 
 	@Autowired
-	private SysRoleService sysRoleService;
+	private ISysRoleService sysRoleService;
 	@PostMapping("/list")
 	public Map<String,Object> list(HttpServletRequest request,
 			HttpServletResponse response) {
@@ -71,53 +68,18 @@ public class SysResourceContorller extends AbstractCrudDhtmlxController<SysResou
 	}
 
 	@PostMapping("/save")
-	public Map<String, Object> saveMenu(HttpServletRequest request,
-			HttpServletResponse response){
-		Map<String, Object> retmap=new HashMap<>();
-		try{
-			Map<String,Object> map=wrapRequest(request);
-			SysResource resource=new SysResource();
-			ConvertUtil.convertToModel(resource, map);
-			resource.setType("1");
-			Long id=service.saveEntity(resource);
-			retmap.put("id", String.valueOf(id));
-			retmap.put("success", "true");
-			retmap.put("menu", resource);
-		}catch(Exception ex){
-			ex.printStackTrace();
-			retmap.put("success", "false");
-			retmap.put("message", ex.getMessage());
-		}
-		return retmap;
+	public Map<String, Object> saveMenu(@RequestBody Map<String,Object> reqMap){
+		return doSave(reqMap);
 	}
-	
 
-	@GetMapping("/edit/{id}")
-	public SysResource queryUser(HttpServletRequest request,@PathVariable String id){
-		SysResource resource=service.getEntity(Long.valueOf(id));
-		return resource;
-	}
-	@PostMapping("/update")
-	public Map<String, Object> updateSysResource(HttpServletRequest request,
-			HttpServletResponse response){
-		Map<String, Object>  retmap=new HashMap<>();
+	@PutMapping
+	public Map<String, Object> updateSysResource(@RequestBody Map<String,Object> reqMap){
+		Long id = Long.valueOf(reqMap.get("id").toString());
 		try{
-			Map<String,Object> map=wrapRequest(request);
-			Long id=Long.valueOf(request.getParameter("id"));
-			SysResource user=service.getEntity(id);
-			SysResource tmpuser=new SysResource();
-			ConvertUtil.convertToModel(tmpuser, map);
-			ConvertUtil.convertToModelForUpdate(user, tmpuser);
-			service.updateEntity(user);
-			retmap.put("id", String.valueOf(id));
-			retmap.put("success", "true");
+			return doUpdate(reqMap,id);
 		}catch(Exception ex){
-			ex.printStackTrace();
-			retmap.put("success", "false");
-			retmap.put("message", ex.getMessage());
+			return wrapFailedMsg(ex);
 		}
-		
-		return retmap;
 	}
 	@PostMapping("/assignrole")
 	public Map<String, Object> assignRole(HttpServletRequest request,HttpServletResponse response){
@@ -138,8 +100,5 @@ public class SysResourceContorller extends AbstractCrudDhtmlxController<SysResou
 		return service.getUserRights(userId);
 	}
 
-	@Override
-	protected String wrapQuery(HttpServletRequest request, PageQuery query) {
-		return null;
-	}
+
 }

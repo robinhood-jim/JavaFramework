@@ -106,7 +106,7 @@ public abstract class BaseObject implements Serializable,Cloneable{
 	}
 	public void setDefaultColumnValues(){
 		createTimeColumn="create_tm";
-		updateTimeColumn="modify_tm";
+		updateTimeColumn="update_tm";
 		creatorColumn="creator";
 		modifierColumn="modifier";
 		hasDefaultColumn=true;

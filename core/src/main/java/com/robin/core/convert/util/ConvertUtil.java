@@ -108,7 +108,7 @@ public class ConvertUtil {
         }
     }
 
-    public static void mapToObject(BaseObject target, Map<String, String> src, String... ignoreColumns) throws Exception {
+    public static void mapToBaseObject(BaseObject target, Map<String, String> src, String... ignoreColumns) throws Exception {
         if (src == null || target == null) {
             return;
         }

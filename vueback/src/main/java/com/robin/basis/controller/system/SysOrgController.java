@@ -1,16 +1,15 @@
 package com.robin.basis.controller.system;
 
+
 import com.robin.basis.dto.SysOrgDTO;
+import com.robin.basis.mapper.SysOrgMapper;
 import com.robin.basis.model.system.SysOrg;
-import com.robin.basis.service.system.SysOrgService;
-import com.robin.basis.service.system.SysUserOrgService;
-import com.robin.core.base.dao.JdbcDao;
-import com.robin.core.base.spring.SpringContextHolder;
+import com.robin.basis.service.system.ISysOrgService;
 import com.robin.core.base.util.Const;
 import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.query.util.PageQuery;
 import com.robin.core.sql.util.FilterConditionBuilder;
-import com.robin.core.web.controller.AbstractCrudDhtmlxController;
+import com.robin.core.web.controller.AbstractMyBatisController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.util.Assert;
@@ -26,18 +25,13 @@ import java.util.stream.Stream;
 
 @RestController
 @RequestMapping("/system/org")
-public class SysOrgController extends AbstractCrudDhtmlxController<SysOrg, Long, SysOrgService> {
+public class SysOrgController extends AbstractMyBatisController<ISysOrgService, SysOrgMapper,SysOrg,Long> {
     @Autowired
     private MessageSource messageSource;
     @Resource
-    private SysOrgService orgService;
+    private ISysOrgService orgService;
 
-    @GetMapping("/edit/{id}")
-    @ResponseBody
-    public Map<String, Object> editOrg(HttpServletRequest request,
-                                       HttpServletResponse response, @PathVariable Long id) {
-        return doEdit(id);
-    }
+
     @GetMapping("/listUser")
     public Map<String, Object> listUser(HttpServletRequest request, HttpServletResponse response) {
         PageQuery query = wrapPageQuery(request);
@@ -47,9 +41,8 @@ public class SysOrgController extends AbstractCrudDhtmlxController<SysOrg, Long,
         }else {
             query.setSelectParamId("GET_SYSUSERINFOINORG");
         }
-        wrapQuery(request,query);
 
-        return doQuery(request,null, query);
+        return doQuery(null, query);
     }
 
 
@@ -61,7 +54,7 @@ public class SysOrgController extends AbstractCrudDhtmlxController<SysOrg, Long,
         return doUpdate(valueMap, Long.valueOf(request.getParameter("id")));
     }
 
-    @PostMapping("/save")
+    @PostMapping
     @ResponseBody
     public Map<String, Object> saveOrg(HttpServletRequest request, HttpServletResponse response) {
         Map<String, Object> retMap = new HashMap<>();
@@ -78,11 +71,11 @@ public class SysOrgController extends AbstractCrudDhtmlxController<SysOrg, Long,
                 Integer codeNum = 10000 + Integer.parseInt(orgCode.substring(orgCode.length() - 4, orgCode.length())) + 1;
                 vo.setTreeCode(orgCode.substring(0, orgCode.length() - 4) + String.valueOf(codeNum).substring(1, 5));
             } else {
-                SysOrg porg = service.getEntity(Long.valueOf(vo.getPid()));
+                SysOrg porg = service.get(Long.valueOf(vo.getPid()));
                 vo.setTreeCode(porg.getTreeCode() + "0001");
             }
             if (!vo.getPid().equals(0L)) {
-                SysOrg porg = service.getEntity(Long.valueOf(vo.getPid()));
+                SysOrg porg = service.get(Long.valueOf(vo.getPid()));
                 vo.setTreeLevel(porg.getTreeLevel() + 1);
             } else {
                 vo.setTreeLevel(1);
@@ -208,7 +201,7 @@ public class SysOrgController extends AbstractCrudDhtmlxController<SysOrg, Long,
         String id = request.getParameter("pid");
         Map<String, Object> map = new HashMap<String, Object>();
         if (!"0".equals(id)) {
-            SysOrg org = service.getEntity(Long.valueOf(id));
+            SysOrg org = service.get(Long.valueOf(id));
             map.put("id", org.getId());
             map.put("text", org.getOrgName());
         } else {
@@ -218,11 +211,4 @@ public class SysOrgController extends AbstractCrudDhtmlxController<SysOrg, Long,
         return map;
     }
 
-
-
-
-    @Override
-    protected String wrapQuery(HttpServletRequest request, PageQuery query) {
-        return null;
-    }
 }

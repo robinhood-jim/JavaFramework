@@ -8,6 +8,8 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.robin.core.base.dto.PageDTO;
 import com.robin.core.base.exception.ServiceException;
 import com.robin.core.base.util.Const;
+import com.robin.core.query.util.PageQuery;
+import com.robin.core.sql.util.FilterCondition;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -50,5 +52,7 @@ public interface IMybatisBaseService<T extends Serializable,P extends Serializab
     boolean deleteByField(String fieldName, Object value);
     boolean saveEntity(T entity);
     boolean updateModelById(T entity);
-
+    void queryBySelectId(PageQuery<Map<String,Object>> query) throws ServiceException;
+    List<Map<String, Object>> queryBySql(String sqlstr, Object... objects) throws ServiceException;
+    void queryByCondition(FilterCondition condition, PageQuery<T> pageQuery);
 }
