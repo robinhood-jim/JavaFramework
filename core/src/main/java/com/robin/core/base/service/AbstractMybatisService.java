@@ -160,6 +160,15 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>, T extends 
         wrapper.eq(fieldName, value);
         return this.remove(wrapper);
     }
+    @Override
+    @Transactional(rollbackFor = RuntimeException.class)
+    public boolean deleteByLogic(List<P> ids, SFunction<T,?> logicField){
+        UpdateWrapper<T> updateWrapper=new UpdateWrapper<>();
+        updateWrapper.lambda().set(logicField,Const.INVALID)
+                .eq(logicField,Const.VALID);
+        updateWrapper.in(pkColumn,ids);
+        return this.update(updateWrapper);
+    }
 
 
     @Override
@@ -744,6 +753,7 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>, T extends 
             throw new ServiceException(e);
         }
     }
+
     protected JdbcDao getJdbcDao(){
         return SpringContextHolder.getBean("jdbcDao",JdbcDao.class);
     }

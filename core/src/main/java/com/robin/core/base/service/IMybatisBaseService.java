@@ -55,4 +55,5 @@ public interface IMybatisBaseService<T extends Serializable,P extends Serializab
     void queryBySelectId(PageQuery<Map<String,Object>> query) throws ServiceException;
     List<Map<String, Object>> queryBySql(String sqlstr, Object... objects) throws ServiceException;
     void queryByCondition(FilterCondition condition, PageQuery<T> pageQuery);
+    boolean deleteByLogic(List<P> ids, SFunction<T,?> logicField);
 }
