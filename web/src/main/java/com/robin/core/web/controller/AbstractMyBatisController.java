@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 /**
  * <p>Project:  frame</p>
@@ -137,12 +138,15 @@ public abstract class AbstractMyBatisController<S extends IMybatisBaseService<T,
             throw new WebException(ex);
         }
     }
-    protected Map<String, Object> doSave(Map<String,Object> paramMap) {
+    protected Map<String, Object> doSave(Map<String,Object> paramMap, Consumer<T> consumer) {
         Map<String, Object> retMap = new HashMap<>();
         try {
             T object=this.voType.newInstance();
             ConvertUtil.setDateFormat(ConvertUtil.ymdSepformatter);
             ConvertUtil.convertToModel(object,paramMap);
+            if(consumer!=null){
+                consumer.accept(object);
+            }
             this.service.saveEntity(object);
             constructRetMap(retMap);
         } catch (Exception ex) {

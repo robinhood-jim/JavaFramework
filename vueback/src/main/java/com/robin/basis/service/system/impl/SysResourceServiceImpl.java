@@ -1,15 +1,20 @@
 package com.robin.basis.service.system.impl;
 
+import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.robin.basis.dto.RouterDTO;
+import com.robin.basis.dto.query.SysResourceQueryDTO;
 import com.robin.basis.mapper.SysResourceMapper;
 import com.robin.basis.model.system.SysResource;
 import com.robin.basis.model.user.SysResourceUser;
+import com.robin.basis.service.system.ISysResourceService;
+import com.robin.basis.vo.SysResourceVO;
 import com.robin.core.base.exception.ServiceException;
 import com.robin.core.base.service.AbstractMybatisService;
 import com.robin.core.base.util.Const;
 import com.robin.core.collection.util.CollectionMapConvert;
 import com.robin.core.query.util.PageQuery;
-import com.robin.basis.service.system.ISysResourceService;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -50,6 +55,37 @@ public class SysResourceServiceImpl extends AbstractMybatisService<SysResourceMa
             }
         }
 
+    }
+    public List<SysResourceVO> search(SysResourceQueryDTO dto){
+        boolean useQuery=!StrUtil.isAllBlank(dto.getCondition(),dto.getType());
+        List<SysResource> allList=queryByField(SysResource::getStatus, Const.OPERATOR.EQ,Const.VALID);
+        Map<Long,List<SysResource>> pidMap=allList.stream().collect(Collectors.groupingBy(SysResource::getPid));
+        List<SysResource> queryList= this.lambdaQuery()
+                .eq(useQuery,SysResource::getPid,0L)
+                .eq(ObjectUtil.isNotNull(dto.getType()),SysResource::getType,dto.getType())
+                .and(StrUtil.isNotBlank(dto.getCondition()),wrapper->wrapper.like(SysResource::getName,dto.getCondition())
+                        .or(orwrapper->orwrapper.like(SysResource::getCode,dto.getCondition())))
+                .orderByAsc(SysResource::getSeqNo).list();
+        return queryList.stream().map(f->{
+            SysResourceVO vo=new SysResourceVO();
+            BeanUtils.copyProperties(f,vo);
+            vo.setSort(f.getSeqNo());
+            if(!useQuery){
+                recusionResourceTree(pidMap,vo);
+            }
+            return vo;
+        }).collect(Collectors.toList());
+    }
+    private void recusionResourceTree(Map<Long,List<SysResource>> pidMap, SysResourceVO vo){
+        if(pidMap.containsKey(vo.getId())){
+            vo.setChildren(pidMap.get(vo.getId()).stream().map(f->{
+                                SysResourceVO vo1=new SysResourceVO();
+                                BeanUtils.copyProperties(f,vo1);
+                                recusionResourceTree(pidMap,vo1);
+                                return vo1;
+                            }
+                    ).collect(Collectors.toList()));
+        }
     }
 
     public List<SysResource> getOrgAllMenu(Long orgId) {

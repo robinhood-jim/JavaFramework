@@ -8,7 +8,7 @@ import java.util.List;
 
 @Data
 public class SysUserVO implements Serializable {
-    private String id;
+    private Long id;
     private String userAccount;
     private String userName;
     private String nickName;

@@ -109,8 +109,9 @@ public class ResourceConst {
         }
     }
     public enum RESTYPE{
-        MENU("1"),
-        BUTTON("2");
+        DIR("1"),
+        MENU("2"),
+        BUTTON("3");
 
         private String value;
 

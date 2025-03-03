@@ -4,15 +4,14 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.google.common.collect.Maps;
 import com.robin.basis.mapper.SysRoleMapper;
-
+import com.robin.basis.mapper.SysUserRoleMapper;
 import com.robin.basis.model.user.SysResourceRole;
 import com.robin.basis.model.user.SysRole;
 import com.robin.basis.model.user.SysUserRole;
-import com.robin.basis.service.system.ISysUserRoleService;
+import com.robin.basis.service.system.ISysRoleService;
 import com.robin.core.base.exception.DAOException;
 import com.robin.core.base.exception.ServiceException;
 import com.robin.core.base.service.AbstractMybatisService;
-import com.robin.basis.service.system.ISysRoleService;
 import com.robin.core.base.util.Const;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -29,13 +28,13 @@ import java.util.stream.Collectors;
 @Service
 public class SysRoleServiceImpl extends AbstractMybatisService<SysRoleMapper, SysRole,Long> implements ISysRoleService {
     @Resource
-    private ISysUserRoleService roleService;
+    private SysUserRoleMapper sysUserRoleMapper;
 
     public Map<Long,List<SysUserRole>> getRoleIdByUser(List<Long> userId){
         LambdaQueryWrapper<SysUserRole> wrapper=new QueryWrapper<SysUserRole>().lambda();
         wrapper.in(SysUserRole::getUserId,userId);
         wrapper.eq(SysUserRole::getStatus, Const.VALID);
-        List<SysUserRole> userRoles=roleService.list(wrapper);
+        List<SysUserRole> userRoles=sysUserRoleMapper.selectList(wrapper);
         if(!CollectionUtils.isEmpty(userRoles)){
             return userRoles.stream().collect(Collectors.groupingBy(SysUserRole::getUserId));
         }else{

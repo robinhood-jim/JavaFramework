@@ -222,11 +222,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
         } catch (Exception ex) {
             throw new DAOException(ex);
         }
-        if (ret != null) {
-            return ret;
-        } else {
-            return -1;
-        }
+        return Objects.requireNonNullElse(ret, -1);
     }
 
     @Override
@@ -286,7 +282,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
     public  int countByNameParam(String nameSql,Map<String,Object> paramMap){
         try {
             if (log.isDebugEnabled()) {
-                log.debug("count sql", nameSql);
+                log.debug("count sql {}", nameSql);
             }
             return getNamedJdbcTemplate().queryForObject(nameSql,paramMap,Integer.class);
         }catch (Exception ex){
@@ -783,8 +779,6 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
         try {
             List<Object> objList = new ArrayList<>();
             AnnotationRetriever.EntityContent<T> tableDef = AnnotationRetriever.getMappingTableByCache(clazz);
-            List<FieldContent> fields = AnnotationRetriever.getMappingFieldsCache(clazz);
-            Map<String, FieldContent> fieldsMap = AnnotationRetriever.getMappingFieldsMapCache(clazz);
             StringBuilder buffer = new StringBuilder();
             buffer.append("delete from ");
             appendSchemaAndTable(tableDef, buffer);

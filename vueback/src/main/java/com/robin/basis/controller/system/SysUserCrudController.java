@@ -57,40 +57,6 @@ public class SysUserCrudController extends AbstractMyBatisController<ISysUserSer
     }
 
 
-    protected String wrapQuery(HttpServletRequest request, PageQuery query) {
-        List<Long> orgIds = null;
-        if (request.getParameter("orgId") != null && !request.getParameter("orgId").isEmpty()) {
-            orgIds = sysOrgService.getSubIdByParentOrgId(Long.valueOf(request.getParameter("orgId")));
-        }
-        String addTag=request.getParameter("addTag");
-        StringBuilder builder = new StringBuilder();
-        StringBuilder userBuilder=new StringBuilder();
-        if (request.getParameter("username") != null && !"".equals(request.getParameter("username"))) {
-            if(Const.VALID.equals(addTag)){
-                userBuilder.append(" and a.user_name like '%" + request.getParameter("username") + "%'");
-            }else {
-                builder.append(" and a.user_name like '%" + request.getParameter("username") + "%'");
-            }
-        }
-        if (request.getParameter("accountType") != null && !"".equals(request.getParameter("accountType"))) {
-            if(Const.VALID.equals(addTag)){
-                userBuilder.append(" and a.account_type =" + request.getParameter("accountType"));
-            }else {
-                builder.append(" and a.account_type =" + request.getParameter("accountType"));
-            }
-        }
-        if (request.getParameter("phone") != null && !"".equals(request.getParameter("phone"))) {
-            builder.append(" and a.phone like '%" + request.getParameter("phone")+"%'");
-        }
-        if (orgIds != null && !orgIds.isEmpty()) {
-            builder.append(" and b.org_id in (" + orgIds + ")");
-        }
-        query.getParameters().put("queryCondition", builder.toString());
-        if(userBuilder.length()>0){
-            query.getParameters().put("userCondition",userBuilder.toString());
-        }
-        return null;
-    }
 
 
     @PostMapping
@@ -101,7 +67,7 @@ public class SysUserCrudController extends AbstractMyBatisController<ISysUserSer
         if (!list.isEmpty()) {
             return wrapError(new WebException(messageSource.getMessage("message.userNameExists", null, Locale.getDefault())));
         } else {
-            return doSave(reqMap);
+            return doSave(reqMap,null);
         }
     }
 

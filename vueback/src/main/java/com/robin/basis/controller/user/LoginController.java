@@ -17,6 +17,8 @@ package com.robin.basis.controller.user;
 
 import cn.hutool.jwt.JWTPayload;
 import cn.hutool.jwt.JWTUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.google.common.collect.Lists;
 import com.robin.basis.dto.LoginUserDTO;
 import com.robin.basis.dto.RoleDTO;
@@ -30,6 +32,7 @@ import com.robin.core.base.dao.JdbcDao;
 import com.robin.core.base.exception.MissingConfigException;
 import com.robin.core.base.spring.SpringContextHolder;
 import com.robin.core.base.util.Const;
+import com.robin.core.base.util.ResourceConst;
 import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.query.util.PageQuery;
 import com.robin.core.web.controller.AbstractController;
@@ -187,7 +190,10 @@ public class LoginController extends AbstractController {
         return retMap;
     }
     public List<RouterDTO> getMenuList(Long userId) {
-        List<SysResource> allList = resourceService.queryByField(SysResource::getStatus, Const.OPERATOR.EQ,Const.VALID);
+        LambdaQueryWrapper<SysResource> queryWrapper=new QueryWrapper<SysResource>().lambda();
+        queryWrapper.eq(SysResource::getStatus,Const.VALID);
+        queryWrapper.in(SysResource::getType, ResourceConst.RESTYPE.DIR.toString(),ResourceConst.RESTYPE.MENU.toString());
+        List<SysResource> allList = resourceService.list(queryWrapper);
         List<RouterDTO> dtoList = allList.stream().map(RouterDTO::fromVO).collect(Collectors.toList());
         Map<Long, RouterDTO> dtoMap = dtoList.stream().collect(Collectors.toMap(RouterDTO::getId, Function.identity()));
         RouterDTO root = new RouterDTO();

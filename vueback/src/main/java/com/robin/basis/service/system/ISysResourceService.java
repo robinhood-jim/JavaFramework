@@ -2,7 +2,9 @@ package com.robin.basis.service.system;
 
 import com.robin.basis.dto.RouterDTO;
 
+import com.robin.basis.dto.query.SysResourceQueryDTO;
 import com.robin.basis.model.system.SysResource;
+import com.robin.basis.vo.SysResourceVO;
 import com.robin.core.base.service.IMybatisBaseService;
 
 import java.util.List;
@@ -13,4 +15,5 @@ public interface ISysResourceService extends IMybatisBaseService<SysResource,Lon
     List<SysResource> getOrgAllMenu(Long orgId);
     Map<String, Object> getUserRights(Long userId);
     List<RouterDTO> getMenuList(Long userId);
+    List<SysResourceVO> search(SysResourceQueryDTO dto);
 }
