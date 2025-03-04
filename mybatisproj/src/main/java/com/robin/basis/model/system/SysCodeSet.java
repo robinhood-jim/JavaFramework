@@ -14,6 +14,6 @@ public class SysCodeSet extends AbstractMybatisModel {
     private Long id;
     private String enName;
     private String cnName;
-    private String csStatus;
+    private String remark;
 
 }

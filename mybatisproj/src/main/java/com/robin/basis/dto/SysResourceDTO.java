@@ -1,19 +1,17 @@
-package com.robin.basis.vo;
+package com.robin.basis.dto;
 
 import lombok.Data;
 
 import java.io.Serializable;
-import java.util.List;
 
 @Data
-public class SysResourceVO implements Serializable {
+public class SysResourceDTO implements Serializable {
     private Long id;
     private Long pid;
     private String resName;
     private String resType;
     private String icon;
     private String routerPath;
-    private Integer sort;
+    private Integer seqNo;
     private String componentPath;
-    private List<SysResourceVO> children;
 }

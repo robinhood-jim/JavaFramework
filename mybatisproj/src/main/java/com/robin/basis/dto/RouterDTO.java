@@ -28,7 +28,7 @@ public class RouterDTO {
         RouterDTO dto=new RouterDTO();
         BeanUtils.copyProperties(source,dto);
         dto.setAssignType(Const.RESOURCE_ASSIGN_ACCESS);
-        dto.getMeta().setTitle(source.getName());
+        dto.getMeta().setTitle(source.getResName());
         dto.getMeta().setIcon(source.getIcon());
         dto.setPath(source.getRouterPath());
         if(Const.VALID.equals(source.getLeafTag().toString())){

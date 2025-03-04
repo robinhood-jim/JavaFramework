@@ -18,24 +18,20 @@ package com.robin.basis.model.user;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.robin.basis.model.AbstractMybatisModel;
 import com.robin.core.base.annotation.MappingEntity;
 import com.robin.core.base.annotation.MappingField;
 import com.robin.core.base.model.BaseObject;
 import lombok.Data;
 
 @MappingEntity(value = "t_sys_resource_user_r")
-@TableName("t_sys_resource_user_r")
 @Data
-public class SysResourceUser extends BaseObject {
+public class SysResourceUser extends AbstractMybatisModel {
 
 	// primary key
 	@MappingField(primary = true, increment = true)
 	@TableId(type = IdType.AUTO)
 	private Long id; //
-
-	// fields
-	@MappingField
-	private String status;
 	@MappingField(value = "res_id")
 	private Integer resId;
 	@MappingField(value = "user_id")
@@ -86,7 +82,7 @@ public class SysResourceUser extends BaseObject {
 		StringBuilder buffer = new StringBuilder();
 		buffer.append("[SysResourceUser:");
 		buffer.append(" id:").append(id);
-		buffer.append(" status:").append(dealNull(status));
+		buffer.append(" status:").append(dealNull(getStatus()));
 		buffer.append(" resId:").append(dealNull(resId));
 		buffer.append(" userId:").append(dealNull(userId));
 		buffer.append("]");
@@ -97,7 +93,7 @@ public class SysResourceUser extends BaseObject {
 		StringBuilder buffer = new StringBuilder();
 		buffer.append("{");
 		buffer.append("\"id\":\"").append(id).append("\"");
-		buffer.append(",\"status\":\"").append(dealNull(status)).append("\"");
+		buffer.append(",\"status\":\"").append(dealNull(getStatus())).append("\"");
 		buffer.append(",\"resId\":\"").append(dealNull(resId)).append("\"");
 		buffer.append(",\"userId\":\"").append(dealNull(userId)).append("\"");
 		buffer.append("}");
@@ -118,14 +114,6 @@ public class SysResourceUser extends BaseObject {
 
 	public void setId(Long id) {
 		this.id = id;
-	}
-
-	public String getStatus() {
-		return status;
-	}
-
-	public void setStatus(String status) {
-		this.status = status;
 	}
 
 	public Integer getResId() {

@@ -60,7 +60,7 @@ public class SysUserServiceImpl extends AbstractMybatisService<SysUserMapper, Sy
                 .in(ObjectUtil.isNotEmpty(queryDTO.getOrgId()),SysUser::getOrgId,subIds)
                 .and(StrUtil.isNotBlank(queryDTO.getName()), wrapper -> wrapper.like(SysUser::getUserAccount, queryDTO.getName())
                         .or(orWrapper -> orWrapper.like(SysUser::getNickName, queryDTO.getName())))
-                .page(getPage(queryDTO,"create_tm",false));
+                .page(getPage(queryDTO));
 
         Map<Long,List<SysUserRole>> userRoles= sysRoleService.getRoleIdByUser(page.getRecords().stream().map(SysUser::getId).collect(Collectors.toList()));
         return WebUtils.toPageVO(page,user->{

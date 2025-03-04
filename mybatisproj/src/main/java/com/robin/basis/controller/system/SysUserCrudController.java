@@ -86,23 +86,7 @@ public class SysUserCrudController extends AbstractMyBatisController<ISysUserSer
         }
     }
 
-    @GetMapping("/listorg")
-    public Map<String, Object> listUserOrg(HttpServletRequest request) {
-        Map<String, Object> retMap = new HashMap<>();
-        if (request.getSession().getAttribute(Const.SESSION) != null) {
-            Session session = (Session) request.getSession().getAttribute(Const.SESSION);
-            PageQuery query = new PageQuery();
-            query.setPageSize(0);
-            query.setSelectParamId("GETUSER_ORG");
-            query.addQueryParameter(new Object[]{session.getUserId()});
-            service.queryBySelectId(query);
-            retMap.put("options", query.getRecordSet());
-            constructRetMap(retMap);
-        } else {
-            wrapFailed(retMap, messageSource.getMessage("login.require", null, Locale.getDefault()));
-        }
-        return retMap;
-    }
+
 
 
     @DeleteMapping

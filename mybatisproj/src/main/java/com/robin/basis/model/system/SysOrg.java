@@ -32,7 +32,6 @@ public class SysOrg extends AbstractMybatisModel
     @TableId(type = IdType.AUTO)
     private Long id;
     private Integer treeLevel;
-    private String orgStatus;
     private Long pid;
     private String orgCode;
     private String orgName;
@@ -40,7 +39,6 @@ public class SysOrg extends AbstractMybatisModel
     private String orgAbbr;
     private String remark;
     private String orderNo;
-    private String orgType;
     private Long tenantId;
     public static String STATUS_ACTIVE = "1";
     public static String STATUS_INACTIVE = "0";

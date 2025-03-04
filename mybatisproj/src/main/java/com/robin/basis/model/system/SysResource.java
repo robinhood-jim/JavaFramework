@@ -27,10 +27,8 @@ import lombok.Data;
 public class SysResource extends AbstractMybatisModel {
 	@TableId(type = IdType.AUTO)
 	private Long id;
-	@TableField("res_name")
-	private String name;
-	@TableField("res_type")
-	private String type;
+	private String resName;
+	private String resType;
 	private String url;
 	private Long powerId;
 	@TableField("is_leaf")
@@ -38,7 +36,6 @@ public class SysResource extends AbstractMybatisModel {
 	private String status;
 	@TableField("res_code")
 	private String code;
-	private String resId;
 	private Long pid;
 	private Integer seqNo;
 	private String remark;

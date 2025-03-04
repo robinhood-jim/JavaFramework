@@ -5,7 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.robin.basis.mapper.SysUserRoleMapper;
-import com.robin.basis.model.system.SysResource;
+import com.robin.basis.model.AbstractMybatisModel;
 import com.robin.basis.model.user.SysUserRole;
 import com.robin.basis.service.system.ISysUserRoleService;
 import com.robin.core.base.service.AbstractMybatisService;
@@ -40,8 +40,9 @@ public class SysUserRoleServiceImpl extends AbstractMybatisService<SysUserRoleMa
                                 //logic delete
                                 if(!CollectionUtils.isEmpty(removeList)) {
                                         UpdateWrapper<SysUserRole> wrapper = new UpdateWrapper<>();
-                                        wrapper.set("status", Const.INVALID).eq("user_id", uid)
-                                                .in("role_id", removeList.stream().map(SysUserRole::getRoleId).collect(Collectors.toList()));
+                                        wrapper.lambda().set(AbstractMybatisModel::getStatus, Const.INVALID)
+                                                .eq(SysUserRole::getUserId, uid).eq(AbstractMybatisModel::getStatus,Const.VALID)
+                                                .in(SysUserRole::getRoleId, removeList.stream().map(SysUserRole::getRoleId).collect(Collectors.toList()));
                                         update(wrapper);
                                 }
                                 if(!CollectionUtils.isEmpty(insertList)) {

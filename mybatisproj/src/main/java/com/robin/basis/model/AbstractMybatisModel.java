@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.robin.core.base.model.BaseObject;
+import com.robin.core.base.util.Const;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -36,7 +37,7 @@ public class AbstractMybatisModel extends BaseObject {
 
 
     @TableField(value = "status", fill = FieldFill.INSERT)
-    private String status;
+    private String status= Const.VALID;
 
     /**
      * 租户标识

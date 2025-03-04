@@ -1,6 +1,7 @@
 package com.robin.core.base.service;
 
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
@@ -20,7 +21,7 @@ public interface IMybatisBaseService<T extends Serializable,P extends Serializab
     boolean deleteByIds(String ids);
     T get(P id);
     IPage<T> getPage(Map<String, Object> params, String defaultOrderField, boolean isAsc);
-    IPage<T> getPage(PageDTO pageDTO, String defaultOrderField, boolean isAsc);
+    IPage<T> getPage(PageDTO pageDTO);
 
     boolean insertBatch(Collection<T> entityList);
     boolean insertBatch(Collection<T> entityList, int batchSize);
@@ -31,7 +32,8 @@ public interface IMybatisBaseService<T extends Serializable,P extends Serializab
     IPage<T> queryPage(PageDTO pageDTO, Wrapper wrapper, String defautOrderFields, boolean isAsc);
     IPage<T> queryPage(Map<String, Object> paramMap, Wrapper wrapper, String defautOrderFields, boolean isAsc);
     List<T> queryByField(SFunction<T,?> queryField, Const.OPERATOR operator, Object... value) throws ServiceException;
-    List<T> queryByField(SFunction<T,?> queryField ,SFunction<T,?> orderField, Const.OPERATOR operator,boolean ascFlag, Object... value) throws ServiceException;
+    List<T> queryByField(SFunction<T,?> queryField ,SFunction<T,?> function, Const.OPERATOR operator,boolean ascFlag, Object... value) throws ServiceException;
+    T getByField(SFunction<T,?> queryField , Const.OPERATOR operator, Object... value) throws ServiceException;
     //依据字段查询
     List<T> selectByField(String columnName, Object value);
     T selectOneByField(String columnName, Object value);
@@ -41,6 +43,8 @@ public interface IMybatisBaseService<T extends Serializable,P extends Serializab
     List<T> queryWithRequest(Object queryObject);
     IPage<T> queryPageWithRequest(Object queryObject, String orderField, boolean isAsc) throws ServiceException;
     QueryWrapper wrapWithEntity(Object queryObject) throws Exception;
+    List<T> queryValid(QueryWrapper<T> queryWrapper);
+    List<T> queryValid(LambdaQueryWrapper<T> queryWrapper, SFunction<T,?> function);
     /**
      * 逻辑删除记录
      * @param ids  主键字段

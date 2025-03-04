@@ -1,6 +1,7 @@
 package com.robin.basis.controller.system;
 
 import com.robin.basis.dto.SysRoleDTO;
+import com.robin.basis.dto.query.SysRoleQueryDTO;
 import com.robin.basis.mapper.SysRoleMapper;
 import com.robin.basis.model.user.SysRole;
 import com.robin.basis.service.system.ISysRoleService;
@@ -22,39 +23,20 @@ import java.util.stream.Collectors;
 @RequestMapping("/system/role")
 public class SysRoleContorller extends AbstractMyBatisController<ISysRoleService, SysRoleMapper,SysRole,Long> {
 
-	@PostMapping("/list")
-	public Map<String,Object> listRole(HttpServletRequest request,
-			HttpServletResponse response) {
-		PageQuery query=wrapPageQuery(request);
-		query.setSelectParamId("GET_SYSROLE_PAGE");
-		query.getParameters().put("queryString", wrapQuery(request,query));
-		service.queryBySelectId(query);
-		Map<String,Object> retMap=new HashMap<>();
-		retMap.put("rows",query.getRecordSet());
-		retMap.put("total",query.getTotal());
-		return retMap;
+	@GetMapping
+	public Map<String,Object> listRole(@RequestBody SysRoleQueryDTO dto) {
+		return service.search(dto);
 	}
 
-	@PostMapping("/save")
-	public Map<String, Object> saveRole(HttpServletRequest request,
-										HttpServletResponse response){
-		Map<String, Object>  retmap=new HashMap<>();
-		try{
-			Map<String,Object> map=wrapRequest(request);
-			SysRole user=new SysRole();
-			ConvertUtil.convertToModel(user, map);
-			service.saveEntity(user);
-			wrapSuccessMap(retmap,"OK");
-		}catch(Exception ex){
-			wrapFailed(retmap,ex);
-		}
-		return retmap;
+	@PostMapping
+	public Map<String, Object> saveRole(@RequestBody SysRoleDTO dto){
+		service.saveRole(dto);
+		return wrapSuccess("OK");
 	}
-	@PutMapping("/update")
-	public Map<String, Object> updateRole(@RequestBody Map<String,Object> reqMap){
-		Long id = Long.valueOf(reqMap.get("id").toString());
-		//check userAccount unique
-		return doUpdate(reqMap, id);
+	@PutMapping
+	public Map<String, Object> updateRole(@RequestBody SysRoleDTO dto){
+		service.updateRole(dto);
+		return wrapSuccess("OK");
 	}
 	@GetMapping("/all")
 	public Map<String,Object> showAllRole(){
@@ -70,22 +52,11 @@ public class SysRoleContorller extends AbstractMyBatisController<ISysRoleService
 	public Map<String,Object> deleteRole(@RequestBody List<Long> ids){
 		Map<String,Object> retMap=new HashMap<>();
 		try{
-			service.deleteByIds(ids);
+			service.deleteRoles(ids);
 			constructRetMap(retMap);
 		}catch(Exception ex){
 			wrapFailed(retMap,ex);
 		}
 		return retMap;
-	}
-
-	public String wrapQuery(HttpServletRequest request,PageQuery query){
-		StringBuilder builder=new StringBuilder();
-		if( request.getParameter("roleName")!=null && !"".equals(request.getParameter("roleName"))){
-			builder.append(" and name like '%"+request.getParameter("roleName")+"%'");
-		}
-		if(!ObjectUtils.isEmpty(request.getParameter("status"))){
-			builder.append(" and status ='"+request.getParameter("status").toString()+"'");
-		}
-		return builder.toString();
 	}
 }

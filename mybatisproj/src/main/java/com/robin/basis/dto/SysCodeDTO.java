@@ -7,11 +7,11 @@ import java.io.Serializable;
 
 @Data
 public class SysCodeDTO implements Serializable {
-    private String id;
+    private String value;
     private String label;
     public static SysCodeDTO fromVO(SysCode code){
         SysCodeDTO dto=new SysCodeDTO();
-        dto.setId(code.getItemValue());
+        dto.setValue(code.getItemValue());
         dto.setLabel(code.getItemName());
         return dto;
     }

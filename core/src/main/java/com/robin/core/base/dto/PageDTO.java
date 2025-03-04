@@ -10,7 +10,8 @@ public class PageDTO {
     private Long limit;
     private Long size;
     private String orderField;
-    private String order;
+    private Boolean order=false;
+    private String orderBy;
     private Map<String,Object> param;
 
 }

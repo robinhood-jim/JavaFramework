@@ -1,5 +1,6 @@
 package com.robin.core.base.service;
 
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
@@ -68,7 +69,7 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>, T extends 
     protected String defaultOrderField = "create_time";
     protected Boolean defaultOrder = false;
     protected Map<String, Field> fieldMap;
-    protected String deleteColumn = "delete_flag";
+    protected String statusColumn = "status";
     protected Method setDeleteMethod = null;
     protected Method getDeleteMethod = null;
     protected Integer invalidValue = Integer.valueOf(Const.INVALID);
@@ -114,9 +115,9 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>, T extends 
                 fieldMappingMap.put(fieldName, columnName);
                 fieldTypeMap.put(columnName, field.getType());
             }
-            if (getMethods.containsKey(com.robin.core.base.util.StringUtils.returnCamelCaseByFieldName(deleteColumn))) {
-                getDeleteMethod = getMethods.get(com.robin.core.base.util.StringUtils.returnCamelCaseByFieldName(deleteColumn));
-                setDeleteMethod = setMethods.get(com.robin.core.base.util.StringUtils.returnCamelCaseByFieldName(deleteColumn));
+            if (getMethods.containsKey(com.robin.core.base.util.StringUtils.returnCamelCaseByFieldName(statusColumn))) {
+                getDeleteMethod = getMethods.get(com.robin.core.base.util.StringUtils.returnCamelCaseByFieldName(statusColumn));
+                setDeleteMethod = setMethods.get(com.robin.core.base.util.StringUtils.returnCamelCaseByFieldName(statusColumn));
             }
             LicenseUtils.getInstance();
         } catch (Exception ex) {
@@ -258,7 +259,7 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>, T extends 
     }
 
     @Override
-    public IPage<T> getPage(PageDTO pageDTO, String defaultOrderField, boolean isAsc) {
+    public IPage<T> getPage(PageDTO pageDTO) {
         long curPage = 1;
         long limit = 10;
 
@@ -277,29 +278,12 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>, T extends 
 
         //排序字段
         String orderField = pageDTO.getOrderField();
-        String order = pageDTO.getOrder();
+
 
         //前端字段排序
-        if (StringUtils.isNotEmpty(orderField) && StringUtils.isNotEmpty(order)) {
-            if (Const.ASC.equalsIgnoreCase(order)) {
-                return page.addOrder(OrderItem.asc(orderField));
-            } else {
-                return page.addOrder(OrderItem.desc(orderField));
-            }
+        if(StrUtil.isBlank(pageDTO.getOrderBy()) && StringUtils.isNotEmpty(orderField)) {
+            page.addOrder(pageDTO.getOrder()?OrderItem.asc(orderField):OrderItem.desc(orderField));
         }
-
-        //没有排序字段，则不排序
-        if (StringUtils.isEmpty(defaultOrderField)) {
-            return page;
-        }
-
-        //默认排序
-        if (isAsc) {
-            page.addOrder(OrderItem.asc(defaultOrderField));
-        } else {
-            page.addOrder(OrderItem.desc(defaultOrderField));
-        }
-
         return page;
     }
 
@@ -325,29 +309,17 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>, T extends 
 
         //排序字段
         String orderField = (String) params.get(Const.ORDER_FIELD);
-        String order = (String) params.get(Const.ORDER);
-
+        Boolean order =  "true".equalsIgnoreCase(params.get(Const.ORDER).toString());
         //前端字段排序
-        if (StringUtils.isNotEmpty(orderField) && StringUtils.isNotEmpty(order)) {
-            if (Const.ASC.equalsIgnoreCase(order)) {
-                return page.addOrder(OrderItem.asc(orderField));
+        if (StringUtils.isNotEmpty(orderField)) {
+            page.addOrder(order?OrderItem.asc(orderField):OrderItem.desc(orderField));
+        }else if(!StringUtils.isEmpty(defaultOrderField)){
+            if (isAsc) {
+                page.addOrder(OrderItem.asc(defaultOrderField));
             } else {
-                return page.addOrder(OrderItem.desc(orderField));
+                page.addOrder(OrderItem.desc(defaultOrderField));
             }
         }
-
-        //没有排序字段，则不排序
-        if (StringUtils.isEmpty(defaultOrderField)) {
-            return page;
-        }
-
-        //默认排序
-        if (isAsc) {
-            page.addOrder(OrderItem.asc(defaultOrderField));
-        } else {
-            page.addOrder(OrderItem.desc(defaultOrderField));
-        }
-
         return page;
     }
 
@@ -420,7 +392,7 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>, T extends 
 
     @Override
     public IPage<T> queryPage(PageDTO pageDTO, Wrapper wrapper, String defautOrderFields, boolean isAsc) {
-        IPage<T> page = getPage(pageDTO, defautOrderFields, isAsc);
+        IPage<T> page = getPage(pageDTO);
         return this.page(page, wrapper);
     }
 
@@ -458,6 +430,22 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>, T extends 
         } catch (Exception ex) {
             log.error("{}", ex);
             throw new ServiceException(ex);
+        }
+    }
+    @Transactional(readOnly = true)
+    public List<T> queryValid(QueryWrapper<T> queryWrapper) {
+        queryWrapper.eq(statusColumn, Const.VALID);
+        return baseMapper.selectList(queryWrapper);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<T> queryValid(LambdaQueryWrapper<T> queryWrapper,SFunction<T,?> function) {
+        queryWrapper.eq(function, Const.VALID);
+        if(!ObjectUtils.isEmpty(queryWrapper)) {
+            return baseMapper.selectList(queryWrapper);
+        }else{
+            return baseMapper.selectList(new QueryWrapper<>());
         }
     }
 
@@ -526,8 +514,8 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>, T extends 
                 Iterator<Map.Entry<String, Object>> iter = pageDTO.getParam().entrySet().iterator();
                 wrapWithValue(getMethod, queryWrapper, iter);
             }
-            if (!StringUtils.isEmpty(pageDTO.getOrderField()) && !StringUtils.isEmpty(pageDTO.getOrder())) {
-                queryWrapper.orderBy(true, pageDTO.getOrder().equalsIgnoreCase(Const.ASC), pageDTO.getOrderField());
+            if (!StringUtils.isEmpty(pageDTO.getOrderField())) {
+                queryWrapper.orderBy(true, pageDTO.getOrder(), pageDTO.getOrderField());
             } else {
                 queryWrapper.orderBy(true, defaultOrder, defaultOrderField);
             }
@@ -751,6 +739,22 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>, T extends 
             getJdbcDao().queryByCondition(voType, condition, pageQuery);
         }catch (DAOException e) {
             throw new ServiceException(e);
+        }
+    }
+
+    @Override
+    public T getByField(SFunction<T, ?> queryField, Const.OPERATOR operator, Object... value) throws ServiceException {
+        try {
+            List<T> list = queryByField(queryField, operator, value);
+            if (!CollectionUtils.isEmpty(list)) {
+                if (list.size()>1){
+                    throw new DAOException("return more than one record");
+                }
+                return list.get(0);
+            }
+            return null;
+        }catch (DAOException ex){
+            throw new ServiceException(ex);
         }
     }
 

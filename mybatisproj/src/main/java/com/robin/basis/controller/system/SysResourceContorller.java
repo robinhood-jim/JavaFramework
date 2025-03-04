@@ -42,20 +42,7 @@ public class SysResourceContorller extends AbstractMyBatisController<ISysResourc
 			return wrapFailedMsg(ex);
 		}
 	}
-	@PostMapping("/assignrole")
-	public Map<String, Object> assignRole(HttpServletRequest request,HttpServletResponse response){
-		String[] ids=request.getParameter("selRoleIds").split(",");
-		Map<String, Object> retmap=new HashMap<>();
-		try{
-			sysRoleService.saveRoleRigth(ids, request.getParameter("resId"));
-		
-			retmap.put("success", "true");
-		}catch(ServiceException ex){
-			ex.printStackTrace();
-			retmap.put("success", "false");
-		}
-		return retmap;
-	}
+
 	@GetMapping("/listright/{userId}")
 	public Map<String,Object> userRights(@PathVariable Long userId){
 		return service.getUserRights(userId);

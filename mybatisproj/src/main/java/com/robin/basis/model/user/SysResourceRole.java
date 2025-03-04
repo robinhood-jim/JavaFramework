@@ -18,6 +18,7 @@ package com.robin.basis.model.user;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.robin.basis.model.AbstractMybatisModel;
 import com.robin.core.base.annotation.MappingEntity;
 import com.robin.core.base.annotation.MappingField;
 import com.robin.core.base.model.BaseObject;
@@ -27,7 +28,7 @@ import lombok.Data;
 @MappingEntity(value = "t_sys_resource_role_r")
 @TableName("t_sys_resource_role_r")
 @Data
-public class SysResourceRole extends BaseObject {
+public class SysResourceRole extends AbstractMybatisModel {
 
     // primary key
     @MappingField(primary = true, increment = true)
@@ -36,24 +37,14 @@ public class SysResourceRole extends BaseObject {
 
     // fields
     @MappingField(value = "role_id")
-    private Integer roleId;
-    @MappingField(value = "status")
-    private String status;
+    private Long roleId;
     @MappingField(value = "res_id")
-    private Integer resId;
+    private Long resId;
 
-
-    public static String REF_CLASS = "SysResourceRole";
-    public static String PROP_ROLE_ID = "roleId";
-    public static String PROP_STATUS = "status";
-    public static String PROP_RES_ID = "resId";
-    public static String PROP_ID = "id";
-
-    public static String REF_TABLE = "t_sys_resource_role_r";
-    public static String COL_ROLE_ID = "ROLE_ID";
-    public static String COL_STATUS = "STATUS";
-    public static String COL_RES_ID = "RES_ID";
-    public static String COL_ID = "ID";
+    public SysResourceRole(Long resId,Long roleId){
+        this.resId=resId;
+        this.roleId=roleId;
+    }
 
     @Override
     public boolean equals(Object obj) {
@@ -77,66 +68,7 @@ public class SysResourceRole extends BaseObject {
         return super.hashCode();
     }
 
-    @Override
-    public String toString() {
-        StringBuilder buffer = new StringBuilder();
-        buffer.append("[SysResourceRole:");
-        buffer.append(" id:").append(id);
-        buffer.append(" roleId:").append(dealNull(roleId));
-        buffer.append(" status:").append(dealNull(status));
-        buffer.append(" resId:").append(dealNull(resId));
-        buffer.append("]");
-        return buffer.toString();
-    }
 
-    public String toJson() {
-        StringBuilder buffer = new StringBuilder();
-        buffer.append("{");
-        buffer.append("\"id\":\"").append(id).append("\"");
-        buffer.append(",\"roleId\":\"").append(dealNull(roleId)).append("\"");
-        buffer.append(",\"status\":\"").append(dealNull(status)).append("\"");
-        buffer.append(",\"resId\":\"").append(dealNull(resId)).append("\"");
-        buffer.append("}");
-        return buffer.toString();
-    }
 
-    private String dealNull(Object str) {
-        if (str == null) {
-            return "";
-        } else {
-            return str.toString();
-        }
-    }
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Integer getRoleId() {
-        return roleId;
-    }
-
-    public void setRoleId(Integer roleId) {
-        this.roleId = roleId;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public Integer getResId() {
-        return resId;
-    }
-
-    public void setResId(Integer resId) {
-        this.resId = resId;
-    }
 }

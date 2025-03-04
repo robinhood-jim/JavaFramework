@@ -1,67 +1,60 @@
 package com.robin.basis.controller.system;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.robin.basis.dto.SysCodeDTO;
+import com.robin.basis.mapper.SysCodeSetMapper;
+import com.robin.basis.model.AbstractMybatisModel;
 import com.robin.basis.model.system.SysCode;
 import com.robin.basis.model.system.SysCodeSet;
-import com.robin.core.base.dao.JdbcDao;
+import com.robin.basis.service.system.ISysCodeService;
+import com.robin.basis.service.system.ISysCodeSetService;
+import com.robin.core.base.exception.WebException;
 import com.robin.core.base.util.Const;
-import com.robin.core.query.util.PageQuery;
-import com.robin.core.sql.util.FilterConditionBuilder;
-import com.robin.core.web.controller.AbstractController;
+import com.robin.core.web.controller.AbstractMyBatisController;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/system/codeSet/")
-public class SysCodeSetController extends AbstractController {
+@RequestMapping("/system/dict/")
+public class SysCodeSetController extends AbstractMyBatisController<ISysCodeSetService, SysCodeSetMapper,SysCodeSet,Long> {
     @Resource
-    private JdbcDao jdbcDao;
+     private ISysCodeService sysCodeService;
 
     @GetMapping("/data/{id}")
     public Map<String,Object> getById(@PathVariable Long id){
-        SysCode code=jdbcDao.getEntity(SysCode.class,id);
+        SysCode code=sysCodeService.getById(id);
         if(!ObjectUtils.isEmpty(code)){
             return wrapObject(code);
         }else{
             return wrapFailedMsg("no id found");
         }
     }
-    @GetMapping("/data/list")
-    public Map<String,Object> queryCode(Map<String,Object> reqMap){
-        FilterConditionBuilder conditionBuilder=new FilterConditionBuilder();
-        if(!ObjectUtils.isEmpty(reqMap.get("dictType"))){
-            SysCodeSet set=jdbcDao.getByField(SysCodeSet.class,SysCodeSet::getEnName, Const.OPERATOR.EQ,reqMap.get("dictType").toString());
-            if(!ObjectUtils.isEmpty(set))
-            conditionBuilder.addEq(SysCode::getCsId,set.getId());
-        }else if(!ObjectUtils.isEmpty(reqMap.get("dictLabel"))){
-            conditionBuilder.addFilter(SysCode::getItemName, Const.OPERATOR.LIKE,reqMap.get("dictLabel").toString());
-        }else if(!ObjectUtils.isEmpty(reqMap.get("status"))){
-            conditionBuilder.addEq(SysCode::getCodeStatus,Integer.parseInt(reqMap.get("status").toString()));
-        }
-        PageQuery<SysCode> pageQuery=new PageQuery<>();
-        pageQuery.setPageSize(0);
-        jdbcDao.queryByCondition(SysCode.class,conditionBuilder.build(),pageQuery);
-        Map<String,Object> retMap=new HashMap<>();
-        retMap.put("code",200);
-        retMap.put("rows",pageQuery.getRecordSet());
-        retMap.put("total",pageQuery.getRecordSet().size());
-        return reqMap;
-    }
-    @GetMapping("/data/type/{dictCode}")
+
+    @GetMapping("/code/{dictCode}")
     public Map<String,Object> getByCode(@PathVariable String dictCode){
-        SysCode code=new SysCode();
-        SysCodeSet set=jdbcDao.getByField(SysCodeSet.class,SysCodeSet::getEnName, Const.OPERATOR.EQ,dictCode);
-        if(!ObjectUtils.isEmpty(set)) {
-            code.setCsId(set.getId());
-            code.setCodeStatus(Const.VALID);
+        LambdaQueryWrapper<SysCodeSet> codeSetWrapper=new QueryWrapper<SysCodeSet>().lambda();
+        codeSetWrapper.eq(SysCodeSet::getEnName,dictCode);
+        codeSetWrapper.eq(AbstractMybatisModel::getStatus,Const.VALID);
+        List<SysCodeSet> codeSets=service.list(codeSetWrapper);
+        if(CollectionUtils.isEmpty(codeSets) ||  codeSets.size()>1){
+            throw new WebException("codeSet not exist or not unique");
         }
-        List<SysCode> list=jdbcDao.queryByVO(SysCode.class,code,"order_no");
+        SysCodeSet set=codeSets.get(0);
+        LambdaQueryWrapper<SysCode> queryWrapper=new QueryWrapper<SysCode>().lambda();
+        queryWrapper.eq(SysCode::getCsId,set.getId());
+        queryWrapper.eq(AbstractMybatisModel::getStatus,Const.VALID);
+        queryWrapper.orderByAsc(SysCode::getOrderNo);
+        List<SysCode> list=sysCodeService.list(queryWrapper);
         return wrapObject(list.stream().map(SysCodeDTO::fromVO).collect(Collectors.toList()));
     }
 

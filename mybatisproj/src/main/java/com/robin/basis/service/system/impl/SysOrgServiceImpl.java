@@ -1,11 +1,19 @@
 package com.robin.basis.service.system.impl;
 
+import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Lists;
 import com.robin.basis.dto.SysOrgDTO;
+import com.robin.basis.dto.query.SysOrgQueryDTO;
 import com.robin.basis.mapper.SysOrgMapper;
+import com.robin.basis.model.AbstractMybatisModel;
 import com.robin.basis.model.system.SysOrg;
+import com.robin.basis.model.user.SysUser;
 import com.robin.basis.model.user.SysUserOrg;
 import com.robin.basis.service.system.ISysOrgService;
+import com.robin.basis.service.system.ISysUserOrgService;
+import com.robin.basis.service.system.ISysUserRoleService;
+import com.robin.basis.service.system.ISysUserService;
+import com.robin.basis.vo.SysOrgVO;
 import com.robin.core.base.service.AbstractMybatisService;
 import com.robin.core.base.util.Const;
 import com.robin.core.sql.util.FilterConditionBuilder;
@@ -15,15 +23,67 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
+import javax.annotation.Resource;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
 public class SysOrgServiceImpl extends AbstractMybatisService<SysOrgMapper,SysOrg,Long> implements ISysOrgService {
+    @Resource
+    private ISysUserService sysUserService;
+    @Resource
+    private ISysUserOrgService userOrgService;
+
+    public List<SysOrgVO> queryOrg(SysOrgQueryDTO dto){
+        List<SysOrgVO> orgList=queryValid(null, AbstractMybatisModel::getStatus).stream().map(SysOrgVO::fromVO).collect(Collectors.toList());
+        Map<Long,List<SysOrgVO>> orgMap=orgList.stream().collect(Collectors.groupingBy(SysOrgVO::getPid));
+        List<SysOrgVO> topList=orgMap.get(dto.getPid());
+        if(!StrUtil.isBlank(dto.getName())){
+            Map<Long,SysOrgVO> idMap=orgList.stream().collect(Collectors.toMap(SysOrgVO::getId,Function.identity()));
+            List<SysOrg> orgs= this.lambdaQuery().and(wrapper->
+                wrapper.like(SysOrg::getOrgName,dto.getName())
+                        .or(orwapper->orwapper.like(SysOrg::getOrgCode,dto.getName()))
+            ).list();
+            if(!CollectionUtils.isEmpty(orgs)){
+                orgs.forEach(f->{
+                    SysOrgVO vo=idMap.get(f.getId());
+                    recusiveDown(orgMap,vo);
+                    recusiveUp(idMap,vo);
+                });
+            }
+        }else{
+            if(!CollectionUtils.isEmpty(topList)){
+                topList.forEach(f->recusiveDown(orgMap,f));
+            }
+        }
+        return topList;
+    }
+    public void recusiveDown(Map<Long,List<SysOrgVO>> pMap,SysOrgVO vo){
+        if(pMap.containsKey(vo.getId())){
+            vo.setChildren(pMap.get(vo.getId()).stream().map(f->{
+                        recusiveDown(pMap,f);
+                        return f;
+                    }
+            ).collect(Collectors.toList()));
+        }
+    }
+    public void recusiveUp(Map<Long,SysOrgVO> idMap,SysOrgVO vo){
+        if(vo.getPid()!=0L){
+            if(CollectionUtils.isEmpty(idMap.get(vo.getPid()).getChildren())){
+                List<SysOrgVO> list=Lists.newArrayList(vo);
+                idMap.get(vo.getPid()).setChildren(list);
+            }else if(!idMap.get(vo.getPid()).getChildren().contains(vo)){
+                idMap.get(vo.getPid()).getChildren().add(vo);
+            }
+            recusiveUp(idMap,idMap.get(vo.getPid()));
+        }
+    }
+
+
     @Override
     public List<Long> getSubIdByParentOrgId(Long orgId) {
-        List<SysOrg> list=queryByField(SysOrg::getOrgStatus, Const.OPERATOR.EQ,Const.VALID);
+        List<SysOrg> list=queryByField(AbstractMybatisModel::getStatus, Const.OPERATOR.EQ,Const.VALID);
         List<Long> subIds=null;
         if(!CollectionUtils.isEmpty(list)){
             subIds=new ArrayList<>();
@@ -41,11 +101,9 @@ public class SysOrgServiceImpl extends AbstractMybatisService<SysOrgMapper,SysOr
         }
     }
     @Transactional(rollbackFor = RuntimeException.class)
-    public int joinOrg(Long orgId,List<Long> uids){
+    public boolean joinOrg(Long orgId,List<Long> uids){
         Assert.isTrue(!CollectionUtils.isEmpty(uids),"");
-        Map<String,Object> map=new HashMap<>();
-        map.put("ids",uids);
-        Integer existCount=getJdbcDao().countByNameParam("select count(1) from t_sys_user_info where id in (:ids) and user_status='1'",map);
+        int existCount=sysUserService.lambdaQuery().in(SysUser::getId,uids).eq(AbstractMybatisModel::getStatus,Const.VALID).count();
         Assert.isTrue(existCount==uids.size(),"");
         List<SysUserOrg> list=new ArrayList<>();
         for(Long uid:uids){
@@ -55,22 +113,20 @@ public class SysOrgServiceImpl extends AbstractMybatisService<SysOrgMapper,SysOr
             userOrg.setStatus(Const.VALID);
             list.add(userOrg);
         }
-        return getJdbcDao().batchUpdate(list,SysUserOrg.class);
+        return userOrgService.insertBatch(list);
     }
     @Transactional(rollbackFor = RuntimeException.class)
-    public int removeOrg(Long orgId,List<Long> uids){
+    public boolean removeOrg(Long orgId,List<Long> uids){
         Assert.isTrue(!CollectionUtils.isEmpty(uids),"");
         Map<String,Object> map=new HashMap<>();
         map.put("ids",uids);
-        Integer existCount=getJdbcDao().countByNameParam("select count(1) from t_sys_user_info where id in (:ids) and user_status='1'",map);
+        int existCount=sysUserService.lambdaQuery().in(SysUser::getId,uids).eq(AbstractMybatisModel::getStatus,Const.VALID).count();
         Assert.isTrue(existCount==uids.size(),"");
-        FilterConditionBuilder builder=new FilterConditionBuilder();
-        builder.addEq(SysUserOrg::getOrgId,orgId);
-        builder.addFilter(SysUserOrg::getUserId, Const.OPERATOR.IN,uids);
-        return getJdbcDao().deleteByCondition(SysUserOrg.class,builder.build());
+        return userOrgService.lambdaUpdate().set(AbstractMybatisModel::getStatus,Const.INVALID)
+                .in(SysUserOrg::getUserId,uids).eq(SysUserOrg::getOrgId,orgId).eq(AbstractMybatisModel::getStatus,Const.VALID).update();
     }
     public List<SysOrgDTO> getOrgTree(Long pid){
-        List<SysOrgDTO> orgList=list().stream().filter(f->Const.VALID.equals(f.getOrgStatus())).map(SysOrgDTO::fromVO).collect(Collectors.toList());
+        List<SysOrgDTO> orgList=list().stream().filter(f->Const.VALID.equals(f.getStatus())).map(SysOrgDTO::fromVO).collect(Collectors.toList());
         Map<Long,List<SysOrgDTO>> parentMap=orgList.stream().collect(Collectors.groupingBy(SysOrgDTO::getPid));
         Map<Long,SysOrgDTO> idMap=orgList.stream().collect(Collectors.toMap(SysOrgDTO::getId, Function.identity()));
         SysOrgDTO root = new SysOrgDTO();
