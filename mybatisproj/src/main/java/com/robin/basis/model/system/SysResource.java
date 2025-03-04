@@ -38,7 +38,7 @@ public class SysResource extends AbstractMybatisModel {
 	private String code;
 	private Long pid;
 	private Integer seqNo;
-	private String remark;
+	private String componentName;
 	private Long orgId;
 	private String permission;
 	private Long tenantId;

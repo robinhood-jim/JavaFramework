@@ -66,7 +66,7 @@ public class SysResourceServiceImpl extends AbstractMybatisService<SysResourceMa
         List<SysResource> allList=queryByField(SysResource::getStatus, Const.OPERATOR.EQ,Const.VALID);
         Map<Long,List<SysResource>> pidMap=allList.stream().collect(Collectors.groupingBy(SysResource::getPid));
         List<SysResource> queryList= this.lambdaQuery()
-                .eq(useQuery,SysResource::getPid,0L)
+                .eq(!useQuery,SysResource::getPid,0L)
                 .eq(ObjectUtil.isNotNull(dto.getType()),SysResource::getResType,dto.getType())
                 .and(StrUtil.isNotBlank(dto.getCondition()),wrapper->wrapper.like(SysResource::getResName,dto.getCondition())
                         .or(orwrapper->orwrapper.like(SysResource::getCode,dto.getCondition())))

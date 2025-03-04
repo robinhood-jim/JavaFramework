@@ -84,7 +84,7 @@
 			union 
 			select c.*,d.assign_type from t_sys_resource_info c,t_sys_resource_user_r d where c.id=d.res_id and d.USER_ID=:userId and c.STATUS=1)e order by res_code,seq_no,assign_type desc
 		</FROMSQL>
-			<FIELD>id,res_type as type,res_name as name,url,is_leaf as leafTag,res_code as code,pid,seq_no as seqNo,assign_type as assignType,permission as permission,router_path as routerPath</FIELD>
+			<FIELD>id,res_type as type,res_name as name,url,is_leaf as leafTag,res_code as code,pid,seq_no as seqNo,assign_type as assignType,permission as permission,router_path as routerPath,component_name as componentName</FIELD>
 	</SQLSCRIPT>
 	<SQLSCRIPT ID="GET_RESOURCEINFOBYSYSRESP">
 		<FROMSQL> from (select a.*,0 as assignType from t_sys_resource_info a,t_sys_resource_resp_r b where a.ID=b.RES_ID and b.RESP_ID in (${respIds}) and a.STATUS='1'

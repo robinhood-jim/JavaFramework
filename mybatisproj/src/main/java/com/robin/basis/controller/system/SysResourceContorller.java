@@ -24,7 +24,7 @@ public class SysResourceContorller extends AbstractMyBatisController<ISysResourc
 	@Autowired
 	private ISysRoleService sysRoleService;
 	@GetMapping
-	public Map<String,Object> list(@RequestBody SysResourceQueryDTO dto) {
+	public Map<String,Object> list(SysResourceQueryDTO dto) {
 		return wrapObject(service.search(dto));
 	}
 

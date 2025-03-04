@@ -3,6 +3,7 @@ package com.robin.basis.controller.system;
 
 import com.robin.basis.dto.SysOrgDTO;
 import com.robin.basis.mapper.SysOrgMapper;
+import com.robin.basis.model.AbstractMybatisModel;
 import com.robin.basis.model.system.SysOrg;
 import com.robin.basis.service.system.ISysOrgService;
 import com.robin.core.base.util.Const;
@@ -101,7 +102,7 @@ public class SysOrgController extends AbstractMyBatisController<ISysOrgService, 
             builder.addEq(SysOrg::getPid,Long.valueOf(reqMap.get("parentId").toString()));
         }
         if(!ObjectUtils.isEmpty(reqMap.get("status"))){
-            builder.addEq(SysOrg::getOrgStatus,reqMap.get("status").toString());
+            builder.addEq(AbstractMybatisModel::getStatus,reqMap.get("status").toString());
         }
 
         PageQuery query = new PageQuery();
@@ -116,8 +117,8 @@ public class SysOrgController extends AbstractMyBatisController<ISysOrgService, 
         Assert.notNull(reqMap.get("userIds"),"");
         Long orgId=Long.valueOf(reqMap.get("orgId").toString());
         List<Long> uids= Stream.of(reqMap.get("userIds").toString().split(",")).map(Long::valueOf).collect(Collectors.toList());;
-        int count= orgService.joinOrg(orgId,uids);
-        return wrapObject(count);
+        orgService.joinOrg(orgId,uids);
+        return wrapObject("OK");
     }
 
 

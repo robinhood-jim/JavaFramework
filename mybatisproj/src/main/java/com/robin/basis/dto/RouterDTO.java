@@ -15,6 +15,7 @@ import java.util.Map;
 public class RouterDTO {
     private Long id;
     private String name;
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private String path;
     private Integer seqNo;
     private Long pid;
@@ -31,6 +32,7 @@ public class RouterDTO {
         dto.getMeta().setTitle(source.getResName());
         dto.getMeta().setIcon(source.getIcon());
         dto.setPath(source.getRouterPath());
+        dto.setName(source.getComponentName());
         if(Const.VALID.equals(source.getLeafTag().toString())){
             dto.setComponent(source.getUrl());
         }
@@ -43,6 +45,9 @@ public class RouterDTO {
             dto.setAssignType(map.get("assignType").toString());
             dto.getMeta().setTitle(map.get("name").toString());
             dto.setPath(map.get("routerPath").toString());
+            if(!ObjectUtils.isEmpty(map.get("componentName"))) {
+                dto.setName(map.get("componentName").toString());
+            }
             if(!ObjectUtils.isEmpty(map.get("icon"))) {
                 dto.getMeta().setIcon(map.get("icon").toString());
             }
