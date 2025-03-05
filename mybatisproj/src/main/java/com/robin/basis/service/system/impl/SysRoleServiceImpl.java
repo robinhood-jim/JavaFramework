@@ -6,11 +6,13 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.google.common.collect.Maps;
+import com.robin.basis.dto.SysResourceDTO;
 import com.robin.basis.dto.SysRoleDTO;
 import com.robin.basis.dto.query.SysRoleQueryDTO;
 import com.robin.basis.mapper.SysRoleMapper;
 
 import com.robin.basis.model.AbstractMybatisModel;
+import com.robin.basis.model.system.SysResource;
 import com.robin.basis.model.user.SysResourceRole;
 import com.robin.basis.model.user.SysRole;
 import com.robin.basis.model.user.SysUserRole;
@@ -28,6 +30,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
@@ -100,8 +103,6 @@ public class SysRoleServiceImpl extends AbstractMybatisService<SysRoleMapper, Sy
            throw new ServiceException(ex);
        }
     }
-
-
     public Map<Long,List<SysUserRole>> getRoleIdByUser(List<Long> userId){
         LambdaQueryWrapper<SysUserRole> wrapper=new QueryWrapper<SysUserRole>().lambda();
         wrapper.in(SysUserRole::getUserId,userId);

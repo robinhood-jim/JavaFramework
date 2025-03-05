@@ -59,6 +59,23 @@ public class RouterDTO {
         }
         return dto;
     }
+    public static RouterDTO fromDTO(SysResourceDTO dto){
+        RouterDTO routerDTO=new RouterDTO();
+        BeanUtils.copyProperties(dto,routerDTO);
+
+        routerDTO.getMeta().setTitle(dto.getResName());
+        routerDTO.setPath(dto.getRouterPath());
+        if(!ObjectUtils.isEmpty(dto.getComponentName())) {
+            routerDTO.setName(dto.getComponentName());
+        }
+        if(!ObjectUtils.isEmpty(dto.getId())) {
+            routerDTO.getMeta().setIcon(dto.getIcon());
+        }
+        if(!Const.VALID.equals(dto.getLeafTag())){
+            routerDTO.setComponent(dto.getUrl());
+        }
+        return routerDTO;
+    }
     private Meta meta=new Meta();
     @Data
     public static class Meta {

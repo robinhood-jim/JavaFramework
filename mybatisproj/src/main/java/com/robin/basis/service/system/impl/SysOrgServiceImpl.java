@@ -1,8 +1,11 @@
 package com.robin.basis.service.system.impl;
 
 import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.collect.Lists;
-import com.robin.basis.dto.SysOrgDTO;
+import com.robin.basis.dto.SysUserDTO;
 import com.robin.basis.dto.query.SysOrgQueryDTO;
 import com.robin.basis.mapper.SysOrgMapper;
 import com.robin.basis.model.AbstractMybatisModel;
@@ -11,17 +14,16 @@ import com.robin.basis.model.user.SysUser;
 import com.robin.basis.model.user.SysUserOrg;
 import com.robin.basis.service.system.ISysOrgService;
 import com.robin.basis.service.system.ISysUserOrgService;
-import com.robin.basis.service.system.ISysUserRoleService;
 import com.robin.basis.service.system.ISysUserService;
 import com.robin.basis.vo.SysOrgVO;
 import com.robin.core.base.service.AbstractMybatisService;
 import com.robin.core.base.util.Const;
-import com.robin.core.sql.util.FilterConditionBuilder;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 
 import javax.annotation.Resource;
 import java.util.*;
@@ -79,8 +81,6 @@ public class SysOrgServiceImpl extends AbstractMybatisService<SysOrgMapper,SysOr
             recusiveUp(idMap,idMap.get(vo.getPid()));
         }
     }
-
-
     @Override
     public List<Long> getSubIdByParentOrgId(Long orgId) {
         List<SysOrg> list=queryByField(AbstractMybatisModel::getStatus, Const.OPERATOR.EQ,Const.VALID);
@@ -125,24 +125,22 @@ public class SysOrgServiceImpl extends AbstractMybatisService<SysOrgMapper,SysOr
         return userOrgService.lambdaUpdate().set(AbstractMybatisModel::getStatus,Const.INVALID)
                 .in(SysUserOrg::getUserId,uids).eq(SysUserOrg::getOrgId,orgId).eq(AbstractMybatisModel::getStatus,Const.VALID).update();
     }
-    public List<SysOrgDTO> getOrgTree(Long pid){
-        List<SysOrgDTO> orgList=list().stream().filter(f->Const.VALID.equals(f.getStatus())).map(SysOrgDTO::fromVO).collect(Collectors.toList());
-        Map<Long,List<SysOrgDTO>> parentMap=orgList.stream().collect(Collectors.groupingBy(SysOrgDTO::getPid));
-        Map<Long,SysOrgDTO> idMap=orgList.stream().collect(Collectors.toMap(SysOrgDTO::getId, Function.identity()));
-        SysOrgDTO root = new SysOrgDTO();
-        idMap.put(0L, root);
-        for(SysOrgDTO dto:orgList){
-            idMap.get(dto.getPid()).getChildren().add(dto);
-            walkOrg(idMap,parentMap,dto);
+    public IPage<SysUserDTO> queryOrgUser(SysOrgQueryDTO dto){
+        List<Long> subIds=null;
+        if(!ObjectUtils.isEmpty(dto.getPid())){
+            subIds=getSubIdByParentOrgId(dto.getPid());
         }
-        return idMap.get(pid).getChildren();
-    }
-    private void walkOrg(Map<Long,SysOrgDTO> idMap,Map<Long,List<SysOrgDTO>> parentMap,SysOrgDTO dto) {
-        if (!CollectionUtils.isEmpty(parentMap.get(dto.getId()))) {
-            for (SysOrgDTO childs : parentMap.get(dto.getId())) {
-                idMap.get(dto.getPid()).getChildren().add(childs);
-                walkOrg(idMap, parentMap, childs);
-            }
+        QueryWrapper<SysUser> queryWrapper=new QueryWrapper<>();
+        queryWrapper.lambda()
+                .eq(AbstractMybatisModel::getStatus,Const.VALID)
+                .like(!StrUtil.isBlank(dto.getPhone()),SysUser::getPhoneNum,dto.getPhone())
+                .and(!StrUtil.isBlank(dto.getUserName()), wrapper -> wrapper.like(SysUser::getUserAccount, dto.getUserName())
+                        .or(orWrapper -> orWrapper.like(SysUser::getNickName, dto.getUserName())));
+        if(dto.isInTag()){
+            return baseMapper.selectUserInOrg(new Page<>(dto.getPage(),dto.getSize()),queryWrapper,subIds);
+        }else{
+            return baseMapper.selectUserNotInOrg(new Page<>(dto.getPage(),dto.getSize()),queryWrapper,subIds);
         }
     }
+
 }

@@ -31,15 +31,12 @@ public class SysOrg extends AbstractMybatisModel
 {
     @TableId(type = IdType.AUTO)
     private Long id;
-    private Integer treeLevel;
     private Long pid;
     private String orgCode;
     private String orgName;
-    private String treeCode;
     private String orgAbbr;
     private String remark;
     private String orderNo;
-    private Long tenantId;
     public static String STATUS_ACTIVE = "1";
     public static String STATUS_INACTIVE = "0";
     public static String ORGTYPE_CUSTTOP="1";

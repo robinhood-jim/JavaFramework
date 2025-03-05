@@ -1,12 +1,15 @@
 package com.robin.basis.dto.query;
 
+import com.robin.core.base.dto.PageDTO;
 import lombok.Data;
 
-import java.io.Serializable;
-
 @Data
-public class SysOrgQueryDTO implements Serializable {
+public class SysOrgQueryDTO extends PageDTO {
     private String name;
-    private Long pid=0L;
+    private String userName;
+    private String accountType;
+    private String phone;
+    private Long pid;
+    private boolean inTag=true;
 
 }

@@ -21,6 +21,7 @@ import com.google.common.collect.Lists;
 import com.robin.basis.dto.LoginUserDTO;
 import com.robin.basis.dto.RoleDTO;
 import com.robin.basis.dto.RouterDTO;
+import com.robin.basis.dto.SysResourceDTO;
 import com.robin.basis.model.system.SysResource;
 import com.robin.basis.model.user.SysRole;
 import com.robin.basis.sercurity.SysLoginUser;
@@ -179,63 +180,12 @@ public class LoginController extends AbstractController {
         Map<String, Object> retMap = new HashMap<>();
         SysLoginUser loginUser=SecurityUtils.getLoginUser();
         if (loginUser != null) {
-            List<RouterDTO> routers = getMenuList(loginUser.getId());
+            List<RouterDTO> routers = resourceService.getMenuList(loginUser.getId(), loginUser.getTenantId());
             retMap = wrapObject(routers);
         } else {
             wrapError(retMap, "not login");
         }
         return retMap;
     }
-    public List<RouterDTO> getMenuList(Long userId) {
-        List<SysResource> allList = resourceService.queryByField(SysResource::getStatus, Const.OPERATOR.EQ,Const.VALID);
-        List<RouterDTO> dtoList = allList.stream().map(RouterDTO::fromVO).collect(Collectors.toList());
-        Map<Long, RouterDTO> dtoMap = dtoList.stream().collect(Collectors.toMap(RouterDTO::getId, Function.identity()));
-        RouterDTO root = new RouterDTO();
-        dtoMap.put(0L, root);
-        Map<Long, Integer> readMap = new HashMap<>();
 
-        PageQuery<Map<String, Object>> query1 = new PageQuery();
-        query1.setPageSize(0);
-        query1.setSelectParamId("GET_RESOURCEINFO");
-        query1.addNamedParameter("userId", userId);
-        jdbcDao.queryBySelectId(query1);
-        try {
-            if (!query1.getRecordSet().isEmpty()) {
-                Map<Long, List<RouterDTO>> aMap = query1.getRecordSet().stream().map(RouterDTO::fromMap).collect(Collectors.groupingBy(RouterDTO::getPid, Collectors.toList()));
-
-                List<RouterDTO> tops = aMap.get(0L);
-                tops.sort(Comparator.comparing(RouterDTO::getSeqNo));
-                for (RouterDTO dto : tops) {
-                    if (!readMap.containsKey(dto.getId()) && !dto.getAssignType().equals(Const.RESOURCE_ASSIGN_DENIED)) {
-                        if(dtoMap.get(dto.getPid()).getChildren()==null){
-                            dtoMap.get(dto.getPid()).setChildren(new ArrayList<>());
-                        }
-                        dtoMap.get(dto.getPid()).getChildren().add(dtoMap.get(dto.getId()));
-                        doScanChildren(dtoMap, aMap, dto, readMap);
-                    }
-                    readMap.put(dto.getId(), 0);
-                }
-
-            }
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-        return dtoMap.get(0L).getChildren();
-    }
-
-    private void doScanChildren(Map<Long, RouterDTO> cmap, Map<Long, List<RouterDTO>> pMap, RouterDTO dto, Map<Long, Integer> readMap) {
-        if (!CollectionUtils.isEmpty(pMap.get(dto.getId()))) {
-            pMap.get(dto.getId()).sort(Comparator.comparing(RouterDTO::getSeqNo));
-            for (RouterDTO childs : pMap.get(dto.getId())) {
-                if (!readMap.containsKey(childs.getId()) && !childs.getAssignType().equals(Const.RESOURCE_ASSIGN_DENIED)) {
-                    if(cmap.get(childs.getPid()).getChildren()==null){
-                        cmap.get(childs.getPid()).setChildren(new ArrayList<>());
-                    }
-                    cmap.get(childs.getPid()).getChildren().add(cmap.get(childs.getId()));
-                    doScanChildren(cmap, pMap, childs, readMap);
-                }
-                readMap.put(childs.getId(), 0);
-            }
-        }
-    }
 }

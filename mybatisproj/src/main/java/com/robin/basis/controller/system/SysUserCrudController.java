@@ -16,9 +16,14 @@
 package com.robin.basis.controller.system;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.google.common.collect.Lists;
+import com.robin.basis.dto.RouterDTO;
+import com.robin.basis.dto.SysResourceDTO;
 import com.robin.basis.dto.SysUserDTO;
 import com.robin.basis.dto.query.SysUserQueryDTO;
 import com.robin.basis.mapper.SysUserMapper;
+import com.robin.basis.model.AbstractMybatisModel;
+import com.robin.basis.model.system.SysResource;
 import com.robin.basis.model.user.SysUser;
 import com.robin.basis.service.system.ISysOrgService;
 import com.robin.basis.service.system.ISysResourceService;
@@ -32,12 +37,15 @@ import com.robin.core.web.controller.AbstractMyBatisController;
 import com.robin.core.web.util.Session;
 import org.springframework.context.MessageSource;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/system/user")
@@ -176,6 +184,22 @@ public class SysUserCrudController extends AbstractMyBatisController<ISysUserSer
         }else{
             return wrapFailedMsg("");
         }
+    }
+    @GetMapping("/lisRight/{id}")
+    public Map<String,Object> listUserRight(@PathVariable Long id){
+        SysUser user=service.get(id);
+        Assert.notNull(user,"user id not exists!");
+        List<SysResourceDTO> permissions=sysResourceService.queryUserPermission(id, user.getTenantId());
+        Map<Long,Integer> selMap=new HashMap<>();
+        List<SysResourceDTO> aviableList= Lists.newArrayList();
+        if(!CollectionUtils.isEmpty(permissions)){
+            aviableList.addAll(permissions.stream().filter(f->{
+                boolean okFlag= !Const.RESOURCE_ASSIGN_DENIED.equals(f.getAssignType()) && !selMap.containsKey(f.getId());
+                selMap.put(f.getId(),1);
+                return okFlag;
+            }).collect(Collectors.toList()));
+        }
+        return wrapObject(aviableList);
     }
 
 

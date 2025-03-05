@@ -1,10 +1,12 @@
 package com.robin.basis.service.system;
 
+import com.robin.basis.dto.SysResourceDTO;
 import com.robin.basis.dto.SysUserDTO;
 import com.robin.basis.dto.query.SysUserQueryDTO;
 import com.robin.basis.model.user.SysUser;
 import com.robin.core.base.service.IMybatisBaseService;
 
+import java.util.List;
 import java.util.Map;
 
 public interface ISysUserService extends IMybatisBaseService<SysUser,Long> {

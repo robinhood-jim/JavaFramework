@@ -2,21 +2,27 @@ package com.robin.basis.dto;
 
 import com.robin.basis.model.system.SysOrg;
 import lombok.Data;
+import org.springframework.beans.BeanUtils;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 @Data
-public class SysOrgDTO {
+public class SysOrgDTO implements Serializable {
     private Long id;
-    private String label;
-    private Long pid;
-    private List<SysOrgDTO> children=new ArrayList<>();
+    private String pid;
+    private String orgCode;
+    private String orgName;
+    private String treeCode;
+    private String orgAbbr;
+    private String remark;
+    private String orderNo;
+    private Long tenantId;
+
     public static SysOrgDTO fromVO(SysOrg org){
         SysOrgDTO dto=new SysOrgDTO();
-        dto.setId(org.getId());
-        dto.setPid(org.getPid());
-        dto.setLabel(org.getOrgName());
+        BeanUtils.copyProperties(org,dto);
         return dto;
     }
 }

@@ -168,10 +168,19 @@ public abstract class AbstractMyBatisController<S extends IMybatisBaseService<T,
         }
         return retMap;
     }
+    protected Map<String,Object> doSave(Serializable obj){
+        try{
+            T vo=this.voType.getDeclaredConstructor().newInstance();
+            BeanUtils.copyProperties(obj,vo);
+            return doSave(vo);
+        }catch (Exception ex){
+            return wrapError(ex);
+        }
+    }
     protected Map<String, Object> doUpdate(Map<String,Object> paramMap,P id) {
         Map<String, Object> retMap = new HashMap<>();
         try {
-            T originObj= this.voType.newInstance();
+            T originObj= this.voType.getDeclaredConstructor().newInstance();
             ConvertUtil.setDateFormat(ConvertUtil.ymdSepformatter);
             ConvertUtil.convertToModel(originObj,paramMap);
             updateWithOrigin(id, retMap, originObj);
@@ -182,6 +191,20 @@ public abstract class AbstractMyBatisController<S extends IMybatisBaseService<T,
             ConvertUtil.finishConvert();
         }
         return retMap;
+    }
+    protected  Map<String,Object> doUpdate(Serializable obj){
+        try{
+            T vo=this.voType.getDeclaredConstructor().newInstance();
+            BeanUtils.copyProperties(obj,vo);
+            if(service.updateById(vo)){
+                return wrapSuccess("OK");
+            }else{
+                return wrapFailedMsg("failed");
+            }
+        }catch (Exception ex){
+            return wrapFailedMsg(ex);
+        }
+
     }
 
     private void updateWithOrigin(P id, Map<String, Object> retMap, T originObj) throws WebException {

@@ -1,9 +1,12 @@
 package com.robin.basis.controller.system;
 
+import com.robin.basis.dto.SysResourceDTO;
 import com.robin.basis.dto.SysRoleDTO;
 import com.robin.basis.dto.query.SysRoleQueryDTO;
 import com.robin.basis.mapper.SysRoleMapper;
+import com.robin.basis.model.user.SysResourceRole;
 import com.robin.basis.model.user.SysRole;
+import com.robin.basis.service.system.ISysResourceRoleService;
 import com.robin.basis.service.system.ISysRoleService;
 import com.robin.core.base.util.Const;
 import com.robin.core.convert.util.ConvertUtil;
@@ -12,6 +15,7 @@ import com.robin.core.web.controller.AbstractMyBatisController;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
@@ -22,6 +26,9 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/system/role")
 public class SysRoleContorller extends AbstractMyBatisController<ISysRoleService, SysRoleMapper,SysRole,Long> {
+	@Resource
+	private ISysResourceRoleService sysResourceRoleService;
+
 
 	@GetMapping
 	public Map<String,Object> listRole(@RequestBody SysRoleQueryDTO dto) {
@@ -43,6 +50,15 @@ public class SysRoleContorller extends AbstractMyBatisController<ISysRoleService
 		try{
 			List<SysRole> roles=service.queryByField(SysRole::getStatus, Const.OPERATOR.EQ,Const.VALID);
 			return wrapObject(roles.stream().map(SysRoleDTO::fromVO).collect(Collectors.toList()));
+		}catch (Exception ex){
+			return wrapError(ex);
+		}
+	}
+	@GetMapping("/menu/{roleId}")
+	public Map<String,Object> showRoleMenu(@PathVariable Long roleId){
+		try{
+			List<SysResourceDTO> premissions=sysResourceRoleService.queryResourceByRole(roleId);
+			return wrapObject(premissions);
 		}catch (Exception ex){
 			return wrapError(ex);
 		}

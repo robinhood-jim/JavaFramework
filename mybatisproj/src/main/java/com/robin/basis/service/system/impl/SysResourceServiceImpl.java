@@ -8,6 +8,7 @@ import com.robin.basis.dto.query.SysResourceQueryDTO;
 import com.robin.basis.mapper.SysResourceMapper;
 import com.robin.basis.model.system.SysResource;
 import com.robin.basis.model.user.SysResourceUser;
+import com.robin.basis.sercurity.SysLoginUser;
 import com.robin.basis.service.system.ISysResourceService;
 import com.robin.basis.vo.SysResourceVO;
 import com.robin.core.base.exception.ServiceException;
@@ -148,7 +149,7 @@ public class SysResourceServiceImpl extends AbstractMybatisService<SysResourceMa
         }
         return retMap;
     }
-    public List<RouterDTO> getMenuList(Long userId) {
+    public List<RouterDTO> getMenuList(Long userId,Long tenantId) {
         List<SysResource> allList = getAllValidate();
         List<RouterDTO> dtoList = allList.stream().map(RouterDTO::fromVO).collect(Collectors.toList());
         Map<Long, RouterDTO> dtoMap = dtoList.stream().collect(Collectors.toMap(RouterDTO::getId, Function.identity()));
@@ -156,14 +157,10 @@ public class SysResourceServiceImpl extends AbstractMybatisService<SysResourceMa
         dtoMap.put(0L, root);
         Map<Long, Integer> readMap = new HashMap<>();
 
-        PageQuery<Map<String, Object>> query1 = new PageQuery();
-        query1.setPageSize(0);
-        query1.setSelectParamId("GET_RESOURCEINFO");
-        query1.addNamedParameter("userId", userId);
-        getJdbcDao().queryBySelectId(query1);
+        List<SysResourceDTO> resources=baseMapper.queryUserPermission(userId, tenantId);
         try {
-            if (!query1.getRecordSet().isEmpty()) {
-                Map<Long, List<RouterDTO>> aMap = query1.getRecordSet().stream().map(RouterDTO::fromMap).collect(Collectors.groupingBy(RouterDTO::getPid, Collectors.toList()));
+            if (!resources.isEmpty()) {
+                Map<Long, List<RouterDTO>> aMap = resources.stream().map(RouterDTO::fromDTO).collect(Collectors.groupingBy(RouterDTO::getPid, Collectors.toList()));
 
                 List<RouterDTO> tops = aMap.get(0L);
                 tops.sort(Comparator.comparing(RouterDTO::getSeqNo));
@@ -193,6 +190,9 @@ public class SysResourceServiceImpl extends AbstractMybatisService<SysResourceMa
                 readMap.put(childs.getId(), 0);
             }
         }
+    }
+    public List<SysResourceDTO> queryUserPermission(Long userId,Long tenantId){
+        return baseMapper.queryUserPermission(userId,tenantId);
     }
 
 }
