@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 public interface ISysResourceService extends IMybatisBaseService<SysResource,Long> {
-    void updateUserResourceRight(String userId, List<String> addList, List<String> delList);
+    void updateUserResourceRight(Long userId,Long tenantId, List<Long> newList);
     List<SysResource> getOrgAllMenu(Long orgId);
     Map<String, Object> getUserRights(Long userId);
     List<RouterDTO> getMenuList(Long userId,Long tenantId);

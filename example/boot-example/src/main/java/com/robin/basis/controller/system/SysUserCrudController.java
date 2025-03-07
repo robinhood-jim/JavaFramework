@@ -32,10 +32,8 @@ import com.robin.core.web.util.Session;
 import com.robin.core.web.util.WebConstant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
-import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.Assert;
-import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -89,11 +87,11 @@ public class SysUserCrudController extends AbstractCrudDhtmlxController<SysUser,
     @Override
     protected String wrapQuery(HttpServletRequest request, PageQuery query) {
         Session session=(Session)request.getSession().getAttribute(Const.SESSION);
-        Assert.isTrue(WebConstant.ACCOUNT_TYPE.ORGUSER.toString().equals(session.getAccountType()) || WebConstant.ACCOUNT_TYPE.SYSUSER.toString().equals(session.getAccountType()),"only sysadmin or orgadmin can use this ");
+        Assert.isTrue(WebConstant.ACCOUNT_TYPE.ORGADMIN.toString().equals(session.getAccountType()) || WebConstant.ACCOUNT_TYPE.SYSADMIN.toString().equals(session.getAccountType()),"only sysadmin or orgadmin can use this ");
         String orgIds = null;
         if (request.getParameter("orgId") != null && !request.getParameter("orgId").isEmpty()) {
             orgIds = sysOrgService.getSubIdByParentOrgId(Long.valueOf(request.getParameter("orgId")));
-        }else if(WebConstant.ACCOUNT_TYPE.ORGUSER.toString().equals(session.getAccountType())){
+        }else if(WebConstant.ACCOUNT_TYPE.ORGADMIN.toString().equals(session.getAccountType())){
             orgIds=sysOrgService.getSubIdByParentOrgId(session.getOrgId());
         }
         String addTag=request.getParameter("addTag");

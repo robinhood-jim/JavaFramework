@@ -15,6 +15,7 @@
  */
 package com.robin.core.convert.util;
 
+import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.robin.core.base.datameta.DataBaseColumnMeta;
 import com.robin.core.base.exception.GenericException;
@@ -26,6 +27,7 @@ import com.robin.core.fileaccess.meta.DataSetColumnMeta;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
@@ -41,6 +43,7 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class ConvertUtil {

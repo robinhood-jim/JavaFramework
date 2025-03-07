@@ -8,6 +8,7 @@ import com.robin.basis.service.system.ISysRoleService;
 import com.robin.core.base.exception.ServiceException;
 import com.robin.core.web.controller.AbstractMyBatisController;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -24,16 +25,19 @@ public class SysResourceContorller extends AbstractMyBatisController<ISysResourc
 	@Autowired
 	private ISysRoleService sysRoleService;
 	@GetMapping
+	@PreAuthorize("@checker.isAdmin()")
 	public Map<String,Object> list(SysResourceQueryDTO dto) {
 		return wrapObject(service.search(dto));
 	}
 
 	@PostMapping("/save")
+	@PreAuthorize("@checker.isAdmin()")
 	public Map<String, Object> saveMenu(@RequestBody Map<String,Object> reqMap){
 		return doSave(reqMap,null);
 	}
 
 	@PutMapping
+	@PreAuthorize("@checker.isAdmin()")
 	public Map<String, Object> updateSysResource(@RequestBody Map<String,Object> reqMap){
 		Long id = Long.valueOf(reqMap.get("id").toString());
 		try{
@@ -43,10 +47,7 @@ public class SysResourceContorller extends AbstractMyBatisController<ISysResourc
 		}
 	}
 
-	@GetMapping("/listright/{userId}")
-	public Map<String,Object> userRights(@PathVariable Long userId){
-		return service.getUserRights(userId);
-	}
+
 
 
 }

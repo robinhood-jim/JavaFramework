@@ -22,6 +22,7 @@ import com.robin.basis.model.AbstractMybatisModel;
 import com.robin.core.base.annotation.MappingEntity;
 import com.robin.core.base.annotation.MappingField;
 import com.robin.core.base.model.BaseObject;
+import com.robin.core.base.util.Const;
 import lombok.Data;
 
 
@@ -44,6 +45,7 @@ public class SysResourceRole extends AbstractMybatisModel {
     public SysResourceRole(Long resId,Long roleId){
         this.resId=resId;
         this.roleId=roleId;
+        this.setStatus(Const.VALID);
     }
 
     @Override

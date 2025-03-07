@@ -158,7 +158,7 @@ public class SysOrgController extends AbstractCrudDhtmlxController<SysOrg, Long,
         List<Map<String,Object>> list=new ArrayList<>();
 
         if(id==0L){
-            if(!session.getAccountType().equals(WebConstant.ACCOUNT_TYPE.SYSUSER.toString())){
+            if(!session.getAccountType().equals(WebConstant.ACCOUNT_TYPE.SYSADMIN.toString())){
                 parentId=session.getOrgId();
                 SysOrg org=service.getEntity(parentId);
                 Map<String,Object> map=new HashMap<>();

@@ -156,10 +156,16 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>, T extends 
 
     @Override
     @Transactional(rollbackFor = RuntimeException.class)
-    public boolean deleteByField(String fieldName, Object value) {
-        QueryWrapper<T> wrapper = new QueryWrapper<>();
-        wrapper.eq(fieldName, value);
-        return this.remove(wrapper);
+    public boolean deleteByField(SFunction<T,?> queryField,Const.OPERATOR operator,Object... value) {
+        QueryWrapper<T> queryWrapper = MybatisUtils.getWrapper(queryField, operator, value);
+        try{
+            queryWrapper.eq(statusColumn,Const.VALID);
+            T vo=voType.getDeclaredConstructor().newInstance();
+            getDeleteMethod.invoke(vo,Const.INVALID);
+            return this.update(vo,queryWrapper);
+        }catch (Exception ex){
+            throw new ServiceException(ex);
+        }
     }
     @Override
     @Transactional(rollbackFor = RuntimeException.class)
@@ -215,8 +221,9 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>, T extends 
     @Override
     public List<T> queryByField(SFunction<T, ?> queryField, Const.OPERATOR operator, Object... value) throws ServiceException {
         Assert.isTrue(value.length > 0, "");
-        LambdaQueryWrapper<T> queryWrapper = MybatisUtils.getWrapper(queryField, operator, value);
+        QueryWrapper<T> queryWrapper = MybatisUtils.getWrapper(queryField, operator, value);
         try {
+            queryWrapper.eq(statusColumn,Const.VALID);
             return baseMapper.selectList(queryWrapper);
         } catch (Exception ex) {
             throw new ServiceException(ex);
@@ -226,11 +233,12 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>, T extends 
     @Override
     public List<T> queryByField(SFunction<T, ?> queryField, SFunction<T, ?> orderField, Const.OPERATOR operator, boolean ascFlag, Object... value) throws ServiceException {
         Assert.isTrue(value.length > 0, "");
-        LambdaQueryWrapper<T> queryWrapper = MybatisUtils.getWrapper(queryField, operator, value);
+        QueryWrapper<T> queryWrapper = MybatisUtils.getWrapper(queryField, operator, value);
+        queryWrapper.eq(statusColumn,Const.VALID);
         if (orderField != null && ascFlag) {
-            queryWrapper.orderByAsc(orderField);
+            queryWrapper.lambda().orderByAsc(orderField);
         } else {
-            queryWrapper.orderByDesc(orderField);
+            queryWrapper.lambda().orderByDesc(orderField);
         }
         try {
             return baseMapper.selectList(queryWrapper);
@@ -757,6 +765,8 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>, T extends 
             throw new ServiceException(ex);
         }
     }
+
+
 
     protected JdbcDao getJdbcDao(){
         return SpringContextHolder.getBean("jdbcDao",JdbcDao.class);

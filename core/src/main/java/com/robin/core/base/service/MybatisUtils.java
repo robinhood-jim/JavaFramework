@@ -9,9 +9,10 @@ import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
 public class MybatisUtils {
-    public static <T> LambdaQueryWrapper<T> getWrapper(SFunction<T,?> queryField, Const.OPERATOR operator,Object... value){
+    public static <T> QueryWrapper<T> getWrapper(SFunction<T,?> queryField, Const.OPERATOR operator,Object... value){
         Assert.isTrue(!ObjectUtils.isEmpty(value),"value must not be null!");
-        LambdaQueryWrapper<T> queryWrapper=new QueryWrapper<T>().lambda();
+        QueryWrapper<T> wrapper=new QueryWrapper<>();
+        LambdaQueryWrapper<T> queryWrapper=wrapper.lambda();
         if(operator.equals(Const.OPERATOR.EQ)){
             queryWrapper.eq(queryField,value[0]);
         }else if(operator.equals(Const.OPERATOR.GE)){
@@ -51,6 +52,6 @@ public class MybatisUtils {
             queryWrapper.notLike(queryField,value[0]);
         }
 
-        return queryWrapper;
+        return wrapper;
     }
 }

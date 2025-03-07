@@ -22,6 +22,7 @@ public class LoginUserDTO implements Serializable {
         dto.setAvatar(loginUser.getAvatar());
         dto.setEmail(loginUser.getEmail());
         dto.setPhone(loginUser.getPhone());
+        dto.setTenantId(loginUser.getTenantId());
         return dto;
     }
 }

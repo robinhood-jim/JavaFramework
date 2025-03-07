@@ -25,6 +25,7 @@ import com.robin.core.base.model.BaseObject;
 import lombok.Data;
 
 @MappingEntity(value = "t_sys_resource_user_r")
+@TableName("t_sys_resource_user_r")
 @Data
 public class SysResourceUser extends AbstractMybatisModel {
 
@@ -33,9 +34,9 @@ public class SysResourceUser extends AbstractMybatisModel {
 	@TableId(type = IdType.AUTO)
 	private Long id; //
 	@MappingField(value = "res_id")
-	private Integer resId;
+	private Long resId;
 	@MappingField(value = "user_id")
-	private Integer userId;
+	private Long userId;
 	@MappingField(value ="assign_type")
 	private Integer assignType;
 
@@ -55,88 +56,5 @@ public class SysResourceUser extends AbstractMybatisModel {
 	public static final String COL_USER_ID = "USER_ID";
 	public static final String COL_ID = "ID";
 
-	@Override
-    public boolean equals(Object obj) {
-		if (obj == null) {
-            return false;
-        }
-		if (!(obj instanceof SysResourceUser)) {
-            return false;
-        } else {
-			SysResourceUser o = (SysResourceUser) obj;
-			if (null == this.getId() || null == o.getId()) {
-                return false;
-            } else {
-                return (this.getId().equals(o.getId()));
-            }
-		}
-	}
 
-	@Override
-	public int hashCode() {
-		return super.hashCode();
-	}
-
-	@Override
-    public String toString() {
-		StringBuilder buffer = new StringBuilder();
-		buffer.append("[SysResourceUser:");
-		buffer.append(" id:").append(id);
-		buffer.append(" status:").append(dealNull(getStatus()));
-		buffer.append(" resId:").append(dealNull(resId));
-		buffer.append(" userId:").append(dealNull(userId));
-		buffer.append("]");
-		return buffer.toString();
-	}
-
-	public String toJson() {
-		StringBuilder buffer = new StringBuilder();
-		buffer.append("{");
-		buffer.append("\"id\":\"").append(id).append("\"");
-		buffer.append(",\"status\":\"").append(dealNull(getStatus())).append("\"");
-		buffer.append(",\"resId\":\"").append(dealNull(resId)).append("\"");
-		buffer.append(",\"userId\":\"").append(dealNull(userId)).append("\"");
-		buffer.append("}");
-		return buffer.toString();
-	}
-
-	private String dealNull(Object str) {
-		if (str == null) {
-            return "";
-        } else {
-            return str.toString();
-        }
-	}
-
-	public Long getId() {
-		return id;
-	}
-
-	public void setId(Long id) {
-		this.id = id;
-	}
-
-	public Integer getResId() {
-		return resId;
-	}
-
-	public void setResId(Integer resId) {
-		this.resId = resId;
-	}
-
-	public Integer getUserId() {
-		return userId;
-	}
-
-	public void setUserId(Integer userId) {
-		this.userId = userId;
-	}
-
-	public Integer getAssignType() {
-		return assignType;
-	}
-
-	public void setAssignType(Integer assignType) {
-		this.assignType = assignType;
-	}
 }

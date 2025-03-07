@@ -12,6 +12,7 @@ import com.robin.core.base.util.Const;
 import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.query.util.PageQuery;
 import com.robin.core.web.controller.AbstractMyBatisController;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,16 +32,19 @@ public class SysRoleContorller extends AbstractMyBatisController<ISysRoleService
 
 
 	@GetMapping
-	public Map<String,Object> listRole(@RequestBody SysRoleQueryDTO dto) {
-		return service.search(dto);
+	@PreAuthorize("@checker.isAdmin()")
+	public Map<String,Object> listRole(SysRoleQueryDTO dto) {
+		return wrapObject(service.search(dto));
 	}
 
 	@PostMapping
+	@PreAuthorize("@checker.isAdmin()")
 	public Map<String, Object> saveRole(@RequestBody SysRoleDTO dto){
 		service.saveRole(dto);
 		return wrapSuccess("OK");
 	}
 	@PutMapping
+	@PreAuthorize("@checker.isAdmin()")
 	public Map<String, Object> updateRole(@RequestBody SysRoleDTO dto){
 		service.updateRole(dto);
 		return wrapSuccess("OK");
@@ -74,5 +78,11 @@ public class SysRoleContorller extends AbstractMyBatisController<ISysRoleService
 			wrapFailed(retMap,ex);
 		}
 		return retMap;
+	}
+	@PostMapping("/{id}/permission")
+	@PreAuthorize("@checker.isAdmin()")
+	public Map<String,Object> savePermission(@PathVariable Long id,@RequestBody List<Long> permissions){
+		sysResourceRoleService.updateUserResourceRight(id,permissions);
+		return wrapSuccess("OK");
 	}
 }

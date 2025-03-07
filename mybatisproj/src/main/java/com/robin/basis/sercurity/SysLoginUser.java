@@ -8,6 +8,7 @@ import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.util.ObjectUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -17,7 +18,7 @@ import java.util.stream.Stream;
 @Data
 public class SysLoginUser implements UserDetails {
     private Long id;
-    private List<Long> roles;
+    private List<String> roles;
     private List<String> permissions;
     private String userName;
     private String displayName;
@@ -27,13 +28,15 @@ public class SysLoginUser implements UserDetails {
     private String phone;
     private String email;
     private Long tenantId;
+    private String accountType;
+    private Long orgId;
     private SysLoginUser(){
 
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Stream.concat(roles.stream().map(f->"role_"+f),permissions.stream()).filter(StrUtil::isNotBlank)
+        return permissions.stream().filter(StrUtil::isNotBlank)
                 .map(SimpleGrantedAuthority::new).collect(Collectors.toList());
     }
 
@@ -80,9 +83,13 @@ public class SysLoginUser implements UserDetails {
             loginUser.setAvatar(user.getAvatar());
             loginUser.setEmail(user.getEmail());
             loginUser.setPhone(user.getPhoneNum());
+            loginUser.setAccountType(user.getAccountType());
+            if(!ObjectUtils.isEmpty(user.getOrgId())) {
+                loginUser.setOrgId(user.getOrgId());
+            }
             return this;
         }
-        public Builder withRoles(List<Long> roles){
+        public Builder withRoles(List<String> roles){
             loginUser.setRoles(roles);
             return this;
         }

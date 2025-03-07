@@ -46,7 +46,7 @@ public class LoginDetailsService implements UserDetailsService {
             SysUser selectUser=users.get(0);
             builder.withSysUser(selectUser);
             //getTenantId
-            if(WebConstant.ACCOUNT_TYPE.SYSUSER.toString().equals(selectUser.getAccountType())){
+            if(WebConstant.ACCOUNT_TYPE.SYSADMIN.toString().equals(selectUser.getAccountType())){
                 builder.tenantId(0L);
             }else if(!ObjectUtils.isEmpty(selectUser.getOrgId())){
                 TenantInfo query=new TenantInfo();

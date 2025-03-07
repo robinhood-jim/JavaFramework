@@ -154,7 +154,7 @@ public class LoginService implements ILoginService {
     }
 
     public void getUserRightsByRole(Session session) {
-        if(WebConstant.ACCOUNT_TYPE.SYSUSER.toString().equals(session.getAccountType())){
+        if(WebConstant.ACCOUNT_TYPE.SYSADMIN.toString().equals(session.getAccountType())){
             session.setTenantId(0L);
         }else if(!ObjectUtils.isEmpty(session.getOrgId())){
             TenantInfo query=new TenantInfo();
@@ -265,7 +265,7 @@ public class LoginService implements ILoginService {
             session.setRoles(userRoles.stream().map(SysUserRole::getRoleId).collect(Collectors.toList()));
         }
 
-        if (!session.getAccountType().equals(WebConstant.ACCOUNT_TYPE.ORGUSER.toString())) {
+        if (!session.getAccountType().equals(WebConstant.ACCOUNT_TYPE.ORGADMIN.toString())) {
             getRights(session);
         } else {
             SysUserOrg org = new SysUserOrg();
@@ -328,7 +328,7 @@ public class LoginService implements ILoginService {
                     session.getResponsiblitys().add(sur.getRespId());
                 }
             }
-        } else if (session.getAccountType().equals(WebConstant.ACCOUNT_TYPE.ORGUSER.toString())) {
+        } else if (session.getAccountType().equals(WebConstant.ACCOUNT_TYPE.ORGADMIN.toString())) {
             respsList.add(WebConstant.SYS_RESPONSIBLITIY.ORG_RESP.getValue());
         }
         PageQuery query = new PageQuery();

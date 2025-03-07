@@ -53,7 +53,7 @@ public interface IMybatisBaseService<T extends Serializable,P extends Serializab
     boolean deleteByLogic(List<P> ids);
     List<P> parseId(String ids) throws ServiceException;
     boolean deleteByIds(List<P> ids);
-    boolean deleteByField(String fieldName, Object value);
+    boolean deleteByField(SFunction<T,?> queryField,Const.OPERATOR oper,Object... value);
     boolean saveEntity(T entity);
     boolean updateModelById(T entity);
     void queryBySelectId(PageQuery<Map<String,Object>> query) throws ServiceException;

@@ -2,6 +2,7 @@ package com.robin.basis.utils;
 
 import com.robin.basis.sercurity.SysLoginUser;
 import com.robin.core.base.exception.ServiceException;
+import com.robin.core.web.util.WebConstant;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 public class SecurityUtils {
@@ -29,5 +30,14 @@ public class SecurityUtils {
         }catch (Exception ex){
             throw new ServiceException(ex.getMessage());
         }
+    }
+    public static boolean isLoginUserSystemAdmin(){
+        return WebConstant.ACCOUNT_TYPE.SYSADMIN.toString().equals(getLoginUser().getAccountType());
+    }
+    public static boolean isAdmin(){
+        return isLoginUserSystemAdmin() ||isLoginUserOrgAdmin();
+    }
+    public static boolean isLoginUserOrgAdmin(){
+        return WebConstant.ACCOUNT_TYPE.ORGADMIN.toString().equals(getLoginUser().getAccountType());
     }
 }

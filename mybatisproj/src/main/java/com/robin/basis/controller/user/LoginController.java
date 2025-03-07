@@ -18,21 +18,18 @@ package com.robin.basis.controller.user;
 import cn.hutool.jwt.JWTPayload;
 import cn.hutool.jwt.JWTUtil;
 import com.google.common.collect.Lists;
-import com.robin.basis.dto.LoginUserDTO;
-import com.robin.basis.dto.RoleDTO;
-import com.robin.basis.dto.RouterDTO;
-import com.robin.basis.dto.SysResourceDTO;
-import com.robin.basis.model.system.SysResource;
+import com.robin.basis.dto.*;
+import com.robin.basis.model.AbstractMybatisModel;
 import com.robin.basis.model.user.SysRole;
 import com.robin.basis.sercurity.SysLoginUser;
 import com.robin.basis.service.system.ISysResourceService;
+import com.robin.basis.service.system.ISysRoleService;
+import com.robin.basis.service.system.ITenantInfoService;
 import com.robin.basis.utils.SecurityUtils;
-import com.robin.core.base.dao.JdbcDao;
 import com.robin.core.base.exception.MissingConfigException;
 import com.robin.core.base.spring.SpringContextHolder;
 import com.robin.core.base.util.Const;
 import com.robin.core.convert.util.ConvertUtil;
-import com.robin.core.query.util.PageQuery;
 import com.robin.core.web.controller.AbstractController;
 import com.robin.core.web.util.CookieUtils;
 import com.robin.core.web.util.Session;
@@ -43,10 +40,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.Cookie;
@@ -55,20 +49,23 @@ import javax.servlet.http.HttpServletResponse;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @RestController
 public class LoginController extends AbstractController {
 
     @Resource
-    private JdbcDao jdbcDao;
-    @Resource
     private RedisTemplate<String, Object> template;
     @Resource
     private ISysResourceService resourceService;
     @Resource
+    private ISysRoleService sysRoleService;
+    @Resource
     private AuthenticationManager authenticationManager;
+    @Resource
+    private ITenantInfoService tenantInfoService;
+    @Resource
+    private ISysResourceService sysResourceService;
 
     @PostMapping("/login")
     public Map<String, Object> login(HttpServletRequest request, HttpServletResponse response, @RequestBody Map<String, Object> reqMap) {
@@ -95,32 +92,42 @@ public class LoginController extends AbstractController {
             }
             SysLoginUser loginUser=(SysLoginUser) authentication.getPrincipal();
 
-            Map<String, Object> sessionMap = new HashMap<>();
-            Map<String, Object> headerMap = new HashMap<>();
-            headerMap.put("type", "JWT");
-            headerMap.put("alg", "RS256");
-
-            ConvertUtil.objectToMapObj(sessionMap, loginUser);
-
-            Integer expireDays = !environment.containsProperty("session.expireDay") ? 15 : Integer.parseInt(environment.getProperty("session.expireDay"));
-            LocalDateTime dateTime = LocalDateTime.now();
-            LocalDateTime expTs = dateTime.plusDays(expireDays);
-            sessionMap.put(JWTPayload.EXPIRES_AT, expTs.atZone(ZoneId.systemDefault()).toInstant());
-
-            String salt = environment.getProperty("jwt.salt");
-
-            String token = JWTUtil.createToken(sessionMap, salt.getBytes());
-            Cookie cookie = new Cookie(Const.TOKEN, token);
-            cookie.setPath("/");
-            cookie.setMaxAge(3600 * 24 * expireDays);
-            response.addCookie(cookie);
+            String token =getToken(loginUser,environment,response);
             map.put("success", true);
             map.put("token", token);
+            if(ObjectUtils.isEmpty(loginUser.getTenantId())){
+                map.put("selectTenant",true);
+                map.put("tenants",tenantInfoService.queryTenantByUser(loginUser.getId()));
+            }else{
+                map.put("selectTenant",false);
+            }
         } catch (Exception ex) {
             map.put("success", false);
             map.put("message", ex.getMessage());
         }
         return map;
+    }
+    private String getToken(SysLoginUser loginUser,Environment environment,HttpServletResponse response) throws Exception{
+        Map<String, Object> sessionMap = new HashMap<>();
+        Map<String, Object> headerMap = new HashMap<>();
+        headerMap.put("type", "JWT");
+        headerMap.put("alg", "RS256");
+
+        ConvertUtil.objectToMapObj(sessionMap, loginUser);
+
+        Integer expireDays = !environment.containsProperty("session.expireDay") ? 15 : Integer.parseInt(environment.getProperty("session.expireDay"));
+        LocalDateTime dateTime = LocalDateTime.now();
+        LocalDateTime expTs = dateTime.plusDays(expireDays);
+        sessionMap.put(JWTPayload.EXPIRES_AT, expTs.atZone(ZoneId.systemDefault()).toInstant());
+
+        String salt = environment.containsProperty("jwt.salt")?environment.getProperty("jwt.salt"):"1234";
+
+        String token = JWTUtil.createToken(sessionMap, salt.getBytes());
+        Cookie cookie = new Cookie(Const.TOKEN, token);
+        cookie.setPath("/");
+        cookie.setMaxAge(3600 * 24 * expireDays);
+        response.addCookie(cookie);
+        return token;
     }
 
     @GetMapping("/checklogin")
@@ -156,9 +163,13 @@ public class LoginController extends AbstractController {
         SysLoginUser loginUser= SecurityUtils.getLoginUser();
         Map<String, Object> retMap = new HashMap<>();
         retMap.put("info", LoginUserDTO.fromLoginUsers(loginUser));
-        List<SysRole> roles=jdbcDao.queryByField(SysRole.class,SysRole::getId, Const.OPERATOR.IN,loginUser.getRoles().toArray());
+        List<SysRole> roles=sysRoleService.lambdaQuery().in(SysRole::getRoleCode,loginUser.getRoles()).eq(AbstractMybatisModel::getStatus,Const.VALID).list();
         if(!CollectionUtils.isEmpty(roles)) {
             retMap.put("roles", roles.stream().map(f-> RoleDTO.fromVO(f,loginUser.getTenantId())).collect(Collectors.toList()));
+        }
+        List<TenantInfoDTO> tenantInfoDTOS=tenantInfoService.queryTenantByUser(loginUser.getId());
+        if(!CollectionUtils.isEmpty(tenantInfoDTOS) && tenantInfoDTOS.size()>1){
+            retMap.put("tenants",tenantInfoDTOS);
         }
         retMap.put("permissions",constructPermissionMap(loginUser));
         return wrapObject(retMap);
@@ -188,4 +199,34 @@ public class LoginController extends AbstractController {
         return retMap;
     }
 
+    @GetMapping("/selectTenant/{tenantId}")
+    public Map<String,Object> showTenantInfo(HttpServletResponse response, @PathVariable Long tenantId){
+        SysLoginUser user=SecurityUtils.getLoginUser();
+        List<TenantInfoDTO> tenantInfoDTOS=tenantInfoService.queryTenantByUser(user.getId());
+        try {
+            if (tenantInfoDTOS.stream().map(TenantInfoDTO::getId).anyMatch(f -> f.equals(tenantId))) {
+                Map<String, Object> retMap = new HashMap<>();
+                user.setTenantId(tenantId);
+                List<String> permissions = new ArrayList<>();
+                List<SysResourceDTO> resources = sysResourceService.queryUserPermission(user.getId(), tenantId);
+                if (!CollectionUtils.isEmpty(resources)) {
+                    Map<Long, Integer> readMap = new HashMap<>();
+                    resources.forEach(f -> {
+                        if (!Const.RESOURCE_ASSIGN_DENIED.equals(f.getAssignType()) && !readMap.containsKey(f.getId()) && !ObjectUtils.isEmpty(f.getPermission())) {
+                            permissions.add(f.getPermission());
+                        }
+                        readMap.put(f.getId(), 1);
+                    });
+                }
+                user.setPermissions(permissions);
+                retMap.put(COL_SUCCESS, true);
+                retMap.put("token", getToken(user, SpringContextHolder.getBean(Environment.class), response));
+                return retMap;
+            } else {
+                return wrapFailedMsg("you have no privilege in this tenant");
+            }
+        }catch (Exception ex){
+            return wrapFailedMsg(ex);
+        }
+    }
 }

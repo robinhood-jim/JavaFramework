@@ -16,9 +16,11 @@ import com.robin.basis.model.system.SysResource;
 import com.robin.basis.model.user.SysResourceRole;
 import com.robin.basis.model.user.SysRole;
 import com.robin.basis.model.user.SysUserRole;
+import com.robin.basis.sercurity.SysLoginUser;
 import com.robin.basis.service.system.ISysResourceRoleService;
 import com.robin.basis.service.system.ISysResourceService;
 import com.robin.basis.service.system.ISysUserRoleService;
+import com.robin.basis.utils.SecurityUtils;
 import com.robin.basis.utils.WebUtils;
 import com.robin.basis.vo.SysRoleVO;
 import com.robin.core.base.exception.DAOException;
@@ -52,11 +54,13 @@ public class SysRoleServiceImpl extends AbstractMybatisService<SysRoleMapper, Sy
     private ISysResourceRoleService sysResourceRoleService;
 
     public Map<String,Object> search(SysRoleQueryDTO dto){
-        IPage<SysRole> roles= this.lambdaQuery().eq(!StrUtil.isNotBlank(dto.getStatus()), AbstractMybatisModel::getStatus,dto.getStatus())
-                .like(!StrUtil.isNotBlank(dto.getCode()),SysRole::getRoleCode,dto.getCode())
+        SysLoginUser user= SecurityUtils.getLoginUser();
+        IPage<SysRole> roles= this.lambdaQuery().eq(AbstractMybatisModel::getStatus,!ObjectUtils.isEmpty(dto.getStatus())?dto.getStatus():Const.VALID)
+                .like(StrUtil.isNotBlank(dto.getCode()),SysRole::getRoleCode,dto.getCode())
+                .eq(user.getTenantId()!=0L,SysRole::getTenantId,user.getTenantId())
                 .and(StrUtil.isNotBlank(dto.getName()),wrapper->
                     wrapper.like(SysRole::getRoleName,dto.getName()).or(
-                            orWrapper-> orWrapper.like(SysRole::getRoleDesc,dto.getName())
+                            orWrapper-> orWrapper.like(SysRole::getDescription,dto.getName())
                     )
                 )
                 .last(StrUtil.isNotBlank(dto.getOrderBy()),dto.getOrderBy())

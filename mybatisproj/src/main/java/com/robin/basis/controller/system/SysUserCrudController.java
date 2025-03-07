@@ -15,27 +15,26 @@
  */
 package com.robin.basis.controller.system;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.google.common.collect.Lists;
-import com.robin.basis.dto.RouterDTO;
 import com.robin.basis.dto.SysResourceDTO;
 import com.robin.basis.dto.SysUserDTO;
+import com.robin.basis.dto.TenantInfoDTO;
 import com.robin.basis.dto.query.SysUserQueryDTO;
 import com.robin.basis.mapper.SysUserMapper;
-import com.robin.basis.model.AbstractMybatisModel;
-import com.robin.basis.model.system.SysResource;
 import com.robin.basis.model.user.SysUser;
+import com.robin.basis.sercurity.SysLoginUser;
 import com.robin.basis.service.system.ISysOrgService;
 import com.robin.basis.service.system.ISysResourceService;
 import com.robin.basis.service.system.ISysUserService;
-import com.robin.basis.utils.WebUtils;
+import com.robin.basis.utils.SecurityUtils;
 import com.robin.core.base.exception.ServiceException;
 import com.robin.core.base.exception.WebException;
 import com.robin.core.base.util.Const;
-import com.robin.core.query.util.PageQuery;
+import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.web.controller.AbstractMyBatisController;
 import com.robin.core.web.util.Session;
 import org.springframework.context.MessageSource;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
@@ -61,14 +60,14 @@ public class SysUserCrudController extends AbstractMyBatisController<ISysUserSer
 
 
     @GetMapping
+    @PreAuthorize("@checker.isAdmin()")
     public Map<String, Object> listUser(SysUserQueryDTO dto) {
         return  wrapObject(service.listUser(dto));
     }
 
 
-
-
     @PostMapping
+    @PreAuthorize("@checker.isAdmin()")
     public Map<String, Object> saveUser(@RequestBody SysUserDTO dto){
 
         //check userAccount unique
@@ -82,26 +81,38 @@ public class SysUserCrudController extends AbstractMyBatisController<ISysUserSer
     }
 
     @PutMapping
-    public Map<String, Object> updateUser(@RequestBody SysUserDTO dto) {
-
+    @PreAuthorize("@checker.isAdmin()")
+    public Map<String, Object> updateUser(@RequestBody Map<String,Object> map) {
         //check userAccount unique
-        List<SysUser> list = this.service.queryByField(SysUser::getUserAccount, Const.OPERATOR.EQ, dto.getUserAccount());
-        if ((list.size() == 1 && dto.getId().equals(list.get(0).getId())) || list.isEmpty()) {
-            service.updateUser(dto);
-            return wrapSuccess("OK");
-        } else {
-            return wrapError(new WebException(messageSource.getMessage("message.userNameExists", null, Locale.getDefault())));
+        SysUserDTO dto=new SysUserDTO();
+        try {
+            ConvertUtil.mapToObject(dto, map);
+            List<?> roleList=(List<?>) map.get("roles");
+            dto.setRoles(roleList.stream().map(f->{
+                if(Map.class.isAssignableFrom(f.getClass())){
+                    return Long.valueOf(((Map)f).get("value").toString());
+                }else{
+                    return Long.valueOf(f.toString());
+                }
+            }).collect(Collectors.toList()));
+            List<SysUser> list = this.service.queryByField(SysUser::getUserAccount, Const.OPERATOR.EQ, dto.getUserAccount());
+            if ((list.size() == 1 && dto.getId().equals(list.get(0).getId())) || list.isEmpty()) {
+                service.updateUser(dto);
+                return wrapSuccess("OK");
+            } else {
+                return wrapError(new WebException(messageSource.getMessage("message.userNameExists", null, Locale.getDefault())));
+            }
+        }catch (Exception ex){
+            return wrapError(ex);
         }
     }
 
-
-
-
     @DeleteMapping
-    public Map<String, Object> deleteUser(@RequestBody Set<Long> ids) {
+    @PreAuthorize("@checker.isAdmin()")
+    public Map<String, Object> deleteUser(@RequestBody List<Long> ids) {
         Map<String,Object> retMap=new HashMap<>();
         try{
-            service.deleteUsers(ids.toArray(new Long[]{}));
+            service.deleteUsers(ids);
             constructRetMap(retMap);
         }catch (Exception ex){
             wrapFailed(retMap,ex);
@@ -129,6 +140,12 @@ public class SysUserCrudController extends AbstractMyBatisController<ISysUserSer
             wrapFailed(retMap, ex);
         }
         return retMap;
+    }
+    @PostMapping("/{id}/permission/")
+    @PreAuthorize("@checker.isAdmin()")
+    public Map<String,Object> assignPermission(@PathVariable Long id,@RequestBody List<Long> resIds){
+        sysResourceService.updateUserResourceRight(id, SecurityUtils.getLoginUser().getTenantId(),resIds);
+        return wrapSuccess("OK");
     }
 
     @GetMapping("/active/{id}")
@@ -201,6 +218,7 @@ public class SysUserCrudController extends AbstractMyBatisController<ISysUserSer
         }
         return wrapObject(aviableList);
     }
+
 
 
 

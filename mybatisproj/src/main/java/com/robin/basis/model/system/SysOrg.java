@@ -36,6 +36,7 @@ public class SysOrg extends AbstractMybatisModel
     private String orgName;
     private String orgAbbr;
     private String remark;
+    private String treeCode;
     private String orderNo;
     public static String STATUS_ACTIVE = "1";
     public static String STATUS_INACTIVE = "0";

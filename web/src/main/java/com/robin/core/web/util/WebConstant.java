@@ -24,9 +24,9 @@ public class WebConstant {
         }
     }
     public enum ACCOUNT_TYPE{
-        SYSUSER(1L),  //System User,can operator system menu
-        ORGUSER(2L),  // Org User,can access Org right menu and menu Assign by system user
-        FREEUSER(3L); // User not include in Any Org
+        SYSADMIN(1L),  //System User,can operator system menu
+        ORGADMIN(2L),  // Org User,can access Org right menu and menu Assign by system user
+        ORDINARY(3L); // User not include in Any Org
         private Long value;
         ACCOUNT_TYPE(Long value){
             this.value=value;

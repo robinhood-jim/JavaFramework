@@ -10,7 +10,9 @@ import com.robin.basis.mapper.SysUserMapper;
 
 import com.robin.basis.model.AbstractMybatisModel;
 import com.robin.basis.model.user.*;
+import com.robin.basis.sercurity.SysLoginUser;
 import com.robin.basis.service.system.*;
+import com.robin.basis.utils.SecurityUtils;
 import com.robin.basis.utils.WebUtils;
 import com.robin.basis.vo.SysRoleVO;
 import com.robin.basis.vo.SysUserVO;
@@ -24,6 +26,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -43,23 +46,26 @@ public class SysUserServiceImpl extends AbstractMybatisService<SysUserMapper, Sy
     private PasswordEncoder encoder;
     @Resource
     private Environment environment;
+    @Resource
+    private ISysResourceUserService sysResourceUserService;
+    @Resource
+    private ISysUserOrgService sysUserOrgService;
 
 
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = ServiceException.class)
     @Override
-    public void deleteUsers(Long[] ids) {
+    public void deleteUsers(List<Long> ids) {
         try {
-            for (Long id : ids) {
-                //delete responsilbity
-                getJdbcDao().deleteByField(SysUserResponsiblity.class,SysUserResponsiblity::getUserId, id);
-                //delete SysResource User right
-                getJdbcDao().deleteByField(SysResourceUser.class,SysResourceUser::getUserId,id);
-                //delete SysOrg user
-                getJdbcDao().deleteByField(SysUserOrg.class,SysUserOrg::getUserId,id);
-                //delete
-                getJdbcDao().deleteByField(SysResourceUser.class,SysResourceUser::getUserId,id);
+            if(!CollectionUtils.isEmpty(ids)) {
+                for (Long id : ids) {
+                    sysUserRoleService.deleteByField(SysUserRole::getUserId, Const.OPERATOR.EQ, id);
+                    //delete SysResource User right
+                    sysResourceUserService.deleteByField(SysResourceUser::getUserId, Const.OPERATOR.EQ, id);
+                    //delete SysOrg user
+                    sysUserOrgService.deleteByField(SysUserOrg::getUserId, Const.OPERATOR.EQ,id);
+                }
+                deleteByLogic(ids, AbstractMybatisModel::getStatus);
             }
-            getJdbcDao().deleteVO(SysUser.class, ids);
         }catch (DAOException ex){
             throw new ServiceException(ex);
         }
@@ -69,8 +75,13 @@ public class SysUserServiceImpl extends AbstractMybatisService<SysUserMapper, Sy
         if(!ObjectUtil.isEmpty(queryDTO.getOrgId())){
             subIds=sysOrgService.getSubIdByParentOrgId(queryDTO.getOrgId());
         }
+        SysLoginUser loginUser=SecurityUtils.getLoginUser();
+        if(!SecurityUtils.isAdmin()){
+            throw new ServiceException("you have no right to access this");
+        }
         IPage<SysUser> page = this.lambdaQuery()
                 .eq(ObjectUtil.isNotNull(queryDTO.getStatus()), AbstractMybatisModel::getStatus, queryDTO.getStatus())
+                .eq(loginUser.getTenantId()!=0L,SysUser::getTenantId,loginUser.getTenantId())
                 .like(StrUtil.isNotBlank(queryDTO.getPhone()), SysUser::getPhoneNum, queryDTO.getPhone())
                 .in(ObjectUtil.isNotEmpty(queryDTO.getOrgId()),SysUser::getOrgId,subIds)
                 .and(StrUtil.isNotBlank(queryDTO.getName()), wrapper -> wrapper.like(SysUser::getUserAccount, queryDTO.getName())
@@ -109,14 +120,24 @@ public class SysUserServiceImpl extends AbstractMybatisService<SysUserMapper, Sy
     @Transactional(rollbackFor = RuntimeException.class)
     public void updateUser(SysUserDTO dto){
         SysUser sysUser=get(dto.getId());
-        if(!ObjectUtil.isNotNull(sysUser)) {
+        if(ObjectUtil.isNotNull(sysUser)) {
             BeanUtils.copyProperties(dto, sysUser);
             updateById(sysUser);
             Long userId = sysUser.getId();
-            if (!ObjectUtil.isNotNull(userId)) {
+            if (ObjectUtil.isNotNull(userId)) {
                 sysUserRoleService.saveUserRole(dto.getRoles(), userId);
             }
         }
+    }
+    protected boolean checkHasOperationPermission(SysUser user) {
+        if (SecurityUtils.isLoginUserSystemAdmin()) {
+            return true;
+        } else {
+            if (SecurityUtils.isLoginUserOrgAdmin()) {
+                return user.getOrgId()==SecurityUtils.getLoginUser().getOrgId();
+            }
+        }
+        return false;
     }
 
 }

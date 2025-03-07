@@ -2,14 +2,17 @@ package com.robin.basis.service.system.impl;
 
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.google.common.collect.Lists;
 import com.robin.basis.dto.RouterDTO;
 import com.robin.basis.dto.SysResourceDTO;
 import com.robin.basis.dto.query.SysResourceQueryDTO;
 import com.robin.basis.mapper.SysResourceMapper;
+import com.robin.basis.model.AbstractMybatisModel;
 import com.robin.basis.model.system.SysResource;
 import com.robin.basis.model.user.SysResourceUser;
 import com.robin.basis.sercurity.SysLoginUser;
 import com.robin.basis.service.system.ISysResourceService;
+import com.robin.basis.service.system.ISysResourceUserService;
 import com.robin.basis.vo.SysResourceVO;
 import com.robin.core.base.exception.ServiceException;
 import com.robin.core.base.service.AbstractMybatisService;
@@ -22,41 +25,52 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import javax.annotation.Resource;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
 public class SysResourceServiceImpl extends AbstractMybatisService<SysResourceMapper, SysResource,Long> implements ISysResourceService {
+    @Resource
+    private ISysResourceUserService sysResourceUserService;
+
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = RuntimeException.class)
-    public void updateUserResourceRight(String userId, List<String> addList, List<String> delList) {
-        getJdbcDao().deleteByField(SysResourceUser.class, SysResourceUser::getUserId, Integer.valueOf(userId));
+    public void updateUserResourceRight(Long userId,Long tenantId, List<Long> newList) {
+
+        List<SysResourceDTO> permissions=queryUserPermission(userId,tenantId);
+        List<Long> originList=permissions.stream().map(SysResourceDTO::getId).collect(Collectors.toList());
+        List<Long> addList=newList.stream().filter(f->!originList.contains(f)).collect(Collectors.toList());
+        List<Long> delList=originList.stream().filter(f->!newList.contains(f)).collect(Collectors.toList());
+
+        List<SysResourceUser> insertList=new ArrayList<>();
         //Add Right
-        if (addList != null && !addList.isEmpty()) {
-            for (String addId : addList) {
+        if (!CollectionUtils.isEmpty(addList)) {
+            for (Long addId : addList) {
                 SysResourceUser vo = new SysResourceUser();
-                vo.setUserId(Integer.valueOf(userId));
-                vo.setResId(Integer.valueOf(addId));
+                vo.setUserId(userId);
+                vo.setResId(addId);
                 vo.setAssignType(SysResourceUser.ASSIGN_ADD);
-                vo.setStatus("1");
-                getJdbcDao().createVO(vo, Long.class);
+                vo.setStatus(Const.VALID);
+                insertList.add(vo);
             }
         }
         //Delete Right
-        if (delList != null && !delList.isEmpty()) {
-            for (String delId : delList) {
+        if (!CollectionUtils.isEmpty(delList)) {
+            for (Long delId : delList) {
                 SysResourceUser vo = new SysResourceUser();
-                vo.setUserId(Integer.valueOf(userId));
-                vo.setResId(Integer.valueOf(delId));
+                vo.setUserId(userId);
+                vo.setResId(delId);
                 vo.setAssignType(SysResourceUser.ASSIGN_DEL);
-                vo.setStatus("1");
-                getJdbcDao().createVO(vo, Long.class);
+                vo.setStatus(Const.VALID);
+                insertList.add(vo);
             }
         }
-
+        if(!CollectionUtils.isEmpty(insertList)){
+            sysResourceUserService.lambdaUpdate().set(AbstractMybatisModel::getStatus,Const.INVALID)
+                    .eq(SysResourceUser::getUserId,userId).eq(AbstractMybatisModel::getStatus,Const.VALID).update();
+            sysResourceUserService.insertBatch(insertList);
+        }
     }
     public List<SysResourceDTO> getByRole(Long roleId){
         return baseMapper.queryByRole(roleId);
@@ -157,7 +171,7 @@ public class SysResourceServiceImpl extends AbstractMybatisService<SysResourceMa
         dtoMap.put(0L, root);
         Map<Long, Integer> readMap = new HashMap<>();
 
-        List<SysResourceDTO> resources=baseMapper.queryUserPermission(userId, tenantId);
+        List<SysResourceDTO> resources=queryUserPermission(userId, tenantId);
         try {
             if (!resources.isEmpty()) {
                 Map<Long, List<RouterDTO>> aMap = resources.stream().map(RouterDTO::fromDTO).collect(Collectors.groupingBy(RouterDTO::getPid, Collectors.toList()));
@@ -166,6 +180,9 @@ public class SysResourceServiceImpl extends AbstractMybatisService<SysResourceMa
                 tops.sort(Comparator.comparing(RouterDTO::getSeqNo));
                 for (RouterDTO dto : tops) {
                     if (!readMap.containsKey(dto.getId()) && !dto.getAssignType().equals(Const.RESOURCE_ASSIGN_DENIED)) {
+                        if(dtoMap.get(dto.getPid()).getChildren()==null){
+                            dtoMap.get(dto.getPid()).setChildren(new ArrayList<>());
+                        }
                         dtoMap.get(dto.getPid()).getChildren().add(dtoMap.get(dto.getId()));
                         doScanChildren(dtoMap, aMap, dto, readMap);
                     }
@@ -184,6 +201,9 @@ public class SysResourceServiceImpl extends AbstractMybatisService<SysResourceMa
             pMap.get(dto.getId()).sort(Comparator.comparing(RouterDTO::getSeqNo));
             for (RouterDTO childs : pMap.get(dto.getId())) {
                 if (!readMap.containsKey(childs.getId()) && !childs.getAssignType().equals(Const.RESOURCE_ASSIGN_DENIED)) {
+                    if(cmap.get(childs.getPid()).getChildren()==null){
+                        cmap.get(childs.getPid()).setChildren(new ArrayList<>());
+                    }
                     cmap.get(childs.getPid()).getChildren().add(cmap.get(childs.getId()));
                     doScanChildren(cmap, pMap, childs, readMap);
                 }
@@ -192,7 +212,12 @@ public class SysResourceServiceImpl extends AbstractMybatisService<SysResourceMa
         }
     }
     public List<SysResourceDTO> queryUserPermission(Long userId,Long tenantId){
-        return baseMapper.queryUserPermission(userId,tenantId);
+        List<SysResourceDTO> origins=baseMapper.queryUserPermission(userId, tenantId);
+        //系统参数表获取通用菜单
+        if(CollectionUtils.isEmpty(origins) && !ObjectUtil.isEmpty(tenantId) && tenantId!=0L){
+
+        }
+        return origins.stream().collect(Collectors.collectingAndThen(Collectors.toCollection(()->new TreeSet<>(Comparator.comparing(SysResourceDTO::getId))),ArrayList::new));
     }
 
 }

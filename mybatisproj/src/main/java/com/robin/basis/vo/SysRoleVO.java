@@ -10,10 +10,10 @@ import java.util.List;
 public class SysRoleVO implements Serializable {
     private Long id;
     private String roleName;
-    private String roleDesc;
-    private String code;
-    private String status;
+    private String description;
+    private String roleType;
     private String roleCode;
+    private String status;
     private List<SysResourceDTO> permissions;
 
 }

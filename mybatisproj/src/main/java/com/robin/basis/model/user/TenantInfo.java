@@ -16,13 +16,11 @@ import java.time.LocalDateTime;
 public class TenantInfo extends AbstractMybatisModel {
     @TableId(type = IdType.AUTO)
     private Long id;
-    private String tenantName;
+    private String name;
 
     private Long orgId;
 
     private LocalDateTime regTime;
 
     private LocalDateTime auditTime;
-
-    private String status;
 }

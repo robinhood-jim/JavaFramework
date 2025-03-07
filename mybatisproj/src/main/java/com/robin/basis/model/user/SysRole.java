@@ -32,8 +32,6 @@ public class SysRole extends AbstractMybatisModel
     private String roleName;
     private String roleType;
 
-    private String status;
-
     private String roleCode;
-    private String roleDesc;
+    private String description;
 }

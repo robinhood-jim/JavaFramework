@@ -19,4 +19,5 @@ public class SysResourceDTO implements Serializable {
     private String assignType;
     private String leafTag;
     private String url;
+    private String permission;
 }
