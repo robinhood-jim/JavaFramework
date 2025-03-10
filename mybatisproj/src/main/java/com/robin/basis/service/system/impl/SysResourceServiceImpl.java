@@ -2,27 +2,31 @@ package com.robin.basis.service.system.impl;
 
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
-import com.google.common.collect.Lists;
 import com.robin.basis.dto.RouterDTO;
 import com.robin.basis.dto.SysResourceDTO;
+import com.robin.basis.dto.TenantInfoDTO;
 import com.robin.basis.dto.query.SysResourceQueryDTO;
 import com.robin.basis.mapper.SysResourceMapper;
 import com.robin.basis.model.AbstractMybatisModel;
 import com.robin.basis.model.system.SysResource;
 import com.robin.basis.model.user.SysResourceUser;
-import com.robin.basis.sercurity.SysLoginUser;
-import com.robin.basis.service.system.ISysResourceService;
-import com.robin.basis.service.system.ISysResourceUserService;
+import com.robin.basis.model.user.SysUser;
+import com.robin.basis.model.user.TenantInfo;
+import com.robin.basis.model.user.TenantUser;
+import com.robin.basis.service.system.*;
+import com.robin.basis.utils.SecurityUtils;
 import com.robin.basis.vo.SysResourceVO;
 import com.robin.core.base.exception.ServiceException;
 import com.robin.core.base.service.AbstractMybatisService;
 import com.robin.core.base.util.Const;
 import com.robin.core.collection.util.CollectionMapConvert;
 import com.robin.core.query.util.PageQuery;
+import com.robin.core.web.util.WebConstant;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
@@ -34,11 +38,19 @@ import java.util.stream.Collectors;
 public class SysResourceServiceImpl extends AbstractMybatisService<SysResourceMapper, SysResource,Long> implements ISysResourceService {
     @Resource
     private ISysResourceUserService sysResourceUserService;
+    @Resource
+    private ITenantInfoService tenantInfoService;
+    @Resource
+    private ISysUserService sysUserService;
+    @Resource
+    private ITenantUserService tenantUserService;
+    @Resource
+    private ISysParamsService sysParamsService;
 
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = RuntimeException.class)
     public void updateUserResourceRight(Long userId,Long tenantId, List<Long> newList) {
-
-        List<SysResourceDTO> permissions=queryUserPermission(userId,tenantId);
+        SysUser user=sysUserService.get(userId);
+        List<SysResourceDTO> permissions=queryUserPermission(user,tenantId);
         List<Long> originList=permissions.stream().map(SysResourceDTO::getId).collect(Collectors.toList());
         List<Long> addList=newList.stream().filter(f->!originList.contains(f)).collect(Collectors.toList());
         List<Long> delList=originList.stream().filter(f->!newList.contains(f)).collect(Collectors.toList());
@@ -89,7 +101,8 @@ public class SysResourceServiceImpl extends AbstractMybatisService<SysResourceMa
         return queryList.stream().map(f->{
             SysResourceVO vo=new SysResourceVO();
             BeanUtils.copyProperties(f,vo);
-            vo.setSort(f.getSeqNo());
+            vo.setStatus(Const.VALID.equals(f.getStatus()));
+            //vo.setSort(f.getSeqNo());
             if(!useQuery){
                 recusionResourceTree(pidMap,vo);
             }
@@ -101,6 +114,7 @@ public class SysResourceServiceImpl extends AbstractMybatisService<SysResourceMa
             vo.setChildren(pidMap.get(vo.getId()).stream().map(f->{
                                 SysResourceVO vo1=new SysResourceVO();
                                 BeanUtils.copyProperties(f,vo1);
+                                vo1.setStatus(Const.VALID.equals(f.getStatus()));
                                 recusionResourceTree(pidMap,vo1);
                                 return vo1;
                             }
@@ -108,61 +122,31 @@ public class SysResourceServiceImpl extends AbstractMybatisService<SysResourceMa
         }
     }
 
-    public List<SysResource> getOrgAllMenu(Long orgId) {
-        SysResource queryVO = new SysResource();
-        queryVO.setStatus(Const.VALID);
-        queryVO.setOrgId(orgId);
-        return getJdbcDao().queryByVO(voType, queryVO, null);
-    }
+
 
     public List<SysResource> getAllValidate() {
         SysResource queryVO = new SysResource();
         queryVO.setStatus(Const.VALID);
         return getJdbcDao().queryByVO(voType,queryVO, null);
     }
-
-    public Map<String, Object> getUserRights(Long userId) {
-        Map<String, Object> retMap = new HashMap<>();
-        //get userRole
-
-        //get user access resources
-        PageQuery<Map<String, Object>> query1 = new PageQuery();
-        query1.setPageSize(0);
-        query1.setSelectParamId("GET_RESOURCEINFO");
-        Map<String, Object> paramMap = new HashMap<>();
-        paramMap.put("userId", userId);
-        query1.addNamedParameter("userId", userId);
-        getJdbcDao().queryBySelectId(query1);
-        if (!query1.getRecordSet().isEmpty()) {
-            try {
-                Map<String, List<Map<String, Object>>> resTypeMap = CollectionMapConvert.convertToMapByParentMapKey(query1.getRecordSet(), "assignType");
-                Map<String, Map<String, Object>> accessResMap = resTypeMap.get("NULL").stream().collect(Collectors.toMap(f -> f.get("id").toString(), f -> f));
-                if (!CollectionUtils.isEmpty(resTypeMap.get(Const.RESOURCE_ASSIGN_ACCESS))) {
-                    accessResMap.putAll(resTypeMap.get(Const.RESOURCE_ASSIGN_ACCESS).stream().collect(Collectors.toMap(f -> f.get("id").toString(), f -> f)));
+    public List<Long> getPermissionIdByUser(Long userId,Long tenantId){
+        SysUser user=sysUserService.get(userId);
+        Assert.isTrue(!ObjectUtil.isEmpty(user) && Const.VALID.equals(user.getStatus()),"user "+userId+" doesn't exists or frozen!");
+        List<SysResourceDTO> resources=queryUserPermission(user, tenantId);
+        Map<Long,Integer> readTagMap=new HashMap<>();
+        List<Long> ids=new ArrayList<>();
+        if(!CollectionUtils.isEmpty(resources)){
+            resources.forEach(f->{
+                if(!readTagMap.containsKey(f.getId()) && !Const.RESOURCE_ASSIGN_DENIED.equals(f.getAssignType())){
+                    ids.add(f.getId());
                 }
-                //positive assign
-                if (resTypeMap.containsKey(Const.RESOURCE_ASSIGN_ACCESS)) {
-                    for (Map<String, Object> tmap : resTypeMap.get(Const.RESOURCE_ASSIGN_DENIED)) {
-                        if (!accessResMap.containsKey(tmap.get("id").toString())) {
-                            accessResMap.put(tmap.get("id").toString(), tmap);
-                        }
-                    }
-                }
-                //passive assign,remove denied resources
-                if (resTypeMap.containsKey(Const.RESOURCE_ASSIGN_DENIED)) {
-                    for (Map<String, Object> tmap : resTypeMap.get(Const.RESOURCE_ASSIGN_DENIED)) {
-                        if (accessResMap.containsKey(tmap.get("id").toString())) {
-                            accessResMap.remove(tmap.get("id").toString());
-                        }
-                    }
-                }
-                retMap.put("permission", accessResMap);
-            } catch (Exception ex) {
-                throw new ServiceException(" internal error");
-            }
+                readTagMap.put(f.getId(),1);
+            });
         }
-        return retMap;
+        return ids;
     }
+
+
     public List<RouterDTO> getMenuList(Long userId,Long tenantId) {
         List<SysResource> allList = getAllValidate();
         List<RouterDTO> dtoList = allList.stream().map(RouterDTO::fromVO).collect(Collectors.toList());
@@ -170,16 +154,17 @@ public class SysResourceServiceImpl extends AbstractMybatisService<SysResourceMa
         RouterDTO root = new RouterDTO();
         dtoMap.put(0L, root);
         Map<Long, Integer> readMap = new HashMap<>();
+        SysUser user=sysUserService.get(userId);
 
-        List<SysResourceDTO> resources=queryUserPermission(userId, tenantId);
+        List<SysResourceDTO> resources=queryUserPermission(user, tenantId);
         try {
-            if (!resources.isEmpty()) {
+            if (!CollectionUtils.isEmpty(resources)) {
                 Map<Long, List<RouterDTO>> aMap = resources.stream().map(RouterDTO::fromDTO).collect(Collectors.groupingBy(RouterDTO::getPid, Collectors.toList()));
 
                 List<RouterDTO> tops = aMap.get(0L);
                 tops.sort(Comparator.comparing(RouterDTO::getSeqNo));
                 for (RouterDTO dto : tops) {
-                    if (!readMap.containsKey(dto.getId()) && !dto.getAssignType().equals(Const.RESOURCE_ASSIGN_DENIED)) {
+                    if (!readMap.containsKey(dto.getId()) && !Const.RESOURCE_ASSIGN_DENIED.equals(dto.getAssignType())) {
                         if(dtoMap.get(dto.getPid()).getChildren()==null){
                             dtoMap.get(dto.getPid()).setChildren(new ArrayList<>());
                         }
@@ -211,13 +196,77 @@ public class SysResourceServiceImpl extends AbstractMybatisService<SysResourceMa
             }
         }
     }
-    public List<SysResourceDTO> queryUserPermission(Long userId,Long tenantId){
-        List<SysResourceDTO> origins=baseMapper.queryUserPermission(userId, tenantId);
-        //系统参数表获取通用菜单
-        if(CollectionUtils.isEmpty(origins) && !ObjectUtil.isEmpty(tenantId) && tenantId!=0L){
-
+    public List<SysResourceDTO> queryUserPermission(SysUser user, Long tenantId){
+        Long useTenantId=tenantId;
+        if(0L==tenantId || WebConstant.ACCOUNT_TYPE.SYSADMIN.toString().equals(user.getAccountType())){
+            useTenantId=null;
         }
-        return origins.stream().collect(Collectors.collectingAndThen(Collectors.toCollection(()->new TreeSet<>(Comparator.comparing(SysResourceDTO::getId))),ArrayList::new));
+        List<Long> accessTenants= tenantInfoService.getUserTenants(user.getId());
+        List<TenantInfoDTO> tenants=tenantInfoService.queryTenantByUser(user.getId());
+
+        if(!WebConstant.ACCOUNT_TYPE.SYSADMIN.toString().equals(SecurityUtils.getLoginUser().getAccountType()) && !isUserHasTenantRight(user,tenantId,accessTenants)){
+            throw new ServiceException("user "+user.getUserName()+" doesn't have privilege to access tenant "+tenantId);
+        }
+
+        List<SysResourceDTO> origins=baseMapper.queryUserPermission(user.getId(), useTenantId);
+        //非系统管理，从系统参数表获取通用菜单（根据企业对应租户的级别来，避免重复的角色菜单赋权，只保留差异）
+        if(WebConstant.ACCOUNT_TYPE.SYSADMIN.toString().equals(SecurityUtils.getLoginUser().getAccountType())){
+            if(!WebConstant.ACCOUNT_TYPE.SYSADMIN.toString().equals(user.getAccountType())) {
+                List<Long> defaults = getSuperAdminConfigUserPermissions(user);
+                List<SysResource> resources = this.lambdaQuery().in(SysResource::getId, defaults).eq(AbstractMybatisModel::getStatus, Const.VALID).list();
+                if (!CollectionUtils.isEmpty(resources)) {
+                    origins.addAll(resources.stream().map(SysResourceDTO::fromVO).collect(Collectors.toList()));
+                }
+            }
+        }else if(!WebConstant.ACCOUNT_TYPE.SYSADMIN.toString().equals(user.getAccountType())){
+            //获取用户租户对应关系
+            Short tenantType=getUserTenantType(user,tenantId,tenants);
+            //获取租户对应的级别
+            List<Long> menus=new ArrayList<>();
+            if(WebConstant.TENANT_TYPE.ORGADMIN.getValue().equals(tenantType)){
+                List<Long> orgMenus=sysParamsService.getOrgAdminDefaultPermission(tenantId);
+                if(!CollectionUtils.isEmpty(orgMenus)){
+                    menus.addAll(orgMenus);
+                }
+            }else{
+                List<Long> ordMenus=sysParamsService.getOrdinaryDefaultPermission(tenantId);
+                if(!CollectionUtils.isEmpty(ordMenus)){
+                    menus.addAll(ordMenus);
+                }
+            }
+            List<SysResource> resources=this.lambdaQuery().in(SysResource::getId,menus).eq(AbstractMybatisModel::getStatus,Const.VALID).list();
+            if(!CollectionUtils.isEmpty(resources)){
+                origins.addAll(resources.stream().map(SysResourceDTO::fromVO).collect(Collectors.toList()));
+            }
+        }
+        List<SysResourceDTO> dtos= origins.stream().collect(Collectors.collectingAndThen(Collectors.toCollection(()->new TreeSet<>(Comparator.comparing(f->f.getId()+"|"+f.getAssignType()))),ArrayList::new));
+        return dtos.stream().sorted(Comparator.comparing(SysResourceDTO::getId).thenComparing(SysResourceDTO::getAssignType).reversed()).collect(Collectors.toList());
+    }
+    public List<Long> getSuperAdminConfigUserPermissions(SysUser user){
+        if(WebConstant.ACCOUNT_TYPE.ORGADMIN.toString().equals(user.getAccountType())){
+            TenantInfo info=tenantInfoService.getManagedTenant(user.getId());
+            return sysParamsService.getOrgAdminDefaultPermission(info.getId());
+        }else{
+            return sysParamsService.getDefaultPermission();
+        }
+    }
+    private boolean isUserHasTenantRight(SysUser user,Long tenantId,List<Long> tenantUsers){
+        if(WebConstant.ACCOUNT_TYPE.SYSADMIN.toString().equals(user.getAccountType())){
+            return true;
+        }
+        return !CollectionUtils.isEmpty(tenantUsers) && tenantUsers.stream().anyMatch(f->f.equals(tenantId));
+    }
+    private Short getUserTenantType(SysUser user,Long tenantId,List<TenantInfoDTO> tenantUsers){
+        if(WebConstant.ACCOUNT_TYPE.ORGADMIN.toString().equals(user.getAccountType()) || user.getTenantId().equals(tenantId)){
+            return WebConstant.TENANT_TYPE.ORGADMIN.getValue();
+        }else{
+            Optional<TenantInfoDTO> optional= tenantUsers.stream().filter(f->f.getId().equals(tenantId)).findFirst();
+            if(optional.isPresent()){
+                return optional.get().getType();
+            }else{
+                return WebConstant.TENANT_TYPE.NORIGHT.getValue();
+            }
+        }
     }
 
 }

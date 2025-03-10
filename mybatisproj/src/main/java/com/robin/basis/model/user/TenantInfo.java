@@ -19,6 +19,7 @@ public class TenantInfo extends AbstractMybatisModel {
     private String name;
 
     private Long orgId;
+    private Integer level;
 
     private LocalDateTime regTime;
 

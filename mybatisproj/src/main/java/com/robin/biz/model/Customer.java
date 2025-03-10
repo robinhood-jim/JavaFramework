@@ -8,6 +8,8 @@ import java.time.LocalDateTime;
 @Data
 public class Customer extends AbstractMybatisModel {
     private Long id;
+    private String wxId;
+
     private String name;
     private String type;
     private String sex;

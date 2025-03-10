@@ -10,4 +10,5 @@ public class TenantInfoVO implements Serializable {
     private String orgName;
     private String orgCode;
     private String name;
+    private Integer level;
 }

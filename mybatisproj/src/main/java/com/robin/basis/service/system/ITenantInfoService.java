@@ -9,4 +9,5 @@ import java.util.List;
 public interface ITenantInfoService extends IMybatisBaseService<TenantInfo,Long> {
     List<Long> getUserTenants(Long userId);
     List<TenantInfoDTO> queryTenantByUser(Long userId);
+    TenantInfo getManagedTenant(Long useId);
 }

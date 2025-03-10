@@ -1,6 +1,7 @@
 package com.robin.basis.utils;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.google.common.collect.Lists;
 import com.robin.core.base.exception.ServiceException;
 import com.robin.core.base.exception.WebException;
 import com.robin.core.base.service.IMybatisBaseService;
@@ -44,6 +45,14 @@ public class WebUtils {
         retMap.put("records",list);
         return retMap;
     }
+    public static  Map<String,Object> toEmptyPageVO(){
+        Map<String,Object> retMap=new HashMap<>();
+        retMap.put("pages",1);
+        retMap.put("total",0);
+        retMap.put("records", Lists.newArrayList());
+        return retMap;
+    }
+
 
     protected static void wrapFailed( Map<String, Object> retMap, Exception ex)
     {

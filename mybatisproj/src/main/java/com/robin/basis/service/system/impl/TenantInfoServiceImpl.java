@@ -1,6 +1,5 @@
 package com.robin.basis.service.system.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.google.common.collect.Lists;
 import com.robin.basis.dto.TenantInfoDTO;
 import com.robin.basis.mapper.TenantInfoMapper;
@@ -14,13 +13,12 @@ import com.robin.core.base.service.AbstractMybatisService;
 import com.robin.core.base.util.Const;
 import com.robin.core.web.util.WebConstant;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
 import javax.annotation.Resource;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -49,5 +47,10 @@ public class TenantInfoServiceImpl extends AbstractMybatisService<TenantInfoMapp
     }
     public List<TenantInfoDTO> queryTenantByUser(Long userId){
         return baseMapper.queryTenantByUser(userId);
+    }
+    public TenantInfo getManagedTenant(Long useId){
+        SysUser selectuser=sysUserService.getById(useId);
+        Assert.isTrue(!ObjectUtils.isEmpty(selectuser) && Const.VALID.equals(selectuser.getStatus()),"");
+        return this.getByField(TenantInfo::getOrgId, Const.OPERATOR.EQ,selectuser.getOrgId());
     }
 }

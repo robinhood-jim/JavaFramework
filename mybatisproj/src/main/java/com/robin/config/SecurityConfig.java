@@ -41,7 +41,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             ignoreUrls=environment.getProperty("login.ignoreUrls").split(",");
         }
 
-        http.csrf().disable()
+        http.csrf().disable().cors().and()
                 .headers().cacheControl().disable().and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
                 .authorizeRequests()

@@ -21,9 +21,11 @@ import com.google.common.collect.Lists;
 import com.robin.basis.dto.*;
 import com.robin.basis.model.AbstractMybatisModel;
 import com.robin.basis.model.user.SysRole;
+import com.robin.basis.model.user.SysUser;
 import com.robin.basis.sercurity.SysLoginUser;
 import com.robin.basis.service.system.ISysResourceService;
 import com.robin.basis.service.system.ISysRoleService;
+import com.robin.basis.service.system.ISysUserService;
 import com.robin.basis.service.system.ITenantInfoService;
 import com.robin.basis.utils.SecurityUtils;
 import com.robin.core.base.exception.MissingConfigException;
@@ -66,6 +68,8 @@ public class LoginController extends AbstractController {
     private ITenantInfoService tenantInfoService;
     @Resource
     private ISysResourceService sysResourceService;
+    @Resource
+    private ISysUserService sysUserService;
 
     @PostMapping("/login")
     public Map<String, Object> login(HttpServletRequest request, HttpServletResponse response, @RequestBody Map<String, Object> reqMap) {
@@ -205,10 +209,11 @@ public class LoginController extends AbstractController {
         List<TenantInfoDTO> tenantInfoDTOS=tenantInfoService.queryTenantByUser(user.getId());
         try {
             if (tenantInfoDTOS.stream().map(TenantInfoDTO::getId).anyMatch(f -> f.equals(tenantId))) {
+                SysUser sysUser=sysUserService.get(user.getId());
                 Map<String, Object> retMap = new HashMap<>();
                 user.setTenantId(tenantId);
                 List<String> permissions = new ArrayList<>();
-                List<SysResourceDTO> resources = sysResourceService.queryUserPermission(user.getId(), tenantId);
+                List<SysResourceDTO> resources = sysResourceService.queryUserPermission(sysUser, tenantId);
                 if (!CollectionUtils.isEmpty(resources)) {
                     Map<Long, Integer> readMap = new HashMap<>();
                     resources.forEach(f -> {

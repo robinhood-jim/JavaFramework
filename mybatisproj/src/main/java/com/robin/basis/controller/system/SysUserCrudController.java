@@ -206,7 +206,7 @@ public class SysUserCrudController extends AbstractMyBatisController<ISysUserSer
     public Map<String,Object> listUserRight(@PathVariable Long id){
         SysUser user=service.get(id);
         Assert.notNull(user,"user id not exists!");
-        List<SysResourceDTO> permissions=sysResourceService.queryUserPermission(id, user.getTenantId());
+        List<SysResourceDTO> permissions=sysResourceService.queryUserPermission(user, user.getTenantId());
         Map<Long,Integer> selMap=new HashMap<>();
         List<SysResourceDTO> aviableList= Lists.newArrayList();
         if(!CollectionUtils.isEmpty(permissions)){

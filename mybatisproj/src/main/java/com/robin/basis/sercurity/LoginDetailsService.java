@@ -79,7 +79,7 @@ public class LoginDetailsService implements UserDetailsService {
                 permissions.addAll(roles.stream().map(f -> "ROLE_" + roleMap.get(f.getRoleId()).getRoleCode().toUpperCase()).collect(Collectors.toList()));
             }
             if (!ObjectUtils.isEmpty(tenantId)) {
-                List<SysResourceDTO> resources = sysResourceService.queryUserPermission(selectUser.getId(), tenantId);
+                List<SysResourceDTO> resources = sysResourceService.queryUserPermission(selectUser, tenantId);
                 if (!CollectionUtils.isEmpty(resources)) {
                     Map<Long, Integer> readMap = new HashMap<>();
                     resources.forEach(f -> {

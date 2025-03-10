@@ -87,23 +87,26 @@ public class SysUserServiceImpl extends AbstractMybatisService<SysUserMapper, Sy
                 .and(StrUtil.isNotBlank(queryDTO.getName()), wrapper -> wrapper.like(SysUser::getUserAccount, queryDTO.getName())
                         .or(orWrapper -> orWrapper.like(SysUser::getNickName, queryDTO.getName())))
                 .page(getPage(queryDTO));
-
-        Map<Long,List<SysUserRole>> userRoles= sysRoleService.getRoleIdByUser(page.getRecords().stream().map(SysUser::getId).collect(Collectors.toList()));
-        Map<Long,SysRoleVO> roleIdMap=sysRoleService.queryByField(AbstractMybatisModel::getStatus, Const.OPERATOR.EQ,Const.VALID)
-                .stream().map(f->{
-                    SysRoleVO vo=new SysRoleVO();
-                    BeanUtils.copyProperties(f,vo);
-                    return vo;
-                }).collect(Collectors.toMap(SysRoleVO::getId, Function.identity()));
-        return WebUtils.toPageVO(page,user->{
-            SysUserVO sysUserVO=new SysUserVO();
-            BeanUtils.copyProperties(user,sysUserVO);
-            sysUserVO.setStatus(Const.VALID.equals(user.getStatus()));
-            if(!ObjectUtil.isEmpty(userRoles.get(user.getId()))) {
-                sysUserVO.setRoles(userRoles.get(user.getId()).stream().map(f -> roleIdMap.get(f.getRoleId())).collect(Collectors.toList()));
-            }
-            return sysUserVO;
-        });
+        if(page.getTotal()>0L) {
+            Map<Long, List<SysUserRole>> userRoles = sysRoleService.getRoleIdByUser(page.getRecords().stream().map(SysUser::getId).collect(Collectors.toList()));
+            Map<Long, SysRoleVO> roleIdMap = sysRoleService.queryByField(AbstractMybatisModel::getStatus, Const.OPERATOR.EQ, Const.VALID)
+                    .stream().map(f -> {
+                        SysRoleVO vo = new SysRoleVO();
+                        BeanUtils.copyProperties(f, vo);
+                        return vo;
+                    }).collect(Collectors.toMap(SysRoleVO::getId, Function.identity()));
+            return WebUtils.toPageVO(page, user -> {
+                SysUserVO sysUserVO = new SysUserVO();
+                BeanUtils.copyProperties(user, sysUserVO);
+                sysUserVO.setStatus(Const.VALID.equals(user.getStatus()));
+                if (!ObjectUtil.isEmpty(userRoles.get(user.getId()))) {
+                    sysUserVO.setRoles(userRoles.get(user.getId()).stream().map(f -> roleIdMap.get(f.getRoleId())).collect(Collectors.toList()));
+                }
+                return sysUserVO;
+            });
+        }else{
+            return WebUtils.toEmptyPageVO();
+        }
     }
     @Transactional(rollbackFor = RuntimeException.class)
     public void saveUser(SysUserDTO dto){

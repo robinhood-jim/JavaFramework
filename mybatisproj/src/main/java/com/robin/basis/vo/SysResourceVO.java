@@ -13,7 +13,8 @@ public class SysResourceVO implements Serializable {
     private String resType;
     private String icon;
     private String routerPath;
-    private Integer sort;
+    private Integer seqNo;
+    private boolean status;
     private String componentPath;
     private List<SysResourceVO> children;
 }

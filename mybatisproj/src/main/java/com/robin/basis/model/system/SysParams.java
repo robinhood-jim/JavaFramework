@@ -1,19 +1,17 @@
-package com.robin.basis.model.user;
+package com.robin.basis.model.system;
 
 import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.robin.basis.model.AbstractMybatisModel;
 import lombok.Data;
 
+@TableName("t_sys_params")
 @Data
-@TableName("t_tenant_user_r")
-public class TenantUser extends AbstractMybatisModel {
+public class SysParams extends AbstractMybatisModel {
     @TableId(type = IdType.AUTO)
     private Long id;
-    private Long userId;
-    @TableField("T_TENANT_ID")
-    private Long targetId;
-    private Short type;
+    private String paramName;
+    private String paramValue;
+
 }

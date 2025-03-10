@@ -5,6 +5,7 @@ import com.robin.basis.mapper.SysResourceMapper;
 import com.robin.basis.model.system.SysResource;
 import com.robin.basis.service.system.ISysResourceService;
 import com.robin.basis.service.system.ISysRoleService;
+import com.robin.basis.utils.SecurityUtils;
 import com.robin.core.base.exception.ServiceException;
 import com.robin.core.web.controller.AbstractMyBatisController;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,6 +46,14 @@ public class SysResourceContorller extends AbstractMyBatisController<ISysResourc
 		}catch(Exception ex){
 			return wrapFailedMsg(ex);
 		}
+	}
+	@GetMapping("/getByUser/{userId}")
+	@PreAuthorize("@checker.isAdmin()")
+	public Map<String,Object> getUserPermission(@PathVariable Long userId){
+		List<Long> ids=service.getPermissionIdByUser(userId, SecurityUtils.getLoginUser().getTenantId());
+		Map<String,Object> map=new HashMap<>();
+		map.put("ids",ids);
+		return wrapObject(map);
 	}
 
 

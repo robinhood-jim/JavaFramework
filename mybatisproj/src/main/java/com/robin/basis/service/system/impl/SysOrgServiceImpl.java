@@ -38,9 +38,9 @@ public class SysOrgServiceImpl extends AbstractMybatisService<SysOrgMapper,SysOr
     private ISysUserOrgService userOrgService;
 
     public List<SysOrgVO> queryOrg(SysOrgQueryDTO dto){
-        List<SysOrgVO> orgList=queryValid(null, AbstractMybatisModel::getStatus).stream().map(SysOrgVO::fromVO).collect(Collectors.toList());
+        List<SysOrgVO> orgList=queryValid(new QueryWrapper<SysOrg>().lambda(), AbstractMybatisModel::getStatus).stream().map(SysOrgVO::fromVO).collect(Collectors.toList());
         Map<Long,List<SysOrgVO>> orgMap=orgList.stream().collect(Collectors.groupingBy(SysOrgVO::getPid));
-        List<SysOrgVO> topList=orgMap.get(dto.getPid());
+        List<SysOrgVO> topList=orgMap.get(!ObjectUtils.isEmpty(dto.getPid())?dto.getPid():0L);
         if(!StrUtil.isBlank(dto.getName())){
             Map<Long,SysOrgVO> idMap=orgList.stream().collect(Collectors.toMap(SysOrgVO::getId,Function.identity()));
             List<SysOrg> orgs= this.lambdaQuery().and(wrapper->
