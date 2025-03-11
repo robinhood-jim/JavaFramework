@@ -12,7 +12,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
-import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.time.Duration;
 import java.time.Instant;
@@ -44,10 +43,8 @@ public class LicenseUtils {
                 try {
                     File rsaPath=new File(userPath + File.separator + ".ssh" + File.separator + "id_rsa.pub");
                     if (rsaPath.exists()) {
-                        publicKey = CipherUtil.readPublicKey(CipherUtil.getKeyBytesByPath(userPath + File.separator + ".ssh" + File.separator + "id_rsa.pub"));
-                        if (publicKey.getEncoded().length <= 300) {
-                            valid = true;
-                        }
+                        publicKey = CipherUtil.readPublicKeyByPem(new FileInputStream(userPath + File.separator + ".ssh" + File.separator + "id_rsa.pub"));
+                        valid = true;
                     }
                 } catch (Exception ex1) {
                     System.out.println(ex1.getMessage());
@@ -154,11 +151,12 @@ public class LicenseUtils {
         return true;
     }
 
-    //生成证书，15天有效
+    //生成证书，7天有效
     private void generateDefaultLicense() {
         StackTraceElement[] traceElements= Thread.currentThread().getStackTrace();
+        //anti reflect call
         if(!LicenseUtils.class.getName().equals(traceElements[2].getClassName()) ||(!"checkValid".equals(traceElements[2].getMethodName()) && !"do".equals(traceElements[2].getMethodName()))){
-            throw new OperationNotSupportException("irregular method call !");
+            throw new OperationNotSupportException("irregular call method through reflect !");
         }
         if(!CharUtils.getInstance().retKeyword(121).equals(CharUtils.getInstance().retKeyword(119))) {
             throw new OperationNotSupportException("product mode can not generate license Automatic!");
@@ -182,7 +180,7 @@ public class LicenseUtils {
         if (rsaFile.exists()) {
             System.out.println("--- generate using ssh key ");
             try {
-                key = CipherUtil.readPrivateKey(CipherUtil.getKeyBytesByPath(userPath + File.separator + ".ssh" + File.separator + "id_rsa"));
+                key = CipherUtil.readPrivateKeyByPem(new FileInputStream(userPath + File.separator + ".ssh" + File.separator + "id_rsa"));
                 ifGetKey = true;
             } catch (Exception ex1) {
                 ex1.printStackTrace();
@@ -192,8 +190,7 @@ public class LicenseUtils {
         if (!ifGetKey) {
             System.out.println("--- generate using default key ");
             try {
-                byte[] bytes = CipherUtil.getKeyByClassPath(CharUtils.getInstance().retKeyword(106));
-                key = CipherUtil.generatePrivateKey("RSA",new PKCS8EncodedKeySpec(bytes));
+                key = CipherUtil.readPrivateKeyByPem(LicenseUtils.class.getClassLoader().getResourceAsStream(CharUtils.getInstance().retKeyword(106)));
             } catch (Exception ex) {
                 ex.printStackTrace();
             }

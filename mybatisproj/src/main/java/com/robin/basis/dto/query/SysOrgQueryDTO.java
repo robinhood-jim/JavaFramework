@@ -10,6 +10,6 @@ public class SysOrgQueryDTO extends PageDTO {
     private String accountType;
     private String phone;
     private Long pid;
-    private boolean inTag=true;
+    private String selType;
 
 }

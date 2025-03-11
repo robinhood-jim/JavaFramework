@@ -1,8 +1,16 @@
 package com.robin.core.encrypt;
 
+import cn.hutool.core.io.FileUtil;
 import com.google.common.collect.Lists;
 import com.robin.core.base.util.CharUtils;
+import com.robin.core.base.util.IOUtils;
+import com.sshtools.common.publickey.SshKeyUtils;
+import com.sshtools.common.ssh.components.SshKeyPair;
+import com.sshtools.common.ssh.components.SshPublicKey;
+import com.sshtools.common.ssh.components.jce.JCEProvider;
 import lombok.extern.slf4j.Slf4j;
+import org.bouncycastle.util.io.pem.PemObject;
+import org.bouncycastle.util.io.pem.PemReader;
 
 import javax.crypto.*;
 import javax.crypto.spec.SecretKeySpec;
@@ -11,10 +19,7 @@ import java.math.BigInteger;
 import java.security.*;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.KeySpec;
-import java.security.spec.RSAPrivateKeySpec;
-import java.security.spec.RSAPublicKeySpec;
+import java.security.spec.*;
 import java.util.Base64;
 import java.util.List;
 
@@ -47,7 +52,7 @@ public class CipherUtil {
         return secretKey.getEncoded();
     }
 
-    private static SecretKey toKey(byte[] keybyte) throws NoSuchAlgorithmException,InvalidKeySpecException {
+    private static SecretKey toKey(byte[] keybyte) throws NoSuchAlgorithmException, InvalidKeySpecException {
         SecretKeySpec key = new SecretKeySpec(keybyte, DEFAULTALGORITHM);
         SecretKeyFactory skf = SecretKeyFactory.getInstance(DEFAULTALGORITHM);
         return skf.generateSecret(key);
@@ -59,7 +64,7 @@ public class CipherUtil {
             kg.init(56);
             return kg.generateKey();
         } catch (Exception ex) {
-            log.error("{}",ex.getMessage());
+            log.error("{}", ex.getMessage());
         }
         return null;
     }
@@ -70,7 +75,7 @@ public class CipherUtil {
             cipher.init(Cipher.ENCRYPT_MODE, key);
             return cipher.doFinal(bytes);
         } catch (Exception ex) {
-            log.error("{}",ex.getMessage());
+            log.error("{}", ex.getMessage());
         }
         return null;
     }
@@ -107,7 +112,7 @@ public class CipherUtil {
             CipherOutputStream out = new CipherOutputStream(os, cipher);
             doCopy(is, out);
         } catch (Exception ex) {
-            log.error("{}",ex.getMessage());
+            log.error("{}", ex.getMessage());
         }
     }
 
@@ -188,6 +193,7 @@ public class CipherUtil {
     public static byte[] getKeyByClassPath(String keyFile) {
         return getKeyByInputStream(CipherUtil.class.getClassLoader().getResourceAsStream(keyFile));
     }
+
     public static byte[] getKeyByInputStream(InputStream stream) {
         StringBuilder builder = new StringBuilder();
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream))) {
@@ -228,11 +234,8 @@ public class CipherUtil {
         return KeyFactory.getInstance(algorithm).generatePublic(keySpec);
     }
 
-    public static PrivateKey generatePrivateKey(String algorithm, KeySpec keySpec) throws NoSuchAlgorithmException, InvalidKeySpecException {
-        return KeyFactory.getInstance(algorithm).generatePrivate(keySpec);
-    }
 
-
+    @Deprecated
     public static PublicKey readPublicKey(byte[] bytes) throws IOException {
 
         try (DataInputStream in = new DataInputStream(new ByteArrayInputStream(bytes))) {
@@ -254,7 +257,66 @@ public class CipherUtil {
             throw new IllegalStateException(ex1);
         }
     }
+    public static PublicKey readPublicKeyByPem(InputStream inputStream) throws Exception{
 
+        PublicKey publicKey ;
+        try {
+            JCEProvider.enableBouncyCastle(false);
+            SshPublicKey pair = SshKeyUtils.getPublicKey(inputStream);
+            publicKey=pair.getJCEPublicKey();
+        } catch (Exception ex) {
+            PKCS8EncodedKeySpec privKeySpec = new PKCS8EncodedKeySpec(getKeyBytes(inputStream));
+            KeyFactory kf = KeyFactory.getInstance("RSA");
+            publicKey = kf.generatePublic(privKeySpec);
+        }
+        return publicKey;
+    }
+    public static PrivateKey readPrivateKeyByPem(InputStream inputStream) throws Exception {
+        PemReader pemReader = null;
+        PrivateKey privKey = null;
+        String tmpPath = System.getProperty(CharUtils.getInstance().retKeyword(115)) + File.separator + CharUtils.getInstance().retKeyword(107) + File.separator ;
+        try (ByteArrayOutputStream byteArrayOutputStream=new ByteArrayOutputStream()){
+            IOUtils.copyBytes(inputStream,byteArrayOutputStream);
+            pemReader = new PemReader(new InputStreamReader(new ByteArrayInputStream(byteArrayOutputStream.toByteArray())));
+            PemObject pemObject = pemReader.readPemObject();
+            if (pemObject.getType().endsWith("RSA PRIVATE KEY")) {
+                // 取得私钥  for PKCS#1
+                org.bouncycastle.asn1.pkcs.RSAPrivateKey asn1PrivKey = org.bouncycastle.asn1.pkcs.RSAPrivateKey.getInstance(pemObject.getContent());
+                RSAPrivateKeySpec rsaPrivKeySpec = new RSAPrivateKeySpec(asn1PrivKey.getModulus(), asn1PrivKey.getPrivateExponent());
+                KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+                privKey = keyFactory.generatePrivate(rsaPrivKeySpec);
+            }else if(pemObject.getType().endsWith("OPENSSH PRIVATE KEY")){
+                if(!FileUtil.exist(tmpPath+"openssh.pem")) {
+                    JCEProvider.enableBouncyCastle(false);
+                    SshKeyPair pair = SshKeyUtils.getPrivateKey(new ByteArrayInputStream(byteArrayOutputStream.toByteArray()), "");
+                    SshKeyUtils.savePrivateKey(pair, "", "", new File(tmpPath + "openssh.pem"));
+                }
+                pemReader=new PemReader(new FileReader(tmpPath+"openssh.pem"));
+                org.bouncycastle.asn1.pkcs.RSAPrivateKey asn1PrivKey = org.bouncycastle.asn1.pkcs.RSAPrivateKey.getInstance(pemReader.readPemObject().getContent());
+                RSAPrivateKeySpec rsaPrivKeySpec = new RSAPrivateKeySpec(asn1PrivKey.getModulus(), asn1PrivKey.getPrivateExponent());
+                KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+                privKey = keyFactory.generatePrivate(rsaPrivKeySpec);
+            }
+            else if (pemObject.getType().endsWith("PRIVATE KEY")) {
+                //取得私钥 for PKCS#8
+                PKCS8EncodedKeySpec privKeySpec = new PKCS8EncodedKeySpec(pemObject.getContent());
+                KeyFactory kf = KeyFactory.getInstance("RSA");
+                privKey = kf.generatePrivate(privKeySpec);
+            }
+        } catch (Exception ex) {
+            throw ex;
+        } finally {
+            try {
+                if (pemReader != null) {
+                    pemReader.close();
+                }
+            } catch (Exception ex) {
+
+            }
+        }
+        return privKey;
+    }
+    @Deprecated
     public static PrivateKey readPrivateKey(byte[] bytes) throws GeneralSecurityException, IOException {
         try (DataInputStream in = new DataInputStream(new ByteArrayInputStream(bytes))) {
             checkArgument(in.read() == 48, "no id_rsa SEQUENCE");
@@ -283,6 +345,8 @@ public class CipherUtil {
         in.readFully(data);
         return new BigInteger(data);
     }
+
+
 
     public static List<String> generateRandomKey() throws NoSuchAlgorithmException {
         KeyPairGenerator keyPairGen = KeyPairGenerator.getInstance("RSA");

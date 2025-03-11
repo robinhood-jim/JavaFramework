@@ -47,4 +47,5 @@ public class SysCodeContorller extends AbstractController {
         map.put("data", list);
         return map;
     }
+
 }

@@ -264,9 +264,15 @@
             <artifactId>aspectjweaver</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.bouncycastle</groupId>
-            <artifactId>bcprov-jdk15on</artifactId>
-            <version>1.67</version>
+            <groupId>com.sshtools</groupId>
+            <artifactId>maverick-bc</artifactId>
+            <version>3.0.9</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>com.sshtools</groupId>
+            <artifactId>maverick-synergy-client</artifactId>
+            <version>3.0.9</version>
             <optional>true</optional>
         </dependency>
     </dependencies>

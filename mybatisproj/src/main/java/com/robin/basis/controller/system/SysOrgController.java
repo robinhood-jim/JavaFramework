@@ -39,8 +39,8 @@ public class SysOrgController extends AbstractMyBatisController<ISysOrgService, 
     }
 
 
-    @PostMapping("/listUser")
-    public Map<String, Object> listUser(@RequestBody SysOrgQueryDTO dto) {
+    @GetMapping("/listUser")
+    public Map<String, Object> listUser(SysOrgQueryDTO dto) {
         return wrapObject(service.queryOrgUser(dto));
     }
 

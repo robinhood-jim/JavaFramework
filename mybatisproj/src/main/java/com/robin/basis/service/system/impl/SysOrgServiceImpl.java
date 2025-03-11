@@ -136,7 +136,7 @@ public class SysOrgServiceImpl extends AbstractMybatisService<SysOrgMapper,SysOr
                 .like(!StrUtil.isBlank(dto.getPhone()),SysUser::getPhoneNum,dto.getPhone())
                 .and(!StrUtil.isBlank(dto.getUserName()), wrapper -> wrapper.like(SysUser::getUserAccount, dto.getUserName())
                         .or(orWrapper -> orWrapper.like(SysUser::getNickName, dto.getUserName())));
-        if(dto.isInTag()){
+        if("1".equals(dto.getSelType())){
             return baseMapper.selectUserInOrg(new Page<>(dto.getPage(),dto.getSize()),queryWrapper,subIds);
         }else{
             return baseMapper.selectUserNotInOrg(new Page<>(dto.getPage(),dto.getSize()),queryWrapper,subIds);
