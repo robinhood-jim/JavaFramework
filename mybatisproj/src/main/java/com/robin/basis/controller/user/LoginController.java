@@ -209,7 +209,7 @@ public class LoginController extends AbstractController {
         List<TenantInfoDTO> tenantInfoDTOS=tenantInfoService.queryTenantByUser(user.getId());
         try {
             if (tenantInfoDTOS.stream().map(TenantInfoDTO::getId).anyMatch(f -> f.equals(tenantId))) {
-                SysUser sysUser=sysUserService.get(user.getId());
+                SysUser sysUser=sysUserService.getById(user.getId());
                 Map<String, Object> retMap = new HashMap<>();
                 user.setTenantId(tenantId);
                 List<String> permissions = new ArrayList<>();

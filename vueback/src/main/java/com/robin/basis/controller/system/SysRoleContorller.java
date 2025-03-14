@@ -43,7 +43,7 @@ public class SysRoleContorller extends AbstractMyBatisController<ISysRoleService
 			Map<String,Object> map=wrapRequest(request);
 			SysRole user=new SysRole();
 			ConvertUtil.convertToModel(user, map);
-			service.saveEntity(user);
+			service.save(user);
 			wrapSuccessMap(retmap,"OK");
 		}catch(Exception ex){
 			wrapFailed(retmap,ex);

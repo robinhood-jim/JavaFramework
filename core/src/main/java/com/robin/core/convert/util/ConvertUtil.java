@@ -642,4 +642,10 @@ public class ConvertUtil {
             currentFormatter.remove();
         }
     }
+    public static DateTimeFormatter getCurrentFormat(){
+        if(currentFormatter.get()!=null){
+            return currentFormatter.get();
+        }
+        return DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    }
 }

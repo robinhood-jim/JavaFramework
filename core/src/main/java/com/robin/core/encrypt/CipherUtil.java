@@ -4,6 +4,7 @@ import cn.hutool.core.io.FileUtil;
 import com.google.common.collect.Lists;
 import com.robin.core.base.util.CharUtils;
 import com.robin.core.base.util.IOUtils;
+import com.robin.core.hardware.MachineIdUtils;
 import com.sshtools.common.publickey.SshKeyUtils;
 import com.sshtools.common.ssh.components.SshKeyPair;
 import com.sshtools.common.ssh.components.SshPublicKey;
@@ -11,6 +12,8 @@ import com.sshtools.common.ssh.components.jce.JCEProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemReader;
+import org.bouncycastle.util.io.pem.PemWriter;
+import org.springframework.util.ObjectUtils;
 
 import javax.crypto.*;
 import javax.crypto.spec.SecretKeySpec;
@@ -40,6 +43,8 @@ public class CipherUtil {
     public static final String DEFAULTKEY = "Robin1234567@123";
     public static final byte[] FILEENDS = {0x7F, 0x7F};
     private static final int KEY_SIZE = 512;
+    public static final String PUBLICKEYPERFIX="PUBLIC KEY";
+    public static final String PRIVATEKEYPERFIX="PRIVATE KEY";
 
     static {
         Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
@@ -224,7 +229,11 @@ public class CipherUtil {
                 }
             }
             String[] arr = builder.toString().split(" ");
-            return Base64.getDecoder().decode(arr[1].toString());
+            if(arr.length==2) {
+                return Base64.getDecoder().decode(arr[1].toString());
+            }else{
+                return Base64.getDecoder().decode(arr[0].toString());
+            }
         } catch (IOException ex) {
             throw ex;
         }
@@ -258,16 +267,18 @@ public class CipherUtil {
         }
     }
     public static PublicKey readPublicKeyByPem(InputStream inputStream) throws Exception{
-
         PublicKey publicKey ;
+        ByteArrayOutputStream byteArrayOutputStream=new ByteArrayOutputStream();
         try {
+            IOUtils.copyBytes(inputStream,byteArrayOutputStream);
             JCEProvider.enableBouncyCastle(false);
-            SshPublicKey pair = SshKeyUtils.getPublicKey(inputStream);
+            SshPublicKey pair = SshKeyUtils.getPublicKey(new ByteArrayInputStream(byteArrayOutputStream.toByteArray()));
             publicKey=pair.getJCEPublicKey();
         } catch (Exception ex) {
-            PKCS8EncodedKeySpec privKeySpec = new PKCS8EncodedKeySpec(getKeyBytes(inputStream));
-            KeyFactory kf = KeyFactory.getInstance("RSA");
-            publicKey = kf.generatePublic(privKeySpec);
+            byte[] bytes = CipherUtil.getKeyByInputStream(new ByteArrayInputStream(byteArrayOutputStream.toByteArray()));
+            publicKey= generatePublicKey("RSA",new X509EncodedKeySpec(bytes));
+        }finally {
+            IOUtils.closeStream(byteArrayOutputStream);
         }
         return publicKey;
     }
@@ -345,33 +356,59 @@ public class CipherUtil {
         in.readFully(data);
         return new BigInteger(data);
     }
-
+    public static PrivateKey generatePrivateKey(String algorithm, KeySpec keySpec) throws NoSuchAlgorithmException, InvalidKeySpecException {
+        return KeyFactory.getInstance(algorithm).generatePrivate(keySpec);
+    }
 
 
     public static List<String> generateRandomKey() throws NoSuchAlgorithmException {
-        KeyPairGenerator keyPairGen = KeyPairGenerator.getInstance("RSA");
-        // 初始化密钥对生成器
-        keyPairGen.initialize(KEY_SIZE, new SecureRandom());
-        // 生成一个密钥对，保存在keyPair中
-        KeyPair keyPair = keyPairGen.generateKeyPair();
-        // 得到私钥
-        RSAPrivateKey privateKey = (RSAPrivateKey) keyPair.getPrivate();
-        // 得到公钥
-        RSAPublicKey publicKey = (RSAPublicKey) keyPair.getPublic();
-        String publicKeyString = Base64.getEncoder().encodeToString(publicKey.getEncoded());
-        // 得到私钥字符串
-        String privateKeyString = Base64.getEncoder().encodeToString(privateKey.getEncoded());
-        return Lists.newArrayList(privateKeyString, publicKeyString);
+        try {
+            KeyPairGenerator keyPairGen = KeyPairGenerator.getInstance("RSA");
+
+            // 初始化密钥对生成器
+            keyPairGen.initialize(2048, new SecureRandom());
+            // 生成一个密钥对，保存在keyPair中
+            KeyPair keyPair = keyPairGen.generateKeyPair();
+            // 得到私钥
+            RSAPrivateKey privateKey = (RSAPrivateKey) keyPair.getPrivate();
+            // 得到公钥
+            RSAPublicKey publicKey = (RSAPublicKey) keyPair.getPublic();
+            String publicKeyString = Base64.getEncoder().encodeToString(publicKey.getEncoded());
+            // 得到私钥字符串
+            String privateKeyString = Base64.getEncoder().encodeToString(privateKey.getEncoded());
+            return Lists.newArrayList(privateKeyString, publicKeyString);
+        }catch (NoSuchAlgorithmException ex){
+            throw ex;
+        }finally {
+
+        }
     }
 
 
     public static void main(String[] args) {
         try {
-            byte[] bytes = CipherUtil.initSecretKey();
+
+
+            /*byte[] bytes = CipherUtil.initSecretKey();
             String ret = Base64.getEncoder().encodeToString(bytes);
             System.out.println(ret);
             System.out.println(CharUtils.getInstance().retKeyword(118));
-			/*String userPath = System.getProperty("user.home");
+            List<String> pair=CipherUtil.generateRandomKey();
+            StringBuilder builder1=new StringBuilder();
+            builder1.append("-----BEGIN PRIVATE KEY-----\n");
+            builder1.append(pair.get(0)).append("\n");
+            builder1.append("-----END PRIVATE KEY-----");
+            InputStream stream=new ByteArrayInputStream(builder1.toString().getBytes());
+            PrivateKey key1= readPrivateKeyByPem(stream);
+            builder1.delete(0,builder1.length());
+            builder1.append("-----BEGIN PUBLIC KEY-----\n");
+            builder1.append(pair.get(1)).append("\n");
+            builder1.append("-----END PUBLIC KEY-----");
+            InputStream stream1=new ByteArrayInputStream(builder1.toString().getBytes());
+            PublicKey key2=readPublicKeyByPem(stream1);
+            System.out.println(pair);
+
+			String userPath = System.getProperty("user.home");
 			//PrivateKey key=CipherUtil.readPrivateKey(CipherUtil.getKeyByPath(userPath+File.separator+".ssh"+File.separator+"id_rsa"));
 			PrivateKey key=CipherUtil.readPrivateKey(CipherUtil.getKeyByPath("e:/dev/ssh/id_rsa"));
 			//PublicKey key1=CipherUtil.readPublicKey(CipherUtil.getPublicKeyByPath(userPath+File.separator+".ssh"+File.separator+"id_rsa.pub"));

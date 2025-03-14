@@ -71,11 +71,11 @@ public class SysOrgController extends AbstractMyBatisController<ISysOrgService, 
                 Integer codeNum = 10000 + Integer.parseInt(orgCode.substring(orgCode.length() - 4, orgCode.length())) + 1;
                 vo.setTreeCode(orgCode.substring(0, orgCode.length() - 4) + String.valueOf(codeNum).substring(1, 5));
             } else {
-                SysOrg porg = service.get(Long.valueOf(vo.getPid()));
+                SysOrg porg = service.getById(Long.valueOf(vo.getPid()));
                 vo.setTreeCode(porg.getTreeCode() + "0001");
             }
             if (!vo.getPid().equals(0L)) {
-                SysOrg porg = service.get(Long.valueOf(vo.getPid()));
+                SysOrg porg = service.getById(Long.valueOf(vo.getPid()));
                 vo.setTreeLevel(porg.getTreeLevel() + 1);
             } else {
                 vo.setTreeLevel(1);
@@ -201,7 +201,7 @@ public class SysOrgController extends AbstractMyBatisController<ISysOrgService, 
         String id = request.getParameter("pid");
         Map<String, Object> map = new HashMap<String, Object>();
         if (!"0".equals(id)) {
-            SysOrg org = service.get(Long.valueOf(id));
+            SysOrg org = service.getById(Long.valueOf(id));
             map.put("id", org.getId());
             map.put("text", org.getOrgName());
         } else {

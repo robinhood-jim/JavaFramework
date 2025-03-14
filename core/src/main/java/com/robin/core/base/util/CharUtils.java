@@ -123,7 +123,9 @@ public class CharUtils {
     }
 
     public static void main(String[] args) {
-        generateFromProperties("f:/keyword.dat","configparam");
+        //generateFromProperties("f:/keyword.dat","configparam");
         //System.out.println(CharUtils.getInstance().retKeyword(118));
+        CharUtils.getInstance();
+        System.out.println(keywordMap);
     }
 }

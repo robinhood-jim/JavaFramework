@@ -126,7 +126,7 @@ public class SysUserCrudController extends AbstractMyBatisController<ISysUserSer
         Long id = Long.valueOf(request.getParameter("id"));
         Map<String, Object> retMap = new HashMap<>();
         try {
-            SysUser user = this.service.get(id);
+            SysUser user = this.service.getById(id);
             if (user.getUserPassword() != null && !user.getUserPassword().isEmpty()) {
                 if (request.getParameter("orgPwd") == null ||
                         !encoder.matches(request.getParameter("orgPwd"),user.getUserPassword())) {
@@ -152,7 +152,7 @@ public class SysUserCrudController extends AbstractMyBatisController<ISysUserSer
     public Map<String, Object> activeUser(@PathVariable Long id) {
         Map<String, Object> retMap = new HashMap<>();
         try {
-            SysUser user = this.service.get(id);
+            SysUser user = this.service.getById(id);
             if (user.getUserPassword() == null || user.getUserPassword().isEmpty()) {
                 throw new ServiceException(messageSource.getMessage("message.passwordEmpty", null, Locale.getDefault()));
             } else {
@@ -169,7 +169,7 @@ public class SysUserCrudController extends AbstractMyBatisController<ISysUserSer
     public Map<String,Object> deactiveUser(@PathVariable Long id){
         Map<String, Object> retMap = new HashMap<>();
         try {
-            SysUser user = this.service.get(id);
+            SysUser user = this.service.getById(id);
             if (user.getUserPassword() == null || user.getUserPassword().isEmpty()) {
                 throw new ServiceException(messageSource.getMessage("message.passwordEmpty", null, Locale.getDefault()));
             } else {
@@ -204,7 +204,7 @@ public class SysUserCrudController extends AbstractMyBatisController<ISysUserSer
     }
     @GetMapping("/lisRight/{id}")
     public Map<String,Object> listUserRight(@PathVariable Long id){
-        SysUser user=service.get(id);
+        SysUser user=service.getById(id);
         Assert.notNull(user,"user id not exists!");
         List<SysResourceDTO> permissions=sysResourceService.queryUserPermission(user, user.getTenantId());
         Map<Long,Integer> selMap=new HashMap<>();

@@ -122,7 +122,7 @@ public class SysUserServiceImpl extends AbstractMybatisService<SysUserMapper, Sy
     }
     @Transactional(rollbackFor = RuntimeException.class)
     public void updateUser(SysUserDTO dto){
-        SysUser sysUser=get(dto.getId());
+        SysUser sysUser=getById(dto.getId());
         if(ObjectUtil.isNotNull(sysUser)) {
             BeanUtils.copyProperties(dto, sysUser);
             updateById(sysUser);

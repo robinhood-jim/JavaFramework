@@ -19,7 +19,6 @@ import java.util.Map;
 
 public interface IMybatisBaseService<T extends Serializable,P extends Serializable> extends IService<T> {
     boolean deleteByIds(String ids);
-    T get(P id);
     IPage<T> getPage(Map<String, Object> params, String defaultOrderField, boolean isAsc);
     IPage<T> getPage(PageDTO pageDTO);
 
@@ -42,7 +41,7 @@ public interface IMybatisBaseService<T extends Serializable,P extends Serializab
     List<T> selectBetweenByField(String columnName, Object fromValue, Object toValue);
     List<T> queryWithRequest(Object queryObject);
     IPage<T> queryPageWithRequest(Object queryObject, String orderField, boolean isAsc) throws ServiceException;
-    QueryWrapper wrapWithEntity(Object queryObject) throws Exception;
+
     List<T> queryValid(QueryWrapper<T> queryWrapper);
     List<T> queryValid(LambdaQueryWrapper<T> queryWrapper, SFunction<T,?> function);
     /**
@@ -54,7 +53,6 @@ public interface IMybatisBaseService<T extends Serializable,P extends Serializab
     List<P> parseId(String ids) throws ServiceException;
     boolean deleteByIds(List<P> ids);
     boolean deleteByField(SFunction<T,?> queryField,Const.OPERATOR oper,Object... value);
-    boolean saveEntity(T entity);
     boolean updateModelById(T entity);
     void queryBySelectId(PageQuery<Map<String,Object>> query) throws ServiceException;
     List<Map<String, Object>> queryBySql(String sqlstr, Object... objects) throws ServiceException;

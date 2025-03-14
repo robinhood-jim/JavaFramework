@@ -147,7 +147,7 @@ public abstract class AbstractMyBatisController<S extends IMybatisBaseService<T,
             if(consumer!=null){
                 consumer.accept(object);
             }
-            this.service.saveEntity(object);
+            this.service.save(object);
             constructRetMap(retMap);
         } catch (Exception ex) {
             this.log.error("{0}", ex);
@@ -160,7 +160,7 @@ public abstract class AbstractMyBatisController<S extends IMybatisBaseService<T,
     protected Map<String, Object> doSave(T obj) {
         Map<String, Object> retMap = new HashMap<>();
         try {
-            this.service.saveEntity(obj);
+            this.service.save(obj);
             constructRetMap(retMap);
         } catch (ServiceException ex) {
             this.log.error("{0}", ex);
@@ -209,7 +209,7 @@ public abstract class AbstractMyBatisController<S extends IMybatisBaseService<T,
 
     private void updateWithOrigin(P id, Map<String, Object> retMap, T originObj) throws WebException {
         try {
-            T updateObj = service.get(id);
+            T updateObj = service.getById(id);
             ConvertUtil.setDateFormat(ConvertUtil.ymdSepformatter);
             ConvertUtil.convertToModelForUpdate(updateObj, originObj);
             service.updateById(updateObj);

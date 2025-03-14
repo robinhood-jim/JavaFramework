@@ -49,7 +49,7 @@ public class SysResourceServiceImpl extends AbstractMybatisService<SysResourceMa
 
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = RuntimeException.class)
     public void updateUserResourceRight(Long userId,Long tenantId, List<Long> newList) {
-        SysUser user=sysUserService.get(userId);
+        SysUser user=sysUserService.getById(userId);
         List<SysResourceDTO> permissions=queryUserPermission(user,tenantId);
         List<Long> originList=permissions.stream().map(SysResourceDTO::getId).collect(Collectors.toList());
         List<Long> addList=newList.stream().filter(f->!originList.contains(f)).collect(Collectors.toList());
@@ -130,7 +130,7 @@ public class SysResourceServiceImpl extends AbstractMybatisService<SysResourceMa
         return getJdbcDao().queryByVO(voType,queryVO, null);
     }
     public List<Long> getPermissionIdByUser(Long userId,Long tenantId){
-        SysUser user=sysUserService.get(userId);
+        SysUser user=sysUserService.getById(userId);
         Assert.isTrue(!ObjectUtil.isEmpty(user) && Const.VALID.equals(user.getStatus()),"user "+userId+" doesn't exists or frozen!");
         List<SysResourceDTO> resources=queryUserPermission(user, tenantId);
         Map<Long,Integer> readTagMap=new HashMap<>();
@@ -154,7 +154,7 @@ public class SysResourceServiceImpl extends AbstractMybatisService<SysResourceMa
         RouterDTO root = new RouterDTO();
         dtoMap.put(0L, root);
         Map<Long, Integer> readMap = new HashMap<>();
-        SysUser user=sysUserService.get(userId);
+        SysUser user=sysUserService.getById(userId);
 
         List<SysResourceDTO> resources=queryUserPermission(user, tenantId);
         try {
