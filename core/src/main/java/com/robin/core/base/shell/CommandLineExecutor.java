@@ -382,9 +382,6 @@ public class CommandLineExecutor {
 				if(!StrUtil.isBlank(line) || !StrUtil.isBlank(line.trim())) {
 					pos++;
 				}
-				if(logger.isDebugEnabled()) {
-					logger.debug("message={}",line);
-				}
 				if(pos>afterrow && !ObjectUtils.isEmpty(line)) {
 					if(builder.length()>0){
 						builder.append("\n");
@@ -406,9 +403,6 @@ public class CommandLineExecutor {
 		try(BufferedReader reader=new BufferedReader(new InputStreamReader(process.getInputStream()))){
 			while((line=reader.readLine())!=null){
 				pos++;
-				if(logger.isDebugEnabled()) {
-					logger.debug("message={}",line);
-				}
 				if(line.contains(key)) {
 					if(builder.length()>0){
 						builder.append("\n");

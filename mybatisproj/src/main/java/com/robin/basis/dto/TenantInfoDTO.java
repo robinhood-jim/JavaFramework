@@ -12,6 +12,8 @@ public class TenantInfoDTO implements Serializable {
     private String orgName;
     private String orgCode;
     private String name;
-    private Short type;
+    private String type;
     private Integer level;
+    private String description;
+    private String logo;
 }

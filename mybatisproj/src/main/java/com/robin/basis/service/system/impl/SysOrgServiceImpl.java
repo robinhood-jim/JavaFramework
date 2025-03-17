@@ -5,17 +5,20 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.collect.Lists;
-import com.robin.basis.dto.SysUserDTO;
+import com.robin.basis.dto.EmployeeDTO;
 import com.robin.basis.dto.query.SysOrgQueryDTO;
 import com.robin.basis.mapper.SysOrgMapper;
 import com.robin.basis.model.AbstractMybatisModel;
 import com.robin.basis.model.system.SysOrg;
+import com.robin.basis.model.system.SysOrgEmployee;
+import com.robin.basis.model.user.Employee;
 import com.robin.basis.model.user.SysUser;
 import com.robin.basis.model.user.SysUserOrg;
-import com.robin.basis.service.system.ISysOrgService;
-import com.robin.basis.service.system.ISysUserOrgService;
-import com.robin.basis.service.system.ISysUserService;
+import com.robin.basis.model.user.TenantInfo;
+import com.robin.basis.service.region.IRegionService;
+import com.robin.basis.service.system.*;
 import com.robin.basis.vo.SysOrgVO;
+import com.robin.core.base.exception.ServiceException;
 import com.robin.core.base.service.AbstractMybatisService;
 import com.robin.core.base.util.Const;
 import lombok.NonNull;
@@ -36,6 +39,12 @@ public class SysOrgServiceImpl extends AbstractMybatisService<SysOrgMapper,SysOr
     private ISysUserService sysUserService;
     @Resource
     private ISysUserOrgService userOrgService;
+    @Resource
+    private ISysOrgEmployeeService sysOrgEmployeeService;
+    @Resource
+    private ITenantInfoService tenantInfoService;
+    @Resource
+    private IRegionService regionService;
 
     public List<SysOrgVO> queryOrg(SysOrgQueryDTO dto){
         List<SysOrgVO> orgList=queryValid(new QueryWrapper<SysOrg>().lambda(), AbstractMybatisModel::getStatus).stream().map(SysOrgVO::fromVO).collect(Collectors.toList());
@@ -92,12 +101,27 @@ public class SysOrgServiceImpl extends AbstractMybatisService<SysOrgMapper,SysOr
         }
         return Optional.ofNullable(subIds).orElse(Lists.newArrayList());
     }
+    @Override
+    public TenantInfo getTopOrgTenant(Long orgId){
+        List<SysOrg> list=queryByField(AbstractMybatisModel::getStatus, Const.OPERATOR.EQ,Const.VALID);
+        Map<Long,SysOrg> map=list.stream().collect(Collectors.toMap(SysOrg::getId,Function.identity()));
+        SysOrg current=map.get(orgId);
+        while (map.containsKey(current.getPid())){
+            current=map.get(current.getPid());
+        }
+        TenantInfo tenantInfo=null;
+        if(current!=null){
+            List<TenantInfo> tList=tenantInfoService.queryByField(TenantInfo::getOrgId, Const.OPERATOR.EQ, current.getId());
+            if(!CollectionUtils.isEmpty(tList)){
+                tenantInfo=tList.get(0);
+            }
+        }
+        return tenantInfo;
+    }
     private void walkOrgTree(Map<Long,List<SysOrg>> map, @NonNull Long id, List<Long> idList){
+        idList.add(id);
         if(!CollectionUtils.isEmpty(map.get(id))){
-            idList.add(id);
-            map.get(id).stream().forEach(f->{
-                walkOrgTree(map,f.getId(),idList);
-            });
+            map.get(id).stream().forEach(f-> walkOrgTree(map,f.getId(),idList));
         }
     }
     @Transactional(rollbackFor = RuntimeException.class)
@@ -105,15 +129,20 @@ public class SysOrgServiceImpl extends AbstractMybatisService<SysOrgMapper,SysOr
         Assert.isTrue(!CollectionUtils.isEmpty(uids),"");
         int existCount=sysUserService.lambdaQuery().in(SysUser::getId,uids).eq(AbstractMybatisModel::getStatus,Const.VALID).count();
         Assert.isTrue(existCount==uids.size(),"");
-        List<SysUserOrg> list=new ArrayList<>();
+        List<SysOrgEmployee> list=new ArrayList<>();
+        TenantInfo topOrgTenant= getTopOrgTenant(orgId);
+        if(ObjectUtils.isEmpty(topOrgTenant)){
+            throw new ServiceException("orgId "+orgId+" has not any owned tenant");
+        }
         for(Long uid:uids){
-            SysUserOrg userOrg=new SysUserOrg();
-            userOrg.setUserId(uid);
+            SysOrgEmployee userOrg=new SysOrgEmployee();
+            userOrg.setEmpId(uid);
             userOrg.setOrgId(orgId);
             userOrg.setStatus(Const.VALID);
+            userOrg.setTargetTenantId(topOrgTenant.getId());
             list.add(userOrg);
         }
-        return userOrgService.insertBatch(list);
+        return sysOrgEmployeeService.insertBatch(list);
     }
     @Transactional(rollbackFor = RuntimeException.class)
     public boolean removeOrg(Long orgId,List<Long> uids){
@@ -125,22 +154,36 @@ public class SysOrgServiceImpl extends AbstractMybatisService<SysOrgMapper,SysOr
         return userOrgService.lambdaUpdate().set(AbstractMybatisModel::getStatus,Const.INVALID)
                 .in(SysUserOrg::getUserId,uids).eq(SysUserOrg::getOrgId,orgId).eq(AbstractMybatisModel::getStatus,Const.VALID).update();
     }
-    public IPage<SysUserDTO> queryOrgUser(SysOrgQueryDTO dto){
+    public IPage<EmployeeDTO> queryOrgUser(SysOrgQueryDTO dto){
         List<Long> subIds=null;
         if(!ObjectUtils.isEmpty(dto.getPid())){
             subIds=getSubIdByParentOrgId(dto.getPid());
         }
-        QueryWrapper<SysUser> queryWrapper=new QueryWrapper<>();
+        QueryWrapper<Employee> queryWrapper=new QueryWrapper<>();
         queryWrapper.lambda()
                 .eq(AbstractMybatisModel::getStatus,Const.VALID)
-                .like(!StrUtil.isBlank(dto.getPhone()),SysUser::getPhoneNum,dto.getPhone())
-                .and(!StrUtil.isBlank(dto.getUserName()), wrapper -> wrapper.like(SysUser::getUserAccount, dto.getUserName())
-                        .or(orWrapper -> orWrapper.like(SysUser::getNickName, dto.getUserName())));
+                .like(!StrUtil.isBlank(dto.getPhone()), Employee::getContactPhone,dto.getPhone())
+                .and(!StrUtil.isBlank(dto.getUserName()), wrapper -> wrapper.like(Employee::getName, dto.getUserName())
+                        .or(orWrapper -> orWrapper.like(Employee::getAddress, dto.getUserName())));
+        IPage<EmployeeDTO>  page=null;
         if("1".equals(dto.getSelType())){
-            return baseMapper.selectUserInOrg(new Page<>(dto.getPage(),dto.getSize()),queryWrapper,subIds);
+            page= baseMapper.selectEmployeeInOrg(new Page<>(dto.getPage(),dto.getSize()),queryWrapper,subIds);
         }else{
-            return baseMapper.selectUserNotInOrg(new Page<>(dto.getPage(),dto.getSize()),queryWrapper,subIds);
+            page= baseMapper.selectEmployeeNotInOrg(new Page<>(dto.getPage(),dto.getSize()),queryWrapper,subIds);
         }
+        if(page.getTotal()>0L){
+            page.getRecords().forEach(f->{
+                if(!ObjectUtils.isEmpty(f.getDistrict())) {
+                    List<String> regions = regionService.getRegionLevel(f.getDistrict());
+                    if(!CollectionUtils.isEmpty(regions)) {
+                        f.setProvince(regions.get(0));
+                        f.setCity(regions.get(1));
+                        f.setDistrict(regions.get(2));
+                    }
+                }
+            });
+        }
+        return page;
     }
 
 }

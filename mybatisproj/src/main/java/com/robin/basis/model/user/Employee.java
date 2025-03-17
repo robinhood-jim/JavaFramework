@@ -14,12 +14,12 @@ public class Employee extends AbstractMybatisModel {
     @TableId(type = IdType.AUTO)
     private Long id;
     private String name;
-    private LocalDate birthDay;
+    private LocalDate brithDay;
 
     private String creditNo;
     private String contactPhone;
     private Short gender;
-    private String districtId;
+    private String district;
     private String address;
     private Long regOrgId;
 

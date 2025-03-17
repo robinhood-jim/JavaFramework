@@ -5,8 +5,10 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.robin.basis.model.AbstractMybatisModel;
+import lombok.Data;
 
 @TableName("t_sys_org_employee_r")
+@Data
 public class SysOrgEmployee extends AbstractMybatisModel {
     @TableId(type = IdType.AUTO)
     private Long id;

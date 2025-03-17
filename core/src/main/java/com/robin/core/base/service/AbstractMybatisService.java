@@ -30,7 +30,6 @@ import com.robin.core.base.spring.SpringContextHolder;
 import com.robin.core.base.util.Const;
 import com.robin.core.base.util.LicenseUtils;
 import com.robin.core.convert.util.ConvertUtil;
-import com.robin.core.query.util.Condition;
 import com.robin.core.query.util.PageQuery;
 import com.robin.core.sql.util.FilterCondition;
 import lombok.extern.slf4j.Slf4j;
@@ -48,8 +47,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
 import java.util.*;
 
 @Slf4j
@@ -178,6 +175,9 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>, T extends 
     public List<T> selectByField(String columName, Object value) {
         QueryWrapper<T> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq(columName, value);
+        if(getStatusMethod!=null && setStatusMethod!=null) {
+            queryWrapper.eq(statusColumn, Const.VALID);
+        }
         return list(queryWrapper);
     }
 
@@ -185,6 +185,9 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>, T extends 
     public T selectOneByField(String columnName, Object value) {
         QueryWrapper<T> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq(columnName, value);
+        if(getStatusMethod!=null && setStatusMethod!=null) {
+            queryWrapper.eq(statusColumn, Const.VALID);
+        }
         return selectOne(queryWrapper);
     }
 
@@ -192,6 +195,9 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>, T extends 
     public List<T> selectInByField(String columnName, Object value) {
         QueryWrapper<T> queryWrapper = new QueryWrapper<>();
         queryWrapper.in(columnName, value);
+        if(getStatusMethod!=null && setStatusMethod!=null) {
+            queryWrapper.eq(statusColumn, Const.VALID);
+        }
         return baseMapper.selectList(queryWrapper);
     }
 
@@ -199,6 +205,9 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>, T extends 
     public List<T> selectNeByField(String columnName, Object value) {
         QueryWrapper<T> queryWrapper = new QueryWrapper<>();
         queryWrapper.ne(columnName, value);
+        if(getStatusMethod!=null && setStatusMethod!=null) {
+            queryWrapper.eq(statusColumn, Const.VALID);
+        }
         return baseMapper.selectList(queryWrapper);
     }
 
@@ -206,6 +215,9 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>, T extends 
     public List<T> selectBetweenByField(String columnName, Object fromValue, Object toValue) {
         QueryWrapper<T> queryWrapper = new QueryWrapper<>();
         queryWrapper.between(columnName, fromValue, toValue);
+        if(getStatusMethod!=null && setStatusMethod!=null) {
+            queryWrapper.eq(statusColumn, Const.VALID);
+        }
         return baseMapper.selectList(queryWrapper);
     }
 
@@ -214,7 +226,9 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>, T extends 
         Assert.isTrue(value.length > 0, "");
         QueryWrapper<T> queryWrapper = QueryWrapperUtils.getWrapper(queryField, operator, value);
         try {
-            queryWrapper.eq(statusColumn,Const.VALID);
+            if(getStatusMethod!=null && setStatusMethod!=null) {
+                queryWrapper.eq(statusColumn, Const.VALID);
+            }
             return baseMapper.selectList(queryWrapper);
         } catch (Exception ex) {
             throw new ServiceException(ex);
@@ -225,7 +239,9 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>, T extends 
     public List<T> queryByField(SFunction<T, ?> queryField, SFunction<T, ?> orderField, Const.OPERATOR operator, boolean ascFlag, Object... value) throws ServiceException {
         Assert.isTrue(value.length > 0, "");
         QueryWrapper<T> queryWrapper = QueryWrapperUtils.getWrapper(queryField, operator, value);
-        queryWrapper.eq(statusColumn,Const.VALID);
+        if(getStatusMethod!=null && setStatusMethod!=null) {
+            queryWrapper.eq(statusColumn, Const.VALID);
+        }
         if (orderField != null && ascFlag) {
             queryWrapper.lambda().orderByAsc(orderField);
         } else {

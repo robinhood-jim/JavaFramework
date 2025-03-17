@@ -26,7 +26,7 @@ public class SysParamsServiceImpl extends AbstractMybatisService<SysParamsMapper
     public List<Long> getOrgAdminDefaultPermission(Long tenantId){
         TenantInfo tenantInfo=tenantInfoService.getById(tenantId);
         Assert.notNull(tenantInfo,"");
-        Integer level=tenantInfo.getLevel();
+        Short level=tenantInfo.getLevel();
         List<SysParams> params=this.lambdaQuery().eq(SysParams::getParamName,WebConstant.SYSPARAMS_PERMISSIONS_ORG_PERFIX+level)
                 .eq(AbstractMybatisModel::getStatus, Const.VALID).list();
         if(!CollectionUtils.isEmpty(params)){
@@ -40,7 +40,7 @@ public class SysParamsServiceImpl extends AbstractMybatisService<SysParamsMapper
     public List<Long> getOrdinaryDefaultPermission(Long tenantId){
         TenantInfo tenantInfo=tenantInfoService.getById(tenantId);
         Assert.notNull(tenantInfo,"");
-        Integer level=tenantInfo.getLevel();
+        Short level=tenantInfo.getLevel();
         List<SysParams> params=this.lambdaQuery().eq(SysParams::getParamName,WebConstant.SYSPARAMS_PERMISSIONS_ORDINARY_PERFIX+level)
                 .eq(AbstractMybatisModel::getStatus, Const.VALID).list();
         if(!CollectionUtils.isEmpty(params)){

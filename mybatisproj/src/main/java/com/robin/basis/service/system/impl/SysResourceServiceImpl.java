@@ -262,7 +262,7 @@ public class SysResourceServiceImpl extends AbstractMybatisService<SysResourceMa
         }else{
             Optional<TenantInfoDTO> optional= tenantUsers.stream().filter(f->f.getId().equals(tenantId)).findFirst();
             if(optional.isPresent()){
-                return optional.get().getType();
+                return Short.valueOf(optional.get().getType());
             }else{
                 return WebConstant.TENANT_TYPE.NORIGHT.getValue();
             }
