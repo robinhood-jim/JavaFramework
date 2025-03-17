@@ -22,6 +22,7 @@ import com.robin.core.base.dao.util.AnnotationRetriever;
 import com.robin.core.base.datameta.BaseDataBaseMeta;
 import com.robin.core.base.datameta.DataBaseMetaFactory;
 import com.robin.core.base.datameta.DataBaseParam;
+import com.robin.core.base.service.SpringAutoCreateService;
 import com.robin.core.base.service.SqlMapperService;
 import com.robin.core.base.spring.DynamicBeanReader;
 import com.robin.core.base.spring.JdbcDaoDynamicBean;
@@ -134,10 +135,10 @@ public class JdbcDaoTest extends TestCase {
         query.setSelectParamId("GET_TEST_PREPARE");
         query.getParameters().put("queryString", "and name like ? and cs_id=?");
         query.addQueryParameter(new Object[]{"%e%", 1});
-        query.setPageSize(2);
+        query.setPageSize(0);
         jdbcDao.queryBySelectId(query);
         List<Map<String, Object>> fristPage = query.getRecordSet();
-        query.setPageNumber(2);
+        query.setCurrentPage(2);
         jdbcDao.queryBySelectId(query);
         List<Map<String, Object>> secondPage = query.getRecordSet();
         assertNotNull(fristPage);
@@ -150,6 +151,16 @@ public class JdbcDaoTest extends TestCase {
         query.setPageSize(0);
         query.setSelectParamId("GET_TEST_NAMEPARAM");
         query.setNameParameterWithKey("name","%O%");
+        jdbcDao.queryBySelectId(query);
+        assertNotNull(query.getRecordSet());
+    }
+    @Test
+    public void testCodeset(){
+        JdbcDao jdbcDao = SpringContextHolder.getBean("jdbcDao", JdbcDao.class);
+        PageQuery<Map<String,Object>> query = new PageQuery<>();
+        query.setPageSize(0);
+        query.setSelectParamId("$_GETCODESET");
+        query.addQueryParameter(new Object[]{"YNTYPE"});
         jdbcDao.queryBySelectId(query);
         assertNotNull(query.getRecordSet());
     }
@@ -340,6 +351,20 @@ public class JdbcDaoTest extends TestCase {
     @Test
     public void testGetFunctionName(){
         System.out.println(AnnotationRetriever.getFieldName(TestModel::getDescription));
+    }
+    @Test
+    public void testAutoCreateService(){
+        SpringAutoCreateService<TestModel,Long> service=new SpringAutoCreateService.Builder<>(TestModel.class,Long.class)
+                .withJdbcDaoName("jdbcDao").withTransactionManager("transactionManager")
+                .withSaveBeforeFunction((o)->
+                        o.setCreateTime(new Timestamp(System.currentTimeMillis()))).build();
+        TestModel model=new TestModel();
+        model.setName("tewerw");
+        model.setCsId(3L);
+        model.setDescription("asdasdasd");
+        service.saveEntity(model);
+
+
     }
 
 }
