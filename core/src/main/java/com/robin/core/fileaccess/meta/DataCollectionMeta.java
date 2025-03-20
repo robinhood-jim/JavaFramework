@@ -15,6 +15,7 @@
  */
 package com.robin.core.fileaccess.meta;
 
+import cn.hutool.setting.yaml.YamlUtil;
 import com.robin.core.base.datameta.BaseDataBaseMeta;
 import com.robin.core.base.datameta.DataBaseColumnMeta;
 import com.robin.core.base.datameta.DataBaseParam;
@@ -27,6 +28,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -181,6 +184,13 @@ public class DataCollectionMeta implements Serializable {
 
 		public DataCollectionMeta build(){
 			return meta;
+		}
+	}
+	public static DataCollectionMeta fromYamlConfig(String yamlConfigPath) throws IOException {
+		if(yamlConfigPath.startsWith("classpath:")){
+			return YamlUtil.load(DataCollectionMeta.class.getClassLoader().getResourceAsStream(yamlConfigPath.substring(10,yamlConfigPath.length())),DataCollectionMeta.class);
+		}else{
+			return YamlUtil.load(new FileInputStream(yamlConfigPath),DataCollectionMeta.class);
 		}
 	}
 	public String constructUrl()  {

@@ -33,8 +33,8 @@ public class CharUtils {
 
 
     private CharUtils() {
-        try (DataInputStream wordIn = new DataInputStream(CharUtils.class.getClassLoader().getResourceAsStream(wordFile));
-             DataInputStream enIn = new DataInputStream(CharUtils.class.getClassLoader().getResourceAsStream(encryptStrFile));
+        try (DataInputStream wordIn =!ObjectUtils.isEmpty(CharUtils.class.getClassLoader().getResourceAsStream(wordFile))?new DataInputStream(CharUtils.class.getClassLoader().getResourceAsStream(wordFile)):null;
+             DataInputStream enIn =!ObjectUtils.isEmpty(CharUtils.class.getClassLoader().getResourceAsStream(encryptStrFile))?new DataInputStream(CharUtils.class.getClassLoader().getResourceAsStream(encryptStrFile)):null;
              DataInputStream keywordIn = new DataInputStream(CharUtils.class.getClassLoader().getResourceAsStream(keywordFile))) {
             int pos = 0;
             if (!ObjectUtils.isEmpty(wordIn)) {
@@ -123,7 +123,9 @@ public class CharUtils {
     }
 
     public static void main(String[] args) {
-        generateFromProperties("f:/keyword.dat","configparam");
+        //generateFromProperties("f:/keyword.dat","configparam");
         //System.out.println(CharUtils.getInstance().retKeyword(118));
+        CharUtils.getInstance();
+        System.out.println(keywordMap);
     }
 }

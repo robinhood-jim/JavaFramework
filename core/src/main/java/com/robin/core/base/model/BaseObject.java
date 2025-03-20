@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.gson.Gson;
 import com.robin.core.base.dao.util.AnnotationRetriever;
@@ -37,16 +38,22 @@ import org.springframework.util.ObjectUtils;
 @Slf4j
 public abstract class BaseObject implements Serializable,Cloneable{
 	private static final long serialVersionUID = -1156095048376157515L;
+	@TableField(exist = false)
 	private List<String> dirtyColumnList=new ArrayList<>();
 	@JsonIgnore
+	@TableField(exist = false)
 	private String createTimeColumn;
 	@JsonIgnore
+	@TableField(exist = false)
 	private String updateTimeColumn;
 	@JsonIgnore
+	@TableField(exist = false)
 	private String creatorColumn;
 	@JsonIgnore
+	@TableField(exist = false)
 	private String modifierColumn;
 	@JsonIgnore
+	@TableField(exist = false)
 	private boolean hasDefaultColumn=false;
 
 	
@@ -106,7 +113,7 @@ public abstract class BaseObject implements Serializable,Cloneable{
 	}
 	public void setDefaultColumnValues(){
 		createTimeColumn="create_tm";
-		updateTimeColumn="modify_tm";
+		updateTimeColumn="update_tm";
 		creatorColumn="creator";
 		modifierColumn="modifier";
 		hasDefaultColumn=true;

@@ -1,4 +1,4 @@
-package com.robin.core.web.codeset;
+package com.robin.core.web.service;
 
 import com.google.common.collect.Lists;
 import com.robin.core.base.dao.JdbcDao;
@@ -6,15 +6,17 @@ import com.robin.core.base.exception.DAOException;
 import com.robin.core.base.spring.SpringContextHolder;
 import com.robin.core.query.util.PageQuery;
 import com.robin.core.query.util.QueryFactory;
+import com.robin.core.web.codeset.Code;
 import org.apache.commons.beanutils.BeanUtils;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-@Component
+@Service
 public class CodeSetService {
     @Cacheable(value = "codeSetCache", key = "'SYSCODE_'+#codeSetNo")
     public Map<String,String> getCacheCode(String codeSetNo) throws DAOException {

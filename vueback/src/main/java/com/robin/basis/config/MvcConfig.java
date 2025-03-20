@@ -3,15 +3,9 @@ package com.robin.basis.config;
 
 import com.google.code.kaptcha.impl.DefaultKaptcha;
 import com.google.code.kaptcha.util.Config;
-import com.robin.basis.interceptor.LoginInterceptor;
-import com.robin.basis.utils.Md5PasswordEncoder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
-
-import org.springframework.context.support.ResourceBundleMessageSource;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -20,7 +14,6 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
 import static com.google.code.kaptcha.Constants.*;
@@ -40,12 +33,7 @@ public class MvcConfig implements WebMvcConfigurer {
         return lci;
     }
 
-    public LoginInterceptor getLoginInterceptor(){
-        LoginInterceptor interceptor = new LoginInterceptor();
-        interceptor.setIgnoreUrls(ignoreUrls);
-        interceptor.setIgnoreResources(ignoreResources);
-        return interceptor;
-    }
+
     @Bean
     RestTemplate restTemplate() {
         return new RestTemplate();

@@ -72,6 +72,7 @@
         <dependency>
             <groupId>org.apache.curator</groupId>
             <artifactId>curator-framework</artifactId>
+            <optional>true</optional>
             <exclusions>
                 <exclusion>
                     <groupId>com.google.guava</groupId>
@@ -84,6 +85,7 @@
         <dependency>
             <groupId>org.apache.curator</groupId>
             <artifactId>curator-recipes</artifactId>
+            <optional>true</optional>
             <version>2.9.1</version>
         </dependency>
 

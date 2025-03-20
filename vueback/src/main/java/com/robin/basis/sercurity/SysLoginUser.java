@@ -23,6 +23,10 @@ public class SysLoginUser implements UserDetails {
     private String displayName;
     private String password;
     private String userStatus;
+    private String avatar;
+    private String phone;
+    private String email;
+    private Long tenantId;
     private SysLoginUser(){
 
     }
@@ -73,6 +77,9 @@ public class SysLoginUser implements UserDetails {
             loginUser.setDisplayName(user.getUserName());
             loginUser.setUserStatus(user.getUserStatus());
             loginUser.setPassword(user.getUserPassword());
+            loginUser.setAvatar(user.getAvatar());
+            loginUser.setEmail(user.getEmail());
+            loginUser.setPhone(user.getPhoneNum());
             return this;
         }
         public Builder withRoles(List<Long> roles){
@@ -81,6 +88,10 @@ public class SysLoginUser implements UserDetails {
         }
         public Builder withPermission(List<String> permissions){
             loginUser.setPermissions(permissions);
+            return this;
+        }
+        public Builder tenantId(Long tenantId){
+            loginUser.setTenantId(tenantId);
             return this;
         }
         public SysLoginUser build(){

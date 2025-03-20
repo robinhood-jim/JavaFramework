@@ -10,7 +10,6 @@ import com.robin.core.base.model.BaseObject;
 import com.robin.core.base.service.IBaseAnnotationJdbcService;
 import com.robin.core.base.spring.SpringContextHolder;
 import com.robin.core.base.util.Const;
-import com.robin.core.base.util.StringUtils;
 import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.query.util.PageQuery;
 import com.robin.core.sql.util.FilterCondition;
@@ -362,7 +361,7 @@ public abstract class ESRepositoryService<V extends BaseObject, P extends Serial
             sourceBuilder.query(queryBuilder);
             searchRequest.source(sourceBuilder);
             if (!ObjectUtils.isEmpty(page) && page.getPageSize()!=0) {
-                sourceBuilder.from(Integer.valueOf(String.valueOf(page.getPageNumber()*page.getPageSize()))).size(page.getPageSize());
+                sourceBuilder.from(Integer.valueOf(String.valueOf(page.getCurrentPage()*page.getPageSize()))).size(page.getPageSize());
             }
             doQuery(page, retList, searchRequest);
         } catch (Exception ex) {
@@ -376,7 +375,7 @@ public abstract class ESRepositoryService<V extends BaseObject, P extends Serial
         SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
         if (null != response.getHits()) {
             SearchHit[] hits = response.getHits().getHits();
-            page.setRecordCount(Integer.valueOf(String.valueOf(response.getHits().getTotalHits().value)));
+            page.setTotal(Integer.valueOf(String.valueOf(response.getHits().getTotalHits().value)));
             if (!ObjectUtils.isEmpty(hits) && hits.length > 0) {
                 for (SearchHit hit : hits) {
                     Map<String, Object> map = hit.getSourceAsMap();
@@ -402,7 +401,7 @@ public abstract class ESRepositoryService<V extends BaseObject, P extends Serial
             sourceBuilder.query(queryBuilder);
             searchRequest.source(sourceBuilder);
             if (!ObjectUtils.isEmpty(page) && page.getPageSize()!=0) {
-                sourceBuilder.from(Integer.valueOf(String.valueOf((page.getPageNumber()-1)*page.getPageSize()))).size(page.getPageSize());
+                sourceBuilder.from(Integer.valueOf(String.valueOf((page.getCurrentPage()-1)*page.getPageSize()))).size(page.getPageSize());
             }
             if(!ObjectUtils.isEmpty(page.getOrder())){
                 sourceBuilder.sort(page.getOrder(),"desc".equals(page.getOrderDirection())? SortOrder.DESC:SortOrder.ASC);
@@ -430,7 +429,7 @@ public abstract class ESRepositoryService<V extends BaseObject, P extends Serial
     private static void wrapRsMap(PageQuery<Map<String, Object>> page, SearchResponse response) {
         if (null != response.getHits()) {
             SearchHit[] hits = response.getHits().getHits();
-            page.setRecordCount(Integer.valueOf(String.valueOf(response.getHits().getTotalHits().value)));
+            page.setTotal(Integer.valueOf(String.valueOf(response.getHits().getTotalHits().value)));
             if (!ObjectUtils.isEmpty(hits) && hits.length > 0) {
                 for (SearchHit hit : hits) {
                     Map<String, Object> map = hit.getSourceAsMap();

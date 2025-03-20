@@ -30,12 +30,12 @@ message TaskResponse {
 }
 message JobStatusRequest{
   string workerName=1;
-  repeated TaskStatus jobs=2;
+  repeated TaskStatus tasks=2;
 }
 
 message JobStatusResponse{
   string workName=1;
-  repeated TaskStatus jobs=2;
+  repeated TaskStatus tasks=2;
 }
 message TaskStatus{
   TaskStep taskStep=1;

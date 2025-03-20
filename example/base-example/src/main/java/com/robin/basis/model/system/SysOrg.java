@@ -15,6 +15,9 @@
  */
 package com.robin.basis.model.system;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import com.robin.core.base.annotation.MappingEntity;
 import com.robin.core.base.annotation.MappingField;
 import com.robin.core.base.model.BaseObject;
@@ -23,9 +26,11 @@ import lombok.Data;
 
 @MappingEntity(value ="t_sys_org_info")
 @Data
+@TableName("t_sys_org_info")
 public class SysOrg extends BaseObject
 {
     @MappingField(increment=true, primary=true)
+    @TableId(type = IdType.AUTO)
     private Long id;
     @MappingField(value ="tree_level")
     private Integer treeLevel;

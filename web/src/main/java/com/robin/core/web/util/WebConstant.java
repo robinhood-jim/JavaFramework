@@ -24,9 +24,9 @@ public class WebConstant {
         }
     }
     public enum ACCOUNT_TYPE{
-        SYSUSER(1L),  //System User,can operator system menu
-        ORGUSER(2L),  // Org User,can access Org right menu and menu Assign by system user
-        FREEUSER(3L); // User not include in Any Org
+        SYSADMIN(1L),  //System User,can operator system menu
+        ORGADMIN(2L),  // Org User,can access Org right menu and menu Assign by system user
+        ORDINARY(3L); // User not include in Any Org
         private Long value;
         ACCOUNT_TYPE(Long value){
             this.value=value;
@@ -39,6 +39,29 @@ public class WebConstant {
             return value;
         }
     }
+    public enum TENANT_TYPE{
+        ORGADMIN(Short.valueOf("1")),  //System User,can operator system menu
+        EMPLOYEE(Short.valueOf("2")),  // Org User,can access Org right menu and menu Assign by system user
+        TEMPORARY(Short.valueOf("3")),
+        NORIGHT(Short.valueOf("4"));
+
+        private Short value;
+        TENANT_TYPE(Short value){
+            this.value=value;
+        }
+        @Override
+        public String toString(){
+            return value.toString();
+        }
+        public Short getValue(){
+            return value;
+        }
+    }
+    public static final String SYSPARAMS_PERMISSIONS_PERFIX="PERMISSIONS_";
+    public static final String SYSPARAMS_PERMISSIONS_ORG_PERFIX="PERMISSIONS_ORG";
+    public static final String SYSPARAMS_PERMISSIONS_ORDINARY_PERFIX="PERMISSIONS_ORDINARY";
+    public static final String SYSPARAMS_ROLES_PERFIX="ROLES_";
+    public static final String SYSPARAMS_DEFAULT_PERFIX="DEFAULT";
     public static final String TOKEN="tokenMap";
     public static final String LOCALE_KEY="application.locale";
 

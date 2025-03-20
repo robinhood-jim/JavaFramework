@@ -191,6 +191,7 @@ public class Const {
     public static final String SQL_WHERE = " WHERE ";
     public static final String SQL_INSERTINTO = "INSERT INTO ";
     public static final String USER_DEFAULTPASSWORD = "123456";
+    public static final String RESOURCE_ASSIGN_DEFAULT = "0";
     public static final String RESOURCE_ASSIGN_ACCESS = "1";
     public static final String RESOURCE_ASSIGN_DENIED = "2";
     public static final String LOCALE_KEY = "application.locale";
@@ -463,6 +464,8 @@ public class Const {
      * 每页显示记录数
      */
     public static final String LIMIT = "limit";
+
+    public static final String SIZE="size";
     /**
      * 排序字段
      */
@@ -471,18 +474,7 @@ public class Const {
      * 排序方式
      */
     public static final String ORDER = "order";
-    public enum ACCOUNTTYPE{
-        ADMIN("1"),
-        NORMAL("2");
-        private String value;
-        ACCOUNTTYPE(String value){
-            this.value=value;
-        }
 
-        public String getValue() {
-            return value;
-        }
-    }
     public enum JOINTYPE{
         INNER("INNER"),
         LEFT("LEFT"),

@@ -6,10 +6,12 @@ import java.util.Map;
 
 @Data
 public class PageDTO {
-    private Long page;
+    private Long page=1L;
     private Long limit;
+    private Long size=10L;
     private String orderField;
-    private String order;
+    private Boolean order=false;
+    private String orderBy;
     private Map<String,Object> param;
 
 }

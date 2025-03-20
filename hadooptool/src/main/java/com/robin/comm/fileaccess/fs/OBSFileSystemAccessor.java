@@ -1,9 +1,7 @@
 package com.robin.comm.fileaccess.fs;
 
 import com.obs.services.ObsClient;
-import com.obs.services.model.ObjectMetadata;
-import com.obs.services.model.ObsObject;
-import com.obs.services.model.PutObjectResult;
+import com.obs.services.model.*;
 import com.robin.comm.fileaccess.fs.outputstream.OBSOutputStream;
 import com.robin.core.base.exception.MissingConfigException;
 import com.robin.core.base.util.Const;
@@ -17,6 +15,7 @@ import org.springframework.util.ObjectUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Map;
 
 /**
  * HUAWEI OBS FileSystemAccessor,must init individual
@@ -45,6 +44,7 @@ public class OBSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
             securityAccessKey = meta.getResourceCfgMap().get(ResourceConst.OBSPARAM.SECURITYACCESSKEY.getValue()).toString();
         }
         client = new ObsClient(accessKeyId, securityAccessKey, endpoint);
+
     }
 
     public void init() {
@@ -68,7 +68,7 @@ public class OBSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
         return 0;
     }
 
-    protected InputStream getObject(String bucketName, String objectName) {
+    public InputStream getObject(String bucketName, String objectName) {
         if (client.doesObjectExist(bucketName, objectName)) {
             ObsObject object = client.getObject(bucketName, objectName);
             if (!ObjectUtils.isEmpty(object)) {
@@ -82,13 +82,26 @@ public class OBSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
     }
 
     @Override
-    protected boolean putObject(String bucketName, DataCollectionMeta meta, InputStream inputStream, long size) throws IOException {
+    public boolean putObject(String bucketName, DataCollectionMeta meta, InputStream inputStream, long size) throws IOException {
         ObjectMetadata metadata=new ObjectMetadata();
         metadata.setContentType(getContentType(meta));
         metadata.setContentLength(size);
         PutObjectResult result=client.putObject(bucketName,meta.getPath(), inputStream,metadata);
         return result.getStatusCode()==200;
     }
+    public boolean createBucket(String name, Map<String,String> paramMap, Map<String,Object> retMap){
+        if(!useAdmin){
+            throw new MissingConfigException("can not call admin api");
+        }
+        ObsBucket bucket=new ObsBucket(name,paramMap.get("location"));
+        Owner owner=new Owner();
+        owner.setId(paramMap.get("ownerId"));
+        bucket.setOwner(owner);
+        ObsBucket bucket1= client.createBucket(bucket);
+        retMap.put("bucket",bucket1);
+        return true;
+    }
+
 
     public static class Builder {
         private OBSFileSystemAccessor accessor;

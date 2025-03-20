@@ -18,12 +18,12 @@ package com.robin.core.base.dao;
 import com.robin.core.base.exception.DAOException;
 import com.robin.core.base.reflect.ReflectUtils;
 import com.robin.core.base.util.Const;
+import com.robin.core.base.util.DateTimeFormatHolder;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.meta.DataSetColumnMeta;
 import com.robin.core.query.util.PageQuery;
 import com.robin.core.query.util.QueryString;
 import com.robin.core.sql.util.BaseSqlGen;
-import com.robin.core.sql.util.FilterCondition;
 import lombok.NonNull;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -148,7 +148,7 @@ public class CommJdbcUtil {
                 rs.next();
                 return rs.getInt(1);
             });
-            pageQuery.setRecordCount(total);
+            pageQuery.setTotal(total);
             if (total > 0) {
                 setPageQueryParameter(pageQuery, total);
                 String pageSQL = sqlGen.generatePageSql(querySQL, pageQuery);
@@ -164,7 +164,7 @@ public class CommJdbcUtil {
         } else {
             list = getResultItems(jdbcTemplate, lobHandler, sqlGen, pageQuery, qs, querySQL);
             if (!CollectionUtils.isEmpty(list)) {
-                pageQuery.setRecordCount(list.size());
+                pageQuery.setTotal(list.size());
             }
             pageQuery.setPageCount(1);
         }
@@ -178,10 +178,10 @@ public class CommJdbcUtil {
         }
         pageQuery.setPageCount(pages);
         //adjust pageNumber
-        if (pageQuery.getPageNumber() > pages) {
-            pageQuery.setPageNumber(pages);
-        } else if (pageQuery.getPageNumber() < 1) {
-            pageQuery.setPageNumber(1);
+        if (pageQuery.getCurrentPage() > pages) {
+            pageQuery.setCurrentPage(pages);
+        } else if (pageQuery.getCurrentPage() < 1) {
+            pageQuery.setCurrentPage(1);
         }
     }
 
@@ -247,11 +247,11 @@ public class CommJdbcUtil {
                         putValue(fields, i, columnName, null, map);
                     } else if ("DATE".equalsIgnoreCase(typeName)) {
                         Date date = rs.getDate(i + 1);
-                        String datestr = query.getDateFormater().format(date);
+                        String datestr = DateTimeFormatHolder.getYmdFormatter().format(date.toLocalDate());
                         putValue(fields, i, columnName, datestr, map);
                     } else if ("TIMESTAMP".equalsIgnoreCase(typeName)) {
                         Timestamp stamp = rs.getTimestamp(i + 1);
-                        String datestr = query.getTimestampFormater().format(new Date(stamp.getTime()));
+                        String datestr = DateTimeFormatHolder.getTimestampFormatter().format(stamp.toLocalDateTime());
                         putValue(fields, i, columnName, datestr, map);
                     } else if (className.toLowerCase().contains("clob")) {
                         if (lobHandler != null) {
@@ -342,18 +342,18 @@ public class CommJdbcUtil {
                         throw new DAOException("Column " + columnName + " is not long value");
                     }
                 } else if (columnType.equals(Const.META_TYPE_DATE)) {
-                    if (value instanceof Date) {
-                        targetValue = value;
-                    } else if (value instanceof java.util.Date) {
+                    if (Date.class.isAssignableFrom(value.getClass()) || java.util.Date.class.isAssignableFrom(value.getClass()) || LocalDateTime.class.isAssignableFrom(value.getClass())) {
                         targetValue = value;
                     } else {
-                        targetValue = pageQuery.getDateFormater().parse(value.toString());
+                        LocalDateTime ds=LocalDateTime.parse(value.toString(),DateTimeFormatHolder.getTimestampFormatter());
+                        targetValue =new Timestamp(ds.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
                     }
                 } else if (columnType.equals(Const.META_TYPE_TIMESTAMP)) {
-                    if (value instanceof Timestamp) {
+                    if (Timestamp.class.isAssignableFrom(value.getClass()) || LocalDateTime.class.isAssignableFrom(value.getClass())) {
                         targetValue = value;
                     } else {
-                        targetValue = new Timestamp(pageQuery.getDateFormater().parse(value.toString()).getTime());
+                        LocalDateTime ds=LocalDateTime.parse(value.toString(),DateTimeFormatHolder.getTimestampFormatter());
+                        targetValue = new Timestamp(ds.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
                     }
                 } else {
                     targetValue = value;
@@ -500,7 +500,7 @@ public class CommJdbcUtil {
                 } else {
                     total = namedParameterJdbcTemplate.queryForObject(sumSQL, pageQuery.getNamedParameters(), Integer.class);
                 }
-                pageQuery.setRecordCount(total);
+                pageQuery.setTotal(total);
                 String pageSQL = sqlGen.generatePageSql(querySQL, pageQuery);
                 if (logger.isDebugEnabled()) {
                     logger.debug("sumSQL: {}", sumSQL);
@@ -520,7 +520,7 @@ public class CommJdbcUtil {
             } else {
                 list = getResultItemsByPreparedSimple(jdbcTemplate, namedParameterJdbcTemplate, lobHandler, sqlGen, qs, pageQuery, querySQL);
                 int len1 = list.size();
-                pageQuery.setRecordCount(len1);
+                pageQuery.setTotal(len1);
                 pageQuery.setPageCount(1);
             }
         } catch (Exception e) {
@@ -799,15 +799,15 @@ public class CommJdbcUtil {
     }
 
     public static void setPageQuery(PageQuery<Map<String, Object>> pageQuery, int total) {
-        pageQuery.setRecordCount(total);
+        pageQuery.setTotal(total);
         if (total > 0) {
             int pages = total / pageQuery.getPageSize();
             if (total % pageQuery.getPageSize() != 0) {
                 pages++;
             }
-            int pageNumber = pageQuery.getPageNumber();
+            int pageNumber = pageQuery.getCurrentPage();
             if (pageNumber > pages) {
-                pageQuery.setPageNumber(pages);
+                pageQuery.setCurrentPage(pages);
             }
             pageQuery.setPageCount(pages);
         } else {

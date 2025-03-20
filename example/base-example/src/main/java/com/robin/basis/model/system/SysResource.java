@@ -15,6 +15,10 @@
  */
 package com.robin.basis.model.system;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import com.robin.core.base.annotation.MappingEntity;
 import com.robin.core.base.annotation.MappingField;
 import com.robin.core.base.model.BaseObject;
@@ -22,22 +26,28 @@ import lombok.Data;
 
 @Data
 @MappingEntity(value ="t_sys_resource_info")
+@TableName("t_sys_resource_info")
 public class SysResource extends BaseObject {
 	@MappingField(primary=true,increment=true)
+	@TableId(type = IdType.AUTO)
 	private Long id;
 	@MappingField(value ="res_name")
+	@TableField("res_name")
 	private String name;
 	@MappingField(value ="res_type")
+	@TableField("res_type")
 	private String type;
 	@MappingField
 	private String url;
 	@MappingField
 	private Long powerId;
 	@MappingField(value = "is_leaf")
+	@TableField("is_leaf")
 	private Integer leafTag;
 	@MappingField
 	private String status;
 	@MappingField(value ="res_code")
+	@TableField("res_code")
 	private String code;
 	@MappingField
 	private String resId;
@@ -52,6 +62,7 @@ public class SysResource extends BaseObject {
 	@MappingField
 	private String permission;
 	private Long tenantId;
-	
+	private String icon;
+	private String routerPath;
 
 }

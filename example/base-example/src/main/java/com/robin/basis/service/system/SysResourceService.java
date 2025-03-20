@@ -30,10 +30,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -123,7 +120,6 @@ public class SysResourceService extends BaseAnnotationJdbcService<SysResource, L
         }
         return retMap;
     }
-
     public List<SysMenuDTO> getMenuList(Long userId) {
         List<SysResource> allList = getAllValidate();
         List<SysMenuDTO> dtoList = allList.stream().map(SysMenuDTO::fromVO).collect(Collectors.toList());
@@ -170,6 +166,7 @@ public class SysResourceService extends BaseAnnotationJdbcService<SysResource, L
             }
         }
     }
+
 
 
 }

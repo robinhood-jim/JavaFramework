@@ -1,13 +1,13 @@
 package com.robin.core.hardware;
 
+import cn.hutool.core.util.StrUtil;
 import com.robin.core.base.shell.CommandLineExecutor;
+import com.robin.core.base.util.Const;
+import org.springframework.util.ObjectUtils;
 
 import java.io.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.math.BigInteger;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.Arrays;
 import java.util.List;
 
@@ -83,58 +83,82 @@ public class MachineIdUtils {
 
     public static String getCPUSerial() throws RuntimeException{
         String serial="";
+        BufferedReader reader=null;
         try {
             if (isWindows()) {
                 //windows get disk serial
-                serial = CommandLineExecutor.getInstance().executeCmdReturnAfterRow(Arrays.asList("wmic", "cpu", "get", "ProcessorId"), 1);
+                serial = CommandLineExecutor.getInstance().executeCmdReturnAfterRow(Arrays.asList("powershell.exe","Get-WmiObject","-Class","Win32_Processor","|","Select-Object","ProcessorId"), 2);
             }else if(isLinux()){
                 //serial=CommandLineExecutor.getInstance().executeCmd("dmidecode -s baseboard-serial-number");
                 serial = CommandLineExecutor.getInstance().executeCmdReturnSpecifyKey(Arrays.asList("dmidecode", "-t", "4", "|", "grep", "\"ID\""), "ID:");
-                if("Not Sepcified".equalsIgnoreCase(serial)){
+                if("Not Specified".equalsIgnoreCase(serial)){
                     serial="";
                 }
             }else if(isMacosName() || isMacosNameX()){
                 serial=CommandLineExecutor.getInstance().executeCmdReturnSpecifyKey(Arrays.asList("system_profiler","SPHardwareDataType"),"Serial Number (system):");
-                if("Not Sepcified".equalsIgnoreCase(serial)){
+                if("Not Specified".equalsIgnoreCase(serial)){
                     serial="";
                 }
             }
-            return serial;
+            if(serial.contains("\n") || serial.contains("\r\n")) {
+                reader = new BufferedReader(new StringReader(serial));
+                serial=reader.readLine();
+            }
+            return !StrUtil.isBlank(serial)?serial.trim():"";
         }catch (Exception ex){
             throw new RuntimeException(ex);
+        }finally {
+            if(reader!=null){
+                try {
+                    reader.close();
+                }catch (Exception ex){
+                    ex.printStackTrace();
+                }
+            }
         }
     }
+
     public static String getSystemSerial() throws RuntimeException{
         String serial="";
+
         try {
             if (isWindows()) {
                 //windows get disk serial
-                serial = CommandLineExecutor.getInstance().executeCmdReturnAfterRow(Arrays.asList("wmic", "diskdrive", "get", "serialnumber"), 1);
+                serial = CommandLineExecutor.getInstance().executeCmdReturnAfterRow(Arrays.asList("powershell.exe", "Get-WmiObject", "-class","win32_bios","|","Select-Object","SerialNumber"), 2);
             }else if(isLinux()){
-                serial=CommandLineExecutor.getInstance().executeCmdReturnSpecifyKey(Arrays.asList("dmidecode","-t","system"),"Serial Number:");
-                if("Not Sepcified".equalsIgnoreCase(serial)){
+                serial=CommandLineExecutor.getInstance().executeCmdReturnSpecifyKey(Arrays.asList("sudo","dmidecode","-t","system"),"Serial Number:");
+                if(StrUtil.isBlank(serial) || Const.INVALID.equals(serial) || "Not Specified".equals(serial)){
+                    serial=CommandLineExecutor.getInstance().executeCmdReturnSpecifyKey(Arrays.asList("sudo","dmidecode","-t","system"),"UUID:");
+                }
+                if("Not Specified".equalsIgnoreCase(serial)){
                     serial="";
                 }
             }else if(isMacosName() || isMacosNameX()){
                 serial=CommandLineExecutor.getInstance().executeCmdReturnSpecifyKey(Arrays.asList("system_profiler","SPHardwareDataType"),"Serial Number (system):");
-                if("Not Sepcified".equalsIgnoreCase(serial)){
+                if("Not Specified".equalsIgnoreCase(serial)){
                     serial="";
                 }
             }
-            return serial;
+            return !StrUtil.isBlank(serial)?serial.trim():"";
         }catch (Exception ex){
             throw new RuntimeException(ex);
         }
     }
     public static String getHardDiskSerial() throws RuntimeException{
         String serial=null;
+        BufferedReader reader=null;
         try{
             if(isWindows()){
-                serial=CommandLineExecutor.getInstance().executeCmdReturnAfterRow(Arrays.asList("wmic","path","win32_physicalmedia","get","serialnumber"),1);
+                serial=CommandLineExecutor.getInstance().executeCmdReturnAfterRow(Arrays.asList("powershell.exe","Get-WmiObject","-Class","Win32_DiskDrive","|","Select-Object","SerialNumber"),2);
+                if(serial.contains("\n") || serial.contains("\r\n")){
+                    reader=new BufferedReader(new StringReader(serial));
+                    serial=reader.readLine();
+                }
             }else if(isLinux()){
-                serial=CommandLineExecutor.getInstance().executeCmdReturnSpecifyKey(Arrays.asList("sudo","lshw","-class","disk","|","grep","serial"),"serial:");
+                serial=CommandLineExecutor.getInstance().executeCmdReturnAfterRow(Arrays.asList("bash","-c","sudo lsblk -o SERIAL"),1);
+
             }else if(isMacosName() || isMacosNameX()){
-                serial=CommandLineExecutor.getInstance().executeCmdReturnSpecifyKey(Arrays.asList("system_profiler","SPStorageDataType"),"Volume UUID");
+                serial=CommandLineExecutor.getInstance().executeCmdReturnSpecifyKey(Arrays.asList("bash","-c","sudo system_profiler SPStorageDataType"),"Volume UUID");
             }
             return serial;
         }catch (Exception ex){
@@ -211,22 +235,50 @@ public class MachineIdUtils {
     public static boolean isOpenVMS() {
         return osName.indexOf("openvms") >= 0;
     }
+    public static String getOsName(){
+        return osName;
+    }
+    public static String getSystemTag(){
+        StringBuilder builder=new StringBuilder();
+
+        String machineId = MachineIdUtils.getMachineId();
+        if(!ObjectUtils.isEmpty(machineId)){
+            builder.append("MID_"+machineId);
+        }
+        String systemSerial=MachineIdUtils.getCPUSerial();
+        if(!ObjectUtils.isEmpty(machineId)){
+            builder.append("_CPU_"+systemSerial);
+        }
+        String hardDsSerial=MachineIdUtils.getHardDiskSerial();
+        if(!ObjectUtils.isEmpty(machineId)){
+            builder.append("_DISK_"+hardDsSerial);
+        }
+        builder.append("_SYS_"+MachineIdUtils.getOsName());
+        return builder.toString();
+    }
+
 
     public static void main(String[] args) {
         String machineId = MachineIdUtils.getMachineId();
         //String[] strs=caculateMachineSerail(machineId,System.currentTimeMillis()+3600*24*365*1000);
-        BigInteger val = new BigInteger(machineId.replaceAll("-", ""), 16);
-        System.out.println(machineId);
-        System.out.println("cpu "+MachineIdUtils.getCPUSerial());
-        System.out.println("system "+MachineIdUtils.getSystemSerial());
-        System.out.println("hardware "+MachineIdUtils.getHardDiskSerial());
-        //System.out.println(val);
-        long ts = LocalDateTime.now().toInstant(ZoneOffset.of("+8")).getEpochSecond();
-        //System.out.println(ts);
 
-        val = val.subtract(BigInteger.valueOf(ts));
+        StringBuilder builder=new StringBuilder();
 
-        //System.out.println(val);
+        if(!ObjectUtils.isEmpty(machineId)){
+            builder.append(machineId);
+        }
+        String systemSerial=MachineIdUtils.getCPUSerial();
+        if(!ObjectUtils.isEmpty(machineId)){
+            builder.append(systemSerial);
+        }
+        String hardDsSerial=MachineIdUtils.getHardDiskSerial();
+        if(!ObjectUtils.isEmpty(machineId)){
+            builder.append(hardDsSerial);
+        }
+        String password= builder.toString().replace("-","");
+        System.out.println(password);
+        String tag=MachineIdUtils.getSystemTag();
+        System.out.println(tag);
     }
 
 

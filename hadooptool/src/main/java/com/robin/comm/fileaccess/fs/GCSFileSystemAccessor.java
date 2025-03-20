@@ -24,6 +24,8 @@ import java.nio.channels.Channels;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Map;
+
 /**
  * Google Cloud Storage FileSystemAccessor,must init individual
  */
@@ -88,7 +90,7 @@ public class GCSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
     }
 
     @Override
-    protected boolean putObject(String bucketName, DataCollectionMeta meta, InputStream inputStream,long size) throws IOException {
+    public boolean putObject(String bucketName, DataCollectionMeta meta, InputStream inputStream, long size) throws IOException {
         checkStorage(meta);
         BlobId blobId=BlobId.of(getBucketName(meta),meta.getPath());
         String contentType=!ObjectUtils.isEmpty(meta.getContent().getContentType())?meta.getContent().getContentType():"application/octet-stream";
@@ -99,7 +101,7 @@ public class GCSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
     }
 
     @Override
-    protected InputStream getObject(String bucketName, String objectName) {
+    public InputStream getObject(String bucketName, String objectName) {
         if(ObjectUtils.isEmpty(bucketName)){
             throw new MissingConfigException("bucketName "+bucketName+" does not exists!");
         }
@@ -110,6 +112,15 @@ public class GCSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
         }else {
             throw new MissingConfigException("objectName " + objectName + " can not get!");
         }
+    }
+    public boolean createBucket(String name, Map<String,String> paramMap, Map<String,Object> retMap){
+        if(!useAdmin){
+            throw new MissingConfigException("can not call admin api");
+        }
+        BucketInfo bucket=Bucket.of(name);
+        Bucket bucket1= storage.create(bucket, Storage.BucketTargetOption.predefinedAcl(Storage.PredefinedAcl.BUCKET_OWNER_FULL_CONTROL));
+        Acl acl=bucket1.createDefaultAcl(Acl.of(new Acl.User(paramMap.get("user")), Acl.Role.OWNER));
+        return true;
     }
     private void checkStorage(DataCollectionMeta meta) {
         Assert.notNull(storage,"storage not initialized");

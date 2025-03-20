@@ -15,6 +15,7 @@
  */
 package com.robin.core.base.util;
 
+import cn.hutool.core.util.StrUtil;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.text.StrBuilder;
 import org.springframework.util.Assert;
@@ -323,11 +324,14 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
     }
 
     public static String fillCharTail(String input, int length, char fillChar) {
-        StringBuilder builder = new StringBuilder();
+        Assert.isTrue(!StrUtil.isBlank(input),"");
+        if(input.length()>length){
+            return input.substring(0,length);
+        }
+        StringBuilder builder = new StringBuilder(input);
         for (int i = 0; i < length - input.length(); i++) {
             builder.append(fillChar);
         }
-        builder.append(input);
         return builder.toString();
     }
 

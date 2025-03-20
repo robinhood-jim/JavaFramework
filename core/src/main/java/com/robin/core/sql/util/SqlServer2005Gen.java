@@ -17,9 +17,8 @@ package com.robin.core.sql.util;
 
 import com.robin.core.base.datameta.BaseDataBaseMeta;
 import com.robin.core.base.exception.DAOException;
+import com.robin.core.base.util.Const;
 import com.robin.core.query.util.PageQuery;
-
-import java.util.List;
 
 public class SqlServer2005Gen extends AbstractSqlGen implements BaseSqlGen{
 	private static final SqlServer2005Gen sqlGen=new SqlServer2005Gen();
@@ -53,13 +52,13 @@ public class SqlServer2005Gen extends AbstractSqlGen implements BaseSqlGen{
 			String order = pageQuery.getOrder();
 			String orderdesc = pageQuery.getOrderDirection();
 			String norder ;
-			if (orderdesc.equalsIgnoreCase(PageQuery.ASC)) {
-				norder = PageQuery.DESC;
+			if (orderdesc.equalsIgnoreCase(Const.ASC)) {
+				norder = Const.DESC;
 			} else {
-				norder = PageQuery.ASC;
+				norder = Const.ASC;
 			}
 			StringBuilder pagingSelect = new StringBuilder(strSQL.length() + 100);
-			int pagefrom = pageQuery.getPageSize() * pageQuery.getPageNumber();
+			int pagefrom = pageQuery.getPageSize() * pageQuery.getCurrentPage();
 			int pos = strSQL.indexOf("select");
 			int pos1 = strSQL.indexOf("order");
 			String sqlpart = strSQL.substring(pos + 6, pos1);

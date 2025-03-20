@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 
+import cn.hutool.core.util.StrUtil;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,8 +74,6 @@ public class CommandLineExecutor {
 			CompletableFuture<Pair<Boolean,String>> future=CompletableFuture.supplyAsync(()->readOutput(process,0));
 			int runCode=process.waitFor();
 			Pair<Boolean,String> pair=future.get();
-			logger.info("return code={}",runCode);
-			logger.info("execute tag= {}",pair.getKey());
 			if(runCode!=0 || !pair.getKey()){
 				runOk=false;
 			}
@@ -96,8 +95,7 @@ public class CommandLineExecutor {
 			CompletableFuture<Pair<Boolean,String>> future=CompletableFuture.supplyAsync(()->readOutput(process,afterRow));
 			int runCode=process.waitFor();
 			Pair<Boolean,String> pair=future.get();
-			logger.info("return code={}",runCode);
-			logger.info("execute tag= {}",pair.getKey());
+
 			if(runCode!=0 || !pair.getKey()){
 				runOk=false;
 			}
@@ -119,8 +117,6 @@ public class CommandLineExecutor {
 			CompletableFuture<Pair<Boolean,String>> future=CompletableFuture.supplyAsync(()->readOutputWithSpecifyKey(process,key));
 			int runCode=process.waitFor();
 			Pair<Boolean,String> pair=future.get();
-			logger.info("return code={}",runCode);
-			logger.info("execute tag= {}",pair.getKey());
 			if(runCode!=0 || !pair.getKey()){
 				runOk=false;
 			}
@@ -383,9 +379,8 @@ public class CommandLineExecutor {
 		int pos=0;
 		try(BufferedReader reader=new BufferedReader(new InputStreamReader(process.getInputStream()))){
 			while((line=reader.readLine())!=null){
-				pos++;
-				if(logger.isDebugEnabled()) {
-					logger.debug("message={}",line);
+				if(!StrUtil.isBlank(line) || !StrUtil.isBlank(line.trim())) {
+					pos++;
 				}
 				if(pos>afterrow && !ObjectUtils.isEmpty(line)) {
 					if(builder.length()>0){
@@ -408,9 +403,6 @@ public class CommandLineExecutor {
 		try(BufferedReader reader=new BufferedReader(new InputStreamReader(process.getInputStream()))){
 			while((line=reader.readLine())!=null){
 				pos++;
-				if(logger.isDebugEnabled()) {
-					logger.debug("message={}",line);
-				}
 				if(line.contains(key)) {
 					if(builder.length()>0){
 						builder.append("\n");

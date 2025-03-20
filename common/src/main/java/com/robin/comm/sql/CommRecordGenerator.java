@@ -92,7 +92,7 @@ public class CommRecordGenerator {
                 calculator.setOutputRecord(newRecord);
                 calculator.setSegment(segment);
                 ListenableFuture<Boolean> future = pool.submit(new CalculatorCallable(calculator));
-                Futures.addCallback(future, new FutureCallback<Boolean>() {
+                Futures.addCallback(future, new FutureCallback<>() {
                             @Override
                             public void onSuccess(Boolean aBoolean) {
                                 caPool.returnObject(calculator);

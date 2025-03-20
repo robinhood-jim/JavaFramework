@@ -1,11 +1,16 @@
 package com.robin.basis.sercurity;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.robin.basis.model.user.SysUser;
 import com.robin.basis.model.user.SysUserRole;
-import com.robin.basis.service.user.SysUserService;
+import com.robin.basis.model.user.TenantInfo;
+
+import com.robin.basis.service.system.ISysUserService;
 import com.robin.core.base.dao.JdbcDao;
 import com.robin.core.base.util.Const;
 import com.robin.core.query.util.PageQuery;
+import com.robin.core.web.util.WebConstant;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -23,7 +28,7 @@ import java.util.stream.Collectors;
 @Service
 public class LoginDetailsService implements UserDetailsService {
     @Resource
-    private SysUserService sysUserService;
+    private ISysUserService sysUserService;
     @Resource
     private JdbcDao jdbcDao;
 
@@ -32,12 +37,26 @@ public class LoginDetailsService implements UserDetailsService {
         SysUser user=new SysUser();
         user.setUserStatus(Const.VALID);
         user.setUserAccount(userName);
-        List<SysUser> users=sysUserService.queryByVO(user,"id");
-
+        LambdaQueryWrapper<SysUser> queryWrapper=new QueryWrapper<SysUser>().lambda();
+        queryWrapper.eq(SysUser::getUserStatus,Const.VALID);
+        queryWrapper.eq(SysUser::getUserAccount,userName);
+        List<SysUser> users=sysUserService.list(queryWrapper);
         SysLoginUser.Builder builder=SysLoginUser.Builder.newBuilder();
         if(!ObjectUtils.isEmpty(users)){
             SysUser selectUser=users.get(0);
             builder.withSysUser(selectUser);
+            //getTenantId
+            if(WebConstant.ACCOUNT_TYPE.SYSADMIN.toString().equals(selectUser.getAccountType())){
+                builder.tenantId(0L);
+            }else if(!ObjectUtils.isEmpty(selectUser.getOrgId())){
+                TenantInfo query=new TenantInfo();
+                query.setStatus(Const.VALID);
+                query.setOrgId(selectUser.getOrgId());
+                List<TenantInfo> tenantInfos=jdbcDao.queryByVO(TenantInfo.class,query,"id");
+                if(CollectionUtils.isEmpty(tenantInfos)){
+                    builder.tenantId(tenantInfos.get(0).getId());
+                }
+            }
             SysUserRole userRole=new SysUserRole();
             userRole.setUserId(selectUser.getId());
             userRole.setStatus(Const.VALID);

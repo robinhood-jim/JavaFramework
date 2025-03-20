@@ -17,25 +17,33 @@ package com.robin.basis.controller.user;
 
 import cn.hutool.jwt.JWTPayload;
 import cn.hutool.jwt.JWTUtil;
-import com.robin.basis.dto.SysMenuDTO;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.google.common.collect.Lists;
+import com.robin.basis.dto.LoginUserDTO;
+import com.robin.basis.dto.RoleDTO;
+import com.robin.basis.dto.RouterDTO;
+import com.robin.basis.model.system.SysResource;
+import com.robin.basis.model.user.SysRole;
 import com.robin.basis.sercurity.SysLoginUser;
-import com.robin.basis.service.system.SysResourceService;
+import com.robin.basis.service.system.ISysResourceService;
 import com.robin.basis.utils.SecurityUtils;
 import com.robin.core.base.dao.JdbcDao;
 import com.robin.core.base.exception.MissingConfigException;
 import com.robin.core.base.spring.SpringContextHolder;
 import com.robin.core.base.util.Const;
+import com.robin.core.base.util.ResourceConst;
 import com.robin.core.convert.util.ConvertUtil;
+import com.robin.core.query.util.PageQuery;
 import com.robin.core.web.controller.AbstractController;
-import com.robin.core.web.service.ILoginService;
 import com.robin.core.web.util.CookieUtils;
 import com.robin.core.web.util.Session;
-import org.springframework.context.MessageSource;
 import org.springframework.core.env.Environment;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -48,29 +56,24 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @RestController
 public class LoginController extends AbstractController {
-    @Resource
-    private ILoginService loginService;
 
-    @Resource
-    private MessageSource messageSource;
     @Resource
     private JdbcDao jdbcDao;
     @Resource
     private RedisTemplate<String, Object> template;
     @Resource
-    private SysResourceService resourceService;
+    private ISysResourceService resourceService;
     @Resource
     private AuthenticationManager authenticationManager;
 
     @PostMapping("/login")
-    public Map<String, Object> ajaxlogin(HttpServletRequest request, HttpServletResponse response, @RequestBody Map<String, Object> reqMap) {
+    public Map<String, Object> login(HttpServletRequest request, HttpServletResponse response, @RequestBody Map<String, Object> reqMap) {
         Map<String, Object> map = new HashMap();
         try {
             Environment environment = SpringContextHolder.getBean(Environment.class);
@@ -154,21 +157,91 @@ public class LoginController extends AbstractController {
     public Map<String, Object> getUserInfo(HttpServletRequest request) {
         SysLoginUser loginUser= SecurityUtils.getLoginUser();
         Map<String, Object> retMap = new HashMap<>();
-        retMap.put("user", loginUser);
-        retMap.put("roles", loginUser.getRoles());
-        return retMap;
+        retMap.put("info", LoginUserDTO.fromLoginUsers(loginUser));
+        List<SysRole> roles=jdbcDao.queryByField(SysRole.class,SysRole::getId, Const.OPERATOR.IN,loginUser.getRoles().toArray());
+        if(!CollectionUtils.isEmpty(roles)) {
+            retMap.put("roles", roles.stream().map(f-> RoleDTO.fromVO(f,loginUser.getTenantId())).collect(Collectors.toList()));
+        }
+        retMap.put("permissions",constructPermissionMap(loginUser));
+        return wrapObject(retMap);
     }
+    private List<Map<String,Object>> constructPermissionMap(SysLoginUser loginUser){
+        if(!CollectionUtils.isEmpty(loginUser.getPermissions())){
+            return loginUser.getPermissions().stream().map(f->{
+                Map<String,Object> tmap=new HashMap<>();
+                tmap.put("permission",f);
+                return tmap;
+            }).collect(Collectors.toList());
+        }
+        return Lists.newArrayList();
+    }
+
 
     @GetMapping("/getRouters")
     public Map<String, Object> getRouter(HttpServletRequest request) {
         Map<String, Object> retMap = new HashMap<>();
         SysLoginUser loginUser=SecurityUtils.getLoginUser();
         if (loginUser != null) {
-            List<SysMenuDTO> routers = resourceService.getMenuList(loginUser.getId());
+            List<RouterDTO> routers = getMenuList(loginUser.getId());
             retMap = wrapObject(routers);
         } else {
             wrapError(retMap, "not login");
         }
         return retMap;
+    }
+    public List<RouterDTO> getMenuList(Long userId) {
+        LambdaQueryWrapper<SysResource> queryWrapper=new QueryWrapper<SysResource>().lambda();
+        queryWrapper.eq(SysResource::getStatus,Const.VALID);
+        queryWrapper.in(SysResource::getType, ResourceConst.RESTYPE.DIR.toString(),ResourceConst.RESTYPE.MENU.toString());
+        List<SysResource> allList = resourceService.list(queryWrapper);
+        List<RouterDTO> dtoList = allList.stream().map(RouterDTO::fromVO).collect(Collectors.toList());
+        Map<Long, RouterDTO> dtoMap = dtoList.stream().collect(Collectors.toMap(RouterDTO::getId, Function.identity()));
+        RouterDTO root = new RouterDTO();
+        dtoMap.put(0L, root);
+        Map<Long, Integer> readMap = new HashMap<>();
+
+        PageQuery<Map<String, Object>> query1 = new PageQuery();
+        query1.setPageSize(0);
+        query1.setSelectParamId("GET_RESOURCEINFO");
+        query1.addNamedParameter("userId", userId);
+        jdbcDao.queryBySelectId(query1);
+        try {
+            if (!query1.getRecordSet().isEmpty()) {
+                Map<Long, List<RouterDTO>> aMap = query1.getRecordSet().stream().map(RouterDTO::fromMap).collect(Collectors.groupingBy(RouterDTO::getPid, Collectors.toList()));
+
+                List<RouterDTO> tops = aMap.get(0L);
+                tops.sort(Comparator.comparing(RouterDTO::getSeqNo));
+                for (RouterDTO dto : tops) {
+                    if (!readMap.containsKey(dto.getId()) && !dto.getAssignType().equals(Const.RESOURCE_ASSIGN_DENIED)) {
+                        if(dtoMap.get(dto.getPid()).getChildren()==null){
+                            dtoMap.get(dto.getPid()).setChildren(new ArrayList<>());
+                        }
+                        dtoMap.get(dto.getPid()).getChildren().add(dtoMap.get(dto.getId()));
+                        doScanChildren(dtoMap, aMap, dto, readMap);
+                    }
+                    readMap.put(dto.getId(), 0);
+                }
+
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return dtoMap.get(0L).getChildren();
+    }
+
+    private void doScanChildren(Map<Long, RouterDTO> cmap, Map<Long, List<RouterDTO>> pMap, RouterDTO dto, Map<Long, Integer> readMap) {
+        if (!CollectionUtils.isEmpty(pMap.get(dto.getId()))) {
+            pMap.get(dto.getId()).sort(Comparator.comparing(RouterDTO::getSeqNo));
+            for (RouterDTO childs : pMap.get(dto.getId())) {
+                if (!readMap.containsKey(childs.getId()) && !childs.getAssignType().equals(Const.RESOURCE_ASSIGN_DENIED)) {
+                    if(cmap.get(childs.getPid()).getChildren()==null){
+                        cmap.get(childs.getPid()).setChildren(new ArrayList<>());
+                    }
+                    cmap.get(childs.getPid()).getChildren().add(cmap.get(childs.getId()));
+                    doScanChildren(cmap, pMap, childs, readMap);
+                }
+                readMap.put(childs.getId(), 0);
+            }
+        }
     }
 }

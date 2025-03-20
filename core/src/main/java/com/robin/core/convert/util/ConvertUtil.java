@@ -16,6 +16,7 @@
 package com.robin.core.convert.util;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.robin.core.base.datameta.DataBaseColumnMeta;
 import com.robin.core.base.exception.GenericException;
 import com.robin.core.base.model.BaseObject;
@@ -26,6 +27,7 @@ import com.robin.core.fileaccess.meta.DataSetColumnMeta;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
@@ -103,12 +105,30 @@ public class ConvertUtil {
         for (Map.Entry<String, Method> entry : getMetholds.entrySet()) {
             if (entry.getValue().getParameterTypes().length == 0) {
                 Object value = entry.getValue().invoke(src);
-                target.put(entry.getKey(), value);
+                if(!ObjectUtils.isEmpty(value)) {
+                    target.put(entry.getKey(), value);
+                }
+            }
+        }
+    }
+    public static void objectToMapObj(Map<String, Object> target, Object src,String... ignoreColumns) throws IllegalAccessException, IllegalArgumentException,
+            InvocationTargetException {
+        Set<String> ignoreSets=ignoreColumns.length>0? Sets.newHashSet(ignoreColumns):null;
+        if (ObjectUtils.isEmpty(src)) {
+            return;
+        }
+        Map<String, Method> getMetholds = ReflectUtils.returnGetMethods(src.getClass());
+        for (Map.Entry<String, Method> entry : getMetholds.entrySet()) {
+            if (entry.getValue().getParameterTypes().length == 0 && (CollectionUtils.isEmpty(ignoreSets) || !ignoreSets.contains(entry.getKey()))) {
+                Object value = entry.getValue().invoke(src);
+                if(!ObjectUtils.isEmpty(value)) {
+                    target.put(entry.getKey(), value);
+                }
             }
         }
     }
 
-    public static void mapToObject(BaseObject target, Map<String, String> src, String... ignoreColumns) throws Exception {
+    public static void mapToBaseObject(BaseObject target, Map<String, String> src, String... ignoreColumns) throws Exception {
         if (src == null || target == null) {
             return;
         }
@@ -638,5 +658,11 @@ public class ConvertUtil {
         if(currentFormatter.get()!=null) {
             currentFormatter.remove();
         }
+    }
+    public static DateTimeFormatter getCurrentFormat(){
+        if(currentFormatter.get()!=null){
+            return currentFormatter.get();
+        }
+        return DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     }
 }

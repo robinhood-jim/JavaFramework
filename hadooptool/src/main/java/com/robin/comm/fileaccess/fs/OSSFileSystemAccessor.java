@@ -4,10 +4,7 @@ import com.aliyun.oss.OSS;
 import com.aliyun.oss.OSSClientBuilder;
 import com.aliyun.oss.common.auth.CredentialsProvider;
 import com.aliyun.oss.common.auth.CredentialsProviderFactory;
-import com.aliyun.oss.model.Bucket;
-import com.aliyun.oss.model.OSSObject;
-import com.aliyun.oss.model.ObjectMetadata;
-import com.aliyun.oss.model.PutObjectResult;
+import com.aliyun.oss.model.*;
 import com.robin.comm.fileaccess.fs.outputstream.OSSOutputStream;
 import com.robin.core.base.exception.MissingConfigException;
 import com.robin.core.base.util.Const;
@@ -21,6 +18,7 @@ import org.springframework.util.ObjectUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Map;
 
 /**
  * Aliyun OSS FileSystemAccessor
@@ -91,7 +89,7 @@ public class OSSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
         return 0;
     }
 
-    protected InputStream getObject(String bucketName, String objectName) {
+    public InputStream getObject(String bucketName, String objectName) {
         if (ossClient.doesObjectExist(bucketName, objectName)) {
             OSSObject object = ossClient.getObject(bucketName, objectName);
             if (object.getResponse().isSuccessful()) {
@@ -104,12 +102,30 @@ public class OSSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
         }
     }
 
-    private Bucket createBucket(String bucketName) {
-        return ossClient.createBucket(bucketName);
+
+    public boolean createBucket(String name, Map<String,String> paramMap, Map<String,Object> retMap) throws Exception{
+        if(!useAdmin){
+            throw new MissingConfigException("can not call admin api");
+        }
+        CreateBucketRequest request=new CreateBucketRequest(name);
+        if(retMap.containsKey("user")){
+            request.setCannedACL(CannedAccessControlList.Private);
+        }
+        Bucket bucket= ossClient.createBucket(request);
+        if(retMap.containsKey("user")){
+            bucket.setOwner(new Owner(paramMap.get("user"),""));
+        }
+        if(paramMap.containsKey("policy")){
+            ossClient.setBucketPolicy(new SetBucketPolicyRequest(name,paramMap.get("policy")));
+        }
+        if(paramMap.containsKey("quotaSize")){
+            ossClient.setBucketStorageCapacity(name,new UserQos(Integer.parseInt(paramMap.get("quotaSize"))));
+        }
+        return true;
     }
 
     @Override
-    protected boolean putObject(String bucketName, DataCollectionMeta meta, InputStream inputStream, long size) throws IOException {
+    public boolean putObject(String bucketName, DataCollectionMeta meta, InputStream inputStream, long size) throws IOException {
         ObjectMetadata metadata = new ObjectMetadata();
         metadata.setContentType(getContentType(meta));
         metadata.setContentLength(size);

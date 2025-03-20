@@ -23,8 +23,7 @@ import com.robin.core.query.util.PageQuery;
 import com.robin.core.query.util.QueryFactory;
 import com.robin.core.query.util.QueryString;
 import com.robin.core.web.codeset.Code;
-import com.robin.core.web.codeset.CodeSetService;
-import com.robin.core.web.international.Translator;
+import com.robin.core.web.service.CodeSetService;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.Serializable;
@@ -84,7 +83,7 @@ public abstract class AbstractCrudDhtmlxController<O extends BaseObject, P exten
             String[] fieldNames = queryKeys.split(",");
             List<Map<String, Object>> retList = new ArrayList<>();
             PageQuery tquery = new PageQuery();
-            tquery.setRecordCount(list.size());
+            tquery.setTotal(list.size());
             tquery.setPageSize(0);
             for (Map<String, String> map : list) {
                 Map<String, Object> tmap = new HashMap<>();
@@ -199,9 +198,9 @@ public abstract class AbstractCrudDhtmlxController<O extends BaseObject, P exten
 
         if (pageQuery != null) {
             retMap.put("pageSize", pageQuery.getPageSize());
-            retMap.put("pageNumber", pageQuery.getPageNumber());
+            retMap.put("pageNumber", pageQuery.getCurrentPage());
             retMap.put("pageCount", pageQuery.getPageCount());
-            retMap.put("recordCount", pageQuery.getRecordCount());
+            retMap.put("recordCount", pageQuery.getTotal());
             retMap.put("order", pageQuery.getOrder());
             retMap.put("orderDirection", pageQuery.getOrderDirection());
         }

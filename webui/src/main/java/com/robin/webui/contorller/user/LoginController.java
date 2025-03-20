@@ -63,7 +63,7 @@ public class LoginController extends BaseController {
                 Session session = gson.fromJson(gson.toJson(rightMap.get("session")), new TypeToken<Session>() {}.getType());
                 request.getSession().setAttribute(Const.SESSION, session);
                 retMap.put("success", true);
-                if (session.getAccountType().equals(WebConstant.ACCOUNT_TYPE.ORGUSER.toString()) && session.getOrgId() == null) {
+                if (session.getAccountType().equals(WebConstant.ACCOUNT_TYPE.ORGADMIN.toString()) && session.getOrgId() == null) {
                     //User has more than one Org,Select from page
                     retMap.put("selectOrg", true);
                     retMap.put("userId", session.getUserId());
@@ -332,7 +332,7 @@ public class LoginController extends BaseController {
             }.getType());
             request.getSession().setAttribute(Const.SESSION, session);
             retMap.put("success", true);
-            if (session.getAccountType().equals(WebConstant.ACCOUNT_TYPE.ORGUSER.toString()) && session.getOrgId() == null) {
+            if (session.getAccountType().equals(WebConstant.ACCOUNT_TYPE.ORGADMIN.toString()) && session.getOrgId() == null) {
                 //User has more than one Org,Select from page
                 retMap.put("selectOrg", true);
                 retMap.put("userId", session.getUserId());

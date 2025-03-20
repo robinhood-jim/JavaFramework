@@ -77,7 +77,7 @@ public class LoginController extends AbstractController {
             response.addCookie(cookie);
             request.getSession().setAttribute(Const.SESSION, session);
             map.put("success", true);
-            if (session.getAccountType().equals(WebConstant.ACCOUNT_TYPE.ORGUSER.toString()) && session.getOrgId() == null) {
+            if (session.getAccountType().equals(WebConstant.ACCOUNT_TYPE.ORGADMIN.toString()) && session.getOrgId() == null) {
                 //User has more than one Org,Select from page
                 map.put("selectOrg", true);
                 map.put("userId", session.getUserId());

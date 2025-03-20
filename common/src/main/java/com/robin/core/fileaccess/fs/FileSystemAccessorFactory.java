@@ -33,9 +33,13 @@ public class FileSystemAccessorFactory {
         try {
             Class<? extends IFileSystemAccessor> clazz = accessorMap.get(resType);
             if (!ObjectUtils.isEmpty(clazz)) {
-                accessor = (AbstractFileSystemAccessor) clazz.getConstructor().newInstance();
-                if(!ObjectUtils.isEmpty(colmeta)){
-                    accessor.init(colmeta);
+                if(LocalFileSystemAccessor.class.isAssignableFrom(clazz)){
+                    return LocalFileSystemAccessor.getInstance();
+                }else {
+                    accessor = (AbstractFileSystemAccessor) clazz.getConstructor().newInstance();
+                    if (!ObjectUtils.isEmpty(colmeta)) {
+                        accessor.init(colmeta);
+                    }
                 }
             }
         } catch (Exception ex) {
