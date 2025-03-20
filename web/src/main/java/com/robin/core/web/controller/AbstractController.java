@@ -15,6 +15,8 @@
  */
 package com.robin.core.web.controller;
 
+import com.google.gson.Gson;
+import com.robin.comm.util.json.GsonUtil;
 import com.robin.core.base.exception.ServiceException;
 import com.robin.core.base.exception.WebException;
 import com.robin.core.base.spring.SpringContextHolder;
@@ -34,6 +36,8 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.*;
 
 
@@ -46,6 +50,7 @@ public abstract class AbstractController
     protected static final String COL_COED="code";
     protected static final String COL_DATA="data";
     protected MessageUtils messageUtils=SpringContextHolder.getBean(MessageUtils.class);
+    private static final Gson gson= GsonUtil.getGson();
 
     protected List<Map<String, String>> convertObjToMapList(List<?> orglist)
             throws Exception
@@ -131,13 +136,27 @@ public abstract class AbstractController
     protected void filterListByCodeSet(List<?> list, String columnName, String codeNo)
             throws Exception
     {
-        if ((list != null) && (!list.isEmpty())) {
+        if (!CollectionUtils.isEmpty(list)) {
             for (Object obj : list)
             {
                 Object transval = PropertyUtils.getProperty(obj, columnName);
                 String name = findCodeName(codeNo, transval.toString());
-                if ((name != null) && (!"".equals(name))) {
+                if (!ObjectUtils.isEmpty(name)) {
                     PropertyUtils.setProperty(obj, columnName, name);
+                }
+            }
+        }
+    }
+    protected void filterListByCodeSet(List<?> list, String columnName,String newColumn, String codeNo)
+            throws Exception
+    {
+        if (!CollectionUtils.isEmpty(list)) {
+            for (Object obj : list)
+            {
+                Object transval = PropertyUtils.getProperty(obj, columnName);
+                String name = findCodeName(codeNo, transval.toString());
+                if (!ObjectUtils.isEmpty(name)) {
+                    PropertyUtils.setProperty(obj, newColumn, name);
                 }
             }
         }
@@ -369,6 +388,11 @@ public abstract class AbstractController
             retmap.put(COL_MESSAGE,ex.getMessage());
         }
         return retmap;
+    }
+    public static void wrapErrMsg(HttpServletResponse response,String message) throws IOException {
+        Map<String,Object> errMap=wrapFailedMsg(message);
+        response.setContentType("application/json");
+        response.getWriter().write(gson.toJson(errMap));
     }
     protected  Long[] parseLongId(String ids) throws ServiceException {
         Assert.isTrue(!ObjectUtils.isEmpty(ids),"input ids is empty");

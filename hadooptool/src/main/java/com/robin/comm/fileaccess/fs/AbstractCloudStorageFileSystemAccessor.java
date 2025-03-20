@@ -10,6 +10,7 @@ import org.apache.flink.core.memory.MemorySegment;
 import org.springframework.util.ObjectUtils;
 
 import java.io.*;
+import java.util.Map;
 
 /**
  * Cloud Storage FileSystemAccessor Abstract super class,not singleton,must init individual
@@ -18,12 +19,18 @@ import java.io.*;
 public abstract class AbstractCloudStorageFileSystemAccessor extends AbstractFileSystemAccessor {
     protected String bucketName;
     protected String tmpFilePath;
-
+    protected boolean useAdmin=false;
     protected MemorySegment segment;
     protected boolean useFileCache = false;
+    public void init(){
 
-    public void init() {
+    }
 
+    public void init(DataCollectionMeta meta) {
+        super.init(meta);
+        if(meta.getResourceCfgMap().containsKey(ResourceConst.USEADMINTG) && "true".equalsIgnoreCase(meta.getResourceCfgMap().get(ResourceConst.USEADMINTG).toString())){
+            useAdmin=true;
+        }
     }
 
     @Override
@@ -92,7 +99,8 @@ public abstract class AbstractCloudStorageFileSystemAccessor extends AbstractFil
         return !ObjectUtils.isEmpty(meta.getContent()) && !ObjectUtils.isEmpty(meta.getContent().getContentType()) ? meta.getContent().getContentType() : ResourceConst.DEFAULTCONTENTTYPE;
     }
 
-    protected abstract boolean putObject(String bucketName, DataCollectionMeta meta, InputStream inputStream, long size) throws IOException;
+    public abstract boolean putObject(String bucketName, DataCollectionMeta meta, InputStream inputStream, long size) throws IOException;
 
-    protected abstract InputStream getObject(String bucketName, String objectName);
+    public abstract InputStream getObject(String bucketName, String objectName);
+    public abstract boolean createBucket(String name, Map<String,String> paramMap, Map<String,Object> retMap) throws Exception;
 }

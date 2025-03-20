@@ -19,6 +19,7 @@ import software.amazon.awssdk.services.s3.S3Client;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Map;
 
 /**
  * Amazon AWS FileSystemAccessor
@@ -81,7 +82,7 @@ public class S3FileSystemAccessor extends AbstractCloudStorageFileSystemAccessor
     }
 
     @Override
-    protected boolean putObject(String bucketName, DataCollectionMeta meta, InputStream inputStream, long size) throws IOException {
+    public boolean putObject(String bucketName, DataCollectionMeta meta, InputStream inputStream, long size) throws IOException {
         return AwsUtils.put(client,bucketName,meta.getPath(),getContentType(meta),inputStream,size);
     }
 
@@ -91,10 +92,17 @@ public class S3FileSystemAccessor extends AbstractCloudStorageFileSystemAccessor
     }
 
     @Override
-    protected InputStream getObject(String bucketName, String objectName) {
+    public InputStream getObject(String bucketName, String objectName) {
         return AwsUtils.getObject(client,bucketName,objectName);
     }
 
+    @Override
+    public boolean createBucket(String name, Map<String, String> paramMap, Map<String, Object> retMap) throws Exception {
+        if(!useAdmin){
+            throw new MissingConfigException("can not call admin api");
+        }
+        return false;
+    }
 
     public static class Builder{
         private S3FileSystemAccessor accessor;

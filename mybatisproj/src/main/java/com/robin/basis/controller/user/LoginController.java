@@ -31,10 +31,12 @@ import com.robin.basis.utils.SecurityUtils;
 import com.robin.core.base.exception.MissingConfigException;
 import com.robin.core.base.spring.SpringContextHolder;
 import com.robin.core.base.util.Const;
+import com.robin.core.base.util.ResourceConst;
 import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.web.controller.AbstractController;
 import com.robin.core.web.util.CookieUtils;
 import com.robin.core.web.util.Session;
+import com.robin.core.web.util.WebConstant;
 import org.springframework.core.env.Environment;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -163,7 +165,7 @@ public class LoginController extends AbstractController {
     }
 
     @GetMapping("/getInfo")
-    public Map<String, Object> getUserInfo(HttpServletRequest request) {
+    public Map<String, Object> getUserInfo(HttpServletRequest request) throws Exception {
         SysLoginUser loginUser= SecurityUtils.getLoginUser();
         Map<String, Object> retMap = new HashMap<>();
         retMap.put("info", LoginUserDTO.fromLoginUsers(loginUser));
@@ -172,6 +174,7 @@ public class LoginController extends AbstractController {
             retMap.put("roles", roles.stream().map(f-> RoleDTO.fromVO(f,loginUser.getTenantId())).collect(Collectors.toList()));
         }
         List<TenantInfoDTO> tenantInfoDTOS=tenantInfoService.queryTenantByUser(loginUser.getId());
+        filterListByCodeSet(tenantInfoDTOS,"type","typeName","");
         if(!CollectionUtils.isEmpty(tenantInfoDTOS) && tenantInfoDTOS.size()>1){
             retMap.put("tenants",tenantInfoDTOS);
         }
@@ -208,10 +211,13 @@ public class LoginController extends AbstractController {
         SysLoginUser user=SecurityUtils.getLoginUser();
         List<TenantInfoDTO> tenantInfoDTOS=tenantInfoService.queryTenantByUser(user.getId());
         try {
-            if (tenantInfoDTOS.stream().map(TenantInfoDTO::getId).anyMatch(f -> f.equals(tenantId))) {
+            Optional<TenantInfoDTO>  optional=tenantInfoDTOS.stream().filter(f -> f.getId().equals(tenantId)).findFirst();
+            if (optional.isPresent()) {
+                TenantInfoDTO dto=optional.get();
                 SysUser sysUser=sysUserService.getById(user.getId());
+                sysUser.setTenantId(tenantId);
+                sysUser.setAccountType(WebConstant.TENANT_TYPE.ORGADMIN.toString().equals(dto.getType())?WebConstant.ACCOUNT_TYPE.ORGADMIN.toString():WebConstant.ACCOUNT_TYPE.ORDINARY.toString());
                 Map<String, Object> retMap = new HashMap<>();
-                user.setTenantId(tenantId);
                 List<String> permissions = new ArrayList<>();
                 List<SysResourceDTO> resources = sysResourceService.queryUserPermission(sysUser, tenantId);
                 if (!CollectionUtils.isEmpty(resources)) {

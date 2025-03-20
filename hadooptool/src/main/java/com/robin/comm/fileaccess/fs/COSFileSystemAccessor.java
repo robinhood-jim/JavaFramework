@@ -11,6 +11,7 @@ import com.qcloud.cos.transfer.TransferManager;
 import com.qcloud.cos.transfer.TransferManagerConfiguration;
 import com.qcloud.cos.transfer.Upload;
 import com.robin.comm.fileaccess.fs.outputstream.COSOutputStream;
+import com.robin.core.base.exception.MissingConfigException;
 import com.robin.core.base.exception.ResourceNotAvailableException;
 import com.robin.core.base.util.Const;
 import com.robin.core.base.util.ResourceConst;
@@ -23,6 +24,8 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -93,7 +96,7 @@ public class COSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
     }
 
 
-    protected InputStream getObject(@NonNull String bucketName,@NonNull String key) {
+    public InputStream getObject(@NonNull String bucketName, @NonNull String key) {
         GetObjectRequest request = new GetObjectRequest(bucketName, key);
         COSObject object = cosClient.getObject(request);
         if (!ObjectUtils.isEmpty(object)) {
@@ -120,7 +123,7 @@ public class COSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
     }
 
     @Override
-    protected boolean putObject(String bucketName, DataCollectionMeta meta, InputStream inputStream,long size) throws IOException {
+    public boolean putObject(String bucketName, DataCollectionMeta meta, InputStream inputStream, long size) throws IOException {
         TransferManager transferManager=getManager();
         ObjectMetadata objectMetadata = new ObjectMetadata();
         objectMetadata.setContentType(getContentType(meta));
@@ -139,6 +142,30 @@ public class COSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
             if (!ObjectUtils.isEmpty(transferManager)) {
                 transferManager.shutdownNow(true);
             }
+        }
+        return false;
+    }
+    @Override
+    public boolean createBucket(String name, Map<String,String> paramMap, Map<String,Object> retMap){
+        if(!useAdmin){
+            throw new MissingConfigException("can not call admin api");
+        }
+        CreateBucketRequest request=new CreateBucketRequest(name);
+        if(paramMap.containsKey("accessAcl")) {
+            request.setCannedAcl(CannedAccessControlList.valueOf(paramMap.get("accessAcl")));
+        }else{
+            request.setCannedAcl(CannedAccessControlList.PublicReadWrite);
+        }
+        if(paramMap.containsKey("ownerId")) {
+            AccessControlList controlList=new AccessControlList();
+            Owner owner=new Owner(paramMap.get("ownerId"),"");
+            controlList.setOwner(owner);
+            request.setAccessControlList(controlList);
+        }
+        Bucket bucket=cosClient.createBucket(request);
+        if(!ObjectUtils.isEmpty(bucket)){
+            retMap.put("bucket",bucket);
+            return true;
         }
         return false;
     }

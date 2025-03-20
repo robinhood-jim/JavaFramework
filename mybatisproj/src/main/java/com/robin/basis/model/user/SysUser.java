@@ -43,5 +43,5 @@ public class SysUser extends AbstractMybatisModel {
     private String phoneNum;
     private String avatar;
     private String nickName;
-    private String sex;
+    private Long employeeId;
 }

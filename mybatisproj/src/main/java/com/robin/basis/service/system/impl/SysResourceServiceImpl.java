@@ -11,16 +11,13 @@ import com.robin.basis.model.AbstractMybatisModel;
 import com.robin.basis.model.system.SysResource;
 import com.robin.basis.model.user.SysResourceUser;
 import com.robin.basis.model.user.SysUser;
-import com.robin.basis.model.user.TenantInfo;
-import com.robin.basis.model.user.TenantUser;
+import com.robin.basis.model.system.TenantInfo;
 import com.robin.basis.service.system.*;
 import com.robin.basis.utils.SecurityUtils;
 import com.robin.basis.vo.SysResourceVO;
 import com.robin.core.base.exception.ServiceException;
 import com.robin.core.base.service.AbstractMybatisService;
 import com.robin.core.base.util.Const;
-import com.robin.core.collection.util.CollectionMapConvert;
-import com.robin.core.query.util.PageQuery;
 import com.robin.core.web.util.WebConstant;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -210,7 +207,7 @@ public class SysResourceServiceImpl extends AbstractMybatisService<SysResourceMa
 
         List<SysResourceDTO> origins=baseMapper.queryUserPermission(user.getId(), useTenantId);
         //非系统管理，从系统参数表获取通用菜单（根据企业对应租户的级别来，避免重复的角色菜单赋权，只保留差异）
-        if(WebConstant.ACCOUNT_TYPE.SYSADMIN.toString().equals(SecurityUtils.getLoginUser().getAccountType())){
+        /*if(WebConstant.ACCOUNT_TYPE.SYSADMIN.toString().equals(SecurityUtils.getLoginUser().getAccountType())){
             if(!WebConstant.ACCOUNT_TYPE.SYSADMIN.toString().equals(user.getAccountType())) {
                 List<Long> defaults = getSuperAdminConfigUserPermissions(user);
                 List<SysResource> resources = this.lambdaQuery().in(SysResource::getId, defaults).eq(AbstractMybatisModel::getStatus, Const.VALID).list();
@@ -218,7 +215,8 @@ public class SysResourceServiceImpl extends AbstractMybatisService<SysResourceMa
                     origins.addAll(resources.stream().map(SysResourceDTO::fromVO).collect(Collectors.toList()));
                 }
             }
-        }else if(!WebConstant.ACCOUNT_TYPE.SYSADMIN.toString().equals(user.getAccountType())){
+        }else */
+        if(!WebConstant.ACCOUNT_TYPE.SYSADMIN.toString().equals(user.getAccountType())){
             //获取用户租户对应关系
             Short tenantType=getUserTenantType(user,tenantId,tenants);
             //获取租户对应的级别
@@ -242,14 +240,14 @@ public class SysResourceServiceImpl extends AbstractMybatisService<SysResourceMa
         List<SysResourceDTO> dtos= origins.stream().collect(Collectors.collectingAndThen(Collectors.toCollection(()->new TreeSet<>(Comparator.comparing(f->f.getId()+"|"+f.getAssignType()))),ArrayList::new));
         return dtos.stream().sorted(Comparator.comparing(SysResourceDTO::getId).thenComparing(SysResourceDTO::getAssignType).reversed()).collect(Collectors.toList());
     }
-    public List<Long> getSuperAdminConfigUserPermissions(SysUser user){
+    /*public List<Long> getSuperAdminConfigUserPermissions(SysUser user){
         if(WebConstant.ACCOUNT_TYPE.ORGADMIN.toString().equals(user.getAccountType())){
             TenantInfo info=tenantInfoService.getManagedTenant(user.getId());
             return sysParamsService.getOrgAdminDefaultPermission(info.getId());
         }else{
             return sysParamsService.getDefaultPermission();
         }
-    }
+    }*/
     private boolean isUserHasTenantRight(SysUser user,Long tenantId,List<Long> tenantUsers){
         if(WebConstant.ACCOUNT_TYPE.SYSADMIN.toString().equals(user.getAccountType())){
             return true;

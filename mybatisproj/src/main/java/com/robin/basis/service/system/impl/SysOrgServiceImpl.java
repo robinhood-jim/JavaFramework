@@ -7,14 +7,16 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.collect.Lists;
 import com.robin.basis.dto.EmployeeDTO;
 import com.robin.basis.dto.query.SysOrgQueryDTO;
+import com.robin.basis.dto.query.SysUserQueryDTO;
 import com.robin.basis.mapper.SysOrgMapper;
 import com.robin.basis.model.AbstractMybatisModel;
 import com.robin.basis.model.system.SysOrg;
 import com.robin.basis.model.system.SysOrgEmployee;
+import com.robin.basis.model.system.TenantInfo;
 import com.robin.basis.model.user.Employee;
 import com.robin.basis.model.user.SysUser;
 import com.robin.basis.model.user.SysUserOrg;
-import com.robin.basis.model.user.TenantInfo;
+import com.robin.basis.model.user.TenantUser;
 import com.robin.basis.service.region.IRegionService;
 import com.robin.basis.service.system.*;
 import com.robin.basis.vo.SysOrgVO;
@@ -22,6 +24,7 @@ import com.robin.core.base.exception.ServiceException;
 import com.robin.core.base.service.AbstractMybatisService;
 import com.robin.core.base.util.Const;
 import lombok.NonNull;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
@@ -45,7 +48,9 @@ public class SysOrgServiceImpl extends AbstractMybatisService<SysOrgMapper,SysOr
     private ITenantInfoService tenantInfoService;
     @Resource
     private IRegionService regionService;
-
+    @Resource
+    private ITenantUserService tenantUserService;
+    @Transactional(readOnly = true)
     public List<SysOrgVO> queryOrg(SysOrgQueryDTO dto){
         List<SysOrgVO> orgList=queryValid(new QueryWrapper<SysOrg>().lambda(), AbstractMybatisModel::getStatus).stream().map(SysOrgVO::fromVO).collect(Collectors.toList());
         Map<Long,List<SysOrgVO>> orgMap=orgList.stream().collect(Collectors.groupingBy(SysOrgVO::getPid));
@@ -70,7 +75,7 @@ public class SysOrgServiceImpl extends AbstractMybatisService<SysOrgMapper,SysOr
         }
         return topList;
     }
-    public void recusiveDown(Map<Long,List<SysOrgVO>> pMap,SysOrgVO vo){
+    private void recusiveDown(Map<Long,List<SysOrgVO>> pMap,SysOrgVO vo){
         if(pMap.containsKey(vo.getId())){
             vo.setChildren(pMap.get(vo.getId()).stream().map(f->{
                         recusiveDown(pMap,f);
@@ -79,7 +84,7 @@ public class SysOrgServiceImpl extends AbstractMybatisService<SysOrgMapper,SysOr
             ).collect(Collectors.toList()));
         }
     }
-    public void recusiveUp(Map<Long,SysOrgVO> idMap,SysOrgVO vo){
+    private void recusiveUp(Map<Long,SysOrgVO> idMap,SysOrgVO vo){
         if(vo.getPid()!=0L){
             if(CollectionUtils.isEmpty(idMap.get(vo.getPid()).getChildren())){
                 List<SysOrgVO> list=Lists.newArrayList(vo);
@@ -91,6 +96,7 @@ public class SysOrgServiceImpl extends AbstractMybatisService<SysOrgMapper,SysOr
         }
     }
     @Override
+    @Transactional(readOnly = true)
     public List<Long> getSubIdByParentOrgId(Long orgId) {
         List<SysOrg> list=queryByField(AbstractMybatisModel::getStatus, Const.OPERATOR.EQ,Const.VALID);
         List<Long> subIds=null;
@@ -102,6 +108,7 @@ public class SysOrgServiceImpl extends AbstractMybatisService<SysOrgMapper,SysOr
         return Optional.ofNullable(subIds).orElse(Lists.newArrayList());
     }
     @Override
+    @Transactional(readOnly = true)
     public TenantInfo getTopOrgTenant(Long orgId){
         List<SysOrg> list=queryByField(AbstractMybatisModel::getStatus, Const.OPERATOR.EQ,Const.VALID);
         Map<Long,SysOrg> map=list.stream().collect(Collectors.toMap(SysOrg::getId,Function.identity()));
@@ -154,6 +161,7 @@ public class SysOrgServiceImpl extends AbstractMybatisService<SysOrgMapper,SysOr
         return userOrgService.lambdaUpdate().set(AbstractMybatisModel::getStatus,Const.INVALID)
                 .in(SysUserOrg::getUserId,uids).eq(SysUserOrg::getOrgId,orgId).eq(AbstractMybatisModel::getStatus,Const.VALID).update();
     }
+    @Transactional(readOnly = true)
     public IPage<EmployeeDTO> queryOrgUser(SysOrgQueryDTO dto){
         List<Long> subIds=null;
         if(!ObjectUtils.isEmpty(dto.getPid())){
@@ -184,6 +192,69 @@ public class SysOrgServiceImpl extends AbstractMybatisService<SysOrgMapper,SysOr
             });
         }
         return page;
+    }
+    @Transactional(rollbackFor = RuntimeException.class)
+    @Override
+    public Pair<Integer,Integer> deleteOrg(List<Long> orgIds){
+        int failedCount=0;
+        int successCount=0;
+        for(Long orgId:orgIds){
+            SysOrg org=this.getById(orgId);
+            if(org==null || Const.INVALID.equals(org.getStatus())){
+                failedCount++;
+            }else{
+                if(org.getPid()==0L){
+
+                    if(deleteOrgEmployee(getSubIdByParentOrgId(org.getId())) && adjustTenantClosed(orgId)){
+                        successCount++;
+                    }else{
+                        failedCount++;
+                    }
+                }else{
+                    if(deleteOrgEmployee(Lists.newArrayList(orgId))){
+                        successCount++;
+                    }else{
+                        failedCount++;
+                    }
+                }
+            }
+        }
+        return Pair.of(successCount,failedCount);
+    }
+    private boolean deleteOrgEmployee(List<Long> orgIds){
+        //删除机构和员工关联关系
+        return sysOrgEmployeeService.lambdaUpdate().set(AbstractMybatisModel::getStatus,Const.INVALID)
+                .in(SysOrgEmployee::getOrgId,orgIds).eq(AbstractMybatisModel::getStatus,Const.VALID).update();
+    }
+    private boolean adjustTenantClosed(Long orgId){
+        int count=tenantInfoService.lambdaQuery().eq(TenantInfo::getOrgId,orgId).eq(TenantInfo::getStatus,Const.VALID).count();
+        return count==0;
+    }
+    private boolean deleteOrgTenant(Long orgId){
+        //查找机构对应租户是否存在
+        TenantInfo info=tenantInfoService.getByField(TenantInfo::getOrgId, Const.OPERATOR.EQ,orgId);
+        boolean tag=false;
+        if(info!=null && Const.VALID.equals(info.getStatus())) {
+            //删除机构对应租户
+            tag= tenantInfoService.lambdaUpdate().set(TenantInfo::getStatus, Const.INVALID)
+                    .eq(TenantInfo::getOrgId, orgId).eq(TenantInfo::getStatus, Const.VALID).update();
+            //删除租户下关联的用户
+            if(tag){
+                tag=false;
+                tag=tenantUserService.lambdaUpdate().set(TenantUser::getStatus,Const.INVALID)
+                        .eq(TenantUser::getTenantId,info.getId()).eq(TenantUser::getStatus,Const.VALID).update();
+            }
+        }
+        return tag;
+    }
+    public IPage<EmployeeDTO> selectEmployeeInOrg(Page<SysUserQueryDTO> page,  QueryWrapper wrapper,List<Long> orgIds){
+        return baseMapper.selectEmployeeInOrg(page,wrapper,orgIds);
+    }
+    public IPage<EmployeeDTO> selectEmployeeNotInOrg(Page<SysUserQueryDTO> page,  QueryWrapper wrapper,List<Long> orgIds){
+        return baseMapper.selectEmployeeNotInOrg(page,wrapper,orgIds);
+    }
+    public List<EmployeeDTO> selectEmployeeUserInOrg(List<Long> orgIds){
+        return baseMapper.selectEmployeeUserInOrg(orgIds);
     }
 
 }

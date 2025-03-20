@@ -9,7 +9,7 @@ import java.net.URI;
 
 public class LocalFileSystemAccessor extends AbstractFileSystemAccessor {
 	private static LocalFileSystemAccessor accessor=new LocalFileSystemAccessor();
-	public LocalFileSystemAccessor(){
+	private LocalFileSystemAccessor(){
 		this.identifier= Const.FILESYSTEM.LOCAL.getValue();
 	}
 	public static LocalFileSystemAccessor getInstance(){

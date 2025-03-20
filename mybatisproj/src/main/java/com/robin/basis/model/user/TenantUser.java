@@ -16,6 +16,7 @@ public class TenantUser extends BaseObject {
     private Long userId;
     @TableField
     private Long tenantId;
+    //类型
     private Short type;
     @TableField(value = "creator", fill = FieldFill.INSERT)
     private Long creatorId;

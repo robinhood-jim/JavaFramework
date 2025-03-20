@@ -18,6 +18,7 @@ public class ResourceConst {
     public static final int DEFAULTSTORAGEUPLOADTHREAD=4;
     public static final String STORAGEFILTERSQL="storage.FilterSql";
     public static final String PARQUETFILEFORMAT="parquet.file.format";
+    public static final String USEADMINTG="useAdmin";
 
     public enum IngestType {
         TYPE_HDFS(1L,"HDFS"),

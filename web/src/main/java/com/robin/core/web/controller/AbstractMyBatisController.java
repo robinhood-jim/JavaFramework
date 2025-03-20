@@ -168,11 +168,30 @@ public abstract class AbstractMyBatisController<S extends IMybatisBaseService<T,
         }
         return retMap;
     }
-    protected Map<String,Object> doSave(Serializable obj){
+    protected <O> Map<String,Object> doSave(O obj,Consumer<T> consumer){
         try{
             T vo=this.voType.getDeclaredConstructor().newInstance();
             BeanUtils.copyProperties(obj,vo);
+            if(consumer!=null) {
+                consumer.accept(vo);
+            }
             return doSave(vo);
+        }catch (Exception ex){
+            return wrapError(ex);
+        }
+    }
+    protected <O> Map<String,Object> doUpdate(O obj,Consumer<T> consumer){
+        try{
+            T vo=this.voType.getDeclaredConstructor().newInstance();
+            BeanUtils.copyProperties(obj,vo);
+            if(consumer!=null) {
+                consumer.accept(vo);
+            }
+            if(service.updateById(vo)){
+                return wrapSuccess("OK");
+            }else{
+                return wrapFailedMsg("failed");
+            }
         }catch (Exception ex){
             return wrapError(ex);
         }
@@ -204,7 +223,17 @@ public abstract class AbstractMyBatisController<S extends IMybatisBaseService<T,
         }catch (Exception ex){
             return wrapFailedMsg(ex);
         }
-
+    }
+    protected Map<String,Object> doDeleteLogic(List<P> ids){
+        try {
+            if (this.service.deleteByLogic(ids)) {
+                return wrapSuccess("OK");
+            } else {
+                return wrapFailedMsg("failed");
+            }
+        }catch (Exception ex){
+            return wrapFailedMsg(ex);
+        }
     }
 
     private void updateWithOrigin(P id, Map<String, Object> retMap, T originObj) throws WebException {

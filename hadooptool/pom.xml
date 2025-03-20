@@ -445,6 +445,7 @@
             <groupId>org.apache.arrow</groupId>
             <artifactId>arrow-memory-core</artifactId>
             <version>${arrow.version}</version>
+            <optional>true</optional>
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>
@@ -456,16 +457,19 @@
             <groupId>org.apache.arrow</groupId>
             <artifactId>arrow-memory-netty</artifactId>
             <version>${arrow.version}</version>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.apache.arrow</groupId>
             <artifactId>arrow-vector</artifactId>
             <version>${arrow.version}</version>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-handler</artifactId>
             <version>4.1.110.Final</version>
+            <optional>true</optional>
         </dependency>
         <!-- FileSystem dependency begin -->
         <dependency>
@@ -647,7 +651,7 @@
         <dependency>
             <groupId>io.minio</groupId>
             <artifactId>minio</artifactId>
-            <version>8.4.0</version>
+            <version>8.5.17</version>
             <optional>true</optional>
             <exclusions>
                 <exclusion>
@@ -659,6 +663,11 @@
                     <artifactId>slf4j-api</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>io.minio</groupId>
+            <artifactId>minio-admin</artifactId>
+            <version>8.5.17</version>
         </dependency>
         <dependency>
             <groupId>com.google.cloud</groupId>
@@ -781,10 +790,12 @@
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-core</artifactId>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>cn.hutool</groupId>
@@ -795,6 +806,7 @@
             <groupId>io.etcd</groupId>
             <artifactId>jetcd-core</artifactId>
             <version>0.7.3</version>
+            <optional>true</optional>
         </dependency>
 
 
@@ -825,7 +837,7 @@
                     </archive>
                 </configuration>
             </plugin>
-            <plugin><!-- 拷贝依赖的jar包到指定路径 -->
+            <!--<plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
@@ -842,7 +854,7 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>
+            </plugin>-->
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

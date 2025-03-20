@@ -3,9 +3,7 @@ package com.robin.comm.fileaccess.fs;
 import com.baidubce.auth.DefaultBceCredentials;
 import com.baidubce.services.bos.BosClient;
 import com.baidubce.services.bos.BosClientConfiguration;
-import com.baidubce.services.bos.model.BosObject;
-import com.baidubce.services.bos.model.ObjectMetadata;
-import com.baidubce.services.bos.model.PutObjectResponse;
+import com.baidubce.services.bos.model.*;
 import com.robin.comm.fileaccess.fs.outputstream.BOSOutputStream;
 import com.robin.core.base.exception.MissingConfigException;
 import com.robin.core.base.util.Const;
@@ -19,6 +17,7 @@ import org.springframework.util.ObjectUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Map;
 
 @Getter
 @SuppressWarnings("unused")
@@ -27,6 +26,7 @@ public class BOSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
     private String accessKeyId;
     private String securityAccessKey;
     private BosClient client;
+
     private BOSFileSystemAccessor(){
         this.identifier= Const.FILESYSTEM.BAIDU_BOS.getValue();
     }
@@ -71,8 +71,24 @@ public class BOSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
         }
         return 0;
     }
+    @Override
+    public boolean createBucket(String name, Map<String,String> paramMap,Map<String,Object> retMap){
+        CreateBucketRequest request=new CreateBucketRequest(name);
+        if(paramMap.containsKey("accessKey") && paramMap.containsKey("secretKey")){
+            request.setRequestCredentials(new DefaultBceCredentials(paramMap.get("accessKey"),paramMap.get("secretKey")));
+        }
+        if(paramMap.containsKey("bucketTag")){
+            request.setBucketTags(paramMap.get("bucketTag"));
+        }
+        CreateBucketResponse response= client.createBucket(request);
+        if(!ObjectUtils.isEmpty(response)){
+            retMap.put("response",response);
+            return true;
+        }
+        return false;
+    }
 
-    protected InputStream getObject(String bucketName,String objectName){
+    public InputStream getObject(String bucketName, String objectName){
         if(client.doesObjectExist(bucketName,objectName)) {
             BosObject object = client.getObject(bucketName, objectName);
             if (!ObjectUtils.isEmpty(object)) {
@@ -86,7 +102,7 @@ public class BOSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
     }
 
     @Override
-    protected boolean putObject(String bucketName, DataCollectionMeta meta, InputStream inputStream,long size) throws IOException {
+    public boolean putObject(String bucketName, DataCollectionMeta meta, InputStream inputStream, long size) throws IOException {
         ObjectMetadata metadata=new ObjectMetadata();
         metadata.setContentType(getContentType(meta));
         metadata.setContentLength(size);

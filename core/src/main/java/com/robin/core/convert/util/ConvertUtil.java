@@ -15,8 +15,8 @@
  */
 package com.robin.core.convert.util;
 
-import com.google.common.base.Function;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.robin.core.base.datameta.DataBaseColumnMeta;
 import com.robin.core.base.exception.GenericException;
 import com.robin.core.base.model.BaseObject;
@@ -43,7 +43,6 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Slf4j
 public class ConvertUtil {
@@ -106,7 +105,25 @@ public class ConvertUtil {
         for (Map.Entry<String, Method> entry : getMetholds.entrySet()) {
             if (entry.getValue().getParameterTypes().length == 0) {
                 Object value = entry.getValue().invoke(src);
-                target.put(entry.getKey(), value);
+                if(!ObjectUtils.isEmpty(value)) {
+                    target.put(entry.getKey(), value);
+                }
+            }
+        }
+    }
+    public static void objectToMapObj(Map<String, Object> target, Object src,String... ignoreColumns) throws IllegalAccessException, IllegalArgumentException,
+            InvocationTargetException {
+        Set<String> ignoreSets=ignoreColumns.length>0? Sets.newHashSet(ignoreColumns):null;
+        if (ObjectUtils.isEmpty(src)) {
+            return;
+        }
+        Map<String, Method> getMetholds = ReflectUtils.returnGetMethods(src.getClass());
+        for (Map.Entry<String, Method> entry : getMetholds.entrySet()) {
+            if (entry.getValue().getParameterTypes().length == 0 && (CollectionUtils.isEmpty(ignoreSets) || !ignoreSets.contains(entry.getKey()))) {
+                Object value = entry.getValue().invoke(src);
+                if(!ObjectUtils.isEmpty(value)) {
+                    target.put(entry.getKey(), value);
+                }
             }
         }
     }

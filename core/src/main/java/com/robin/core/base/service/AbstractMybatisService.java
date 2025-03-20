@@ -62,7 +62,7 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>, T extends 
     protected Map<String, Method> getMethods;
     protected Map<String, Method> setMethods;
 
-    protected String defaultOrderField = "create_time";
+    protected String defaultOrderField = "create_tm";
     protected Boolean defaultOrder = false;
     protected String statusColumn = "status";
     protected Method setStatusMethod = null;

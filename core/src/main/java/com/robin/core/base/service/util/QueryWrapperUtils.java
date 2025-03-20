@@ -11,6 +11,7 @@ import com.robin.core.base.util.Const;
 import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.query.util.Condition;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
@@ -34,6 +35,9 @@ public class  QueryWrapperUtils {
         for (Map.Entry<String, Object> entry : valueMap.entrySet()) {
             String key = entry.getKey();
             String columnName = fieldMap.get(entry.getKey());
+            if(ObjectUtils.isEmpty(columnName)){
+                continue;
+            }
             //or 组合，支持全字段查询
             if ("or".equalsIgnoreCase(key)) {
                 Object valueObj = entry.getValue();
@@ -44,7 +48,7 @@ public class  QueryWrapperUtils {
                         wrapper.and(f -> {
                             for (String column : columns) {
                                 if(fieldMap.containsKey(column)) {
-                                    queryConditionWrap(fieldTypeMap, f.or(), fieldMap.get(column), orMap.get("value").toString());
+                                    queryConditionWrap(fieldTypeMap, f.or(), fieldMap.get(column), orMap.get("value").toString(),false);
                                 }else{
                                     throw new MissingConfigException("column "+column+" not exists in table");
                                 }
@@ -56,9 +60,9 @@ public class  QueryWrapperUtils {
                 }
             } else if (entry.getValue().getClass().isAssignableFrom(String.class)) {
                 if (!StringUtils.isEmpty(columnName)) {
-                    queryConditionWrap(fieldTypeMap,wrapper, columnName, entry.getValue().toString());
+                    queryConditionWrap(fieldTypeMap,wrapper, columnName, entry.getValue().toString(),true);
                 } else {
-                    queryConditionWrap(fieldTypeMap,wrapper, key, entry.getValue().toString());
+                    queryConditionWrap(fieldTypeMap,wrapper, key, entry.getValue().toString(),false);
                 }
             } else {
                 if (!StringUtils.isEmpty(columnName)) {
@@ -74,7 +78,7 @@ public class  QueryWrapperUtils {
         }
     }
 
-    protected static <T> void queryConditionWrap(Map<String, Class<?>> fieldTypeMap,QueryWrapper<T> wrapper, String columnName, String value) {
+    protected static <T> void queryConditionWrap(Map<String, Class<?>> fieldTypeMap,QueryWrapper<T> wrapper, String columnName, String value,boolean defaultUseLike) {
         if (value.contains("%")) {
             if (value.startsWith("%")) {
                 if (value.endsWith("%")) {
@@ -110,7 +114,11 @@ public class  QueryWrapperUtils {
         } else if ("NULL".equalsIgnoreCase(value)) {
             wrapper.isNull(columnName);
         } else {
-            wrapper.eq(columnName, retValue(fieldTypeMap,columnName, value));
+            if(defaultUseLike){
+                wrapper.like(columnName,retValue(fieldTypeMap, columnName, value));
+            }else {
+                wrapper.eq(columnName, retValue(fieldTypeMap, columnName, value));
+            }
         }
     }
 
@@ -176,19 +184,9 @@ public class  QueryWrapperUtils {
     }
     private static Map<String, Object> returnValueMap(PageDTO targetObj) throws Exception {
         Map<String, Object> getMap = new HashMap<>();
-        Map<String, Field> fieldMap = ReflectUtils.getAllField(targetObj.getClass());
-        for (Map.Entry<String, Field> entry : fieldMap.entrySet()) {
-            String name = entry.getValue().getName();
-            if (name.startsWith("get") && !"getClass".equals(name) && !"getOffset".equals(name) && !"getLimit".equals(name)) {
-                Object val = entry.getValue().get(targetObj);
-                if (null != val) {
-                    getMap.put(org.springframework.util.StringUtils.uncapitalize(name.substring(3)), val);
-                }
-            }
-        }
-        Map<String, Object> paramMap = targetObj.getParam();
-        if (!CollectionUtils.isEmpty(paramMap)) {
-            getMap.putAll(paramMap);
+        ConvertUtil.objectToMapObj(getMap,targetObj,"param","order","page","limit","size","orderField","orderBy");
+        if (!CollectionUtils.isEmpty(targetObj.getParam())) {
+            getMap.putAll(targetObj.getParam());
         }
         return getMap;
     }
@@ -202,9 +200,17 @@ public class  QueryWrapperUtils {
             wrapWithValue(fieldMap, getMethod, queryWrapper, iter);
             if (tmpMap.get(Const.ORDER) != null && !org.apache.commons.lang3.StringUtils.isEmpty(tmpMap.get(Const.ORDER).toString())
                     && tmpMap.get(Const.ORDER_FIELD) != null && !org.apache.commons.lang3.StringUtils.isEmpty(tmpMap.get(Const.ORDER_FIELD).toString())) {
-                queryWrapper.orderBy(true, tmpMap.get(Const.ORDER).equals(Const.ASC), tmpMap.get(Const.ORDER_FIELD).toString());
+                if(tmpMap.get(Const.ORDER).equals(Const.ASC)){
+                    queryWrapper.orderByAsc(defaultOrderField);
+                }else{
+                    queryWrapper.orderByDesc(defaultOrderField);
+                }
             } else {
-                queryWrapper.orderBy(true, defaultOrder, defaultOrderField);
+                if(defaultOrder){
+                    queryWrapper.orderByAsc(defaultOrderField);
+                }else{
+                    queryWrapper.orderByDesc(defaultOrderField);
+                }
             }
         }
         //PageDTO paramMap
@@ -212,7 +218,7 @@ public class  QueryWrapperUtils {
             PageDTO pageDTO = (PageDTO) queryObject;
             QueryWrapperUtils.getWrapperByReq(fieldMap,fieldTypeMap,getStatusMethod,statusColumn,pageDTO, queryWrapper, true);
             if (!org.apache.commons.lang3.StringUtils.isEmpty(pageDTO.getOrderField())) {
-                queryWrapper.orderBy(true, pageDTO.getOrder(), pageDTO.getOrderField());
+                queryWrapper.orderBy(true, pageDTO.getOrder().booleanValue(), pageDTO.getOrderField());
             } else {
                 queryWrapper.orderBy(true, defaultOrder, defaultOrderField);
             }

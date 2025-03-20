@@ -7,6 +7,8 @@ import com.robin.basis.mapper.SysOrgMapper;
 import com.robin.basis.model.system.SysOrg;
 import com.robin.basis.service.system.ISysOrgService;
 import com.robin.core.web.controller.AbstractMyBatisController;
+import org.apache.commons.lang3.tuple.Pair;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,25 +26,36 @@ public class SysOrgController extends AbstractMyBatisController<ISysOrgService, 
     private ISysOrgService orgService;
 
     @GetMapping
+    @PreAuthorize("@checker.isAdmin()")
     public Map<String,Object> list(SysOrgQueryDTO dto){
         return wrapObject(service.queryOrg(dto));
     }
 
 
     @GetMapping("/listUser")
+    @PreAuthorize("@checker.isAdmin()")
     public Map<String, Object> listUser(SysOrgQueryDTO dto) {
         return wrapObject(service.queryOrgUser(dto));
     }
 
     @PostMapping
+    @PreAuthorize("@checker.isAdmin()")
     public Map<String, Object> saveOrg(@RequestBody SysOrgDTO dto) {
-        return doSave(dto);
+        return doSave(dto,null);
     }
     @PutMapping
+    @PreAuthorize("@checker.isAdmin()")
     public Map<String,Object> updateOrg(@RequestBody SysOrgDTO dto){
         return doUpdate(dto);
     }
+    @DeleteMapping
+    @PreAuthorize("@checker.isSuperAdmin()")
+    public Map<String, Object> deleteOrgs(@RequestBody List<Long> ids) {
+        Pair<Integer,Integer> pair=service.deleteOrg(ids);
+        return wrapObject(new Integer[]{pair.getLeft(),pair.getRight()});
+    }
     @PostMapping("/join/")
+    @PreAuthorize("@checker.isAdmin()")
     public Map<String,Object> joinOrg(@RequestBody Map<String,Object> reqMap){
         Assert.notNull(reqMap.get("orgId"),"");
         Assert.notNull(reqMap.get("userIds"),"");
@@ -55,6 +68,7 @@ public class SysOrgController extends AbstractMyBatisController<ISysOrgService, 
         }
     }
     @PostMapping("/remove")
+    @PreAuthorize("@checker.isAdmin()")
     public Map<String,Object> removeFromOrg(@RequestBody Map<String,Object> reqMap){
         Assert.notNull(reqMap.get("orgId"),"");
         Assert.notNull(reqMap.get("userIds"),"");
@@ -66,8 +80,6 @@ public class SysOrgController extends AbstractMyBatisController<ISysOrgService, 
             return wrapFailedMsg("failed");
         }
     }
-
-
 
 
 

@@ -3,7 +3,7 @@ package com.robin.basis.service.system.impl;
 import com.robin.basis.mapper.SysParamsMapper;
 import com.robin.basis.model.AbstractMybatisModel;
 import com.robin.basis.model.system.SysParams;
-import com.robin.basis.model.user.TenantInfo;
+import com.robin.basis.model.system.TenantInfo;
 import com.robin.basis.service.system.ISysParamsService;
 import com.robin.basis.service.system.ITenantInfoService;
 import com.robin.core.base.service.AbstractMybatisService;

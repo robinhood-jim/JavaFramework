@@ -57,4 +57,13 @@ public interface SysOrgMapper extends BaseMapper<SysOrg> {
             +"</when>"
             +") </script>")
     IPage<EmployeeDTO> selectEmployeeNotInOrg(Page<SysUserQueryDTO> page, @Param(Constants.WRAPPER) QueryWrapper wrapper, @Param(value = "orgIds") List<Long> orgIds);
+    @Select("<script>"+"select a.id,name,a.gender,address,district as district,contact_phone as contactPhone,brith_day as brithDay,u.id as userId from t_sys_employee a,t_sys_user_info u "
+            +"where a.id in (select b.emp_id from t_sys_org_employee_r b where a.id=b.emp_id "+"<when test='orgIds!=null'>"
+            +" and b.org_id in "+
+            "   <foreach item='id' index='index' collection='orgIds' open='(' separator=',' close=')'>" +
+            "       #{id}" +
+            "   </foreach>"
+            +"</when>"
+            +") </script>")
+    List<EmployeeDTO> selectEmployeeUserInOrg(@Param(value = "orgIds") List<Long> orgIds);
 }

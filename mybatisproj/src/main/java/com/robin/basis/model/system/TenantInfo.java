@@ -1,11 +1,8 @@
-package com.robin.basis.model.user;
+package com.robin.basis.model.system;
 
 
 import com.baomidou.mybatisplus.annotation.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.robin.basis.model.AbstractMybatisModel;
-import com.robin.core.base.annotation.MappingEntity;
-import com.robin.core.base.annotation.MappingField;
 import com.robin.core.base.model.BaseObject;
 import com.robin.core.base.util.Const;
 import lombok.Data;
@@ -17,7 +14,8 @@ import java.time.LocalDateTime;
 public class TenantInfo extends BaseObject {
     @TableId(type = IdType.AUTO)
     private Long id;
-    private String name;
+    private String tenantName;
+    private String tenantCode;
 
     private Long orgId;
     private String logo;
