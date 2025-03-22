@@ -1,10 +1,12 @@
 package com.robin.biz.model;
 
-import com.robin.core.base.model.AbstractBaseModel;
+import com.baomidou.mybatisplus.annotation.TableName;
+import com.robin.basis.model.AbstractMybatisModel;
 import lombok.Data;
 
 @Data
-public class Merchant extends AbstractBaseModel {
+@TableName("t_biz_merchant")
+public class Merchant extends AbstractMybatisModel {
     private Long orgId;
     private String name;
     private String abbrName;

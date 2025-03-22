@@ -53,9 +53,9 @@ public class EmployeeServiceImpl extends AbstractMybatisService<EmployeeMapper, 
         }
     }
     public boolean saveEmployee(EmployeeDTO dto) throws ServiceException{
-        int count=this.lambdaQuery().eq(StrUtil.isNotBlank(dto.getCreditNo()),Employee::getCreditNo,dto.getCreditNo())
+        long count=this.lambdaQuery().eq(StrUtil.isNotBlank(dto.getCreditNo()),Employee::getCreditNo,dto.getCreditNo())
                 .or(orwrapper->orwrapper.eq(StrUtil.isNotBlank(dto.getName()),Employee::getName,dto.getName())).count();
-        if(count>0){
+        if(count>0L){
             throw new ServiceException("employee exists!");
         }
         Employee employee=new Employee();

@@ -131,7 +131,7 @@
         <cassandradriver.version>3.6.0</cassandradriver.version>
         <graal.version>1.0.0-rc7</graal.version>
         <calcite.version>1.34.0</calcite.version>
-        <mybatisplus.version>3.4.3</mybatisplus.version>
+        <mybatisplus.version>3.4.3.4</mybatisplus.version>
         <orc.version>1.7.1</orc.version>
         <spark.version>2.4.8</spark.version>
         <hutool.version>5.8.11</hutool.version>

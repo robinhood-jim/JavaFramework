@@ -188,7 +188,7 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>, T extends 
         if(getStatusMethod!=null && setStatusMethod!=null) {
             queryWrapper.eq(statusColumn, Const.VALID);
         }
-        return selectOne(queryWrapper);
+        return getOne(queryWrapper);
     }
 
     @Override
@@ -412,10 +412,6 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>, T extends 
     }
 
 
-    @Override
-    public T selectOne(Wrapper<T> wrapper) {
-        return baseMapper.selectOne(wrapper);
-    }
 
     @Transactional(rollbackFor = RuntimeException.class)
     public boolean deleteWithRequest(Object queryObject) {

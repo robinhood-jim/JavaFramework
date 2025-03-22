@@ -1,11 +1,13 @@
 package com.robin.biz.model;
 
+import com.baomidou.mybatisplus.annotation.TableName;
 import com.robin.basis.model.AbstractMybatisModel;
 import lombok.Data;
 
 import java.time.LocalDateTime;
 
 @Data
+@TableName("t_biz_customer")
 public class Customer extends AbstractMybatisModel {
     private Long id;
     private String wxId;

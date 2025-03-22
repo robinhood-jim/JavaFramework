@@ -3,6 +3,7 @@ package com.robin.basis.controller.system;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.robin.basis.dto.SysCodeDTO;
+import com.robin.basis.dto.SysCodeSetDTO;
 import com.robin.basis.mapper.SysCodeSetMapper;
 import com.robin.basis.model.AbstractMybatisModel;
 import com.robin.basis.model.system.SysCode;
@@ -25,10 +26,15 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/system/dict/")
+@RequestMapping("/system/dict")
 public class SysCodeSetController extends AbstractMyBatisController<ISysCodeSetService, SysCodeSetMapper,SysCodeSet,Long> {
     @Resource
-     private ISysCodeService sysCodeService;
+    private ISysCodeService sysCodeService;
+
+    @GetMapping
+    public Map<String,Object> list(SysCodeSetDTO dto){
+        return wrapObject(service.list(dto));
+    }
 
     @GetMapping("/data/{id}")
     public Map<String,Object> getById(@PathVariable Long id){

@@ -19,6 +19,7 @@ import com.robin.basis.model.user.SysUserOrg;
 import com.robin.basis.model.user.TenantUser;
 import com.robin.basis.service.region.IRegionService;
 import com.robin.basis.service.system.*;
+import com.robin.basis.utils.SecurityUtils;
 import com.robin.basis.vo.SysOrgVO;
 import com.robin.core.base.exception.ServiceException;
 import com.robin.core.base.service.AbstractMybatisService;
@@ -54,10 +55,11 @@ public class SysOrgServiceImpl extends AbstractMybatisService<SysOrgMapper,SysOr
     public List<SysOrgVO> queryOrg(SysOrgQueryDTO dto){
         List<SysOrgVO> orgList=queryValid(new QueryWrapper<SysOrg>().lambda(), AbstractMybatisModel::getStatus).stream().map(SysOrgVO::fromVO).collect(Collectors.toList());
         Map<Long,List<SysOrgVO>> orgMap=orgList.stream().collect(Collectors.groupingBy(SysOrgVO::getPid));
-        List<SysOrgVO> topList=orgMap.get(!ObjectUtils.isEmpty(dto.getPid())?dto.getPid():0L);
+        List<SysOrgVO> topList=orgMap.get(!ObjectUtils.isEmpty(dto.getPid())?dto.getPid():SecurityUtils.isLoginUserSystemAdmin()?0L:SecurityUtils.getLoginUser().getOrgId());
+
         if(!StrUtil.isBlank(dto.getName())){
             Map<Long,SysOrgVO> idMap=orgList.stream().collect(Collectors.toMap(SysOrgVO::getId,Function.identity()));
-            List<SysOrg> orgs= this.lambdaQuery().and(wrapper->
+            List<SysOrg> orgs= this.lambdaQuery().eq(!SecurityUtils.isLoginUserSystemAdmin(),SysOrg::getPid,SecurityUtils.getLoginUser().getOrgId()).and(wrapper->
                 wrapper.like(SysOrg::getOrgName,dto.getName())
                         .or(orwapper->orwapper.like(SysOrg::getOrgCode,dto.getName()))
             ).list();
@@ -134,8 +136,8 @@ public class SysOrgServiceImpl extends AbstractMybatisService<SysOrgMapper,SysOr
     @Transactional(rollbackFor = RuntimeException.class)
     public boolean joinOrg(Long orgId,List<Long> uids){
         Assert.isTrue(!CollectionUtils.isEmpty(uids),"");
-        int existCount=sysUserService.lambdaQuery().in(SysUser::getId,uids).eq(AbstractMybatisModel::getStatus,Const.VALID).count();
-        Assert.isTrue(existCount==uids.size(),"");
+        long existCount=sysUserService.lambdaQuery().in(SysUser::getId,uids).eq(AbstractMybatisModel::getStatus,Const.VALID).count();
+        Assert.isTrue(Long.valueOf(existCount).intValue()==uids.size(),"");
         List<SysOrgEmployee> list=new ArrayList<>();
         TenantInfo topOrgTenant= getTopOrgTenant(orgId);
         if(ObjectUtils.isEmpty(topOrgTenant)){
@@ -156,8 +158,8 @@ public class SysOrgServiceImpl extends AbstractMybatisService<SysOrgMapper,SysOr
         Assert.isTrue(!CollectionUtils.isEmpty(uids),"");
         Map<String,Object> map=new HashMap<>();
         map.put("ids",uids);
-        int existCount=sysUserService.lambdaQuery().in(SysUser::getId,uids).eq(AbstractMybatisModel::getStatus,Const.VALID).count();
-        Assert.isTrue(existCount==uids.size(),"");
+        long existCount=sysUserService.lambdaQuery().in(SysUser::getId,uids).eq(AbstractMybatisModel::getStatus,Const.VALID).count();
+        Assert.isTrue(Long.valueOf(existCount).intValue()==uids.size(),"");
         return userOrgService.lambdaUpdate().set(AbstractMybatisModel::getStatus,Const.INVALID)
                 .in(SysUserOrg::getUserId,uids).eq(SysUserOrg::getOrgId,orgId).eq(AbstractMybatisModel::getStatus,Const.VALID).update();
     }
@@ -227,8 +229,8 @@ public class SysOrgServiceImpl extends AbstractMybatisService<SysOrgMapper,SysOr
                 .in(SysOrgEmployee::getOrgId,orgIds).eq(AbstractMybatisModel::getStatus,Const.VALID).update();
     }
     private boolean adjustTenantClosed(Long orgId){
-        int count=tenantInfoService.lambdaQuery().eq(TenantInfo::getOrgId,orgId).eq(TenantInfo::getStatus,Const.VALID).count();
-        return count==0;
+        long count=tenantInfoService.lambdaQuery().eq(TenantInfo::getOrgId,orgId).eq(TenantInfo::getStatus,Const.VALID).count();
+        return count==0L;
     }
     private boolean deleteOrgTenant(Long orgId){
         //查找机构对应租户是否存在

@@ -137,8 +137,12 @@ project:
     appId: wx2b676f2108f5506d
     secretId: a5227884e44310f71e16188dd5b5dbc0
 
+oss:
+  type: file
+  startPath: file:///f:/tmp/
+
 login:
-  ignoreUrls: /index,/login,/logout,/captchaImage
+  ignoreUrls: /index,/login,/logout,/captchaImage,/ossres
   ignoreResources: gif,bmp,png,jpg,js,flash,css,swf,flv,metaget
 jwt:
   salt: 1234
