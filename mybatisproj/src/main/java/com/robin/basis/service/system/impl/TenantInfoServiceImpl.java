@@ -7,10 +7,12 @@ import com.robin.basis.dto.EmployeeDTO;
 import com.robin.basis.dto.EmployeeUserTenantDTO;
 import com.robin.basis.dto.TenantInfoDTO;
 import com.robin.basis.mapper.TenantInfoMapper;
+import com.robin.basis.model.AbstractMybatisModel;
 import com.robin.basis.model.system.TenantInfo;
 import com.robin.basis.model.user.Employee;
 import com.robin.basis.model.user.SysUser;
 import com.robin.basis.model.user.TenantUser;
+import com.robin.basis.model.user.TenantUserInvite;
 import com.robin.basis.service.system.*;
 import com.robin.basis.utils.WebUtils;
 import com.robin.core.base.exception.MissingConfigException;
@@ -18,6 +20,7 @@ import com.robin.core.base.exception.ServiceException;
 import com.robin.core.base.service.AbstractMybatisService;
 import com.robin.core.base.spring.SpringContextHolder;
 import com.robin.core.base.util.Const;
+import com.robin.core.base.util.StringUtils;
 import com.robin.core.fileaccess.fs.AbstractFileSystemAccessor;
 import com.robin.core.web.util.WebConstant;
 import org.springframework.beans.BeanUtils;
@@ -30,6 +33,7 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -45,6 +49,8 @@ public class TenantInfoServiceImpl extends AbstractMybatisService<TenantInfoMapp
     private ITenantUserService tenantUserService;
     @Resource
     private IEmployeeService employeeService;
+    @Resource
+    private ITenantUserInviteService tenantUserInviteService;
 
 
     @Transactional(rollbackFor = RuntimeException.class)
@@ -77,6 +83,8 @@ public class TenantInfoServiceImpl extends AbstractMybatisService<TenantInfoMapp
         QueryWrapper<EmployeeUserTenantDTO> queryWrapper=new QueryWrapper<>();
         queryWrapper.lambda().eq(EmployeeUserTenantDTO::getId,managerId).eq(EmployeeUserTenantDTO::getTenantId,tenantId);
         List<EmployeeUserTenantDTO> dtos=tenantUserService.getTenantEmpUser(queryWrapper);
+
+
         //雇员已与租户绑定
         if(!CollectionUtils.isEmpty(dtos)){
             EmployeeUserTenantDTO dto=dtos.get(0);
@@ -86,7 +94,7 @@ public class TenantInfoServiceImpl extends AbstractMybatisService<TenantInfoMapp
         }else{
             //查找雇员对应的用户
             QueryWrapper<EmployeeUserTenantDTO> queryWrapper1=new QueryWrapper<>();
-            queryWrapper1.lambda().eq(EmployeeUserTenantDTO::getId,managerId);
+            queryWrapper1.eq("u.id",managerId);
             List<EmployeeUserTenantDTO> userEmps=tenantUserService.getEmployeeUser(queryWrapper);
             if(!CollectionUtils.isEmpty(userEmps)){
                 //将第一个条对应用户关联为企业管理
@@ -160,9 +168,27 @@ public class TenantInfoServiceImpl extends AbstractMybatisService<TenantInfoMapp
     public List<TenantInfoDTO> queryTenantByUser(Long userId){
         return baseMapper.queryTenantByUser(userId);
     }
-    /*public TenantInfo getManagedTenant(Long useId){
-        SysUser selectuser=sysUserService.getById(useId);
-        Assert.isTrue(!ObjectUtils.isEmpty(selectuser) && Const.VALID.equals(selectuser.getStatus()),"");
-        return this.getByField(TenantInfo::getOrgId, Const.OPERATOR.EQ,selectuser.getOrgId());
-    }*/
+    @Transactional(rollbackFor = RuntimeException.class)
+    public boolean inviteEmployees(Long tenantId,List<Long> empIds){
+        TenantInfo info=this.getById(tenantId);
+        Assert.isTrue(!ObjectUtils.isEmpty(info) && Const.VALID.equals(info.getStatus()),"tenant not exists");
+        Assert.isTrue(!CollectionUtils.isEmpty(empIds),"");
+        long count=employeeService.lambdaQuery().in(Employee::getId,empIds).eq(AbstractMybatisModel::getStatus,Const.VALID).count();
+        Assert.isTrue(Long.valueOf(count).intValue()==empIds.size(),"");
+        List<Employee> employees=employeeService.lambdaQuery().in(Employee::getId,empIds).eq(AbstractMybatisModel::getStatus,Const.VALID).list();
+        if(!CollectionUtils.isEmpty(employees)){
+            List<TenantUserInvite> invites=new ArrayList<>();
+            for(Employee employee:employees){
+                String inviteCode= StringUtils.genarateRandomUpperLowerChar(32);
+                TenantUserInvite invite=new TenantUserInvite();
+                invite.setPhone(employee.getContactPhone());
+                invite.setTenantId(tenantId);
+                invite.setInviteCode(inviteCode);
+                invite.setEmpId(employee.getId());
+                invites.add(invite);
+            }
+            return tenantUserInviteService.insertBatch(invites);
+        }
+        return false;
+    }
 }

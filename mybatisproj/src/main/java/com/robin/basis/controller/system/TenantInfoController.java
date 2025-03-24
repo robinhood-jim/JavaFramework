@@ -14,6 +14,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.annotation.security.PermitAll;
 import java.util.List;
 import java.util.Map;
 
@@ -77,6 +78,12 @@ public class TenantInfoController extends AbstractMyBatisController<ITenantInfoS
             return wrapFailedMsg("失败");
         }
 
+    }
+    @GetMapping("/attendTenant")
+    @PermitAll
+    public Map<String,Object> attendTenant(Map<String,Object> reqMap){
+
+        return null;
     }
 
 }

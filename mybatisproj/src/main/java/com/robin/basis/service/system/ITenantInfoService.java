@@ -13,5 +13,6 @@ public interface ITenantInfoService extends IMybatisBaseService<TenantInfo,Long>
     boolean activeTenant(Long tenantId,Long managerId);
     boolean closeTenant(Long tenantId);
     boolean insertTenant(TenantInfoDTO dto, MultipartFile logo);
+    boolean inviteEmployees(Long tenantId,List<Long> empIds);
     //TenantInfo getManagedTenant(Long useId);
 }

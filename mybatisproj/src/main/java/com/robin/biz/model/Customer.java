@@ -14,13 +14,13 @@ public class Customer extends AbstractMybatisModel {
 
     private String name;
     private String type;
-    private String sex;
+    private String gender;
     private LocalDateTime brithDay;
     private String phone;
     private String creditNo;
     private String province;
     private String city;
-    private String district;
+    private String districtId;
     private String address;
     private LocalDateTime regTime;
     private Long regOrgId;
