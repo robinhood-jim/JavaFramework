@@ -1,5 +1,6 @@
 package com.robin.basis.service.system.impl;
 
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.google.common.collect.Lists;
@@ -33,8 +34,8 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.List;
+import java.sql.Timestamp;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -179,7 +180,7 @@ public class TenantInfoServiceImpl extends AbstractMybatisService<TenantInfoMapp
         if(!CollectionUtils.isEmpty(employees)){
             List<TenantUserInvite> invites=new ArrayList<>();
             for(Employee employee:employees){
-                String inviteCode= StringUtils.genarateRandomUpperLowerChar(32);
+                String inviteCode= UUID.randomUUID().toString();
                 TenantUserInvite invite=new TenantUserInvite();
                 invite.setPhone(employee.getContactPhone());
                 invite.setTenantId(tenantId);
@@ -188,6 +189,62 @@ public class TenantInfoServiceImpl extends AbstractMybatisService<TenantInfoMapp
                 invites.add(invite);
             }
             return tenantUserInviteService.insertBatch(invites);
+        }
+        return false;
+    }
+    public Map<String,Object> showTenantInvite(String inviteCode){
+        List<TenantUserInvite> invites=tenantUserInviteService.lambdaQuery().eq(TenantUserInvite::getInviteCode,inviteCode)
+                .eq(TenantUserInvite::getAcceptable,Const.VALID).list();
+        Map<String,Object> retMap=new HashMap<>();
+        if(!CollectionUtils.isEmpty(invites)){
+            retMap.put("success",true);
+            TenantUserInvite invite=invites.get(0);
+            QueryWrapper<EmployeeUserTenantDTO> queryWrapper=new QueryWrapper<>();
+            queryWrapper.eq("a.id",invite.getEmpId());
+            List<EmployeeUserTenantDTO> emps= tenantUserService.getEmployeeUser(queryWrapper);
+            if(!CollectionUtils.isEmpty(emps)){
+                retMap.put("userId",emps.get(0).getUserId());
+                retMap.put("name",emps.get(0).getName());
+                retMap.put("phone",emps.get(0).getContactPhone());
+                retMap.put("userName",emps.get(0).getUserName());
+            }
+            retMap.put("tenantId",invite.getTenantId());
+        }else{
+            retMap.put("success",false);
+        }
+        return retMap;
+    }
+    public boolean acceptTenantInvite(String inviteCode,String ipAddress,String userName,String cnName,String password){
+        List<TenantUserInvite> invites=tenantUserInviteService.lambdaQuery().eq(TenantUserInvite::getInviteCode,inviteCode)
+                .eq(TenantUserInvite::getAcceptable,Const.VALID).list();
+        if(!CollectionUtils.isEmpty(invites)){
+            TenantUserInvite invite=invites.get(0);
+            QueryWrapper<EmployeeUserTenantDTO> queryWrapper=new QueryWrapper<>();
+            queryWrapper.eq("a.id",invite.getEmpId());
+            List<EmployeeUserTenantDTO> emps= tenantUserService.getEmployeeUser(queryWrapper);
+            Long userId;
+            if(!CollectionUtils.isEmpty(emps)){
+                userId=emps.get(0).getUserId();
+            }else{
+                Assert.isTrue(StrUtil.isNotBlank(userName) && StrUtil.isNotBlank(password));
+                SysUser user=new SysUser();
+                user.setUserAccount(userName);
+                if(!ObjectUtils.isEmpty(cnName)) {
+                    user.setUserName(cnName);
+                }
+                user.setUserPassword(SpringContextHolder.getBean(PasswordEncoder.class).encode(password));
+                user.setAccountType(WebConstant.ACCOUNT_TYPE.ORDINARY.toString());
+                sysUserService.save(user);
+                userId=user.getId();
+            }
+            TenantUser tuser=new TenantUser();
+            tuser.setTenantId(invite.getTenantId());
+            tuser.setUserId(userId);
+            tuser.setType(WebConstant.TENANT_TYPE.EMPLOYEE.getValue());
+            tenantUserService.save(tuser);
+            tenantUserInviteService.lambdaUpdate().set(TenantUserInvite::getAcceptTime,new Timestamp(System.currentTimeMillis())).set(TenantUserInvite::getAcceptIp,ipAddress).set(TenantUserInvite::getAcceptable,Const.INVALID)
+                    .eq(TenantUserInvite::getInviteCode,inviteCode).update();
+            return true;
         }
         return false;
     }

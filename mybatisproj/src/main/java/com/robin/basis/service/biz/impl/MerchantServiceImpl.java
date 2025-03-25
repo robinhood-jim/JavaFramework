@@ -8,4 +8,6 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class MerchantServiceImpl extends AbstractMybatisService<MerchantMapper, Merchant,Long> implements IMerchantService {
+
+
 }

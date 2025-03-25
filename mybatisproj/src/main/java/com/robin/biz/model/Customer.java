@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import com.robin.basis.model.AbstractMybatisModel;
 import lombok.Data;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Data
@@ -15,7 +16,7 @@ public class Customer extends AbstractMybatisModel {
     private String name;
     private String type;
     private String gender;
-    private LocalDateTime brithDay;
+    private LocalDate brithDay;
     private String phone;
     private String creditNo;
     private String province;
