@@ -80,7 +80,7 @@
         <commons-net.version>3.9.0</commons-net.version>
         <commons-beanutils.version>1.9.4</commons-beanutils.version>
         <comm-codec.version>1.4</comm-codec.version>
-        <vfs.version>2.9.0</vfs.version>
+        <vfs.version>2.10.0</vfs.version>
         <lang.version>2.6</lang.version>
         <lang3.version>3.2.1</lang3.version>
         <jackson-mapper-asl.version>1.9.10</jackson-mapper-asl.version>
