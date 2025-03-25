@@ -3,6 +3,7 @@ package com.robin.basis.utils;
 import cn.hutool.core.util.StrUtil;
 import org.springframework.util.Assert;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
@@ -19,7 +20,7 @@ public class IdCardNoIdentifier {
         Map<String,Object> retMap=new HashMap<>();
         boolean ifSuccess=false;
         long diffYear=0L;
-        retMap.put("districtId",code.substring(0,5));
+        retMap.put("districtId",code.substring(0,6));
         if(code.length()==18){
             year=code.substring(6,10);
             month=code.substring(10,12);
@@ -59,7 +60,7 @@ public class IdCardNoIdentifier {
         return retMap;
     }
     private static Long getAge(String brithDay){
-        LocalDateTime birthTime=LocalDateTime.parse(brithDay,formatter);
+        LocalDateTime birthTime= LocalDate.parse(brithDay,formatter).atStartOfDay();
         return ChronoUnit.YEARS.between(birthTime,LocalDateTime.now());
     }
 }
