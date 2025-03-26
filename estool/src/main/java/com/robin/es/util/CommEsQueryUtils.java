@@ -331,7 +331,7 @@ public class CommEsQueryUtils {
         return value;
     }
 
-    private static Object parseValue(@NonNull String columnType, String value) {
+    public static Object parseValue(@NonNull String columnType, String value) {
         Object retVal = null;
         if (!ObjectUtils.isEmpty(value)) {
             switch (columnType) {

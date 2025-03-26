@@ -55,8 +55,8 @@ public interface IBaseAnnotationJdbcService<V extends BaseObject, P extends Seri
     List<V> queryByField(String fieldName, Const.OPERATOR oper, Object... fieldValues) throws ServiceException;
     List<V> queryByField(PropertyFunction<V,?> function, Const.OPERATOR oper, Object... fieldValues) throws ServiceException;
 
-    List<V> queryByFieldOrderBy(String orderByStr, String fieldName, Const.OPERATOR oper, Object... fieldValues) throws ServiceException;
-    List<V> queryByFieldOrderBy(String orderByStr, PropertyFunction<V,?> function, Const.OPERATOR oper, Object... fieldValues) throws ServiceException;
+    List<V> queryByFieldOrderBy(String orderField, boolean ascDesc, String fieldName, Const.OPERATOR oper, Object... fieldValues) throws ServiceException;
+    List<V> queryByFieldOrderBy(PropertyFunction<V, ?> orderField, boolean ascDesc, PropertyFunction<V,?> queryField, Const.OPERATOR oper, Object... fieldValues) throws ServiceException;
 
     List<V> queryAll() throws ServiceException;
 

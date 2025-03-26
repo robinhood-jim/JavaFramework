@@ -1,5 +1,6 @@
 package com.robin.es.service;
 
+import cn.hutool.core.util.StrUtil;
 import com.google.gson.Gson;
 import com.robin.comm.util.json.GsonUtil;
 import com.robin.core.base.dao.util.AnnotationRetriever;
@@ -10,10 +11,10 @@ import com.robin.core.base.model.BaseObject;
 import com.robin.core.base.service.IBaseAnnotationJdbcService;
 import com.robin.core.base.spring.SpringContextHolder;
 import com.robin.core.base.util.Const;
-import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.query.util.PageQuery;
 import com.robin.core.sql.util.FilterCondition;
 import com.robin.core.sql.util.FilterConditionBuilder;
+import com.robin.es.util.BaseObjectWrapper;
 import com.robin.es.util.CommEsQueryUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.elasticsearch.action.index.IndexRequest;
@@ -51,7 +52,6 @@ import org.springframework.util.ObjectUtils;
 import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
@@ -186,7 +186,7 @@ public abstract class ESRepositoryService<V extends BaseObject, P extends Serial
                 obj = type.getDeclaredConstructor().newInstance();
                 while (citer.hasNext()) {
                     Map.Entry<String, Object> entry = citer.next();
-                    extractValue(obj, entry);
+                    BaseObjectWrapper.extractValue(obj, entry,fieldsMap,fieldContents);
                 }
 
             }
@@ -196,19 +196,7 @@ public abstract class ESRepositoryService<V extends BaseObject, P extends Serial
         return obj;
     }
 
-    private void extractValue(V obj, Map.Entry<String, Object> entry) throws Exception {
-        String key = entry.getKey();
-        if (fieldsMap.containsKey(key)) {
-            Method method = fieldsMap.get(key).getSetMethod();
-            Class<?> paramType = method.getParameterTypes()[0];
-            method.invoke(obj, ConvertUtil.parseParameter(paramType, entry.getValue()));
-        }
-        if (key.equalsIgnoreCase("_id")) {
-            Method method = AnnotationRetriever.getPrimaryField(fieldContents).getSetMethod();
-            Class<?> paramType = method.getParameterTypes()[0];
-            method.invoke(obj, ConvertUtil.parseParameter(paramType, entry.getValue()));
-        }
-    }
+
 
     @Override
     public void queryBySelectId(PageQuery<Map<String, Object>> query) throws ServiceException {
@@ -262,7 +250,7 @@ public abstract class ESRepositoryService<V extends BaseObject, P extends Serial
                         V obj = type.getDeclaredConstructor().newInstance();
                         while (citer.hasNext()) {
                             Map.Entry<String, Object> entry = citer.next();
-                            extractValue(obj, entry);
+                            BaseObjectWrapper.extractValue(obj, entry,fieldsMap,fieldContents);
                         }
                         retList.add(obj);
                     }
@@ -282,13 +270,20 @@ public abstract class ESRepositoryService<V extends BaseObject, P extends Serial
     }
 
     @Override
-    public List<V> queryByFieldOrderBy(String orderByStr, String fieldName, Const.OPERATOR oper, Object... fieldValues) throws ServiceException {
+    public List<V> queryByFieldOrderBy(String orderField, boolean ascDesc, String fieldName, Const.OPERATOR oper, Object... fieldValues) throws ServiceException {
         return null;
     }
 
     @Override
-    public List<V> queryByFieldOrderBy(String orderByStr, PropertyFunction<V, ?> function, Const.OPERATOR oper, Object... fieldValues) throws ServiceException {
-        return null;
+    public List<V> queryByFieldOrderBy(PropertyFunction<V, ?> orderField, boolean ascDesc, PropertyFunction<V, ?> queryField, Const.OPERATOR oper, Object... fieldValues) throws ServiceException {
+        String orderFieldName = AnnotationRetriever.getFieldName(orderField);
+        String queryFieldName = AnnotationRetriever.getFieldName(queryField);
+        if(!StrUtil.isNotBlank(orderFieldName) || !StrUtil.isNotBlank(queryFieldName)){
+            return queryByFieldOrderBy(orderFieldName,ascDesc,queryFieldName,oper,fieldValues);
+        }else{
+            throw new ServiceException("");
+        }
+
     }
 
     @Override
@@ -383,7 +378,7 @@ public abstract class ESRepositoryService<V extends BaseObject, P extends Serial
                     V obj = type.getDeclaredConstructor().newInstance();
                     while (citer.hasNext()) {
                         Map.Entry<String, Object> entry = citer.next();
-                        extractValue(obj, entry);
+                        BaseObjectWrapper.extractValue(obj, entry,fieldsMap,fieldContents);
                     }
                     retList.add(obj);
                 }
