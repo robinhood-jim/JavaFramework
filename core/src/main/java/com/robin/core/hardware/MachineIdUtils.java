@@ -256,6 +256,23 @@ public class MachineIdUtils {
         builder.append("_SYS_"+MachineIdUtils.getOsName());
         return builder.toString();
     }
+    public static String getSystemTagNum(){
+        StringBuilder builder=new StringBuilder();
+
+        String machineId = MachineIdUtils.getMachineId();
+        if(!ObjectUtils.isEmpty(machineId)){
+            builder.append(machineId);
+        }
+        String systemSerial=MachineIdUtils.getCPUSerial();
+        if(!ObjectUtils.isEmpty(machineId)){
+            builder.append(systemSerial);
+        }
+        String hardDsSerial=MachineIdUtils.getHardDiskSerial();
+        if(!ObjectUtils.isEmpty(machineId)){
+            builder.append(hardDsSerial);
+        }
+        return builder.toString();
+    }
 
 
     public static void main(String[] args) {

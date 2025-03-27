@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemReader;
 import org.bouncycastle.util.io.pem.PemWriter;
+import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
 import javax.crypto.*;
@@ -23,8 +24,10 @@ import java.security.*;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.*;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.Random;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
@@ -33,6 +36,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 public class CipherUtil {
     private static final String DEFAULTALGORITHM = "AES";
     private static final String DEFAULT_CIPHER_ALGORITHM = "AES/ECB/PKCS7Padding";
+    private static final String[] CONFUSEDSTRS = {"i", "I", "l", "O", "0", "1"};
 
     public static final String SIGNATURE_ALGORITHM = "SHA256WithRSA";
     public static final char[] avaiablechar = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '-', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '/'};
@@ -193,6 +197,17 @@ public class CipherUtil {
             ex.printStackTrace();
         }
         return null;
+    }
+    public static byte[] getMd5(byte[] bytes) {
+        byte[] b = null;
+        try {
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            md.update(bytes);
+            b = md.digest();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+        return b;
     }
 
     public static byte[] getKeyByClassPath(String keyFile) {
@@ -383,11 +398,79 @@ public class CipherUtil {
 
         }
     }
+    public static String bytesToHexString1(byte[] src) {
+        StringBuilder stringBuilder = new StringBuilder("");
+        if (src == null || src.length <= 0) {
+            return null;
+        }
+        for (int i = 0; i < src.length; i++) {
+            int v = src[i] & 0xFF;
+            String hv = Integer.toHexString(v);
+            if (hv.length() < 2) {
+                stringBuilder.append(0);
+            }
+            stringBuilder.append(hv);
+        }
+        return stringBuilder.toString().toUpperCase();
+    }
 
+    public static byte[] LongToBytes(long values) {
+        byte[] buffer = new byte[8];
+        for (int i = 0; i < 8; i++) {
+            int offset = 64 - (i + 1) * 8;
+            buffer[i] = (byte) ((values >> offset) & 0xff);
+        }
+        return buffer;
+    }
+    public static byte[] hexStringToBytes(String hex) {
+        byte[] bytes = new byte[hex.length() / 2];
+        for (int i = 0; i < bytes.length; i++) {
+            bytes[i] = (byte) Integer.parseInt(hex.substring(i * 2, i * 2 + 2), 16);
+        }
+        return bytes;
+    }
+    public static String bytesToHexString(byte[] bytes) {
+        StringBuilder builder = new StringBuilder();
+        for (byte b : bytes) {
+            builder.append(String.format("%02X", b));
+        }
+        return builder.toString();
+    }
+
+    public static byte[] getEncryptKey(byte[] bytes){
+        if(bytes.length==16 || bytes.length==32){
+            return bytes;
+        }else{
+            return getMd5(bytes);
+        }
+    }
+    public static String generateRandomKey(int range, int num, Random random) {
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < num; i++) {
+            int randint = random.nextInt(range);
+            builder.append(CipherUtil.avaiablechar[randint]);
+        }
+        return builder.toString();
+    }
+    public static List<String> getConfusedName(int length, Random random) {
+        StringBuilder builder = new StringBuilder();
+        StringBuilder builder1 = new StringBuilder();
+        for (int i = 0; i < length; i++) {
+            int pos = random.nextInt(CONFUSEDSTRS.length);
+            builder1.append(pos);
+            builder.append(CONFUSEDSTRS[pos]);
+        }
+        List<String> retList = new ArrayList<>();
+        retList.add(builder.toString());
+        retList.add(builder1.toString());
+        return retList;
+    }
 
     public static void main(String[] args) {
         try {
-
+            byte[] bytes=hexStringToBytes("9AF16B867075453592358C8BDB17CBF1");
+            System.out.println(bytes);
+            System.out.println(bytesToHexString(bytes));
 
             /*byte[] bytes = CipherUtil.initSecretKey();
             String ret = Base64.getEncoder().encodeToString(bytes);

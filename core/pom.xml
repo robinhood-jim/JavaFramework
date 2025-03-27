@@ -241,7 +241,7 @@
         <dependency>
             <groupId>com.thoughtworks.qdox</groupId>
             <artifactId>qdox</artifactId>
-            <version>2.0.0</version>
+            <version>2.1.0</version>
             <optional>true</optional>
         </dependency>
         <dependency>
@@ -273,6 +273,12 @@
             <groupId>com.sshtools</groupId>
             <artifactId>maverick-synergy-client</artifactId>
             <version>3.0.9</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.javassist</groupId>
+            <artifactId>javassist</artifactId>
+            <version>3.25.0-GA</version>
             <optional>true</optional>
         </dependency>
     </dependencies>
