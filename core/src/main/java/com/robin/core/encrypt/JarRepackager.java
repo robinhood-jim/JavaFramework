@@ -5,6 +5,7 @@ import com.robin.core.base.util.MavenUtils;
 
 import com.robin.core.hardware.MachineIdUtils;
 import javassist.ClassPool;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 
 import java.io.*;
@@ -16,8 +17,17 @@ import java.util.jar.JarInputStream;
 import java.util.jar.JarOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-
+@Slf4j
 public class JarRepackager {
+    /**
+     *
+     * @param inputJarFiles  待加密的包
+     * @param outputJarFile  结果包路径
+     * @param mavenSrcPath   工程maven pom.xml所在路径
+     * @param basePath       相对于jar包的相对路径
+     * @param machineId      机器码，与机器绑定
+     * @param expireTs       包失效时间
+     */
     public static void repackage(String inputJarFiles,String outputJarFile,String mavenSrcPath, String basePath,String machineId,Long expireTs){
         Random random=new Random(100000L);
         ClassPool pool=ClassPool.getDefault();
@@ -28,8 +38,7 @@ public class JarRepackager {
             JarOutputStream outputStream=new JarOutputStream(new FileOutputStream(outputJarFile));
                 ByteArrayOutputStream out1=new ByteArrayOutputStream();
                 DataOutputStream dout=new DataOutputStream(out1)) {
-            ZipEntry entry = null;
-
+            ZipEntry entry;
             dout.write(CipherUtil.mzHeader);
             dout.write(CipherUtil.m_datapadding);
             dout.write(CipherUtil.hexStringToBytes(machineId.toUpperCase()));
@@ -40,26 +49,29 @@ public class JarRepackager {
                     String path = entry.getName();
                     int pos = path.lastIndexOf("/");
                     String className = path.substring(pos + 1);
+                    String packageName = path.substring(0, pos).replaceAll("/", ".");
                     pos = className.indexOf(".");
                     String clazzName = className.substring(0, pos);
-                    String packageName = path.substring(0, pos).replaceAll("/", ".");
+
                     String keystr = CipherUtil.generateRandomKey(CipherUtil.avaiablechar.length, 16, random);
+                    log.info("{} using {}",packageName + "." + clazzName,keystr);
                     byte[] bytes = getZipByte(inputStream);
-                    byte[] outbyte = CipherUtil.encryptByte(bytes, keystr.getBytes());
-                    byte[] classNameBytes=CipherUtil.encryptByte((packageName + "." + clazzName).getBytes(),CipherUtil.getEncryptKey(machineId.getBytes()));
-                    byte[] keybytes=CipherUtil.encryptByte(keystr.getBytes(),CipherUtil.getEncryptKey(machineId.getBytes()));
+                    byte[] classNameBytes=CipherUtil.encryptByte((packageName + "." + clazzName).getBytes(),CipherUtil.getEncryptKey(machineId.toUpperCase().getBytes()));
+                    byte[] keybytes=CipherUtil.encryptByte(keystr.getBytes(),CipherUtil.getEncryptKey(machineId.toUpperCase().getBytes()));
                     dout.writeInt(classNameBytes.length);
                     dout.write(classNameBytes);
-                    outbyte=CipherUtil.encryptByte(outbyte,CipherUtil.getEncryptKey(machineId.getBytes()));
+                    byte[] outbyte = CipherUtil.encryptByte(bytes, keystr.getBytes());
+                    outbyte=CipherUtil.encryptByte(outbyte,CipherUtil.getEncryptKey(machineId.toUpperCase().getBytes()));
                     List<String> confusedNames=CipherUtil.getConfusedName(16,random);
                     outputStream.putNextEntry(new JarEntry(basePath + confusedNames.get(0)));
                     dout.writeLong(Long.valueOf(confusedNames.get(1)));
                     dout.writeInt(keybytes.length);
                     dout.write(keybytes);
                     IOUtils.copy(new ByteArrayInputStream(outbyte), outputStream, 8094);
-                    //byte[] clearBytes=JarMethodClearUtils.rewriteAllMethods(pool,className);
-                    //outputStream.putNextEntry(new JarEntry(entry.getName()));
-                    //IOUtils.write(clearBytes, outputStream);
+                    //方法体清理
+                    byte[] clearBytes=JarMethodClearUtils.rewriteAllMethods(pool,packageName+"."+clazzName);
+                    outputStream.putNextEntry(new JarEntry(entry.getName()));
+                    IOUtils.write(clearBytes, outputStream);
                 }else {
                     outputStream.putNextEntry(new JarEntry(entry.getName()));
                     IOUtils.copy(inputStream, outputStream, 1024);

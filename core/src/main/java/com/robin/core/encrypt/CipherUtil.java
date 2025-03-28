@@ -4,7 +4,6 @@ import cn.hutool.core.io.FileUtil;
 import com.google.common.collect.Lists;
 import com.robin.core.base.util.CharUtils;
 import com.robin.core.base.util.IOUtils;
-import com.robin.core.hardware.MachineIdUtils;
 import com.sshtools.common.publickey.SshKeyUtils;
 import com.sshtools.common.ssh.components.SshKeyPair;
 import com.sshtools.common.ssh.components.SshPublicKey;
@@ -12,9 +11,6 @@ import com.sshtools.common.ssh.components.jce.JCEProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemReader;
-import org.bouncycastle.util.io.pem.PemWriter;
-import org.springframework.util.Assert;
-import org.springframework.util.ObjectUtils;
 
 import javax.crypto.*;
 import javax.crypto.spec.SecretKeySpec;
@@ -464,6 +460,13 @@ public class CipherUtil {
         retList.add(builder.toString());
         retList.add(builder1.toString());
         return retList;
+    }
+    public static String decodeConfusedNameByCode(String code){
+        StringBuilder builder = new StringBuilder();
+        for(char input:code.toCharArray()){
+            builder.append(CONFUSEDSTRS[Integer.parseInt(String.valueOf(input))]);
+        }
+        return builder.toString();
     }
 
     public static void main(String[] args) {

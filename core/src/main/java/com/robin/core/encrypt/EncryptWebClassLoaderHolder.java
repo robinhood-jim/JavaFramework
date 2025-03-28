@@ -107,11 +107,13 @@ public class EncryptWebClassLoaderHolder {
                 }
 
                 // load bin file
-                instream = new DataInputStream(ClassLoader.getSystemResourceAsStream("META-INF/config.exe"));
+                instream = new DataInputStream(ClassLoader.getSystemResourceAsStream("META-INF/config.bin"));
                 if (instream != null) {
-                    String keystr = decrypt(instream.readUTF());
+                    instream.read(CipherUtil.mzHeader);
+
                     instream.read(m_datapadding);
                     while (instream.available() > 0) {
+                        String keystr = decrypt(instream.readUTF());
                         String className = decrypt(instream.readUTF());
                         instream.readByte();
                         classMappingMap.put(keystr, className);

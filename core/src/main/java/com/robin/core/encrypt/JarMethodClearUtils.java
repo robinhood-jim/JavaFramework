@@ -137,6 +137,7 @@ public class JarMethodClearUtils {
             }
             return cc.toBytecode();
         } catch (Exception e) {
+            e.printStackTrace();
             throw new RuntimeException("[" + classname + "(" + name + ")]" + e.getMessage());
         }
     }

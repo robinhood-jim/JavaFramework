@@ -64,7 +64,7 @@ public class MavenUtils {
             if(MachineIdUtils.isWindows()) {
                 content=CommandLineExecutor.getInstance().executeCmd(Lists.newArrayList("cmd.exe", "/c", "CD " + mavenFilePath + " & mvn dependency:tree -D outputType=dot"));
             }else if(MachineIdUtils.isLinux() || MachineIdUtils.isMacosName()){
-                content=CommandLineExecutor.getInstance().executeCmd(Lists.newArrayList("sh", "-c", "CD " + mavenFilePath + " & mvn dependency:tree -D outputType=dot"));
+                content=CommandLineExecutor.getInstance().executeCmd(Lists.newArrayList("sh", "-c", "cd " + mavenFilePath + "; mvn dependency:tree -D outputType=dot"));
             }
             process(mavenRepoPath, dependencyList, content);
         }catch (Exception ex){
@@ -77,20 +77,18 @@ public class MavenUtils {
         try(Scanner scanner = new Scanner(content)) {
             while (scanner.hasNext()) {
                 String line = scanner.nextLine();
-                if (!ObjectUtils.isEmpty(line) && (line.contains("+") || line.contains("-"))) {
-                    String[] arr = null;
-                    if(line.contains("+-")){
-                        arr=StringUtils.split(line, "+-");
-                    }else if(line.contains("\\-")){
-                        arr=StringUtils.split(line, "\\-");
-                    }
-                    if (arr!=null && arr.length == 2) {
-                        String trimStr = arr[1].trim().replace("\"", "");
+                if (!ObjectUtils.isEmpty(line) && line.contains("->")) {
+                    String[] arr = StringUtils.split(line, "->");
+                    if (arr.length == 2) {
+                        String trimStr = arr[1].trim().replace("\"", "").replace(";","");
+
                         String[] dependencyPart = trimStr.trim().split(":");
-                        if ("compile".equalsIgnoreCase(dependencyPart[4])) {
-                            dependencyList.add(mavenRepoPath + File.separator + dependencyPart[0].replace(".", File.separator) + File.separator + dependencyPart[1] + File.separator + dependencyPart[3] + File.separator + dependencyPart[1] + "-" + dependencyPart[3] + ".jar");
-                        } else {
-                            log.info("{} scope {}", trimStr, dependencyPart[4]);
+                        if (dependencyPart.length>=5 ) {
+                            if ("compile".equalsIgnoreCase(dependencyPart[4])) {
+                                dependencyList.add(mavenRepoPath + File.separator + dependencyPart[0].replace(".", File.separator) + File.separator + dependencyPart[1] + File.separator + dependencyPart[3] + File.separator + dependencyPart[1] + "-" + dependencyPart[3] + ".jar");
+                            } else {
+                                log.info("{} scope {}", trimStr, dependencyPart[4]);
+                            }
                         }
                     }
                 }
