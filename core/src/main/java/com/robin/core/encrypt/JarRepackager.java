@@ -7,6 +7,7 @@ import com.robin.core.hardware.MachineIdUtils;
 import javassist.ClassPool;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
+import org.springframework.util.Assert;
 
 import java.io.*;
 import java.math.BigInteger;
@@ -61,17 +62,29 @@ public class JarRepackager {
                     dout.writeInt(classNameBytes.length);
                     dout.write(classNameBytes);
                     byte[] outbyte = CipherUtil.encryptByte(bytes, keystr.getBytes());
-                    outbyte=CipherUtil.encryptByte(outbyte,CipherUtil.getEncryptKey(machineId.toUpperCase().getBytes()));
+                    byte[] encrypted=CipherUtil.encryptByte(outbyte,CipherUtil.getEncryptKey(machineId.toUpperCase().getBytes()));
+                    ByteArrayOutputStream output1=new ByteArrayOutputStream();
+
+                    CipherUtil.decryptByte(machineId.getBytes(),new ByteArrayInputStream(encrypted),output1);
+
+                    byte[] origin=CipherUtil.decryptByte(output1.toByteArray(),keystr.getBytes());
+
+
                     List<String> confusedNames=CipherUtil.getConfusedName(16,random);
                     outputStream.putNextEntry(new JarEntry(basePath + confusedNames.get(0)));
                     dout.writeLong(Long.valueOf(confusedNames.get(1)));
                     dout.writeInt(keybytes.length);
                     dout.write(keybytes);
-                    IOUtils.copy(new ByteArrayInputStream(outbyte), outputStream, 8094);
+                    IOUtils.write(encrypted, outputStream);
                     //方法体清理
-                    byte[] clearBytes=JarMethodClearUtils.rewriteAllMethods(pool,packageName+"."+clazzName);
-                    outputStream.putNextEntry(new JarEntry(entry.getName()));
-                    IOUtils.write(clearBytes, outputStream);
+                    if(!packageName.equals("com.robin.spring")) {
+                        byte[] clearBytes = JarMethodClearUtils.rewriteAllMethods(pool, packageName + "." + clazzName);
+                        outputStream.putNextEntry(new JarEntry(entry.getName()));
+                        IOUtils.write(clearBytes, outputStream);
+                    }else{
+                        outputStream.putNextEntry(new JarEntry(entry.getName()));
+                        IOUtils.write(bytes, outputStream);
+                    }
                 }else {
                     outputStream.putNextEntry(new JarEntry(entry.getName()));
                     IOUtils.copy(inputStream, outputStream, 1024);
@@ -92,7 +105,7 @@ public class JarRepackager {
         return bArray.toByteArray();
     }
     public static void main(String[] args){
-        repackage("E:/dev/workspaceframe/JavaFramework/core/target/core-1.0.jar","e:/tmp/encrypt.jar","E:/dev/workspaceframe/JavaFramework/core","META-INF/ext/", MachineIdUtils.getMachineId().replace("-",""),System.currentTimeMillis()+365*3600*24*1000L);
+        repackage("E:/dev/workspaceframe/JavaFramework/core/target/core-1.0_proguard_base.jar","e:/tmp/encrypt.jar","E:/dev/workspaceframe/JavaFramework/core","META-INF/ext/", MachineIdUtils.getMachineId().replace("-","").toUpperCase(),System.currentTimeMillis()+365*3600*24*1000L);
 
     }
 }

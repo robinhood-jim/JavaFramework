@@ -111,7 +111,7 @@ public class CipherUtil {
 
     public static void decryptByte(byte[] key, InputStream is, OutputStream os) {
         try {
-            Cipher cipher = Cipher.getInstance(DEFAULTALGORITHM);
+            Cipher cipher = Cipher.getInstance(DEFAULT_CIPHER_ALGORITHM);
             cipher.init(Cipher.DECRYPT_MODE, toKey(key));
             //CipherInputStream cis=new CipherInputStream(is, cipher);
             CipherOutputStream out = new CipherOutputStream(os, cipher);
