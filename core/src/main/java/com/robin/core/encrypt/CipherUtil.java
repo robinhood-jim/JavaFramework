@@ -453,7 +453,7 @@ public class CipherUtil {
         StringBuilder builder1 = new StringBuilder();
         for (int i = 0; i < length; i++) {
             int pos = random.nextInt(CONFUSEDSTRS.length);
-            builder1.append(pos);
+            builder1.append(pos+1);
             builder.append(CONFUSEDSTRS[pos]);
         }
         List<String> retList = new ArrayList<>();
@@ -464,7 +464,7 @@ public class CipherUtil {
     public static String decodeConfusedNameByCode(String code){
         StringBuilder builder = new StringBuilder();
         for(char input:code.toCharArray()){
-            builder.append(CONFUSEDSTRS[Integer.parseInt(String.valueOf(input))]);
+            builder.append(CONFUSEDSTRS[Integer.parseInt(String.valueOf(input))-1]);
         }
         return builder.toString();
     }

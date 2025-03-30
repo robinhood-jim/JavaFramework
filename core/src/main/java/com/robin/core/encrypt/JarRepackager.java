@@ -2,15 +2,12 @@ package com.robin.core.encrypt;
 
 
 import com.robin.core.base.util.MavenUtils;
-
 import com.robin.core.hardware.MachineIdUtils;
 import javassist.ClassPool;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
-import org.springframework.util.Assert;
 
 import java.io.*;
-import java.math.BigInteger;
 import java.util.List;
 import java.util.Random;
 import java.util.jar.JarEntry;
@@ -46,7 +43,7 @@ public class JarRepackager {
             dout.writeLong(expireTs);
             while((entry=inputStream.getNextEntry())!=null){
                 if(!entry.isDirectory() && entry.getName().endsWith("class")){
-                    dout.write(CipherUtil.m_datapadding);
+
                     String path = entry.getName();
                     int pos = path.lastIndexOf("/");
                     String className = path.substring(pos + 1);
@@ -59,25 +56,27 @@ public class JarRepackager {
                     byte[] bytes = getZipByte(inputStream);
                     byte[] classNameBytes=CipherUtil.encryptByte((packageName + "." + clazzName).getBytes(),CipherUtil.getEncryptKey(machineId.toUpperCase().getBytes()));
                     byte[] keybytes=CipherUtil.encryptByte(keystr.getBytes(),CipherUtil.getEncryptKey(machineId.toUpperCase().getBytes()));
-                    dout.writeInt(classNameBytes.length);
-                    dout.write(classNameBytes);
                     byte[] outbyte = CipherUtil.encryptByte(bytes, keystr.getBytes());
                     byte[] encrypted=CipherUtil.encryptByte(outbyte,CipherUtil.getEncryptKey(machineId.toUpperCase().getBytes()));
-                    ByteArrayOutputStream output1=new ByteArrayOutputStream();
+                   /* ByteArrayOutputStream output1=new ByteArrayOutputStream();
 
                     CipherUtil.decryptByte(machineId.getBytes(),new ByteArrayInputStream(encrypted),output1);
 
-                    byte[] origin=CipherUtil.decryptByte(output1.toByteArray(),keystr.getBytes());
+                    byte[] origin=CipherUtil.decryptByte(output1.toByteArray(),keystr.getBytes());*/
 
+                    if(!packageName.equals("com.robin.spring") && !"JarMethodClearUtils".equals(clazzName) && !"JarRepackager".equals(clazzName) && !clazzName.contains("Hibernate")) {
+                        dout.write(CipherUtil.m_datapadding);
+                        dout.writeInt(classNameBytes.length);
+                        dout.write(classNameBytes);
+                        List<String> confusedNames=CipherUtil.getConfusedName(16,random);
+                        outputStream.putNextEntry(new JarEntry(basePath + confusedNames.get(0)));
+                        dout.write(confusedNames.get(1).getBytes());
+                        dout.writeInt(keybytes.length);
+                        dout.write(keybytes);
+                        IOUtils.write(encrypted, outputStream);
+                        System.out.println(packageName+"."+clazzName+"="+confusedNames.get(0)+"|"+confusedNames.get(1)+"|"+keystr);
+                        //方法体清理
 
-                    List<String> confusedNames=CipherUtil.getConfusedName(16,random);
-                    outputStream.putNextEntry(new JarEntry(basePath + confusedNames.get(0)));
-                    dout.writeLong(Long.valueOf(confusedNames.get(1)));
-                    dout.writeInt(keybytes.length);
-                    dout.write(keybytes);
-                    IOUtils.write(encrypted, outputStream);
-                    //方法体清理
-                    if(!packageName.equals("com.robin.spring")) {
                         byte[] clearBytes = JarMethodClearUtils.rewriteAllMethods(pool, packageName + "." + clazzName);
                         outputStream.putNextEntry(new JarEntry(entry.getName()));
                         IOUtils.write(clearBytes, outputStream);
@@ -96,7 +95,7 @@ public class JarRepackager {
             }
 
         }catch (IOException ex){
-
+            ex.printStackTrace();
         }
     }
     private static byte[] getZipByte(ZipInputStream inputStream) throws IOException {

@@ -1,5 +1,6 @@
 package com.robin.spring;
 
+
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -11,15 +12,15 @@ import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.*;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.security.NoSuchAlgorithmException;
 import java.security.Security;
 import java.security.spec.InvalidKeySpecException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class CustomerClassLoader extends ClassLoader {
+public class CustomerURLClassLoader extends URLClassLoader {
     private ClassLoader superloader;
     private Map<String, Class> loadedClassPool = new HashMap<>();
     private Map<String, Pair<String, String>> encryptKeyMap = new HashMap<>();
@@ -32,10 +33,14 @@ public class CustomerClassLoader extends ClassLoader {
     private static final String[] CONFUSEDSTRS = {"i", "I", "l", "O", "0", "1"};
 
     public static final byte[] mzHeader = {0x4D, 0x5A, 0x50, 0x00, 0x02, 0x00, 0x00, 0x00, 0x04, 0x00, 0x0f, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+    public CustomerURLClassLoader(URL[] urls, ClassLoader parent) {
+        super(urls, parent);
+        this.superloader = parent;
+        init();
+    }
 
-
-    public CustomerClassLoader(ClassLoader loader) {
-        super(loader);
+    public CustomerURLClassLoader(ClassLoader loader) {
+        super(null, CustomerURLClassLoader.class.getClassLoader());
         this.superloader = loader;
         init();
     }
@@ -70,8 +75,6 @@ public class CustomerClassLoader extends ClassLoader {
                 byte[] keyDecryptByte = decryptByte(keyEncryptByte, machineCode.getBytes());
                 String key = new String(keyDecryptByte);
                 encryptKeyMap.put(className, Pair.of(confusedName, key));
-                //System.out.println(className+" "+confusedName);
-                //loadClass(className,true);
             }
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -111,7 +114,6 @@ public class CustomerClassLoader extends ClassLoader {
     protected synchronized Class<?> loadClass(String name, boolean resolve)
             throws ClassNotFoundException {
         String classname = name;
-        System.out.println("load class "+name);
         try {
             if (classname.endsWith("BeanInfo")) {
                 classname = classname.substring(0, classname.length() - 8);
@@ -145,7 +147,7 @@ public class CustomerClassLoader extends ClassLoader {
                 } catch (Exception ex) {
 
                 }
-                try {
+                try{
                     if (clazz == null) {
                         clazz = findSystemClass(name);
                     }
@@ -182,7 +184,6 @@ public class CustomerClassLoader extends ClassLoader {
         os.close();
         is.close();
     }
-
     private static byte[] decryptByte(byte[] bytes, byte[] key) {
         try {
             Cipher cipher = Cipher.getInstance(DEFAULT_CIPHER_ALGORITHM);
@@ -193,7 +194,6 @@ public class CustomerClassLoader extends ClassLoader {
         }
         return null;
     }
-
     private static String bytesToHexString(byte[] bytes) {
         StringBuilder builder = new StringBuilder();
         for (byte b : bytes) {
@@ -204,7 +204,7 @@ public class CustomerClassLoader extends ClassLoader {
 
     private static void decryptByte(byte[] key, InputStream is, OutputStream os) {
         try {
-            Cipher cipher = Cipher.getInstance(DEFAULT_CIPHER_ALGORITHM);
+            Cipher cipher = Cipher.getInstance(DEFAULTALGORITHM);
             cipher.init(Cipher.DECRYPT_MODE, toKey(key));
             CipherOutputStream out = new CipherOutputStream(os, cipher);
             doCopy(is, out);
@@ -212,16 +212,15 @@ public class CustomerClassLoader extends ClassLoader {
             ex.printStackTrace();
         }
     }
-
     private static SecretKey toKey(byte[] keybyte) throws NoSuchAlgorithmException, InvalidKeySpecException {
         SecretKeySpec key = new SecretKeySpec(keybyte, DEFAULTALGORITHM);
         SecretKeyFactory skf = SecretKeyFactory.getInstance(DEFAULTALGORITHM);
         return skf.generateSecret(key);
     }
 
-    private static String decodeConfusedNameByCode(String code) {
+    private static String decodeConfusedNameByCode(String code){
         StringBuilder builder = new StringBuilder();
-        for (char input : code.toCharArray()) {
+        for(char input:code.toCharArray()){
             builder.append(CONFUSEDSTRS[Integer.parseInt(String.valueOf(input))-1]);
         }
         return builder.toString();
