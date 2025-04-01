@@ -53,6 +53,7 @@
         <module>estool</module>
         <module>tracer</module>
         <module>dataming</module>
+        <module>decryptagent</module>
     </modules>
     <!-- properties -->
     <properties>

@@ -7,7 +7,13 @@ import javassist.ClassPool;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 
+import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.*;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.List;
 import java.util.Random;
 import java.util.jar.JarEntry;
@@ -17,6 +23,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 @Slf4j
 public class JarRepackager {
+    private static final String DEFAULT_CIPHER_ALGORITHM = "AES/ECB/PKCS5Padding";
     /**
      *
      * @param inputJarFiles  待加密的包
@@ -54,10 +61,10 @@ public class JarRepackager {
                     String keystr = CipherUtil.generateRandomKey(CipherUtil.avaiablechar.length, 16, random);
                     log.info("{} using {}",packageName + "." + clazzName,keystr);
                     byte[] bytes = getZipByte(inputStream);
-                    byte[] classNameBytes=CipherUtil.encryptByte((packageName + "." + clazzName).getBytes(),CipherUtil.getEncryptKey(machineId.toUpperCase().getBytes()));
-                    byte[] keybytes=CipherUtil.encryptByte(keystr.getBytes(),CipherUtil.getEncryptKey(machineId.toUpperCase().getBytes()));
-                    byte[] outbyte = CipherUtil.encryptByte(bytes, keystr.getBytes());
-                    byte[] encrypted=CipherUtil.encryptByte(outbyte,CipherUtil.getEncryptKey(machineId.toUpperCase().getBytes()));
+                    byte[] classNameBytes=encryptByte((packageName + "." + clazzName).getBytes(),CipherUtil.getEncryptKey(machineId.toUpperCase().getBytes()));
+                    byte[] keybytes=encryptByte(keystr.getBytes(),CipherUtil.getEncryptKey(machineId.toUpperCase().getBytes()));
+                    byte[] outbyte = encryptByte(bytes, keystr.getBytes());
+                    byte[] encrypted=encryptByte(outbyte,CipherUtil.getEncryptKey(machineId.toUpperCase().getBytes()));
                    /* ByteArrayOutputStream output1=new ByteArrayOutputStream();
 
                     CipherUtil.decryptByte(machineId.getBytes(),new ByteArrayInputStream(encrypted),output1);
@@ -102,6 +109,32 @@ public class JarRepackager {
         ByteArrayOutputStream bArray = new ByteArrayOutputStream();
         IOUtils.copy(inputStream, bArray, 8192);
         return bArray.toByteArray();
+    }
+    private static SecretKeySpec toKey(byte[] keybyte,String argrithm) throws NoSuchAlgorithmException, InvalidKeySpecException {
+        return new SecretKeySpec(keybyte, argrithm);
+    }
+    private static byte[] encryptByte(byte[] bytes, byte[] key) {
+        try {
+            Cipher cipher = Cipher.getInstance(DEFAULT_CIPHER_ALGORITHM);
+
+            cipher.init(Cipher.ENCRYPT_MODE, toKey(key,"AES"));
+            return cipher.doFinal(bytes);
+        } catch (Exception ex) {
+            log.error("{}", ex.getMessage());
+        }
+        return null;
+    }
+
+
+    private static byte[] decryptByte(byte[] bytes, byte[] key) {
+        try {
+            Cipher cipher = Cipher.getInstance(DEFAULT_CIPHER_ALGORITHM);
+            cipher.init(Cipher.DECRYPT_MODE, toKey(key,"AES"));
+            return cipher.doFinal(bytes);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return null;
     }
     public static void main(String[] args){
         repackage("E:/dev/workspaceframe/JavaFramework/core/target/core-1.0_proguard_base.jar","e:/tmp/encrypt.jar","E:/dev/workspaceframe/JavaFramework/core","META-INF/ext/", MachineIdUtils.getMachineId().replace("-","").toUpperCase(),System.currentTimeMillis()+365*3600*24*1000L);
