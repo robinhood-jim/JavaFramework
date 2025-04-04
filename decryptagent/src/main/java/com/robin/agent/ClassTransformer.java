@@ -5,9 +5,7 @@ import javax.crypto.spec.SecretKeySpec;
 import java.io.*;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
-import java.security.NoSuchAlgorithmException;
 import java.security.ProtectionDomain;
-import java.security.spec.InvalidKeySpecException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,17 +14,19 @@ public class ClassTransformer implements ClassFileTransformer {
     private Map<String, String> encryptKeyMap = new HashMap<>();
     private String machineCode;
     private Long expireTs;
-    private static final String DEFAULTALGORITHM = "AES";
-    private static final String DEFAULT_CIPHER_ALGORITHM = "AES/ECB/PKCS5Padding";
-    public static final byte[] m_datapadding = {0x7F};
-    public static final byte[] m_ending = {0x00};
-    private static final String[] CONFUSEDSTRS = {"i", "I", "l", "O", "0", "1"};
+    private final String DEFAULTALGORITHM = "AES";
+    private final String DEFAULT_CIPHER_ALGORITHM = "AES/ECB/PKCS5Padding";
+    private final byte[] m_datapadding = {0x7F};
 
-    public static final byte[] mzHeader = new byte[19];
+    private final String[] CONFUSEDSTRS = {"i", "I", "l", "O", "0", "1"};
 
-    public ClassTransformer(){
+    private final byte[] mzHeader = new byte[19];
+    private final char spacebyteVal=20;
+
+    public ClassTransformer() {
         init();
     }
+
     private void init() {
         try (DataInputStream dInput = new DataInputStream(getClass().getClassLoader().getResourceAsStream("META-INF/config.bin"))) {
             dInput.read(mzHeader);
@@ -38,7 +38,7 @@ public class ClassTransformer implements ClassFileTransformer {
             machineCode = bytesToHexString(machineCodeByte);
             expireTs = dInput.readLong();
             checkExpire();
-            int classNameBytesLen ;
+            int classNameBytesLen;
             while (dInput.available() > 0) {
                 dInput.read(paddingbyte);
                 checkPadding(paddingbyte);
@@ -47,20 +47,21 @@ public class ClassTransformer implements ClassFileTransformer {
                 dInput.read(classNameEncryptBytes);
                 byte[] decryptClassNameBytes = decryptByte(classNameEncryptBytes, machineCode.getBytes());
                 String className = new String(decryptClassNameBytes);
-                byte[] posByte=new byte[16];
+                byte[] posByte = new byte[16];
                 dInput.read(posByte);
-                String confusedName = decodeConfusedNameByCode(new String(posByte));
+                String confusedName = decodeConfusedNameByCode(posByte);
                 int keyLength = dInput.readInt();
                 byte[] keyEncryptByte = new byte[keyLength];
                 dInput.read(keyEncryptByte);
                 byte[] keyDecryptByte = decryptByte(keyEncryptByte, machineCode.getBytes());
                 String key = new String(keyDecryptByte);
-                encryptKeyMap.put(className, confusedName+"|"+key);
+                encryptKeyMap.put(className, confusedName + "|" + key);
             }
         } catch (Exception ex) {
             ex.printStackTrace();
         }
     }
+
     private void checkPadding(byte[] paddingbyte) {
         if (paddingbyte[0] != m_datapadding[0]) {
             System.err.println("jar package corrupted");
@@ -74,6 +75,7 @@ public class ClassTransformer implements ClassFileTransformer {
             System.exit(1);
         }
     }
+
     private byte[] loadEncryptDataStream(String confusedName) throws IOException {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         doCopy(getClass().getClassLoader().getResourceAsStream("META-INF/ext/" + confusedName), outputStream);
@@ -81,8 +83,7 @@ public class ClassTransformer implements ClassFileTransformer {
     }
 
 
-
-    private static void doCopy(InputStream is, OutputStream os) throws IOException {
+    private void doCopy(InputStream is, OutputStream os) throws IOException {
         byte[] bytes = new byte[2048];
         int numBytes;
         while ((numBytes = is.read(bytes)) != -1) {
@@ -93,7 +94,7 @@ public class ClassTransformer implements ClassFileTransformer {
         is.close();
     }
 
-    private static byte[] decryptByte(byte[] bytes, byte[] key) {
+    private byte[] decryptByte(byte[] bytes, byte[] key) {
         try {
             Cipher cipher = Cipher.getInstance(DEFAULT_CIPHER_ALGORITHM);
             cipher.init(Cipher.DECRYPT_MODE, toKey(key));
@@ -103,8 +104,14 @@ public class ClassTransformer implements ClassFileTransformer {
         }
         return null;
     }
-
-    private static String bytesToHexString(byte[] bytes) {
+    private String bytesToIndex(byte[] bytes){
+        StringBuilder builder=new StringBuilder();
+        for(byte bytes1:bytes){
+            builder.append((char)((int)bytes1+spacebyteVal));
+        }
+        return builder.toString();
+    }
+    private String bytesToHexString(byte[] bytes) {
         StringBuilder builder = new StringBuilder();
         for (byte b : bytes) {
             builder.append(String.format("%02X", b));
@@ -113,14 +120,15 @@ public class ClassTransformer implements ClassFileTransformer {
     }
 
 
-    private static SecretKeySpec toKey(byte[] keybyte)  {
+    private SecretKeySpec toKey(byte[] keybyte) {
         return new SecretKeySpec(keybyte, DEFAULTALGORITHM);
     }
 
-    private static String decodeConfusedNameByCode(String code) {
+    private String decodeConfusedNameByCode(byte[] bytes) {
+        String index=bytesToIndex(bytes);
         StringBuilder builder = new StringBuilder();
-        for (char input : code.toCharArray()) {
-            builder.append(CONFUSEDSTRS[Integer.parseInt(String.valueOf(input))-1]);
+        for (char input : index.toCharArray()) {
+            builder.append(CONFUSEDSTRS[Integer.parseInt(String.valueOf(input)) - 1]);
         }
         return builder.toString();
     }
@@ -128,24 +136,24 @@ public class ClassTransformer implements ClassFileTransformer {
     @Override
     public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
         try {
-            String loadClass=className.replace("/",".");
+            String loadClass = className.replace("/", ".");
             if (encryptKeyMap.containsKey(loadClass)) {
-                //System.out.println("load class "+className);
-                if(loadedClassPool.containsKey(loadClass)){
+                System.out.println("load class "+className);
+                if (loadedClassPool.containsKey(loadClass)) {
                     return loadedClassPool.get(loadClass);
                 }
                 String[] arr = encryptKeyMap.get(loadClass).split("\\|");
                 byte[] encryptBytes = loadEncryptDataStream(arr[0]);
-                byte[] machineDecr=decryptByte(encryptBytes,machineCode.getBytes());
-                byte[] decryptByte=decryptByte(machineDecr,arr[1].getBytes());
+                byte[] machineDecr = decryptByte(encryptBytes, machineCode.getBytes());
+                byte[] decryptByte = decryptByte(machineDecr, arr[1].getBytes());
                 if (decryptByte != null && decryptByte[0] == -54 && decryptByte[1] == -2 && decryptByte[2] == -70 && decryptByte[3] == -66) {
-                    loadedClassPool.put(loadClass,decryptByte);
+                    loadedClassPool.put(loadClass, decryptByte);
                     return decryptByte;
-                }else{
+                } else {
                     throw new RuntimeException("decrypt error!");
                 }
             }
-        }catch (Exception ex){
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
         return classfileBuffer;

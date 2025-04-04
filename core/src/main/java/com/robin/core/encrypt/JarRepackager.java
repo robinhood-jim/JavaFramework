@@ -1,6 +1,7 @@
 package com.robin.core.encrypt;
 
 
+import cn.hutool.core.io.FileUtil;
 import com.robin.core.base.util.MavenUtils;
 import com.robin.core.hardware.MachineIdUtils;
 import javassist.ClassPool;
@@ -24,6 +25,7 @@ import java.util.zip.ZipInputStream;
 @Slf4j
 public class JarRepackager {
     private static final String DEFAULT_CIPHER_ALGORITHM = "AES/ECB/PKCS5Padding";
+    private static final char spacebyteVal=20;
     /**
      *
      * @param inputJarFiles  待加密的包
@@ -39,6 +41,7 @@ public class JarRepackager {
         List<String> dependencys= MavenUtils.getDepenendcyList(MavenUtils.getMavenRepository(),mavenSrcPath);
         JarMethodClearUtils.loadJars(pool,dependencys);
         JarMethodClearUtils.loadJars(pool,inputJarFiles);
+        FileUtil.clean(basePath);
         try(JarInputStream inputStream=new JarInputStream(new FileInputStream(inputJarFiles));
             JarOutputStream outputStream=new JarOutputStream(new FileOutputStream(outputJarFile));
                 ByteArrayOutputStream out1=new ByteArrayOutputStream();
@@ -48,6 +51,7 @@ public class JarRepackager {
             dout.write(CipherUtil.m_datapadding);
             dout.write(CipherUtil.hexStringToBytes(machineId.toUpperCase()));
             dout.writeLong(expireTs);
+
             while((entry=inputStream.getNextEntry())!=null){
                 if(!entry.isDirectory() && entry.getName().endsWith("class")){
 
@@ -65,22 +69,19 @@ public class JarRepackager {
                     byte[] keybytes=encryptByte(keystr.getBytes(),CipherUtil.getEncryptKey(machineId.toUpperCase().getBytes()));
                     byte[] outbyte = encryptByte(bytes, keystr.getBytes());
                     byte[] encrypted=encryptByte(outbyte,CipherUtil.getEncryptKey(machineId.toUpperCase().getBytes()));
-                   /* ByteArrayOutputStream output1=new ByteArrayOutputStream();
-
-                    CipherUtil.decryptByte(machineId.getBytes(),new ByteArrayInputStream(encrypted),output1);
-
-                    byte[] origin=CipherUtil.decryptByte(output1.toByteArray(),keystr.getBytes());*/
 
                     if(!packageName.equals("com.robin.spring") && !"JarMethodClearUtils".equals(clazzName) && !"JarRepackager".equals(clazzName) && !clazzName.contains("Hibernate")) {
                         dout.write(CipherUtil.m_datapadding);
                         dout.writeInt(classNameBytes.length);
                         dout.write(classNameBytes);
                         List<String> confusedNames=CipherUtil.getConfusedName(16,random);
-                        outputStream.putNextEntry(new JarEntry(basePath + confusedNames.get(0)));
-                        dout.write(confusedNames.get(1).getBytes());
+                        FileOutputStream fileOut=new FileOutputStream(basePath+confusedNames.get(0));
+                        //outputStream.putNextEntry(new JarEntry(basePath + confusedNames.get(0)));
+                        dout.write(indexToBytes(confusedNames.get(1)));
                         dout.writeInt(keybytes.length);
                         dout.write(keybytes);
-                        IOUtils.write(encrypted, outputStream);
+                        IOUtils.write(encrypted, fileOut);
+                        fileOut.close();
                         System.out.println(packageName+"."+clazzName+"="+confusedNames.get(0)+"|"+confusedNames.get(1)+"|"+keystr);
                         //方法体清理
 
@@ -97,8 +98,10 @@ public class JarRepackager {
                 }
             }
             if(dout!=null){
-                outputStream.putNextEntry(new JarEntry("META-INF/config.bin"));
-                IOUtils.write(out1.toByteArray(), outputStream);
+                //outputStream.putNextEntry(new JarEntry("META-INF/config.bin"));
+                FileOutputStream fileOut2=new FileOutputStream(basePath+"../config.bin");
+                IOUtils.write(out1.toByteArray(), fileOut2);
+                fileOut2.close();
             }
 
         }catch (IOException ex){
@@ -136,8 +139,27 @@ public class JarRepackager {
         }
         return null;
     }
+    private static byte[] indexToBytes(String index){
+        byte[] outputBytes=new byte[index.length()];
+        for(int i=0;i<index.length();i++){
+            outputBytes[i]=(byte)((index.charAt(i)-spacebyteVal));
+        }
+        return outputBytes;
+    }
+    private static String bytesToIndex(byte[] bytes){
+        StringBuilder builder=new StringBuilder();
+        for(byte bytes1:bytes){
+            builder.append((char)((int)bytes1+spacebyteVal));
+        }
+        return builder.toString();
+    }
     public static void main(String[] args){
-        repackage("E:/dev/workspaceframe/JavaFramework/core/target/core-1.0_proguard_base.jar","e:/tmp/encrypt.jar","E:/dev/workspaceframe/JavaFramework/core","META-INF/ext/", MachineIdUtils.getMachineId().replace("-","").toUpperCase(),System.currentTimeMillis()+365*3600*24*1000L);
-
+        repackage("E:/dev/core-obs.jar","E:/dev/maven/repository/com/robin/core-encrypt/1.0/core-encrypt-1.0.jar","E:/dev/workspaceframe/JavaFramework/core","E:/dev/workspaceframe/JavaFramework/decryptagent/src/main/resources/META-INF/ext/", MachineIdUtils.getMachineId().replace("-","").toUpperCase(),System.currentTimeMillis()+365*3600*24*1000L);
+        /*Random random=new Random();
+        List<String> strs=CipherUtil.getConfusedName(16,random);
+        System.out.println(strs.get(1));
+        byte[] bytes=indexToBytes(strs.get(1));
+        System.out.println(bytes.length);
+        System.out.println(bytesToIndex(bytes));*/
     }
 }
