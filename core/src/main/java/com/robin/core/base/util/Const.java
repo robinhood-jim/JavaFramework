@@ -97,6 +97,7 @@ public class Const {
     public static final Integer COLUMN_INVALID = 0;
     public static final String ITERATOR_PROCESSID="$processId";
     public static final String SUCCESS="success";
+    public static final String COLUMN_XLSX_HASHEADER="xlsx.hasHeader";
 
 
     public enum FILEFORMAT {
@@ -437,7 +438,8 @@ public class Const {
         CSV("csv"),
         PROTOBUF("proto"),
         ARROW("arrow"),
-        ARFF("arff");
+        ARFF("arff"),
+        XLSX("xlsx");
         private String value;
         FILEFORMATSTR(String value){
             this.value=value;

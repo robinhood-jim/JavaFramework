@@ -46,7 +46,11 @@ public class LicenseUtils {
     private static HttpClient client;
 
     private LicenseUtils() {
-
+        if (thread == null) {
+            thread = new RunThread();
+            thread.start();
+            Runtime.getRuntime().addShutdownHook(new Thread(() ->thread.stopRun()));
+        }
     }
 
     private static void checkValid() {
@@ -78,11 +82,7 @@ public class LicenseUtils {
                 }
             }
         }
-        if (thread == null) {
-            thread = new RunThread();
-            thread.start();
-            Runtime.getRuntime().addShutdownHook(new Thread(() ->thread.stopRun()));
-        }
+
     }
 
     private static PublicKey getPublicKey(String userPath) {
@@ -208,10 +208,9 @@ public class LicenseUtils {
         String userPath = System.getProperty(CharUtils.getInstance().retKeyword(115));
         LocalDateTime dateTime = LocalDateTime.now();
         LocalDateTime dateTime1 = dateTime.plusDays(Integer.parseInt(CharUtils.getInstance().retKeyword(116)));
-        //检查用户目录下是否存在证书
         byte[] encryptBytes = CipherUtil.encryptByte(new String(machineTag + ";" + dateTime1.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()+";"+Const.VALID).getBytes(), getEncryptPasswd().getBytes());
 
-        //使用系统配置的rsa证书签名
+        //证书所在路径
         File parentPath=new File(userPath + File.separator + CharUtils.getInstance().retKeyword(107));
         if(!parentPath.exists()){
             parentPath.mkdir();
@@ -365,7 +364,6 @@ public class LicenseUtils {
 
 
     public static LicenseUtils getInstance() {
-        checkValid();
         return utils;
     }
 
@@ -380,8 +378,8 @@ public class LicenseUtils {
         public void run() {
             try {
                 while (!stopTag) {
-                    Thread.sleep(60000L);
                     checkValid();
+                    Thread.sleep(60000L);
                 }
             } catch (Exception ex) {
                 logger.error("{}",ex.getMessage());

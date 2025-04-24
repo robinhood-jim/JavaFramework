@@ -29,7 +29,7 @@ public class OracleDataBaseImportor extends BaseDataBaseImportor {
         FreeMarkerUtil util = new FreeMarkerUtil("");
         ctlFile = tmpPath + "run" + System.currentTimeMillis() + ".ctl";
         try (PrintWriter writer = new PrintWriter(new File(ctlFile), "UTF-8")) {
-            Map<String, String> map = new HashMap<String, String>();
+            Map<String, String> map = new HashMap<>();
             map.put("filePath", inparam.getFilePath());
             map.put("tableName", inparam.getTableName());
             map.put("spilt", inparam.getSplit());

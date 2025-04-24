@@ -86,12 +86,17 @@ public class ClassTransformer implements ClassFileTransformer {
     private void doCopy(InputStream is, OutputStream os) throws IOException {
         byte[] bytes = new byte[2048];
         int numBytes;
-        while ((numBytes = is.read(bytes)) != -1) {
-            os.write(bytes, 0, numBytes);
+        try {
+            while ((numBytes = is.read(bytes)) != -1) {
+                os.write(bytes, 0, numBytes);
+            }
+        }catch (IOException ex){
+            throw ex;
+        }finally {
+            os.close();
+            is.close();
         }
-        os.flush();
-        os.close();
-        is.close();
+
     }
 
     private byte[] decryptByte(byte[] bytes, byte[] key) {

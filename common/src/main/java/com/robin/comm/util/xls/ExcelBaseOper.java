@@ -383,8 +383,10 @@ public class ExcelBaseOper {
 
     private static Cell createFormulaCell(Row row, int column, CellStyle cellStyle, String formula) {
         Cell cell = row.createCell(column);
+        FormulaEvaluator evaluator = cell.getSheet().getWorkbook().getCreationHelper().createFormulaEvaluator();
         cell.setCellFormula(formula);
         cell.setCellStyle(cellStyle);
+        cell.setCellValue(evaluator.evaluate(cell).getNumberValue());
         return cell;
     }
 

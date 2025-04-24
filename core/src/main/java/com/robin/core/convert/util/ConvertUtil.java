@@ -543,8 +543,14 @@ public class ConvertUtil {
                 return null;
             }
             if (columnType.equals(Const.META_TYPE_INTEGER)) {
+                if(value.contains(".")){
+                    value=value.substring(0,value.indexOf("."));
+                }
                 retObj = Integer.valueOf(value);
             } else if (columnType.equals(Const.META_TYPE_BIGINT)) {
+                if(value.contains(".")){
+                    value=value.substring(0,value.indexOf("."));
+                }
                 retObj = Long.valueOf(value);
             } else if (columnType.equals(Const.META_TYPE_NUMERIC)) {
                 retObj = Double.valueOf(value);

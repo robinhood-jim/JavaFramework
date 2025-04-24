@@ -15,6 +15,7 @@ public class ResourceConst {
     public static final String DEFAULTCACHEOFFHEAPSIZEKEY="defaultCacheHeapSize";
     public static final String USEASYNCUPLOAD="storage.useAsyncUpload";
     public static final String DEFAULTSTORAGEUPLOADTHREADKEY="storage.defaultUploadThread";
+    public static final String USEOFFHEAPFORASYNCKEY="storage.useOffHeapForAsync";
     public static final int DEFAULTSTORAGEUPLOADTHREAD=4;
     public static final String STORAGEFILTERSQL="storage.FilterSql";
     public static final String PARQUETFILEFORMAT="parquet.file.format";
