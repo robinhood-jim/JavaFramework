@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.robin.core.base.util.Const;
+import com.robin.core.fileaccess.fs.AbstractFileSystemAccessor;
 import org.apache.commons.lang3.StringUtils;
 
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
@@ -35,6 +36,10 @@ public class PlainTextFileWriter extends TextBasedFileWriter {
 	}
 	public PlainTextFileWriter(DataCollectionMeta colmeta) {
 		super(colmeta);
+		this.identifier= Const.FILEFORMATSTR.CSV.getValue();
+	}
+	public PlainTextFileWriter(DataCollectionMeta colmeta, AbstractFileSystemAccessor accessor) {
+		super(colmeta,accessor);
 		this.identifier= Const.FILEFORMATSTR.CSV.getValue();
 	}
 

@@ -17,6 +17,7 @@ package com.robin.core.fileaccess.writer;
 
 import com.google.gson.stream.JsonWriter;
 import com.robin.core.base.util.Const;
+import com.robin.core.fileaccess.fs.AbstractFileSystemAccessor;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 
 import javax.naming.OperationNotSupportedException;
@@ -30,6 +31,10 @@ public class JsonFileWriter extends TextBasedFileWriter {
 	}
 	public JsonFileWriter(DataCollectionMeta colmeta) {
 		super(colmeta);
+		this.identifier= Const.FILEFORMATSTR.JSON.getValue();
+	}
+	public JsonFileWriter(DataCollectionMeta colmeta, AbstractFileSystemAccessor accessor) {
+		super(colmeta,accessor);
 		this.identifier= Const.FILEFORMATSTR.JSON.getValue();
 	}
 

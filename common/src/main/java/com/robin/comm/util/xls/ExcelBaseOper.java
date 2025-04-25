@@ -333,6 +333,14 @@ public class ExcelBaseOper {
         return (short) align;
     }
 
+    private static Cell createCell(Row row, int column, CellStyle cellStyle, CreationHelper helper, String objvalue) {
+        Cell cell = row.createCell(column);
+
+        cell.setCellValue(objvalue);
+        cell.setCellStyle(cellStyle);
+        return cell;
+    }
+
     public static Cell createCell(Row row1,int j, String value, String colType, CellStyle cellStyle, CreationHelper helper) {
         Cell cell;
         if (colType.equals(Const.META_TYPE_STRING)) {
@@ -360,14 +368,6 @@ public class ExcelBaseOper {
         } else {
             cell = createCell(row1, j, cellStyle, helper, value);
         }
-        return cell;
-    }
-
-    private static Cell createCell(Row row, int column, CellStyle cellStyle, CreationHelper helper, String objvalue) {
-        Cell cell = row.createCell(column);
-
-        cell.setCellValue(objvalue);
-        cell.setCellStyle(cellStyle);
         return cell;
     }
 
@@ -402,7 +402,7 @@ public class ExcelBaseOper {
 
     private static Cell createCellDate(Row row, int column, CellStyle cellStyle, CreationHelper helper, String value) {
         Cell cell = row.createCell(column);
-        cellStyle.setDataFormat(helper.createDataFormat().getFormat("yyyy-MM-dd hh:mm:ss"));
+        //cellStyle.setDataFormat(helper.createDataFormat().getFormat("yyyy-MM-dd hh:mm:ss"));
 
         cell.setCellValue(new Date(Long.parseLong(value)));
         cell.setCellStyle(cellStyle);

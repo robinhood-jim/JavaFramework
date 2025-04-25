@@ -16,6 +16,7 @@
 package com.robin.core.fileaccess.writer;
 
 import com.robin.core.base.util.StringUtils;
+import com.robin.core.fileaccess.fs.AbstractFileSystemAccessor;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 
 import java.io.BufferedWriter;
@@ -30,6 +31,9 @@ public abstract class TextBasedFileWriter extends AbstractFileWriter{
 
 	protected TextBasedFileWriter(DataCollectionMeta colmeta) {
 		super(colmeta);
+	}
+	protected TextBasedFileWriter(DataCollectionMeta colmeta, AbstractFileSystemAccessor accessor) {
+		super(colmeta,accessor);
 	}
 	@Override
 	public void setOutputStream(OutputStream out) {
