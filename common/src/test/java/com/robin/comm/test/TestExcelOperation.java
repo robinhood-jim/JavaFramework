@@ -40,6 +40,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 
@@ -92,7 +94,7 @@ public class TestExcelOperation {
             writer.setSheetProp(prop);
             writer.beginWrite();
             Long startTs = System.currentTimeMillis() - 3600 * 24 * 1000;
-            for(int j=0;j<500000;j++){
+            for(int j=0;j<5000;j++){
                 cachedMap.put("name", StringUtils.generateRandomChar(12));
                 cachedMap.put("time", String.valueOf(startTs + j * 1000));
                 cachedMap.put("intcol", String.valueOf(random.nextInt(1000)));
@@ -120,27 +122,36 @@ public class TestExcelOperation {
         Map<String,CellStyle> cellStyleMap=new HashMap<>();
         Map<String,Object> cachedMap=new HashMap<>();
         Random random = new Random(12312321321312L);
-
-        try (XSSFWorkbook workbook = new XSSFWorkbook()) {
-             Field field=workbook.getClass().getSuperclass().getDeclaredField("pkg");
-             field.setAccessible(true);
-             OPCPackage opcPackage=(OPCPackage) field.get(workbook);
-             workbook.createSheet("sheet1");
-
-            List<PackagePart> sheets = opcPackage.getPartsByContentType(XSSFRelation.WORKSHEET.getContentType());
-
-            List<PackagePart> sharedParts = opcPackage.getPartsByContentType(XSSFRelation.SHARED_STRINGS.getContentType());
-
+        ByteArrayOutputStream byteOut=new ByteArrayOutputStream();
+        try(XSSFWorkbook workbook=new XSSFWorkbook()){
+            Field field=workbook.getClass().getSuperclass().getDeclaredField("pkg");
+            field.setAccessible(true);
+            OPCPackage opcPackage=(OPCPackage) field.get(workbook);
+            Sheet sheet=workbook.createSheet("sheet1");
             PackagePartName packagePartName = PackagingURIHelper.createPartName("/xl/worksheets/sheet1.xml");
             opcPackage.removePart(packagePartName);
-            //opcPackage.deletePart(packagePartName);
-            //PackagePart part=opcPackage.getPart(packagePartName);
-            PackagePart part = opcPackage.createPart(packagePartName,XSSFRelation.WORKSHEET.getContentType());
-            opcPackage.addRelationship(packagePartName, TargetMode.INTERNAL,XSSFRelation.WORKSHEET.getRelation());
-            opcPackage.flush();
-            //ByteArrayOutputStream outputStream=new ByteArrayOutputStream();
-            OutputStream outputStream = part.getOutputStream();
-            writer = factory.createXMLStreamWriter(outputStream);
+            for(int i=0;i<meta.getColumnList().size();i++){
+                ExcelCellStyleUtil.getCellStyle(workbook, meta.getColumnList().get(i).getColumnType(), cellStyleMap);
+            }
+            workbook.write(byteOut);
+        }catch (Exception ex1){
+            ex1.printStackTrace();
+        }
+        try(ZipOutputStream zout=new ZipOutputStream(new FileOutputStream("d:/test2.xlsx"));
+            ZipInputStream zis=new ZipInputStream(new ByteArrayInputStream(byteOut.toByteArray()))){
+            ZipEntry entry;
+            // Copy existing entries
+            while ((entry = zis.getNextEntry()) != null) {
+                zout.putNextEntry(new ZipEntry(entry.getName()));
+                byte[] buffer = new byte[1024];
+                int len;
+                while ((len = zis.read(buffer)) != -1) {
+                    zout.write(buffer, 0, len);
+                }
+                zout.closeEntry();
+            }
+            zout.putNextEntry(new ZipEntry("xl/worksheets/sheet1.xml"));
+            writer = factory.createXMLStreamWriter(zout);
             writer.writeStartDocument("UTF-8", "1.0");
             writer.writeStartElement("worksheet");
             writer.writeAttribute("xmlxs", "http://schemas.openxmlformats.org/spreadsheetml/2006/main");
@@ -162,21 +173,46 @@ public class TestExcelOperation {
             writer.writeEndElement();
             writer.writeEndElement();
             writer.writeStartElement("sheetData");
-            writeHeader(writer,workbook,Arrays.asList("name","time","intcol","dval","dval2","diff"),cellStyleMap);
+            writeHeader(writer,Arrays.asList("name","time","intcol","dval","dval2","diff"),cellStyleMap);
             cachedMap.clear();
             Long startTs = System.currentTimeMillis() - 3600 * 24 * 1000;
-            for(int j=0;j<5000;j++){
+            for(int j=0;j<600000;j++){
                 cachedMap.put("name", StringUtils.generateRandomChar(12));
                 cachedMap.put("time", String.valueOf(startTs + j * 1000));
                 cachedMap.put("intcol", String.valueOf(random.nextInt(1000)));
                 cachedMap.put("dval", String.valueOf(random.nextDouble() * 1000));
                 cachedMap.put("dval2", String.valueOf(random.nextDouble() * 500));
-                writeLine(writer,workbook,cachedMap,meta,cellStyleMap,j+2);
+                writeLine(writer,cachedMap,meta,cellStyleMap,j+2);
             }
             writer.writeEndElement();
             writer.writeEndElement();
             writer.flush();
             writer.close();
+            zout.closeEntry();
+        }catch (Exception ex){
+            ex.printStackTrace();
+        }
+
+       /* try (XSSFWorkbook workbook = new XSSFWorkbook()) {
+             Field field=workbook.getClass().getSuperclass().getDeclaredField("pkg");
+             field.setAccessible(true);
+             OPCPackage opcPackage=(OPCPackage) field.get(workbook);
+             workbook.createSheet("sheet1");
+
+            List<PackagePart> sheets = opcPackage.getPartsByContentType(XSSFRelation.WORKSHEET.getContentType());
+
+            List<PackagePart> sharedParts = opcPackage.getPartsByContentType(XSSFRelation.SHARED_STRINGS.getContentType());
+
+            PackagePartName packagePartName = PackagingURIHelper.createPartName("/xl/worksheets/sheet1.xml");
+            opcPackage.removePart(packagePartName);
+            //opcPackage.deletePart(packagePartName);
+            //PackagePart part=opcPackage.getPart(packagePartName);
+            PackagePart part = opcPackage.createPart(packagePartName,XSSFRelation.WORKSHEET.getContentType());
+            opcPackage.addRelationship(packagePartName, TargetMode.INTERNAL,XSSFRelation.WORKSHEET.getRelation());
+            opcPackage.flush();
+            //ByteArrayOutputStream outputStream=new ByteArrayOutputStream();
+            OutputStream outputStream = part.getOutputStream();
+
             part.flush();
             opcPackage.flush();
             Sheet sheet=workbook.getSheetAt(0);
@@ -190,7 +226,7 @@ public class TestExcelOperation {
             if(writer!=null) {
                 writer.close();
             }
-        }
+        }*/
     }
 
     private String getEndCell(int columnSize) {
@@ -204,12 +240,12 @@ public class TestExcelOperation {
         return builder.toString();
     }
 
-    private void writeLine(XMLStreamWriter writer, Workbook wb, Map<String, Object> valueMap, DataCollectionMeta colmeta, Map<String, CellStyle> cellStyleMap, int rowpos) throws Exception {
+    private void writeLine(XMLStreamWriter writer,Map<String, Object> valueMap, DataCollectionMeta colmeta, Map<String, CellStyle> cellStyleMap, int rowpos) throws Exception {
 
         writer.writeStartElement("row");
         writer.writeAttribute("r", String.valueOf(rowpos));
         for (int i = 0; i < colmeta.getColumnList().size(); i++) {
-            CellStyle style = ExcelCellStyleUtil.getCellStyle(wb, colmeta.getColumnList().get(i).getColumnType(), cellStyleMap);
+            CellStyle style = cellStyleMap.get(colmeta.getColumnList().get(i).getColumnType());
             if (!ObjectUtils.isEmpty(valueMap.get(colmeta.getColumnList().get(i).getColumnName()))) {
                 writer.writeStartElement("c");
                 writer.writeAttribute("r", getEndCell(i + 1) + rowpos);
@@ -254,8 +290,8 @@ public class TestExcelOperation {
         writer.writeCharacters("\n");
     }
 
-    private void writeHeader(XMLStreamWriter writer, Workbook wb, List<String> columnName, Map<String, CellStyle> cellStyleMap) throws Exception {
-        CellStyle style = ExcelCellStyleUtil.getCellStyle(wb, Const.META_TYPE_STRING, cellStyleMap);
+    private void writeHeader(XMLStreamWriter writer, List<String> columnName, Map<String, CellStyle> cellStyleMap) throws Exception {
+        CellStyle style = cellStyleMap.get(Const.META_TYPE_STRING);
         writer.writeStartElement("row");
         writer.writeAttribute("r", "1");
         for (int i = 0; i < columnName.size(); i++) {
@@ -273,61 +309,7 @@ public class TestExcelOperation {
         writer.writeEndElement();
     }
 
-    @Test
-    public void testGen1() throws Exception {
-        XMLOutputFactory factory = XMLOutputFactory.newFactory();
-        XMLStreamWriter writer = null;
 
-        try {
-            writer = factory.createXMLStreamWriter(new FileOutputStream("d:/test1.xml"), "UTF-8");
-            writer.writeStartDocument("UTF-8", "1.0");
-            writer.writeCharacters("\n");
-            writer.writeStartElement("worksheet");
-            writer.writeAttribute("xmlxs", "http://schemas.openxmlformats.org/spreadsheetml/2006/main");
-            writer.writeEmptyElement("dimension");
-            writer.writeAttribute("ref", "A1:D13");
-            writer.writeStartElement("sheetViews");
-            writer.writeStartElement("sheetView");
-            writer.writeAttribute("workbookViewId", "0");
-            writer.writeAttribute("tabSelected", "true");
-            writer.writeEndElement();
-            writer.writeEndElement();
-            writer.writeEmptyElement("sheetFormatPr");
-            writer.writeAttribute("defaultRowHeight", "15.0");
-            writer.writeStartElement("cols");
-            writer.writeStartElement("col");
-            writer.writeAttribute("min", "1");
-            writer.writeAttribute("max", "1");
-            writer.writeAttribute("customWidth", "true");
-            writer.writeEndElement();
-            writer.writeEndElement();
-            writer.writeStartElement("sheetData");
-            writer.writeStartElement("row");
-            writer.writeAttribute("r", "1");
-            writer.writeCharacters("\n");
-            writer.writeStartElement("c");
-            writer.writeAttribute("r", "A1");
-            writer.writeAttribute("s", "1");
-            writer.writeAttribute("t", "n");
-            writer.writeStartElement("v");
-            writer.writeCharacters("111.0");
-            writer.writeEndElement();
-            writer.writeEndElement();
-            writer.writeStartElement("c");
-            writer.writeAttribute("r", "B1");
-            writer.writeAttribute("s", "1");
-            writer.writeAttribute("t", "n");
-            writer.writeCharacters("200.0");
-            writer.writeEndElement();
-            writer.writeEndElement();
-            writer.writeEndElement();
-            writer.writeEndElement();
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        } finally {
-            writer.close();
-        }
-    }
 
     @Test
     public void testGenerate() throws Exception {

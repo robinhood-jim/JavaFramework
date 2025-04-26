@@ -98,7 +98,8 @@ public class Const {
     public static final String ITERATOR_PROCESSID="$processId";
     public static final String SUCCESS="success";
     public static final String COLUMN_XLSX_HASHEADER="xlsx.hasHeader";
-
+    public static final String COLUMN_XLSX_MULTIPLESHEETS="xlsx.multipleSheets";
+    public static final String COLUMN_XLSX_SHEETLINELIMITS="xlsx.sheetLineLimits";
 
     public enum FILEFORMAT {
         TYPE_CSV("1"),       //csv
