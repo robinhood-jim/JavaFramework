@@ -200,7 +200,7 @@ public interface IjdbcDao {
      * @return
      * @throws DAOException
      */
-    <T extends BaseObject>T getEntity(Class<T> clazz, Serializable value) throws DAOException;
+    <T extends BaseObject,P extends Serializable>T getEntity(Class<T> clazz, P value) throws DAOException;
 
     /**
      * Execute Sql with Config query

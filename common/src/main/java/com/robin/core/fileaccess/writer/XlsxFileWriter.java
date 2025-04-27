@@ -40,13 +40,12 @@ import java.util.zip.ZipOutputStream;
  * Xlsx StaX writer,Support divided Sheet write,MAX_LINE max sheet lines
  */
 public class XlsxFileWriter extends TextBasedFileWriter{
-    private XMLOutputFactory factory;
     private XMLStreamWriter streamWriter;
     private XSSFWorkbook workbook;
     private OPCPackage opcPackage;
 
     private static final char CHARA = 'A';
-    private Map<String,CellStyle> cellStyleMap=new HashMap<>();
+    private final Map<String,CellStyle> cellStyleMap=new HashMap<>();
     private int rowPos=2;
     private int currentSheetPos=0;
     private ExcelSheetProp sheetProp;
@@ -85,7 +84,7 @@ public class XlsxFileWriter extends TextBasedFileWriter{
     public void beginWrite() throws IOException {
         super.beginWrite();
         try {
-            factory=XMLOutputFactory.newFactory();
+            XMLOutputFactory factory=XMLOutputFactory.newFactory();
             workbook = new XSSFWorkbook();
             Field field = workbook.getClass().getSuperclass().getDeclaredField("pkg");
             field.setAccessible(true);

@@ -225,6 +225,9 @@ public class XlsxFileIterator extends AbstractFileIterator{
                 streamReader.close();
                 readStreams=sheetStreams.next();
                 streamReader=factory.createXMLStreamReader(readStreams,colmeta.getEncode());
+                if(hasHeader) {
+                    readNext();
+                }
             }
             readNext();
         }

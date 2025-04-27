@@ -796,7 +796,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
 
 
     @Override
-    public <T extends BaseObject> T getEntity(Class<T> clazz, Serializable id) throws DAOException {
+    public <T extends BaseObject,P extends Serializable> T getEntity(Class<T> clazz, P id) throws DAOException {
         try {
             T obj = clazz.getDeclaredConstructor().newInstance();
             EntityMappingUtil.SelectSegment segment = EntityMappingUtil.getSelectPkSegment(clazz, id, sqlGen, this);
