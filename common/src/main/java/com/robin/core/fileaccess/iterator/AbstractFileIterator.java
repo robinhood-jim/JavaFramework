@@ -255,7 +255,7 @@ public abstract class AbstractFileIterator implements IResourceIterator {
         try {
             // no order by
             if(!useOrderBy && !useGroupBy) {
-                groupOrderByInit();
+
                 pullNext();
                 while (!CollectionUtils.isEmpty(cachedValue) && useFilter && !CommRecordGenerator.doesRecordAcceptable(segment, cachedValue)) {
                     pullNext();
@@ -267,6 +267,9 @@ public abstract class AbstractFileIterator implements IResourceIterator {
                 return !CollectionUtils.isEmpty(cachedValue);
             }else{
                 //capture all record to offHeap
+                if(CollectionUtils.isEmpty(groupByMap)) {
+                    groupOrderByInit();
+                }
                 newRecord.clear();
                 if(groupIter.hasNext()) {
 
