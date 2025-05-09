@@ -59,13 +59,14 @@ public class XlsxFileIterator extends AbstractFileIterator{
     public void beforeProcess() {
         super.beforeProcess();
         try {
-            factory = XMLInputFactory.newFactory();
+            factory = new com.fasterxml.aalto.stax.InputFactoryImpl();
             factory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, Boolean.FALSE);
             factory.setProperty(XMLInputFactory.SUPPORT_DTD, Boolean.FALSE);
             opcPackage=OPCPackage.open(instream);
             xssfReader=new XSSFReader(opcPackage);
             sheetStreams=xssfReader.getSheetsData();
             sharedStrings=xssfReader.getSharedStringsTable();
+
             if(sheetStreams.hasNext()){
                 readStreams=sheetStreams.next();
                 streamReader=factory.createXMLStreamReader(readStreams,colmeta.getEncode());

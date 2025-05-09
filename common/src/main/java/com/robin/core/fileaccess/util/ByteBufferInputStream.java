@@ -16,6 +16,12 @@ public class ByteBufferInputStream  extends InputStream {
         byteBuffer.position(0);
         this.count=count;
     }
+    public ByteBufferInputStream(ByteBuffer buffer,byte[] bytes){
+        this.byteBuffer=buffer;
+        byteBuffer.position(0);
+        buffer.put(bytes);
+        this.count=bytes.length;
+    }
     @Override
     public int read() throws IOException {
         if (byteBuffer.position()>count || byteBuffer.remaining() == 0) {
@@ -82,5 +88,10 @@ public class ByteBufferInputStream  extends InputStream {
     }
     public void seek(int pos){
         byteBuffer.position(pos);
+    }
+
+    @Override
+    public void close() throws IOException {
+        byteBuffer.clear();
     }
 }

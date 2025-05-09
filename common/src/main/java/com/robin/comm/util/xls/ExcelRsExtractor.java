@@ -38,7 +38,7 @@ public class ExcelRsExtractor extends ResultSetOperationExtractor {
         pos++;
         processRows++;
         try {
-            if (prop.isStreamInsert() && (processRows) % prop.getStreamRows() == 0) {
+            if (prop.isStreamMode() && (processRows) % prop.getStreamRows() == 0) {
                 ((SXSSFSheet) targetSheet).flushRows(prop.getStreamRows());
             }
 

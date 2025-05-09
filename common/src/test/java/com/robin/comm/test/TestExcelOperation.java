@@ -12,24 +12,19 @@ import com.robin.core.fileaccess.iterator.AbstractFileIterator;
 import com.robin.core.fileaccess.iterator.AbstractResIterator;
 import com.robin.core.fileaccess.iterator.TextFileIteratorFactory;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
-import com.robin.core.fileaccess.writer.AbstractFileWriter;
 import com.robin.core.fileaccess.writer.TextFileWriterFactory;
 import com.robin.core.fileaccess.writer.XlsxFileWriter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
-import org.apache.poi.hssf.usermodel.HSSFDataFormat;
 import org.apache.poi.openxml4j.opc.*;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
-import org.apache.poi.xssf.usermodel.XSSFRelation;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.ObjectUtils;
 
-import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamWriter;
 import java.io.*;
@@ -56,18 +51,17 @@ public class TestExcelOperation {
         builder.addColumn("name", Const.META_TYPE_STRING).addColumn("time", Const.META_TYPE_TIMESTAMP)
                 .addColumn("intcol", Const.META_TYPE_INTEGER).addColumn("dval", Const.META_TYPE_DOUBLE)
                 .addColumn("dval2", Const.META_TYPE_DOUBLE).addColumn("diff", Const.META_TYPE_DOUBLE)
-                .fileFormat(Const.FILEFORMATSTR.XLSX.getValue()).resPath("file:///d:/test.xlsx");
+                .fileFormat(Const.FILEFORMATSTR.XLSX.getValue()).resPath("file:///d:/test2.xlsx");
 
         LocalFileSystemAccessor accessor = LocalFileSystemAccessor.getInstance();
+        Long fromTs=System.currentTimeMillis();
         try (AbstractFileIterator iterator = (AbstractFileIterator) TextFileIteratorFactory.getProcessIteratorByType(builder.build(), accessor)) {
             int pos = 0;
             while (iterator.hasNext()) {
                 pos++;
-                if (pos % 10000 == 0) {
-                    System.out.println(iterator.next());
-                }
             }
             System.out.println(pos);
+            System.out.println(System.currentTimeMillis()-fromTs);
         } catch (IOException ex) {
 
         }
@@ -94,7 +88,7 @@ public class TestExcelOperation {
             writer.setSheetProp(prop);
             writer.beginWrite();
             Long startTs = System.currentTimeMillis() - 3600 * 24 * 1000;
-            for(int j=0;j<5000;j++){
+            for(int j=0;j<120000;j++){
                 cachedMap.put("name", StringUtils.generateRandomChar(12));
                 cachedMap.put("time", String.valueOf(startTs + j * 1000));
                 cachedMap.put("intcol", String.valueOf(random.nextInt(1000)));
@@ -319,7 +313,7 @@ public class TestExcelOperation {
         prop.setStartCol(1);
         prop.setStartRow(1);
         prop.setSheetName("test");
-        prop.setStreamInsert(true);
+        prop.setStreamMode(true);
         prop.addColumnProp(new ExcelColumnProp("name", "name", Const.META_TYPE_STRING, false));
         prop.addColumnProp(new ExcelColumnProp("time", "time", Const.META_TYPE_TIMESTAMP, false));
         prop.addColumnProp(new ExcelColumnProp("intcol", "intcol", Const.META_TYPE_INTEGER, false));
@@ -388,7 +382,7 @@ public class TestExcelOperation {
         prop.setStartCol(1);
         prop.setStartRow(1);
         prop.setSheetName("test");
-        prop.setStreamInsert(true);
+        prop.setStreamMode(true);
         prop.addColumnProp(new ExcelColumnProp("name", "name", Const.META_TYPE_STRING, false));
         prop.addColumnProp(new ExcelColumnProp("time", "time", Const.META_TYPE_TIMESTAMP, false));
         prop.addColumnProp(new ExcelColumnProp("intcol", "intcol", Const.META_TYPE_INTEGER, false));
@@ -419,7 +413,7 @@ public class TestExcelOperation {
         prop.addColumnProp(new ExcelColumnProp("model", "model", Const.META_TYPE_STRING, false));
         prop.addColumnProp(new ExcelColumnProp("engine", "engine", Const.META_TYPE_STRING, false));
         prop.addColumnProp(new ExcelColumnProp("img", "img", Const.META_TYPE_STRING, false));
-        prop.setStreamInsert(true);
+        prop.setStreamMode(true);
         prop.setStreamRows(3000);
         TableConfigProp header = new TableConfigProp();
         header.setContainrow(1);

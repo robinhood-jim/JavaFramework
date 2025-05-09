@@ -520,7 +520,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
             }
             FieldContent generateColumn;
             //pk model insert
-            if (insertSegment.isHasPrimaryKey()) {
+            if (insertSegment.isHasincrementPk() || insertSegment.isHasSequencePk()) {
                 PreparedStatementCreatorFactory factory = new PreparedStatementCreatorFactory(insertSql, insertSegment.getParamTypes());
                 KeyHolder keyHolder = new GeneratedKeyHolder();
                 if (insertSegment.isHasSequencePk()) {
@@ -555,7 +555,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
 
                 }
             } else {
-                //no pk model insert
+                //no pk model insert or assign value pk
                 if (!insertSegment.isContainlob()) {
                     executeUpdate(insertSql, fields, obj);
                 } else {

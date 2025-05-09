@@ -84,7 +84,7 @@ public class XlsxFileWriter extends TextBasedFileWriter{
     public void beginWrite() throws IOException {
         super.beginWrite();
         try {
-            XMLOutputFactory factory=XMLOutputFactory.newFactory();
+            XMLOutputFactory factory=new com.fasterxml.aalto.stax.OutputFactoryImpl();
             workbook = new XSSFWorkbook();
             Field field = workbook.getClass().getSuperclass().getDeclaredField("pkg");
             field.setAccessible(true);
@@ -96,6 +96,7 @@ public class XlsxFileWriter extends TextBasedFileWriter{
                 ExcelCellStyleUtil.getCellStyle(workbook, colmeta.getColumnList().get(i).getColumnType(), cellStyleMap);
             }
             byteOut=new ByteArrayOutputStream();
+
             if(!multipleSheets) {
                 workbook.write(byteOut);
                 workbook.close();

@@ -32,7 +32,7 @@ public class ExcelSheetProp {
 	private int startCol=1;  
 	private Integer tableId;
 	// using SXSSFWorkbook with streamingWrite
-	private boolean streamInsert=false;
+	private boolean streamMode =false;
 	private Integer streamRows=100;
 	private int sheetNum=0;
 	private boolean fillHeader=true;

@@ -36,7 +36,6 @@ import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
 import java.awt.Color;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -76,7 +75,7 @@ public class ExcelBaseOper {
                     })
                     .orElseGet(HSSFWorkbook::new);
         } else {
-            wb = Optional.of(prop.isStreamInsert()).map(f -> {
+            wb = Optional.of(prop.isStreamMode()).map(f -> {
                 Workbook wb1 = Optional.ofNullable(prop.getTemplateFile()).map(p1 -> {
                     try {
                         SXSSFWorkbook wb3 = new SXSSFWorkbook(new XSSFWorkbook(getTemplateInputStream(prop)), prop.getStreamRows());

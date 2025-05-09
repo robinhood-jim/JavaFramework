@@ -17,6 +17,7 @@ package com.robin.comm.util.xls;
 
 import java.util.Map;
 
+import com.robin.core.base.util.DateTimeFormatHolder;
 import org.apache.poi.hssf.usermodel.HSSFDataFormat;
 import org.apache.poi.ss.usermodel.*;
 
@@ -29,6 +30,7 @@ public class ExcelCellStyleUtil {
     private ExcelCellStyleUtil() {
 
     }
+
 
     public static CellStyle getNoBorderCellType(Workbook wb, String metaType) {
         CellStyle cs = wb.createCellStyle();
@@ -52,7 +54,7 @@ public class ExcelCellStyleUtil {
                 break;
             case Const.META_TYPE_DATE:
             case Const.META_TYPE_TIMESTAMP:
-                cs.setDataFormat(wb.getCreationHelper().createDataFormat().getFormat("yyyy-MM-dd hh:mm:ss"));
+                cs.setDataFormat(wb.getCreationHelper().createDataFormat().getFormat(DateTimeFormatHolder.getTimestampFormatter().toString()));
                 break;
             case Const.META_TYPE_INTEGER:
                 cs.setDataFormat(HSSFDataFormat.getBuiltinFormat("0"));
