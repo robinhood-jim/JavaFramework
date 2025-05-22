@@ -56,7 +56,7 @@ public class ExcelBaseOper {
 
     public static final String TYPE_EXCEL2003 = "xls";
     public static final String TYPE_EXCEL2007 = "xlsx";
-    public static final String defaultFontName = Locale.CHINA.equals(Locale.getDefault()) || Locale.SIMPLIFIED_CHINESE.equals(Locale.getDefault()) ? "宋体" : java.awt.Font.SANS_SERIF;
+    public static final String defaultFontName = Locale.CHINA.equals(Locale.getDefault()) || Locale.SIMPLIFIED_CHINESE.equals(Locale.getDefault()) ? "宋体" : "Calibri";
     private static final Logger logger = LoggerFactory.getLogger(ExcelBaseOper.class);
     private static final Pattern paramPattern=Pattern.compile("\\w+(\\{P([\\+|-]?[\\d+])?\\})");
 

@@ -32,7 +32,7 @@ import java.util.function.Function;
 @Getter
 @Setter
 @SuppressWarnings("unused")
-public class SpringAutoCreateService<B extends BaseObject, P extends Serializable> implements IBaseAnnotationJdbcService<B, P> {
+public final class SpringAutoCreateService<B extends BaseObject, P extends Serializable> implements IBaseAnnotationJdbcService<B, P> {
     protected Function<B, P> saveFunction;
     protected Consumer<B> saveBeforeFunction;
     protected BiConsumer<B, P> saveAfterFunction;

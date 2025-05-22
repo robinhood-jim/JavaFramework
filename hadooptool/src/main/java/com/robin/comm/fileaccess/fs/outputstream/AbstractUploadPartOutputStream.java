@@ -4,6 +4,7 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
+import com.robin.core.base.util.FileUtils;
 import com.robin.core.base.util.ResourceConst;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import lombok.extern.slf4j.Slf4j;
@@ -48,6 +49,7 @@ public abstract class AbstractUploadPartOutputStream extends OutputStream {
     protected ListeningExecutorService guavaExecutor;
     protected int uploadThread = ResourceConst.DEFAULTSTORAGEUPLOADTHREAD;
     protected List<ListenableFuture<Boolean>> futures = new ArrayList<>();
+    protected int defaultUploadPartSize =ResourceConst.DEFAULTCACHEOFFHEAPSIZE;
 
     protected void init() {
         if (!asyncTag && !ObjectUtils.isEmpty(meta) && !CollectionUtils.isEmpty(meta.getResourceCfgMap()) && !ObjectUtils.isEmpty(meta.getResourceCfgMap().get(ResourceConst.USEASYNCUPLOAD)) && "true".equalsIgnoreCase(meta.getResourceCfgMap().get(ResourceConst.USEASYNCUPLOAD).toString())) {
@@ -172,12 +174,16 @@ public abstract class AbstractUploadPartOutputStream extends OutputStream {
     }
 
     protected String getContentType(DataCollectionMeta meta) {
-        return !ObjectUtils.isEmpty(meta.getContent()) && !ObjectUtils.isEmpty(meta.getContent().getContentType()) ? meta.getContent().getContentType() : ResourceConst.DEFAULTCONTENTTYPE;
+        if(!ObjectUtils.isEmpty(meta)) {
+            return !ObjectUtils.isEmpty(meta.getContent()) && !ObjectUtils.isEmpty(meta.getContent().getContentType()) ? meta.getContent().getContentType() : ResourceConst.DEFAULTCONTENTTYPE;
+        }else{
+            return FileUtils.parseFile(path).getContentType();
+        }
     }
 
     protected void initHeap() {
         int initLength =!ObjectUtils.isEmpty(meta) && !ObjectUtils.isEmpty(meta.getResourceCfgMap().get(ResourceConst.DEFAULTCACHEOFFHEAPSIZEKEY))
-                ? Integer.parseInt(meta.getResourceCfgMap().get(ResourceConst.DEFAULTCACHEOFFHEAPSIZEKEY).toString()) : ResourceConst.DEFAULTCACHEOFFHEAPSIZE;
+                ? Integer.parseInt(meta.getResourceCfgMap().get(ResourceConst.DEFAULTCACHEOFFHEAPSIZEKEY).toString()) : defaultUploadPartSize;
         segment = MemorySegmentFactory.allocateOffHeapUnsafeMemory(initLength, this, new Thread() {
         });
         buffer = segment.getOffHeapBuffer();
@@ -235,5 +241,11 @@ public abstract class AbstractUploadPartOutputStream extends OutputStream {
         }
 
         protected abstract boolean uploadPartAsync() throws IOException;
+    }
+
+    void setDefaultUploadPartSize(int defaultUploadPartSize) {
+        if(defaultUploadPartSize>0) {
+            this.defaultUploadPartSize = defaultUploadPartSize;
+        }
     }
 }

@@ -17,11 +17,12 @@ public class S3OutputStream extends AbstractUploadPartOutputStream {
 
     }
 
-    public S3OutputStream(S3Client client, DataCollectionMeta meta, String bucketName, String path) {
+    public S3OutputStream(S3Client client, DataCollectionMeta meta, String bucketName, String path,int defaultPartSize) {
         this.client = client;
         this.bucketName = bucketName;
         this.path = path;
         this.meta = meta;
+        setDefaultUploadPartSize(defaultPartSize);
         init();
     }
 

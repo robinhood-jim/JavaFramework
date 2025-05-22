@@ -36,6 +36,7 @@ public class JsonFileWriter extends TextBasedFileWriter {
 	public JsonFileWriter(DataCollectionMeta colmeta, AbstractFileSystemAccessor accessor) {
 		super(colmeta,accessor);
 		this.identifier= Const.FILEFORMATSTR.JSON.getValue();
+		this.useBufferedWriter=true;
 	}
 
 	@Override

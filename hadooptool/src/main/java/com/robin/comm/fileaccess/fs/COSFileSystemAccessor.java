@@ -172,7 +172,12 @@ public class COSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
 
     @Override
     protected OutputStream getOutputStream(String path) throws IOException {
-        return new COSOutputStream(cosClient, colmeta,getBucketName(colmeta),path,regionName);
+        return new COSOutputStream(cosClient, colmeta,getBucketName(colmeta),path,regionName,0);
+    }
+
+    @Override
+    protected OutputStream getOutputStream(String path, int uploadPartSize) throws IOException {
+        return new COSOutputStream(cosClient, colmeta,getBucketName(colmeta),path,regionName,uploadPartSize);
     }
 
     public static class Builder{

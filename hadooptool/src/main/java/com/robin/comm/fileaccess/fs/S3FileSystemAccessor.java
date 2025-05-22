@@ -88,7 +88,11 @@ public class S3FileSystemAccessor extends AbstractCloudStorageFileSystemAccessor
 
     @Override
     protected synchronized OutputStream getOutputStream(String path) throws IOException {
-        return new S3OutputStream(client, colmeta,getBucketName(colmeta),path);
+        return new S3OutputStream(client, colmeta,getBucketName(colmeta),path,0);
+    }
+    @Override
+    protected synchronized OutputStream getOutputStream(String path,int uploadPartSize) throws IOException {
+        return new S3OutputStream(client, colmeta,getBucketName(colmeta),path,uploadPartSize);
     }
 
     @Override

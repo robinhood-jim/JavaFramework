@@ -25,6 +25,7 @@ public class ExcelColumnProp {
     private String columnCode;
     private String columnType;
     private String formula;
+    private String format;
     private boolean needMerge;
 
 

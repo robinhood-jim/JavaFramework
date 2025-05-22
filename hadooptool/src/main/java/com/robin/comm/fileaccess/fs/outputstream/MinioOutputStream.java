@@ -31,12 +31,13 @@ public class MinioOutputStream extends AbstractUploadPartOutputStream {
 
     }
 
-    public MinioOutputStream(CustomMinioClient client, DataCollectionMeta meta, String bucketName, String path, String region) {
+    public MinioOutputStream(CustomMinioClient client, DataCollectionMeta meta, String bucketName, String path, String region,int defaultPartSize) {
         this.client = client;
         this.bucketName = bucketName;
         this.path = path;
         this.region=region;
         this.meta=meta;
+        setDefaultUploadPartSize(defaultPartSize);
         init();
     }
     protected void initiateUpload() throws IOException{

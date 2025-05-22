@@ -59,7 +59,7 @@ public class XlsxFileIterator extends AbstractFileIterator{
     public void beforeProcess() {
         super.beforeProcess();
         try {
-            factory = new com.fasterxml.aalto.stax.InputFactoryImpl();
+            factory = XMLInputFactory.newFactory();
             factory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, Boolean.FALSE);
             factory.setProperty(XMLInputFactory.SUPPORT_DTD, Boolean.FALSE);
             opcPackage=OPCPackage.open(instream);

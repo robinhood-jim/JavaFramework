@@ -36,7 +36,7 @@ public class QiniuOutputStream extends AbstractUploadPartOutputStream {
 
     }
 
-    public QiniuOutputStream(Client client, UploadManager manager, DataCollectionMeta colmeta, Auth auth, String bucketName, String path, String urlPrefix) {
+    public QiniuOutputStream(Client client, UploadManager manager, DataCollectionMeta colmeta, Auth auth, String bucketName, String path, String urlPrefix,int defaultPartSize) {
         this.client = client;
         this.meta = colmeta;
         this.bucketName = bucketName;
@@ -45,6 +45,7 @@ public class QiniuOutputStream extends AbstractUploadPartOutputStream {
         this.auth = auth;
         this.manager = manager;
         log.info("using urlPrefix {}", urlPrefix);
+        setDefaultUploadPartSize(defaultPartSize);
         initHeap();
     }
 

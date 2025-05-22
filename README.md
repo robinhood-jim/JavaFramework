@@ -161,10 +161,12 @@ Slightly Framework design to  support Spring based java or Bigdata program.
         
         4.Query Configuration XML        
             4.1 Config Spring Bean
-                using Config file                
-                    <bean id="queryFactory" class="com.robin.core.query.util.QueryFactory" autowire="byName">
-                        	<property name="xmlConfigPath" value="classpath:query"></property>
-                    </bean>
+                using Config file   
+```xml
+                <bean id="queryFactory" class="com.robin.core.query.util.QueryFactory" autowire="byName">
+                    <property name="xmlConfigPath" value="classpath:query"></property>
+                </bean>                    
+```
                 xmlConfigPath support three input
                     I.if not assign value,read config xml from classpath:queryConfig
                     II. classpath:query  
@@ -178,14 +180,16 @@ Slightly Framework design to  support Spring based java or Bigdata program.
                          return factory;
                     }
             4.1 config XML File
-                in  xmlConfigPath Path ,add xml file
-                content
-                    <SQLSCRIPT ID="$_GETCODESET">
-                        <FROMSQL>from t_sys_code a,t_sys_codeset b where a.CS_ID=b.ID and ${queryString}</FROMSQL>
-                    	<FIELD>a.ITEM_NAME as ITEMNAME,a.ITEM_VALUE as ITEMVALUE</FIELD>
-                    </SQLSCRIPT>
+                in  xmlConfigPath Path ,add xml file content
+```XML
+            <SQLSCRIPT ID="$_GETCODESET">
+                <FROMSQL>from t_sys_code a,t_sys_codeset b where a.CS_ID=b.ID and ${queryString}</FROMSQL>
+                <FIELD>a.ITEM_NAME as ITEMNAME,a.ITEM_VALUE as ITEMVALUE</FIELD>
+            </SQLSCRIPT>                    
+```
                 SQLSCRIPT ID refrer to   queryBySelectId selectId.example see core test.    
 		5.mybatis like QueryMapper
+```xml
 			<mapper namespace="com.robin.test.query1">
 			<resultMap id="rsMap1" type="com.robin.core.test.model.TestModel">
 				<result column="id" property="id" jdbcType="BIGINT" />
@@ -274,6 +278,7 @@ Slightly Framework design to  support Spring based java or Bigdata program.
 
 			</delete>
 		</mapper>
+```
 		no need to generate Mapper class,Only need QueryMapper xml file
 		exmaple: core/src/test/java/com/robin/core/test/db/JdbcDaoTest  testQueryAndInsertMapper
 		

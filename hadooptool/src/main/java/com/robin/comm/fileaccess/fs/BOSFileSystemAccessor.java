@@ -112,7 +112,12 @@ public class BOSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
 
     @Override
     protected OutputStream getOutputStream(String path) throws IOException {
-        return new BOSOutputStream(client, colmeta,bucketName, path);
+        return new BOSOutputStream(client, colmeta,bucketName, path,0);
+    }
+
+    @Override
+    protected OutputStream getOutputStream(String path, int uploadPartSize) throws IOException {
+        return new BOSOutputStream(client, colmeta,bucketName, path,uploadPartSize);
     }
 
     public static class Builder{

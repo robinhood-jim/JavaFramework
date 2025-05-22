@@ -31,9 +31,11 @@ public abstract class TextBasedFileWriter extends AbstractFileWriter{
 
 	protected TextBasedFileWriter(DataCollectionMeta colmeta) {
 		super(colmeta);
+		this.useBufferedWriter=true;
 	}
 	protected TextBasedFileWriter(DataCollectionMeta colmeta, AbstractFileSystemAccessor accessor) {
 		super(colmeta,accessor);
+		this.useBufferedWriter=true;
 	}
 	@Override
 	public void setOutputStream(OutputStream out) {

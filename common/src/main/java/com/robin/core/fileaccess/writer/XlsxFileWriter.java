@@ -36,10 +36,11 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
+
 /**
  * Xlsx StaX writer,Support divided Sheet write,MAX_LINE max sheet lines
  */
-public class XlsxFileWriter extends TextBasedFileWriter{
+public class XlsxFileWriter extends AbstractFileWriter{
     private XMLStreamWriter streamWriter;
     private XSSFWorkbook workbook;
     private OPCPackage opcPackage;
@@ -55,6 +56,7 @@ public class XlsxFileWriter extends TextBasedFileWriter{
     private ByteArrayOutputStream byteOut;
     private FileOutputStream tmpZipFile;
     private String tmpFileName;
+    private XMLOutputFactory factory;
     private int MAX_LINE=Double.valueOf(Math.pow(2,18)).intValue();
     public XlsxFileWriter(){
         this.identifier= Const.FILEFORMATSTR.XLSX.getValue();
@@ -84,7 +86,7 @@ public class XlsxFileWriter extends TextBasedFileWriter{
     public void beginWrite() throws IOException {
         super.beginWrite();
         try {
-            XMLOutputFactory factory=new com.fasterxml.aalto.stax.OutputFactoryImpl();
+            factory=XMLOutputFactory.newFactory();
             workbook = new XSSFWorkbook();
             Field field = workbook.getClass().getSuperclass().getDeclaredField("pkg");
             field.setAccessible(true);
@@ -123,6 +125,7 @@ public class XlsxFileWriter extends TextBasedFileWriter{
         PackagePartName packagePartName = PackagingURIHelper.createPartName("/xl/worksheets/sheet"+sheetNum+".xml");
         opcPackage.removePart(packagePartName);
         zipOutputStream.putNextEntry(new ZipEntry("xl/worksheets/sheet"+sheetNum+".xml"));
+        //streamWriter = factory.createXMLStreamWriter(bufferedOutputStream,colmeta.getEncode());
         writePrefix();
         writeHeader(sheetProp.getColumnPropList().stream().map(ExcelColumnProp::getColumnName).collect(Collectors.toList()),cellStyleMap);
     }
@@ -235,6 +238,7 @@ public class XlsxFileWriter extends TextBasedFileWriter{
                 streamWriter.writeEndElement();
                 streamWriter.writeEndElement();
                 streamWriter.flush();
+                //streamWriter.close();
                 bufferedOutputStream.flush();
                 zipOutputStream.closeEntry();
                 createSheet();

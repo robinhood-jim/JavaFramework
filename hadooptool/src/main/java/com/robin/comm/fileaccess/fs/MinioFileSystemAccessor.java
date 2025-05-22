@@ -107,10 +107,13 @@ public class MinioFileSystemAccessor extends AbstractCloudStorageFileSystemAcces
 
     @Override
     protected synchronized OutputStream getOutputStream(String path) throws IOException {
-        return new MinioOutputStream(new CustomMinioClient(client), colmeta,bucketName,path,region);
+        return new MinioOutputStream(new CustomMinioClient(client), colmeta,bucketName,path,region,0);
     }
 
-
+    @Override
+    protected OutputStream getOutputStream(String path, int uploadPartSize) throws IOException {
+        return new MinioOutputStream(new CustomMinioClient(client), colmeta,bucketName,path,region,uploadPartSize);
+    }
 
     @Override
     public boolean exists(String resourcePath) throws IOException {

@@ -70,7 +70,11 @@ public class OSSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
 
     @Override
     protected synchronized OutputStream getOutputStream(String path) throws IOException {
-        return new OSSOutputStream(ossClient, colmeta, getBucketName(colmeta), path, region);
+        return new OSSOutputStream(ossClient, colmeta, getBucketName(colmeta), path, region,0);
+    }
+    @Override
+    protected synchronized OutputStream getOutputStream(String path,int uploadPartSize) throws IOException {
+        return new OSSOutputStream(ossClient, colmeta, getBucketName(colmeta), path, region,uploadPartSize);
     }
 
     @Override
