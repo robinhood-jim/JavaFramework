@@ -70,7 +70,7 @@ public class DataCollectionMeta implements Serializable {
 		valueClassName=fullClassName.substring(pos+1);
 	}
 
-	public void addColumnMeta(String columnName,String columnType,String defaultNullValue){
+	public void addColumnMeta(String columnName,String columnType,Object defaultNullValue){
 		this.columnList.add(new DataSetColumnMeta(columnName, columnType, defaultNullValue));
 		columnNameMap.put(columnName,1);
 	}
@@ -78,11 +78,18 @@ public class DataCollectionMeta implements Serializable {
 		this.columnList.add(new DataSetColumnMeta(columnName, columnType, flushOut));
 		columnNameMap.put(columnName,1);
 	}
-	public void addColumnMeta(String columnName,String columnType,String defaultNullValue,boolean required){
+
+	public void addColumnMeta(String columnName,String columnType,Object defaultNullValue,boolean required){
 		this.columnList.add(new DataSetColumnMeta(columnName, columnType, defaultNullValue,required));
 		columnNameMap.put(columnName,null);
 	}
-	public void addColumnMeta(String columnName,String columnType,String defaultNullValue,boolean required,String dateFormat){
+	public void addColumnMeta(String columnName,String columnCode,String columnType,Object defaultNullValue,boolean required){
+		DataSetColumnMeta setColumnMeta=new DataSetColumnMeta(columnName,columnCode, columnType, defaultNullValue);
+		setColumnMeta.setRequired(required);
+		this.columnList.add(setColumnMeta);
+		columnNameMap.put(columnName,null);
+	}
+	public void addColumnMeta(String columnName,String columnType,Object defaultNullValue,boolean required,String dateFormat){
 		this.columnList.add(new DataSetColumnMeta(columnName, columnType, defaultNullValue,required,dateFormat));
 		columnNameMap.put(columnName,null);
 	}

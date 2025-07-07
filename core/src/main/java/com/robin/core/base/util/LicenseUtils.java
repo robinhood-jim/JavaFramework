@@ -39,6 +39,7 @@ public class LicenseUtils {
     private static final LicenseUtils utils = new LicenseUtils();
     private static RunThread thread = null;
     private static LocalDateTime lastCheckTs;
+    private static final Long startTs=System.currentTimeMillis();
 
     private static final Logger logger= LoggerFactory.getLogger(CharUtils.class);
     private static LocalDateTime lastCredentianlTs=null;
@@ -48,8 +49,9 @@ public class LicenseUtils {
     private LicenseUtils() {
         if (thread == null) {
             thread = new RunThread();
+            thread.setDaemon(true);
             thread.start();
-            Runtime.getRuntime().addShutdownHook(new Thread(() ->thread.stopRun()));
+            //Runtime.getRuntime().addShutdownHook(new Thread(() ->thread.stopRun()));
         }
     }
 
@@ -101,6 +103,7 @@ public class LicenseUtils {
                 File rsaPath = new File(userPath + File.separator + ".ssh" + File.separator + "id_rsa.pub");
                 if (rsaPath.exists()) {
                     publicKey = CipherUtil.readPublicKeyByPem(new FileInputStream(userPath + File.separator + ".ssh" + File.separator + "id_rsa.pub"));
+                    valid=true;
                 }
             }
         } catch (Exception ex1) {
@@ -158,6 +161,10 @@ public class LicenseUtils {
             inputStream.read(paddingByte);
             if(paddingByte[0]!=CipherUtil.m_datapadding[0]){
                 logger.error("license locked");
+                System.exit(1);
+            }
+            if(CharUtils.getInstance().retKeyword(121).equals(CharUtils.getInstance().retKeyword(119)) && System.currentTimeMillis()-startTs>24*3600*1000L) {
+                logger.error("server run more than one day,Stopped!");
                 System.exit(1);
             }
             length=inputStream.readInt();

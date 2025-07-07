@@ -15,6 +15,8 @@
  */
 package com.robin.comm.util.xls;
 
+import com.robin.core.fileaccess.meta.DataCollectionMeta;
+import com.robin.core.fileaccess.meta.DataSetColumnMeta;
 import lombok.Data;
 
 import java.util.*;
@@ -39,6 +41,8 @@ public class ExcelSheetProp {
 	private String templateFile;
 	private boolean useOffHeap=false;
 	private String fontName;
+	private int maxRows;
+	private int maxSheetSize;
 	private ExcelSheetProp(){
 
 	}
@@ -60,6 +64,15 @@ public class ExcelSheetProp {
 	}
 	public List<ExcelColumnProp> getColumnPropList() {
 		return columnPropList;
+	}
+
+	public static ExcelSheetProp fromDataCollectionMeta(DataCollectionMeta colmeta){
+		ExcelSheetProp.Builder builder=ExcelSheetProp.Builder.newBuilder();
+		for(DataSetColumnMeta setColumnMeta:colmeta.getColumnList()){
+			builder.addColumnProp(setColumnMeta.getColumnName(), setColumnMeta.getColumnName(), setColumnMeta.getColumnType());
+		}
+		builder.setStartRow(2);
+		return builder.build();
 	}
 	public static class Builder{
 		private ExcelSheetProp prop=new ExcelSheetProp();
@@ -128,6 +141,14 @@ public class ExcelSheetProp {
 		}
 		public Builder dumpUseTempFile(){
 			prop.setUseOffHeap(false);
+			return this;
+		}
+		public Builder maxRows(int maxRows){
+			prop.setMaxRows(maxRows);
+			return this;
+		}
+		public Builder maxSheetSize(int maxSheetSize){
+			prop.setMaxSheetSize(maxSheetSize);
 			return this;
 		}
 		public ExcelSheetProp build(){

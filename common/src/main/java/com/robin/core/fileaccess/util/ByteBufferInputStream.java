@@ -22,6 +22,16 @@ public class ByteBufferInputStream  extends InputStream {
         buffer.put(bytes);
         this.count=bytes.length;
     }
+    public ByteBufferInputStream(ByteBuffer buffer,InputStream inputStream) throws IOException{
+        this.byteBuffer=buffer;
+        byteBuffer.position(0);
+        byte[] readBytes=new byte[8192];
+        int count;
+        while ((count=inputStream.read(readBytes))>0){
+            byteBuffer.put(readBytes,0,count);
+        }
+        this.count=byteBuffer.position();
+    }
     @Override
     public int read() throws IOException {
         if (byteBuffer.position()>count || byteBuffer.remaining() == 0) {

@@ -3,9 +3,7 @@ package com.robin.comm.util.config;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
+import java.io.*;
 import java.util.Map;
 
 
@@ -16,7 +14,10 @@ public class YamlUtils {
         Map<String,Object> map= yaml.load(clazz.getClassLoader().getResourceAsStream(classPathFile));
         return map;
     }
-    public static Map<String,Object> parseYamlFileWithStream(InputStream in){
+    public static Map<String,Object> parseYamlFromFile(String filePath) throws IOException {
+        return parseYamlFromStream(new FileInputStream(filePath));
+    }
+    public static Map<String,Object> parseYamlFromStream(InputStream in){
         Map<String,Object> map= yaml.load(in);
         return map;
     }
@@ -30,6 +31,9 @@ public class YamlUtils {
     public static <T> T loadFromStream(InputStream inputStream,Class<T> clazz){
         Yaml tyaml=new Yaml(new Constructor(clazz.getClass()));
         return tyaml.load(inputStream);
+    }
+    public static <T> T loadFromClassPath(String classPath,Class<T> clazz){
+        return loadFromStream(clazz.getClassLoader().getResourceAsStream(classPath),clazz);
     }
 
 }

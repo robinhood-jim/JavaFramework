@@ -179,7 +179,7 @@ public class ConvertUtil {
     }
 
 
-    private static String wordCase(String value) {
+    private static String camelCase(String value) {
         return value.substring(0, 1).toUpperCase() + value.substring(1);
     }
 

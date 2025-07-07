@@ -11,6 +11,7 @@ import java.util.List;
 @Data
 public class DataSetColumnMeta implements Serializable {
     private String columnName;
+    private String columnCode;
     private String columnType;
     private Object defaultNullValue;
     private String dateFormat;
@@ -24,16 +25,23 @@ public class DataSetColumnMeta implements Serializable {
     private Integer length;
     private List<String> nominalValues;
     private boolean flushOut=true;
+    public DataSetColumnMeta(){
 
+    }
 
     public DataSetColumnMeta(String columnName,String columnType,Object defaultNullValue){
         this.columnName=columnName;
+        this.columnCode=columnName;
         this.columnType=columnType;
         if(defaultNullValue!=null){
             this.defaultNullValue=defaultNullValue;
         }else{
             this.defaultNullValue="";
         }
+    }
+    public DataSetColumnMeta(String columnName,String columnCode,String columnType,Object defaultNullValue){
+        this(columnName,columnType,defaultNullValue);
+        this.columnCode=columnCode;
     }
     public DataSetColumnMeta(String columnName,String columnType){
         this(columnName,columnType,null);
@@ -48,24 +56,12 @@ public class DataSetColumnMeta implements Serializable {
         this.flushOut=flushOut;
     }
     public DataSetColumnMeta(String columnName,String columnType,Object defaultNullValue,boolean required,String dateFormat){
-        this.columnName=columnName;
-        this.columnType=columnType;
-        if(defaultNullValue!=null){
-            this.defaultNullValue=defaultNullValue;
-        }else{
-            this.defaultNullValue="";
-        }
+        this(columnName,columnType,defaultNullValue);
         this.required=required;
         this.dateFormat=dateFormat;
     }
     public DataSetColumnMeta(String columnName,String columnType,Object defaultNullValue,boolean required){
-        this.columnName=columnName;
-        this.columnType=columnType;
-        if(defaultNullValue!=null){
-            this.defaultNullValue=defaultNullValue;
-        }else{
-            this.defaultNullValue="";
-        }
+        this(columnName,columnType,defaultNullValue);
         this.required=required;
     }
     public DataBaseColumnMeta toDataBaseColumnMeta(){

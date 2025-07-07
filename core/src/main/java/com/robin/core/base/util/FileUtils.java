@@ -7,7 +7,6 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileExistsException;
 import org.springframework.util.Assert;
-import org.springframework.util.MimeTypeUtils;
 import org.springframework.util.ObjectUtils;
 
 import java.io.File;
@@ -20,7 +19,6 @@ import java.nio.file.attribute.PosixFileAttributeView;
 import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.UserPrincipalLookupService;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Slf4j
 public class FileUtils {
@@ -200,7 +198,7 @@ public class FileUtils {
         private Const.CompressType compressType= Const.CompressType.COMPRESS_TYPE_NONE;
     }
     public static void main(String[] args){
-        String path="file:///e:/tmp/test/test1.avro.cs.lz4";
+        String path="tmp/1234.xlsx";
         System.out.println(parseFile(path));
     }
 }

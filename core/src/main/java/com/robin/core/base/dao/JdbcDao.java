@@ -811,6 +811,12 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
             throw wrapException(ex);
         }
     }
+    public long executeSqlWithReturn(final String sql, Object[] object)
+            throws DAOException {
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        getJdbcTemplate().update(new SimplePrepareStatement(sql, object, lobHandler), keyHolder);
+        return keyHolder.getKey().longValue();
+    }
 
 
     public void setSqlGen(BaseSqlGen sqlGen) {
