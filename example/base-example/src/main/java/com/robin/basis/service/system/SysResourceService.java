@@ -93,13 +93,13 @@ public class SysResourceService extends BaseAnnotationJdbcService<SysResource, L
         if (!query1.getRecordSet().isEmpty()) {
             try {
                 Map<String, List<Map<String, Object>>> resTypeMap = CollectionMapConvert.convertToMapByParentMapKey(query1.getRecordSet(), "assignType");
-                Map<String, Map<String, Object>> accessResMap = resTypeMap.get("NULL").stream().collect(Collectors.toMap(f -> f.get("id").toString(), f -> f));
+                Map<String, Map<String, Object>> accessResMap = resTypeMap.get("0").stream().collect(Collectors.toMap(f -> f.get("id").toString(), f -> f));
                 if (!CollectionUtils.isEmpty(resTypeMap.get(Const.RESOURCE_ASSIGN_ACCESS))) {
                     accessResMap.putAll(resTypeMap.get(Const.RESOURCE_ASSIGN_ACCESS).stream().collect(Collectors.toMap(f -> f.get("id").toString(), f -> f)));
                 }
                 //positive assign
                 if (resTypeMap.containsKey(Const.RESOURCE_ASSIGN_ACCESS)) {
-                    for (Map<String, Object> tmap : resTypeMap.get(Const.RESOURCE_ASSIGN_DENIED)) {
+                    for (Map<String, Object> tmap : resTypeMap.get(Const.RESOURCE_ASSIGN_ACCESS)) {
                         if (!accessResMap.containsKey(tmap.get("id").toString())) {
                             accessResMap.put(tmap.get("id").toString(), tmap);
                         }

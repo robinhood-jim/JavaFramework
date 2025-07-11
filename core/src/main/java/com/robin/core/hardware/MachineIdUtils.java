@@ -150,21 +150,19 @@ public class MachineIdUtils {
         try{
             if(isWindows()){
                 serial=CommandLineExecutor.getInstance().executeCmdReturnAfterRow(Arrays.asList("powershell.exe","Get-WmiObject","-Class","Win32_DiskDrive","|","Select-Object","SerialNumber,DeviceId"),2);
-                if(serial.contains("\n") || serial.contains("\r\n")){
-                    reader=new BufferedReader(new StringReader(serial));
-                    String tmpStr;
-                    String selSerial=null;
-                    int deviceId=10000;
-                    while((tmpStr=reader.readLine())!=null){
-                        String[] arr=tmpStr.split(" ");
-                        int currentdevice=Integer.parseInt(arr[1].substring(arr[1].length()-1));
-                        if(currentdevice<deviceId){
-                            selSerial=arr[0].trim();
-                            deviceId=currentdevice;
-                        }
+                reader=new BufferedReader(new StringReader(serial));
+                String tmpStr;
+                String selSerial=null;
+                int deviceId=10000;
+                while((tmpStr=reader.readLine())!=null){
+                    String[] arr=tmpStr.split(" ");
+                    int currentdevice=Integer.parseInt(arr[1].substring(arr[1].length()-1));
+                    if(currentdevice<deviceId){
+                        selSerial=arr[0].trim();
+                        deviceId=currentdevice;
                     }
-                    serial=selSerial;
                 }
+                serial=selSerial;
             }else if(isLinux()){
                 serial=CommandLineExecutor.getInstance().executeCmdReturnAfterRow(Arrays.asList("bash","-c","sudo lsblk -o SERIAL"),1);
 
