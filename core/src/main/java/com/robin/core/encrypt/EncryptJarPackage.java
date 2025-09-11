@@ -5,6 +5,7 @@ import com.robin.core.base.util.IOUtils;
 import com.robin.core.hardware.MachineIdUtils;
 import com.thoughtworks.qdox.JavaProjectBuilder;
 import com.thoughtworks.qdox.model.*;
+import com.thoughtworks.qdox.model.expression.Expression;
 import com.thoughtworks.qdox.model.impl.DefaultJavaParameterizedType;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base64;
@@ -12,10 +13,10 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 
 import javax.tools.*;
 import java.io.*;
-import java.math.BigInteger;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
@@ -37,7 +38,7 @@ public class EncryptJarPackage {
     public static void main(String[] args) {
         String sourcePath = "E:/dev/workspaceframe/JavaFramework/core/src/";
         String compileclassPath = ".;E:/dev/workspaceframe/JavaFramework/core/target/lib/*;d:/servlet-api-2.5.jar;D:/dev/workspaceframe/JavaFramework/core/target/core-1.0-SNAPSHOT_proLists.newArrayListrd_base.jar;d:/jdk1.8/lib/tools.jar";
-        String srcPath = "E:/tmp/corencrypt/src/";
+        String srcPath = "E:/tmp/corencrypt/src/main/java/";
         JavaProjectBuilder builder = new JavaProjectBuilder();
         builder.addSourceFolder(new File(sourcePath));
         String machineSerial = MachineIdUtils.getMachineId();
@@ -45,6 +46,8 @@ public class EncryptJarPackage {
 
         DataOutputStream dout = null;
         Iterator<File> iter = col.iterator();
+        JavaClass tmpClass = null;
+        ZipOutputStream outputStream=null;
         try {
             while (iter.hasNext()) {
                 File tpFile = iter.next();
@@ -55,7 +58,7 @@ public class EncryptJarPackage {
 
             //bin encrypt key file init
             dout = new DataOutputStream(new FileOutputStream(new File(srcPath + "config.bin")));
-            ZipOutputStream outputStream = getJarClasses("E:/dev/workspaceframe/JavaFramework/core/target/core-1.0-SNAPSHOT_proguard_base.jar", "com/robin/core/ext/", dout, machineSerial);
+            outputStream = getJarClasses("E:/dev/workspaceframe/JavaFramework/core/target/core-1.0_proguard_base.jar", "com/robin/core/ext/", dout, machineSerial);
             while (iter1.hasNext()) {
                 StringBuilder buffer = new StringBuilder();
                 JavaSource source = iter1.next();
@@ -72,10 +75,11 @@ public class EncryptJarPackage {
                 StringBuilder tmpBuilder = new StringBuilder();
                 for (int i = 0; i < classlist.size(); i++) {
                     JavaClass clazz = classlist.get(i);
+                    tmpClass = clazz;
                     List<JavaAnnotation> annotations = clazz.getAnnotations();
                     if (!CollectionUtils.isEmpty(annotations)) {
                         for (JavaAnnotation annotation : annotations) {
-                            buffer.append(annotation.getCodeBlock());
+                            buffer.append(getAnnotationPart(annotation));
                         }
                     }
 
@@ -84,29 +88,14 @@ public class EncryptJarPackage {
                     List<JavaTypeVariable<JavaGenericDeclaration>> annotaions = clazz.getTypeParameters();
                     List<JavaField> props = clazz.getFields();
                     name = clazz.getName();
+                    if(packagename.contains(".test") || name.contains("Test")){
+                        continue;
+                    }
                     fullName = (packagename + "." + name);
                     boolean isinterface = clazz.isInterface();
                     boolean hasgenric = false;
                     getClassDef(clazz, buffer);
-
-                    if (annotaions != null && !annotaions.isEmpty()) {
-                        buffer.append("<");
-                        StringBuilder tbuilder = new StringBuilder();
-                        for (JavaTypeVariable<JavaGenericDeclaration> define : annotaions) {
-                            tbuilder.append(define.getValue());
-                            StringBuilder tBuffer = new StringBuilder();
-                            if (define.getBounds() != null) {
-                                tbuilder.append(" extends ");
-                                for (JavaType type : define.getBounds()) {
-                                    tbuilder.append(type.getGenericCanonicalName()).append(",");
-                                }
-                                //tbuilder.append(" extends ").append(define.getBounds().get(0).getCanonicalName()).append(",");
-                            } else {
-                                tbuilder.append(",");
-                            }
-                        }
-                        buffer.append(tbuilder.substring(0, tbuilder.length() - 1)).append(">");
-                    }
+                    parseAnotation(buffer, annotaions);
 
                     if (superclass != null) {
                         buffer.append(" extends ").append(superclass.getGenericFullyQualifiedName());
@@ -135,39 +124,54 @@ public class EncryptJarPackage {
                     }
                     buffer.append("{").append("\n");
                     String tmpStr;
-                    if (props != null && props.size() > 0) {
+                    if (!CollectionUtils.isEmpty(props)) {
                         for (JavaField prop : props) {
                             tmpStr = null;
                             if (!isinterface) {
-                                tmpStr = prop.getCodeBlock().replaceAll(clazz.getPackage().getName() + "." + clazz.getName() + ".", "");
-                                //log.info(" tmpStr {}",tmpStr);
-                                if (tmpStr.indexOf("\n") < tmpStr.lastIndexOf("\n")) {
-                                    int pos = tmpStr.indexOf("=");
-                                    if (pos != -1) {
-                                        if (!tmpStr.contains("static")) {
-                                            tmpStr = tmpStr.substring(0, pos - 1) + ";\n";
+                                if (!prop.isEnumConstant()) {
+                                    tmpStr = prop.getCodeBlock().replaceAll(clazz.getPackage().getName() + "." + clazz.getName() + ".", "");
+                                } else {
+                                    List<Expression> list = prop.getEnumConstantArguments();
+                                    buffer.append(prop.getName()).append("(");
+                                    for (int pos = 0; pos < list.size(); pos++) {
+                                        if (!ObjectUtils.isEmpty(list.get(pos))) {
+                                            buffer.append(list.get(pos).getParameterValue());
                                         } else {
-                                            if (";".equals(tmpStr.substring(pos + 1).replaceAll("\r", "").replaceAll("\n", "").trim())) {
-                                                if (!prop.getType().isPrimitive()) {
-                                                    tmpStr = tmpStr.substring(0, pos - 1) + "=null;\n";
-                                                } else {
-                                                    if (tmpStr.contains("long")) {
-                                                        tmpStr = tmpStr.substring(0, pos - 1) + "=0L;\n";
-                                                    } else if (tmpStr.contains("int")) {
-                                                        tmpStr = tmpStr.substring(0, pos - 1) + "=0L;\n";
-                                                    } else if (tmpStr.contains("float") || tmpStr.contains("double'")) {
-                                                        tmpStr = tmpStr.substring(0, pos - 1) + "=0.0;\n";
+                                            buffer.append("null");
+                                        }
+                                        if (i < list.size() - 1) {
+                                            buffer.append(",");
+                                        }
+                                    }
+                                    buffer.append(")\n");
+                                }
+                                if (!ObjectUtils.isEmpty(tmpStr)) {
+                                    if (tmpStr.indexOf("\n") < tmpStr.lastIndexOf("\n")) {
+                                        int pos = tmpStr.indexOf("=");
+                                        if (pos != -1) {
+                                            if (!tmpStr.contains("static")) {
+                                                tmpStr = tmpStr.substring(0, pos - 1) + ";\n";
+                                            } else {
+                                                if (";".equals(tmpStr.substring(pos + 1).replaceAll("\r", "").replaceAll("\n", "").trim())) {
+                                                    if (!prop.getType().isPrimitive()) {
+                                                        tmpStr = tmpStr.substring(0, pos - 1) + "=null;\n";
+                                                    } else {
+                                                        if (tmpStr.contains("long")) {
+                                                            tmpStr = tmpStr.substring(0, pos - 1) + "=0L;\n";
+                                                        } else if (tmpStr.contains("int")) {
+                                                            tmpStr = tmpStr.substring(0, pos - 1) + "=0L;\n";
+                                                        } else if (tmpStr.contains("float") || tmpStr.contains("double'")) {
+                                                            tmpStr = tmpStr.substring(0, pos - 1) + "=0.0;\n";
+                                                        }
                                                     }
                                                 }
                                             }
                                         }
+
                                     }
-
-                                } else {
-
+                                    buffer.append(tmpStr);
                                 }
                             }
-                            buffer.append(tmpStr);
                         }
                     }
                     List<JavaConstructor> constructList = clazz.getConstructors();
@@ -212,7 +216,6 @@ public class EncryptJarPackage {
                         getParameters(parameters, tmpbuffer, method);
                         tmpbuffer.append(")");
                         if (!isinterface) {
-                            String code = method.getCodeBlock();
                             tmpbuffer.append("{");
                             if (!"void".equals(rettype)) {
                                 if (rettype.contains("[") && rettype.contains("]")) {
@@ -281,9 +284,7 @@ public class EncryptJarPackage {
 
                     }
                     buffer.append("}");
-
                 }
-
                 String classPathStr = fullName.replace(".", "/");
                 String encryptclaspath = classPathStr + ".class";
                 String srcFilepath = srcPath + classPathStr + ".java";
@@ -293,7 +294,7 @@ public class EncryptJarPackage {
                 if (!parentpath.exists()) {
                     parentpath.mkdir();
                 }
-                FileUtils.writeStringToFile(srcFile, buffer.toString(), Charset.defaultCharset(),false);
+                FileUtils.writeStringToFile(srcFile, buffer.toString(), Charset.defaultCharset(), false);
                 //compile classes
 
                 JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
@@ -317,8 +318,11 @@ public class EncryptJarPackage {
 
         } catch (Exception ex) {
             ex.printStackTrace();
+            System.out.println(tmpClass.getPackage().getName() + "." + tmpClass.getName());
+
         } finally {
             try {
+                outputStream.close();
                 if (dout != null) {
                     dout.flush();
                     dout.close();
@@ -327,6 +331,38 @@ public class EncryptJarPackage {
                 ex.printStackTrace();
             }
         }
+    }
+
+
+    private static void parseAnotation(StringBuilder buffer, List<JavaTypeVariable<JavaGenericDeclaration>> annotaions) {
+        if (annotaions != null && !annotaions.isEmpty()) {
+            buffer.append("<");
+            StringBuilder tbuilder = new StringBuilder();
+            for (JavaTypeVariable<JavaGenericDeclaration> define : annotaions) {
+                tbuilder.append(define.getValue());
+                StringBuilder tBuffer = new StringBuilder();
+                if (define.getBounds() != null) {
+                    tbuilder.append(" extends ");
+                    for (JavaType type : define.getBounds()) {
+                        tbuilder.append(type.getGenericCanonicalName()).append(",");
+                    }
+                    //tbuilder.append(" extends ").append(define.getBounds().get(0).getCanonicalName()).append(",");
+                } else {
+                    tbuilder.append(",");
+                }
+            }
+            buffer.append(tbuilder.substring(0, tbuilder.length() - 1)).append(">");
+        }
+    }
+
+    private static String getAnnotationPart(JavaAnnotation annotation){
+        String code=null;
+        try {
+            code=annotation.getCodeBlock();
+        }catch (Exception ex){
+            code=annotation.toString()+"\n";
+        }
+        return code;
     }
 
     private static String getExceptions(List<JavaClass> exceptions) {
@@ -476,12 +512,15 @@ public class EncryptJarPackage {
 
             Random random1 = new Random();
             //List<String> insertFloder = new ArrayList<>();
-            String[] caculateStr = caculateMachineSerail(machineSerial, System.currentTimeMillis() + 365 * 3600 * 24 * 1000);
-            byte[] machineSerailbytes = Base64.decodeBase64(caculateStr[1].getBytes());
+            String[] caculateStr = calculateMachineSerial(machineSerial, System.currentTimeMillis() + 365 * 3600 * 24 * 1000);
+
             //core key ,contains machineId and expireTs
             dout.write(CipherUtil.mzHeader);
-            dout.writeUTF(encrypt(caculateStr[0]));
-            dout.write(CipherUtil.m_datapadding);
+            byte[] keybytes=CipherUtil.encryptByte(caculateStr[0].getBytes(),CipherUtil.getEncryptKey(caculateStr[0].getBytes()));
+            dout.writeInt(keybytes.length);
+            dout.write(keybytes);
+            //dout.writeUTF(encrypt(caculateStr[0]));
+            //dout.write(CipherUtil.m_datapadding);
             while ((entry = inputStream.getNextEntry()) != null) {
                 String path = entry.getName();
                 int pos = path.lastIndexOf("/");
@@ -496,23 +535,24 @@ public class EncryptJarPackage {
                     pos = className.indexOf(".");
                     String clazzName = className.substring(0, pos);
                     String keystr = generateEncrytKey(range, 16, random);
-                    byte[] key = Base64.decodeBase64(keystr.getBytes());
+                    //byte[] key = Base64.decodeBase64(keystr.getBytes());
                     byte[] bytes = getZipByte(inputStream);
                     //使用随机密码加密
                     byte[] outbyte = CipherUtil.encryptByte(bytes, keystr.getBytes());
                     //使用机器码加密，用于失效验证
-                    byte[] encryptbytes = CipherUtil.encryptByte(outbyte, caculateStr[0].getBytes());
+
                     //FileUtils.writeByteArrayToFile(new File(basePath + path), outbyte);
                     String randomoutputPath = randomFolders.get(random1.nextInt(8));
                     List<String> params = getRandomName(16, random);
                     String fileName = params.get(0);
-                    dout.writeUTF(encrypt(packageName + "." + clazzName));
-                    dout.write(CipherUtil.m_datapadding);
+                    byte[] classNameBytes=CipherUtil.encryptByte((packageName + "." + clazzName).getBytes(),CipherUtil.getEncryptKey(caculateStr[0].getBytes()));
+                    dout.writeInt(classNameBytes.length);
+                    dout.write(classNameBytes);
                     //dout.writeUTF(encrypt(basePath + randomoutputPath + fileName));
                     dout.write(longToBytes(Long.valueOf(params.get(1))));
-                    dout.write(CipherUtil.m_datapadding);
                     dout.write(getKeyByte(keystr));
-                    dout.write(CipherUtil.m_datapadding);
+                    byte[] encryptbytes = CipherUtil.encryptByte(outbyte, keystr.getBytes());
+                    //dout.write(CipherUtil.m_datapadding);
                     outputStream.putNextEntry(new JarEntry(basePath + fileName));
                     IOUtils.copyBytes(new ByteArrayInputStream(encryptbytes), outputStream, 8094);
                     System.out.println(packageName + "." + clazzName + "=" + keystr);
@@ -664,12 +704,12 @@ public class EncryptJarPackage {
         return "";
     }
 
-    private static String[] caculateMachineSerail(String machineId, Long expireTs) {
+    public static String[] calculateMachineSerial(String machineId, Long expireTs) {
         //取机器码对应bigint
         //BigInteger integer = new BigInteger(machineId.replaceAll("-", ""), 16);
         int len = String.valueOf(expireTs).length();
         //String machineStr = integer.toString();
-        String machineStr=machineId.replace("-","");
+        String machineStr = machineId.replace("-", "");
         StringBuilder builder = new StringBuilder();
         String key = machineStr.substring(0, machineStr.length() - len);
         builder.append(key);
@@ -678,13 +718,14 @@ public class EncryptJarPackage {
         }
         String remain = machineStr.substring(machineStr.length() - len);
         String headerStr = machineStr.substring(0, len);
-        Long remainVal = Long.valueOf(remain,16);
+        Long remainVal = Long.valueOf(remain, 16);
         Long overflowval = Double.valueOf(Math.pow(10.0, len + 1)).longValue() - expireTs - 1L;
         //机器码后部分与 超时时间补进行xor
-        Long xorVal = (Long.valueOf(headerStr,16) & remainVal) ^ overflowval;
+        Long xorVal = (Long.valueOf(headerStr, 16) & remainVal) ^ overflowval;
         //BigInteger real = new BigInteger(builder.toString(),10).add(BigInteger.valueOf(Long.valueOf(xorVal)));
-        String[] output = new String[3];
-        output[0] = xorVal.toString();
+        String[] output = new String[2];
+
+        output[0] = Long.toHexString(xorVal);
         output[1] = key;
         return output;
     }

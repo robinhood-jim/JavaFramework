@@ -138,7 +138,11 @@ public class QiniuFileSystemAccessor extends AbstractCloudStorageFileSystemAcces
 
     @Override
     protected synchronized OutputStream getOutputStream(String path) throws IOException {
-        return new QiniuOutputStream(client, uploadManager, colmeta, auth, getBucketName(colmeta), path, urlPrefix);
+        return new QiniuOutputStream(client, uploadManager, colmeta, auth, getBucketName(colmeta), path, urlPrefix,0);
+    }
+    @Override
+    protected synchronized OutputStream getOutputStream(String path,int uploadPartSize) throws IOException {
+        return new QiniuOutputStream(client, uploadManager, colmeta, auth, getBucketName(colmeta), path, urlPrefix,uploadPartSize);
     }
 
     public InputStream getObject(@NonNull String bucketName, @NonNull String key) {

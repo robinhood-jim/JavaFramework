@@ -18,6 +18,6 @@ public interface TenantUserMapper extends BaseMapper<TenantUser> {
     List<EmployeeUserTenantDTO> getTenantEmpUser(@Param(Constants.WRAPPER) QueryWrapper<EmployeeUserTenantDTO> wrapper);
 
     @Select("<script>"+
-            "select * from (select a.id,name,u.id as userId from t_sys_employee a,t_sys_user_info u where a.id=u.employee_id) t ${ew.customSqlSegment}"+"</script>")
+            "select * from (select a.id,a.name,a.contact_phone as contactPhone,u.id as userId,u.user_account as userName from t_sys_employee a,t_sys_user_info u where a.id=u.employee_id and a.status='1' and b.status='1') t ${ew.customSqlSegment}"+"</script>")
     List<EmployeeUserTenantDTO> getEmployeeUser(@Param(Constants.WRAPPER) QueryWrapper<EmployeeUserTenantDTO> wrapper);
 }

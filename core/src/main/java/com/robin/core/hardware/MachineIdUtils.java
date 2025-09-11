@@ -149,11 +149,20 @@ public class MachineIdUtils {
         BufferedReader reader=null;
         try{
             if(isWindows()){
-                serial=CommandLineExecutor.getInstance().executeCmdReturnAfterRow(Arrays.asList("powershell.exe","Get-WmiObject","-Class","Win32_DiskDrive","|","Select-Object","SerialNumber"),2);
-                if(serial.contains("\n") || serial.contains("\r\n")){
-                    reader=new BufferedReader(new StringReader(serial));
-                    serial=reader.readLine();
+                serial=CommandLineExecutor.getInstance().executeCmdReturnAfterRow(Arrays.asList("powershell.exe","Get-WmiObject","-Class","Win32_DiskDrive","|","Select-Object","SerialNumber,DeviceId"),2);
+                reader=new BufferedReader(new StringReader(serial));
+                String tmpStr;
+                String selSerial=null;
+                int deviceId=10000;
+                while((tmpStr=reader.readLine())!=null){
+                    String[] arr=tmpStr.split(" ");
+                    int currentdevice=Integer.parseInt(arr[1].substring(arr[1].length()-1));
+                    if(currentdevice<deviceId){
+                        selSerial=arr[0].trim();
+                        deviceId=currentdevice;
+                    }
                 }
+                serial=selSerial;
             }else if(isLinux()){
                 serial=CommandLineExecutor.getInstance().executeCmdReturnAfterRow(Arrays.asList("bash","-c","sudo lsblk -o SERIAL"),1);
 
@@ -254,6 +263,23 @@ public class MachineIdUtils {
             builder.append("_DISK_"+hardDsSerial);
         }
         builder.append("_SYS_"+MachineIdUtils.getOsName());
+        return builder.toString();
+    }
+    public static String getSystemTagNum(){
+        StringBuilder builder=new StringBuilder();
+
+        String machineId = MachineIdUtils.getMachineId();
+        if(!ObjectUtils.isEmpty(machineId)){
+            builder.append(machineId);
+        }
+        String systemSerial=MachineIdUtils.getCPUSerial();
+        if(!ObjectUtils.isEmpty(machineId)){
+            builder.append(systemSerial);
+        }
+        String hardDsSerial=MachineIdUtils.getHardDiskSerial();
+        if(!ObjectUtils.isEmpty(machineId)){
+            builder.append(hardDsSerial);
+        }
         return builder.toString();
     }
 

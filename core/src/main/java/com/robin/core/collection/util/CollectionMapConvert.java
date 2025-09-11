@@ -27,6 +27,7 @@ import org.springframework.util.ObjectUtils;
 
 import javax.script.Bindings;
 import javax.script.CompiledScript;
+import java.lang.invoke.MethodHandle;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -54,25 +55,28 @@ public class CollectionMapConvert {
     public static <T> Map<String, T> convertListToMap(List<T> listobj, String identityCol) throws MissingConfigException,InvocationTargetException,IllegalAccessException {
         checkType(listobj);
         Map<String, T> retMap = new HashMap<>();
-        Map<String, Method> methodMap = ReflectUtils.returnGetMethods(listobj.get(0).getClass());
-        Method method = methodMap.get(identityCol);
-        if (method != null) {
-            for (T targerobj : listobj) {
-                Object obj = method.invoke(targerobj, (Object) null);
-                String value = obj.toString();
-                if (obj instanceof Double) {
-                    value = String.valueOf(((Double) obj).longValue());
+        Map<String, MethodHandle> methodMap = ReflectUtils.returnGetMethodHandle(listobj.get(0).getClass());
+        MethodHandle method = methodMap.get(identityCol);
+        try {
+            if (method != null) {
+                for (T targerobj : listobj) {
+                    Object obj = method.bindTo(targerobj).invoke();
+                    String value = obj.toString();
+                    if (obj instanceof Double) {
+                        value = String.valueOf(((Double) obj).longValue());
+                    }
+                    if (obj instanceof Long) {
+                        value = String.valueOf(((Long) obj).longValue());
+                    }
+                    retMap.put(value, targerobj);
                 }
-                if (obj instanceof Long) {
-                    value = String.valueOf(((Long) obj).longValue());
-                }
-                retMap.put(value, targerobj);
-
+            } else {
+                throw new MissingConfigException("identify column not exists in object!");
             }
-        } else {
-            throw new MissingConfigException("identify column not exists in object!");
+            return retMap;
+        }catch (Throwable ex1){
+            throw new MissingConfigException(ex1.getMessage());
         }
-        return retMap;
     }
 
     public static <T> List<T> convertToList(Map<String, T> mapobj) {
@@ -202,22 +206,26 @@ public class CollectionMapConvert {
 
     public static <T> List<Map<String, Object>> getListMap(List<T> listobj) throws MissingConfigException,InvocationTargetException,IllegalAccessException {
         checkType(listobj);
-        Map<String, Method> getMetholds = ReflectUtils.returnGetMethods(listobj.get(0).getClass());
+        Map<String, MethodHandle> getMetholds = ReflectUtils.returnGetMethodHandle(listobj.get(0).getClass());
         if (getMetholds.isEmpty()) {
             throw new MissingConfigException("target object contain no get methold!");
         }
-        List<Map<String, Object>> retList = new ArrayList<>();
-        for (T t : listobj) {
-            Map<String, Object> retmap = new HashMap<>();
-            for (Map.Entry<String, Method> entry : getMetholds.entrySet()) {
-                Object obj = entry.getValue().invoke(t, null);
-                if (obj != null) {
-                    retmap.put(entry.getKey(), obj);
+        try {
+            List<Map<String, Object>> retList = new ArrayList<>();
+            for (T t : listobj) {
+                Map<String, Object> retmap = new HashMap<>();
+                for (Map.Entry<String, MethodHandle> entry : getMetholds.entrySet()) {
+                    Object obj = entry.getValue().bindTo(t).invoke();
+                    if (obj != null) {
+                        retmap.put(entry.getKey(), obj);
+                    }
                 }
+                retList.add(retmap);
             }
-            retList.add(retmap);
+            return retList;
+        }catch (Throwable ex1){
+            throw new MissingConfigException(ex1.getMessage());
         }
-        return retList;
     }
 
     public static <T> List<T> mergeListFromNew(List<T> orgList, List<T> newList, String identifyCol) throws MissingConfigException,InvocationTargetException,IllegalAccessException {
@@ -226,19 +234,23 @@ public class CollectionMapConvert {
         }
         Map<String, T> map = convertListToMap(newList, identifyCol);
         List<T> retList = new ArrayList<>();
-        Method method = ReflectUtils.returnGetMethods(orgList.get(0).getClass()).get(identifyCol);
+        MethodHandle method = ReflectUtils.returnGetMethodHandle(orgList.get(0).getClass()).get(identifyCol);
         if (method == null) {
             throw new MissingConfigException("identify column not exist in object");
         }
-        for (T obj : orgList) {
-            Object val = method.invoke(obj, (Object) null);
-            if (map.get(val.toString()) != null) {
-                retList.add(map.get(val.toString()));
-            } else {
-                retList.add(obj);
+        try {
+            for (T obj : orgList) {
+                Object val = method.bindTo(obj).invoke();
+                if (map.get(val.toString()) != null) {
+                    retList.add(map.get(val.toString()));
+                } else {
+                    retList.add(obj);
+                }
             }
+            return retList;
+        }catch (Throwable ex1){
+            throw new MissingConfigException(ex1.getMessage());
         }
-        return retList;
     }
 
 }

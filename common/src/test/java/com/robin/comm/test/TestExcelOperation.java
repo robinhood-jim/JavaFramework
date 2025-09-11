@@ -7,54 +7,333 @@ import com.robin.core.base.datameta.DataBaseMetaFactory;
 import com.robin.core.base.datameta.DataBaseParam;
 import com.robin.core.base.util.Const;
 import com.robin.core.base.util.StringUtils;
+import com.robin.core.fileaccess.fs.LocalFileSystemAccessor;
+import com.robin.core.fileaccess.iterator.AbstractFileIterator;
 import com.robin.core.fileaccess.iterator.AbstractResIterator;
+import com.robin.core.fileaccess.iterator.TextFileIteratorFactory;
+import com.robin.core.fileaccess.meta.DataCollectionMeta;
+import com.robin.core.fileaccess.writer.TextFileWriterFactory;
+import com.robin.core.fileaccess.writer.XlsxFileWriter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.openxml4j.opc.*;
+import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.ObjectUtils;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamWriter;
+import java.io.*;
+import java.lang.reflect.Field;
 import java.sql.Connection;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 
 @Slf4j
 public class TestExcelOperation {
     private Logger logger = LoggerFactory.getLogger(TestExcelOperation.class);
+    private static final char CHARA = 'A';
+
+    @Test
+    public void testReadWithIterator() throws Exception {
+        DataCollectionMeta.Builder builder = new DataCollectionMeta.Builder();
+        builder.addColumn("name", Const.META_TYPE_STRING).addColumn("time", Const.META_TYPE_TIMESTAMP)
+                .addColumn("intcol", Const.META_TYPE_INTEGER).addColumn("dval", Const.META_TYPE_DOUBLE)
+                .addColumn("dval2", Const.META_TYPE_DOUBLE).addColumn("diff", Const.META_TYPE_DOUBLE)
+                .fileFormat(Const.FILEFORMATSTR.XLSX.getValue()).resPath("file:///d:/test2.xlsx");
+
+        LocalFileSystemAccessor accessor = LocalFileSystemAccessor.getInstance();
+        Long fromTs=System.currentTimeMillis();
+        try (AbstractFileIterator iterator = (AbstractFileIterator) TextFileIteratorFactory.getProcessIteratorByType(builder.build(), accessor)) {
+            int pos = 0;
+            while (iterator.hasNext()) {
+                pos++;
+            }
+            System.out.println(pos);
+            System.out.println(System.currentTimeMillis()-fromTs);
+        } catch (IOException ex) {
+
+        }
+    }
+    @Test
+    public void testWriteStAX() throws Exception{
+        ExcelSheetProp.Builder builder1 = ExcelSheetProp.Builder.newBuilder();
+        builder1.addColumnProp(new ExcelColumnProp("name", "name", Const.META_TYPE_STRING, false));
+        builder1.addColumnProp(new ExcelColumnProp("time", "time", Const.META_TYPE_TIMESTAMP, false));
+        builder1.addColumnProp(new ExcelColumnProp("intcol", "intcol", Const.META_TYPE_INTEGER, false));
+        builder1.addColumnProp(new ExcelColumnProp("dval", "dval", Const.META_TYPE_DOUBLE, false));
+        builder1.addColumnProp(new ExcelColumnProp("dval2", "dval2", Const.META_TYPE_DOUBLE, false));
+        builder1.addColumnProp(new ExcelColumnProp("diff", "diff", Const.META_TYPE_FORMULA, "(D{P}-E{P})/C{P}"));
+        DataCollectionMeta.Builder builder = new DataCollectionMeta.Builder();
+        builder.addColumn("name", Const.META_TYPE_STRING).addColumn("time", Const.META_TYPE_TIMESTAMP)
+                .addColumn("intcol", Const.META_TYPE_INTEGER).addColumn("dval", Const.META_TYPE_DOUBLE)
+                .addColumn("dval2", Const.META_TYPE_DOUBLE).addColumn("diff", Const.META_TYPE_DOUBLE)
+                .fileFormat(Const.FILEFORMATSTR.XLSX.getValue()).resPath("file:///d:/test2.xlsx");
+        DataCollectionMeta meta = builder.build();
+        LocalFileSystemAccessor accessor = LocalFileSystemAccessor.getInstance();
+        Random random = new Random(12312321321312L);
+        Map<String,Object> cachedMap=new HashMap<>();
+        try(XlsxFileWriter writer=(XlsxFileWriter) TextFileWriterFactory.getWriterByType(meta,accessor)){
+            writer.setSheetProp(builder1.build());
+            writer.beginWrite();
+            Long startTs = System.currentTimeMillis() - 3600 * 24 * 1000;
+            for(int j=0;j<1200000;j++){
+                cachedMap.put("name", StringUtils.generateRandomChar(12));
+                cachedMap.put("time", String.valueOf(startTs + j * 1000));
+                cachedMap.put("intcol", String.valueOf(random.nextInt(1000)));
+                cachedMap.put("dval", String.valueOf(random.nextDouble() * 1000));
+                cachedMap.put("dval2", String.valueOf(random.nextDouble() * 500));
+                writer.writeRecord(cachedMap);
+            }
+            writer.finishWrite();
+        }catch (Exception ex){
+            ex.printStackTrace();
+        }
+    }
+
+
+    @Test
+    public void testWriteStream() throws Exception{
+        DataCollectionMeta.Builder builder = new DataCollectionMeta.Builder();
+        builder.addColumn("name", Const.META_TYPE_STRING).addColumn("time", Const.META_TYPE_TIMESTAMP)
+                .addColumn("intcol", Const.META_TYPE_INTEGER).addColumn("dval", Const.META_TYPE_DOUBLE)
+                .addColumn("dval2", Const.META_TYPE_DOUBLE).addColumn("diff", Const.META_TYPE_DOUBLE)
+                .fileFormat(Const.FILEFORMATSTR.XLSX.getValue()).resPath("file:///d:/test.xlsx");
+        DataCollectionMeta meta = builder.build();
+        XMLOutputFactory factory = XMLOutputFactory.newFactory();
+        XMLStreamWriter writer=null;
+        Map<String,CellStyle> cellStyleMap=new HashMap<>();
+        Map<String,Object> cachedMap=new HashMap<>();
+        Random random = new Random(12312321321312L);
+        ByteArrayOutputStream byteOut=new ByteArrayOutputStream();
+        try(XSSFWorkbook workbook=new XSSFWorkbook()){
+            Field field=workbook.getClass().getSuperclass().getDeclaredField("pkg");
+            field.setAccessible(true);
+            OPCPackage opcPackage=(OPCPackage) field.get(workbook);
+            Sheet sheet=workbook.createSheet("sheet1");
+            PackagePartName packagePartName = PackagingURIHelper.createPartName("/xl/worksheets/sheet1.xml");
+            opcPackage.removePart(packagePartName);
+            for(int i=0;i<meta.getColumnList().size();i++){
+                ExcelCellStyleUtil.getCellStyle(workbook, meta.getColumnList().get(i).getColumnType(), cellStyleMap);
+            }
+            workbook.write(byteOut);
+        }catch (Exception ex1){
+            ex1.printStackTrace();
+        }
+        try(ZipOutputStream zout=new ZipOutputStream(new FileOutputStream("d:/test2.xlsx"));
+            ZipInputStream zis=new ZipInputStream(new ByteArrayInputStream(byteOut.toByteArray()))){
+            ZipEntry entry;
+            // Copy existing entries
+            while ((entry = zis.getNextEntry()) != null) {
+                zout.putNextEntry(new ZipEntry(entry.getName()));
+                byte[] buffer = new byte[1024];
+                int len;
+                while ((len = zis.read(buffer)) != -1) {
+                    zout.write(buffer, 0, len);
+                }
+                zout.closeEntry();
+            }
+            zout.putNextEntry(new ZipEntry("xl/worksheets/sheet1.xml"));
+            writer = factory.createXMLStreamWriter(zout);
+            writer.writeStartDocument("UTF-8", "1.0");
+            writer.writeStartElement("worksheet");
+            writer.writeAttribute("xmlxs", "http://schemas.openxmlformats.org/spreadsheetml/2006/main");
+            writer.writeEmptyElement("dimension");
+            writer.writeAttribute("ref", "A1:" + getEndCell(meta.getColumnList().size()) + "50001");
+            writer.writeStartElement("sheetViews");
+            writer.writeStartElement("sheetView");
+            writer.writeAttribute("workbookViewId", "0");
+            writer.writeAttribute("tabSelected", "true");
+            writer.writeEndElement();
+            writer.writeEndElement();
+            writer.writeEmptyElement("sheetFormatPr");
+            writer.writeAttribute("defaultRowHeight", "15.0");
+            writer.writeStartElement("cols");
+            writer.writeStartElement("col");
+            writer.writeAttribute("min", "1");
+            writer.writeAttribute("max", "1");
+            writer.writeAttribute("customWidth", "true");
+            writer.writeEndElement();
+            writer.writeEndElement();
+            writer.writeStartElement("sheetData");
+            writeHeader(writer,Arrays.asList("name","time","intcol","dval","dval2","diff"),cellStyleMap);
+            cachedMap.clear();
+            Long startTs = System.currentTimeMillis() - 3600 * 24 * 1000;
+            for(int j=0;j<600000;j++){
+                cachedMap.put("name", StringUtils.generateRandomChar(12));
+                cachedMap.put("time", String.valueOf(startTs + j * 1000));
+                cachedMap.put("intcol", String.valueOf(random.nextInt(1000)));
+                cachedMap.put("dval", String.valueOf(random.nextDouble() * 1000));
+                cachedMap.put("dval2", String.valueOf(random.nextDouble() * 500));
+                writeLine(writer,cachedMap,meta,cellStyleMap,j+2);
+            }
+            writer.writeEndElement();
+            writer.writeEndElement();
+            writer.flush();
+            writer.close();
+            zout.closeEntry();
+        }catch (Exception ex){
+            ex.printStackTrace();
+        }
+
+       /* try (XSSFWorkbook workbook = new XSSFWorkbook()) {
+             Field field=workbook.getClass().getSuperclass().getDeclaredField("pkg");
+             field.setAccessible(true);
+             OPCPackage opcPackage=(OPCPackage) field.get(workbook);
+             workbook.createSheet("sheet1");
+
+            List<PackagePart> sheets = opcPackage.getPartsByContentType(XSSFRelation.WORKSHEET.getContentType());
+
+            List<PackagePart> sharedParts = opcPackage.getPartsByContentType(XSSFRelation.SHARED_STRINGS.getContentType());
+
+            PackagePartName packagePartName = PackagingURIHelper.createPartName("/xl/worksheets/sheet1.xml");
+            opcPackage.removePart(packagePartName);
+            //opcPackage.deletePart(packagePartName);
+            //PackagePart part=opcPackage.getPart(packagePartName);
+            PackagePart part = opcPackage.createPart(packagePartName,XSSFRelation.WORKSHEET.getContentType());
+            opcPackage.addRelationship(packagePartName, TargetMode.INTERNAL,XSSFRelation.WORKSHEET.getRelation());
+            opcPackage.flush();
+            //ByteArrayOutputStream outputStream=new ByteArrayOutputStream();
+            OutputStream outputStream = part.getOutputStream();
+
+            part.flush();
+            opcPackage.flush();
+            Sheet sheet=workbook.getSheetAt(0);
+            for(int i=0;i<meta.getColumnList().size();i++) {
+                sheet.autoSizeColumn(i);
+            }
+            workbook.write(new FileOutputStream("d:/test1.xlsx"));
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        } finally {
+            if(writer!=null) {
+                writer.close();
+            }
+        }*/
+    }
+
+    private String getEndCell(int columnSize) {
+        int firstPos = columnSize / 26;
+        int secondPos = columnSize % 26;
+        StringBuilder builder = new StringBuilder();
+        if (firstPos > 0) {
+            builder.append((char)(CHARA + firstPos - 1));
+        }
+        builder.append((char)(CHARA + secondPos - 1));
+        return builder.toString();
+    }
+
+    private void writeLine(XMLStreamWriter writer,Map<String, Object> valueMap, DataCollectionMeta colmeta, Map<String, CellStyle> cellStyleMap, int rowpos) throws Exception {
+
+        writer.writeStartElement("row");
+        writer.writeAttribute("r", String.valueOf(rowpos));
+        for (int i = 0; i < colmeta.getColumnList().size(); i++) {
+            CellStyle style = cellStyleMap.get(colmeta.getColumnList().get(i).getColumnType());
+            if (!ObjectUtils.isEmpty(valueMap.get(colmeta.getColumnList().get(i).getColumnName()))) {
+                writer.writeStartElement("c");
+                writer.writeAttribute("r", getEndCell(i + 1) + rowpos);
+                writer.writeAttribute("s", String.valueOf(style.getFontIndexAsInt()));
+                if (Const.META_TYPE_STRING.equals(colmeta.getColumnList().get(i).getColumnType())) {
+                    writer.writeAttribute("t", "inlineStr");
+                    writer.writeStartElement("is");
+                    writer.writeStartElement("t");
+                    writer.writeCharacters(valueMap.get(colmeta.getColumnList().get(i).getColumnName()).toString());
+                    writer.writeEndElement();
+                    writer.writeEndElement();
+                } else {
+                    writer.writeAttribute("t", "n");
+                    writer.writeStartElement("v");
+                    if (Const.META_TYPE_TIMESTAMP.equals(colmeta.getColumnList().get(i).getColumnType()) || Const.META_TYPE_DATE.equals(colmeta.getColumnList().get(i).getColumnType())) {
+                        Object value = valueMap.get(colmeta.getColumnList().get(i).getColumnName());
+                        Date valDate = null;
+                        double dateVal=0.0;
+                        if (Timestamp.class.isAssignableFrom(value.getClass())) {
+                            valDate = new Date(((Timestamp) value).getTime());
+                            dateVal = DateUtil.getExcelDate(valDate);
+                        } else if(LocalDateTime.class.isAssignableFrom(value.getClass())){
+                            dateVal=DateUtil.getExcelDate((LocalDateTime) value);
+                        }else if(LocalDate.class.isAssignableFrom(value.getClass())){
+                            dateVal=DateUtil.getExcelDate((LocalDate) value);
+                        }
+                        else if(Date.class.isAssignableFrom(value.getClass())){
+                            dateVal=DateUtil.getExcelDate((Date) value);
+                        }else{
+                            dateVal=DateUtil.getExcelDate(new Date(Long.valueOf(value.toString())));
+                        }
+                        writer.writeCharacters(String.valueOf(dateVal));
+                    } else {
+                        writer.writeCharacters(valueMap.get(colmeta.getColumnList().get(i).getColumnName()).toString());
+                    }
+                    writer.writeEndElement();
+                }
+                writer.writeEndElement();
+            }
+        }
+        writer.writeEndElement();
+        writer.writeCharacters("\n");
+    }
+
+    private void writeHeader(XMLStreamWriter writer, List<String> columnName, Map<String, CellStyle> cellStyleMap) throws Exception {
+        CellStyle style = cellStyleMap.get(Const.META_TYPE_STRING);
+        writer.writeStartElement("row");
+        writer.writeAttribute("r", "1");
+        for (int i = 0; i < columnName.size(); i++) {
+            writer.writeStartElement("c");
+            writer.writeAttribute("r", getEndCell(i + 1) + "1");
+            writer.writeAttribute("s", String.valueOf(style.getIndex()));
+            writer.writeAttribute("t", "inlineStr");
+            writer.writeStartElement("is");
+            writer.writeStartElement("t");
+            writer.writeCharacters(columnName.get(i));
+            writer.writeEndElement();
+            writer.writeEndElement();
+            writer.writeEndElement();
+        }
+        writer.writeEndElement();
+    }
+
+
 
     @Test
     public void testGenerate() throws Exception {
         Long startTs = System.currentTimeMillis() - 3600 * 24 * 1000;
-        ExcelSheetProp prop = new ExcelSheetProp();
+        ExcelSheetProp.Builder prop = ExcelSheetProp.Builder.newBuilder();
         prop.setFileExt("xlsx");
         prop.setStartCol(1);
         prop.setStartRow(1);
         prop.setSheetName("test");
-        prop.setStreamInsert(true);
+        prop.setStreamMode();
         prop.addColumnProp(new ExcelColumnProp("name", "name", Const.META_TYPE_STRING, false));
         prop.addColumnProp(new ExcelColumnProp("time", "time", Const.META_TYPE_TIMESTAMP, false));
         prop.addColumnProp(new ExcelColumnProp("intcol", "intcol", Const.META_TYPE_INTEGER, false));
         prop.addColumnProp(new ExcelColumnProp("dval", "dval", Const.META_TYPE_DOUBLE, false));
-        prop.addColumnProp(new ExcelColumnProp("差距1", "sep1", Const.META_TYPE_FORMULA, "D{P+1}-D{P}"));
-        prop.addColumnProp(new ExcelColumnProp("差距2", "sep2", Const.META_TYPE_FORMULA, "D{P-1}-D{P}"));
+        prop.addColumnProp(new ExcelColumnProp("dval2", "dval2", Const.META_TYPE_DOUBLE, false));
+        prop.addColumnProp(new ExcelColumnProp("diff", "diff", Const.META_TYPE_FORMULA, "(D{P}-E{P})/C{P}"));
+        //prop.addColumnProp(new ExcelColumnProp("差距1", "sep1", Const.META_TYPE_FORMULA, "D{P+1}-D{P}"));
+        //prop.addColumnProp(new ExcelColumnProp("差距2", "sep2", Const.META_TYPE_FORMULA, "D{P-1}-D{P}"));
         TableConfigProp header = new TableConfigProp();
         header.setContainrow(1);
         Random random = new Random(12312321321312L);
         AbstractResIterator iterator = new AbstractResIterator() {
             Map<String, Object> map = new HashMap<>();
             int row = 0;
+
             @Override
             public void beforeProcess() {
 
             }
+
             @Override
             public void afterProcess() {
 
@@ -67,7 +346,7 @@ public class TestExcelOperation {
 
             @Override
             public boolean hasNext() {
-                if (row < 5000)
+                if (row < 50000)
                     return true;
                 return false;
             }
@@ -79,6 +358,7 @@ public class TestExcelOperation {
                 map.put("time", String.valueOf(startTs + row * 1000));
                 map.put("intcol", String.valueOf(random.nextInt(1000)));
                 map.put("dval", String.valueOf(random.nextDouble() * 1000));
+                map.put("dval2", String.valueOf(random.nextDouble() * 500));
                 row++;
                 return map;
             }
@@ -88,7 +368,7 @@ public class TestExcelOperation {
                 return "test";
             }
         };
-        Workbook wb = ExcelProcessor.generateExcelFile(prop, header, iterator);
+        Workbook wb = ExcelProcessor.generateExcelFile(prop.build(), header, iterator);
         FileOutputStream out = new FileOutputStream("d:/test.xlsx");
         wb.write(out);
         out.close();
@@ -97,18 +377,19 @@ public class TestExcelOperation {
 
     @Test
     public void testRead() throws IOException {
-        ExcelSheetProp prop = new ExcelSheetProp();
-        prop.setFileExt("xlsx");
-        prop.setStartCol(1);
-        prop.setStartRow(1);
-        prop.setSheetName("test");
-        prop.setStreamInsert(true);
-        prop.addColumnProp(new ExcelColumnProp("name", "name", Const.META_TYPE_STRING, false));
-        prop.addColumnProp(new ExcelColumnProp("time", "time", Const.META_TYPE_TIMESTAMP, false));
-        prop.addColumnProp(new ExcelColumnProp("intcol", "intcol", Const.META_TYPE_INTEGER, false));
-        prop.addColumnProp(new ExcelColumnProp("dval", "dval", Const.META_TYPE_DOUBLE, false));
-        prop.addColumnProp(new ExcelColumnProp("差距1", "sep1", Const.META_TYPE_FORMULA, "D{P+1}-D{P}"));
-        prop.addColumnProp(new ExcelColumnProp("差距2", "sep2", Const.META_TYPE_FORMULA, "D{P-1}-D{P}"));
+        ExcelSheetProp.Builder builder = ExcelSheetProp.Builder.newBuilder();
+        builder.setFileExt("xlsx");
+        builder.setStartCol(1);
+        builder.setStartRow(1);
+        builder.setSheetName("test");
+        builder.setStreamMode();
+        builder.addColumnProp(new ExcelColumnProp("name", "name", Const.META_TYPE_STRING, false));
+        builder.addColumnProp(new ExcelColumnProp("time", "time", Const.META_TYPE_TIMESTAMP, false));
+        builder.addColumnProp(new ExcelColumnProp("intcol", "intcol", Const.META_TYPE_INTEGER, false));
+        builder.addColumnProp(new ExcelColumnProp("dval", "dval", Const.META_TYPE_DOUBLE, false));
+        builder.addColumnProp(new ExcelColumnProp("差距1", "sep1", Const.META_TYPE_FORMULA, "D{P+1}-D{P}"));
+        builder.addColumnProp(new ExcelColumnProp("差距2", "sep2", Const.META_TYPE_FORMULA, "D{P-1}-D{P}"));
+        ExcelSheetProp prop=builder.build();
         ExcelProcessor.readExcelFile("d:/test.xlsx", prop);
         if (!CollectionUtils.isEmpty(prop.getColumnList())) {
             prop.getColumnList().forEach(f -> System.out.println(f));
@@ -117,24 +398,24 @@ public class TestExcelOperation {
 
     @Test
     public void testGenWithQuery() {
-        ExcelSheetProp prop = new ExcelSheetProp();
-        prop.setFileExt("xlsx");
-        prop.setStartCol(1);
-        prop.setStartRow(1);
-        prop.setSheetName("TestSheet1");
-        prop.addColumnProp(new ExcelColumnProp("唯一键", "uuid", Const.META_TYPE_BIGINT, false));
-        prop.addColumnProp(new ExcelColumnProp("企业id", "corpId", Const.META_TYPE_BIGINT, false));
-        prop.addColumnProp(new ExcelColumnProp("车牌号", "carNum", Const.META_TYPE_STRING, false));
-        prop.addColumnProp(new ExcelColumnProp("车架号", "vin", Const.META_TYPE_STRING, false));
-        prop.addColumnProp(new ExcelColumnProp("品牌", "brand", Const.META_TYPE_STRING, false));
-        prop.addColumnProp(new ExcelColumnProp("修改时间", "modifier", Const.META_TYPE_STRING, false));
-        prop.addColumnProp(new ExcelColumnProp("颜色", "color", Const.META_TYPE_BIGINT, false));
-        prop.addColumnProp(new ExcelColumnProp("生产者", "maufactor", Const.META_TYPE_STRING, false));
-        prop.addColumnProp(new ExcelColumnProp("model", "model", Const.META_TYPE_STRING, false));
-        prop.addColumnProp(new ExcelColumnProp("engine", "engine", Const.META_TYPE_STRING, false));
-        prop.addColumnProp(new ExcelColumnProp("img", "img", Const.META_TYPE_STRING, false));
-        prop.setStreamInsert(true);
-        prop.setStreamRows(3000);
+        ExcelSheetProp.Builder builder = ExcelSheetProp.Builder.newBuilder();
+        builder.setFileExt("xlsx");
+        builder.setStartCol(1);
+        builder.setStartRow(1);
+        builder.setSheetName("TestSheet1");
+        builder.addColumnProp(new ExcelColumnProp("唯一键", "uuid", Const.META_TYPE_BIGINT, false));
+        builder.addColumnProp(new ExcelColumnProp("企业id", "corpId", Const.META_TYPE_BIGINT, false));
+        builder.addColumnProp(new ExcelColumnProp("车牌号", "carNum", Const.META_TYPE_STRING, false));
+        builder.addColumnProp(new ExcelColumnProp("车架号", "vin", Const.META_TYPE_STRING, false));
+        builder.addColumnProp(new ExcelColumnProp("品牌", "brand", Const.META_TYPE_STRING, false));
+        builder.addColumnProp(new ExcelColumnProp("修改时间", "modifier", Const.META_TYPE_STRING, false));
+        builder.addColumnProp(new ExcelColumnProp("颜色", "color", Const.META_TYPE_BIGINT, false));
+        builder.addColumnProp(new ExcelColumnProp("生产者", "maufactor", Const.META_TYPE_STRING, false));
+        builder.addColumnProp(new ExcelColumnProp("model", "model", Const.META_TYPE_STRING, false));
+        builder.addColumnProp(new ExcelColumnProp("engine", "engine", Const.META_TYPE_STRING, false));
+        builder.addColumnProp(new ExcelColumnProp("img", "img", Const.META_TYPE_STRING, false));
+        builder.setStreamMode();
+        builder.setStreamRows(3000);
         TableConfigProp header = new TableConfigProp();
         header.setContainrow(1);
         header.setContentFontName("微软雅黑");
@@ -144,7 +425,7 @@ public class TestExcelOperation {
         DataBaseParam param = new DataBaseParam("127.0.0.1", 3316, "test", "test", "test");
         BaseDataBaseMeta meta = DataBaseMetaFactory.getDataBaseMetaByType(BaseDataBaseMeta.TYPE_MYSQL, param);
         try (Connection conn = SimpleJdbcDao.getConnection(meta)) {
-            Workbook wb = ExcelProcessor.generateExcelFile(prop, header, conn, sql, null, new ExcelRsExtractor(prop, header));
+            Workbook wb = ExcelProcessor.generateExcelFile(builder.build(), header, conn, sql, null, new ExcelRsExtractor(builder.build(), header));
             FileOutputStream out = new FileOutputStream("d:/test.xlsx");
             wb.write(out);
             out.close();

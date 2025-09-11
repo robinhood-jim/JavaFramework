@@ -76,9 +76,11 @@ public class SysResourceServiceImpl extends AbstractMybatisService<SysResourceMa
             }
         }
         if(!CollectionUtils.isEmpty(insertList)){
-            sysResourceUserService.lambdaUpdate().set(AbstractMybatisModel::getStatus,Const.INVALID)
-                    .eq(SysResourceUser::getUserId,userId).eq(AbstractMybatisModel::getStatus,Const.VALID).update();
             sysResourceUserService.insertBatch(insertList);
+        }
+        if(!CollectionUtils.isEmpty(delList)){
+            sysResourceUserService.lambdaUpdate().set(AbstractMybatisModel::getStatus,Const.INVALID)
+                    .eq(SysResourceUser::getUserId,userId).in(SysResourceUser::getResId,delList).eq(AbstractMybatisModel::getStatus,Const.VALID).update();
         }
     }
     public List<SysResourceDTO> getByRole(Long roleId){
@@ -89,9 +91,11 @@ public class SysResourceServiceImpl extends AbstractMybatisService<SysResourceMa
         boolean useQuery=!StrUtil.isAllBlank(dto.getCondition(),dto.getType());
         List<SysResource> allList=queryByField(SysResource::getStatus, Const.OPERATOR.EQ,Const.VALID);
         Map<Long,List<SysResource>> pidMap=allList.stream().collect(Collectors.groupingBy(SysResource::getPid));
+
         List<SysResource> queryList= this.lambdaQuery()
                 .eq(!useQuery,SysResource::getPid,0L)
                 .eq(ObjectUtil.isNotNull(dto.getType()),SysResource::getResType,dto.getType())
+                .eq(!SecurityUtils.isLoginUserSystemAdmin(),SysResource::getTenantId,SecurityUtils.getLoginUser().getTenantId())
                 .and(StrUtil.isNotBlank(dto.getCondition()),wrapper->wrapper.like(SysResource::getResName,dto.getCondition())
                         .or(orwrapper->orwrapper.like(SysResource::getCode,dto.getCondition())))
                 .orderByAsc(SysResource::getSeqNo).list();
@@ -118,8 +122,6 @@ public class SysResourceServiceImpl extends AbstractMybatisService<SysResourceMa
                     ).collect(Collectors.toList()));
         }
     }
-
-
 
     public List<SysResource> getAllValidate() {
         SysResource queryVO = new SysResource();

@@ -103,7 +103,9 @@ public class LoginController extends AbstractController {
             map.put("token", token);
             if(ObjectUtils.isEmpty(loginUser.getTenantId())){
                 map.put("selectTenant",true);
-                map.put("tenants",tenantInfoService.queryTenantByUser(loginUser.getId()));
+                List<TenantInfoDTO> dtos=tenantInfoService.queryTenantByUser(loginUser.getId());
+                filterListByCodeSet(dtos,"type","typeName","TENANTUSERTYPE");
+                map.put("tenants",dtos);
             }else{
                 map.put("selectTenant",false);
             }
@@ -174,7 +176,7 @@ public class LoginController extends AbstractController {
             retMap.put("roles", roles.stream().map(f-> RoleDTO.fromVO(f,loginUser.getTenantId())).collect(Collectors.toList()));
         }
         List<TenantInfoDTO> tenantInfoDTOS=tenantInfoService.queryTenantByUser(loginUser.getId());
-        filterListByCodeSet(tenantInfoDTOS,"type","typeName","");
+        filterListByCodeSet(tenantInfoDTOS,"type","typeName","TENANTUSERTYPE");
         if(!CollectionUtils.isEmpty(tenantInfoDTOS) && tenantInfoDTOS.size()>1){
             retMap.put("tenants",tenantInfoDTOS);
         }
@@ -215,8 +217,8 @@ public class LoginController extends AbstractController {
             if (optional.isPresent()) {
                 TenantInfoDTO dto=optional.get();
                 SysUser sysUser=sysUserService.getById(user.getId());
-                sysUser.setTenantId(tenantId);
-                sysUser.setAccountType(WebConstant.TENANT_TYPE.ORGADMIN.toString().equals(dto.getType())?WebConstant.ACCOUNT_TYPE.ORGADMIN.toString():WebConstant.ACCOUNT_TYPE.ORDINARY.toString());
+                user.setTenantId(tenantId);
+                user.setAccountType(WebConstant.TENANT_TYPE.ORGADMIN.toString().equals(dto.getType())?WebConstant.ACCOUNT_TYPE.ORGADMIN.toString():WebConstant.ACCOUNT_TYPE.ORDINARY.toString());
                 Map<String, Object> retMap = new HashMap<>();
                 List<String> permissions = new ArrayList<>();
                 List<SysResourceDTO> resources = sysResourceService.queryUserPermission(sysUser, tenantId);

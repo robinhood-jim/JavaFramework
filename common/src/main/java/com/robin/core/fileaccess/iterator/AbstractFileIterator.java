@@ -114,51 +114,52 @@ public abstract class AbstractFileIterator implements IResourceIterator {
             }else{
                 this.instream=accessUtil.getInResourceByStream(ResourceUtil.getProcessPath(colmeta.getPath()));
             }
-            if(useOrderBy || useGroupBy){
-                //pool all record through OffHeap
-                //ByteBuffer buffer=ByteBuffer.allocate(512);
-                pullNext();
-                StringBuilder builder=new StringBuilder();
-                while (!CollectionUtils.isEmpty(cachedValue)){
-                    while (!CollectionUtils.isEmpty(cachedValue) && useFilter && !CommRecordGenerator.doesRecordAcceptable(segment, cachedValue)) {
-                        pullNext();
-                    }
-                    if (segment != null && (!segment.isIncludeAllOriginColumn() && !CollectionUtils.isEmpty(segment.getSelectColumns()))) {
-                        newRecord.clear();
-                        CommRecordGenerator.doAsyncCalculator(segment, cachedValue, newRecord);
-                    }
-                    //get group by column
-                    if(!CollectionUtils.isEmpty(segment.getGroupBy())){
-                        if(builder.length()>0){
-                            builder.delete(0,builder.length());
-                        }
-                        for(SqlNode tnode:segment.getGroupBy()) {
-                            String columnName=((SqlIdentifier)tnode).getSimple();
-                            if (!ObjectUtils.isEmpty(newRecord.get(columnName))) {
-                                appendByType(builder,newRecord.get(columnName));
-                            }
-                        }
-                        doGroupAgg(builder.toString());//ByteBufferUtils.getContent(buffer)
-                    }
-                    pullNext();
-                }
-                //calculate avg
-                for(CommSqlParser.ValueParts parts:segment.getSelectColumns()){
-                    if("avg".equalsIgnoreCase(parts.getFunctionName())){
-                        groupByMap.entrySet().forEach(entry->{
-                            if(!ObjectUtils.isEmpty(entry.getValue().get(parts.getAliasName())) &&
-                                    !ObjectUtils.isEmpty(entry.getValue().get(parts.getAliasName()+"cou"))){
-                                entry.getValue().put(parts.getAliasName(),(Double)entry.getValue().get(parts.getAliasName())/(Integer)entry.getValue().get(parts.getAliasName()+"cou"));
-                                entry.getValue().remove(parts.getAliasName()+"cou");
-                            }
-                        });
-                    }
-                }
-                groupIter=groupByMap.entrySet().iterator();
-            }
-
         } catch (Exception ex) {
             logger.error("{}", ex.getMessage());
+        }
+    }
+    protected void groupOrderByInit() throws Exception{
+        if(useOrderBy || useGroupBy){
+            //pool all record through OffHeap
+            //ByteBuffer buffer=ByteBuffer.allocate(512);
+            pullNext();
+            StringBuilder builder=new StringBuilder();
+            while (!CollectionUtils.isEmpty(cachedValue)){
+                while (!CollectionUtils.isEmpty(cachedValue) && useFilter && !CommRecordGenerator.doesRecordAcceptable(segment, cachedValue)) {
+                    pullNext();
+                }
+                if (segment != null && (!segment.isIncludeAllOriginColumn() && !CollectionUtils.isEmpty(segment.getSelectColumns()))) {
+                    newRecord.clear();
+                    CommRecordGenerator.doAsyncCalculator(segment, cachedValue, newRecord);
+                }
+                //get group by column
+                if(!CollectionUtils.isEmpty(segment.getGroupBy())){
+                    if(builder.length()>0){
+                        builder.delete(0,builder.length());
+                    }
+                    for(SqlNode tnode:segment.getGroupBy()) {
+                        String columnName=((SqlIdentifier)tnode).getSimple();
+                        if (!ObjectUtils.isEmpty(newRecord.get(columnName))) {
+                            appendByType(builder,newRecord.get(columnName));
+                        }
+                    }
+                    doGroupAgg(builder.toString());//ByteBufferUtils.getContent(buffer)
+                }
+                pullNext();
+            }
+            //calculate avg
+            for(CommSqlParser.ValueParts parts:segment.getSelectColumns()){
+                if("avg".equalsIgnoreCase(parts.getFunctionName())){
+                    groupByMap.entrySet().forEach(entry->{
+                        if(!ObjectUtils.isEmpty(entry.getValue().get(parts.getAliasName())) &&
+                                !ObjectUtils.isEmpty(entry.getValue().get(parts.getAliasName()+"cou"))){
+                            entry.getValue().put(parts.getAliasName(),(Double)entry.getValue().get(parts.getAliasName())/(Integer)entry.getValue().get(parts.getAliasName()+"cou"));
+                            entry.getValue().remove(parts.getAliasName()+"cou");
+                        }
+                    });
+                }
+            }
+            groupIter=groupByMap.entrySet().iterator();
         }
     }
     private void doGroupAgg(String key){
@@ -254,6 +255,7 @@ public abstract class AbstractFileIterator implements IResourceIterator {
         try {
             // no order by
             if(!useOrderBy && !useGroupBy) {
+
                 pullNext();
                 while (!CollectionUtils.isEmpty(cachedValue) && useFilter && !CommRecordGenerator.doesRecordAcceptable(segment, cachedValue)) {
                     pullNext();
@@ -265,6 +267,9 @@ public abstract class AbstractFileIterator implements IResourceIterator {
                 return !CollectionUtils.isEmpty(cachedValue);
             }else{
                 //capture all record to offHeap
+                if(CollectionUtils.isEmpty(groupByMap)) {
+                    groupOrderByInit();
+                }
                 newRecord.clear();
                 if(groupIter.hasNext()) {
 
@@ -312,7 +317,7 @@ public abstract class AbstractFileIterator implements IResourceIterator {
         return aliasName;
     }
 
-    protected abstract void pullNext();
+    protected abstract void pullNext() throws Exception;
     public DataCollectionMeta getCollectionMeta(){
         return colmeta;
     }

@@ -200,7 +200,7 @@ public interface IjdbcDao {
      * @return
      * @throws DAOException
      */
-    <T extends BaseObject>T getEntity(Class<T> clazz, Serializable value) throws DAOException;
+    <T extends BaseObject,P extends Serializable>T getEntity(Class<T> clazz, P value) throws DAOException;
 
     /**
      * Execute Sql with Config query
@@ -240,4 +240,5 @@ public interface IjdbcDao {
     <T extends BaseObject,P extends Serializable> int deleteByLogic(Class<T> clazz,List<P> pkObjs,String statusColumn,String statusValue) throws DAOException;
     <T extends BaseObject> List<T> queryByVO(Class<T> type, BaseObject vo, String orderByStr);
     List<Map<String, Object>> queryByNamedParam(String executeSql, Map<String, List<Object>> parmaMap) throws DAOException;
+    long executeSqlWithReturn(final String sql, Object[] object);
 }

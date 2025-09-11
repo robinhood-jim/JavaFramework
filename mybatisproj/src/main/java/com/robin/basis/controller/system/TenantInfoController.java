@@ -14,6 +14,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.annotation.security.PermitAll;
 import java.util.List;
 import java.util.Map;
 
@@ -23,7 +24,7 @@ public class TenantInfoController extends AbstractMyBatisController<ITenantInfoS
     @PostMapping
     @PreAuthorize("@checker.isSuperAdmin()")
     public Map<String,Object> save(@RequestPart("tenant") TenantInfoDTO dto,@RequestPart(required = false) MultipartFile logo){
-        int count=service.lambdaQuery().eq(TenantInfo::getTenantCode,dto.getTenantCode()).eq(TenantInfo::getStatus, Const.VALID).count();
+        long count=service.lambdaQuery().eq(TenantInfo::getTenantCode,dto.getTenantCode()).eq(TenantInfo::getStatus, Const.VALID).count();
         if(count>0){
             return wrapFailedMsg("存在编码相同的企业!");
         }
@@ -77,6 +78,12 @@ public class TenantInfoController extends AbstractMyBatisController<ITenantInfoS
             return wrapFailedMsg("失败");
         }
 
+    }
+    @GetMapping("/attendTenant")
+    @PermitAll
+    public Map<String,Object> attendTenant(Map<String,Object> reqMap){
+
+        return null;
     }
 
 }

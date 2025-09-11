@@ -20,7 +20,7 @@ public interface ISysOrgService extends IMybatisBaseService<SysOrg,Long> {
     boolean removeOrg(Long orgId,List<Long> uids);
     List<SysOrgVO> queryOrg(SysOrgQueryDTO dto);
     IPage<EmployeeDTO> queryOrgUser(SysOrgQueryDTO dto);
-    TenantInfo getTopOrgTenant(Long orgId);
+    Pair<TenantInfo, SysOrg> getTopOrgTenant(Long orgId);
     IPage<EmployeeDTO> selectEmployeeInOrg(Page<SysUserQueryDTO> page, QueryWrapper wrapper, List<Long> orgIds);
     IPage<EmployeeDTO> selectEmployeeNotInOrg(Page<SysUserQueryDTO> page,  QueryWrapper wrapper,List<Long> orgIds);
     Pair<Integer,Integer> deleteOrg(List<Long> orgIds);

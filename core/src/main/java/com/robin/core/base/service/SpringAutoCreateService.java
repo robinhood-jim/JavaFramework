@@ -1,6 +1,7 @@
 package com.robin.core.base.service;
 
 import com.robin.core.base.dao.JdbcDao;
+import com.robin.core.base.dao.util.AnnotationRetriever;
 import com.robin.core.base.dao.util.PropertyFunction;
 import com.robin.core.base.exception.DAOException;
 import com.robin.core.base.exception.ServiceException;
@@ -31,7 +32,7 @@ import java.util.function.Function;
 @Getter
 @Setter
 @SuppressWarnings("unused")
-public class SpringAutoCreateService<B extends BaseObject, P extends Serializable> implements IBaseAnnotationJdbcService<B, P> {
+public final class SpringAutoCreateService<B extends BaseObject, P extends Serializable> implements IBaseAnnotationJdbcService<B, P> {
     protected Function<B, P> saveFunction;
     protected Consumer<B> saveBeforeFunction;
     protected BiConsumer<B, P> saveAfterFunction;
@@ -126,18 +127,19 @@ public class SpringAutoCreateService<B extends BaseObject, P extends Serializabl
     }
 
     @Override
-    public List<B> queryByFieldOrderBy(String orderByStr, String fieldName, Const.OPERATOR oper, Object... fieldValues) throws ServiceException {
+    public List<B> queryByFieldOrderBy(String orderField, boolean ascDesc, String fieldName, Const.OPERATOR oper, Object... fieldValues) throws ServiceException {
         try {
-            return jdbcDao.queryByFieldOrderBy(potype, fieldName, oper, orderByStr, fieldValues);
+            return jdbcDao.queryByFieldOrderBy(potype, fieldName, oper, orderField+(ascDesc?" asc":"desc"), fieldValues);
         } catch (DAOException ex) {
             throw new ServiceException(ex);
         }
     }
 
     @Override
-    public List<B> queryByFieldOrderBy(String orderByStr, PropertyFunction<B, ?> function, Const.OPERATOR oper, Object... fieldValues) throws ServiceException {
+    public List<B> queryByFieldOrderBy(PropertyFunction<B, ?> orderField, boolean ascDesc, PropertyFunction<B, ?> queryField, Const.OPERATOR oper, Object... fieldValues) throws ServiceException {
         try {
-            return jdbcDao.queryByFieldOrderBy(potype, function, oper, orderByStr, fieldValues);
+            String fieldName = AnnotationRetriever.getFieldName(orderField);
+            return jdbcDao.queryByFieldOrderBy(potype, queryField, oper, fieldName+(ascDesc?" asc":" desc"), fieldValues);
         } catch (DAOException ex) {
             throw new ServiceException(ex);
         }

@@ -36,13 +36,13 @@ public abstract class AbstractCloudStorageFileSystemAccessor extends AbstractFil
     @Override
     public synchronized Pair<BufferedReader, InputStream> getInResourceByReader(String resourcePath) throws IOException {
         InputStream inputStream = getInputStreamByConfig(resourcePath);
-        return Pair.of(getReaderByPath(resourcePath, inputStream, colmeta.getEncode()), inputStream);
+        return Pair.of(getReaderByPath(resourcePath, inputStream, getEncode()), inputStream);
     }
 
     @Override
     public synchronized Pair<BufferedWriter, OutputStream> getOutResourceByWriter(String resourcePath) throws IOException {
         OutputStream outputStream = getOutputStream(resourcePath);
-        return Pair.of(getWriterByPath(resourcePath, outputStream, colmeta.getEncode()), outputStream);
+        return Pair.of(getWriterByPath(resourcePath, outputStream, getEncode()), outputStream);
     }
 
     @Override
@@ -93,7 +93,10 @@ public abstract class AbstractCloudStorageFileSystemAccessor extends AbstractFil
      * @throws IOException
      */
     protected abstract OutputStream getOutputStream(String path) throws IOException;
-
+    protected abstract OutputStream getOutputStream(String path,int uploadPartSize) throws IOException;
+    public String getEncode(){
+        return colmeta==null?"UTF8":colmeta.getEncode();
+    }
 
     protected String getContentType(DataCollectionMeta meta) {
         return !ObjectUtils.isEmpty(meta.getContent()) && !ObjectUtils.isEmpty(meta.getContent().getContentType()) ? meta.getContent().getContentType() : ResourceConst.DEFAULTCONTENTTYPE;

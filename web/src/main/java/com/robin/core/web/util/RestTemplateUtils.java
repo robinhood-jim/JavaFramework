@@ -41,7 +41,7 @@ public class RestTemplateUtils {
     }
     public static Map<String,Object> getResultFromGateWayRest(String requestUrl,String token,Object... objects){
         Environment environment= SpringContextHolder.getBean(Environment.class);
-        String url=environment.getProperty("backgroud.gatewayUrl")+requestUrl;
+        String url=environment.getProperty("project.gatewayUrl")+requestUrl;
         HttpHeaders requestHeaders = new HttpHeaders();
         if(!StringUtils.isEmpty(token)) {
             requestHeaders.add(HttpHeaders.AUTHORIZATION,"Bearer "+token);

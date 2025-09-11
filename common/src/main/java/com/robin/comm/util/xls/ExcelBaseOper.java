@@ -36,7 +36,6 @@ import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
 import java.awt.Color;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -57,7 +56,7 @@ public class ExcelBaseOper {
 
     public static final String TYPE_EXCEL2003 = "xls";
     public static final String TYPE_EXCEL2007 = "xlsx";
-    public static final String defaultFontName = Locale.CHINA.equals(Locale.getDefault()) || Locale.SIMPLIFIED_CHINESE.equals(Locale.getDefault()) ? "宋体" : java.awt.Font.SANS_SERIF;
+    public static final String defaultFontName = Locale.CHINA.equals(Locale.getDefault()) || Locale.SIMPLIFIED_CHINESE.equals(Locale.getDefault()) ? "宋体" : "Calibri";
     private static final Logger logger = LoggerFactory.getLogger(ExcelBaseOper.class);
     private static final Pattern paramPattern=Pattern.compile("\\w+(\\{P([\\+|-]?[\\d+])?\\})");
 
@@ -76,7 +75,7 @@ public class ExcelBaseOper {
                     })
                     .orElseGet(HSSFWorkbook::new);
         } else {
-            wb = Optional.of(prop.isStreamInsert()).map(f -> {
+            wb = Optional.of(prop.isStreamMode()).map(f -> {
                 Workbook wb1 = Optional.ofNullable(prop.getTemplateFile()).map(p1 -> {
                     try {
                         SXSSFWorkbook wb3 = new SXSSFWorkbook(new XSSFWorkbook(getTemplateInputStream(prop)), prop.getStreamRows());
@@ -333,6 +332,14 @@ public class ExcelBaseOper {
         return (short) align;
     }
 
+    private static Cell createCell(Row row, int column, CellStyle cellStyle, CreationHelper helper, String objvalue) {
+        Cell cell = row.createCell(column);
+
+        cell.setCellValue(objvalue);
+        cell.setCellStyle(cellStyle);
+        return cell;
+    }
+
     public static Cell createCell(Row row1,int j, String value, String colType, CellStyle cellStyle, CreationHelper helper) {
         Cell cell;
         if (colType.equals(Const.META_TYPE_STRING)) {
@@ -363,14 +370,6 @@ public class ExcelBaseOper {
         return cell;
     }
 
-    private static Cell createCell(Row row, int column, CellStyle cellStyle, CreationHelper helper, String objvalue) {
-        Cell cell = row.createCell(column);
-
-        cell.setCellValue(objvalue);
-        cell.setCellStyle(cellStyle);
-        return cell;
-    }
-
     private static Cell createCell(Row row, int column, CellStyle cellStyle, CreationHelper helper, double value) {
         Cell cell = row.createCell(column);
 
@@ -383,8 +382,10 @@ public class ExcelBaseOper {
 
     private static Cell createFormulaCell(Row row, int column, CellStyle cellStyle, String formula) {
         Cell cell = row.createCell(column);
+        FormulaEvaluator evaluator = cell.getSheet().getWorkbook().getCreationHelper().createFormulaEvaluator();
         cell.setCellFormula(formula);
         cell.setCellStyle(cellStyle);
+        cell.setCellValue(evaluator.evaluate(cell).getNumberValue());
         return cell;
     }
 
@@ -400,7 +401,7 @@ public class ExcelBaseOper {
 
     private static Cell createCellDate(Row row, int column, CellStyle cellStyle, CreationHelper helper, String value) {
         Cell cell = row.createCell(column);
-        cellStyle.setDataFormat(helper.createDataFormat().getFormat("yyyy-MM-dd hh:mm:ss"));
+        //cellStyle.setDataFormat(helper.createDataFormat().getFormat("yyyy-MM-dd hh:mm:ss"));
 
         cell.setCellValue(new Date(Long.parseLong(value)));
         cell.setCellStyle(cellStyle);

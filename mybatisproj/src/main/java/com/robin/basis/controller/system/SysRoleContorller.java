@@ -52,7 +52,7 @@ public class SysRoleContorller extends AbstractMyBatisController<ISysRoleService
 	@GetMapping("/all")
 	public Map<String,Object> showAllRole(){
 		try{
-			List<SysRole> roles=service.queryByField(SysRole::getStatus, Const.OPERATOR.EQ,Const.VALID);
+			List<SysRole> roles=service.queryValid();
 			return wrapObject(roles.stream().map(SysRoleDTO::fromVO).collect(Collectors.toList()));
 		}catch (Exception ex){
 			return wrapError(ex);

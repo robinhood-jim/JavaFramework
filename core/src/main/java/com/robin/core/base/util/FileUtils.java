@@ -5,8 +5,8 @@ import com.google.common.collect.Lists;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileExistsException;
 import org.springframework.util.Assert;
-import org.springframework.util.MimeTypeUtils;
 import org.springframework.util.ObjectUtils;
 
 import java.io.File;
@@ -152,6 +152,38 @@ public class FileUtils {
         }
         return true;
     }
+    public static boolean mkDirReclusive(String path) throws FileExistsException{
+        int pos=path.contains(File.separator)?path.lastIndexOf(File.separator):path.lastIndexOf("/");
+        Assert.isTrue(pos>0,"not a valid filePath");
+        String processPath=path.substring(0,pos);
+        if(processPath.startsWith("file:///")){
+            processPath=processPath.substring(8);
+        }
+        List<String> pathParts=processPath.contains(File.separator)?Lists.newArrayList(processPath.split(File.separator)):Lists.newArrayList(processPath.split("/"));
+        if(pathParts.size()==1){
+            return true;
+        }
+        StringBuilder builder=new StringBuilder();
+
+        builder.append(pathParts.get(0)).append(File.separator);
+        for(int i=1;i<pathParts.size();i++){
+            builder.append(pathParts.get(i));
+            mkdir(builder.toString());
+            builder.append(File.separator);
+        }
+        return true;
+
+    }
+    public static boolean mkdir(String path) throws FileExistsException {
+        File file=new File(path);
+        if(file.isDirectory()){
+            return true;
+        }else if(!file.exists()){
+            return file.mkdir();
+        }else{
+            throw new FileExistsException("path already exists as file");
+        }
+    }
     public static String getWorkingPath(DataCollectionMeta meta){
         return !ObjectUtils.isEmpty(meta.getResourceCfgMap().get(ResourceConst.WORKINGPATHPARAM))
                 ? meta.getResourceCfgMap().get(ResourceConst.WORKINGPATHPARAM).toString()
@@ -166,7 +198,7 @@ public class FileUtils {
         private Const.CompressType compressType= Const.CompressType.COMPRESS_TYPE_NONE;
     }
     public static void main(String[] args){
-        String path="file:///e:/tmp/test/test1.avro.cs.lz4";
+        String path="tmp/1234.xlsx";
         System.out.println(parseFile(path));
     }
 }

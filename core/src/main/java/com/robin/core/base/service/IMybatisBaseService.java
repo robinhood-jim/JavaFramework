@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.robin.core.base.dto.PageDTO;
 import com.robin.core.base.exception.ServiceException;
+import com.robin.core.base.model.BaseObject;
 import com.robin.core.base.util.Const;
 import com.robin.core.query.util.PageQuery;
 import com.robin.core.sql.util.FilterCondition;
@@ -17,7 +18,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-public interface IMybatisBaseService<T extends Serializable,P extends Serializable> extends IService<T> {
+public interface IMybatisBaseService<T extends BaseObject,P extends Serializable> extends IService<T> {
     boolean deleteByIds(String ids);
     IPage<T> getPage(Map<String, Object> params, String defaultOrderField, boolean isAsc);
     IPage<T> getPage(PageDTO pageDTO);
@@ -27,7 +28,6 @@ public interface IMybatisBaseService<T extends Serializable,P extends Serializab
     boolean delete(Wrapper<T> deleteWrapper);
 
     List<T> selectAll();
-    T selectOne(Wrapper<T> wrapper);
     IPage<T> queryPage(PageDTO pageDTO, Wrapper wrapper, String defautOrderFields, boolean isAsc);
     IPage<T> queryPage(Map<String, Object> paramMap, Wrapper wrapper, String defautOrderFields, boolean isAsc);
     List<T> queryByField(SFunction<T,?> queryField, Const.OPERATOR operator, Object... value) throws ServiceException;

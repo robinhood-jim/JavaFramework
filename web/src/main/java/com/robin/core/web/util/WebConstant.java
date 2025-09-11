@@ -57,6 +57,28 @@ public class WebConstant {
             return value;
         }
     }
+    public enum TENANT_KEYS{
+        PERMISSIONS_DEFAULT("PERMISSIONS_DEFAULT"),
+        ROLES_DEFAULT("ROLES_DEFAULT"),
+        ALL_PERMISSIONS("allPermissions"),
+        MANAGER_PERMISSION("managerPermissions"),
+        ORDINARY_PERMISSIONS("ordinaryPermissions"),
+        USER_CAPACITY("userCapacity"),
+        USE_DIVIDED_STORAGE("useDividedStorage"),
+        DIVIDE_STORAGE_TYPE("dividedStorageType"),
+        USE_CLOUD_STORAGE("useCloudStorage"),
+        CLOUD_TYPE("cloudType"),
+        CLOUD_ACCESSKEY("cloudAccessKey"),
+        CLOUD_SECRETKEY("cloudSecretKey");
+        private String key;
+        TENANT_KEYS(String key){
+            this.key=key;
+        }
+
+        public String getKey() {
+            return key;
+        }
+    }
     public static final String SYSPARAMS_PERMISSIONS_PERFIX="PERMISSIONS_";
     public static final String SYSPARAMS_PERMISSIONS_ORG_PERFIX="PERMISSIONS_ORG";
     public static final String SYSPARAMS_PERMISSIONS_ORDINARY_PERFIX="PERMISSIONS_ORDINARY";

@@ -42,6 +42,7 @@ public class TextFileWriterFactory {
         }
         return fileWriter;
     }
+
     public static IResourceWriter getWriterByType(DataCollectionMeta colmeta, BufferedWriter writer,AbstractFileSystemAccessor accessor) throws IOException {
         IResourceWriter fileWriter = getWriterByType(colmeta,accessor);
         if(!ObjectUtils.isEmpty(fileWriter) && writer!=null) {
@@ -96,7 +97,7 @@ public class TextFileWriterFactory {
 
             Class<? extends IResourceWriter> writerClass=fileWriterMap.get(fileSuffix);
             if (!ObjectUtils.isEmpty(writerClass)) {
-                fileWriter =  writerClass.getConstructor(DataCollectionMeta.class).newInstance(colmeta);
+                fileWriter =  writerClass.getDeclaredConstructor(DataCollectionMeta.class, AbstractFileSystemAccessor.class).newInstance(colmeta,accessor);
                 fileWriter.setAccessUtil(accessor);
                 logger.info("using resource writer {}",writerClass.getCanonicalName());
             }

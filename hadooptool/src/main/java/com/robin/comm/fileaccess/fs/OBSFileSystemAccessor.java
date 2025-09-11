@@ -150,7 +150,11 @@ public class OBSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
 
     @Override
     protected OutputStream getOutputStream(String path) throws IOException {
-        return new OBSOutputStream(client,colmeta,bucketName,path);
+        return new OBSOutputStream(client,colmeta,bucketName,path,0);
+    }
+    @Override
+    protected OutputStream getOutputStream(String path,int uploadPartSize) throws IOException {
+        return new OBSOutputStream(client,colmeta,bucketName,path,uploadPartSize);
     }
 
     public ObsClient getClient() {

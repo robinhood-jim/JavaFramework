@@ -44,6 +44,7 @@ public class ByteBufferOutputStream extends OutputStream {
     }
     public void writeGap() throws IOException{
         write(0);
+        count++;
     }
     public void writeNullTag() throws IOException{
         //overwrite 0x00 with 0xff

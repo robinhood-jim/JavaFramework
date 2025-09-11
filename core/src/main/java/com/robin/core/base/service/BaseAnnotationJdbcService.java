@@ -274,8 +274,8 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 	}
 
 	/**
-	 *
-	 * @param orderByStr
+	 * @param orderField
+	 * @param ascDesc
 	 * @param fieldName
 	 * @param oper
 	 * @param fieldValues
@@ -284,10 +284,10 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 	 */
 	@Override
 	@Transactional(readOnly=true)
-	public List<V> queryByFieldOrderBy(String orderByStr, String fieldName, Const.OPERATOR oper, Object... fieldValues) throws ServiceException{
+	public List<V> queryByFieldOrderBy(String orderField, boolean ascDesc, String fieldName, Const.OPERATOR oper, Object... fieldValues) throws ServiceException{
 		List<V> retlist;
-		try{	
-			retlist= jdbcDao.queryByFieldOrderBy(type, fieldName, oper, orderByStr, fieldValues);
+		try{
+			retlist= jdbcDao.queryByFieldOrderBy(type, fieldName, oper, orderField+ (ascDesc?" asc":" desc"), fieldValues);
 		}
 		catch(Exception e){
 			throw new ServiceException(e);
@@ -296,10 +296,11 @@ public abstract class BaseAnnotationJdbcService<V extends BaseObject,P extends S
 	}
 	@Override
 	@Transactional(readOnly=true)
-	public List<V> queryByFieldOrderBy(String orderByStr, PropertyFunction<V,?> function, Const.OPERATOR oper, Object... fieldValues) throws ServiceException{
+	public List<V> queryByFieldOrderBy(PropertyFunction<V, ?> orderField, boolean ascDesc, PropertyFunction<V,?> queryField, Const.OPERATOR oper, Object... fieldValues) throws ServiceException{
 		List<V> retlist;
 		try{
-			retlist= jdbcDao.queryByFieldOrderBy(type, function, oper, orderByStr, fieldValues);
+			String fieldName = AnnotationRetriever.getFieldName(orderField);
+			retlist= jdbcDao.queryByFieldOrderBy(type, queryField, oper, fieldName+(ascDesc?" asc":" desc"), fieldValues);
 		}
 		catch(Exception e){
 			throw new ServiceException(e);

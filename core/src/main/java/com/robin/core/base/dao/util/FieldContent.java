@@ -5,6 +5,7 @@ import com.robin.core.base.annotation.MappingField;
 import lombok.Data;
 import org.springframework.util.ObjectUtils;
 
+import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.List;
@@ -21,8 +22,8 @@ public class FieldContent {
     private boolean primary;
     private boolean keyword;
     private Field field;
-    private Method getMethod;
-    private Method setMethod;
+    private MethodHandle getMethod;
+    private MethodHandle setMethod;
     private int scale;
     private int precise;
     private int length;
@@ -36,7 +37,7 @@ public class FieldContent {
     }
 
 
-    public FieldContent(String propertyName, String fieldName, Field field, Method getMethod, Method setMethod) {
+    public FieldContent(String propertyName, String fieldName, Field field, MethodHandle getMethod, MethodHandle setMethod) {
         this.propertyName = propertyName;
         this.fieldName = fieldName;
         this.field = field;
@@ -53,11 +54,11 @@ public class FieldContent {
             content.setFieldName(fieldName);
             return this;
         }
-        public Builder setGetMethod(Method getMethod){
+        public Builder setGetMethod(MethodHandle getMethod){
             content.setGetMethod(getMethod);
             return this;
         }
-        public Builder setSetMethod(Method setMethod){
+        public Builder setSetMethod(MethodHandle setMethod){
             content.setSetMethod(setMethod);
             return this;
         }

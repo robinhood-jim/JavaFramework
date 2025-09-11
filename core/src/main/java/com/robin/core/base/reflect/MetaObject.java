@@ -24,20 +24,24 @@ public class MetaObject {
     public Object getValue(String columnName){
         try {
             if (fieldContentMap.containsKey(columnName)) {
-                return fieldContentMap.get(columnName).getGetMethod().invoke(originalObject, null);
+                return fieldContentMap.get(columnName).getGetMethod().bindTo(originalObject).invoke();
             }
         }catch (Exception ex){
             log.error("{}",ex);
+        }catch (Throwable ex1){
+            log.error("{}",ex1);
         }
         return null;
     }
     public void setValue(String fieldName,Object fieldValue){
         try{
             if(fieldContentMap.containsKey(fieldName)){
-                fieldContentMap.get(fieldName).getSetMethod().invoke(originalObject,fieldValue);
+                fieldContentMap.get(fieldName).getSetMethod().bindTo(originalObject).invoke(fieldValue);
             }
         }catch (Exception ex){
             log.error("{}",ex);
+        }catch (Throwable ex1){
+            log.error("{}",ex1);
         }
     }
     public boolean hasGetter(String columnName){

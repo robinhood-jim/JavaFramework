@@ -25,7 +25,7 @@ public class SysUserContorller extends BaseController {
             request.setAttribute("orgId",session.getOrgId());
         }
         request.setAttribute("resps", StringUtils.join(session.getResponsiblitys().toArray(),","));
-        return "/user/user_list";
+        return "user/user_list";
     }
     @GetMapping("/showright")
     public String userRight(HttpServletRequest request, HttpServletResponse response) {

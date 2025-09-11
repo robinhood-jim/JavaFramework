@@ -48,6 +48,7 @@ public abstract class AbstractFileWriter implements IResourceWriter {
 	protected DateTimeFormatter formatter;
 	protected AbstractFileSystemAccessor accessUtil;
 	protected String identifier;
+	protected boolean useBufferedWriter=false;
 
 	public AbstractFileWriter(){
 
@@ -105,7 +106,9 @@ public abstract class AbstractFileWriter implements IResourceWriter {
 		if(out==null){
 			checkAccessUtil(colmeta.getPath());
 			out = accessUtil.getOutResourceByStream(ResourceUtil.getProcessPath(colmeta.getPath()));
-			writer=new BufferedWriter(new OutputStreamWriter(out));
+			if(useBufferedWriter) {
+				writer = new BufferedWriter(new OutputStreamWriter(out));
+			}
 		}
 		logger.info("using Writer {}",getClass().getCanonicalName());
 	}

@@ -25,12 +25,13 @@ public class COSOutputStream extends AbstractUploadPartOutputStream {
 
     }
 
-    public COSOutputStream(COSClient client, DataCollectionMeta meta, String bucketName, String path, String region) {
+    public COSOutputStream(COSClient client, DataCollectionMeta meta, String bucketName, String path, String region,int defaultPartSize) {
         this.client = client;
         this.meta = meta;
         this.bucketName = bucketName;
         this.path = path;
         this.region = region;
+        setDefaultUploadPartSize(defaultPartSize);
         init();
     }
 

@@ -17,6 +17,7 @@ package com.robin.comm.util.xls;
 
 import java.util.Map;
 
+import com.robin.core.base.util.DateTimeFormatHolder;
 import org.apache.poi.hssf.usermodel.HSSFDataFormat;
 import org.apache.poi.ss.usermodel.*;
 
@@ -30,6 +31,7 @@ public class ExcelCellStyleUtil {
 
     }
 
+
     public static CellStyle getNoBorderCellType(Workbook wb, String metaType) {
         CellStyle cs = wb.createCellStyle();
         cs.setAlignment(HorizontalAlignment.CENTER);
@@ -39,11 +41,11 @@ public class ExcelCellStyleUtil {
         cs.setFillForegroundColor(IndexedColors.WHITE.getIndex());
         cs.setFillPattern(FillPatternType.SOLID_FOREGROUND);
         cs.setWrapText(true);
-        extractMeta(metaType, cs);
+        extractMeta(wb,metaType, cs);
         return cs;
     }
 
-    private static void extractMeta(String metaType, CellStyle cs) {
+    private static void extractMeta(Workbook wb,String metaType, CellStyle cs) {
         switch (metaType) {
             case Const.META_TYPE_NUMERIC:
             case Const.META_TYPE_DOUBLE:
@@ -51,7 +53,8 @@ public class ExcelCellStyleUtil {
                 cs.setDataFormat(HSSFDataFormat.getBuiltinFormat("0.00"));
                 break;
             case Const.META_TYPE_DATE:
-                cs.setDataFormat(HSSFDataFormat.getBuiltinFormat("yyyy-MM-dd hh:mm:ss"));
+            case Const.META_TYPE_TIMESTAMP:
+                cs.setDataFormat(wb.getCreationHelper().createDataFormat().getFormat(DateTimeFormatHolder.getTimestampFormatter().toString()));
                 break;
             case Const.META_TYPE_INTEGER:
                 cs.setDataFormat(HSSFDataFormat.getBuiltinFormat("0"));
@@ -76,9 +79,35 @@ public class ExcelCellStyleUtil {
         Font font = wb.createFont();
         font.setFontName(ExcelBaseOper.defaultFontName);
         cs.setFont(font);
-        extractMeta(metaType, cs);
+        extractMeta(wb,metaType, cs);
         return cs;
 
+    }
+    public static CellStyle getCellStyle(Workbook wb,String metaType,Map<String, CellStyle> cellMap){
+        if(cellMap.containsKey(metaType)){
+            return cellMap.get(metaType);
+        }else{
+            CellStyle cs = wb.createCellStyle();
+            cs.setVerticalAlignment(VerticalAlignment.CENTER);
+            cs.setAlignment(HorizontalAlignment.CENTER);
+            cs.setBorderBottom(BorderStyle.THIN);
+            cs.setBottomBorderColor(IndexedColors.BLACK.getIndex());
+            cs.setBorderLeft(BorderStyle.THIN);
+            cs.setLeftBorderColor(IndexedColors.BLACK.getIndex());
+            cs.setBorderRight(BorderStyle.THIN);
+            cs.setRightBorderColor(IndexedColors.BLACK.getIndex());
+            cs.setBorderTop(BorderStyle.THIN);
+            cs.setTopBorderColor(IndexedColors.BLACK.getIndex());
+            cs.setFillForegroundColor(IndexedColors.WHITE.getIndex());
+            Font font = wb.createFont();
+            font.setFontName(ExcelBaseOper.defaultFontName);
+            cs.setFont(font);
+            cs.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            cs.setWrapText(true);
+            extractMeta(wb,metaType,cs);
+            cellMap.put(metaType,cs);
+            return cs;
+        }
     }
 
     public static CellStyle getCellStyle(Workbook wb, int rowspan, int colspan, String metaType, TableConfigProp header, Map<String, CellStyle> cellMap) {
@@ -114,7 +143,7 @@ public class ExcelCellStyleUtil {
             cs.setFont(font);
             cs.setFillPattern(FillPatternType.SOLID_FOREGROUND);
             cs.setWrapText(true);
-            extractMeta(metaType,cs);
+            extractMeta(wb,metaType,cs);
             cellMap.put("C_" + rowspan + "_" + colspan + "_" + metaType, cs);
         }
         return cs;

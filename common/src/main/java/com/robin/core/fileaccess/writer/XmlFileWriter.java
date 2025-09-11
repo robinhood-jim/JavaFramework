@@ -16,6 +16,7 @@
 package com.robin.core.fileaccess.writer;
 
 import com.robin.core.base.util.Const;
+import com.robin.core.fileaccess.fs.AbstractFileSystemAccessor;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import org.tukaani.xz.FinishableOutputStream;
 
@@ -35,6 +36,10 @@ public class XmlFileWriter extends TextBasedFileWriter {
 	}
 	public XmlFileWriter(DataCollectionMeta colmeta) {
 		super(colmeta);
+		this.identifier= Const.FILEFORMATSTR.XML.getValue();
+	}
+	public XmlFileWriter(DataCollectionMeta colmeta, AbstractFileSystemAccessor accessor) {
+		super(colmeta,accessor);
 		this.identifier= Const.FILEFORMATSTR.XML.getValue();
 	}
 

@@ -39,6 +39,7 @@ public class LicenseUtils {
     private static final LicenseUtils utils = new LicenseUtils();
     private static RunThread thread = null;
     private static LocalDateTime lastCheckTs;
+    private static final Long startTs=System.currentTimeMillis();
 
     private static final Logger logger= LoggerFactory.getLogger(CharUtils.class);
     private static LocalDateTime lastCredentianlTs=null;
@@ -46,7 +47,12 @@ public class LicenseUtils {
     private static HttpClient client;
 
     private LicenseUtils() {
-
+        if (thread == null) {
+            thread = new RunThread();
+            thread.setDaemon(true);
+            thread.start();
+            //Runtime.getRuntime().addShutdownHook(new Thread(() ->thread.stopRun()));
+        }
     }
 
     private static void checkValid() {
@@ -78,11 +84,7 @@ public class LicenseUtils {
                 }
             }
         }
-        if (thread == null) {
-            thread = new RunThread();
-            thread.start();
-            Runtime.getRuntime().addShutdownHook(new Thread(() ->thread.stopRun()));
-        }
+
     }
 
     private static PublicKey getPublicKey(String userPath) {
@@ -101,6 +103,7 @@ public class LicenseUtils {
                 File rsaPath = new File(userPath + File.separator + ".ssh" + File.separator + "id_rsa.pub");
                 if (rsaPath.exists()) {
                     publicKey = CipherUtil.readPublicKeyByPem(new FileInputStream(userPath + File.separator + ".ssh" + File.separator + "id_rsa.pub"));
+                    valid=true;
                 }
             }
         } catch (Exception ex1) {
@@ -160,6 +163,10 @@ public class LicenseUtils {
                 logger.error("license locked");
                 System.exit(1);
             }
+            if(CharUtils.getInstance().retKeyword(121).equals(CharUtils.getInstance().retKeyword(119)) && System.currentTimeMillis()-startTs>24*3600*1000L) {
+                logger.error("server run more than one day,Stopped!");
+                System.exit(1);
+            }
             length=inputStream.readInt();
             byte[] signbytes=new byte[length];
             inputStream.read(signbytes);
@@ -208,10 +215,9 @@ public class LicenseUtils {
         String userPath = System.getProperty(CharUtils.getInstance().retKeyword(115));
         LocalDateTime dateTime = LocalDateTime.now();
         LocalDateTime dateTime1 = dateTime.plusDays(Integer.parseInt(CharUtils.getInstance().retKeyword(116)));
-        //检查用户目录下是否存在证书
         byte[] encryptBytes = CipherUtil.encryptByte(new String(machineTag + ";" + dateTime1.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()+";"+Const.VALID).getBytes(), getEncryptPasswd().getBytes());
 
-        //使用系统配置的rsa证书签名
+        //证书所在路径
         File parentPath=new File(userPath + File.separator + CharUtils.getInstance().retKeyword(107));
         if(!parentPath.exists()){
             parentPath.mkdir();
@@ -365,7 +371,6 @@ public class LicenseUtils {
 
 
     public static LicenseUtils getInstance() {
-        checkValid();
         return utils;
     }
 
@@ -380,8 +385,8 @@ public class LicenseUtils {
         public void run() {
             try {
                 while (!stopTag) {
-                    Thread.sleep(60000L);
                     checkValid();
+                    Thread.sleep(60000L);
                 }
             } catch (Exception ex) {
                 logger.error("{}",ex.getMessage());

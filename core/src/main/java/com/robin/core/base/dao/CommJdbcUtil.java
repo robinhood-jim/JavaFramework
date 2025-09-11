@@ -39,6 +39,7 @@ import org.springframework.jdbc.support.lob.LobHandler;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
+import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Method;
 import java.sql.Date;
 import java.sql.*;
@@ -361,9 +362,9 @@ public class CommJdbcUtil {
                 if (target instanceof HashMap) {
                     ((HashMap) target).put(columnName, targetValue);
                 } else {
-                    Map<String, Method> setMethods = ReflectUtils.returnSetMethods(target.getClass());
+                    Map<String, MethodHandle> setMethods = ReflectUtils.returnSetMethodHandle(target.getClass());
                     if (setMethods.containsKey(columnName)) {
-                        setMethods.get(columnName).invoke(target, targetValue);
+                        setMethods.get(columnName).bindTo(target).invoke(targetValue);
                     }
                 }
             }
@@ -371,6 +372,8 @@ public class CommJdbcUtil {
             throw ex;
         } catch (Exception ex) {
             throw new DAOException(ex);
+        }catch (Throwable ex2){
+            throw new DAOException(ex2.getMessage());
         }
     }
 

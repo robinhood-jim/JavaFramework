@@ -16,6 +16,7 @@ import redis.clients.jedis.JedisPoolConfig;
 
 import javax.annotation.concurrent.ThreadSafe;
 import java.io.*;
+import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Method;
 import java.util.*;
 
@@ -151,17 +152,17 @@ public class JedisClientFactory {
 
         public byte[] putSetWithSchema(Schema schema, Schema nestedSchema, List<? extends Serializable> valueObject) throws Exception {
             Assert.notEmpty(valueObject, "array is null");
-            Map<String, Method> getMethods = ReflectUtils.returnGetMethods(valueObject.get(0).getClass());
+            Map<String, MethodHandle> getMethods = ReflectUtils.returnGetMethodHandle(valueObject.get(0).getClass());
 
             try {
                 GenericRecord rd = new GenericData.Record(nestedSchema);
                 List<GenericRecord> retList = new ArrayList<>();
                 for (Serializable obj : valueObject) {
                     GenericRecord genericRecord = new GenericData.Record(schema);
-                    Iterator<Map.Entry<String, Method>> iter = getMethods.entrySet().iterator();
+                    Iterator<Map.Entry<String, MethodHandle>> iter = getMethods.entrySet().iterator();
                     while (iter.hasNext()) {
-                        Map.Entry<String, Method> entry = iter.next();
-                        genericRecord.put(entry.getKey(), AvroUtils.acquireGenericRecord(entry.getKey(), entry.getValue().invoke(obj, null), schema));
+                        Map.Entry<String, MethodHandle> entry = iter.next();
+                        genericRecord.put(entry.getKey(), AvroUtils.acquireGenericRecord(entry.getKey(), entry.getValue().bindTo(obj).invoke(), schema));
                     }
                     retList.add(genericRecord);
                 }
@@ -174,8 +175,8 @@ public class JedisClientFactory {
                 System.out.println(record);
                 return bytes;
                 //getJedis().sadd(key.getBytes(),AvroUtils.dataToByteWithBijection(nestedSchema,))
-            } catch (Exception ex) {
-                throw ex;
+            } catch (Throwable ex) {
+                throw new IllegalAccessException(ex.getMessage());
             }
         }
 

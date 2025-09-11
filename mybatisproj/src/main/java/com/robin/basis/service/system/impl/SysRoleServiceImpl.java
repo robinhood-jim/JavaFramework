@@ -57,7 +57,7 @@ public class SysRoleServiceImpl extends AbstractMybatisService<SysRoleMapper, Sy
         SysLoginUser user= SecurityUtils.getLoginUser();
         IPage<SysRole> roles= this.lambdaQuery().eq(AbstractMybatisModel::getStatus,!ObjectUtils.isEmpty(dto.getStatus())?dto.getStatus():Const.VALID)
                 .like(StrUtil.isNotBlank(dto.getCode()),SysRole::getRoleCode,dto.getCode())
-                .eq(user.getTenantId()!=0L,SysRole::getTenantId,user.getTenantId())
+                .eq(!SecurityUtils.isLoginUserSystemAdmin(),SysRole::getTenantId,user.getTenantId())
                 .and(StrUtil.isNotBlank(dto.getName()),wrapper->
                     wrapper.like(SysRole::getRoleName,dto.getName()).or(
                             orWrapper-> orWrapper.like(SysRole::getDescription,dto.getName())
@@ -73,9 +73,15 @@ public class SysRoleServiceImpl extends AbstractMybatisService<SysRoleMapper, Sy
         });
 
     }
+    @Override
+    public List<SysRole> queryValid(){
+        SysLoginUser user= SecurityUtils.getLoginUser();
+        return this.lambdaQuery().eq(AbstractMybatisModel::getStatus,Const.VALID)
+                .eq(!SecurityUtils.isLoginUserSystemAdmin(),SysRole::getTenantId,user.getTenantId()).list();
+    }
     public boolean saveRole(SysRoleDTO dto) throws ServiceException{
        try {
-           boolean exist = this.lambdaQuery().eq(AbstractMybatisModel::getStatus, Const.VALID).eq(SysRole::getRoleCode, dto.getRoleCode()).count() > 0;
+           boolean exist = this.lambdaQuery().eq(AbstractMybatisModel::getStatus, Const.VALID).eq(AbstractMybatisModel::getTenantId,SecurityUtils.getLoginUser().getTenantId()).eq(SysRole::getRoleCode, dto.getRoleCode()).count() > 0;
            if (exist) {
                throw new ServiceException("role exists");
            }

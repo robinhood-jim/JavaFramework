@@ -32,6 +32,7 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import java.io.Serializable;
+import java.lang.invoke.MethodHandle;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
@@ -62,15 +63,18 @@ public class ConvertUtil {
             return;
         }
 
-        Map<String, Method> srcmap = ReflectUtils.returnGetMethods(src.getClass());
-        Map<String, Method> targetMap = ReflectUtils.returnSetMethods(target.getClass());
+        Map<String, MethodHandle> srcmap = ReflectUtils.returnGetMethodHandle(src.getClass());
+        Map<String, MethodHandle> targetMap = ReflectUtils.returnSetMethodHandle(target.getClass());
         List<String> ignoreColumnList = getIgnoreColumns(ignoreColumns);
-
-        for (Map.Entry<String, Method> entry : srcmap.entrySet()) {
-            if (targetMap.containsKey(entry.getKey()) && (ObjectUtils.isEmpty(ignoreColumnList) || !ignoreColumnList.contains(entry.getKey()))) {
-                Object value = parseParameter(targetMap.get(entry.getKey()).getParameterTypes()[0], srcmap.get(entry.getKey()).invoke(src, (Object[]) null));
-                targetMap.get(entry.getKey()).invoke(target, value);
+        try {
+            for (Map.Entry<String, MethodHandle> entry : srcmap.entrySet()) {
+                if (targetMap.containsKey(entry.getKey()) && (ObjectUtils.isEmpty(ignoreColumnList) || !ignoreColumnList.contains(entry.getKey()))) {
+                    Object value = parseParameter(targetMap.get(entry.getKey()).type().parameterType(1), srcmap.get(entry.getKey()).bindTo(src).invoke());
+                    targetMap.get(entry.getKey()).bindTo(target).invoke(value);
+                }
             }
+        } catch (Throwable ex1) {
+            throw new IllegalAccessException(ex1.getMessage());
         }
     }
 
@@ -87,12 +91,16 @@ public class ConvertUtil {
         if (src == null || target == null) {
             return;
         }
-        Map<String, Method> getMethods = ReflectUtils.returnGetMethods(src.getClass());
-        for (Map.Entry<String, Method> entry : getMethods.entrySet()) {
-            if (entry.getValue().getParameterTypes().length == 0) {
-                Object value = entry.getValue().invoke(src);
-                target.put(entry.getKey(), value == null ? "" : value.toString().trim());
+        Map<String, MethodHandle> getMethods = ReflectUtils.returnGetMethodHandle(src.getClass());
+        try {
+            for (Map.Entry<String, MethodHandle> entry : getMethods.entrySet()) {
+                if (entry.getValue().type().parameterCount() == 1) {
+                    Object value = entry.getValue().bindTo(src).invoke();
+                    target.put(entry.getKey(), value == null ? "" : value.toString().trim());
+                }
             }
+        } catch (Throwable ex1) {
+            throw new IllegalAccessException(ex1.getMessage());
         }
     }
 
@@ -101,30 +109,39 @@ public class ConvertUtil {
         if (ObjectUtils.isEmpty(src)) {
             return;
         }
-        Map<String, Method> getMetholds = ReflectUtils.returnGetMethods(src.getClass());
-        for (Map.Entry<String, Method> entry : getMetholds.entrySet()) {
-            if (entry.getValue().getParameterTypes().length == 0) {
-                Object value = entry.getValue().invoke(src);
-                if(!ObjectUtils.isEmpty(value)) {
-                    target.put(entry.getKey(), value);
+        Map<String, MethodHandle> getMetholds = ReflectUtils.returnGetMethodHandle(src.getClass());
+        try {
+            for (Map.Entry<String, MethodHandle> entry : getMetholds.entrySet()) {
+                if (entry.getValue().type().parameterCount() == 1) {
+                    Object value = entry.getValue().bindTo(src).invoke();
+                    if (!ObjectUtils.isEmpty(value)) {
+                        target.put(entry.getKey(), value);
+                    }
                 }
             }
+        } catch (Throwable ex1) {
+            throw new IllegalAccessException(ex1.getMessage());
         }
     }
-    public static void objectToMapObj(Map<String, Object> target, Object src,String... ignoreColumns) throws IllegalAccessException, IllegalArgumentException,
+
+    public static void objectToMapObj(Map<String, Object> target, Object src, String... ignoreColumns) throws IllegalAccessException, IllegalArgumentException,
             InvocationTargetException {
-        Set<String> ignoreSets=ignoreColumns.length>0? Sets.newHashSet(ignoreColumns):null;
+        Set<String> ignoreSets = ignoreColumns.length > 0 ? Sets.newHashSet(ignoreColumns) : null;
         if (ObjectUtils.isEmpty(src)) {
             return;
         }
-        Map<String, Method> getMetholds = ReflectUtils.returnGetMethods(src.getClass());
-        for (Map.Entry<String, Method> entry : getMetholds.entrySet()) {
-            if (entry.getValue().getParameterTypes().length == 0 && (CollectionUtils.isEmpty(ignoreSets) || !ignoreSets.contains(entry.getKey()))) {
-                Object value = entry.getValue().invoke(src);
-                if(!ObjectUtils.isEmpty(value)) {
-                    target.put(entry.getKey(), value);
+        Map<String, MethodHandle> getMetholds = ReflectUtils.returnGetMethodHandle(src.getClass());
+        try {
+            for (Map.Entry<String, MethodHandle> entry : getMetholds.entrySet()) {
+                if (entry.getValue().type().parameterCount() == 1 && (CollectionUtils.isEmpty(ignoreSets) || !ignoreSets.contains(entry.getKey()))) {
+                    Object value = entry.getValue().bindTo(target).invoke(src);
+                    if (!ObjectUtils.isEmpty(value)) {
+                        target.put(entry.getKey(), value);
+                    }
                 }
             }
+        } catch (Throwable ex1) {
+            throw new IllegalAccessException(ex1.getMessage());
         }
     }
 
@@ -133,23 +150,27 @@ public class ConvertUtil {
             return;
         }
         Iterator<Map.Entry<String, String>> it = src.entrySet().iterator();
-        Map<String, Method> methodMap = ReflectUtils.returnSetMethods(target.getClass());
+        Map<String, MethodHandle> methodMap = ReflectUtils.returnSetMethodHandle(target.getClass());
         List<String> ignoreColumnList = getIgnoreColumns(ignoreColumns);
-        while (it.hasNext()) {
-            Map.Entry<String, String> entry = it.next();
-            String key = entry.getKey();
-            String value = entry.getValue();
-            if (methodMap.containsKey(key) && (ObjectUtils.isEmpty(ignoreColumnList) || !ignoreColumnList.contains(key))) {
-                target.addDirtyColumn(key);
-                Class<?> type = methodMap.get(key).getParameterTypes()[0];
-                Object retValue;
-                if (StringUtils.isEmpty(value)) {
-                    retValue = null;
-                } else {
-                    retValue = parseParameter(type, value);
+        try {
+            while (it.hasNext()) {
+                Map.Entry<String, String> entry = it.next();
+                String key = entry.getKey();
+                String value = entry.getValue();
+                if (methodMap.containsKey(key) && (ObjectUtils.isEmpty(ignoreColumnList) || !ignoreColumnList.contains(key))) {
+                    target.addDirtyColumn(key);
+                    Class<?> type = methodMap.get(key).type().parameterType(1);
+                    Object retValue;
+                    if (StringUtils.isEmpty(value)) {
+                        retValue = null;
+                    } else {
+                        retValue = parseParameter(type, value);
+                    }
+                    methodMap.get(key).bindTo(target).invoke(retValue);
                 }
-                methodMap.get(key).invoke(target, retValue);
             }
+        } catch (Throwable ex1) {
+            throw new IllegalAccessException(ex1.getMessage());
         }
 
     }
@@ -159,27 +180,31 @@ public class ConvertUtil {
             return;
         }
         Iterator<Map.Entry<String, Object>> it = src.entrySet().iterator();
-        Map<String, Method> targetMap = ReflectUtils.returnSetMethods(target.getClass());
+        Map<String, MethodHandle> targetMap = ReflectUtils.returnSetMethodHandle(target.getClass());
         List<String> ignoreColumnList = getIgnoreColumns(ignoreColumns);
-        while (it.hasNext()) {
-            Map.Entry<String, Object> entry = it.next();
-            String key = entry.getKey();
-            Object value = entry.getValue();
-            if (targetMap.containsKey(key) && (ObjectUtils.isEmpty(ignoreColumnList) || !ignoreColumnList.contains(key))) {
-                Class<?> type = targetMap.get(key).getParameterTypes()[0];
-                Object retValue;
-                if (ObjectUtils.isEmpty(value)) {
-                    retValue = null;
-                } else {
-                    retValue = parseParameter(type, value);
+        try {
+            while (it.hasNext()) {
+                Map.Entry<String, Object> entry = it.next();
+                String key = entry.getKey();
+                Object value = entry.getValue();
+                if (targetMap.containsKey(key) && (ObjectUtils.isEmpty(ignoreColumnList) || !ignoreColumnList.contains(key))) {
+                    Class<?> type = targetMap.get(key).type().parameterType(1);
+                    Object retValue;
+                    if (ObjectUtils.isEmpty(value)) {
+                        retValue = null;
+                    } else {
+                        retValue = parseParameter(type, value);
+                    }
+                    targetMap.get(key).bindTo(target).invoke(retValue);
                 }
-                targetMap.get(key).invoke(target, retValue);
             }
+        } catch (Throwable ex1) {
+            throw new IllegalAccessException(ex1.getMessage());
         }
     }
 
 
-    private static String wordCase(String value) {
+    private static String camelCase(String value) {
         return value.substring(0, 1).toUpperCase() + value.substring(1);
     }
 
@@ -190,17 +215,22 @@ public class ConvertUtil {
         if (!target.getClass().equals(src.getClass())) {
             throw new GenericException("source and target class mismatch");
         }
-        Map<String, Method> srcmap = ReflectUtils.returnGetMethods(src.getClass());
+        Map<String, MethodHandle> srcmap = ReflectUtils.returnGetMethodHandle(src.getClass());
+        Map<String, MethodHandle> targetMap = ReflectUtils.returnSetMethodHandle(target.getClass());
         List<String> ignoreColumnList = getIgnoreColumns(ignoreColumns);
-        for (Map.Entry<String, Method> entry : srcmap.entrySet()) {
-            String field = entry.getKey();
-            if (ObjectUtils.isEmpty(ignoreColumnList) || !ignoreColumnList.contains(field)) {
-                Method setMethod = entry.getValue();
-                Object value = entry.getValue().invoke(null);
-                if (value != null && setMethod != null) {
-                    setObjectValue(target, value, setMethod);
+        try {
+            for (Map.Entry<String, MethodHandle> entry : srcmap.entrySet()) {
+                String field = entry.getKey();
+                if (ObjectUtils.isEmpty(ignoreColumnList) || !ignoreColumnList.contains(field)) {
+
+                    Object value = entry.getValue().bindTo(src).invoke();
+                    if (value != null && targetMap.get(entry.getKey()) != null) {
+                        setObjectValue(target, value, targetMap.get(entry.getKey()));
+                    }
                 }
             }
+        } catch (Throwable throwable) {
+            throw new IllegalAccessException(throwable.getMessage());
         }
     }
 
@@ -210,24 +240,26 @@ public class ConvertUtil {
             return;
         }
         if (!target.getClass().equals(src.getClass())) {
-            throw new RuntimeException("");
+            throw new RuntimeException("must have unique type");
         }
-        Map<String, Method> srcmap = ReflectUtils.returnGetMethods(src.getClass());
-        Map<String, Method> targetMap = ReflectUtils.returnSetMethods(target.getClass());
-
-        if(!ObjectUtils.isEmpty(src.getDirtyColumn())) {
-            for (String s : src.getDirtyColumn()) {
-                Method setMethod = targetMap.get(s);
-                if (setMethod != null) {
-                    Method getMethod = srcmap.get(s);
-                    Object value = getMethod.invoke(src, (Object[]) null);
-                    if (value != null) {
-                        setMethod.invoke(target, value);
-                    } else {
-                        setMethod.invoke(target);
+        Map<String, MethodHandle> srcmap = ReflectUtils.returnGetMethodHandle(src.getClass());
+        Map<String, MethodHandle> targetmap = ReflectUtils.returnSetMethodHandle(src.getClass());
+        try {
+            if (!ObjectUtils.isEmpty(src.getDirtyColumn())) {
+                for (String s : src.getDirtyColumn()) {
+                    MethodHandle method = srcmap.get(s);
+                    if (method != null) {
+                        Object value = method.bindTo(src).invoke();
+                        if (value != null) {
+                            targetmap.get(s).bindTo(target).invoke(value);
+                        } else {
+                            targetmap.get(s).bindTo(target).invoke(null);
+                        }
                     }
                 }
             }
+        } catch (Throwable ex1) {
+            throw new IllegalAccessException(ex1.getMessage());
         }
     }
 
@@ -235,36 +267,40 @@ public class ConvertUtil {
         if (target == null || src == null) {
             return;
         }
-        Map<String, Method> map = ReflectUtils.returnSetMethods(target.getClass());
+        Map<String, MethodHandle> map = ReflectUtils.returnSetMethodHandle(target.getClass());
         List<String> ignoreColumnList = getIgnoreColumns(ignoreColumns);
-        for (Map.Entry<String, Object> entry : src.entrySet()) {
-            String field = entry.getKey();
-            if (ObjectUtils.isEmpty(ignoreColumnList) || !ignoreColumnList.contains(field)) {
-                Method setMethod = map.get(field);
-                if (setMethod != null) {
-                    setBaseObjectValue(target, entry.getValue(), field, setMethod);
+        try {
+            for (Map.Entry<String, Object> entry : src.entrySet()) {
+                String field = entry.getKey();
+                if (ObjectUtils.isEmpty(ignoreColumnList) || !ignoreColumnList.contains(field)) {
+                    MethodHandle setMethod = map.get(field);
+                    if (setMethod != null) {
+                        setBaseObjectValue(target, entry.getValue(), field, setMethod);
+                    }
                 }
             }
+        } catch (Throwable ex1) {
+            throw new IllegalAccessException(ex1.getMessage());
         }
     }
 
-    private static void setBaseObjectValue(BaseObject target, Object value, String field, Method setMethod) throws Exception {
+    private static void setBaseObjectValue(BaseObject target, Object value, String field, MethodHandle setMethod) throws Throwable {
         if (!ObjectUtils.isEmpty(value)) {
             target.addDirtyColumn(field);
-            Class<?> type = setMethod.getParameterTypes()[0];
+            Class<?> type = setMethod.type().parameterType(1);
             Object retValue = parseParameter(type, value);
-            setMethod.invoke(target, retValue);
+            setMethod.bindTo(target).invoke(retValue);
         } else if (target.getDirtyColumn().contains(field)) {
-            setMethod.invoke(target);
+            setMethod.bindTo(target).invoke(null);
         }
     }
 
-    private static void setObjectValue(Serializable target, Object value, Method setMethod) throws Exception {
+    private static void setObjectValue(Serializable target, Object value, MethodHandle setMethod) throws Throwable {
         if (!ObjectUtils.isEmpty(value)) {
-            Class<?> type = setMethod.getParameterTypes()[0];
+            Class<?> type = setMethod.type().parameterType(1);
             Object retValue = parseParameter(type, value);
             if (retValue != null) {
-                setMethod.invoke(target, retValue);
+                setMethod.bindTo(target).invoke(retValue);
             }
         }
     }
@@ -274,41 +310,45 @@ public class ConvertUtil {
         if (target == null || src == null) {
             return;
         }
-        Map<String, Method> targetMethodMap = ReflectUtils.returnSetMethods(target.getClass());
-        Map<String, Method> sourceMethodMap = ReflectUtils.returnGetMethods(src.getClass());
+        Map<String, MethodHandle> targetMethodMap = ReflectUtils.returnSetMethodHandle(target.getClass());
+        Map<String, MethodHandle> sourceMethodMap = ReflectUtils.returnGetMethodHandle(src.getClass());
         List<String> ignoreColumnList = getIgnoreColumns(ignoreColumns);
-        if (Map.class.isAssignableFrom(src.getClass())) {
-            Map<String, Object> vMap = (Map<String, Object>) src;
-            for (Map.Entry<String, Object> entry : vMap.entrySet()) {
-                String field = entry.getKey();
-                Method setMethod = targetMethodMap.get(field);
-                if (setMethod != null) {
-                    if (target instanceof BaseObject) {
-                        setBaseObjectValue((BaseObject) target, entry.getValue(), field, setMethod);
-                    } else {
-                        if (targetMethodMap.containsKey(field) && (ObjectUtils.isEmpty(ignoreColumnList) || !ignoreColumnList.contains(field))) {
-                            Object retValue = parseParameter(targetMethodMap.get(field).getParameterTypes()[0], entry.getValue());
-                            if (retValue != null) {
-                                setObjectValue(targetMethodMap.get(field), target, retValue);
+        try {
+            if (Map.class.isAssignableFrom(src.getClass())) {
+                Map<String, Object> vMap = (Map<String, Object>) src;
+                for (Map.Entry<String, Object> entry : vMap.entrySet()) {
+                    String field = entry.getKey();
+                    MethodHandle setMethod = targetMethodMap.get(field);
+                    if (setMethod != null) {
+                        if (target instanceof BaseObject) {
+                            setBaseObjectValue((BaseObject) target, entry.getValue(), field, setMethod);
+                        } else {
+                            if (targetMethodMap.containsKey(field) && (ObjectUtils.isEmpty(ignoreColumnList) || !ignoreColumnList.contains(field))) {
+                                Object retValue = parseParameter(targetMethodMap.get(field).type().parameterType(1), entry.getValue());
+                                if (retValue != null) {
+                                    setObjectValue(targetMethodMap.get(field), target, retValue);
+                                }
                             }
                         }
                     }
                 }
-            }
-        } else {
-            for (Map.Entry<String, Method> entry : sourceMethodMap.entrySet()) {
-                if (targetMethodMap.containsKey(entry.getKey()) && entry.getValue().getParameterTypes().length == 0) {
-                    Object retValue = parseParameter(targetMethodMap.get(entry.getKey()).getParameterTypes()[0], entry.getValue().invoke(src));
-                    if (null != retValue) {
-                        setObjectValue(targetMethodMap.get(entry.getKey()), target, retValue);
+            } else {
+                for (Map.Entry<String, MethodHandle> entry : sourceMethodMap.entrySet()) {
+                    if (targetMethodMap.containsKey(entry.getKey()) && entry.getValue().type().parameterCount() == 1) {
+                        Object retValue = parseParameter(targetMethodMap.get(entry.getKey()).type().parameterType(1), entry.getValue().bindTo(src).invoke());
+                        if (null != retValue) {
+                            setObjectValue(targetMethodMap.get(entry.getKey()), target, retValue);
+                        }
                     }
                 }
             }
+        } catch (Throwable ex1) {
+            throw new IllegalAccessException(ex1.getMessage());
         }
     }
 
-    private static void setObjectValue(Method setMethod, Object target, Object value) throws Exception {
-        setMethod.invoke(target, value);
+    private static void setObjectValue(MethodHandle setMethod, Object target, Object value) throws Throwable {
+        setMethod.bindTo(target).invoke(value);
     }
 
     public static Object parseParameter(DataBaseColumnMeta meta, Object strValue) {
@@ -543,8 +583,14 @@ public class ConvertUtil {
                 return null;
             }
             if (columnType.equals(Const.META_TYPE_INTEGER)) {
+                if (value.contains(".")) {
+                    value = value.substring(0, value.indexOf("."));
+                }
                 retObj = Integer.valueOf(value);
             } else if (columnType.equals(Const.META_TYPE_BIGINT)) {
+                if (value.contains(".")) {
+                    value = value.substring(0, value.indexOf("."));
+                }
                 retObj = Long.valueOf(value);
             } else if (columnType.equals(Const.META_TYPE_NUMERIC)) {
                 retObj = Double.valueOf(value);
@@ -589,8 +635,8 @@ public class ConvertUtil {
             hasIgnore = true;
         }
         T targetObject = null;
-        Map<String, Method> methodMap = ReflectUtils.returnSetMethods(target);
         try {
+            Map<String, MethodHandle> methodMap = ReflectUtils.returnSetMethodHandle(target);
             targetObject = target.newInstance();
             for (Map.Entry<String, Object> entry : map.entrySet()) {
                 if (entry.getValue() != null) {
@@ -610,30 +656,30 @@ public class ConvertUtil {
     }
 
 
-    private static <T> void setFields(T target, Method method, Object value) {
+    private static <T> void setFields(T target, MethodHandle method, Object value) {
         try {
             if (value != null) {
-                method.invoke(target, parseParameter(method.getParameterTypes()[0], value));
+                method.bindTo(target).invoke(parseParameter(method.type().parameterType(1), value));
             }
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             ex.printStackTrace();
         }
     }
 
     public static <T> void sourceToMap(Map<String, Object> map, T sourceObj, String defaultTimeFormat, String... ignoreKeys) {
-        Map<String, Method> methodMap = ReflectUtils.returnGetMethods(sourceObj.getClass());
-        Iterator<Map.Entry<String, Method>> iterator = methodMap.entrySet().iterator();
-        List<String> ignoreList = new ArrayList<>();
-        DateTimeFormatter timeFormatter = !ObjectUtils.isEmpty(defaultTimeFormat) ? DateTimeFormatter.ofPattern(defaultTimeFormat) : ymdSecondformatter;
-        if (ignoreKeys != null && ignoreKeys.length > 0) {
-            for (int i = 0; i < ignoreKeys.length; i++) {
-                ignoreList.addAll(Arrays.asList(ignoreKeys[i]));
+        try {
+            Map<String, MethodHandle> methodMap = ReflectUtils.returnGetMethodHandle(sourceObj.getClass());
+            Iterator<Map.Entry<String, MethodHandle>> iterator = methodMap.entrySet().iterator();
+            List<String> ignoreList = new ArrayList<>();
+            DateTimeFormatter timeFormatter = !ObjectUtils.isEmpty(defaultTimeFormat) ? DateTimeFormatter.ofPattern(defaultTimeFormat) : ymdSecondformatter;
+            if (ignoreKeys != null && ignoreKeys.length > 0) {
+                for (int i = 0; i < ignoreKeys.length; i++) {
+                    ignoreList.addAll(Arrays.asList(ignoreKeys[i]));
+                }
             }
-        }
-        while (iterator.hasNext()) {
-            try {
-                Map.Entry<String, Method> entry = iterator.next();
-                Object value = entry.getValue().invoke(sourceObj);
+            while (iterator.hasNext()) {
+                Map.Entry<String, MethodHandle> entry = iterator.next();
+                Object value = entry.getValue().bindTo(sourceObj).invoke();
                 if (!ignoreList.contains(entry.getKey()) && value != null) {
                     if (value.getClass().isAssignableFrom(LocalDateTime.class)) {
                         map.put(entry.getKey(), timeFormatter.format((LocalDateTime) value));
@@ -641,26 +687,29 @@ public class ConvertUtil {
                         map.put(entry.getKey(), value);
                     }
                 }
-            } catch (Exception ex) {
-                log.error("{}", ex);
+
             }
+        } catch (Throwable ex) {
+            log.error("{}", ex);
         }
     }
 
     public static void setDateFormat(String formatStr) {
         currentFormatter.set(DateTimeFormatter.ofPattern(formatStr));
     }
-    public static void setDateFormat(DateTimeFormatter formatter){
+
+    public static void setDateFormat(DateTimeFormatter formatter) {
         currentFormatter.set(formatter);
     }
 
     public static void finishConvert() {
-        if(currentFormatter.get()!=null) {
+        if (currentFormatter.get() != null) {
             currentFormatter.remove();
         }
     }
-    public static DateTimeFormatter getCurrentFormat(){
-        if(currentFormatter.get()!=null){
+
+    public static DateTimeFormatter getCurrentFormat() {
+        if (currentFormatter.get() != null) {
             return currentFormatter.get();
         }
         return DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");

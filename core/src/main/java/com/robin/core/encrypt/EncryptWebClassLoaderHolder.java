@@ -109,9 +109,11 @@ public class EncryptWebClassLoaderHolder {
                 // load bin file
                 instream = new DataInputStream(ClassLoader.getSystemResourceAsStream("META-INF/config.bin"));
                 if (instream != null) {
-                    String keystr = decrypt(instream.readUTF());
+                    instream.read(CipherUtil.mzHeader);
+
                     instream.read(m_datapadding);
                     while (instream.available() > 0) {
+                        String keystr = decrypt(instream.readUTF());
                         String className = decrypt(instream.readUTF());
                         instream.readByte();
                         classMappingMap.put(keystr, className);
@@ -418,7 +420,7 @@ public class EncryptWebClassLoaderHolder {
             for (int i = 0; i < inputStr.length(); i++) {
                 int keypos = i % 8;
                 int xorbyte = inputStr.charAt(i) ^ XorKey[keypos];
-                builder.append(bytesToHexString(new byte[]{(byte) xorbyte}));
+                builder.append(CipherUtil.bytesToHexString(new byte[]{(byte) xorbyte}));
             }
             return builder.toString();
         }
@@ -436,21 +438,7 @@ public class EncryptWebClassLoaderHolder {
             return builder.toString();
         }
 
-        public static String bytesToHexString(byte[] src) {
-            StringBuilder stringBuilder = new StringBuilder("");
-            if (src == null || src.length <= 0) {
-                return null;
-            }
-            for (int i = 0; i < src.length; i++) {
-                int v = src[i] & 0xFF;
-                String hv = Integer.toHexString(v);
-                if (hv.length() < 2) {
-                    stringBuilder.append(0);
-                }
-                stringBuilder.append(hv);
-            }
-            return stringBuilder.toString().toUpperCase();
-        }
+
 
         public URLClassLoader getSuperloader() {
             return superloader;

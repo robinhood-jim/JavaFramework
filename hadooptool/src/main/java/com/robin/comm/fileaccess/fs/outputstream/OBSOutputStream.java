@@ -18,11 +18,12 @@ public class OBSOutputStream extends AbstractUploadPartOutputStream{
     private OBSOutputStream(){
 
     }
-    public OBSOutputStream(ObsClient client, DataCollectionMeta meta, String bucketName, String path) {
+    public OBSOutputStream(ObsClient client, DataCollectionMeta meta, String bucketName, String path,int defaultPartSize) {
         this.client = client;
         this.meta = meta;
         this.bucketName = bucketName;
         this.path = path;
+        setDefaultUploadPartSize(defaultPartSize);
         init();
     }
     @Override

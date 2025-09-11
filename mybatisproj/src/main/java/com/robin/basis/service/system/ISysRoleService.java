@@ -17,4 +17,5 @@ public interface ISysRoleService extends IMybatisBaseService<SysRole,Long> {
     boolean saveRole(SysRoleDTO dto) throws ServiceException;
     boolean updateRole(SysRoleDTO dto) throws ServiceException;
     boolean deleteRoles(List<Long> ids) throws ServiceException;
+    List<SysRole> queryValid();
 }

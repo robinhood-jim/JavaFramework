@@ -414,7 +414,7 @@ public class SimpleJdbcDao {
     public static int executeOperationWithQuery(final Connection conn, String sql, boolean pmdKnownBroken, final ResultSetOperationExtractor extractor) throws SQLException {
         QueryRunner qRunner ;
         if (pmdKnownBroken) {
-            qRunner = new QueryRunner(pmdKnownBroken);
+            qRunner = new QueryRunner(true);
         } else {
             qRunner = new QueryRunner();
         }
@@ -423,7 +423,7 @@ public class SimpleJdbcDao {
     public static int executeOperationWithHandler(final Connection conn, String sql, boolean pmdKnownBroken, final ResultSetHandler<Integer> handler) throws SQLException {
         QueryRunner qRunner ;
         if (pmdKnownBroken) {
-            qRunner = new QueryRunner(pmdKnownBroken);
+            qRunner = new QueryRunner(true);
         } else {
             qRunner = new QueryRunner();
         }

@@ -184,4 +184,9 @@ public class GCSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
         }
         return outputStream;
     }
+
+    @Override
+    protected OutputStream getOutputStream(String path, int uploadPartSize) throws IOException {
+        return getOutputStream(path);
+    }
 }

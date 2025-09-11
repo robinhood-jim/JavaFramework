@@ -23,11 +23,12 @@ public class BOSOutputStream extends AbstractUploadPartOutputStream {
 
     }
 
-    public BOSOutputStream(BosClient client, DataCollectionMeta meta, String bucketName, String path) {
+    public BOSOutputStream(BosClient client, DataCollectionMeta meta, String bucketName, String path,int defaultPartSize) {
         this.client = client;
         this.meta = meta;
         this.bucketName = bucketName;
         this.path = path;
+        setDefaultUploadPartSize(defaultPartSize);
         init();
     }
 

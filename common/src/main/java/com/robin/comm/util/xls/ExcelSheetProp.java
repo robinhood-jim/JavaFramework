@@ -15,6 +15,8 @@
  */
 package com.robin.comm.util.xls;
 
+import com.robin.core.fileaccess.meta.DataCollectionMeta;
+import com.robin.core.fileaccess.meta.DataSetColumnMeta;
 import lombok.Data;
 
 import java.util.*;
@@ -32,12 +34,16 @@ public class ExcelSheetProp {
 	private int startCol=1;  
 	private Integer tableId;
 	// using SXSSFWorkbook with streamingWrite
-	private boolean streamInsert=false;
+	private boolean streamMode =false;
 	private Integer streamRows=100;
 	private int sheetNum=0;
 	private boolean fillHeader=true;
 	private String templateFile;
-	public ExcelSheetProp(){
+	private boolean useOffHeap=false;
+	private String fontName;
+	private int maxRows;
+	private int maxSheetSize;
+	private ExcelSheetProp(){
 
 	}
 	public ExcelSheetProp(String[] headerName,String[] columnName,String fileExt){
@@ -60,6 +66,95 @@ public class ExcelSheetProp {
 		return columnPropList;
 	}
 
+	public static ExcelSheetProp fromDataCollectionMeta(DataCollectionMeta colmeta){
+		ExcelSheetProp.Builder builder=ExcelSheetProp.Builder.newBuilder();
+		for(DataSetColumnMeta setColumnMeta:colmeta.getColumnList()){
+			builder.addColumnProp(setColumnMeta.getColumnName(), setColumnMeta.getColumnName(), setColumnMeta.getColumnType());
+		}
+		builder.setStartRow(2);
+		return builder.build();
+	}
+	public static class Builder{
+		private ExcelSheetProp prop=new ExcelSheetProp();
+		private Builder(){
+
+		}
+		public static Builder newBuilder(){
+			Builder builder=new Builder();
+			return builder;
+		}
+		public Builder setFileExt(String fileExt){
+			prop.setFileExt(fileExt);
+			return this;
+		}
+		public Builder addColumnProp(String columnName,String columnCode,String columnType){
+			prop.getColumnPropList().add(new ExcelColumnProp(columnName,columnCode,columnType));
+			return this;
+		}
+		public Builder addColumnProp(String columnName,String columnCode,String columnType,String formula){
+			prop.getColumnPropList().add(new ExcelColumnProp(columnName,columnCode,columnType,formula));
+			return this;
+		}
+		public Builder addColumnProp(ExcelColumnProp columnProp){
+			prop.getColumnPropList().add(columnProp);
+			return this;
+		}
+		public Builder addColumnProp(String columnName,String columnCode,String columnType,boolean needMerge){
+			prop.getColumnPropList().add(new ExcelColumnProp(columnName,columnCode,columnType,needMerge));
+			return this;
+		}
+		public Builder setStartRow(int row){
+			prop.setStartRow(row);
+			return this;
+		}
+		public Builder setStartCol(int col){
+			prop.setStartCol(col);
+			return this;
+		}
+		public Builder setSheetName(String sheetName){
+			prop.setSheetName(sheetName);
+			return this;
+		}
+		public Builder setStreamMode(){
+			prop.setStreamMode(true);
+			return this;
+		}
+		public Builder setStreamRows(int streamRows){
+			prop.setStreamRows(streamRows);
+			return this;
+		}
+		public Builder setBatchMode(){
+			prop.setStreamMode(false);
+			return this;
+		}
+		public Builder doNotFillHeader(){
+			prop.setFillHeader(false);
+			return this;
+		}
+		public Builder useTemplateFile(String templateFile){
+			prop.setTemplateFile(templateFile);
+			return this;
+		}
+		public Builder dumpUseOffHeap(){
+			prop.setUseOffHeap(true);
+			return this;
+		}
+		public Builder dumpUseTempFile(){
+			prop.setUseOffHeap(false);
+			return this;
+		}
+		public Builder maxRows(int maxRows){
+			prop.setMaxRows(maxRows);
+			return this;
+		}
+		public Builder maxSheetSize(int maxSheetSize){
+			prop.setMaxSheetSize(maxSheetSize);
+			return this;
+		}
+		public ExcelSheetProp build(){
+			return prop;
+		}
+	}
 
 
 }

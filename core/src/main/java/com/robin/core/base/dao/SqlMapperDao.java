@@ -22,6 +22,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
 import javax.sql.DataSource;
+import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Method;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -168,15 +169,17 @@ public class SqlMapperDao extends JdbcDaoSupport {
             throw e1;
         } catch (Exception ex) {
             throw new DAOException(ex);
+        }catch (Throwable ex2){
+            throw new DAOException(ex2);
         }
         return updateRows;
     }
 
 
-    private void setGenerateKey(Object targetObj, String columnName, Number number) throws Exception {
-        Map<String, Method> methodMap = ReflectUtils.returnSetMethods(targetObj.getClass());
+    private void setGenerateKey(Object targetObj, String columnName, Number number) throws Throwable {
+        Map<String, MethodHandle> methodMap = ReflectUtils.returnSetMethodHandle(targetObj.getClass());
         if (methodMap.containsKey(columnName)) {
-            methodMap.get(columnName).invoke(targetObj, ConvertUtil.parseParameter(methodMap.get(columnName).getParameterTypes()[0], number));
+            methodMap.get(columnName).bindTo(targetObj).invoke(ConvertUtil.parseParameter(methodMap.get(columnName).type().parameterType(1), number));
         }
     }
 

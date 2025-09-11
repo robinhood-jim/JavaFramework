@@ -476,7 +476,7 @@ public class ExcelProcessor {
             while (iterator.hasNext()) {
                 Map<String, Object> map = iterator.next();
                 processSingleLine(map, wb, sheet, row, prop, header, helper, cellMap);
-                if (prop.isStreamInsert() && (row + 1) % prop.getStreamRows() == 0) {
+                if (prop.isStreamMode() && (row + 1) % prop.getStreamRows() == 0) {
                     ((SXSSFSheet) sheet).flushRows(prop.getStreamRows());
                 }
                 row++;
@@ -688,7 +688,7 @@ public class ExcelProcessor {
                 Map<String, CellStyle> cellMap = new HashMap<>();
                 for (int i = 0; i < list.size(); i++) {
                     processSingleLine(list.get(i), wb, targetsheet, i, prop, header, helper, cellMap);
-                    if (prop.isStreamInsert() && (i + 1) % prop.getStreamRows() == 0) {
+                    if (prop.isStreamMode() && (i + 1) % prop.getStreamRows() == 0) {
                         ((SXSSFSheet) targetsheet).flushRows(prop.getStreamRows());
                     }
                 }
@@ -817,7 +817,7 @@ public class ExcelProcessor {
 
     private static void autoSizeSheet(ExcelSheetProp prop, Sheet sheet, int count) {
         for (int i = 0; i < count; i++) {
-            if (!prop.isStreamInsert()) {
+            if (!prop.isStreamMode()) {
                 sheet.autoSizeColumn(i);
             } else {
                 if (i == 0) {
