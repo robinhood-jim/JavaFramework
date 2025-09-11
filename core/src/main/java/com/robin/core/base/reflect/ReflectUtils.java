@@ -10,8 +10,11 @@ import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
 import java.lang.annotation.Annotation;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
@@ -25,14 +28,14 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @SuppressWarnings("UnstableApiUsage")
 public class ReflectUtils {
-    private ReflectUtils(){
+    private ReflectUtils() {
 
     }
 
-    private static final Cache<String, Map<String, Method>> cachedGetMethod = CacheBuilder.newBuilder().maximumSize(1000).expireAfterAccess(30, TimeUnit.MINUTES).build();
-    private static final Cache<String, Map<String, Method>> cachedSetMethod = CacheBuilder.newBuilder().maximumSize(1000).expireAfterAccess(30, TimeUnit.MINUTES).build();
-    private static final Cache<String, Map<String, List<Field>>> cacheField= CacheBuilder.newBuilder().maximumSize(1000).expireAfterAccess(30,TimeUnit.MINUTES).build();
-    private static final Cache<String, Map<String, Field>> fieldCache= CacheBuilder.newBuilder().maximumSize(1000).expireAfterAccess(30,TimeUnit.MINUTES).build();
+    private static final Cache<String, Map<String, MethodHandle>> cachedGetMethodHandle = CacheBuilder.newBuilder().maximumSize(1000).expireAfterAccess(30, TimeUnit.MINUTES).build();
+    private static final Cache<String, Map<String, MethodHandle>> cachedSetMethodHandle = CacheBuilder.newBuilder().maximumSize(1000).expireAfterAccess(30, TimeUnit.MINUTES).build();
+    private static final Cache<String, Map<String, List<Field>>> cacheField = CacheBuilder.newBuilder().maximumSize(1000).expireAfterAccess(30, TimeUnit.MINUTES).build();
+    private static final Cache<String, Map<String, Field>> fieldCache = CacheBuilder.newBuilder().maximumSize(1000).expireAfterAccess(30, TimeUnit.MINUTES).build();
 
     public static List<String> getAllProperty(Class<?> clazz) {
         List<String> nameList = new ArrayList<>();
@@ -45,34 +48,21 @@ public class ReflectUtils {
         return nameList;
     }
 
-    public static Map<String, Method> getAllSetMethod(Class<?> clazz) {
-        Map<String, Method> methodMap = new HashMap<>();
-        Assert.notNull(clazz,"");
-        if (!clazz.isPrimitive()) {
-            Method[] method = clazz.getDeclaredMethods();
-            for (Method value : method) {
-                String name = value.getName();
-                if (name.startsWith("set")) {
-                    name = StringUtils.uncapitalize(name.substring(3));
-                    methodMap.put(name, value);
+
+
+    public static Map<String, Field> getAllField(Class<?> clazz) {
+        Map<String, Field> map;
+        if (fieldCache.getIfPresent(clazz.getCanonicalName()) == null) {
+            if (isUseClassGraphForReflect()) {
+                map = SpringContextHolder.getBean(ClassGraphReflector.class).returnAllField(clazz);
+            } else {
+                Field[] fields = clazz.getDeclaredFields();
+                map = new HashMap<>();
+                for (Field field : fields) {
+                    map.put(field.getName(), field);
                 }
             }
-        }
-        return methodMap;
-    }
-    public static Map<String,Field> getAllField(Class<?> clazz){
-        Map<String,Field> map;
-        if(fieldCache.getIfPresent(clazz.getCanonicalName())==null){
-            if(isUseClassGraphForReflect()){
-                map= SpringContextHolder.getBean(ClassGraphReflector.class).returnAllField(clazz);
-            }else{
-                Field[] fields=clazz.getDeclaredFields();
-                map=new HashMap<>();
-                for(Field field:fields){
-                    map.put(field.getName(),field);
-                }
-            }
-            if(!CollectionUtils.isEmpty(map)) {
+            if (!CollectionUtils.isEmpty(map)) {
                 fieldCache.put(clazz.getCanonicalName(), map);
             }
         }
@@ -91,49 +81,47 @@ public class ReflectUtils {
         }
     }
 
-    public static Map<String, Method> returnGetMethods(Class<?> clazz) {
-        Map<String, Method> map ;
-        if (cachedGetMethod.getIfPresent(clazz.getCanonicalName()) == null) {
-            if (isUseClassGraphForReflect()) {
-                map = SpringContextHolder.getBean(ClassGraphReflector.class).returnGetMethods(clazz);
-            } else {
-                map = new HashMap<>();
-                Method[] methods = clazz.getMethods();
-                for (Method method : methods) {
-                    if (method.getName().startsWith("get") && !"getClass".equals(method.getName()) && method.getParameterTypes().length == 0) {
-                        String name = StringUtils.uncapitalize(method.getName().substring(3));
-                        map.put(name, method);
-                    }
+
+    public static <T> Map<String, MethodHandle> returnGetMethodHandle(Class<T> clazz) throws IllegalAccessException {
+        Map<String, MethodHandle> map;
+        if (cachedGetMethodHandle.getIfPresent(clazz.getCanonicalName()) == null) {
+            map = new HashMap<>();
+            Method[] methods = clazz.getMethods();
+            MethodHandles.Lookup lookup = MethodHandles.publicLookup().in(clazz);
+            for (Method method : methods) {
+                if (method.getName().startsWith("get") && !"getClass".equals(method.getName()) && method.getParameterTypes().length == 0) {
+                    String name = StringUtils.uncapitalize(method.getName().substring(3));
+                    map.put(name, lookup.unreflect(method));
                 }
             }
-            if (!map.isEmpty()) {
-                cachedGetMethod.put(clazz.getCanonicalName(), map);
+            if (!CollectionUtils.isEmpty(map)) {
+                cachedGetMethodHandle.put(clazz.getCanonicalName(), map);
             }
         }
-        return cachedGetMethod.getIfPresent(clazz.getCanonicalName());
+        return cachedGetMethodHandle.getIfPresent(clazz.getCanonicalName());
     }
 
-    public static Map<String, Method> returnSetMethods(Class<?> clazz) {
-        Map<String, Method> map;
-        if (cachedSetMethod.getIfPresent(clazz.getCanonicalName()) == null) {
-            if (isUseClassGraphForReflect()) {
-                map = SpringContextHolder.getBean(ClassGraphReflector.class).returnSetMethods(clazz);
-            } else {
-                Method[] methods = clazz.getMethods();
-                map = new HashMap<>();
-                for (Method method : methods) {
-                    if (method.getName().startsWith("set") && !"setClass".equals(method.getName()) && method.getParameterTypes().length == 1) {
-                        String name = StringUtils.uncapitalize(method.getName().substring(3));
-                        map.put(name, method);
-                    }
+    public static <T> Map<String, MethodHandle> returnSetMethodHandle(Class<T> clazz) throws IllegalAccessException {
+        Map<String, MethodHandle> map;
+        if (cachedSetMethodHandle.getIfPresent(clazz.getCanonicalName()) == null) {
+
+            Method[] methods = clazz.getMethods();
+            map = new HashMap<>();
+            MethodHandles.Lookup lookup = MethodHandles.publicLookup().in(clazz);
+            for (Method method : methods) {
+                if (method.getName().startsWith("set") && !"setClass".equals(method.getName()) && method.getParameterTypes().length == 1) {
+                    String name = StringUtils.uncapitalize(method.getName().substring(3));
+                    map.put(name, lookup.unreflect(method));
                 }
             }
-            if (!map.isEmpty()) {
-                cachedSetMethod.put(clazz.getCanonicalName(), map);
+            if (!CollectionUtils.isEmpty(map)) {
+                cachedSetMethodHandle.put(clazz.getCanonicalName(), map);
             }
         }
-        return cachedSetMethod.getIfPresent(clazz.getCanonicalName());
+        return cachedSetMethodHandle.getIfPresent(clazz.getCanonicalName());
     }
+
+
 
     public static boolean isAnnotationClassWithAnnotationFields(Class<?> clazz, Class<? extends Annotation> annotationClazz, Class<? extends Annotation> annotationFields) {
         if (!isUseClassGraphForReflect()) {
@@ -145,17 +133,15 @@ public class ReflectUtils {
                         return true;
                     }
                 }
-                return false;
-            } else {
-                return false;
             }
+            return false;
         } else {
             return SpringContextHolder.getBean(ClassGraphReflector.class).isAnnotationClassWithAnnotationFields(clazz, annotationClazz, annotationFields);
         }
     }
 
-    public static Object getIncrementValueBySetMethod(Method method, Long input) {
-        String typeName = method.getParameterTypes()[0].getTypeName();
+    public static Object getIncrementValueBySetMethod(MethodHandle method, Long input) {
+        String typeName = method.type().parameterType(1).getTypeName();
         if (typeName.equals(Long.class.getTypeName())) {
             return input;
         } else if (typeName.equals(Integer.class.getTypeName())) {
@@ -168,21 +154,7 @@ public class ReflectUtils {
         return null;
     }
 
-    private static Method getMethodByName(Class<?> clazz, String methodName) throws NoSuchMethodException {
-        try {
-            return clazz.getDeclaredMethod(methodName);
-        } catch (NoSuchMethodException ex) {
-            throw ex;
-        }
-    }
 
-    private static Method getMethodByName(Class<?> clazz, String methodName, Type type) throws NoSuchMethodException {
-        try {
-            return clazz.getDeclaredMethod(methodName, (Class) type);
-        } catch (NoSuchMethodException ex) {
-            throw ex;
-        }
-    }
 
     private static boolean isUseClassGraphForReflect() {
         try {
@@ -194,10 +166,11 @@ public class ReflectUtils {
         }
         return false;
     }
-    public static <T extends Annotation> T getAnnotationByFieldName(Class<?> baseClazz, String fieldName, Class<T> annotationClazz){
-        Assert.isTrue(annotationClazz.isAnnotation(),"field class must be annotation!");
-        List<Field> fields= getFieldsByAnnotation(baseClazz,annotationClazz);
-        if(!CollectionUtils.isEmpty(fields)) {
+
+    public static <T extends Annotation> T getAnnotationByFieldName(Class<?> baseClazz, String fieldName, Class<T> annotationClazz) {
+        Assert.isTrue(annotationClazz.isAnnotation(), "field class must be annotation!");
+        List<Field> fields = getFieldsByAnnotation(baseClazz, annotationClazz);
+        if (!CollectionUtils.isEmpty(fields)) {
             for (Field field : fields) {
                 if (field.getName().equals(fieldName) && field.isAnnotationPresent(annotationClazz)) {
                     return field.getAnnotation(annotationClazz);
@@ -206,9 +179,10 @@ public class ReflectUtils {
         }
         return null;
     }
-    public static Map<String,Field> getFieldsMapByAnnotation(Class<?> baseClazz,Class<? extends Annotation> annotationClazz){
-        List<Field> fields= getFieldsByAnnotation(baseClazz,annotationClazz);
-        if(null!=fields) {
+
+    public static Map<String, Field> getFieldsMapByAnnotation(Class<?> baseClazz, Class<? extends Annotation> annotationClazz) {
+        List<Field> fields = getFieldsByAnnotation(baseClazz, annotationClazz);
+        if (null != fields) {
             Map<String, Field> map = new HashMap<>();
             for (Field field : fields) {
                 map.put(field.getName(), field);
@@ -217,12 +191,13 @@ public class ReflectUtils {
         }
         return null;
     }
-    public static List<Field> getFieldsByAnnotation(Class<?> baseClazz, Class<? extends Annotation> annotationClazz){
-        Assert.isTrue(annotationClazz.isAnnotation(),"field class must be annotation!");
-        Map<String,List<Field>> tmap=cacheField.getIfPresent(baseClazz.getCanonicalName()+annotationClazz.getCanonicalName());
-        if(null==tmap){
-            tmap=new HashMap<>();
-            Field[] fields=baseClazz.getDeclaredFields();
+
+    public static List<Field> getFieldsByAnnotation(Class<?> baseClazz, Class<? extends Annotation> annotationClazz) {
+        Assert.isTrue(annotationClazz.isAnnotation(), "field class must be annotation!");
+        Map<String, List<Field>> tmap = cacheField.getIfPresent(baseClazz.getCanonicalName() + annotationClazz.getCanonicalName());
+        if (null == tmap) {
+            tmap = new HashMap<>();
+            Field[] fields = baseClazz.getDeclaredFields();
             for (Field field : fields) {
                 if (field.isAnnotationPresent(annotationClazz)) {
                     String clazzName = annotationClazz.getCanonicalName();
@@ -235,44 +210,46 @@ public class ReflectUtils {
                     }
                 }
             }
-            if(!tmap.isEmpty()) {
+            if (!tmap.isEmpty()) {
                 cacheField.put(baseClazz.getCanonicalName() + annotationClazz.getCanonicalName(), tmap);
             }
         }
-        if(tmap.containsKey(annotationClazz.getCanonicalName())){
+        if (tmap.containsKey(annotationClazz.getCanonicalName())) {
             return tmap.get(annotationClazz.getCanonicalName());
-        }else {
+        } else {
             return null;
         }
     }
 
     /**
      * 返回指定Annotation字段的值，返回第一个属性
+     *
      * @param baseClazz
      * @param baseObj
      * @param annotationClazz
      * @return
      */
-    public static Object getFieldValueByAnnotation(Class<?> baseClazz, Object baseObj,Class<? extends Annotation> annotationClazz) {
-        List<Field> fields= getFieldsByAnnotation(baseClazz,annotationClazz);
+    public static Object getFieldValueByAnnotation(Class<?> baseClazz, Object baseObj, Class<? extends Annotation> annotationClazz) {
+        List<Field> fields = getFieldsByAnnotation(baseClazz, annotationClazz);
         try {
             if (null != fields && !fields.isEmpty()) {
                 fields.get(0).setAccessible(true);
                 return fields.get(0).get(baseObj);
             }
-        }catch (Exception ex){
-            log.error("{}",ex);
+        } catch (Exception ex) {
+            log.error("{}", ex);
         }
         return null;
     }
-    public static String getFieldNameByAnnotation(Class<?> baseClazz,Class<? extends Annotation> annotationClazz) {
-        List<Field> fields= getFieldsByAnnotation(baseClazz,annotationClazz);
+
+    public static String getFieldNameByAnnotation(Class<?> baseClazz, Class<? extends Annotation> annotationClazz) {
+        List<Field> fields = getFieldsByAnnotation(baseClazz, annotationClazz);
         try {
             if (null != fields && !fields.isEmpty()) {
                 return fields.get(0).getName();
             }
-        }catch (Exception ex){
-            log.error("{}",ex.getMessage());
+        } catch (Exception ex) {
+            log.error("{}", ex.getMessage());
         }
         return null;
     }

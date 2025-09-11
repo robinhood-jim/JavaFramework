@@ -41,5 +41,8 @@ public class ServiceException extends AbstractCodeException {
 	public ServiceException(int retCode){
 		super(retCode);
 	}
+	public ServiceException(Throwable ex1){
+		super(500,ex1.getMessage());
+	}
 
 }

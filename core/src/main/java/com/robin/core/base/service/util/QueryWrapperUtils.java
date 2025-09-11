@@ -17,6 +17,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
+import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.sql.Timestamp;
@@ -30,7 +31,7 @@ import java.util.stream.Collectors;
 public class  QueryWrapperUtils {
     public static final List<String> compareOperations = Lists.newArrayList(">", ">=", "!=", "<", "<=");
     public static final List<Integer> compareOperationLens = Lists.newArrayList(1, 2, 2, 1, 2);
-    public static <T> void getWrapperByReq(Map<String, String> fieldMap, Map<String, Class<?>> fieldTypeMap, Method deleteField,String deleteColumn, PageDTO pageDTO, QueryWrapper<T> wrapper, boolean includeDeleteField) throws Exception {
+    public static <T> void getWrapperByReq(Map<String, String> fieldMap, Map<String, Class<?>> fieldTypeMap, MethodHandle deleteField,String deleteColumn, PageDTO pageDTO, QueryWrapper<T> wrapper, boolean includeDeleteField) throws Exception {
         Map<String, Object> valueMap = returnValueMap(pageDTO);
         for (Map.Entry<String, Object> entry : valueMap.entrySet()) {
             String key = entry.getKey();
@@ -190,8 +191,8 @@ public class  QueryWrapperUtils {
         }
         return getMap;
     }
-    public static  <T> QueryWrapper<T> wrapWithEntity(Map<String,String> fieldMap,Map<String, Class<?>> fieldTypeMap,Method getStatusMethod,String statusColumn, Object queryObject,boolean defaultOrder,String defaultOrderField,Class<T> voType) throws Exception {
-        Map<String, Method> getMethod = ReflectUtils.returnGetMethods(voType);
+    public static  <T> QueryWrapper<T> wrapWithEntity(Map<String,String> fieldMap, Map<String, Class<?>> fieldTypeMap, MethodHandle getStatusMethod, String statusColumn, Object queryObject, boolean defaultOrder, String defaultOrderField, Class<T> voType) throws Exception {
+        Map<String, MethodHandle> getMethod = ReflectUtils.returnGetMethodHandle(voType);
         QueryWrapper<T> queryWrapper = new QueryWrapper<>();
         //hashMap
         if (queryObject.getClass().getInterfaces().length > 0 && queryObject.getClass().getInterfaces()[0].isAssignableFrom(Map.class)) {
@@ -223,40 +224,43 @@ public class  QueryWrapperUtils {
                 queryWrapper.orderBy(true, defaultOrder, defaultOrderField);
             }
         } else {
-            Map<String, Method> qtoMethod = ReflectUtils.returnGetMethods(queryObject.getClass());
-            Iterator<Map.Entry<String, Method>> entryIterator = qtoMethod.entrySet().iterator();
-            while (entryIterator.hasNext()) {
-                Map.Entry<String, Method> entry = entryIterator.next();
-                if (getMethod.containsKey(entry.getKey())) {
-                    String filterColumn = getFilterColumn(fieldMap,entry.getKey());
-                    Object tmpObj = entry.getValue().invoke(queryObject);
-                    if (null != tmpObj) {
-                        wrapQueryWithTypeAndValue(getMethod.get(entry.getKey()).getReturnType(), filterColumn, tmpObj.toString(), queryWrapper);
+            Map<String, MethodHandle> qtoMethod = ReflectUtils.returnGetMethodHandle(queryObject.getClass());
+            try {
+                Iterator<Map.Entry<String, MethodHandle>> entryIterator = qtoMethod.entrySet().iterator();
+                while (entryIterator.hasNext()) {
+                    Map.Entry<String, MethodHandle> entry = entryIterator.next();
+                    if (getMethod.containsKey(entry.getKey())) {
+                        String filterColumn = getFilterColumn(fieldMap, entry.getKey());
+                        Object tmpObj = entry.getValue().bindTo(queryObject).invoke();
+                        if (null != tmpObj) {
+                            wrapQueryWithTypeAndValue(getMethod.get(entry.getKey()).type().returnType(), filterColumn, tmpObj.toString(), queryWrapper);
+                        }
+                    } else {
+                        log.warn("param {} not fit in entity {},skip!", entry.getKey(), voType.getSimpleName());
                     }
-                } else {
-                    log.warn("param {} not fit in entity {},skip!", entry.getKey(), voType.getSimpleName());
                 }
-            }
-            if (qtoMethod.containsKey("getOrderField") && qtoMethod.containsKey("getOrder")) {
-                String orderField = (String) qtoMethod.get("getOrderField").invoke(queryObject, null);
-                String order = (String) qtoMethod.get("getOrder").invoke(queryObject, null);
-                if (!org.apache.commons.lang3.StringUtils.isEmpty(orderField) && !org.apache.commons.lang3.StringUtils.isEmpty(order)) {
-                    queryWrapper.orderBy(true, order.equalsIgnoreCase(Const.ASC), orderField);
-                } else {
-                    queryWrapper.orderBy(true, defaultOrder, defaultOrderField);
+                if (qtoMethod.containsKey("getOrderField") && qtoMethod.containsKey("getOrder")) {
+                    String orderField = (String) qtoMethod.get("getOrderField").bindTo(queryObject).invoke();
+                    String order = (String) qtoMethod.get("getOrder").bindTo(queryObject).invoke();
+                    if (!org.apache.commons.lang3.StringUtils.isEmpty(orderField) && !org.apache.commons.lang3.StringUtils.isEmpty(order)) {
+                        queryWrapper.orderBy(true, order.equalsIgnoreCase(Const.ASC), orderField);
+                    } else {
+                        queryWrapper.orderBy(true, defaultOrder, defaultOrderField);
+                    }
                 }
+            }catch (Throwable ex1){
+                throw new IllegalAccessException(ex1.getMessage());
             }
-
         }
         return queryWrapper;
     }
 
-    private static <T> void wrapWithValue(Map<String, String> fieldMap, Map<String, Method> getMethod, QueryWrapper<T> queryWrapper, Iterator<Map.Entry<String, Object>> iter) {
+    private static <T> void wrapWithValue(Map<String, String> fieldMap, Map<String, MethodHandle> getMethod, QueryWrapper<T> queryWrapper, Iterator<Map.Entry<String, Object>> iter) {
         while (iter.hasNext()) {
             Map.Entry<String, Object> entry = iter.next();
             if (getMethod.containsKey(entry.getKey())) {
                 String filterColumn = getFilterColumn(fieldMap,entry.getKey());
-                wrapQueryWithTypeAndValue(getMethod.get(entry.getKey()).getReturnType(), filterColumn, entry.getValue().toString(), queryWrapper);
+                wrapQueryWithTypeAndValue(getMethod.get(entry.getKey()).type().returnType(), filterColumn, entry.getValue().toString(), queryWrapper);
             } else if (entry.getKey().equalsIgnoreCase(Condition.OR)) {
                 //or 条件组合
                 if (entry.getValue().getClass().getInterfaces() != null) {
@@ -272,7 +276,7 @@ public class  QueryWrapperUtils {
                             for (String column : colArrs) {
                                 queryWrapper.and(f -> {
                                     if (getMethod.containsKey(column)) {
-                                        wrapQueryWithTypeAndValue(getMethod.get(column).getReturnType(), column, tmap.get("value").toString(), f.or());
+                                        wrapQueryWithTypeAndValue(getMethod.get(column).type().returnType(), column, tmap.get("value").toString(), f.or());
                                     }
                                 });
                             }
@@ -286,7 +290,7 @@ public class  QueryWrapperUtils {
         }
     }
 
-    private static <T> void wrapNested(Map<String, Object> tmap, Map<String, Method> getMethod, QueryWrapper<T> queryWrapper) {
+    private static <T> void wrapNested(Map<String, Object> tmap, Map<String, MethodHandle> getMethod, QueryWrapper<T> queryWrapper) {
         Iterator<Map.Entry<String, Object>> iter = tmap.entrySet().iterator();
         while (iter.hasNext()) {
             Map.Entry<String, Object> entry = iter.next();

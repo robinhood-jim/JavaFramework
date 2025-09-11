@@ -43,6 +43,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
 import java.io.Serializable;
+import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
@@ -59,14 +60,14 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>, T extends 
     protected Map<String, String> fieldMap = new HashMap<>();
     protected Field idField;
     protected TableId tableId;
-    protected Map<String, Method> getMethods;
-    protected Map<String, Method> setMethods;
+    protected Map<String, MethodHandle> getMethods;
+    protected Map<String, MethodHandle> setMethods;
 
     protected String defaultOrderField = "create_tm";
     protected Boolean defaultOrder = false;
     protected String statusColumn = "status";
-    protected Method setStatusMethod = null;
-    protected Method getStatusMethod = null;
+    protected MethodHandle setStatusMethod = null;
+    protected MethodHandle getStatusMethod = null;
     protected Integer invalidValue = Integer.valueOf(Const.INVALID);
     protected Map<String, Class<?>> fieldTypeMap = new HashMap<>();
 
@@ -88,8 +89,8 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>, T extends 
         this.pkType = ((Class<P>) parametrizedType.getActualTypeArguments()[2]);
         try {
             valueOfMethod = this.pkType.getMethod("valueOf", String.class);
-            getMethods = ReflectUtils.returnGetMethods(voType);
-            setMethods = ReflectUtils.returnSetMethods(voType);
+            getMethods = ReflectUtils.returnGetMethodHandle(voType);
+            setMethods = ReflectUtils.returnSetMethodHandle(voType);
 
             List<Field> fields = Lists.newArrayList(voType.getDeclaredFields());
             if (voType.getSuperclass().isAssignableFrom(BaseModel.class)) {
@@ -152,10 +153,10 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>, T extends 
         try{
             queryWrapper.eq(statusColumn,Const.VALID);
             T vo=voType.getDeclaredConstructor().newInstance();
-            getStatusMethod.invoke(vo,Const.INVALID);
+            getStatusMethod.bindTo(vo).invoke(Const.INVALID);
             return this.update(vo,queryWrapper);
-        }catch (Exception ex){
-            throw new ServiceException(ex);
+        }catch (Throwable ex){
+            throw new ServiceException(ex.getMessage());
         }
     }
     @Override
@@ -358,10 +359,10 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>, T extends 
         T valueObj = BeanUtils.instantiateClass(voType);
         try {
             if (setStatusMethod != null) {
-                setStatusMethod.invoke(valueObj, invalidValue);
+                setStatusMethod.bindTo(valueObj).invoke(invalidValue);
             }
-        } catch (Exception ex) {
-            throw new ServiceException(ex);
+        } catch (Throwable ex) {
+            throw new ServiceException(ex.getMessage());
         }
         return SqlHelper.retBool(baseMapper.update(valueObj, wrapper));
     }
@@ -468,19 +469,19 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>, T extends 
             if (requsetObj.getClass().getInterfaces().length > 0 && requsetObj.getClass().getInterfaces()[0].isAssignableFrom(Map.class)) {
                 ConvertUtil.mapToBaseObject(obj, (HashMap) requsetObj);
             } else {
-                Map<String, Method> modelGetMetholds = ReflectUtils.returnGetMethods(requsetObj.getClass());
-                Iterator<Map.Entry<String, Method>> iter = modelGetMetholds.entrySet().iterator();
+                Map<String, MethodHandle> modelGetMetholds = ReflectUtils.returnGetMethodHandle(requsetObj.getClass());
+                Iterator<Map.Entry<String, MethodHandle>> iter = modelGetMetholds.entrySet().iterator();
                 while (iter.hasNext()) {
-                    Map.Entry<String, Method> entry = iter.next();
+                    Map.Entry<String, MethodHandle> entry = iter.next();
                     if (setMethods.containsKey(entry.getKey())) {
-                        setMethods.get(entry.getKey()).invoke(obj, entry.getValue().invoke(requsetObj));
+                        setMethods.get(entry.getKey()).bindTo(obj).invoke(entry.getValue().bindTo(requsetObj).invoke());
                     }
                 }
             }
             baseMapper.insert(obj);
             return true;
-        } catch (Exception ex) {
-            throw new ServiceException(ex);
+        } catch (Throwable ex) {
+            throw new ServiceException(ex.getMessage());
         }
     }
 

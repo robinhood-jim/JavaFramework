@@ -3,6 +3,7 @@ package com.robin.es.util;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.robin.comm.util.http.HttpUtils;
+import com.robin.comm.util.json.GsonUtil;
 import com.robin.core.base.dao.util.AnnotationRetriever;
 import com.robin.core.base.dao.util.FieldContent;
 import com.robin.core.base.exception.ServiceException;
@@ -11,7 +12,6 @@ import com.robin.core.base.spring.SpringContextHolder;
 import com.robin.core.base.util.Const;
 import com.robin.core.base.util.StringUtils;
 import com.robin.core.convert.util.ConvertUtil;
-import com.robin.comm.util.json.GsonUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
@@ -38,7 +38,7 @@ import org.springframework.lang.NonNull;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
-import java.lang.reflect.Method;
+import java.lang.invoke.MethodHandle;
 import java.util.*;
 
 @Slf4j
@@ -153,9 +153,9 @@ public class CommEsQueryUtils {
                 if (null != response.getHits()) {
                     SearchHit[] hits = response.getHits().getHits();
                     boolean isContentMap = serializableClass.isAssignableFrom(Map.class);
-                    Map<String, Method> setMap = null;
+                    Map<String, MethodHandle> setMap = null;
                     if (!isContentMap) {
-                        setMap = ReflectUtils.returnSetMethods(serializableClass);
+                        setMap = ReflectUtils.returnSetMethodHandle(serializableClass);
                     }
                     for (SearchHit hit : hits) {
                         Map<String, Object> map = hit.getSourceAsMap();
@@ -177,9 +177,9 @@ public class CommEsQueryUtils {
                                 String key = entry.getKey();
                                 String columnName = StringUtils.returnCamelCaseByFieldName(key);
                                 if (null != setMap && setMap.containsKey(columnName)) {
-                                    Method method = setMap.get(columnName);
-                                    Class<?> paramType = method.getParameterTypes()[0];
-                                    method.invoke(obj, ConvertUtil.parseParameter(paramType, entry.getValue()));
+                                    MethodHandle method = setMap.get(columnName);
+                                    Class<?> paramType = method.type().parameterType(1);
+                                    method.bindTo(obj).invoke(ConvertUtil.parseParameter(paramType, entry.getValue()));
                                 }
                             }
                             contents.add(obj);
@@ -187,7 +187,7 @@ public class CommEsQueryUtils {
                     }
                     retPage = new PageImpl(contents, pageable, response.getHits().getTotalHits().value);
                 }
-            } catch (Exception ex) {
+            } catch (Throwable ex) {
                 throw new ServiceException(ex);
             }
         }

@@ -56,7 +56,7 @@ public class EntityMappingUtil {
             Map<String, DataBaseColumnMeta> columnMetaMap = returnMetaMap(obj.getClass(), sqlGen, jdbcDao, tableDef);
             insertSegment.setColumnMetaMap(columnMetaMap);
             for (FieldContent content : fields) {
-                Object value = content.getGetMethod().invoke(obj);
+                Object value = content.getGetMethod().bindTo(obj).invoke();
                 if (CollectionUtils.isEmpty(content.getPrimaryKeys()) && !columnMetaMap.containsKey(content.getFieldName().toLowerCase()) && !columnMetaMap.containsKey(content.getFieldName().toUpperCase())) {
                     log.warn("field {} not included in table {},insert column ignore!", content.getFieldName(), tableDef.getTableName());
                     continue;
@@ -71,13 +71,13 @@ public class EntityMappingUtil {
                         if (!content.isPrimary()) {
                             fieldBuffer.append(content.getFieldName()).append(",");
                             valueBuffer.append("?,");
-                            params.add(content.getGetMethod().invoke(obj));
+                            params.add(content.getGetMethod().bindTo(obj).invoke());
                             paramTypes.add(new SqlParameter(columnMeta.getDataType()));
                         } else {
                             insertSegment.setHasPrimaryKey(true);
                             if (!ObjectUtils.isEmpty(content.getPrimaryKeys())) {
                                 //Composite Primary Key
-                                BasePrimaryObject pkObj=(BasePrimaryObject) content.getGetMethod().invoke(obj);
+                                BasePrimaryObject pkObj=(BasePrimaryObject) content.getGetMethod().bindTo(obj).invoke();
                                 for (FieldContent field : content.getPrimaryKeys()) {
                                     if (field.isIncrement()) {
                                         insertSegment.setHasincrementPk(true);
@@ -91,7 +91,7 @@ public class EntityMappingUtil {
                                         } else {
                                             valueBuffer.append("?,");
                                             columnMeta=Optional.ofNullable(columnMetaMap.get(field.getFieldName().toLowerCase())).orElse(columnMetaMap.get(field.getFieldName().toUpperCase()));
-                                            params.add(field.getGetMethod().invoke(pkObj));
+                                            params.add(field.getGetMethod().bindTo(pkObj).invoke());
                                             paramTypes.add(new SqlParameter(columnMeta.getDataType()));
                                         }
                                         fieldBuffer.append(field.getFieldName()).append(",");
@@ -100,7 +100,7 @@ public class EntityMappingUtil {
                             } else {
                                 fieldBuffer.append(content.getFieldName()).append(",");
                                 valueBuffer.append("?,");
-                                params.add(content.getGetMethod().invoke(obj));
+                                params.add(content.getGetMethod().bindTo(obj).invoke());
                                 paramTypes.add(new SqlParameter(columnMeta.getDataType()));
                             }
                         }
@@ -152,6 +152,8 @@ public class EntityMappingUtil {
             insertSegment.setParamTypes(paramTypes);
         } catch (Exception ex) {
             throw new DAOException(ex);
+        }catch (Throwable ex1){
+            throw new DAOException(ex1);
         }
         return insertSegment;
     }
@@ -365,7 +367,7 @@ public class EntityMappingUtil {
         return segment;
     }
 
-    public static SelectSegment getSelectByVOSegment(Class<? extends BaseObject> type, BaseObject vo, String orderByStr, String wholeSelectSql) throws Exception {
+    public static SelectSegment getSelectByVOSegment(Class<? extends BaseObject> type, BaseObject vo, String orderByStr, String wholeSelectSql) throws Throwable {
         AnnotationRetriever.isBaseObjectClassValid(type);
         List<Object> params = new ArrayList<>();
         StringBuilder builder = new StringBuilder();
@@ -373,7 +375,7 @@ public class EntityMappingUtil {
         List<FieldContent> fields = AnnotationRetriever.getMappingFieldsCache(type);
         SelectSegment selectSegment = new SelectSegment();
         for (FieldContent field : fields) {
-            Object obj = field.getGetMethod().invoke(vo);
+            Object obj = field.getGetMethod().bindTo(vo).invoke();
             if (obj != null) {
                 builder.append(field.getFieldName()).append("=?");
                 params.add(obj);

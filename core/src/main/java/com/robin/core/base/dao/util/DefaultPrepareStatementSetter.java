@@ -23,7 +23,7 @@ public class DefaultPrepareStatementSetter implements PreparedStatementSetter {
         int pos = 1;
         try {
             for (FieldContent field : fields) {
-                Object value = field.getGetMethod().invoke(object, new Object[]{});
+                Object value = field.getGetMethod().bindTo(object).invoke();
                 if (!field.isIncrement() && value != null) {
                     AnnotationRetriever.setParameter(ps, pos, value);
                     pos++;
@@ -31,6 +31,8 @@ public class DefaultPrepareStatementSetter implements PreparedStatementSetter {
             }
         } catch (Exception ex) {
             throw new SQLException(ex);
+        }catch (Throwable ex1){
+            throw new SQLException(ex1.getMessage());
         }
     }
 }

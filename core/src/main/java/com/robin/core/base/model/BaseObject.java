@@ -140,13 +140,15 @@ public abstract class BaseObject implements Serializable,Cloneable{
 		List<FieldContent> fields = AnnotationRetriever.getMappingFieldsCache(getClass());
 		try {
 			for (FieldContent content : fields) {
-				if (!ObjectUtils.isEmpty(content.getGetMethod().invoke(this))) {
+				if (!ObjectUtils.isEmpty(content.getGetMethod().bindTo(this).invoke())) {
 					emptyTag = false;
 					break;
 				}
 			}
 		}catch (InvocationTargetException | IllegalAccessException ex){
 			throw new DAOException(ex);
+		}catch (Throwable ex1){
+			throw new DAOException(ex1);
 		}
 		return emptyTag;
 	}

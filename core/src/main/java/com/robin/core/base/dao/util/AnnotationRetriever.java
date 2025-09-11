@@ -31,6 +31,7 @@ import org.springframework.jdbc.support.lob.LobHandler;
 import org.springframework.util.ObjectUtils;
 
 import javax.persistence.*;
+import java.lang.invoke.MethodHandles;
 import java.lang.invoke.SerializedLambda;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
@@ -267,7 +268,7 @@ public class AnnotationRetriever {
         try {
             while (iterator.hasNext()) {
                 Map.Entry<String, FieldContent> entry = iterator.next();
-                Object value = entry.getValue().getGetMethod().invoke(object);
+                Object value = entry.getValue().getGetMethod().bindTo(object).invoke();
                 if (entry.getValue().isSequential() || entry.getValue().isIncrement()) {
                     break;
                 }
@@ -287,6 +288,8 @@ public class AnnotationRetriever {
             throw ex1;
         } catch (Exception ex) {
             throw new DAOException(ex);
+        }catch (Throwable ex2){
+            throw new DAOException(ex2);
         }
     }
 
@@ -302,6 +305,7 @@ public class AnnotationRetriever {
     private static FieldContent retrieveFieldByMyBatis(Field field, Class<? extends BaseObject> clazz) throws DAOException {
         FieldContent content;
         try {
+            MethodHandles.Lookup lookup=MethodHandles.publicLookup().in(clazz);
             String tmpName = org.springframework.util.StringUtils.capitalize(field.getName());
             Method getMethod = clazz.getMethod("get" + tmpName);
             Type type = getMethod.getReturnType();
@@ -310,7 +314,7 @@ public class AnnotationRetriever {
             TableId idfield = field.getAnnotation(TableId.class);
             String fieldName;
             FieldContent.Builder builder = new FieldContent.Builder();
-            builder.setGetMethod(getMethod).setSetMethod(setMethod).setField(field).setPropertyName(field.getName());
+            builder.setGetMethod(lookup.unreflect(getMethod)).setSetMethod(lookup.unreflect(setMethod)).setField(field).setPropertyName(field.getName());
             if (!Objects.isNull(mapfield)) {
                 if (!mapfield.exist()) {
                     return null;
@@ -360,7 +364,7 @@ public class AnnotationRetriever {
     private static FieldContent retrieveFieldJpa(Field field, Class<? extends BaseObject> clazz) throws DAOException {
         FieldContent content ;
         try {
-
+            MethodHandles.Lookup lookup=MethodHandles.publicLookup().in(clazz);
             String tmpName = org.springframework.util.StringUtils.capitalize(field.getName());
             Method getMethod = clazz.getMethod("get" + tmpName);
             Type type = getMethod.getReturnType();
@@ -370,7 +374,7 @@ public class AnnotationRetriever {
             Id idfield = field.getAnnotation(Id.class);
             String fieldName = null;
             FieldContent.Builder builder = new FieldContent.Builder();
-            builder.setGetMethod(getMethod).setSetMethod(setMethod).setField(field).setPropertyName(field.getName());
+            builder.setGetMethod(lookup.unreflect(getMethod)).setSetMethod(lookup.unreflect(setMethod)).setField(field).setPropertyName(field.getName());
             if (mapfield != null) {
                 if (mapfield.name() != null && !mapfield.name().isEmpty()) {
                     fieldName = mapfield.name();
@@ -417,6 +421,7 @@ public class AnnotationRetriever {
         try {
             MappingEntity entity = clazz.getAnnotation(MappingEntity.class);
             MappingField mapfield = field.getAnnotation(MappingField.class);
+            MethodHandles.Lookup lookup=MethodHandles.publicLookup().in(clazz);
             String name = field.getName();
             String colname = name.substring(0, 1).toUpperCase() + name.substring(1);
             Method getMethod = clazz.getDeclaredMethod("get" + colname);
@@ -425,7 +430,7 @@ public class AnnotationRetriever {
             String fieldName = null;
             String datatype = null;
             FieldContent.Builder builder = new FieldContent.Builder();
-            builder.withMappingField(mapfield).setGetMethod(getMethod).setSetMethod(setMethod).setField(field).setPropertyName(field.getName());
+            builder.withMappingField(mapfield).setGetMethod(lookup.unreflect(getMethod)).setSetMethod(lookup.unreflect(setMethod)).setField(field).setPropertyName(field.getName());
             if (mapfield != null) {
                 String colfield = mapfield.value();
                 datatype = mapfield.datatype();
@@ -515,9 +520,11 @@ public class AnnotationRetriever {
 
     public static Object getValueFromVO(FieldContent content, BaseObject object) throws SQLException {
         try {
-            return content.getGetMethod().invoke(object);
+            return content.getGetMethod().bindTo(object).invoke();
         } catch (Exception ex) {
             throw new SQLException(ex);
+        }catch (Throwable ex1){
+            throw new SQLException(ex1.getMessage());
         }
     }
 

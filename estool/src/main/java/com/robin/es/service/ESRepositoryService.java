@@ -105,6 +105,8 @@ public abstract class ESRepositoryService<V extends BaseObject, P extends Serial
             return (P) response.getId();
         } catch (Exception ex) {
             throw new ServiceException(ex);
+        }catch (Throwable ex1){
+            throw new ServiceException(ex1);
         }
     }
 
@@ -192,6 +194,8 @@ public abstract class ESRepositoryService<V extends BaseObject, P extends Serial
             }
         } catch (Exception ex) {
             throw new ServiceException(ex);
+        }catch (Throwable ex1){
+            throw new ServiceException(ex1);
         }
         return obj;
     }
@@ -259,6 +263,8 @@ public abstract class ESRepositoryService<V extends BaseObject, P extends Serial
             }
         } catch (Exception ex) {
             throw new ServiceException(ex);
+        }catch (Throwable ex1){
+            throw new ServiceException(ex1);
         }
         return retList;
     }
@@ -361,12 +367,14 @@ public abstract class ESRepositoryService<V extends BaseObject, P extends Serial
             doQuery(page, retList, searchRequest);
         } catch (Exception ex) {
             throw new ServiceException(ex);
+        }catch (Throwable ex1){
+            throw new ServiceException(ex1);
         }
         return retList;
     }
 
 
-    private void doQuery(PageQuery<Map<String, Object>> page, List<V> retList, SearchRequest searchRequest) throws Exception {
+    private void doQuery(PageQuery<Map<String, Object>> page, List<V> retList, SearchRequest searchRequest) throws Throwable {
         SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
         if (null != response.getHits()) {
             SearchHit[] hits = response.getHits().getHits();
@@ -454,18 +462,18 @@ public abstract class ESRepositoryService<V extends BaseObject, P extends Serial
         }
     }
 
-    protected Pair<Map<String, Object>,String> toJsonMap(V vo) throws IllegalAccessException, InvocationTargetException {
+    protected Pair<Map<String, Object>,String> toJsonMap(V vo) throws Throwable {
         Assert.notNull(vo, "vo is null");
         Map<String, Object> retMap = new HashMap<>();
         String id=null;
         if (!CollectionUtils.isEmpty(fieldsMap)) {
             for (Map.Entry<String, FieldContent> entry : fieldsMap.entrySet()) {
                 String key = entry.getKey();
-                Object value = entry.getValue().getGetMethod().invoke(vo);
+                Object value = entry.getValue().getGetMethod().bindTo(vo).invoke();
                 if (entry.getValue().isPrimary() && !ObjectUtils.isEmpty(value)) {
                     id=value.toString();
                 } else {
-                    retMap.put(entry.getKey(), entry.getValue().getGetMethod().invoke(vo));
+                    retMap.put(entry.getKey(), entry.getValue().getGetMethod().bindTo(vo).invoke());
                 }
             }
         }

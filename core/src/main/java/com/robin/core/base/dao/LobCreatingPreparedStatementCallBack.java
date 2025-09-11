@@ -64,7 +64,7 @@ public class LobCreatingPreparedStatementCallBack extends
         int pos = 1;
         try {
             for (FieldContent field : fields) {
-                Object value = field.getGetMethod().invoke(obj, null);
+                Object value = field.getGetMethod().bindTo(obj).invoke();
                 if (!field.isIncrement() && !field.isSequential() && value != null) {
                     boolean needDo = true;
                     if (field.isPrimary() && field.getPrimaryKeys() != null) {
@@ -84,6 +84,8 @@ public class LobCreatingPreparedStatementCallBack extends
         } catch (IllegalAccessException ex) {
             log.error("{}",ex);
         } catch (InvocationTargetException ex1) {
+            log.error("{}",ex1);
+        }catch (Throwable ex1){
             log.error("{}",ex1);
         }
     }

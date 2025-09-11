@@ -1,13 +1,11 @@
 package com.robin.mongodb.service;
 
 import cn.hutool.core.util.StrUtil;
-import com.google.gson.Gson;
 import com.mongodb.BasicDBObject;
 import com.mongodb.MongoClient;
 import com.mongodb.client.*;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
-import com.robin.comm.util.json.GsonUtil;
 import com.robin.core.base.dao.util.AnnotationRetriever;
 import com.robin.core.base.dao.util.FieldContent;
 import com.robin.core.base.dao.util.PropertyFunction;
@@ -25,21 +23,20 @@ import com.robin.es.util.MongoQueryUtils;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
 import java.io.Serializable;
-import java.lang.reflect.Method;
+import java.lang.invoke.MethodHandle;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.mongodb.client.model.Filters.*;
+import static com.mongodb.client.model.Filters.eq;
+import static com.mongodb.client.model.Filters.in;
 
 public abstract class MongoRepositoryService <V extends BaseObject, P extends Serializable> implements IBaseAnnotationJdbcService<V, P> {
     private MongoClient client;
@@ -86,19 +83,21 @@ public abstract class MongoRepositoryService <V extends BaseObject, P extends Se
             return (P)id.toString();
         }catch (Exception ex){
             throw new ServiceException(ex);
+        }catch (Throwable ex1){
+            throw new ServiceException(ex1);
         }
     }
-    private Document parse(V vo,Map<String, Object> objectMap) throws Exception{
+    private Document parse(V vo,Map<String, Object> objectMap) throws Throwable{
         Document document =null;
 
         for(FieldContent content:fieldContents){
             if(content.isPrimary()){
-                Object pkObj=content.getGetMethod().invoke(vo);
+                Object pkObj=content.getGetMethod().bindTo(vo).invoke();
                 if (!ObjectUtils.isEmpty(pkObj)) {
                     document=new Document("_id",pkObj.toString());
                 }
             }else{
-                Object obj=content.getGetMethod().invoke(vo);
+                Object obj=content.getGetMethod().bindTo(vo).invoke();
                 if(!ObjectUtils.isEmpty(obj)) {
                     objectMap.put(content.getPropertyName(), obj);
                 }
@@ -130,12 +129,12 @@ public abstract class MongoRepositoryService <V extends BaseObject, P extends Se
 
             for(FieldContent content:fieldContents){
                 if(content.isPrimary()){
-                    Object pkObj=content.getGetMethod().invoke(vo);
+                    Object pkObj=content.getGetMethod().bindTo(vo).invoke();
                     if (!ObjectUtils.isEmpty(pkObj)) {
                         filter.put("_id",new ObjectId(pkObj.toString()));
                     }
                 }else{
-                    Object obj=content.getGetMethod().invoke(vo);
+                    Object obj=content.getGetMethod().bindTo(vo).invoke();
                     if(!ObjectUtils.isEmpty(obj)) {
                         updates.put(content.getPropertyName(), obj);
                     }
@@ -148,7 +147,7 @@ public abstract class MongoRepositoryService <V extends BaseObject, P extends Se
             UpdateResult result= mongoCollection.updateOne(session, filter, updates);
             session.commitTransaction();
             return Long.valueOf(result.getMatchedCount()).intValue();
-        }catch (Exception ex){
+        }catch (Throwable ex){
 
         }
         return 0;
@@ -217,6 +216,8 @@ public abstract class MongoRepositoryService <V extends BaseObject, P extends Se
             return vo;
         }catch (Exception ex){
             throw new ServiceException(ex);
+        }catch (Throwable ex1){
+            throw new ServiceException(ex1);
         }
     }
 
@@ -278,6 +279,8 @@ public abstract class MongoRepositoryService <V extends BaseObject, P extends Se
             return retList;
         }catch (Exception ex){
             throw new ServiceException(ex);
+        }catch (Throwable ex1){
+            throw new ServiceException(ex1);
         }
     }
 
@@ -315,6 +318,8 @@ public abstract class MongoRepositoryService <V extends BaseObject, P extends Se
             return retList;
         }catch (Exception ex){
             throw new ServiceException(ex);
+        }catch (Throwable ex1){
+            throw new ServiceException(ex1);
         }
     }
 
@@ -377,17 +382,17 @@ public abstract class MongoRepositoryService <V extends BaseObject, P extends Se
     public int batchUpdate(List<V> list) {
         throw new ServiceException("operate not supported!");
     }
-    private void extractValue(V obj, Map.Entry<String, Object> entry) throws Exception {
+    private void extractValue(V obj, Map.Entry<String, Object> entry) throws Throwable {
         String key = entry.getKey();
         if (fieldsMap.containsKey(key)) {
-            Method method = fieldsMap.get(key).getSetMethod();
-            Class<?> paramType = method.getParameterTypes()[0];
-            method.invoke(obj, ConvertUtil.parseParameter(paramType, entry.getValue()));
+            MethodHandle method = fieldsMap.get(key).getSetMethod();
+            Class<?> paramType = method.type().parameterType(1);
+            method.bindTo(obj).invoke(ConvertUtil.parseParameter(paramType, entry.getValue()));
         }
         if (key.equalsIgnoreCase("_id")) {
-            Method method = AnnotationRetriever.getPrimaryField(fieldContents).getSetMethod();
-            Class<?> paramType = method.getParameterTypes()[0];
-            method.invoke(obj, ConvertUtil.parseParameter(paramType, entry.getValue()));
+            MethodHandle method = AnnotationRetriever.getPrimaryField(fieldContents).getSetMethod();
+            Class<?> paramType = method.type().parameterType(1);
+            method.bindTo(obj).invoke(ConvertUtil.parseParameter(paramType, entry.getValue()));
         }
     }
 

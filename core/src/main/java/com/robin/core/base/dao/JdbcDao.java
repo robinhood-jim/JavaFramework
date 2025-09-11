@@ -239,6 +239,8 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
             wrapList(type, retlist, fields, rsList);
         } catch (Exception ex) {
             throw new DAOException(ex);
+        } catch (Throwable ex1) {
+            throw new DAOException(ex1);
         }
         return retlist;
     }
@@ -266,6 +268,8 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
             pageQuery.setRecordSet(retlist);
         } catch (Exception e) {
             throw new DAOException(e);
+        }catch (Throwable ex){
+            throw new DAOException(ex);
         }
     }
 
@@ -331,6 +335,8 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
             }
         } catch (Exception ex) {
             throw new DAOException(ex);
+        }catch (Throwable ex1){
+            throw new DAOException(ex1);
         }
         return retlist;
     }
@@ -387,6 +393,8 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
             }
         } catch (Exception ex) {
             throw new DAOException(ex);
+        }catch (Throwable ex1){
+            throw new DAOException(ex1);
         }
         return retlist;
     }
@@ -410,6 +418,8 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
             wrapList(type, retlist, fields, rsList);
         } catch (Exception e) {
             throw new DAOException(e);
+        }catch (Throwable ex1){
+            throw new DAOException(ex1);
         }
         return retlist;
     }
@@ -542,15 +552,15 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
                     }
                     Object targetVal = ReflectUtils.getIncrementValueBySetMethod(generateColumn.getSetMethod(), retval);
                     if (pkColumn.getPrimaryKeys() == null) {
-                        generateColumn.getSetMethod().invoke(obj, targetVal);
+                        generateColumn.getSetMethod().bindTo(obj).invoke(targetVal);
                         retObj = (P) targetVal;
                     } else {
                         for (FieldContent field : pkColumn.getPrimaryKeys()) {
                             if (field.isIncrement() || field.isSequential()) {
-                                field.getSetMethod().invoke(generateColumn.getGetMethod().invoke(obj), retval);
+                                field.getSetMethod().bindTo(generateColumn.getGetMethod().bindTo(obj).invoke()).invoke(retval);
                             }
                         }
-                        retObj = (P) pkColumn.getGetMethod().invoke(obj);
+                        retObj = (P) pkColumn.getGetMethod().bindTo(obj).invoke();
                     }
 
                 }
@@ -568,6 +578,8 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
         } catch (Exception ex) {
             logError(ex);
             throw new DAOException(ex);
+        }catch (Throwable ex1){
+            throw new DAOException(ex1);
         }
         return retObj;
     }
@@ -588,7 +600,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
                 try {
                     for (FieldContent content : fields) {
                         if (!content.isIncrement() && !content.isSequential()) {
-                            Object obj=content.getGetMethod().invoke(t);
+                            Object obj=content.getGetMethod().bindTo(t).invoke();
                             if(!ObjectUtils.isEmpty(obj)) {
                                 ps.setObject(pos, obj);
                             }else{
@@ -598,8 +610,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
                             pos++;
                         }
                     }
-
-                }catch (Exception ex){
+                }catch (Throwable ex){
                     ex.printStackTrace();
                 }
             });
@@ -809,6 +820,8 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
             return obj;
         } catch (Exception ex) {
             throw wrapException(ex);
+        } catch (Throwable ex) {
+            throw wrapException(ex);
         }
     }
     public long executeSqlWithReturn(final String sql, Object[] object)
@@ -930,7 +943,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
         }
     }
 
-    private void wrapResultToModelWithKey(BaseObject obj, Map<String, Object> map, List<FieldContent> fields, Serializable pkObj) throws Exception {
+    private void wrapResultToModelWithKey(BaseObject obj, Map<String, Object> map, List<FieldContent> fields, Serializable pkObj) throws Throwable {
         for (FieldContent field : fields) {
             if (field.isPrimary()) {
                 field.getSetMethod().invoke(obj, pkObj);
@@ -940,28 +953,28 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
         }
     }
 
-    private void wrapValueWithPropNoCase(BaseObject obj, Map<String, Object> map, FieldContent field) throws Exception {
+    private void wrapValueWithPropNoCase(BaseObject obj, Map<String, Object> map, FieldContent field) throws Throwable {
         if (map.containsKey(field.getPropertyName())) {
-            field.getSetMethod().invoke(obj, ConvertUtil.parseParameter(field.getGetMethod().getReturnType(), map.get(field.getPropertyName())));
+            field.getSetMethod().bindTo(obj).invoke(ConvertUtil.parseParameter(field.getGetMethod().type().returnType(), map.get(field.getPropertyName())));
         } else if (map.containsKey(field.getPropertyName().toUpperCase())) {
-            field.getSetMethod().invoke(obj, ConvertUtil.parseParameter(field.getGetMethod().getReturnType(), map.get(field.getPropertyName().toUpperCase())));
+            field.getSetMethod().bindTo(obj).invoke(ConvertUtil.parseParameter(field.getGetMethod().type().returnType(), map.get(field.getPropertyName().toUpperCase())));
         }
     }
 
-    private void wrapResultToModel(BaseObject obj, Map<String, Object> map, List<FieldContent> fields) throws Exception {
+    private void wrapResultToModel(BaseObject obj, Map<String, Object> map, List<FieldContent> fields) throws Throwable {
         for (FieldContent field : fields) {
             if (field.isPrimary()) {
                 if (field.getPrimaryKeys() == null) {
                     if (!ObjectUtils.isEmpty(map.get(field.getPropertyName()))) {
-                        field.getSetMethod().invoke(obj, ConvertUtil.parseParameter(field.getGetMethod().getReturnType(), map.get(field.getPropertyName())));
+                        field.getSetMethod().bindTo(obj).invoke(ConvertUtil.parseParameter(field.getGetMethod().type().returnType(), map.get(field.getPropertyName())));
                     } else if (!ObjectUtils.isEmpty(map.get(field.getPropertyName().toUpperCase()))) {
-                        field.getSetMethod().invoke(obj, ConvertUtil.parseParameter(field.getGetMethod().getReturnType(), map.get(field.getPropertyName().toUpperCase())));
+                        field.getSetMethod().bindTo(obj).invoke(ConvertUtil.parseParameter(field.getGetMethod().type().returnType(), map.get(field.getPropertyName().toUpperCase())));
                     }
                 } else {
-                    Object pkObj = field.getGetMethod().getReturnType().getDeclaredConstructor().newInstance();
-                    field.getSetMethod().invoke(obj, pkObj);
+                    Object pkObj = field.getGetMethod().type().returnType().getDeclaredConstructor().newInstance();
+                    field.getSetMethod().bindTo(obj).invoke(pkObj);
                     for (FieldContent pkField : field.getPrimaryKeys()) {
-                        pkField.getSetMethod().invoke(pkObj, ConvertUtil.parseParameter(pkField.getGetMethod().getReturnType(), map.get(pkField.getPropertyName())));
+                        pkField.getSetMethod().bindTo(pkObj).invoke(ConvertUtil.parseParameter(pkField.getGetMethod().type().returnType(), map.get(pkField.getPropertyName())));
                     }
                 }
             } else {
@@ -1005,6 +1018,10 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
             throw new DAOException(e);
         }
     }
+    private DAOException wrapException(Throwable e) {
+        log.error("Encounter Error", e);
+        throw new DAOException(e);
+    }
 
     private int executeUpdate(String sql, List<FieldContent> fields, BaseObject obj) throws DAOException {
         try {
@@ -1046,7 +1063,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
         return selectId;
     }
 
-    private <T extends BaseObject> void wrapList(Class<T> type, List<T> retlist, List<FieldContent> fields, List<Map<String, Object>> rsList) throws Exception {
+    private <T extends BaseObject> void wrapList(Class<T> type, List<T> retlist, List<FieldContent> fields, List<Map<String, Object>> rsList) throws Throwable {
         for (Map<String, Object> map : rsList) {
             T obj = type.getDeclaredConstructor().newInstance();
             wrapResultToModel(obj, map, fields);

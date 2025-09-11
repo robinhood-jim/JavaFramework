@@ -35,4 +35,7 @@ public class DAOException extends AbstractCodeException
     public DAOException(Exception e){
     	super(e);
     }
+    public DAOException(Throwable ex1){
+        super(500,ex1.getMessage());
+    }
 }
