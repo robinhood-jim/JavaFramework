@@ -30,7 +30,7 @@ public class SysMenuDTO {
     public static SysMenuDTO fromMap(Map<String,Object> map){
         SysMenuDTO dto=new SysMenuDTO();
         try{
-            ConvertUtil.mapToObject(dto,map);
+            ConvertUtil.mapToObject(map, dto);
             dto.setAssignType(map.get("assignType").toString());
             dto.setTitle(map.get("name").toString());
             dto.setPath(map.get("url").toString());

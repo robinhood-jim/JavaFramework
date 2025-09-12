@@ -19,12 +19,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.robin.basis.model.AbstractMybatisModel;
-import com.robin.core.base.annotation.MappingEntity;
-import com.robin.core.base.annotation.MappingField;
-import com.robin.core.base.model.BaseObject;
 import lombok.Data;
-
-import java.time.LocalDateTime;
 
 
 @Data
@@ -34,7 +29,7 @@ public class SysUser extends AbstractMybatisModel {
     private Long id;
     private Long orgId;
     private String accountType;
-    private String userStatus;
+    private String status;
     private String userAccount;
     private String userName;
     private String remark;

@@ -75,7 +75,7 @@ public class SysLoginUser implements UserDetails {
             loginUser.setId(user.getId());
             loginUser.setUserName(user.getUserAccount());
             loginUser.setDisplayName(user.getUserName());
-            loginUser.setUserStatus(user.getUserStatus());
+            loginUser.setUserStatus(user.getStatus());
             loginUser.setPassword(user.getUserPassword());
             loginUser.setAvatar(user.getAvatar());
             loginUser.setEmail(user.getEmail());

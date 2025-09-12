@@ -29,7 +29,6 @@ import javax.script.Bindings;
 import javax.script.CompiledScript;
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -181,7 +180,7 @@ public class CollectionMapConvert {
             Map<String, Object> valueMap = new HashMap<>();
             try {
                 bindings.clear();
-                ConvertUtil.objectToMapObj(valueMap, f);
+                ConvertUtil.objectToMapObj(f, valueMap);
                 bindings.putAll(valueMap);
                 return (Boolean) script.eval(bindings);
             }catch (Exception ex){

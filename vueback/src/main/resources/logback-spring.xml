@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-    <springProperty scope="context" name="logLevel" source="log.level"/>
-    <springProperty scope="context" name="logHome" source="log.home"/>
+    <springProperty scope="context" name="logLevel" source="log.level" />
+    <springProperty scope="context" name="logHome" source="log.home" defaultValue="logs" />
 
     <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
@@ -57,7 +57,7 @@
     </appender>
     <logger name="org.apache.kafka" level = "ERROR"></logger>
 
-    <root level="DEBUG">
+    <root level="INFO">
         <appender-ref ref="console" />
         <appender-ref ref="file-info" />
         <!--<appender-ref ref="file-error" />-->

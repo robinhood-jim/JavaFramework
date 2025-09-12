@@ -15,14 +15,12 @@
  */
 package com.robin.basis.controller.system;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.robin.basis.dto.SysUserDTO;
 import com.robin.basis.mapper.SysUserMapper;
 import com.robin.basis.model.user.SysUser;
 import com.robin.basis.service.system.ISysOrgService;
 import com.robin.basis.service.system.ISysResourceService;
 import com.robin.basis.service.system.ISysUserService;
-import com.robin.basis.utils.WebUtils;
 import com.robin.core.base.exception.ServiceException;
 import com.robin.core.base.exception.WebException;
 import com.robin.core.base.util.Const;
@@ -146,7 +144,7 @@ public class SysUserCrudController extends AbstractMyBatisController<ISysUserSer
             if (user.getUserPassword() == null || user.getUserPassword().isEmpty()) {
                 throw new ServiceException(messageSource.getMessage("message.passwordEmpty", null, Locale.getDefault()));
             } else {
-                user.setUserStatus(Const.VALID);
+                user.setStatus(Const.VALID);
                 this.service.updateModelById(user);
                 constructRetMap(retMap);
             }
@@ -163,7 +161,7 @@ public class SysUserCrudController extends AbstractMyBatisController<ISysUserSer
             if (user.getUserPassword() == null || user.getUserPassword().isEmpty()) {
                 throw new ServiceException(messageSource.getMessage("message.passwordEmpty", null, Locale.getDefault()));
             } else {
-                user.setUserStatus(Const.INVALID);
+                user.setStatus(Const.INVALID);
                 this.service.updateModelById(user);
                 constructRetMap(retMap);
             }

@@ -11,15 +11,12 @@ import com.robin.core.base.util.Const;
 import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.query.util.Condition;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import java.lang.invoke.MethodHandle;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -185,7 +182,7 @@ public class  QueryWrapperUtils {
     }
     private static Map<String, Object> returnValueMap(PageDTO targetObj) throws Exception {
         Map<String, Object> getMap = new HashMap<>();
-        ConvertUtil.objectToMapObj(getMap,targetObj,"param","order","page","limit","size","orderField","orderBy");
+        ConvertUtil.objectToMapObj(targetObj, getMap, "param","order","page","limit","size","orderField","orderBy");
         if (!CollectionUtils.isEmpty(targetObj.getParam())) {
             getMap.putAll(targetObj.getParam());
         }

@@ -70,7 +70,7 @@ public class DataBaseParam implements Serializable {
 	}
 	protected Map<String,String> processParam() throws Exception{
 		Map<String,String> map=new HashMap<>();
-		ConvertUtil.objectToMap(map, this);
+		ConvertUtil.objectToMap(this, map);
 		return map;
 	}
 

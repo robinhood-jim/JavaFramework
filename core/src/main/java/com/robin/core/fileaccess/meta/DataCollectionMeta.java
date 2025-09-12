@@ -203,7 +203,7 @@ public class DataCollectionMeta implements Serializable {
 	public String constructUrl()  {
 		VfsParam param = new VfsParam();
 		try {
-			ConvertUtil.convertToTarget(param, getResourceCfgMap());
+			ConvertUtil.convertToTarget(getResourceCfgMap(), param);
 			param.adjustProtocol();
 			StringBuilder builder = new StringBuilder();
 			builder.append(param.getProtocol()).append("://");

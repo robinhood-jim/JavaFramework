@@ -467,7 +467,7 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>, T extends 
         try {
             T obj = voType.newInstance();
             if (requsetObj.getClass().getInterfaces().length > 0 && requsetObj.getClass().getInterfaces()[0].isAssignableFrom(Map.class)) {
-                ConvertUtil.mapToBaseObject(obj, (HashMap) requsetObj);
+                ConvertUtil.mapToBaseObject((HashMap) requsetObj, obj);
             } else {
                 Map<String, MethodHandle> modelGetMetholds = ReflectUtils.returnGetMethodHandle(requsetObj.getClass());
                 Iterator<Map.Entry<String, MethodHandle>> iter = modelGetMetholds.entrySet().iterator();

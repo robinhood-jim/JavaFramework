@@ -115,7 +115,7 @@ public class LoginService implements ILoginService {
         List<SysUserResponsiblity> respList = sysUserResponsiblityService.queryByField("userId", Const.OPERATOR.EQ, queryUser.getId());
 
         try {
-            ConvertUtil.objectToMapObj(retMap, queryUser);
+            ConvertUtil.objectToMapObj(queryUser, retMap);
         } catch (Exception ex) {
             throw new ServiceException(ex);
         }
@@ -373,7 +373,7 @@ public class LoginService implements ILoginService {
                 }
                 Map<String, Object> tmap = new HashMap<>();
                 if (!idMap.containsKey(pid.toString())) {
-                    ConvertUtil.objectToMapObj(tmap, resMap.get(pid));
+                    ConvertUtil.objectToMapObj(resMap.get(pid), tmap);
                     tmap.put("assignType", "0");
                     fillRights(pid, resMap, privMap, tmap, idMap);
                 }

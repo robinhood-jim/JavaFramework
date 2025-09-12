@@ -61,7 +61,7 @@ public class SysOrgController extends AbstractMyBatisController<ISysOrgService, 
         String orgCode = "";
         try {
             SysOrg vo = new SysOrg();
-            ConvertUtil.mapToObject(vo, wrapRequest(request));
+            ConvertUtil.mapToObject(wrapRequest(request), vo);
             PageQuery<Map<String,Object>> query = new PageQuery();
             query.setSelectParamId("GET_ORGMAXCODE");
             service.queryBySelectId(query);

@@ -91,7 +91,7 @@ public abstract class AbstractCrudController<O extends BaseObject, P extends Ser
         Map<String, Object> retMap = new HashMap<>();
         try {
             O object=this.objectType.newInstance();
-            ConvertUtil.setDateFormat(ConvertUtil.ymdSepformatter);
+            ConvertUtil.setDateTimeFormat(ConvertUtil.ymdSepformatter);
             ConvertUtil.convertToModel(object,paramMap);
             P pk=this.service.saveEntity(object);
             constructRetMap(retMap);
@@ -136,7 +136,7 @@ public abstract class AbstractCrudController<O extends BaseObject, P extends Ser
         Map<String, Object> retMap = new HashMap<>();
         try {
             O originObj= this.objectType.newInstance();
-            ConvertUtil.setDateFormat(ConvertUtil.ymdSepformatter);
+            ConvertUtil.setDateTimeFormat(ConvertUtil.ymdSepformatter);
             ConvertUtil.convertToModel(originObj,paramMap);
             updateWithOrigin(id, retMap, originObj);
         } catch (Exception ex) {
@@ -151,8 +151,8 @@ public abstract class AbstractCrudController<O extends BaseObject, P extends Ser
     private void updateWithOrigin(P id, Map<String, Object> retMap, O originObj) throws WebException {
         try {
             O updateObj = service.getEntity(id);
-            ConvertUtil.setDateFormat(ConvertUtil.ymdSepformatter);
-            ConvertUtil.convertToModelForUpdate(updateObj, originObj);
+            ConvertUtil.setDateTimeFormat(ConvertUtil.ymdSepformatter);
+            ConvertUtil.convertToModelForUpdate(originObj, updateObj);
             service.updateEntity(updateObj);
             doAfterUpdate(updateObj, retMap);
             constructRetMap(retMap);

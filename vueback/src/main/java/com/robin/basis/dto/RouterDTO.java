@@ -39,7 +39,7 @@ public class RouterDTO {
     public static RouterDTO fromMap(Map<String,Object> map){
         RouterDTO dto=new RouterDTO();
         try{
-            ConvertUtil.mapToObject(dto,map);
+            ConvertUtil.mapToObject(map, dto);
             dto.setAssignType(map.get("assignType").toString());
             dto.getMeta().setTitle(map.get("name").toString());
             dto.setPath(map.get("routerPath").toString());

@@ -60,7 +60,7 @@ public abstract class AbstractController
             for (Object object : orglist)
             {
                 Map<String, String> map = new HashMap<>();
-                ConvertUtil.objectToMap(map, object);
+                ConvertUtil.objectToMap(object, map);
                 list.add(map);
             }
         }
@@ -331,7 +331,7 @@ public abstract class AbstractController
         PageQuery query = new PageQuery();
         try
         {
-            ConvertUtil.mapToObject(query, paramMap);
+            ConvertUtil.mapToObject(paramMap, query);
         }
         catch (Exception ex)
         {
@@ -354,7 +354,7 @@ public abstract class AbstractController
         }
         try
         {
-            ConvertUtil.mapToObject(query, tmpmap);
+            ConvertUtil.mapToObject(tmpmap, query);
             if(!ObjectUtils.isEmpty(tmpmap.get("pageNum"))){
                 query.setCurrentPage(Integer.parseInt(tmpmap.get("pageNum").toString()));
             }

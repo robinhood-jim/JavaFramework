@@ -55,7 +55,7 @@ public class SysUserServiceImpl extends AbstractMybatisService<SysUserMapper, Sy
             subIds=sysOrgService.getSubIdByParentOrgId(queryDTO.getOrgId());
         }
         IPage<SysUser> page = this.lambdaQuery()
-                .eq(ObjectUtil.isNotNull(queryDTO.getStatus()), SysUser::getUserStatus, queryDTO.getStatus())
+                .eq(ObjectUtil.isNotNull(queryDTO.getStatus()), SysUser::getStatus, queryDTO.getStatus())
                 .like(StrUtil.isNotBlank(queryDTO.getPhone()), SysUser::getPhoneNum, queryDTO.getPhone())
                 .in(ObjectUtil.isNotEmpty(queryDTO.getOrgId()),SysUser::getOrgId,subIds)
                 .and(StrUtil.isNotBlank(queryDTO.getName()), wrapper -> wrapper.like(SysUser::getUserAccount, queryDTO.getName())
