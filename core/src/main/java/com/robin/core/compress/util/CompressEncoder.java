@@ -54,7 +54,7 @@ public class CompressEncoder {
                 break;
             case COMPRESS_TYPE_ZIP:
                 ZipOutputStream stream1 = new ZipOutputStream(rawstream);
-                stream1.putNextEntry(new ZipEntry(content.getFileName() + "." + content.getFileFormat()));
+                stream1.putNextEntry(new ZipEntry(content.getFileName() + "." + content.getFileFormat().getValue()));
                 outputStream = stream1;
                 break;
             case COMPRESS_TYPE_LZ4:

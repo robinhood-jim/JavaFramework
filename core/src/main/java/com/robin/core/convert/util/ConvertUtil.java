@@ -284,7 +284,7 @@ public class ConvertUtil {
                 if (ObjectUtils.isEmpty(ignoreColumnList) || !ignoreColumnList.contains(field)) {
                     MethodHandle setMethod = map.get(field);
                     if (setMethod != null) {
-                        setBaseObjectValue(target, entry.getValue(), field, setMethod);
+                        setBaseObjectValue(target, entry.getValue(), field, setMethod,ignoreColumnList);
                     }
                 }
             }
@@ -293,14 +293,16 @@ public class ConvertUtil {
         }
     }
 
-    private static void setBaseObjectValue(BaseObject target, Object value, String field, MethodHandle setMethod) throws Throwable {
-        if (!ObjectUtils.isEmpty(value)) {
-            target.addDirtyColumn(field);
-            Class<?> type = setMethod.type().parameterType(1);
-            Object retValue = parseParameter(type, value);
-            setMethod.bindTo(target).invoke(retValue);
-        } else if (target.getDirtyColumn().contains(field)) {
-            setMethod.bindTo(target).invoke(null);
+    private static void setBaseObjectValue(BaseObject target, Object value, String field, MethodHandle setMethod,List<String> ignoreColumns) throws Throwable {
+        if(canFill(ignoreColumns,field)) {
+            if (!ObjectUtils.isEmpty(value)) {
+                target.addDirtyColumn(field);
+                Class<?> type = setMethod.type().parameterType(1);
+                Object retValue = parseParameter(type, value);
+                setMethod.bindTo(target).invoke(retValue);
+            } else if (target.getDirtyColumn().contains(field)) {
+                setMethod.bindTo(target).invoke(null);
+            }
         }
     }
 
@@ -331,13 +333,11 @@ public class ConvertUtil {
                         MethodHandle setMethod = targetMethodMap.get(field);
                         if (setMethod != null) {
                             if (target instanceof BaseObject) {
-                                setBaseObjectValue((BaseObject) target, entry.getValue(), field, setMethod);
-                            } else {
-                                if (targetMethodMap.containsKey(field) && canFill(ignoreColumnList,field)) {
-                                    Object retValue = parseParameter(targetMethodMap.get(field).type().parameterType(1), entry.getValue());
-                                    if (retValue != null) {
-                                        setObjectValue(targetMethodMap.get(field), target, retValue);
-                                    }
+                                setBaseObjectValue((BaseObject) target, entry.getValue(), field, setMethod,ignoreColumnList);
+                            } else if (targetMethodMap.containsKey(field) && canFill(ignoreColumnList,field)) {
+                                Object retValue = parseParameter(targetMethodMap.get(field).type().parameterType(1), entry.getValue());
+                                if (retValue != null) {
+                                    setObjectValue(targetMethodMap.get(field), target, retValue);
                                 }
                             }
                         }
@@ -354,7 +354,9 @@ public class ConvertUtil {
                     Map<String, MethodHandle> targetMethodMap = ReflectUtils.returnSetMethodHandle(target.getClass());
                     Map<String, MethodHandle> sourceMethodMap = ReflectUtils.returnGetMethodHandle(source.getClass());
                     for (Map.Entry<String, MethodHandle> entry : sourceMethodMap.entrySet()) {
-                        if (targetMethodMap.containsKey(entry.getKey()) && entry.getValue().type().parameterCount() == 1) {
+                        if(BaseObject.class.isAssignableFrom(target.getClass())){
+                            setBaseObjectValue((BaseObject) target, entry.getValue().bindTo(source).invoke(), entry.getKey(), targetMethodMap.get(entry.getKey()),ignoreColumnList);
+                        }else if (targetMethodMap.containsKey(entry.getKey()) && entry.getValue().type().parameterCount() == 1){
                             Object retValue = parseParameter(targetMethodMap.get(entry.getKey()).type().parameterType(1), entry.getValue().bindTo(source).invoke());
                             if (null != retValue) {
                                 setObjectValue(targetMethodMap.get(entry.getKey()), target, retValue);
@@ -534,7 +536,7 @@ public class ConvertUtil {
         DateTimeFormatter formatter;
         formatter = !ObjectUtils.isEmpty(currentFormatter.get()) ? currentFormatter.get() : getFormatter(strValue.toString());
         if(formatter!=null) {
-            if (ymdformatter.equals(formatter) || ymdEupformatter.equals(formatter) || ymdEupformatter.equals(formatter)) {
+            if (ymdformatter.equals(formatter) || ymdEupformatter.equals(formatter) || ymdSepformatter.equals(formatter)) {
                 ret = LocalDate.parse(strValue.toString(), formatter).atStartOfDay();
             } else {
                 ret = LocalDateTime.parse(strValue.toString(), formatter);
@@ -697,7 +699,7 @@ public class ConvertUtil {
             }
 
         } catch (Exception e) {
-            log.error("convert error {}", e);
+            log.error("convert error {}", e.getMessage());
         }
         return targetObject;
     }

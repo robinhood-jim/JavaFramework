@@ -51,7 +51,6 @@ public class DbConfig {
     @Bean(name = "dataSource")
     @Qualifier("dataSource")
     @Primary
-    @DependsOn("springContextHolder")
     public DataSource dataSource(){
         try {
             return DataSourceBuilder.create().type((Class<? extends DataSource>) Class.forName(coretype)).url(coreurl).driverClassName(coredriverClassName).username(coreuserName).password(corepassword).build();
@@ -92,7 +91,11 @@ public class DbConfig {
         dao.setSqlGen(sqlGen);
         return dao;
     }
-
+    @Bean
+    @Lazy(value = false)
+    public SpringContextHolder getHolder(){
+        return new SpringContextHolder();
+    }
 
 
 

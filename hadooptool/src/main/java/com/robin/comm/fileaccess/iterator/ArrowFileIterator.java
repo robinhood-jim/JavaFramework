@@ -5,6 +5,7 @@ import com.robin.core.base.util.Const;
 import com.robin.core.fileaccess.fs.AbstractFileSystemAccessor;
 import com.robin.core.fileaccess.iterator.AbstractFileIterator;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
+import com.robin.core.fileaccess.util.AvroUtils;
 import org.apache.arrow.memory.BufferAllocator;
 import org.apache.arrow.memory.RootAllocator;
 import org.apache.arrow.vector.*;
@@ -49,9 +50,11 @@ public class ArrowFileIterator extends AbstractFileIterator {
     public void beforeProcess() {
         super.beforeProcess();
         schema= ArrowSchemaUtils.getSchema(colmeta);
+        avroSchema= AvroUtils.getSchemaFromMeta(colmeta);
         allocator=new RootAllocator(Integer.MAX_VALUE);
         vectorSchemaRoot=VectorSchemaRoot.create(schema,allocator);
         streamReader=new ArrowStreamReader(instream,allocator);
+
     }
 
     @Override

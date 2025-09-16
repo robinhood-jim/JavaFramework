@@ -66,7 +66,6 @@ import static org.apache.parquet.filter2.predicate.FilterApi.*;
 public class ParquetFileIterator extends AbstractFileIterator {
     private ParquetReader<GenericData.Record> preader;
     private ParquetReader<DynamicMessage.Builder> protoReader;
-    private Schema schema;
     private MessageType msgtype;
     private GenericData.Record record;
     private ParquetReader<Map<String, Object>> ireader;
@@ -100,7 +99,6 @@ public class ParquetFileIterator extends AbstractFileIterator {
         accessUtil = accessor;
     }
 
-    private List<Schema.Field> fields;
     private File tmpFile;
 
     @Override
@@ -142,7 +140,7 @@ public class ParquetFileIterator extends AbstractFileIterator {
                     }
                     protoReader=protoBuilder.build();
                 }else {
-                    ParquetReader.Builder<Map<String, Object>> builder = ParquetReader.builder(new CustomRowReadSupport(), new Path(ResourceUtil.getProcessPath(colmeta.getPath()))).withConf(conf);
+                    ParquetReader.Builder<Map<String, Object>> builder = ParquetReader.builder(new CustomRowReadSupport(colmeta), new Path(ResourceUtil.getProcessPath(colmeta.getPath()))).withConf(conf);
                     if(filter==null) {
                         builder.withFilter(filter);
                     }
@@ -200,7 +198,6 @@ public class ParquetFileIterator extends AbstractFileIterator {
                     ireader = builder.build();
                 }
             }
-            fields = schema.getFields();
         } catch (Exception ex) {
             logger.error("{}", ex.getMessage());
         }
@@ -218,7 +215,7 @@ public class ParquetFileIterator extends AbstractFileIterator {
                 }
             }
         } else {
-            schema = AvroUtils.getSchemaFromMeta(colmeta);
+            avroSchema = AvroUtils.getSchemaFromMeta(colmeta);
         }
     }
 
@@ -240,7 +237,7 @@ public class ParquetFileIterator extends AbstractFileIterator {
                 record = null;
                 record = preader.read();
                 if(record!=null){
-                    for (Schema.Field field : fields) {
+                    for (Schema.Field field : avroSchema.getFields()) {
                         Object value = record.get(field.name());
                         if (LogicalTypes.timestampMillis().equals(field.schema().getLogicalType())) {
                             value = new Timestamp((Long) value);
@@ -424,14 +421,10 @@ public class ParquetFileIterator extends AbstractFileIterator {
         for (Type type : colList) {
             colmeta.addColumnMeta(type.getName(), ParquetReaderUtil.parseColumnType(type.asPrimitiveType()), null);
         }
-        schema = AvroUtils.getSchemaFromMeta(colmeta);
+        avroSchema = AvroUtils.getSchemaFromMeta(colmeta);
 
     }
 
-
-    public Schema getSchema() {
-        return schema;
-    }
 
     @Override
     public void remove() {

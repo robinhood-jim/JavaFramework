@@ -113,7 +113,7 @@ public class TextFileWriterFactory {
         if(ObjectUtils.isEmpty(fileSuffix)){
             FileUtils.FileContent content=FileUtils.parseFile(colmeta.getPath());
             colmeta.setContent(content);
-            fileSuffix=content.getFileFormat();
+            fileSuffix=content.getFileFormat().getValue();
         }
         return fileSuffix;
     }

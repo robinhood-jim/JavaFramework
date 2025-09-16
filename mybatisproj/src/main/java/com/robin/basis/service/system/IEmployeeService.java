@@ -10,6 +10,6 @@ import java.util.Map;
 
 public interface IEmployeeService extends IMybatisBaseService<Employee,Long> {
     Map<String,Object> list(SysEmployeeQueryDTO queryDTO);
-    boolean saveEmployee(EmployeeDTO dto) throws ServiceException;
+    boolean saveEmployee(EmployeeDTO dto,boolean createAccount) throws ServiceException;
     boolean updateEmployee(EmployeeDTO dto) throws ServiceException;
 }

@@ -392,6 +392,8 @@ public class Const {
     public enum FILESYSTEM{
         LOCAL("file"),
         VFS("vfs"),
+        FTP("ftp"),
+        SFTP("sftp"),
         HDFS("hdfs"),
         S3("s3"),
         ALIYUN("oss"),
@@ -406,6 +408,14 @@ public class Const {
         }
         public String getValue(){
             return value;
+        }
+        public static FILESYSTEM forName(String name){
+            for(FILESYSTEM s:FILESYSTEM.values()){
+                if(s.getValue().equalsIgnoreCase(name)){
+                    return s;
+                }
+            }
+            return null;
         }
     }
     public enum ACCESSRESOURCE{
@@ -447,6 +457,15 @@ public class Const {
         }
         public String getValue(){
             return value;
+        }
+
+        public static FILEFORMATSTR forName(String name){
+            for(FILEFORMATSTR s:FILEFORMATSTR.values()){
+                if(s.getValue().equalsIgnoreCase(name)){
+                    return s;
+                }
+            }
+            return null;
         }
     }
 

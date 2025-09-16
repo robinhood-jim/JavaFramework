@@ -30,6 +30,7 @@ import com.robin.core.fileaccess.util.Calculator;
 import com.robin.core.fileaccess.util.PolandNotationUtil;
 import com.robin.core.fileaccess.util.ResourceUtil;
 import com.robin.core.fileaccess.util.SqlContentResolver;
+import org.apache.avro.Schema;
 import org.apache.calcite.config.Lex;
 import org.apache.calcite.sql.*;
 import org.apache.commons.lang3.StringUtils;
@@ -73,6 +74,7 @@ public abstract class AbstractFileIterator implements IResourceIterator {
 
     protected SqlSegment segment;
     protected Iterator<Map.Entry<String,Map<String,Object>>> groupIter;
+    protected Schema avroSchema;
 
     public AbstractFileIterator() {
 
@@ -327,5 +329,22 @@ public abstract class AbstractFileIterator implements IResourceIterator {
         }else {
             builder.append(value).append("|");
         }
+    }
+
+    @Override
+    public void remove() {
+        hasNext();
+    }
+
+    public Schema getSchema() {
+        return avroSchema;
+    }
+
+    public Map<String, DataSetColumnMeta> getColumnMap() {
+        return columnMap;
+    }
+
+    public SqlSegment getSegment() {
+        return segment;
     }
 }

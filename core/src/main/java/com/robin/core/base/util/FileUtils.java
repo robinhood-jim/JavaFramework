@@ -81,7 +81,7 @@ public class FileUtils {
     }
     private static void parseFileFormat(FileContent content,String suffix,List<String> sepParts){
         if(ObjectUtils.isEmpty(content.getFileFormat())){
-            content.setFileFormat(suffix);
+            content.setFileFormat(Const.FILEFORMATSTR.forName(suffix.toLowerCase()));
             if(ObjectUtils.isEmpty(content.getContentType())){
                 if(contentTypeMap.containsKey(suffix.toLowerCase())){
                     content.setContentType(contentTypeMap.get(suffix.toLowerCase()));
@@ -107,7 +107,7 @@ public class FileUtils {
         String fileType=meta.getFileFormat();
         if(ObjectUtils.isEmpty(fileType)){
             FileUtils.FileContent content=FileUtils.parseFile(meta.getPath());
-            fileType=content.getFileFormat();
+            fileType=content.getFileFormat().getValue();
         }
         return getContentType(fileType);
     }
@@ -193,7 +193,7 @@ public class FileUtils {
     public static class FileContent{
         private String fileName;
         private String filePath;
-        private String fileFormat;
+        private Const.FILEFORMATSTR fileFormat;
         private String contentType;
         private Const.CompressType compressType= Const.CompressType.COMPRESS_TYPE_NONE;
     }

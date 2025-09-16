@@ -1,14 +1,22 @@
 package com.robin.comm.fileaccess.writer;
 
 import com.robin.comm.fileaccess.util.ArrowSchemaUtils;
+import com.robin.core.base.exception.MissingConfigException;
 import com.robin.core.base.util.Const;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.meta.DataSetColumnMeta;
+import com.robin.core.fileaccess.util.ResourceUtil;
 import com.robin.core.fileaccess.writer.AbstractFileWriter;
+import org.apache.arrow.compression.CommonsCompressionFactory;
 import org.apache.arrow.memory.BufferAllocator;
 import org.apache.arrow.memory.RootAllocator;
 import org.apache.arrow.vector.*;
+import org.apache.arrow.vector.compression.CompressionCodec;
+import org.apache.arrow.vector.compression.CompressionUtil;
+import org.apache.arrow.vector.compression.NoCompressionCodec;
+import org.apache.arrow.vector.dictionary.DictionaryProvider;
 import org.apache.arrow.vector.ipc.ArrowStreamWriter;
+import org.apache.arrow.vector.ipc.message.IpcOption;
 import org.apache.arrow.vector.types.pojo.Field;
 import org.apache.arrow.vector.types.pojo.Schema;
 import org.springframework.util.ObjectUtils;
@@ -17,6 +25,7 @@ import javax.naming.OperationNotSupportedException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
+import java.nio.channels.Channels;
 import java.sql.Timestamp;
 import java.util.Map;
 
@@ -32,11 +41,13 @@ public class ArrowFileWriter extends AbstractFileWriter {
 
     public ArrowFileWriter() {
         this.identifier = Const.FILEFORMATSTR.ARROW.getValue();
+        useRawOutputStream=true;
     }
 
     public ArrowFileWriter(DataCollectionMeta colmeta) {
         super(colmeta);
         this.identifier = Const.FILEFORMATSTR.ARROW.getValue();
+        useRawOutputStream=true;
     }
 
     @Override
@@ -45,7 +56,23 @@ public class ArrowFileWriter extends AbstractFileWriter {
         schema = ArrowSchemaUtils.getSchema(colmeta);
         allocator = new RootAllocator(Integer.MAX_VALUE);
         vectorSchemaRoot = VectorSchemaRoot.create(schema, allocator);
-        streamWriter = new ArrowStreamWriter(vectorSchemaRoot, null, out);
+        Const.CompressType type= getCompressType();
+        CompressionUtil.CodecType codecType= CompressionUtil.CodecType.NO_COMPRESSION;
+        CompressionCodec.Factory factory=new NoCompressionCodec.Factory();
+        switch (type){
+            case COMPRESS_TYPE_LZ4:
+                codecType= CompressionUtil.CodecType.LZ4_FRAME;
+                factory=new CommonsCompressionFactory();
+                break;
+            case COMPRESS_TYPE_ZSTD:
+                codecType= CompressionUtil.CodecType.ZSTD;
+                factory=new CommonsCompressionFactory();
+                break;
+            default:
+                throw new MissingConfigException("not supported!");
+
+        }
+        streamWriter = new ArrowStreamWriter(vectorSchemaRoot, new DictionaryProvider.MapDictionaryProvider(), Channels.newChannel(out), IpcOption.DEFAULT,factory,codecType);
         vectorSchemaRoot.allocateNew();
         streamWriter.start();
     }

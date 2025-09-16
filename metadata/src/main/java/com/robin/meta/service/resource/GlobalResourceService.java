@@ -30,6 +30,8 @@ import com.robin.core.base.util.FileUtils;
 import com.robin.core.base.util.ResourceConst;
 import com.robin.core.fileaccess.fs.AbstractFileSystemAccessor;
 import com.robin.core.fileaccess.fs.ApacheVfsFileSystemAccessor;
+import com.robin.core.fileaccess.fs.LocalFileSystemAccessor;
+import com.robin.core.fileaccess.iterator.AbstractFileIterator;
 import com.robin.core.fileaccess.iterator.IResourceIterator;
 import com.robin.core.fileaccess.iterator.TextFileIteratorFactory;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
@@ -160,11 +162,13 @@ public class GlobalResourceService extends BaseAnnotationJdbcService<GlobalResou
 
 
     public Schema getDataSourceSchema(DataCollectionMeta colmeta, Long sourceId, String sourceParamInput, int maxReadLines) {
-        GlobalResource resource = getEntity(sourceId);
+        GlobalResource resource = sourceId!=0L?getEntity(sourceId):null;
         Schema schema = null;
-
         try {
-            if (resource.getResType().equals(ResourceConst.ResourceType.TYPE_DB.getValue()) || resource.getResType().equals(ResourceConst.ResourceType.TYPE_ES.getValue())) {
+            if (sourceId==0L) {
+                LocalFileSystemAccessor accessor=LocalFileSystemAccessor.getInstance();
+                schema=getFileSchema(accessor,colmeta,resource,maxReadLines);
+            }else if (resource.getResType().equals(ResourceConst.ResourceType.TYPE_DB.getValue()) || resource.getResType().equals(ResourceConst.ResourceType.TYPE_ES.getValue())) {
                 schema = AvroUtils.getSchemaFromMeta(colmeta);
             } else if (resource.getResType().equals(ResourceConst.ResourceType.TYPE_HDFSFILE.getValue())) {
                 HdfsFileSystemAccessor util = (HdfsFileSystemAccessor) ResourceAccessHolder.getAccessUtilByProtocol(resource.getProtocol(), colmeta);;;
@@ -181,11 +185,6 @@ public class GlobalResourceService extends BaseAnnotationJdbcService<GlobalResou
                     colmeta.setPath(inputPath + fileList.get(0));
                 }
                 schema = getFileSchema(util, colmeta, resource, maxReadLines);
-            } else if (resource.getResType().equals(ResourceConst.ResourceType.TYPE_LOCALFILE.getValue())) {
-
-
-            } else if (resource.getResType().equals(ResourceConst.ResourceType.TYPE_REDIS.getValue())) {
-
             }
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -202,42 +201,38 @@ public class GlobalResourceService extends BaseAnnotationJdbcService<GlobalResou
     private Schema getFileSchema(AbstractFileSystemAccessor util, DataCollectionMeta meta, GlobalResource resource, int maxReadLines) throws Exception {
         Schema schema = null;
         FileUtils.FileContent content=FileUtils.parseFile(meta.getPath());
-        String fileFormat =content.getFileFormat();
+        String fileFormat =content.getFileFormat().getValue();
         int columnPos = 0;
         //read Header 10000 Line
         int readLines = maxReadLines > 0 ? maxReadLines : 10000;
 
-        Pair<BufferedReader, InputStream> pair = util.getInResourceByReader(meta.getPath());
+        Pair<BufferedReader, InputStream> pair=null;
 
-        if (fileFormat.equalsIgnoreCase(Const.FILESUFFIX_CSV)) {
-            SourceFileExplorer.exploreCsv(pair.getKey(), meta, resource.getRecordContent() == null ? null : resource.getRecordContent().split(","), readLines);
-            schema = AvroUtils.getSchemaFromMeta(meta);
-        } else if (fileFormat.equalsIgnoreCase(Const.FILESUFFIX_JSON)) {
-            SourceFileExplorer.exploreJson(pair.getKey(), meta, readLines);
-            schema = AvroUtils.getSchemaFromMeta(meta);
-        } else if (fileFormat.equalsIgnoreCase(Const.FILESUFFIX_XML)) {
-
-        } else if (fileFormat.equalsIgnoreCase(Const.FILESUFFIX_PARQUET)) {
-            IResourceIterator iterator = TextFileIteratorFactory.getProcessIteratorByType(meta, pair.getKey());
-            if (iterator.hasNext()) {
-                schema = ((ParquetFileIterator) iterator).getSchema();
-            }
-        } else if (fileFormat.equalsIgnoreCase(Const.FILESUFFIX_AVRO)) {
-            IResourceIterator iterator = TextFileIteratorFactory.getProcessIteratorByType(meta, pair.getKey());
-            if (iterator.hasNext()) {
-                schema = ((AvroFileIterator) iterator).getSchema();
-            }
-        }else if(fileFormat.equalsIgnoreCase(Const.FILESUFFIX_ORC)){
-
-        }
         try{
+            if (fileFormat.equalsIgnoreCase(Const.FILESUFFIX_CSV)) {
+                pair = util.getInResourceByReader(meta.getPath());
+                SourceFileExplorer.exploreCsv(pair.getKey(), meta,resource==null || resource.getRecordContent() == null ? null : resource.getRecordContent().split(","), readLines);
+                schema = AvroUtils.getSchemaFromMeta(meta);
+            } else if (fileFormat.equalsIgnoreCase(Const.FILESUFFIX_JSON)) {
+                pair = util.getInResourceByReader(meta.getPath());
+                SourceFileExplorer.exploreJson(pair.getKey(), meta, readLines);
+                schema = AvroUtils.getSchemaFromMeta(meta);
+            } else if (fileFormat.equalsIgnoreCase(Const.FILESUFFIX_XML)) {
 
-        }finally {
-            if(!ObjectUtils.isEmpty(pair.getKey())){
-                pair.getKey().close();
+            } else if (fileFormat.equalsIgnoreCase(Const.FILESUFFIX_PARQUET) || fileFormat.equalsIgnoreCase(Const.FILESUFFIX_AVRO) || fileFormat.equalsIgnoreCase(Const.FILESUFFIX_ORC)) {
+                IResourceIterator iterator = TextFileIteratorFactory.getProcessIteratorByType(meta, util);
+                if (iterator.hasNext()) {
+                    schema = ((AbstractFileIterator) iterator).getSchema();
+                }
             }
-            if(!ObjectUtils.isEmpty(pair.getValue())){
-                pair.getValue().close();
+        }finally {
+            if(pair!=null) {
+                if (!ObjectUtils.isEmpty(pair.getKey())) {
+                    pair.getKey().close();
+                }
+                if (!ObjectUtils.isEmpty(pair.getValue())) {
+                    pair.getValue().close();
+                }
             }
         }
         return schema;

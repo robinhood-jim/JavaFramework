@@ -5,7 +5,7 @@ import io.minio.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 
-import javax.servlet.http.HttpServletResponse;
+
 import java.io.*;
 import java.util.ResourceBundle;
 
@@ -71,7 +71,7 @@ public class MinioUtils {
         }
         return executeOk;
     }
-    public static void download(MinioAsyncClient client,String bucketName,String objectName,String contentType,  HttpServletResponse response) throws Exception{
+    /*public static void download(MinioAsyncClient client,String bucketName,String objectName,String contentType,  HttpServletResponse response) throws Exception{
         GetObjectArgs args= GetObjectArgs.builder().bucket(bucketName).object(objectName).build();
         try(GetObjectResponse response1=client.getObject(args).get()){
             int pos=objectName.lastIndexOf("/");
@@ -84,7 +84,7 @@ public class MinioUtils {
         }catch (Exception ex){
             throw ex;
         }
-    }
+    }*/
     public static void main(String[] args){
         ResourceBundle bundle=ResourceBundle.getBundle("application");
         MinioClient.Builder builder= MinioClient.builder().endpoint(bundle.getString("minio.endpoint")).credentials(bundle.getString("minio.accessKey"),bundle.getString("minio.secretKey"));

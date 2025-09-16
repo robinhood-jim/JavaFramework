@@ -1,6 +1,7 @@
 package com.robin.comm.fileaccess.util;
 
 
+import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.parquet.hadoop.api.InitContext;
 import org.apache.parquet.hadoop.api.ReadSupport;
@@ -12,15 +13,17 @@ import java.util.Map;
 
 public class CustomRowReadSupport extends ReadSupport<Map<String,Object>> {
     MessageType type;
+    DataCollectionMeta colmeta;
 
-    public CustomRowReadSupport(){
+    public CustomRowReadSupport(DataCollectionMeta colmeta){
+        this.colmeta=colmeta;
     }
 
 
     @Override
     public ReadContext init(InitContext context) {
-        type = context.getFileSchema();
-        return new ReadContext(context.getFileSchema());
+        type = ParquetUtil.genSchema(colmeta);
+        return new ReadContext(type);
     }
 
 

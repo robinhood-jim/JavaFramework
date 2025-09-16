@@ -3,6 +3,7 @@ package com.robin.comm.fileaccess.writer;
 import com.robin.comm.fileaccess.util.MockFileSystem;
 import com.robin.comm.fileaccess.util.OrcUtil;
 import com.robin.core.base.util.Const;
+import com.robin.core.fileaccess.fs.AbstractFileSystemAccessor;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.meta.DataSetColumnMeta;
 import com.robin.core.fileaccess.util.ResourceUtil;
@@ -19,6 +20,7 @@ import org.apache.orc.OrcFile;
 import org.apache.orc.TypeDescription;
 import org.apache.orc.Writer;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import javax.naming.OperationNotSupportedException;
@@ -36,6 +38,8 @@ public class OrcFileWriter extends AbstractFileWriter {
     private TypeDescription schema;
     private Writer owriter;
     private VectorizedRowBatch batch;
+    private int batchSize=4096;
+    public static final String BACTH_SIZE="orcWrite.batchSize";
 
     public OrcFileWriter() {
         this.identifier = Const.FILEFORMATSTR.ORC.getValue();
@@ -44,6 +48,16 @@ public class OrcFileWriter extends AbstractFileWriter {
     public OrcFileWriter(DataCollectionMeta colmeta) {
         super(colmeta);
         this.identifier = Const.FILEFORMATSTR.ORC.getValue();
+        if (!ObjectUtils.isEmpty(colmeta.getResourceCfgMap().get(BACTH_SIZE))) {
+            batchSize = Integer.parseInt(colmeta.getResourceCfgMap().get(BACTH_SIZE).toString());
+        }
+    }
+    public OrcFileWriter(DataCollectionMeta colmeta, AbstractFileSystemAccessor accessor){
+        super(colmeta,accessor);
+        this.identifier=Const.FILEFORMATSTR.ORC.getValue();
+        if (!ObjectUtils.isEmpty(colmeta.getResourceCfgMap().get(BACTH_SIZE))) {
+            batchSize = Integer.parseInt(colmeta.getResourceCfgMap().get(BACTH_SIZE).toString());
+        }
     }
 
     @Override
@@ -92,7 +106,7 @@ public class OrcFileWriter extends AbstractFileWriter {
         }
         schema = OrcUtil.getSchema(colmeta);
         owriter = OrcFile.createWriter(new Path(colmeta.getPath()), OrcFile.writerOptions(conf).setSchema(schema).compress(compressionKind).fileSystem(fs));
-        batch = schema.createRowBatch();
+        batch = schema.createRowBatch(batchSize);
     }
 
     @Override

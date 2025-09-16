@@ -15,6 +15,7 @@
  */
 package com.robin.meta.contorller;
 
+import com.robin.core.base.util.Const;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.meta.service.resource.GlobalResourceService;
 import org.springframework.stereotype.Controller;
@@ -32,12 +33,19 @@ public class SchemaController {
     private GlobalResourceService globalResourceService;
     @GetMapping("/resource")
     @ResponseBody
-    public Map<String,Object> getResourceSchema(@RequestParam String sourceId,@RequestParam String sourceParam){
-        DataCollectionMeta collectionMeta=globalResourceService.getResourceMetaDef(sourceId+","+sourceParam);
+    public Map<String,Object> getResourceSchema(@RequestParam(required = true) Long sourceId,@RequestParam String sourceParam){
+        DataCollectionMeta collectionMeta=null;
+        if(sourceId!=0L) {
+            collectionMeta=globalResourceService.getResourceMetaDef(sourceId + "," + sourceParam);
+        }else{
+            DataCollectionMeta.Builder builder=new DataCollectionMeta.Builder();
+            builder.fsType(Const.FILESYSTEM.LOCAL.getValue())
+                    .resPath(sourceParam);
+            collectionMeta=builder.build();
+        }
         //Schema schema=globalResourceService.getDataSourceSchema(collectionMeta,sourceId,sourceParam);
         Map<String,Object> retMap=new HashMap<>();
-        String[] arr=sourceId.split(",");
-        retMap.put("schema",globalResourceService.getDataSourceSchemaDesc(collectionMeta,Long.parseLong(arr[0]),sourceParam,0));
+        retMap.put("schema",globalResourceService.getDataSourceSchemaDesc(collectionMeta,sourceId,sourceParam,0));
         return retMap;
     }
 

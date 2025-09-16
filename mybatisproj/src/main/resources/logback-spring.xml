@@ -4,7 +4,7 @@
 	<!--<property name="log.path" value="/home/ruoyi/logs" />-->
     <!-- 日志输出格式 -->
 	<property name="log.pattern" value="%d{HH:mm:ss.SSS} [%thread] %-5level %logger{20} - [%method,%line] - %msg%n" />
-
+    <springProperty scope="context" name="log.path" source="log.home" defaultValue="logs" />
 	<!-- 控制台输出 -->
 	<appender name="console" class="ch.qos.logback.core.ConsoleAppender">
 		<encoder>
