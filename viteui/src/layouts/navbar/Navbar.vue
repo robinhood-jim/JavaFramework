@@ -1,0 +1,138 @@
+<script setup>
+import { onMounted, onUnmounted, ref, watch } from 'vue';
+import { useRoute } from 'vue-router';
+import { useUserStore } from '@/store';
+import { useFullscreen } from '@vueuse/core';
+import { handleScroll, isDark, scrolling, sidebarState, toggleDarkMode } from '@/composables';
+import { useGlobalProp } from '@/composables/globalProp.js';
+import Logo from '@/layouts/Logo.vue';
+
+const { isFullscreen, toggle: toggleFullScreen } = useFullscreen();
+const avatar = useGlobalProp().$money.getOssUrl(useUserStore().info.avatar);
+const route = useRoute();
+const breadcrumb = ref([]);
+const tenants=useUserStore().getTenants()
+
+const haveMoreTenant=useUserStore().hasMoreTenants
+const tenantId=useUserStore().getTenantId
+onMounted(() => {
+    document.addEventListener('scroll', handleScroll);
+});
+
+onUnmounted(() => {
+    document.removeEventListener('scroll', handleScroll);
+});
+
+watch(
+    () => route.fullPath,
+    () => {
+        breadcrumb.value = [{ path: '/', meta: { title: '首页' } }, ...route.matched.filter((e) => e.meta?.title)];
+    },
+    { immediate: true }
+);
+
+function logout() {
+    useUserStore().logout();
+}
+function setTenant(id){
+  console.log("checked"+id)
+}
+</script>
+
+<template>
+    <!-- PC nav -->
+    <nav
+        aria-label="secondary"
+        :class="[
+      'sticky bg-base-100 top-0 z-10 px-6 py-3 flex items-center justify-between transition-transform duration-500',
+      {
+        '-translate-y-full': scrolling.down,
+        'translate-y-0': scrolling.up,
+      },
+    ]"
+    >
+        <div class="flex items-center gap-2">
+            <a href="javascript:void(0)" @click="sidebarState.isOpen = !sidebarState.isOpen">
+                <svg-icon :name="sidebarState.isOpen ? 'menu-open' : 'menu-close'" class="w-5 h-5 hidden lg:block" />
+            </a>
+            <el-breadcrumb separator="/">
+                <el-breadcrumb-item v-for="item in breadcrumb" :to="{ path: item.path }">
+                    {{ item.meta.title }}
+                </el-breadcrumb-item>
+            </el-breadcrumb>
+        </div>
+
+        <div class="flex items-center gap-2">
+            <a href="javascript:void(0)" class="hidden md:inline-flex" @click="toggleDarkMode()">
+                <svg-icon :name="isDark ? 'sun' : 'moon'" />
+            </a>
+
+            <a href="javascript:void(0)" class="px-2 hidden md:inline-flex" @click="toggleFullScreen()">
+                <svg-icon :name="isFullscreen ? 'arrow-collapse-all' : 'arrow-expand-all'" />
+            </a>
+          <el-dropdown v-if="haveMoreTenant">
+            <div class="w-8 rounded cursor-pointer">
+              <el-avatar :src="avatar" shape="square" />
+            </div>
+            <template #dropdown>
+            <el-dropdown-menu>
+              <el-dropdown-item
+                  v-for="(item,key) in tenants"
+                  :key="key"
+                  :command="item.id"
+                  :class="{'selected':tenantId==item.id}"
+                  @click="setTenant(item.id)"
+              >
+                <i v-show="tenantId==item.id" class="el-icon-check"></i>
+                {{ item.name }}</el-dropdown-item>
+            </el-dropdown-menu>
+            </template>
+          </el-dropdown>
+
+            <el-dropdown>
+                <div class="w-8 rounded cursor-pointer">
+                    <el-avatar :src="avatar" shape="square" />
+                </div>
+                <template #dropdown>
+                    <el-dropdown-menu>
+                        <el-dropdown-item>
+                            <router-link :to="{ name: 'Personal' }">个人中心</router-link>
+                        </el-dropdown-item>
+                        <el-dropdown-item @click="logout">登出</el-dropdown-item>
+                    </el-dropdown-menu>
+                </template>
+            </el-dropdown>
+        </div>
+    </nav>
+
+    <!-- Mobile bottom bar -->
+    <nav
+        :class="[
+      'fixed bg-base-100 bottom-0 z-10 px-4 py-4 sm:px-6 inset-x-0 flex items-center justify-between transition-transform duration-500 md:hidden',
+      {
+        'translate-y-full': scrolling.down,
+        'translate-y-0': scrolling.up,
+      },
+    ]"
+    >
+        <div class="flex items-center gap-2">
+            <a href="javascript:void(0)" class="px-2 md:hidden" @click="toggleDarkMode()">
+                <svg-icon :name="isDark ? 'sun' : 'moon'" />
+            </a>
+        </div>
+
+        <router-link to="">
+            <Logo class="w-10 h-10" />
+            <span class="sr-only">Money</span>
+        </router-link>
+
+        <label @click="sidebarState.isOpen = !sidebarState.isOpen">
+            <svg-icon :name="sidebarState.isOpen ? 'window-close' : 'menu'" class="w-6 h-6" />
+        </label>
+    </nav>
+</template>
+<style scoped>
+.selected{
+  color: #409eff
+}
+</style>
