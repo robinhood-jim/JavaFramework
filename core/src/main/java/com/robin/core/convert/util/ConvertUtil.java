@@ -27,6 +27,7 @@ import com.robin.core.fileaccess.meta.DataSetColumnMeta;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
@@ -154,7 +155,7 @@ public class ConvertUtil {
         }
     }
 
-    public static void mapToBaseObject(Map<String, String> source, BaseObject target, String... ignoreColumns) throws Exception {
+    public static void mapToBaseObject(Map<String, String> source, BaseObject target, String... ignoreColumns) throws IllegalAccessException {
         if (source == null || target == null) {
             return;
         }
@@ -184,7 +185,7 @@ public class ConvertUtil {
 
     }
 
-    public static void mapToObject(Map<String, Object> source, Object target, String... ignoreColumns) throws Exception {
+    public static void mapToObject(Map<String, Object> source, Object target, String... ignoreColumns) throws IllegalAccessException {
         if (source == null || target == null) {
             return;
         }
@@ -213,11 +214,11 @@ public class ConvertUtil {
     }
 
 
-    private static String camelCase(String value) {
+    private static String toUpper(String value) {
         return value.substring(0, 1).toUpperCase() + value.substring(1);
     }
 
-    public static void convertSerializableForUpdate(Serializable source, Serializable target, String... ignoreColumns) throws Exception {
+    public static void convertSerializableForUpdate(Serializable source, Serializable target, String... ignoreColumns) throws IllegalAccessException {
         if (target == null || source == null) {
             return;
         }
@@ -244,7 +245,7 @@ public class ConvertUtil {
     }
 
 
-    public static void convertToModelForUpdate(BaseObject source, BaseObject target) throws Exception {
+    public static void convertToModelForUpdate(BaseObject source, BaseObject target) throws IllegalAccessException {
         if (target == null || source == null) {
             return;
         }
@@ -272,14 +273,14 @@ public class ConvertUtil {
         }
     }
 
-    public static void convertToModel(BaseObject target, Map<String, Object> src, String... ignoreColumns) throws Exception {
-        if (target == null || src == null) {
+    public static void convertToModel(Map<String, Object> source, BaseObject target, String... ignoreColumns) throws IllegalAccessException {
+        if (target == null || source == null) {
             return;
         }
         Map<String, MethodHandle> map = ReflectUtils.returnSetMethodHandle(target.getClass());
         List<String> ignoreColumnList = getIgnoreColumns(ignoreColumns);
         try {
-            for (Map.Entry<String, Object> entry : src.entrySet()) {
+            for (Map.Entry<String, Object> entry : source.entrySet()) {
                 String field = entry.getKey();
                 if (ObjectUtils.isEmpty(ignoreColumnList) || !ignoreColumnList.contains(field)) {
                     MethodHandle setMethod = map.get(field);
@@ -317,7 +318,7 @@ public class ConvertUtil {
     }
 
     @SuppressWarnings("unchecked")
-    public static void convertToTarget(Object source, Object target, String... ignoreColumns) throws Exception {
+    public static void convertToTarget(Object source, Object target, String... ignoreColumns) throws IllegalAccessException {
         if (target == null || source == null) {
             return;
         }
@@ -332,7 +333,7 @@ public class ConvertUtil {
                         String field = entry.getKey();
                         MethodHandle setMethod = targetMethodMap.get(field);
                         if (setMethod != null) {
-                            if (target instanceof BaseObject) {
+                            if (target.getClass().isAssignableFrom(BaseObject.class)) {
                                 setBaseObjectValue((BaseObject) target, entry.getValue(), field, setMethod,ignoreColumnList);
                             } else if (targetMethodMap.containsKey(field) && canFill(ignoreColumnList,field)) {
                                 Object retValue = parseParameter(targetMethodMap.get(field).type().parameterType(1), entry.getValue());
@@ -389,7 +390,6 @@ public class ConvertUtil {
         if (strValue == null) {
             return null;
         }
-        DateTimeFormatter formatter = null;
         Object ret = null;
         if (!StringUtils.isEmpty(strValue)) {
             if (Types.INTEGER == meta.getDataType()) {
@@ -403,17 +403,12 @@ public class ConvertUtil {
             } else if (Types.SMALLINT == meta.getDataType()) {
                 ret = Short.valueOf(strValue.toString());
             } else if (Types.TIME == meta.getDataType() || Types.DATE == meta.getDataType() || Types.TIMESTAMP == meta.getDataType()) {
-                String value = strValue.toString().trim();
-                formatter = getFormatter(value);
-                if (null != formatter) {
-                    LocalDateTime localDateTime = LocalDateTime.parse(value, formatter);
-                    if (Types.DATE == meta.getDataType()) {
-                        ret = new java.util.Date(localDateTime.toInstant(ZoneOffset.ofHours(8)).toEpochMilli());
-                    } else if (Types.TIMESTAMP == meta.getDataType()) {
-                        ret = new Timestamp(localDateTime.toInstant(ZoneOffset.ofHours(8)).toEpochMilli());
-                    }
+                LocalDateTime localDateTime = getLocalDateTimeFrom(strValue);
+                if (Types.DATE == meta.getDataType()) {
+                    ret = new java.util.Date(localDateTime.toInstant(ZoneOffset.ofHours(8)).toEpochMilli());
+                } else if (Types.TIMESTAMP == meta.getDataType()) {
+                    ret = new Timestamp(localDateTime.toInstant(ZoneOffset.ofHours(8)).toEpochMilli());
                 }
-
             } else if (Types.VARCHAR == meta.getDataType() || Types.CHAR == meta.getDataType()) {
                 ret = strValue.toString();
             } else {
@@ -427,7 +422,6 @@ public class ConvertUtil {
         if (strValue == null) {
             return null;
         }
-        DateTimeFormatter formatter = null;
         Object ret = null;
         if (!StringUtils.isEmpty(strValue)) {
             if (Const.META_TYPE_INTEGER.equals(meta.getColumnType())) {
@@ -441,17 +435,12 @@ public class ConvertUtil {
             } else if (Const.META_TYPE_SHORT.equals(meta.getColumnType())) {
                 ret = Short.valueOf(strValue.toString());
             } else if (Const.META_TYPE_DATE.equals(meta.getColumnType()) || Const.META_TYPE_TIMESTAMP.equals(meta.getColumnType())) {
-                String value = strValue.toString().trim();
-                formatter = getFormatter(value);
-                if (null != formatter) {
-                    LocalDateTime localDateTime = LocalDateTime.parse(value, formatter);
-                    if (Const.META_TYPE_DATE.equals(meta.getColumnType())) {
-                        ret = new java.util.Date(localDateTime.toInstant(ZoneOffset.ofHours(8)).toEpochMilli());
-                    } else if (Const.META_TYPE_TIMESTAMP.equals(meta.getColumnType())) {
-                        ret = new Timestamp(localDateTime.toInstant(ZoneOffset.ofHours(8)).toEpochMilli());
-                    }
+                LocalDateTime localDateTime = getLocalDateTimeFrom(strValue);
+                if (Const.META_TYPE_DATE.equals(meta.getColumnType())) {
+                    ret = new java.util.Date(localDateTime.toInstant(ZoneOffset.ofHours(8)).toEpochMilli());
+                } else if (Const.META_TYPE_TIMESTAMP.equals(meta.getColumnType())) {
+                    ret = new Timestamp(localDateTime.toInstant(ZoneOffset.ofHours(8)).toEpochMilli());
                 }
-
             } else if (Const.META_TYPE_STRING.equals(meta.getColumnType())) {
                 ret = strValue.toString();
             } else {
@@ -466,20 +455,27 @@ public class ConvertUtil {
         if (Objects.isNull(strValue)) {
             return null;
         }
-        DateTimeFormatter formatter = null;
         Object ret = null;
         if (!ObjectUtils.isEmpty(strValue)) {
-            if (Integer.class.isAssignableFrom(type)) {
+            if(type.isAssignableFrom(strValue.getClass())){
+                ret= strValue;
+            }else if (Integer.class.isAssignableFrom(type)) {
+                Assert.isTrue(NumberUtils.isDigits(strValue.toString()));
                 ret = Integer.parseInt(strValue.toString());
             } else if (Long.class.isAssignableFrom(type)) {
+                Assert.isTrue(NumberUtils.isDigits(strValue.toString()));
                 ret = Long.parseLong(strValue.toString());
             } else if (Float.class.isAssignableFrom(type)) {
+                Assert.isTrue(NumberUtils.isNumber(strValue.toString()));
                 ret = Float.parseFloat(strValue.toString());
             } else if (Double.class.isAssignableFrom(type)) {
+                Assert.isTrue(NumberUtils.isNumber(strValue.toString()));
                 ret = Double.parseDouble(strValue.toString());
             } else if (Short.class.isAssignableFrom(type)) {
+                Assert.isTrue(NumberUtils.isDigits(strValue.toString()));
                 ret = Short.valueOf(strValue.toString());
             } else if (BigDecimal.class.isAssignableFrom(type)) {
+                Assert.isTrue(NumberUtils.isNumber(strValue.toString()));
                 ret = BigDecimal.valueOf(Double.parseDouble(strValue.toString()));
             } else if (Boolean.class.isAssignableFrom(type)) {
                 if (NumberUtils.isNumber(strValue.toString())) {
@@ -487,33 +483,23 @@ public class ConvertUtil {
                 } else {
                     ret = Boolean.valueOf(strValue.toString());
                 }
-            } else if (type.isAssignableFrom(java.util.Date.class) || type.isAssignableFrom(LocalDateTime.class) || type.isAssignableFrom(Timestamp.class)) {
-
+            } else if (type.isAssignableFrom(java.util.Date.class) || type.isAssignableFrom(LocalDateTime.class) || type.isAssignableFrom(Timestamp.class)
+                    || type.isAssignableFrom(java.sql.Date.class) || type.isAssignableFrom(LocalDate.class)) {
+                LocalDateTime localDateTime = getLocalDateTimeFrom(strValue);
                 if (type.isAssignableFrom(java.util.Date.class)) {
-                    if (java.util.Date.class.isAssignableFrom(strValue.getClass())) {
-                        ret = strValue;
-                    } else {
-                        LocalDateTime localDateTime = getLocalDateTimeFrom(strValue.toString());
-                        ret = new java.util.Date(localDateTime.toInstant(ZoneOffset.ofHours(8)).toEpochMilli());
-                    }
+                    ret = new java.util.Date(localDateTime.toInstant(ZoneOffset.ofHours(8)).toEpochMilli());
                 } else if (type.isAssignableFrom(Timestamp.class)) {
-                    if (Timestamp.class.isAssignableFrom(strValue.getClass())) {
-                        ret = strValue;
-                    } else {
-                        LocalDateTime localDateTime = getLocalDateTimeFrom(strValue.toString());
-                        ret = new Timestamp(localDateTime.toInstant(ZoneOffset.ofHours(8)).toEpochMilli());
-                    }
+                    ret = new Timestamp(localDateTime.toInstant(ZoneOffset.ofHours(8)).toEpochMilli());
                 } else if (type.isAssignableFrom(LocalDateTime.class)) {
-                    if (LocalDateTime.class.isAssignableFrom(strValue.getClass())) {
-                        ret = strValue;
-                    } else {
-                        ret = getLocalDateTimeFrom(strValue);
-                    }
+                    ret = localDateTime;
+                }else if(type.isAssignableFrom(LocalDate.class)){
+                    ret =localDateTime.toLocalDate();
+                }else if(type.isAssignableFrom(java.sql.Date.class)){
+                    ret = new java.sql.Date(localDateTime.toInstant(ZoneOffset.ofHours(8)).toEpochMilli());
                 }
             } else if (type.isAssignableFrom(String.class)) {
                 ret = strValue.toString();
             } else {
-
                 if (type.isAssignableFrom(byte.class)) {
                     if (!ObjectUtils.isEmpty(strValue)) {
                         Method method = type.getMethod("valueOf", String.class);
@@ -533,19 +519,35 @@ public class ConvertUtil {
 
     private static LocalDateTime getLocalDateTimeFrom(Object strValue) {
         LocalDateTime ret=null;
-        DateTimeFormatter formatter;
-        formatter = !ObjectUtils.isEmpty(currentFormatter.get()) ? currentFormatter.get() : getFormatter(strValue.toString());
-        if(formatter!=null) {
-            if (ymdformatter.equals(formatter) || ymdEupformatter.equals(formatter) || ymdSepformatter.equals(formatter)) {
-                ret = LocalDate.parse(strValue.toString(), formatter).atStartOfDay();
-            } else {
-                ret = LocalDateTime.parse(strValue.toString(), formatter);
+        if(ObjectUtils.isEmpty(strValue)){
+            return null;
+        }
+        if(java.sql.Date.class.isAssignableFrom(strValue.getClass())){
+            ret=LocalDateTime.ofInstant(Instant.ofEpochMilli(((java.sql.Date)strValue).getTime()),ZoneId.systemDefault());
+        } else if (java.util.Date.class.isAssignableFrom(strValue.getClass())) {
+            ret=LocalDateTime.ofInstant(Instant.ofEpochMilli(((java.util.Date)strValue).getTime()),ZoneId.systemDefault());
+        }else if(Timestamp.class.isAssignableFrom(strValue.getClass())){
+            ret=LocalDateTime.ofInstant(Instant.ofEpochMilli(((Timestamp)strValue).getTime()),ZoneId.systemDefault());
+        }else if(LocalDate.class.isAssignableFrom(strValue.getClass())){
+            ret=((LocalDate)strValue).atStartOfDay();
+        }else if(LocalDateTime.class.isAssignableFrom(strValue.getClass())){
+            ret=(LocalDateTime) strValue;
+        }else {
+            DateTimeFormatter formatter;
+            formatter = !ObjectUtils.isEmpty(currentFormatter.get()) ? currentFormatter.get() : getFormatter(strValue.toString());
+            if (formatter != null) {
+                if (ymdformatter.equals(formatter) || ymdEupformatter.equals(formatter) || ymdSepformatter.equals(formatter)) {
+                    ret = LocalDate.parse(strValue.toString(), formatter).atStartOfDay();
+                } else {
+                    ret = LocalDateTime.parse(strValue.toString(), formatter);
+                }
+            } else if (NumberUtils.isNumber(strValue.toString())) {
+                ret = LocalDateTime.ofInstant(Instant.ofEpochMilli(Long.valueOf(strValue.toString())), ZoneId.systemDefault());
             }
-        }else if(NumberUtils.isNumber(strValue.toString())){
-            ret=LocalDateTime.ofInstant(Instant.ofEpochMilli(Long.valueOf(strValue.toString())),ZoneId.systemDefault());
         }
         return ret;
     }
+
 
     public static DateTimeFormatter getFormatter(String value) {
         DateTimeFormatter retFormatter = currentFormatter.get();
