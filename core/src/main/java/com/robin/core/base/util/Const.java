@@ -401,6 +401,7 @@ public class Const {
         QINIU("qiniu"),
         BAIDU_BOS("bos"),
         HUAWEI_OBS("obs"),
+        GOOGLECLOUD("gcs"),
         MINIO("minio");
         private String value;
         FILESYSTEM(String value){

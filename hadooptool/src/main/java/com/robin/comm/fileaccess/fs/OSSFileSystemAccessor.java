@@ -32,7 +32,7 @@ public class OSSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
     private String accessKeyId;
     private String securityAccessKey;
 
-    private OSSFileSystemAccessor() {
+    public OSSFileSystemAccessor() {
         this.identifier = Const.FILESYSTEM.ALIYUN.getValue();
     }
 

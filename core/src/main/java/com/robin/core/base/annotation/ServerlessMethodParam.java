@@ -5,11 +5,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Target(ElementType.METHOD)
+@Target(ElementType.PARAMETER)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface ServerlessFunction {
+public @interface ServerlessMethodParam {
     String value() default "";
-    String initFunc() default "";
-    String initParam() default "";
-    String method() default "";
 }

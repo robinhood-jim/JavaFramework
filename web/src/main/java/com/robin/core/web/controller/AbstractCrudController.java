@@ -92,7 +92,7 @@ public abstract class AbstractCrudController<O extends BaseObject, P extends Ser
         try {
             O object=this.objectType.newInstance();
             ConvertUtil.setDateTimeFormat(ConvertUtil.ymdSepformatter);
-            ConvertUtil.convertToModel(object,paramMap);
+            ConvertUtil.convertToModel(paramMap, object);
             P pk=this.service.saveEntity(object);
             constructRetMap(retMap);
             doAfterAdd(object,pk, retMap);
@@ -137,7 +137,7 @@ public abstract class AbstractCrudController<O extends BaseObject, P extends Ser
         try {
             O originObj= this.objectType.newInstance();
             ConvertUtil.setDateTimeFormat(ConvertUtil.ymdSepformatter);
-            ConvertUtil.convertToModel(originObj,paramMap);
+            ConvertUtil.convertToModel(paramMap, originObj);
             updateWithOrigin(id, retMap, originObj);
         } catch (Exception ex) {
             log.error("{0}", ex);

@@ -42,7 +42,7 @@ public class MinioFileSystemAccessor extends AbstractCloudStorageFileSystemAcces
     private MinioAdminClient adminClient;
     private OkHttpClient httpClient;
 
-    private MinioFileSystemAccessor(){
+    public MinioFileSystemAccessor(){
         this.identifier= Const.FILESYSTEM.MINIO.getValue();
     }
 

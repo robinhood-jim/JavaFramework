@@ -373,6 +373,14 @@ public abstract class AbstractController
         }
         return retmap;
     }
+    public static Map<String,Object> wrapSuccess(Object result){
+        Map<String,Object> retmap=new HashMap<>();
+        retmap.put(COL_SUCCESS, true);
+        if(!ObjectUtils.isEmpty(result)){
+            retmap.put(COL_DATA,result);
+        }
+        return retmap;
+    }
     public static Map<String,Object> wrapFailedMsg(String message){
         Map<String,Object> retmap=new HashMap<>();
         retmap.put(COL_SUCCESS, false);

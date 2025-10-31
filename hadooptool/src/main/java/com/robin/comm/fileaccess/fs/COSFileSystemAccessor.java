@@ -40,7 +40,7 @@ public class COSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
     private HttpProtocol protocol=HttpProtocol.http;
     private String securityKey;
     private String accessKey;
-    private COSFileSystemAccessor(){
+    public COSFileSystemAccessor(){
         this.identifier= Const.FILESYSTEM.TENCENT.getValue();
     }
 

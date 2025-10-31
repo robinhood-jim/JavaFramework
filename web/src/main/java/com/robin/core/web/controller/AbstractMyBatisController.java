@@ -142,7 +142,7 @@ public abstract class AbstractMyBatisController<S extends IMybatisBaseService<T,
         try {
             T object=this.voType.newInstance();
             ConvertUtil.setDateTimeFormat(ConvertUtil.ymdSepformatter);
-            ConvertUtil.convertToModel(object,paramMap);
+            ConvertUtil.convertToModel(paramMap, object);
             if(consumer!=null){
                 consumer.accept(object);
             }
@@ -200,7 +200,7 @@ public abstract class AbstractMyBatisController<S extends IMybatisBaseService<T,
         try {
             T originObj= this.voType.getDeclaredConstructor().newInstance();
             ConvertUtil.setDateTimeFormat(ConvertUtil.ymdSepformatter);
-            ConvertUtil.convertToModel(originObj,paramMap);
+            ConvertUtil.convertToModel(paramMap, originObj);
             updateWithOrigin(id, retMap, originObj);
         } catch (Exception ex) {
             log.error("{0}", ex);

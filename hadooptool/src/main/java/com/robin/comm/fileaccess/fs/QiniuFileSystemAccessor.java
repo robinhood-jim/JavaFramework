@@ -52,7 +52,7 @@ public class QiniuFileSystemAccessor extends AbstractCloudStorageFileSystemAcces
     private Client client;
     private String urlPrefix;
 
-    private QiniuFileSystemAccessor() {
+    public QiniuFileSystemAccessor() {
         this.identifier = Const.FILESYSTEM.QINIU.getValue();
     }
 

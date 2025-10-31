@@ -27,7 +27,7 @@ public class OBSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
     private String securityAccessKey;
     private ObsClient client;
 
-    private OBSFileSystemAccessor() {
+    public OBSFileSystemAccessor() {
         this.identifier= Const.FILESYSTEM.HUAWEI_OBS.getValue();
     }
 

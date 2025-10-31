@@ -27,7 +27,7 @@ public class BOSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
     private String securityAccessKey;
     private BosClient client;
 
-    private BOSFileSystemAccessor(){
+    public BOSFileSystemAccessor(){
         this.identifier= Const.FILESYSTEM.BAIDU_BOS.getValue();
     }
 
