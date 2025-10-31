@@ -13,7 +13,7 @@
 		<spring.cloud.version>2.1.0.RELEASE</spring.cloud.version>
 		<frm.version>1.0</frm.version>
 		<spring.boot.version>2.5.14</spring.boot.version>
-		<logback.version>1.2.2</logback.version>
+		<logback.version>1.3.16</logback.version>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
 		<svn.version>1.8.9</svn.version>
