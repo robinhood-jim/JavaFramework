@@ -35,7 +35,7 @@ public class S3FileSystemAccessor extends AbstractCloudStorageFileSystemAccessor
     private String accessKey;
     private String secret;
 
-    private S3FileSystemAccessor(){
+    public S3FileSystemAccessor(){
         this.identifier= Const.FILESYSTEM.S3.getValue();
     }
 

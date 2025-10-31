@@ -5,6 +5,7 @@ import com.google.cloud.storage.*;
 import com.google.common.collect.Lists;
 import com.robin.core.base.exception.MissingConfigException;
 import com.robin.core.base.exception.OperationNotSupportException;
+import com.robin.core.base.util.Const;
 import com.robin.core.base.util.ResourceConst;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.util.ByteBufferOutputStream;
@@ -36,6 +37,9 @@ public class GCSFileSystemAccessor extends AbstractCloudStorageFileSystemAccesso
     private List<String> scopes;
     private Storage storage;
     private int dumpOffHeapSize = ResourceConst.DEFAULTDUMPEDOFFHEAPSIZE;
+    public GCSFileSystemAccessor(){
+        this.identifier= Const.FILESYSTEM.GOOGLECLOUD.getValue();
+    }
 
     @Override
     public void init(DataCollectionMeta meta) {

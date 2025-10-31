@@ -21,6 +21,7 @@ public class EmployeeDTO implements Serializable {
     private String province;
     private String city;
     private Long userId;
+    private String verifyCode;
     private static final DateTimeFormatter formatter=DateTimeFormatter.ofPattern("yyyy-MM-dd");
     public static EmployeeDTO fromVO(Employee employee){
         EmployeeDTO dto=new EmployeeDTO();

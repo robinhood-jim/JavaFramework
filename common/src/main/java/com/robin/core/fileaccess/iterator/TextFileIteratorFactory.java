@@ -116,7 +116,7 @@ public class TextFileIteratorFactory {
 	public static IResourceIterator getProcessIteratorByPath(DataCollectionMeta colmeta,InputStream in) throws IOException{
 		FileUtils.FileContent content=FileUtils.parseFile(colmeta.getPath());
 		colmeta.setContent(content);
-		String fileFormat=content.getFileFormat();
+		String fileFormat=content.getFileFormat().getValue();
 		if(StringUtils.isEmpty(colmeta.getFileFormat())){
 			colmeta.setFileFormat(fileFormat);
 		}
@@ -170,7 +170,7 @@ public class TextFileIteratorFactory {
 		if(ObjectUtils.isEmpty(fileType)){
 			FileUtils.FileContent content=FileUtils.parseFile(colmeta.getPath());
 			colmeta.setContent(content);
-			fileType=content.getFileFormat();
+			fileType=content.getFileFormat().getValue();
 		}
 		return fileType;
 	}

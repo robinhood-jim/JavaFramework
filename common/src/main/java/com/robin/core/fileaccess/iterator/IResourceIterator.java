@@ -1,5 +1,6 @@
 package com.robin.core.fileaccess.iterator;
 import com.robin.core.fileaccess.fs.AbstractFileSystemAccessor;
+import org.apache.avro.Schema;
 
 import java.io.BufferedReader;
 import java.io.Closeable;

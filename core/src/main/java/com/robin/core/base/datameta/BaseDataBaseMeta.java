@@ -61,7 +61,7 @@ public abstract class BaseDataBaseMeta implements DataBaseInterface, Serializabl
 		return param.getUrlByMeta(this);
 	}
 	protected void processParam(Map<String,String> map) throws Exception{
-		ConvertUtil.objectToMap(map, param);
+		ConvertUtil.objectToMap(param, map);
 	}
 	
 	protected BaseDataBaseMeta(DataBaseParam param){

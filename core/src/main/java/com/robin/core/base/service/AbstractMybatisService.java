@@ -151,6 +151,20 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>, T extends 
     public boolean deleteByField(SFunction<T,?> queryField,Const.OPERATOR operator,Object... value) {
         QueryWrapper<T> queryWrapper = QueryWrapperUtils.getWrapper(queryField, operator, value);
         try{
+            /*queryWrapper.eq(statusColumn,Const.VALID);
+            T vo=voType.getDeclaredConstructor().newInstance();
+            getStatusMethod.bindTo(vo).invoke(Const.INVALID);*/
+
+            return this.remove(queryWrapper);
+        }catch (Throwable ex){
+            throw new ServiceException(ex.getMessage());
+        }
+    }
+    @Override
+    @Transactional(rollbackFor = RuntimeException.class)
+    public boolean deleteLogicByField(SFunction<T,?> queryField,Const.OPERATOR operator,Object... value) {
+        QueryWrapper<T> queryWrapper = QueryWrapperUtils.getWrapper(queryField, operator, value);
+        try{
             queryWrapper.eq(statusColumn,Const.VALID);
             T vo=voType.getDeclaredConstructor().newInstance();
             getStatusMethod.bindTo(vo).invoke(Const.INVALID);
@@ -168,6 +182,7 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>, T extends 
         updateWrapper.in(pkColumn,ids);
         return this.update(updateWrapper);
     }
+
 
 
 
@@ -467,7 +482,7 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>, T extends 
         try {
             T obj = voType.newInstance();
             if (requsetObj.getClass().getInterfaces().length > 0 && requsetObj.getClass().getInterfaces()[0].isAssignableFrom(Map.class)) {
-                ConvertUtil.mapToBaseObject(obj, (HashMap) requsetObj);
+                ConvertUtil.mapToBaseObject((HashMap) requsetObj, obj);
             } else {
                 Map<String, MethodHandle> modelGetMetholds = ReflectUtils.returnGetMethodHandle(requsetObj.getClass());
                 Iterator<Map.Entry<String, MethodHandle>> iter = modelGetMetholds.entrySet().iterator();

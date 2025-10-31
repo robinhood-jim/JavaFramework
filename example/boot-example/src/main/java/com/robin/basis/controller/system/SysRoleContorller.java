@@ -4,7 +4,6 @@ import com.google.gson.Gson;
 import com.robin.basis.model.system.SysResource;
 import com.robin.basis.service.system.SysResourceService;
 import com.robin.core.base.util.Const;
-import com.robin.core.collection.util.CollectionBaseConvert;
 import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.query.util.PageQuery;
 import com.robin.core.web.controller.AbstractCrudDhtmlxController;
@@ -61,7 +60,7 @@ public class SysRoleContorller extends AbstractCrudDhtmlxController<SysRole,Long
 		try{
 			Map<String,Object> map=wrapRequest(request);
 			SysRole user=new SysRole();
-			ConvertUtil.convertToModel(user, map);
+			ConvertUtil.convertToModel(map, user);
 			Long id=service.saveEntity(user);
 			retmap.put("id", String.valueOf(id));
 			retmap.put("success", "true");
@@ -83,8 +82,8 @@ public class SysRoleContorller extends AbstractCrudDhtmlxController<SysRole,Long
 			Long id=Long.valueOf(request.getParameter("id"));
 			SysRole user=service.getEntity(id);
 			SysRole tmpuser=new SysRole();
-			ConvertUtil.mapToObject(tmpuser, map);
-			ConvertUtil.convertToModelForUpdate(user, tmpuser);
+			ConvertUtil.mapToObject(map, tmpuser);
+			ConvertUtil.convertToModelForUpdate(tmpuser, user);
 			service.updateEntity(user);
 			retmap.put("id", String.valueOf(id));
 			retmap.put("success", "true");

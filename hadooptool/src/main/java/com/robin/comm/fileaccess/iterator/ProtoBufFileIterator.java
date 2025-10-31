@@ -7,6 +7,7 @@ import com.robin.core.base.util.Const;
 import com.robin.core.fileaccess.fs.AbstractFileSystemAccessor;
 import com.robin.core.fileaccess.iterator.AbstractFileIterator;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
+import com.robin.core.fileaccess.util.AvroUtils;
 import com.robin.core.fileaccess.util.ResourceUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.math3.analysis.function.Abs;
@@ -40,7 +41,7 @@ public class ProtoBufFileIterator extends AbstractFileIterator {
     public void beforeProcess() {
         try {
             container=ProtoBufUtil.initSchema(colmeta);
-
+            avroSchema= AvroUtils.getSchemaFromMeta(colmeta);
             checkAccessUtil(null);
             instream = accessUtil.getInResourceByStream(ResourceUtil.getProcessPath(colmeta.getPath()));
         } catch (Exception ex) {

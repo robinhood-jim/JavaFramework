@@ -8,4 +8,5 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class CustomerServiceImpl extends AbstractMybatisService<CustomerMapper, Customer,Long> implements ICustomerService {
+
 }

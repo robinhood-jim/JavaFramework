@@ -8,7 +8,6 @@ import com.robin.basis.model.user.SysRole;
 import com.robin.basis.model.user.SysUser;
 import com.robin.basis.model.user.SysUserRole;
 import com.robin.basis.service.system.*;
-import com.robin.core.base.dao.JdbcDao;
 import com.robin.core.base.util.Const;
 import com.robin.core.web.util.WebConstant;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -39,8 +38,6 @@ public class LoginDetailsService implements UserDetailsService {
     @Resource
     private ISysResourceService sysResourceService;
 
-    @Resource
-    private JdbcDao jdbcDao;
 
     @Override
     public UserDetails loadUserByUsername(String userName) throws UsernameNotFoundException {

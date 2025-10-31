@@ -15,7 +15,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
@@ -72,7 +71,7 @@ public abstract class AbstractMyBatisController<S extends IMybatisBaseService<T,
                 return service.save((T)obj);
             }else{
                 T voObj = BeanUtils.instantiateClass(voType);
-                ConvertUtil.convertToTarget(voObj,obj);
+                ConvertUtil.convertToTarget(obj, voObj);
                 return service.save(voObj);
             }
         }catch (Exception ex){
@@ -86,7 +85,7 @@ public abstract class AbstractMyBatisController<S extends IMybatisBaseService<T,
                 return service.updateById((T) obj);
             }else{
                 T voObj = BeanUtils.instantiateClass(voType);
-                ConvertUtil.convertToTarget(voObj,obj);
+                ConvertUtil.convertToTarget(obj, voObj);
                 return service.updateById(voObj);
             }
 
@@ -119,11 +118,11 @@ public abstract class AbstractMyBatisController<S extends IMybatisBaseService<T,
                         try {
                             if (targetClazz.getInterfaces().length>0 && targetClazz.getInterfaces()[0].isAssignableFrom(Map.class)) {
                                 Map<String, Object> valueMap = new HashMap<>();
-                                ConvertUtil.objectToMapObj(valueMap, f);
+                                ConvertUtil.objectToMapObj(f, valueMap);
                                 retList.add((D)valueMap);
                             } else {
                                 D obj = BeanUtils.instantiateClass(targetClazz);
-                                ConvertUtil.convertToTarget(obj, f);
+                                ConvertUtil.convertToTarget(f, obj);
                                 retList.add(obj);
                             }
                         }catch (Exception ex){
@@ -142,8 +141,8 @@ public abstract class AbstractMyBatisController<S extends IMybatisBaseService<T,
         Map<String, Object> retMap = new HashMap<>();
         try {
             T object=this.voType.newInstance();
-            ConvertUtil.setDateFormat(ConvertUtil.ymdSepformatter);
-            ConvertUtil.convertToModel(object,paramMap);
+            ConvertUtil.setDateTimeFormat(ConvertUtil.ymdSepformatter);
+            ConvertUtil.convertToModel(paramMap, object);
             if(consumer!=null){
                 consumer.accept(object);
             }
@@ -200,8 +199,8 @@ public abstract class AbstractMyBatisController<S extends IMybatisBaseService<T,
         Map<String, Object> retMap = new HashMap<>();
         try {
             T originObj= this.voType.getDeclaredConstructor().newInstance();
-            ConvertUtil.setDateFormat(ConvertUtil.ymdSepformatter);
-            ConvertUtil.convertToModel(originObj,paramMap);
+            ConvertUtil.setDateTimeFormat(ConvertUtil.ymdSepformatter);
+            ConvertUtil.convertToModel(paramMap, originObj);
             updateWithOrigin(id, retMap, originObj);
         } catch (Exception ex) {
             log.error("{0}", ex);
@@ -239,8 +238,8 @@ public abstract class AbstractMyBatisController<S extends IMybatisBaseService<T,
     private void updateWithOrigin(P id, Map<String, Object> retMap, T originObj) throws WebException {
         try {
             T updateObj = service.getById(id);
-            ConvertUtil.setDateFormat(ConvertUtil.ymdSepformatter);
-            ConvertUtil.convertToModelForUpdate(updateObj, originObj);
+            ConvertUtil.setDateTimeFormat(ConvertUtil.ymdSepformatter);
+            ConvertUtil.convertToModelForUpdate(originObj, updateObj);
             service.updateById(updateObj);
             constructRetMap(retMap);
         }catch (Exception ex){

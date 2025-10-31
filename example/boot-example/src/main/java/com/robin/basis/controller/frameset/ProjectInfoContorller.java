@@ -64,7 +64,7 @@ public class ProjectInfoContorller extends AbstractCrudDhtmlxController<ProjectI
         Map<String, Object> retmap = new HashMap<String, Object>();
         try {
             ProjectInfo projectInfo = new ProjectInfo();
-            ConvertUtil.mapToObject(projectInfo, wrapRequest(request));
+            ConvertUtil.mapToObject(wrapRequest(request), projectInfo);
             //DataSourceService DataSourceService = (DataSourceService) getBean("DataSourceService");
             this.service.saveEntity(projectInfo);
             constructRetMap(retmap);
@@ -138,7 +138,7 @@ public class ProjectInfoContorller extends AbstractCrudDhtmlxController<ProjectI
         try {
             //DataSourceService DataSourceService = (DataSourceService) getBean("DataSourceService");
             ProjectInfo projectInfo = this.service.getEntity(id);
-            ConvertUtil.objectToMapObj(retmap, projectInfo);
+            ConvertUtil.objectToMapObj(projectInfo, retmap);
             wrapSuccessMap(retmap, "OK");
         } catch (Exception e) {
             retmap.put("success", false);
@@ -175,7 +175,7 @@ public class ProjectInfoContorller extends AbstractCrudDhtmlxController<ProjectI
         Map<String, Object> retmap = new HashMap<>();
         try {
             ProjectInfo projectInfo = new ProjectInfo();
-            ConvertUtil.mapToObject(projectInfo, wrapRequest(request));
+            ConvertUtil.mapToObject(wrapRequest(request), projectInfo);
             this.service.updateEntity(projectInfo);
             retmap.put("success", true);
         } catch (Exception e) {

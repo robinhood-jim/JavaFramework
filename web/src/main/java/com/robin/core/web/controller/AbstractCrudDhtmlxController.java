@@ -109,7 +109,7 @@ public abstract class AbstractCrudDhtmlxController<O extends BaseObject, P exten
     }
 
     protected void wrapObjectWithRequest(HttpServletRequest request, BaseObject obj) throws Exception {
-        ConvertUtil.mapToObject(obj, wrapRequest(request));
+        ConvertUtil.mapToObject(wrapRequest(request), obj);
     }
 
     protected Map<String, Object> returnCodeSetDhtmlxCombo(String codeSetNo, boolean allowNulls) {

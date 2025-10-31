@@ -27,6 +27,7 @@ import com.robin.core.fileaccess.meta.DataSetColumnMeta;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
@@ -38,9 +39,7 @@ import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.sql.Types;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.*;
@@ -53,23 +52,34 @@ public class ConvertUtil {
     public static final DateTimeFormatter ymdSepSecondformatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     public static final DateTimeFormatter ymdEupformatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
     private static ThreadLocal<DateTimeFormatter> currentFormatter = new ThreadLocal<>();
+    private static ThreadLocal<String> timeFormatStrLocal=new ThreadLocal<>();
+    private static List<String> formatStrList=Lists.newArrayList("yyyyMMdd","yyyy-MM-dd","yyyyMMddHHmmss","yyyy-MM-dd HH:mm:ss","yyyy/MM/dd");
+    private static List<DateTimeFormatter> formatterList=Lists.newArrayList(ymdformatter,ymdSepformatter,ymdSecondformatter,ymdSepSecondformatter,ymdEupformatter);
+
 
     private ConvertUtil() {
 
     }
 
-    public static void convertToTargetObj(Object target, Object src, String... ignoreColumns) throws Exception {
-        if (target == null || src == null) {
+    /**
+     *
+     * @param source
+     * @param target
+     * @param ignoreColumns
+     * @throws Exception
+     */
+    public static void convertToTargetObj(Object source, Object target, String... ignoreColumns) throws Exception {
+        if (target == null || source == null) {
             return;
         }
 
-        Map<String, MethodHandle> srcmap = ReflectUtils.returnGetMethodHandle(src.getClass());
+        Map<String, MethodHandle> srcmap = ReflectUtils.returnGetMethodHandle(source.getClass());
         Map<String, MethodHandle> targetMap = ReflectUtils.returnSetMethodHandle(target.getClass());
         List<String> ignoreColumnList = getIgnoreColumns(ignoreColumns);
         try {
             for (Map.Entry<String, MethodHandle> entry : srcmap.entrySet()) {
                 if (targetMap.containsKey(entry.getKey()) && (ObjectUtils.isEmpty(ignoreColumnList) || !ignoreColumnList.contains(entry.getKey()))) {
-                    Object value = parseParameter(targetMap.get(entry.getKey()).type().parameterType(1), srcmap.get(entry.getKey()).bindTo(src).invoke());
+                    Object value = parseParameter(targetMap.get(entry.getKey()).type().parameterType(1), srcmap.get(entry.getKey()).bindTo(source).invoke());
                     targetMap.get(entry.getKey()).bindTo(target).invoke(value);
                 }
             }
@@ -86,16 +96,16 @@ public class ConvertUtil {
         return ignoreColumnList;
     }
 
-    public static void objectToMap(Map<String, String> target, Object src) throws IllegalAccessException, IllegalArgumentException,
+    public static void objectToMap(Object source, Map<String, String> target) throws IllegalAccessException, IllegalArgumentException,
             InvocationTargetException {
-        if (src == null || target == null) {
+        if (source == null || target == null) {
             return;
         }
-        Map<String, MethodHandle> getMethods = ReflectUtils.returnGetMethodHandle(src.getClass());
+        Map<String, MethodHandle> getMethods = ReflectUtils.returnGetMethodHandle(source.getClass());
         try {
             for (Map.Entry<String, MethodHandle> entry : getMethods.entrySet()) {
                 if (entry.getValue().type().parameterCount() == 1) {
-                    Object value = entry.getValue().bindTo(src).invoke();
+                    Object value = entry.getValue().bindTo(source).invoke();
                     target.put(entry.getKey(), value == null ? "" : value.toString().trim());
                 }
             }
@@ -104,16 +114,16 @@ public class ConvertUtil {
         }
     }
 
-    public static void objectToMapObj(Map<String, Object> target, Object src) throws IllegalAccessException, IllegalArgumentException,
+    public static void objectToMapObj(Object source, Map<String, Object> target) throws IllegalAccessException, IllegalArgumentException,
             InvocationTargetException {
-        if (ObjectUtils.isEmpty(src)) {
+        if (ObjectUtils.isEmpty(source)) {
             return;
         }
-        Map<String, MethodHandle> getMetholds = ReflectUtils.returnGetMethodHandle(src.getClass());
+        Map<String, MethodHandle> getMetholds = ReflectUtils.returnGetMethodHandle(source.getClass());
         try {
             for (Map.Entry<String, MethodHandle> entry : getMetholds.entrySet()) {
                 if (entry.getValue().type().parameterCount() == 1) {
-                    Object value = entry.getValue().bindTo(src).invoke();
+                    Object value = entry.getValue().bindTo(source).invoke();
                     if (!ObjectUtils.isEmpty(value)) {
                         target.put(entry.getKey(), value);
                     }
@@ -124,17 +134,17 @@ public class ConvertUtil {
         }
     }
 
-    public static void objectToMapObj(Map<String, Object> target, Object src, String... ignoreColumns) throws IllegalAccessException, IllegalArgumentException,
+    public static void objectToMapObj(Object source, Map<String, Object> target, String... ignoreColumns) throws IllegalAccessException, IllegalArgumentException,
             InvocationTargetException {
         Set<String> ignoreSets = ignoreColumns.length > 0 ? Sets.newHashSet(ignoreColumns) : null;
-        if (ObjectUtils.isEmpty(src)) {
+        if (ObjectUtils.isEmpty(source)) {
             return;
         }
-        Map<String, MethodHandle> getMetholds = ReflectUtils.returnGetMethodHandle(src.getClass());
+        Map<String, MethodHandle> getMetholds = ReflectUtils.returnGetMethodHandle(source.getClass());
         try {
             for (Map.Entry<String, MethodHandle> entry : getMetholds.entrySet()) {
                 if (entry.getValue().type().parameterCount() == 1 && (CollectionUtils.isEmpty(ignoreSets) || !ignoreSets.contains(entry.getKey()))) {
-                    Object value = entry.getValue().bindTo(target).invoke(src);
+                    Object value = entry.getValue().bindTo(target).invoke(source);
                     if (!ObjectUtils.isEmpty(value)) {
                         target.put(entry.getKey(), value);
                     }
@@ -145,11 +155,11 @@ public class ConvertUtil {
         }
     }
 
-    public static void mapToBaseObject(BaseObject target, Map<String, String> src, String... ignoreColumns) throws Exception {
-        if (src == null || target == null) {
+    public static void mapToBaseObject(Map<String, String> source, BaseObject target, String... ignoreColumns) throws IllegalAccessException {
+        if (source == null || target == null) {
             return;
         }
-        Iterator<Map.Entry<String, String>> it = src.entrySet().iterator();
+        Iterator<Map.Entry<String, String>> it = source.entrySet().iterator();
         Map<String, MethodHandle> methodMap = ReflectUtils.returnSetMethodHandle(target.getClass());
         List<String> ignoreColumnList = getIgnoreColumns(ignoreColumns);
         try {
@@ -175,11 +185,11 @@ public class ConvertUtil {
 
     }
 
-    public static void mapToObject(Object target, Map<String, Object> src, String... ignoreColumns) throws Exception {
-        if (src == null || target == null) {
+    public static void mapToObject(Map<String, Object> source, Object target, String... ignoreColumns) throws IllegalAccessException {
+        if (source == null || target == null) {
             return;
         }
-        Iterator<Map.Entry<String, Object>> it = src.entrySet().iterator();
+        Iterator<Map.Entry<String, Object>> it = source.entrySet().iterator();
         Map<String, MethodHandle> targetMap = ReflectUtils.returnSetMethodHandle(target.getClass());
         List<String> ignoreColumnList = getIgnoreColumns(ignoreColumns);
         try {
@@ -204,18 +214,18 @@ public class ConvertUtil {
     }
 
 
-    private static String camelCase(String value) {
+    private static String toUpper(String value) {
         return value.substring(0, 1).toUpperCase() + value.substring(1);
     }
 
-    public static void convertSerializableForUpdate(Serializable target, Serializable src, String... ignoreColumns) throws Exception {
-        if (target == null || src == null) {
+    public static void convertSerializableForUpdate(Serializable source, Serializable target, String... ignoreColumns) throws IllegalAccessException {
+        if (target == null || source == null) {
             return;
         }
-        if (!target.getClass().equals(src.getClass())) {
+        if (!target.getClass().equals(source.getClass())) {
             throw new GenericException("source and target class mismatch");
         }
-        Map<String, MethodHandle> srcmap = ReflectUtils.returnGetMethodHandle(src.getClass());
+        Map<String, MethodHandle> srcmap = ReflectUtils.returnGetMethodHandle(source.getClass());
         Map<String, MethodHandle> targetMap = ReflectUtils.returnSetMethodHandle(target.getClass());
         List<String> ignoreColumnList = getIgnoreColumns(ignoreColumns);
         try {
@@ -223,7 +233,7 @@ public class ConvertUtil {
                 String field = entry.getKey();
                 if (ObjectUtils.isEmpty(ignoreColumnList) || !ignoreColumnList.contains(field)) {
 
-                    Object value = entry.getValue().bindTo(src).invoke();
+                    Object value = entry.getValue().bindTo(source).invoke();
                     if (value != null && targetMap.get(entry.getKey()) != null) {
                         setObjectValue(target, value, targetMap.get(entry.getKey()));
                     }
@@ -235,21 +245,21 @@ public class ConvertUtil {
     }
 
 
-    public static void convertToModelForUpdate(BaseObject target, BaseObject src) throws Exception {
-        if (target == null || src == null) {
+    public static void convertToModelForUpdate(BaseObject source, BaseObject target) throws IllegalAccessException {
+        if (target == null || source == null) {
             return;
         }
-        if (!target.getClass().equals(src.getClass())) {
+        if (!target.getClass().equals(source.getClass())) {
             throw new RuntimeException("must have unique type");
         }
-        Map<String, MethodHandle> srcmap = ReflectUtils.returnGetMethodHandle(src.getClass());
-        Map<String, MethodHandle> targetmap = ReflectUtils.returnSetMethodHandle(src.getClass());
+        Map<String, MethodHandle> srcmap = ReflectUtils.returnGetMethodHandle(source.getClass());
+        Map<String, MethodHandle> targetmap = ReflectUtils.returnSetMethodHandle(source.getClass());
         try {
-            if (!ObjectUtils.isEmpty(src.getDirtyColumn())) {
-                for (String s : src.getDirtyColumn()) {
+            if (!ObjectUtils.isEmpty(source.getDirtyColumn())) {
+                for (String s : source.getDirtyColumn()) {
                     MethodHandle method = srcmap.get(s);
                     if (method != null) {
-                        Object value = method.bindTo(src).invoke();
+                        Object value = method.bindTo(source).invoke();
                         if (value != null) {
                             targetmap.get(s).bindTo(target).invoke(value);
                         } else {
@@ -263,19 +273,19 @@ public class ConvertUtil {
         }
     }
 
-    public static void convertToModel(BaseObject target, Map<String, Object> src, String... ignoreColumns) throws Exception {
-        if (target == null || src == null) {
+    public static void convertToModel(Map<String, Object> source, BaseObject target, String... ignoreColumns) throws IllegalAccessException {
+        if (target == null || source == null) {
             return;
         }
         Map<String, MethodHandle> map = ReflectUtils.returnSetMethodHandle(target.getClass());
         List<String> ignoreColumnList = getIgnoreColumns(ignoreColumns);
         try {
-            for (Map.Entry<String, Object> entry : src.entrySet()) {
+            for (Map.Entry<String, Object> entry : source.entrySet()) {
                 String field = entry.getKey();
                 if (ObjectUtils.isEmpty(ignoreColumnList) || !ignoreColumnList.contains(field)) {
                     MethodHandle setMethod = map.get(field);
                     if (setMethod != null) {
-                        setBaseObjectValue(target, entry.getValue(), field, setMethod);
+                        setBaseObjectValue(target, entry.getValue(), field, setMethod,ignoreColumnList);
                     }
                 }
             }
@@ -284,14 +294,16 @@ public class ConvertUtil {
         }
     }
 
-    private static void setBaseObjectValue(BaseObject target, Object value, String field, MethodHandle setMethod) throws Throwable {
-        if (!ObjectUtils.isEmpty(value)) {
-            target.addDirtyColumn(field);
-            Class<?> type = setMethod.type().parameterType(1);
-            Object retValue = parseParameter(type, value);
-            setMethod.bindTo(target).invoke(retValue);
-        } else if (target.getDirtyColumn().contains(field)) {
-            setMethod.bindTo(target).invoke(null);
+    private static void setBaseObjectValue(BaseObject target, Object value, String field, MethodHandle setMethod,List<String> ignoreColumns) throws Throwable {
+        if(canFill(ignoreColumns,field)) {
+            if (!ObjectUtils.isEmpty(value)) {
+                target.addDirtyColumn(field);
+                Class<?> type = setMethod.type().parameterType(1);
+                Object retValue = parseParameter(type, value);
+                setMethod.bindTo(target).invoke(retValue);
+            } else if (target.getDirtyColumn().contains(field)) {
+                setMethod.bindTo(target).invoke(null);
+            }
         }
     }
 
@@ -306,24 +318,24 @@ public class ConvertUtil {
     }
 
     @SuppressWarnings("unchecked")
-    public static void convertToTarget(Object target, Object src, String... ignoreColumns) throws Exception {
-        if (target == null || src == null) {
+    public static void convertToTarget(Object source, Object target, String... ignoreColumns) throws IllegalAccessException {
+        if (target == null || source == null) {
             return;
         }
-        Map<String, MethodHandle> targetMethodMap = ReflectUtils.returnSetMethodHandle(target.getClass());
-        Map<String, MethodHandle> sourceMethodMap = ReflectUtils.returnGetMethodHandle(src.getClass());
+
         List<String> ignoreColumnList = getIgnoreColumns(ignoreColumns);
         try {
-            if (Map.class.isAssignableFrom(src.getClass())) {
-                Map<String, Object> vMap = (Map<String, Object>) src;
-                for (Map.Entry<String, Object> entry : vMap.entrySet()) {
-                    String field = entry.getKey();
-                    MethodHandle setMethod = targetMethodMap.get(field);
-                    if (setMethod != null) {
-                        if (target instanceof BaseObject) {
-                            setBaseObjectValue((BaseObject) target, entry.getValue(), field, setMethod);
-                        } else {
-                            if (targetMethodMap.containsKey(field) && (ObjectUtils.isEmpty(ignoreColumnList) || !ignoreColumnList.contains(field))) {
+            if (Map.class.isAssignableFrom(source.getClass())) {
+                if(!Map.class.isAssignableFrom(target.getClass())) {
+                    Map<String, Object> vMap = (Map<String, Object>) source;
+                    Map<String, MethodHandle> targetMethodMap = ReflectUtils.returnSetMethodHandle(target.getClass());
+                    for (Map.Entry<String, Object> entry : vMap.entrySet()) {
+                        String field = entry.getKey();
+                        MethodHandle setMethod = targetMethodMap.get(field);
+                        if (setMethod != null) {
+                            if (target.getClass().isAssignableFrom(BaseObject.class)) {
+                                setBaseObjectValue((BaseObject) target, entry.getValue(), field, setMethod,ignoreColumnList);
+                            } else if (targetMethodMap.containsKey(field) && canFill(ignoreColumnList,field)) {
                                 Object retValue = parseParameter(targetMethodMap.get(field).type().parameterType(1), entry.getValue());
                                 if (retValue != null) {
                                     setObjectValue(targetMethodMap.get(field), target, retValue);
@@ -331,13 +343,33 @@ public class ConvertUtil {
                             }
                         }
                     }
+                }else{
+                    ((Set<Map.Entry<?,?>>)((Map)source).entrySet()).forEach(entry->{
+                        if(entry.getValue()!=null && canFill(ignoreColumnList,entry.getKey().toString())){
+                            ((Map) target).put(entry.getKey(),entry.getValue());
+                        }
+                    });
                 }
             } else {
-                for (Map.Entry<String, MethodHandle> entry : sourceMethodMap.entrySet()) {
-                    if (targetMethodMap.containsKey(entry.getKey()) && entry.getValue().type().parameterCount() == 1) {
-                        Object retValue = parseParameter(targetMethodMap.get(entry.getKey()).type().parameterType(1), entry.getValue().bindTo(src).invoke());
-                        if (null != retValue) {
-                            setObjectValue(targetMethodMap.get(entry.getKey()), target, retValue);
+                if(!Map.class.isAssignableFrom(target.getClass())) {
+                    Map<String, MethodHandle> targetMethodMap = ReflectUtils.returnSetMethodHandle(target.getClass());
+                    Map<String, MethodHandle> sourceMethodMap = ReflectUtils.returnGetMethodHandle(source.getClass());
+                    for (Map.Entry<String, MethodHandle> entry : sourceMethodMap.entrySet()) {
+                        if(BaseObject.class.isAssignableFrom(target.getClass())){
+                            setBaseObjectValue((BaseObject) target, entry.getValue().bindTo(source).invoke(), entry.getKey(), targetMethodMap.get(entry.getKey()),ignoreColumnList);
+                        }else if (targetMethodMap.containsKey(entry.getKey()) && entry.getValue().type().parameterCount() == 1){
+                            Object retValue = parseParameter(targetMethodMap.get(entry.getKey()).type().parameterType(1), entry.getValue().bindTo(source).invoke());
+                            if (null != retValue) {
+                                setObjectValue(targetMethodMap.get(entry.getKey()), target, retValue);
+                            }
+                        }
+                    }
+                }else{
+                    Map<String, MethodHandle> sourceMethodMap = ReflectUtils.returnGetMethodHandle(source.getClass());
+                    for (Map.Entry<String, MethodHandle> entry : sourceMethodMap.entrySet()) {
+                        Object retValue=entry.getValue().bindTo(source).invoke();
+                        if(retValue!=null && canFill(ignoreColumnList,entry.getKey())) {
+                            ((Map) target).put(entry.getKey(), retValue);
                         }
                     }
                 }
@@ -345,6 +377,9 @@ public class ConvertUtil {
         } catch (Throwable ex1) {
             throw new IllegalAccessException(ex1.getMessage());
         }
+    }
+    private static boolean canFill(List<String> ignoreColumnList,String field){
+        return ObjectUtils.isEmpty(ignoreColumnList) || !ignoreColumnList.contains(field);
     }
 
     private static void setObjectValue(MethodHandle setMethod, Object target, Object value) throws Throwable {
@@ -355,7 +390,6 @@ public class ConvertUtil {
         if (strValue == null) {
             return null;
         }
-        DateTimeFormatter formatter = null;
         Object ret = null;
         if (!StringUtils.isEmpty(strValue)) {
             if (Types.INTEGER == meta.getDataType()) {
@@ -369,17 +403,12 @@ public class ConvertUtil {
             } else if (Types.SMALLINT == meta.getDataType()) {
                 ret = Short.valueOf(strValue.toString());
             } else if (Types.TIME == meta.getDataType() || Types.DATE == meta.getDataType() || Types.TIMESTAMP == meta.getDataType()) {
-                String value = strValue.toString().trim();
-                formatter = getFormatter(value);
-                if (null != formatter) {
-                    LocalDateTime localDateTime = LocalDateTime.parse(value, formatter);
-                    if (Types.DATE == meta.getDataType()) {
-                        ret = new java.util.Date(localDateTime.toInstant(ZoneOffset.ofHours(8)).toEpochMilli());
-                    } else if (Types.TIMESTAMP == meta.getDataType()) {
-                        ret = new Timestamp(localDateTime.toInstant(ZoneOffset.ofHours(8)).toEpochMilli());
-                    }
+                LocalDateTime localDateTime = getLocalDateTimeFrom(strValue);
+                if (Types.DATE == meta.getDataType()) {
+                    ret = new java.util.Date(localDateTime.toInstant(ZoneOffset.ofHours(8)).toEpochMilli());
+                } else if (Types.TIMESTAMP == meta.getDataType()) {
+                    ret = new Timestamp(localDateTime.toInstant(ZoneOffset.ofHours(8)).toEpochMilli());
                 }
-
             } else if (Types.VARCHAR == meta.getDataType() || Types.CHAR == meta.getDataType()) {
                 ret = strValue.toString();
             } else {
@@ -393,7 +422,6 @@ public class ConvertUtil {
         if (strValue == null) {
             return null;
         }
-        DateTimeFormatter formatter = null;
         Object ret = null;
         if (!StringUtils.isEmpty(strValue)) {
             if (Const.META_TYPE_INTEGER.equals(meta.getColumnType())) {
@@ -407,17 +435,12 @@ public class ConvertUtil {
             } else if (Const.META_TYPE_SHORT.equals(meta.getColumnType())) {
                 ret = Short.valueOf(strValue.toString());
             } else if (Const.META_TYPE_DATE.equals(meta.getColumnType()) || Const.META_TYPE_TIMESTAMP.equals(meta.getColumnType())) {
-                String value = strValue.toString().trim();
-                formatter = getFormatter(value);
-                if (null != formatter) {
-                    LocalDateTime localDateTime = LocalDateTime.parse(value, formatter);
-                    if (Const.META_TYPE_DATE.equals(meta.getColumnType())) {
-                        ret = new java.util.Date(localDateTime.toInstant(ZoneOffset.ofHours(8)).toEpochMilli());
-                    } else if (Const.META_TYPE_TIMESTAMP.equals(meta.getColumnType())) {
-                        ret = new Timestamp(localDateTime.toInstant(ZoneOffset.ofHours(8)).toEpochMilli());
-                    }
+                LocalDateTime localDateTime = getLocalDateTimeFrom(strValue);
+                if (Const.META_TYPE_DATE.equals(meta.getColumnType())) {
+                    ret = new java.util.Date(localDateTime.toInstant(ZoneOffset.ofHours(8)).toEpochMilli());
+                } else if (Const.META_TYPE_TIMESTAMP.equals(meta.getColumnType())) {
+                    ret = new Timestamp(localDateTime.toInstant(ZoneOffset.ofHours(8)).toEpochMilli());
                 }
-
             } else if (Const.META_TYPE_STRING.equals(meta.getColumnType())) {
                 ret = strValue.toString();
             } else {
@@ -432,20 +455,27 @@ public class ConvertUtil {
         if (Objects.isNull(strValue)) {
             return null;
         }
-        DateTimeFormatter formatter = null;
         Object ret = null;
         if (!ObjectUtils.isEmpty(strValue)) {
-            if (Integer.class.isAssignableFrom(type)) {
+            if(type.isAssignableFrom(strValue.getClass())){
+                ret= strValue;
+            }else if (Integer.class.isAssignableFrom(type)) {
+                Assert.isTrue(NumberUtils.isDigits(strValue.toString()));
                 ret = Integer.parseInt(strValue.toString());
             } else if (Long.class.isAssignableFrom(type)) {
+                Assert.isTrue(NumberUtils.isDigits(strValue.toString()));
                 ret = Long.parseLong(strValue.toString());
             } else if (Float.class.isAssignableFrom(type)) {
+                Assert.isTrue(NumberUtils.isNumber(strValue.toString()));
                 ret = Float.parseFloat(strValue.toString());
             } else if (Double.class.isAssignableFrom(type)) {
+                Assert.isTrue(NumberUtils.isNumber(strValue.toString()));
                 ret = Double.parseDouble(strValue.toString());
             } else if (Short.class.isAssignableFrom(type)) {
+                Assert.isTrue(NumberUtils.isDigits(strValue.toString()));
                 ret = Short.valueOf(strValue.toString());
             } else if (BigDecimal.class.isAssignableFrom(type)) {
+                Assert.isTrue(NumberUtils.isNumber(strValue.toString()));
                 ret = BigDecimal.valueOf(Double.parseDouble(strValue.toString()));
             } else if (Boolean.class.isAssignableFrom(type)) {
                 if (NumberUtils.isNumber(strValue.toString())) {
@@ -453,36 +483,23 @@ public class ConvertUtil {
                 } else {
                     ret = Boolean.valueOf(strValue.toString());
                 }
-            } else if (type.isAssignableFrom(java.util.Date.class) || type.isAssignableFrom(LocalDateTime.class) || type.isAssignableFrom(Timestamp.class)) {
-
+            } else if (type.isAssignableFrom(java.util.Date.class) || type.isAssignableFrom(LocalDateTime.class) || type.isAssignableFrom(Timestamp.class)
+                    || type.isAssignableFrom(java.sql.Date.class) || type.isAssignableFrom(LocalDate.class)) {
+                LocalDateTime localDateTime = getLocalDateTimeFrom(strValue);
                 if (type.isAssignableFrom(java.util.Date.class)) {
-                    if (java.util.Date.class.isAssignableFrom(strValue.getClass())) {
-                        ret = strValue;
-                    } else {
-                        formatter = !ObjectUtils.isEmpty(currentFormatter.get()) ? currentFormatter.get() : getFormatter(strValue.toString());
-                        LocalDateTime localDateTime = LocalDateTime.parse(strValue.toString(), formatter);
-                        ret = new java.util.Date(localDateTime.toInstant(ZoneOffset.ofHours(8)).toEpochMilli());
-                    }
+                    ret = new java.util.Date(localDateTime.toInstant(ZoneOffset.ofHours(8)).toEpochMilli());
                 } else if (type.isAssignableFrom(Timestamp.class)) {
-                    if (Timestamp.class.isAssignableFrom(strValue.getClass())) {
-                        ret = strValue;
-                    } else {
-                        formatter = !ObjectUtils.isEmpty(currentFormatter.get()) ? currentFormatter.get() : getFormatter(strValue.toString());
-                        LocalDateTime localDateTime = LocalDateTime.parse(strValue.toString(), formatter);
-                        ret = new Timestamp(localDateTime.toInstant(ZoneOffset.ofHours(8)).toEpochMilli());
-                    }
+                    ret = new Timestamp(localDateTime.toInstant(ZoneOffset.ofHours(8)).toEpochMilli());
                 } else if (type.isAssignableFrom(LocalDateTime.class)) {
-                    if (LocalDateTime.class.isAssignableFrom(strValue.getClass())) {
-                        ret = strValue;
-                    } else {
-                        formatter = !ObjectUtils.isEmpty(currentFormatter.get()) ? currentFormatter.get() : getFormatter(strValue.toString());
-                        ret = LocalDateTime.parse(strValue.toString(), formatter);
-                    }
+                    ret = localDateTime;
+                }else if(type.isAssignableFrom(LocalDate.class)){
+                    ret =localDateTime.toLocalDate();
+                }else if(type.isAssignableFrom(java.sql.Date.class)){
+                    ret = new java.sql.Date(localDateTime.toInstant(ZoneOffset.ofHours(8)).toEpochMilli());
                 }
             } else if (type.isAssignableFrom(String.class)) {
                 ret = strValue.toString();
             } else {
-
                 if (type.isAssignableFrom(byte.class)) {
                     if (!ObjectUtils.isEmpty(strValue)) {
                         Method method = type.getMethod("valueOf", String.class);
@@ -500,6 +517,38 @@ public class ConvertUtil {
         return ret;
     }
 
+    private static LocalDateTime getLocalDateTimeFrom(Object strValue) {
+        LocalDateTime ret=null;
+        if(ObjectUtils.isEmpty(strValue)){
+            return null;
+        }
+        if(java.sql.Date.class.isAssignableFrom(strValue.getClass())){
+            ret=LocalDateTime.ofInstant(Instant.ofEpochMilli(((java.sql.Date)strValue).getTime()),ZoneId.systemDefault());
+        } else if (java.util.Date.class.isAssignableFrom(strValue.getClass())) {
+            ret=LocalDateTime.ofInstant(Instant.ofEpochMilli(((java.util.Date)strValue).getTime()),ZoneId.systemDefault());
+        }else if(Timestamp.class.isAssignableFrom(strValue.getClass())){
+            ret=LocalDateTime.ofInstant(Instant.ofEpochMilli(((Timestamp)strValue).getTime()),ZoneId.systemDefault());
+        }else if(LocalDate.class.isAssignableFrom(strValue.getClass())){
+            ret=((LocalDate)strValue).atStartOfDay();
+        }else if(LocalDateTime.class.isAssignableFrom(strValue.getClass())){
+            ret=(LocalDateTime) strValue;
+        }else {
+            DateTimeFormatter formatter;
+            formatter = !ObjectUtils.isEmpty(currentFormatter.get()) ? currentFormatter.get() : getFormatter(strValue.toString());
+            if (formatter != null) {
+                if (ymdformatter.equals(formatter) || ymdEupformatter.equals(formatter) || ymdSepformatter.equals(formatter)) {
+                    ret = LocalDate.parse(strValue.toString(), formatter).atStartOfDay();
+                } else {
+                    ret = LocalDateTime.parse(strValue.toString(), formatter);
+                }
+            } else if (NumberUtils.isNumber(strValue.toString())) {
+                ret = LocalDateTime.ofInstant(Instant.ofEpochMilli(Long.valueOf(strValue.toString())), ZoneId.systemDefault());
+            }
+        }
+        return ret;
+    }
+
+
     public static DateTimeFormatter getFormatter(String value) {
         DateTimeFormatter retFormatter = currentFormatter.get();
         if (ObjectUtils.isEmpty(retFormatter)) {
@@ -514,7 +563,9 @@ public class ConvertUtil {
             } else if (isFormatterFit(value, ymdEupformatter)) {
                 retFormatter = ymdEupformatter;
             }
-            currentFormatter.set(retFormatter);
+            if(retFormatter!=null) {
+                currentFormatter.set(retFormatter);
+            }
         }
         return retFormatter;
     }
@@ -650,7 +701,7 @@ public class ConvertUtil {
             }
 
         } catch (Exception e) {
-            log.error("convert error {}", e);
+            log.error("convert error {}", e.getMessage());
         }
         return targetObject;
     }
@@ -694,12 +745,24 @@ public class ConvertUtil {
         }
     }
 
-    public static void setDateFormat(String formatStr) {
-        currentFormatter.set(DateTimeFormatter.ofPattern(formatStr));
+    public static void setDateTimeFormat(String formatStr) {
+        int pos=formatStrList.indexOf(formatStr);
+        if(pos!=-1){
+            currentFormatter.set(formatterList.get(pos));
+        }else {
+            currentFormatter.set(DateTimeFormatter.ofPattern(formatStr));
+        }
+        timeFormatStrLocal.set(formatStr);
     }
 
-    public static void setDateFormat(DateTimeFormatter formatter) {
-        currentFormatter.set(formatter);
+    public static void setDateTimeFormat(DateTimeFormatter formatter) {
+        int pos=formatStrList.indexOf(formatter.toString());
+        if(pos!=-1){
+            currentFormatter.set(formatterList.get(pos));
+        }else {
+            currentFormatter.set(formatter);
+        }
+        timeFormatStrLocal.set(formatter.toString());
     }
 
     public static void finishConvert() {

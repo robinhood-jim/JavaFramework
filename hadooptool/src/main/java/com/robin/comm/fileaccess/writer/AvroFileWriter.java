@@ -16,6 +16,7 @@
 package com.robin.comm.fileaccess.writer;
 
 import com.robin.core.base.util.Const;
+import com.robin.core.fileaccess.fs.AbstractFileSystemAccessor;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.util.AvroUtils;
 import com.robin.core.fileaccess.util.ResourceUtil;
@@ -49,12 +50,19 @@ public class AvroFileWriter extends AbstractFileWriter {
 		super(colmeta);
 		schema = AvroUtils.getSchemaFromMeta(colmeta);
 		this.identifier= Const.FILEFORMATSTR.AVRO.getValue();
+		useRawOutputStream=true;
+	}
+	public AvroFileWriter(DataCollectionMeta colmeta, AbstractFileSystemAccessor accessor) {
+		super(colmeta,accessor);
+		schema = AvroUtils.getSchemaFromMeta(colmeta);
+		this.identifier= Const.FILEFORMATSTR.AVRO.getValue();
+		useRawOutputStream=true;
 	}
 
 	
 	@Override
 	public void beginWrite() throws IOException {
-		out = accessUtil.getRawOutputStream(ResourceUtil.getProcessPath(colmeta.getPath()));
+		super.beginWrite();
 		dwriter=new GenericDatumWriter<>(schema);
 		fileWriter=new DataFileWriter<>(dwriter);
 		Const.CompressType type= getCompressType();

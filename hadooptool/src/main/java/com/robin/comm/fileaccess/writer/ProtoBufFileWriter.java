@@ -6,6 +6,7 @@ import com.google.protobuf.DynamicMessage;
 import com.robin.comm.fileaccess.util.ProtoBufUtil;
 import com.robin.core.base.util.Const;
 import com.robin.core.compress.util.CompressEncoder;
+import com.robin.core.fileaccess.fs.AbstractFileSystemAccessor;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.util.ResourceUtil;
 import com.robin.core.fileaccess.writer.AbstractFileWriter;
@@ -26,6 +27,10 @@ public class ProtoBufFileWriter extends AbstractFileWriter {
     }
     public ProtoBufFileWriter(DataCollectionMeta colmeta) {
         super(colmeta);
+        this.identifier= Const.FILEFORMATSTR.PROTOBUF.getValue();
+    }
+    public ProtoBufFileWriter(DataCollectionMeta colmeta, AbstractFileSystemAccessor accessor){
+        super(colmeta,accessor);
         this.identifier= Const.FILEFORMATSTR.PROTOBUF.getValue();
     }
 

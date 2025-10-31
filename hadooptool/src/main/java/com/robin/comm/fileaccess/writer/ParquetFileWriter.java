@@ -6,6 +6,7 @@ import com.robin.comm.fileaccess.util.ParquetUtil;
 import com.robin.comm.fileaccess.util.ProtoBufUtil;
 import com.robin.core.base.util.Const;
 import com.robin.core.base.util.ResourceConst;
+import com.robin.core.fileaccess.fs.AbstractFileSystemAccessor;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.util.AvroUtils;
 import com.robin.core.fileaccess.util.ResourceUtil;
@@ -55,6 +56,16 @@ public class ParquetFileWriter extends AbstractFileWriter {
     }
     public ParquetFileWriter(DataCollectionMeta colmeta) {
         super(colmeta);
+        useRawOutputStream=true;
+        initWriter();
+
+    }
+    public ParquetFileWriter(DataCollectionMeta colmeta, AbstractFileSystemAccessor accessor){
+        super(colmeta,accessor);
+        useRawOutputStream=true;
+        initWriter();
+    }
+    private void initWriter(){
         avroSchema= AvroUtils.getSchemaFromMeta(colmeta);
         schema=ParquetUtil.genSchema(colmeta);
         this.identifier= Const.FILEFORMATSTR.PARQUET.getValue();
@@ -70,11 +81,11 @@ public class ParquetFileWriter extends AbstractFileWriter {
         }catch (Exception ex){
 
         }
-
     }
 
     @Override
     public void beginWrite() throws IOException {
+        super.beginWrite();
         Const.CompressType type= getCompressType();
         switch (type){
             case COMPRESS_TYPE_GZ:
@@ -107,9 +118,7 @@ public class ParquetFileWriter extends AbstractFileWriter {
                 codecName=CompressionCodecName.UNCOMPRESSED;
         }
 
-        if(out==null) {
-            checkAccessUtil(null);
-        }
+
         if(colmeta.getResourceCfgMap().containsKey(ResourceConst.PARQUETFILEFORMAT)){
             if(ResourceConst.PARQUETSUPPORTFORMAT.AVRO.getValue().equalsIgnoreCase(colmeta.getResourceCfgMap().get(ResourceConst.PARQUETFILEFORMAT).toString())) {
                 useAvroEncode = true;
@@ -131,7 +140,6 @@ public class ParquetFileWriter extends AbstractFileWriter {
                 mapWriter =new CustomParquetWriter.Builder(new Path(colmeta.getPath()), schema).withConf(conf).withPageSize(pageSize).withCompressionCodec(codecName).withDictionaryEncoding(false).withWriterVersion(writerVersion).build();
             }
         }else{
-            out=accessUtil.getRawOutputStream(ResourceUtil.getProcessPath(colmeta.getPath()));
             if(useAvroEncode) {
                 avroWriter = AvroParquetWriter.<GenericRecord>builder(ParquetUtil.makeOutputFile(out, colmeta, ResourceUtil.getProcessPath(colmeta.getPath()))).withCompressionCodec(codecName).withSchema(avroSchema).build();
             }else if(useProtobufEncode){

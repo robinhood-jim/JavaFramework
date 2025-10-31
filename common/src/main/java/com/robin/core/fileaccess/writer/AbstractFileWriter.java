@@ -49,6 +49,7 @@ public abstract class AbstractFileWriter implements IResourceWriter {
 	protected AbstractFileSystemAccessor accessUtil;
 	protected String identifier;
 	protected boolean useBufferedWriter=false;
+	protected boolean useRawOutputStream=false;
 
 	public AbstractFileWriter(){
 
@@ -105,7 +106,11 @@ public abstract class AbstractFileWriter implements IResourceWriter {
 	public void beginWrite() throws IOException{
 		if(out==null){
 			checkAccessUtil(colmeta.getPath());
-			out = accessUtil.getOutResourceByStream(ResourceUtil.getProcessPath(colmeta.getPath()));
+			if(!useRawOutputStream) {
+				out = accessUtil.getOutResourceByStream(ResourceUtil.getProcessPath(colmeta.getPath()));
+			}else{
+				out = accessUtil.getRawOutputStream(ResourceUtil.getProcessPath(colmeta.getPath()));
+			}
 			if(useBufferedWriter) {
 				writer = new BufferedWriter(new OutputStreamWriter(out));
 			}

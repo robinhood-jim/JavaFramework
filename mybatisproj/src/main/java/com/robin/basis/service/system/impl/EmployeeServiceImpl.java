@@ -4,18 +4,22 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.robin.basis.dto.EmployeeDTO;
+import com.robin.basis.dto.SysUserDTO;
 import com.robin.basis.dto.query.SysEmployeeQueryDTO;
 import com.robin.basis.mapper.EmployeeMapper;
 import com.robin.basis.model.region.Region;
 import com.robin.basis.model.user.Employee;
+import com.robin.basis.model.user.SysUser;
 import com.robin.basis.service.region.IRegionService;
 import com.robin.basis.service.system.IEmployeeService;
+import com.robin.basis.service.system.ISysUserService;
 import com.robin.basis.utils.WebUtils;
 import com.robin.core.base.exception.ServiceException;
 import com.robin.core.base.service.AbstractMybatisService;
 import com.robin.core.base.util.Const;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
@@ -28,6 +32,8 @@ import java.util.Map;
 public class EmployeeServiceImpl extends AbstractMybatisService<EmployeeMapper, Employee,Long> implements IEmployeeService {
     @Resource
     private IRegionService regionService;
+    @Resource
+    private ISysUserService userService;
 
     private static final DateTimeFormatter birthDayFormat=DateTimeFormatter.ofPattern("yyyy-MM-dd");
     public Map<String,Object> list(SysEmployeeQueryDTO queryDTO){
@@ -52,7 +58,8 @@ public class EmployeeServiceImpl extends AbstractMybatisService<EmployeeMapper, 
             return WebUtils.toEmptyPageVO();
         }
     }
-    public boolean saveEmployee(EmployeeDTO dto) throws ServiceException{
+    @Transactional(rollbackFor = RuntimeException.class)
+    public boolean saveEmployee(EmployeeDTO dto,boolean createAccount) throws ServiceException{
         long count=this.lambdaQuery().eq(StrUtil.isNotBlank(dto.getCreditNo()),Employee::getCreditNo,dto.getCreditNo())
                 .or(orwrapper->orwrapper.eq(StrUtil.isNotBlank(dto.getName()),Employee::getName,dto.getName())).count();
         if(count>0L){
@@ -67,8 +74,21 @@ public class EmployeeServiceImpl extends AbstractMybatisService<EmployeeMapper, 
         if(!ObjectUtil.isEmpty(dto.getBrithDay())){
             employee.setBrithDay(LocalDate.parse(dto.getBrithDay(),birthDayFormat));
         }
-        return save(employee);
+        if(!createAccount) {
+            return save(employee);
+        }else{
+            if(save(employee)) {
+                SysUserDTO user = new SysUserDTO();
+                user.setUserAccount(dto.getContactPhone());
+                user.setUserName(dto.getName());
+                user.setPhoneNum(dto.getContactPhone());
+                userService.saveUser(user);
+                return true;
+            }
+            return false;
+        }
     }
+    @Transactional(rollbackFor = RuntimeException.class)
     public boolean updateEmployee(EmployeeDTO dto) throws ServiceException{
         Employee employee=getById(dto.getId());
         if(!ObjectUtil.isEmpty(employee)) {

@@ -275,7 +275,7 @@ public class DataMappingContoller extends AbstractCrudDhtmlxController<ProjectIn
             String basePath = info.getProjBasePath();
             String className = enmap.getJavaClass().substring(0, 1).toUpperCase() + enmap.getJavaClass().substring(1, enmap.getJavaClass().length());
             Map<String, String> entityMap = new HashMap<>();
-            ConvertUtil.objectToMap(entityMap, enmap);
+            ConvertUtil.objectToMap(enmap, entityMap);
             entityMap.put("pkType", pktype);
             entityMap.put("upperName", className);
             if (!basePath.endsWith("/")) {
@@ -436,7 +436,7 @@ public class DataMappingContoller extends AbstractCrudDhtmlxController<ProjectIn
         Map<String, Object> retMap = new HashMap<>();
         mapping = new EntityMapping();
         try {
-            ConvertUtil.mapToObject(mapping, wrapRequest(request));
+            ConvertUtil.mapToObject(wrapRequest(request), mapping);
             String javaClass = mapping.getJavaClass();
             if (mapping.getSpringName() == null || mapping.getSpringName().isEmpty()) {
                 mapping.setSpringName(javaClass.substring(0, 1).toLowerCase() + javaClass.substring(1));

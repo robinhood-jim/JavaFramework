@@ -17,7 +17,7 @@ spring:
     password: vue
 logging:
   level:
-    root: DEBUG
+    root: INFO
 
 pagehelper:
   helperDialect: mysql
@@ -43,5 +43,9 @@ project:
 jwt:
   salt: 123456
 login:
-  ignoreUrls: /index,/login,/logout,/captchaImage
+  ignoreUrls: /index,/login,/logout,/captchaImage,/ossres
   ignoreResources: gif,bmp,png,jpg,js,flash,css,swf,flv,metaget
+
+oss:
+  type: file
+  startPath: file:///f:/tmp/

@@ -28,7 +28,6 @@ import java.util.NoSuchElementException;
 
 public class ParquetStreamIterator extends AbstractFileIterator {
     private ParquetReader<GenericData.Record> preader;
-    private Schema schema;
     private MessageType msgtype;
     private Configuration conf;
     private GenericData.Record record;
@@ -52,7 +51,7 @@ public class ParquetStreamIterator extends AbstractFileIterator {
                 msgtype = meta.getFileMetaData().getSchema();
                 parseSchemaByType();
             } else {
-                schema = AvroUtils.getSchemaFromMeta(colmeta);
+                avroSchema = AvroUtils.getSchemaFromMeta(colmeta);
             }
             //seek remote file to local tmp
             ByteArrayOutputStream byteout=new ByteArrayOutputStream(instream.available());
@@ -60,7 +59,7 @@ public class ParquetStreamIterator extends AbstractFileIterator {
             ByteArraySeekableInputStream seekableInputStream=new ByteArraySeekableInputStream(byteout.toByteArray());
             preader = AvroParquetReader
                     .<GenericData.Record>builder(ParquetUtil.makeInputFile(seekableInputStream)).withConf(conf).build();
-            fields = schema.getFields();
+            fields = avroSchema.getFields();
         }catch (Exception ex){
             logger.error("{0}",ex);
         }
@@ -99,12 +98,9 @@ public class ParquetStreamIterator extends AbstractFileIterator {
         for(Type type:colList){
             colmeta.addColumnMeta(type.getName(),ParquetReaderUtil.parseColumnType(type.asPrimitiveType()),null);
         }
-        schema= AvroUtils.getSchemaFromMeta(colmeta);
+        avroSchema= AvroUtils.getSchemaFromMeta(colmeta);
     }
 
-    public Schema getSchema() {
-        return schema;
-    }
 
     @Override
     public void remove() {

@@ -23,7 +23,6 @@ import org.springframework.util.ObjectUtils;
 
 import javax.sql.DataSource;
 import java.lang.invoke.MethodHandle;
-import java.lang.reflect.Method;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -120,7 +119,7 @@ public class SqlMapperDao extends JdbcDaoSupport {
             }
         } else {
             try {
-                ConvertUtil.objectToMapObj(paramMap, params[0]);
+                ConvertUtil.objectToMapObj(params[0], paramMap);
             } catch (Exception ex) {
                 throw new DAOException(ex);
             }

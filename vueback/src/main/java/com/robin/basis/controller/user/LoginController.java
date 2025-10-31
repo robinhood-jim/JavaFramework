@@ -102,7 +102,7 @@ public class LoginController extends AbstractController {
             headerMap.put("type", "JWT");
             headerMap.put("alg", "RS256");
 
-            ConvertUtil.objectToMapObj(sessionMap, loginUser);
+            ConvertUtil.objectToMapObj(loginUser, sessionMap);
 
             Integer expireDays = !environment.containsProperty("session.expireDay") ? 15 : Integer.parseInt(environment.getProperty("session.expireDay"));
             LocalDateTime dateTime = LocalDateTime.now();

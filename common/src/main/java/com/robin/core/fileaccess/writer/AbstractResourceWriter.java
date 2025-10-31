@@ -16,18 +16,7 @@ import javax.naming.OperationNotSupportedException;
 import java.io.IOException;
 import java.util.*;
 
-/**
- * <p>Project:  frame</p>
- * <p>
- * <p>Description:com.robin.core.fileaccess.writer</p>
- * <p>
- * <p>Copyright: Copyright (c) 2018 create at 2018年10月31日</p>
- * <p>
- * <p>Company: zhcx_DEV</p>
- *
- * @author robinjim
- * @version 1.0
- */
+
 public abstract class AbstractResourceWriter implements IResourceWriter{
     protected DataCollectionMeta colmeta;
 

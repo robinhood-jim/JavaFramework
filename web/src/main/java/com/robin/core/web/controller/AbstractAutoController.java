@@ -150,7 +150,7 @@ public abstract class AbstractAutoController<O extends BaseObject, P extends Ser
         Map<String, Object> retMap = new HashMap<>();
         try {
             O vo = potype.newInstance();
-            ConvertUtil.mapToBaseObject(vo, reqMap);
+            ConvertUtil.mapToBaseObject(reqMap, vo);
             P p = service.getSaveFunction().apply(vo);
             retMap.put(WebConstant.DATA, p);
             constructRetMap(retMap);
@@ -178,7 +178,7 @@ public abstract class AbstractAutoController<O extends BaseObject, P extends Ser
         Map<String, Object> retmap = new HashMap<>();
         try {
             O vo = potype.newInstance();
-            ConvertUtil.mapToBaseObject(vo, reqMap);
+            ConvertUtil.mapToBaseObject(reqMap, vo);
             this.service.updateEntity(vo);
             retmap.put(WebConstant.SUCCESS, true);
         } catch (Exception e) {
@@ -207,7 +207,7 @@ public abstract class AbstractAutoController<O extends BaseObject, P extends Ser
         PageQuery<O> query=new PageQuery<>();
         try{
             if(paramMap.containsKey("_pageQuery")) {
-                ConvertUtil.mapToObject(query, (Map<String,Object>)paramMap.get("_pageQuery"));
+                ConvertUtil.mapToObject((Map<String,Object>)paramMap.get("_pageQuery"), query);
             }
             FilterCondition condition=getCondition(paramMap);
             service.queryByCondition(condition,query);
@@ -272,7 +272,7 @@ public abstract class AbstractAutoController<O extends BaseObject, P extends Ser
     protected PageQuery<Map<String,Object>> wrapPageQueryReq(Map<String, Object> reqMap) {
         PageQuery<Map<String,Object>> query = new PageQuery<>();
         try {
-            ConvertUtil.mapToObject(query, reqMap);
+            ConvertUtil.mapToObject(reqMap, query);
         } catch (Exception ex) {
             ex.printStackTrace();
         }

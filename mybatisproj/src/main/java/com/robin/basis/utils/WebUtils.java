@@ -98,10 +98,10 @@ public class WebUtils {
             }
         }else{
             if(SecurityUtils.isLoginUserSystemAdmin()){
-                ossPath="/"+formatter.format(LocalDateTime.now())+"/"+ System.currentTimeMillis() + "." + content.getFileFormat();
+                ossPath="/"+formatter.format(LocalDateTime.now())+"/"+ System.currentTimeMillis() + "." + content.getFileFormat().getValue();
                 fileName=ossPath;
             }else{
-                ossPath="/"+formatter.format(LocalDateTime.now())+"/"+ System.currentTimeMillis() + "." + content.getFileFormat();
+                ossPath="/"+formatter.format(LocalDateTime.now())+"/"+ System.currentTimeMillis() + "." + content.getFileFormat().getValue();
                 fileName=ossPath;
             }
 

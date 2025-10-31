@@ -4,10 +4,17 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.robin.core.base.exception.ServiceException;
 import com.robin.core.base.exception.WebException;
 import com.robin.core.base.service.IMybatisBaseService;
+import com.robin.core.base.util.FileUtils;
+import com.robin.core.base.util.IOUtils;
 import com.robin.core.base.util.MessageUtils;
+import com.robin.core.fileaccess.fs.AbstractFileSystemAccessor;
 import com.robin.core.query.util.PageQuery;
+import org.springframework.lang.NonNull;
 import org.springframework.util.ObjectUtils;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -59,4 +66,14 @@ public class WebUtils {
             retMap.put(COL_MESSAGE, ex.getMessage());
         }
     }
+    public static void returnOSSResource(HttpServletResponse response, @NonNull AbstractFileSystemAccessor accessor, String ossPath) throws IOException {
+        FileUtils.FileContent content= FileUtils.parseFile(ossPath);
+        try(InputStream inputStream=accessor.getInResourceByStream(ossPath)) {
+            response.setHeader("content-type", content.getContentType());
+            IOUtils.copyBytes(inputStream, response.getOutputStream());
+        }catch (IOException ex){
+            throw ex;
+        }
+    }
+
 }

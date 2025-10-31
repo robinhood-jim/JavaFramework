@@ -28,7 +28,7 @@ public class FsInboundComponent extends AbstractComponent {
             fileStorageType=context.getJobParam().get(EtlConstant.FILESTORAGETYPE).toString();
             accessor= FileSystemAccessorFactory.getResourceAccessorByType(fileStorageType);
             if (accessor == null) {
-                accessor= CloudStorageFileSystemAccessorFactory.getAccessorByIdentifier(context.getInputMeta(),fileStorageType);
+                accessor= CloudStorageFileSystemAccessorFactory.getAccessorByIdentifier(fileStorageType, context.getInputMeta());
             }
         }
 

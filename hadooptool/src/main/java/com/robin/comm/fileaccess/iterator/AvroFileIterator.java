@@ -38,7 +38,6 @@ import java.util.List;
 import java.util.Map;
 
 public class AvroFileIterator extends AbstractFileIterator {
-    private Schema schema;
     private FileReader<GenericRecord> fileReader;
     private Double allowOffHeapDumpLimit = ResourceConst.ALLOWOUFHEAPMEMLIMIT;
     private MemorySegment segment;
@@ -73,7 +72,7 @@ public class AvroFileIterator extends AbstractFileIterator {
     @Override
     public void beforeProcess() {
         try {
-            schema = AvroUtils.getSchemaFromMeta(colmeta);
+            avroSchema = AvroUtils.getSchemaFromMeta(colmeta);
             doInit(colmeta.getPath());
         } catch (Exception ex) {
             logger.error("Exception {0}", ex);
@@ -82,13 +81,13 @@ public class AvroFileIterator extends AbstractFileIterator {
 
 
     private void doInit(String resourcePath) throws Exception {
-        if (colmeta.getSourceType().equals(ResourceConst.IngestType.TYPE_HDFS.getValue())) {
+        if (Const.FILESYSTEM.HDFS.getValue().equals(colmeta.getFsType())) {
             HDFSUtil util = new HDFSUtil(colmeta);
             instream = util.getHDFSDataByRawInputStream(ResourceUtil.getProcessPath(resourcePath));
             input = new AvroFSInput(new FSDataInputStream(instream), util.getHDFSFileSize(ResourceUtil.getProcessPath(resourcePath)));
         } else {
             // no hdfs input source
-            if (!ResourceConst.IngestType.TYPE_LOCAL.getValue().equals(colmeta.getSourceType())) {
+            if (!Const.FILESYSTEM.LOCAL.getValue().equals(colmeta.getFsType())) {
                 instream = accessUtil.getRawInputStream(ResourceUtil.getProcessPath(resourcePath));
                 long size = accessUtil.getInputStreamSize(ResourceUtil.getProcessPath(colmeta.getPath()));
                 Double freeMemory = SysUtils.getFreeMemory();
@@ -112,9 +111,16 @@ public class AvroFileIterator extends AbstractFileIterator {
             }
         }
         Assert.notNull(input, "Seekable input is null");
-        GenericDatumReader<GenericRecord> dreader = new GenericDatumReader<>(schema);
+        GenericDatumReader<GenericRecord> dreader ;
+        if(avroSchema!=null){
+            dreader=new GenericDatumReader<>(avroSchema);
+        }else{
+            dreader=new GenericDatumReader<>();
+        }
         fileReader = new DataFileReader<>(input, dreader);
-        schema = fileReader.getSchema();
+        if(avroSchema==null){
+            avroSchema=fileReader.getSchema();
+        }
     }
 
     @Override
@@ -123,7 +129,7 @@ public class AvroFileIterator extends AbstractFileIterator {
             cachedValue.clear();
             if(fileReader.hasNext()){
                 GenericRecord records = fileReader.next();
-                List<Field> flist = schema.getFields();
+                List<Field> flist = avroSchema.getFields();
                 for (Field f : flist) {
                     if (!ObjectUtils.isEmpty(records.get(f.name()))) {
                         cachedValue.put(f.name(), records.get(f.name()).toString());
@@ -139,7 +145,7 @@ public class AvroFileIterator extends AbstractFileIterator {
         Map<String, Object> retmap = new HashMap<>();
         try {
             GenericRecord records = fileReader.next();
-            List<Field> flist = schema.getFields();
+            List<Field> flist = avroSchema.getFields();
             for (Field f : flist) {
                 if (!ObjectUtils.isEmpty(records.get(f.name()))) {
                     retmap.put(f.name(), records.get(f.name()).toString());
@@ -151,9 +157,6 @@ public class AvroFileIterator extends AbstractFileIterator {
         return retmap;
     }
 
-    public Schema getSchema() {
-        return schema;
-    }
 
     @Override
     public void remove() {

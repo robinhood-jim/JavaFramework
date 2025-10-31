@@ -31,7 +31,6 @@ import com.robin.basis.utils.SecurityUtils;
 import com.robin.core.base.exception.MissingConfigException;
 import com.robin.core.base.spring.SpringContextHolder;
 import com.robin.core.base.util.Const;
-import com.robin.core.base.util.ResourceConst;
 import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.web.controller.AbstractController;
 import com.robin.core.web.util.CookieUtils;
@@ -121,7 +120,7 @@ public class LoginController extends AbstractController {
         headerMap.put("type", "JWT");
         headerMap.put("alg", "RS256");
 
-        ConvertUtil.objectToMapObj(sessionMap, loginUser);
+        ConvertUtil.objectToMapObj(loginUser, sessionMap);
 
         Integer expireDays = !environment.containsProperty("session.expireDay") ? 15 : Integer.parseInt(environment.getProperty("session.expireDay"));
         LocalDateTime dateTime = LocalDateTime.now();

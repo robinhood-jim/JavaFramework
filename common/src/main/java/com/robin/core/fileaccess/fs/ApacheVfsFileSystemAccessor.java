@@ -49,7 +49,7 @@ public class ApacheVfsFileSystemAccessor extends AbstractFileSystemAccessor {
         VfsParam param = new VfsParam();
         InputStream stream;
         try {
-            ConvertUtil.convertToTarget(param, colmeta.getResourceCfgMap());
+            ConvertUtil.convertToTarget(colmeta.getResourceCfgMap(), param);
             FileObject fileObject = manager.resolveFile(getUriByParam(param, resourcePath).toString(), getOptions(param));
             checkAndSetFileObject(fileObject);
             stream = getInResource(fileObject, colmeta);
@@ -92,7 +92,7 @@ public class ApacheVfsFileSystemAccessor extends AbstractFileSystemAccessor {
     public InputStream getInResourceByStream(String resourcePath) throws IOException {
         VfsParam param = new VfsParam();
         try {
-            ConvertUtil.convertToTarget(param, colmeta.getResourceCfgMap());
+            ConvertUtil.convertToTarget(colmeta.getResourceCfgMap(), param);
             FileObject fileObject =  manager.resolveFile(getUriByParam(param, resourcePath).toString(), getOptions(param));
             checkAndSetFileObject(fileObject);
             return getInResource(fileObject, colmeta);
@@ -104,7 +104,7 @@ public class ApacheVfsFileSystemAccessor extends AbstractFileSystemAccessor {
     public static FileObject getFileObject(FileSystemManager manager, DataCollectionMeta meta, String resPath) throws IOException {
         VfsParam param = new VfsParam();
         try {
-            ConvertUtil.convertToTarget(param, meta.getResourceCfgMap());
+            ConvertUtil.convertToTarget(meta.getResourceCfgMap(), param);
             return manager.resolveFile(getUriByParam(param, resPath).toString(), getOptions(param));
         } catch (Exception ex) {
             throw new IOException(ex);
@@ -162,7 +162,7 @@ public class ApacheVfsFileSystemAccessor extends AbstractFileSystemAccessor {
 
     public FileObject createNotExists(DataCollectionMeta meta, String resourcePath) throws Exception {
         VfsParam param = new VfsParam();
-        ConvertUtil.convertToTarget(param, meta.getResourceCfgMap());
+        ConvertUtil.convertToTarget(meta.getResourceCfgMap(), param);
         try (FileObject fo =  manager.resolveFile(getUriByParam(param, resourcePath).toString(), getOptions(param))) {
             if (fo.exists()) {
                 if (FileType.FOLDER.equals(fo.getType())) {
@@ -209,7 +209,7 @@ public class ApacheVfsFileSystemAccessor extends AbstractFileSystemAccessor {
     public InputStream getRawInputStream(String resourcePath) throws IOException {
         VfsParam param = new VfsParam();
         try {
-            ConvertUtil.convertToTarget(param, colmeta.getResourceCfgMap());
+            ConvertUtil.convertToTarget(colmeta.getResourceCfgMap(), param);
             FileObject fileObject =  manager.resolveFile(getUriByParam(param, resourcePath).toString(), getOptions(param));
             checkAndSetFileObject(fileObject);
             return getRawInResource(fileObject, colmeta);
@@ -284,7 +284,7 @@ public class ApacheVfsFileSystemAccessor extends AbstractFileSystemAccessor {
     public boolean exists(String resourcePath) throws IOException {
         VfsParam param = new VfsParam();
         try {
-            ConvertUtil.convertToTarget(param, colmeta.getResourceCfgMap());
+            ConvertUtil.convertToTarget(colmeta.getResourceCfgMap(), param);
         } catch (Exception ex) {
             throw new IOException(ex);
         }
@@ -299,7 +299,7 @@ public class ApacheVfsFileSystemAccessor extends AbstractFileSystemAccessor {
     public long getInputStreamSize(String resourcePath) throws IOException {
         VfsParam param = new VfsParam();
         try {
-            ConvertUtil.convertToTarget(param, colmeta.getResourceCfgMap());
+            ConvertUtil.convertToTarget(colmeta.getResourceCfgMap(), param);
         } catch (Exception ex) {
             throw new IOException(ex);
         }

@@ -35,10 +35,10 @@ public class LoginDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String userName) throws UsernameNotFoundException {
         SysUser user=new SysUser();
-        user.setUserStatus(Const.VALID);
+        user.setStatus(Const.VALID);
         user.setUserAccount(userName);
         LambdaQueryWrapper<SysUser> queryWrapper=new QueryWrapper<SysUser>().lambda();
-        queryWrapper.eq(SysUser::getUserStatus,Const.VALID);
+        queryWrapper.eq(SysUser::getStatus,Const.VALID);
         queryWrapper.eq(SysUser::getUserAccount,userName);
         List<SysUser> users=sysUserService.list(queryWrapper);
         SysLoginUser.Builder builder=SysLoginUser.Builder.newBuilder();
@@ -74,7 +74,9 @@ public class LoginDetailsService implements UserDetailsService {
                 Map<Long,Integer> readMap=new HashMap<>();
                 pageQuery.getRecordSet().forEach(f->{
                     if(!Const.RESOURCE_ASSIGN_DENIED.equals(f.get("assignType").toString()) && !readMap.containsKey((Long)f.get("id"))){
-                        permissions.add(f.get("permission").toString());
+                        if(!ObjectUtils.isEmpty(f.get("permission"))) {
+                            permissions.add(f.get("permission").toString());
+                        }
                     }
                     readMap.put((Long)f.get("id"),1);
                 });

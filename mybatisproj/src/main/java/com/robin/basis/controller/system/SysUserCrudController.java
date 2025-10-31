@@ -18,11 +18,9 @@ package com.robin.basis.controller.system;
 import com.google.common.collect.Lists;
 import com.robin.basis.dto.SysResourceDTO;
 import com.robin.basis.dto.SysUserDTO;
-import com.robin.basis.dto.TenantInfoDTO;
 import com.robin.basis.dto.query.SysUserQueryDTO;
 import com.robin.basis.mapper.SysUserMapper;
 import com.robin.basis.model.user.SysUser;
-import com.robin.basis.sercurity.SysLoginUser;
 import com.robin.basis.service.system.ISysOrgService;
 import com.robin.basis.service.system.ISysResourceService;
 import com.robin.basis.service.system.ISysUserService;
@@ -86,7 +84,7 @@ public class SysUserCrudController extends AbstractMyBatisController<ISysUserSer
         //check userAccount unique
         SysUserDTO dto=new SysUserDTO();
         try {
-            ConvertUtil.mapToObject(dto, map);
+            ConvertUtil.mapToObject(map, dto);
             List<?> roleList=(List<?>) map.get("roles");
             dto.setRoles(roleList.stream().map(f->{
                 if(Map.class.isAssignableFrom(f.getClass())){

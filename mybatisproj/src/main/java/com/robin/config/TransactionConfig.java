@@ -27,11 +27,12 @@ import javax.sql.DataSource;
 
 @Configuration
 public class TransactionConfig implements TransactionManagementConfigurer {
-    @Resource(name = "txManager")
+
     private PlatformTransactionManager txManager;
     @Bean
     public PlatformTransactionManager txManager(@Qualifier("dataSource") DataSource dataSource){
-        return new DataSourceTransactionManager(dataSource);
+        txManager=new DataSourceTransactionManager(dataSource);
+        return txManager;
     }
 
     @Override

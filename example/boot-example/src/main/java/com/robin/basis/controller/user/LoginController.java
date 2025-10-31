@@ -72,7 +72,7 @@ public class LoginController extends AbstractController {
             headerMap.put("type", "JWT");
             headerMap.put("alg", "RS256");
 
-            ConvertUtil.objectToMapObj(sessionMap, session);
+            ConvertUtil.objectToMapObj(session, sessionMap);
             Environment environment= SpringContextHolder.getBean(Environment.class);
 
             Integer expireDays = !environment.containsProperty("session.expireDay") ? 15 : Integer.parseInt(environment.getProperty("session.expireDay"));
@@ -123,7 +123,7 @@ public class LoginController extends AbstractController {
             headerMap.put("type", "JWT");
             headerMap.put("alg", "RS256");
 
-            ConvertUtil.objectToMapObj(sessionMap, session);
+            ConvertUtil.objectToMapObj(session, sessionMap);
 
             Integer expireDays = !environment.containsProperty("session.expireDay") ? 15 : Integer.parseInt(environment.getProperty("session.expireDay"));
             LocalDateTime dateTime = LocalDateTime.now();

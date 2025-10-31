@@ -6,8 +6,8 @@ import com.robin.core.fileaccess.fs.AbstractFileSystemAccessor;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 
 public class CloudStorageFileSystemAccessorFactory {
-    public static AbstractFileSystemAccessor getAccessorByIdentifier(DataCollectionMeta colmeta,String identifier){
-        Const.FILESYSTEM filesystem= Const.FILESYSTEM.valueOf(identifier);
+    public static AbstractFileSystemAccessor getAccessorByIdentifier(String identifier, DataCollectionMeta colmeta){
+        Const.FILESYSTEM filesystem= Const.FILESYSTEM.forName(identifier);
         AbstractFileSystemAccessor accessor=null;
         switch (filesystem){
             case BAIDU_BOS:
