@@ -87,7 +87,7 @@ public class SysResourceContorller extends AbstractCrudDhtmlxController<SysResou
 			Session session=(Session) request.getSession().getAttribute(Const.SESSION);
 			Map<String,Object> map=wrapRequest(request);
 			SysResource resource=new SysResource();
-			ConvertUtil.convertToModel(resource, map);
+			ConvertUtil.convertToModel(map, resource);
 			resource.setTenantId(session.getTenantId());
 			resource.setType("1");
 			Long id=service.saveEntity(resource);
@@ -126,7 +126,7 @@ public class SysResourceContorller extends AbstractCrudDhtmlxController<SysResou
 			Long id=Long.valueOf(request.getParameter("id"));
 			SysResource user=service.getEntity(id);
 			SysResource tmpuser=new SysResource();
-			ConvertUtil.convertToModel(tmpuser, map);
+			ConvertUtil.convertToModel(map, tmpuser);
 			ConvertUtil.convertToModelForUpdate(tmpuser, user);
 			service.updateEntity(user);
 			retmap.put("id", String.valueOf(id));

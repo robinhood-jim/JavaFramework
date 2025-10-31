@@ -60,7 +60,7 @@ public class SysRoleContorller extends AbstractCrudDhtmlxController<SysRole,Long
 		try{
 			Map<String,Object> map=wrapRequest(request);
 			SysRole user=new SysRole();
-			ConvertUtil.convertToModel(user, map);
+			ConvertUtil.convertToModel(map, user);
 			Long id=service.saveEntity(user);
 			retmap.put("id", String.valueOf(id));
 			retmap.put("success", "true");

@@ -83,7 +83,7 @@ public class SysResponsiblityController extends AbstractCrudDhtmlxController<Sys
         try{
             Map<String,Object> map=wrapRequest(request);
             SysResponsibility user=new SysResponsibility();
-            ConvertUtil.convertToModel(user, map);
+            ConvertUtil.convertToModel(map, user);
             Long id=service.saveEntity(user);
             retmap.put("id", String.valueOf(id));
             retmap.put("success", "true");

@@ -49,7 +49,7 @@ public class ServerlessJarLoaderFactoryBean implements InitializingBean {
     private final DataCollectionMeta collectionMeta;
     private final AbstractFileSystemAccessor accessor;
 
-    public ServerlessJarLoaderFactoryBean(DataCollectionMeta collectionMeta, AbstractFileSystemAccessor accessor) {
+    public  ServerlessJarLoaderFactoryBean(DataCollectionMeta collectionMeta, AbstractFileSystemAccessor accessor) {
         this.collectionMeta = collectionMeta;
         this.accessor = accessor;
     }

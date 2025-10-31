@@ -87,7 +87,7 @@ public class SysOrgController extends AbstractMyBatisController<ISysOrgService, 
         return retMap;
     }
 
-    @GetMapping("/list")
+    @GetMapping
     @ResponseBody
     public Map<String, Object> getdeptJson(Map<String, Object> reqMap) {
         FilterConditionBuilder builder=new FilterConditionBuilder();
