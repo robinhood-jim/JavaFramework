@@ -30,6 +30,7 @@ import org.springframework.util.ObjectUtils;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -199,6 +200,9 @@ public class DataCollectionMeta implements Serializable {
 		}else{
 			return YamlUtil.load(new FileInputStream(yamlConfigPath),DataCollectionMeta.class);
 		}
+	}
+	public static DataCollectionMeta fromStream(InputStream stream){
+		return YamlUtil.load(stream,DataCollectionMeta.class);
 	}
 	public String constructUrl()  {
 		VfsParam param = new VfsParam();

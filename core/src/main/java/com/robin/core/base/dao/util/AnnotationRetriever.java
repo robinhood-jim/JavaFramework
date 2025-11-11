@@ -174,8 +174,7 @@ public class AnnotationRetriever {
                 if (flag) {
                     Field[] fields = clazz.getDeclaredFields();
                     for (Field field : fields) {
-                        TableId tableIdField = field.getAnnotation(TableId.class);
-                        if (tableIdField != null && !Modifier.isStatic(field.getModifiers()) && !Modifier.isFinal(field.getModifiers())) {
+                        if (!Modifier.isStatic(field.getModifiers()) && !Modifier.isFinal(field.getModifiers())) {
                             FieldContent content = retrieveFieldByMyBatis(field, clazz);
                             if (!Objects.isNull(content)) {
                                 map.put(field.getName(), content);
@@ -546,6 +545,16 @@ public class AnnotationRetriever {
         SerializedLambda lambda = Optional.ofNullable(functionMap.get(name)).map(Reference::get).orElseGet(() -> getLambdaSerialized(field));
         return uncapitalize(lambda.getImplMethodName());
     }
+    public static <T> Class<? extends BaseObject> getFieldClass(PropertyFunction<T, ?> field) {
+        Class<?> clazz = field.getClass();
+        String name = clazz.getName();
+        SerializedLambda lambda = Optional.ofNullable(functionMap.get(name)).map(Reference::get).orElseGet(() -> getLambdaSerialized(field));
+        try{
+            return (Class<? extends BaseObject>)Class.forName(lambda.getImplClass().replace("/","."));
+        }catch (ClassNotFoundException ex){
+            throw new ConfigurationIncorrectException(ex);
+        }
+    }
     public static <T extends BaseObject> String getFieldColumnName(PropertyFunction<T, ?> field) {
         Class<T> clazz = getFieldOwnedClass(field);
         String fieldName=getFieldName(field);
@@ -752,6 +761,13 @@ public class AnnotationRetriever {
             this.jpaAnnotation = jpaAnnotation;
             this.mybatisAnnotation = mybatisAnnotation;
             this.schema = schema;
+        }
+        public String getTableSchemaName(){
+            StringBuilder builder=new StringBuilder();
+            if(!ObjectUtils.isEmpty(schema)){
+                builder.append(schema).append(".");
+            }
+            return  builder.append(tableName).toString();
         }
 
     }

@@ -105,11 +105,11 @@ public class SpringContextHolder extends InstantiationAwareBeanPostProcessorAdap
     public void setApplicationContext(ApplicationContext appcontext)
             throws BeansException {
         if (logger.isDebugEnabled()) {
-            logger.debug("begin to initalize context!!!");
+            logger.debug("begin to initialize context!!!");
         }
         injectApplicationContext(appcontext);
         if (logger.isDebugEnabled()) {
-            logger.debug("end to initalize context!!!");
+            logger.debug("end to initialize context!!!");
         }
     }
 

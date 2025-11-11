@@ -54,6 +54,16 @@ public class  QueryWrapperUtils {
                         });
                     } else {
                         //TODO 多条件OR查询
+                        if(!CollectionUtils.isEmpty(orMap)) {
+                            wrapper.and(f -> {
+                                for (Map.Entry<String, Object> orEntry : orMap.entrySet()) {
+                                    String column = orEntry.getKey();
+                                    if (fieldMap.containsKey(column)) {
+                                        queryConditionWrap(fieldTypeMap, f.or(), fieldMap.get(column), entry.getValue().toString(), false);
+                                    }
+                                }
+                            });
+                        }
                     }
                 }
             } else if (entry.getValue().getClass().isAssignableFrom(String.class)) {
@@ -278,7 +288,16 @@ public class  QueryWrapperUtils {
                                 });
                             }
                         } else {
-
+                            if(!CollectionUtils.isEmpty(tmap)) {
+                                queryWrapper.and(f -> {
+                                    for (Map.Entry<String, Object> orEntry : tmap.entrySet()) {
+                                        String column = orEntry.getKey();
+                                        if (getMethod.containsKey(column)) {
+                                            wrapQueryWithTypeAndValue(getMethod.get(column).type().returnType(), column, orEntry.getValue().toString(), f.or());
+                                        }
+                                    }
+                                });
+                            }
                         }
                     }
 

@@ -510,9 +510,15 @@ public abstract class AbstractMybatisService<M extends BaseMapper<T>, T extends 
             } else if (queryObject.getClass().getInterfaces().length > 0 && queryObject.getClass().getInterfaces()[0].isAssignableFrom(Map.class)) {
                 return queryPage((Map<String, Object>) queryObject, wrapper, orderField, isAsc);
             } else {
-                throw new WebException("unsupported Type");
+                MethodHandle method=ReflectUtils.returnGetMethodHandle(queryObject.getClass()).get("getPage");
+                if(method!=null){
+                    IPage iPage=(IPage)method.bindTo(queryObject).invokeExact(null);
+                    return  page(iPage,wrapper);
+                }else {
+                    throw new WebException("unsupported Type");
+                }
             }
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             log.error("{}", ex);
             throw new ServiceException(ex);
         }
