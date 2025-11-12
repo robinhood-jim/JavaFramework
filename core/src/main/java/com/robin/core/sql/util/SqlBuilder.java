@@ -40,7 +40,7 @@ public class SqlBuilder {
         return this;
     }
 
-    public SqlBuilder addEntity(Class<? extends BaseObject> clazz, String aliasName) {
+    public SqlBuilder aliasEntity(Class<? extends BaseObject> clazz, String aliasName) {
         if (!entityClassMap.containsKey(clazz)) {
             AnnotationRetriever.EntityContent entityContent = AnnotationRetriever.getMappingTableByCache(clazz);
             Map<String, FieldContent> fields = AnnotationRetriever.getMappingFieldsMapCache(clazz);
@@ -81,7 +81,7 @@ public class SqlBuilder {
     private void appendFields(PropertyFunction<?, ?> function) {
         Class<? extends BaseObject> clazz = AnnotationRetriever.getFieldClass(function);
         if (!entityClassMap.containsKey(clazz)) {
-            addEntity(clazz, null);
+            aliasEntity(clazz, null);
         }
         String fieldName = AnnotationRetriever.getFieldName(function);
         selectFields.add(Pair.of(clazz,fieldMap.get(clazz).get(fieldName)));
@@ -89,16 +89,16 @@ public class SqlBuilder {
 
     public <L extends BaseObject,R extends BaseObject> SqlBuilder join(PropertyFunction<L, ?> leftColumn, PropertyFunction<R, ?> rightColumn, Const.JOINTYPE joinType) {
         Assert.isTrue(leftColumn != null && rightColumn != null, "");
-        addEntity(AnnotationRetriever.getFieldClass(leftColumn), null);
-        addEntity(AnnotationRetriever.getFieldClass(rightColumn), null);
+        aliasEntity(AnnotationRetriever.getFieldClass(leftColumn), null);
+        aliasEntity(AnnotationRetriever.getFieldClass(rightColumn), null);
         joinList.add(new Join(leftColumn, rightColumn, joinType));
         return this;
     }
 
     public <L extends BaseObject,R extends BaseObject> SqlBuilder join(PropertyFunction<L, ?> leftColumn, String leftAlias, PropertyFunction<R, ?> rightColumn, String rightAlias, Const.JOINTYPE joinType) {
         Assert.isTrue(leftColumn != null && rightColumn != null, "");
-        addEntity(AnnotationRetriever.getFieldClass(leftColumn), leftAlias);
-        addEntity(AnnotationRetriever.getFieldClass(rightColumn), rightAlias);
+        aliasEntity(AnnotationRetriever.getFieldClass(leftColumn), leftAlias);
+        aliasEntity(AnnotationRetriever.getFieldClass(rightColumn), rightAlias);
         joinList.add(new Join(leftColumn, rightColumn, joinType));
         return this;
     }

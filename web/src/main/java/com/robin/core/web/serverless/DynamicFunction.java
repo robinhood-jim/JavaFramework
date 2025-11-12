@@ -20,12 +20,12 @@ public class DynamicFunction {
         this.parameters=parameters;
         this.funStatic=funStatic;
     }
-    public DynamicFunction(MethodHandle handle,List<ServerlessParameter> parameters,boolean funStatic,String callMethods){
+    public DynamicFunction(MethodHandle handle,List<ServerlessParameter> parameters,boolean funStatic,Object callMethods){
         this.invokeMethod=handle;
         this.parameters=parameters;
         this.funStatic=funStatic;
         if(!ObjectUtils.isEmpty(callMethods)){
-            this.callMethods= Lists.newArrayList(callMethods.split(","));
+            this.callMethods= Lists.newArrayList(callMethods.toString().split(","));
         }
     }
     public boolean checkCallMethod(String callMethod){

@@ -32,7 +32,9 @@ public abstract class AbstractQueueWriter extends AbstractResourceWriter {
             useCompress=true;
 
         }
-        recordInjection= GenericAvroCodecs.toBinary(schema);
+        if(schema!=null) {
+            recordInjection = GenericAvroCodecs.toBinary(schema);
+        }
     }
     @Override
     public void writeRecord(GenericRecord genericRecord) throws IOException,OperationNotSupportedException {

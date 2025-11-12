@@ -17,6 +17,7 @@ import com.robin.core.sql.util.FilterConditionBuilder;
 import com.robin.es.util.BaseObjectWrapper;
 import com.robin.es.util.CommEsQueryUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequest;
@@ -143,7 +144,7 @@ public abstract class ESRepositoryService<V extends BaseObject, P extends Serial
     public int deleteByField(String field, Object value) throws ServiceException {
         try {
             DeleteByQueryRequest request = new DeleteByQueryRequest(entityContent.getTableName());
-            request.setQuery(new TermQueryBuilder(field, value));
+            request.setQuery(QueryBuilders.matchQuery(field,value));
             request.setTimeout(TimeValue.timeValueSeconds(1));
             request.setRefresh(true);
             BulkByScrollResponse response = client.deleteByQuery(request, RequestOptions.DEFAULT);

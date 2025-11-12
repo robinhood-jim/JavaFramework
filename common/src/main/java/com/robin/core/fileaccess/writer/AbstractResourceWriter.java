@@ -25,7 +25,7 @@ public abstract class AbstractResourceWriter implements IResourceWriter{
     protected Map<String, Void> columnMap=new HashMap<String, Void>();
     protected List<String> columnList=new ArrayList<String>();
     protected Logger logger= LoggerFactory.getLogger(getClass());
-    protected String valueType= ResourceConst.VALUE_TYPE.AVRO.getValue();
+    protected String valueType= ResourceConst.VALUE_TYPE.JSON.getValue();
     protected Schema schema;
     protected Map<String,Object> cfgMap;
     protected Gson gson= GsonUtil.getGson();

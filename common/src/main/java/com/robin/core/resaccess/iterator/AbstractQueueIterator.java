@@ -10,6 +10,7 @@ import com.twitter.bijection.avro.GenericAvroCodecs;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericRecord;
 import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
 import java.util.List;
@@ -29,9 +30,11 @@ public abstract class AbstractQueueIterator extends AbstractResIterator {
     @Override
     public void beforeProcess() {
         Assert.notNull(colmeta,"");
-        schema= AvroUtils.getSchemaFromMeta(colmeta);
         cfgMap=colmeta.getResourceCfgMap();
-        recordInjection= GenericAvroCodecs.toBinary(schema);
+        if(!CollectionUtils.isEmpty(colmeta.getColumnList())) {
+            schema = AvroUtils.getSchemaFromMeta(colmeta);
+            recordInjection = GenericAvroCodecs.toBinary(schema);
+        }
     }
 
     @Override

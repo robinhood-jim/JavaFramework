@@ -425,7 +425,7 @@
         <dependency>
             <groupId>org.springframework.amqp</groupId>
             <artifactId>spring-rabbit</artifactId>
-            <version>2.1.8.RELEASE</version>
+            <version>2.4.17</version>
             <optional>true</optional>
             <exclusions>
                 <exclusion>
@@ -435,6 +435,10 @@
                 <exclusion>
                     <groupId>org.slf4j</groupId>
                     <artifactId>slf4j-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.rabbitmq</groupId>
+                    <artifactId>amqp-client</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -472,6 +476,7 @@
             <groupId>org.apache.arrow</groupId>
             <artifactId>arrow-compression</artifactId>
             <version>${arrow.version}</version>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>io.netty</groupId>
@@ -676,6 +681,7 @@
             <groupId>io.minio</groupId>
             <artifactId>minio-admin</artifactId>
             <version>8.5.17</version>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>com.google.cloud</groupId>
@@ -837,6 +843,17 @@
             <artifactId>stormpot</artifactId>
             <version>2.4.1</version>
             <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.rocketmq</groupId>
+            <artifactId>rocketmq-client</artifactId>
+            <version>4.8.0</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>com.rabbitmq</groupId>
+            <artifactId>amqp-client</artifactId>
+            <version>5.22.0</version>
         </dependency>
 
     </dependencies>
