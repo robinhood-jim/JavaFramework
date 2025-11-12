@@ -1,8 +1,8 @@
 package com.robin.core.sql.util;
 
 import com.robin.core.base.dao.util.AnnotationRetriever;
-import com.robin.core.base.dao.util.FieldContent;
 import com.robin.core.base.dao.util.PropertyFunction;
+import com.robin.core.base.exception.MissingConfigException;
 import com.robin.core.base.model.BaseObject;
 import com.robin.core.base.util.Const;
 import lombok.Data;
@@ -25,11 +25,18 @@ public class FilterCondition {
     private Const.LINKOPERATOR linkOper = Const.LINKOPERATOR.LINK_AND;
     private Class<? extends BaseObject> mappingClass;
     private String orderByStr;
-    private Map<Class<? extends BaseObject>,String> aliasMap=new HashMap<>();
+    private Map<Class<? extends BaseObject>, String> aliasMap = new HashMap<>();
+    private Object leftColumn;
+    private SqlBuilder sqlBuilder;
 
 
     public FilterCondition(String columnCode, Const.OPERATOR operator) {
         this.columnCode = columnCode;
+        this.operator = operator;
+    }
+
+    public FilterCondition(Object leftColumn, Const.OPERATOR operator) {
+        this.leftColumn = leftColumn;
         this.operator = operator;
     }
 
@@ -81,11 +88,11 @@ public class FilterCondition {
         this.conditions = conditions;
         this.mappingClass = clazz;
     }
+
     public FilterCondition(Const.LINKOPERATOR linkOper, List<FilterCondition> conditions) {
         this.linkOper = linkOper;
         this.conditions = conditions;
     }
-
 
 
     public <T extends BaseObject> FilterCondition(PropertyFunction<T, ?> function, Const.OPERATOR operator, List<FilterCondition> values) {
@@ -133,20 +140,34 @@ public class FilterCondition {
 
     public String toPreparedSQLPart(List<Object> params) {
         StringBuilder sbSQLStr = new StringBuilder();
-        String realColumn = Optional.ofNullable(aliasMap.get(mappingClass)).map(f->f+"."+columnCode).orElse(columnCode);
-        if (ObjectUtils.isEmpty(value) && ObjectUtils.isEmpty(values) && !CollectionUtils.isEmpty(getConditions()) && getConditions().size()>1) {
-            if (Const.LINKOPERATOR.LINK_OR.equals(getLinkOper())) {
-                sbSQLStr.append("(");
-            }
-            for (int i = 0; i < getConditions().size(); i++) {
-                sbSQLStr.append(getConditions().get(i).toPreparedSQLPart(params));
-                if (i < getConditions().size() - 1) {
-                    sbSQLStr.append(getConditions().get(i + 1).getLinkOper().getSignal());
+        String realColumn = null;
+        if (!ObjectUtils.isEmpty(columnCode)) {
+            realColumn = Optional.ofNullable(aliasMap.get(mappingClass)).map(f -> f + "." + columnCode).orElse(columnCode);
+        } else {
+            if (leftColumn != null) {
+                if (FunctionCall.class.isAssignableFrom(leftColumn.getClass())) {
+                    ((FunctionCall) leftColumn).setSqlBuilder(sqlBuilder);
+                    realColumn = ((FunctionCall) leftColumn).getFormula(false);
+                } else {
+                    throw new MissingConfigException("type " + leftColumn.getClass().getName() + " not allowed");
                 }
             }
-            if (Const.LINKOPERATOR.LINK_OR.equals(getLinkOper())) {
-                sbSQLStr.append(")");
+        }
+        if (ObjectUtils.isEmpty(value) && ObjectUtils.isEmpty(values) && !CollectionUtils.isEmpty(getConditions()) && getConditions().size() > 1) {
+
+            for (int i = 0; i < getConditions().size(); i++) {
+                if (Const.LINKOPERATOR.LINK_OR.equals(getLinkOper())) {
+                    sbSQLStr.append("(");
+                }
+                sbSQLStr.append(getConditions().get(i).toPreparedSQLPart(params));
+                if (Const.LINKOPERATOR.LINK_OR.equals(getLinkOper())) {
+                    sbSQLStr.append(")");
+                }
+                if (i < getConditions().size() - 1) {
+                    sbSQLStr.append(getLinkOper().getSignal());
+                }
             }
+
         } else {
             switch (operator) {
                 case BETWEEN:
@@ -178,8 +199,24 @@ public class FilterCondition {
                 case GE:
                     Assert.notNull(value, "");
                     sbSQLStr.append(realColumn);
-                    sbSQLStr.append(operator.getSignal()).append("?");
-                    params.add(getValue());
+                    sbSQLStr.append(operator.getSignal());
+                    if (FunctionCall.class.isAssignableFrom(value.getClass())) {
+                        FunctionCall call = (FunctionCall) value;
+                        call.setSqlBuilder(sqlBuilder);
+                        sbSQLStr.append(call.getFormula(false));
+                    } else if (PropertyFunction.class.isAssignableFrom(value.getClass())) {
+                        Class<? extends BaseObject> clazz = AnnotationRetriever.getFieldClass((PropertyFunction<? extends Object, ?>) value);
+                        String fieldName = AnnotationRetriever.getFieldName((PropertyFunction<? extends Object, ?>) value);
+                        if (sqlBuilder != null) {
+                            if (sqlBuilder.getTabAliasMap().containsKey(clazz)) {
+                                sbSQLStr.append(sqlBuilder.getTabAliasMap().get(clazz)).append(".");
+                            }
+                            sqlBuilder.arithmetic(sqlBuilder.getFieldMap().get(clazz).get(fieldName).getFieldName());
+                        }
+                    } else {
+                        sbSQLStr.append("?");
+                        params.add(getValue());
+                    }
                     break;
                 case NOTNULL:
                     sbSQLStr.append(realColumn);
@@ -242,7 +279,7 @@ public class FilterCondition {
 
     private void parseConditions(StringBuilder sbSQLStr, List<Object> params) {
         if (!CollectionUtils.isEmpty(getConditions())) {
-            if(getConditions().size()>1) {
+            if (getConditions().size() > 1) {
                 for (int i = 0; i < getConditions().size(); i++) {
                     if (Const.LINKOPERATOR.LINK_OR.equals(getConditions().get(i).getLinkOper())) {
                         sbSQLStr.append(" OR (");
@@ -255,13 +292,13 @@ public class FilterCondition {
                         sbSQLStr.append("(");
                     }
                 }
-            }else{
-                FilterCondition condition= getConditions().get(0);
+            } else {
+                FilterCondition condition = getConditions().get(0);
                 sbSQLStr.append(Const.SQL_SELECT).append(condition.getColumnCode()).append(Const.SQL_FROM);
                 AnnotationRetriever.EntityContent tableDef = AnnotationRetriever.getMappingTableByCache(condition.getMappingClass());
                 sbSQLStr.append(tableDef.getTableName()).append(Const.SQL_WHERE);
-                if(!CollectionUtils.isEmpty(condition.getConditions())){
-                    for(FilterCondition condition1:condition.getConditions()){
+                if (!CollectionUtils.isEmpty(condition.getConditions())) {
+                    for (FilterCondition condition1 : condition.getConditions()) {
                         sbSQLStr.append(condition1.toPreparedSQLPart(params));
                     }
                 }

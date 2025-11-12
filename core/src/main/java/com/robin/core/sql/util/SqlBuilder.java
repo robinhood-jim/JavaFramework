@@ -6,6 +6,7 @@ import com.robin.core.base.dao.util.PropertyFunction;
 import com.robin.core.base.model.BaseObject;
 import com.robin.core.base.util.Const;
 import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.util.Assert;
@@ -26,6 +27,12 @@ public class SqlBuilder {
     private final List<Join> joinList = new ArrayList<>();
     private final FilterConditionBuilder conditionBuilder = new FilterConditionBuilder();
     private final List<Object> objectParams=new ArrayList<>();
+    StringBuilder builder = new StringBuilder();
+    StringBuilder whereBuilder=new StringBuilder();
+    StringBuilder joinBuilder=new StringBuilder();
+    StringBuilder groupBuilder=new StringBuilder();
+    StringBuilder havingBuilder=new StringBuilder();
+    StringBuilder orderByBuilder=new StringBuilder();
 
     private SqlBuilder() {
 
@@ -138,6 +145,7 @@ public class SqlBuilder {
 
     public FilterConditionBuilder getConditionBuilder() {
         conditionBuilder.aliasMap(tabAliasMap);
+        conditionBuilder.sqlBuilder(this);
         return conditionBuilder;
     }
 
@@ -200,9 +208,16 @@ public class SqlBuilder {
             }
             String fieldName = AnnotationRetriever.getFieldName((PropertyFunction<? extends BaseObject, ?>) tmpObj);
             builder.append(fieldMap.get(clazz).get(fieldName).getFieldName());
-        } else {
+        }else if(FunctionCall.class.isAssignableFrom(tmpObj.getClass())){
+            builder.append(((FunctionCall)tmpObj).getFormula(false));
+        }
+        else {
             builder.append(tmpObj);
         }
+    }
+    public <L extends BaseObject,R extends BaseObject> SqlBuilder function(String newColumnName,FunctionCall<L,R> functionCall){
+        newColumnMap.put(newColumnName,functionCall.getFormula(false));
+        return this;
     }
 
     public SqlBuilder function(String newColumnName, String functionName, Object... params) {
@@ -227,12 +242,59 @@ public class SqlBuilder {
         newColumnMap.put(newColumnName, builder.toString());
         return this;
     }
+    public <L extends BaseObject,R extends BaseObject> SqlBuilder having(FunctionCall<L,R> call,Const.OPERATOR operator,Object cmpValue){
+        wrapField(havingBuilder,call);
+        havingBuilder.append(operator.getSignal());
+        wrapField(havingBuilder,cmpValue);
+        havingBuilder.append(" AND ");
+        return this;
+    }
+    public SqlBuilder orderBy(Pair<Object,Boolean>... orders){
+        if(orders.length>0){
+            for(Pair<Object,Boolean> obj:orders){
+                wrapField(orderByBuilder,obj.getKey());
+                if(obj.getValue()){
+                    orderByBuilder.append(" ASC,");
+                }else {
+                    orderByBuilder.append(" DESC,");
+                }
+            }
+        }
+        return this;
+    }
+    public <T extends BaseObject> SqlBuilder orderBy(PropertyFunction<T,?> function,Boolean order){
+        wrapField(orderByBuilder,function);
+        if(order){
+            orderByBuilder.append(" ASC,");
+        }else {
+            orderByBuilder.append(" DESC,");
+        }
+        return this;
+    }
+    public SqlBuilder groupBy(Object... groups){
+        if(groups.length>0){
+            for(Object groupObj:groups){
+                wrapField(groupBuilder,groupObj);
+                groupBuilder.append(",");
+            }
+        }
+        return this;
+    }
+    public <T extends BaseObject> SqlBuilder groupBy(PropertyFunction<T,?>... groups){
+        if(groups.length>0){
+            for(Object groupObj:groups){
+                wrapField(groupBuilder,groupObj);
+                groupBuilder.append(",");
+            }
+        }
+        return this;
+    }
+
 
     public String getAppendSql() {
-        StringBuilder builder = new StringBuilder();
+
         builder.append("SELECT ");
-        StringBuilder whereBuilder=new StringBuilder();
-        StringBuilder joinBuilder=new StringBuilder();
+
         //exists Columns
         for(Pair<Class<? extends BaseObject>,FieldContent> pair:selectFields){
             if (tabAliasMap.containsKey(pair.getKey())) {
@@ -282,6 +344,9 @@ public class SqlBuilder {
                 }
                 joinBuilder.append(fieldMap.get(join.getRightClass()).get(AnnotationRetriever.getFieldName(join.getRightColumn())).getFieldName()).append(" ");
             }
+        }else if(!CollectionUtils.isEmpty(entityClassMap)){
+            Map.Entry<Class<? extends BaseObject>, AnnotationRetriever.EntityContent> entry= entityClassMap.entrySet().iterator().next();
+            joinBuilder.append(entry.getValue().getTableSchemaName());
         }
         //where Condition
         extractQueryParts(conditionBuilder.build(),whereBuilder);
@@ -303,6 +368,18 @@ public class SqlBuilder {
         if(whereBuilder.length()>0){
             builder.append(" WHERE ").append(whereBuilder);
         }
+        //group by
+        if(groupBuilder.length()>0){
+            builder.append(" GROUP BY ").append(groupBuilder.substring(0,groupBuilder.length()-1));
+        }
+        //having
+        if(havingBuilder.length()>0){
+            builder.append(" HAVING ").append(havingBuilder.substring(0,havingBuilder.length()-5));
+        }
+        //order by
+        if(orderByBuilder.length()>0){
+            builder.append(" ORDER BY ").append(orderByBuilder.substring(0,orderByBuilder.length()-1));
+        }
         return builder.toString();
     }
 
@@ -322,6 +399,14 @@ public class SqlBuilder {
 
     public List<Object> getObjectParams() {
         return objectParams;
+    }
+
+    public Map<Class<? extends BaseObject>, String> getTabAliasMap() {
+        return tabAliasMap;
+    }
+
+    public Map<Class<? extends BaseObject>, Map<String, FieldContent>> getFieldMap() {
+        return fieldMap;
     }
 
     @Getter

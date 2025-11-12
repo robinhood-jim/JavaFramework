@@ -354,6 +354,19 @@ public class Const {
             return signal;
         }
     }
+    public enum ARITHMETIC{
+        PLUS("+"),
+        MINUS("-"),
+        MULTIPLE("*"),
+        DIVIDE("/");
+        private String value;
+        ARITHMETIC(String value){
+            this.value=value;
+        }
+        public String getValue() {
+            return value;
+        }
+    }
     public enum LINKOPERATOR {
         LINK_AND("AND"," AND "),
         LINK_OR("OR"," OR ");
