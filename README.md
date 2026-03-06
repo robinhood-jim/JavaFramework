@@ -5,6 +5,7 @@ Slightly Framework design to  support Spring based java or Bigdata program.
 [![Build Status](https://api.travis-ci.com/robinhood-jim/JavaFramework.svg?branch=master)](https://app.travis-ci.com/github/robinhood-jim/JavaFramework)
 [![CircleCI](https://circleci.com/gh/robinhood-jim/JavaFramework.svg?style=svg)](https://circleci.com/gh/robinhood-jim/JavaFramework)
 ![license](https://img.shields.io/badge/license-Apache--2.0-green.svg)
+[![DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/robinhood-jim/JavaFramework)
 
 1.Introduction
 

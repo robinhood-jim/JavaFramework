@@ -9,8 +9,13 @@ import com.robin.core.base.util.Const;
 import com.robin.core.fileaccess.fs.AbstractFileSystemAccessor;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.web.controller.AbstractController;
+import javassist.ClassClassPath;
+import javassist.ClassPool;
+import javassist.CtClass;
+import javassist.CtMethod;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
+import org.objectweb.asm.ClassWriter;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.env.Environment;
 import org.springframework.util.Assert;
@@ -19,6 +24,8 @@ import org.springframework.util.ObjectUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.tools.JavaCompiler;
+import javax.tools.ToolProvider;
 import java.io.File;
 import java.io.IOException;
 import java.lang.invoke.MethodHandle;
@@ -97,7 +104,9 @@ public class ServerlessJarLoaderFactoryBean implements InitializingBean {
                 DynamicJarClassLoader loader = classLoaderMap.remove(jarFileName);
                 if (jarFunctionListMap.containsKey(jarFileName)) {
                     jarFunctionListMap.get(jarFileName).forEach(f -> {
-                        serverlessFunMap.remove(f);
+                        DynamicFunction function=serverlessFunMap.remove(f);
+                        function.setInvokeMethod(null);
+                        function=null;
                         functionOriginClassMap.remove(f);
                         if (userDefinedObjectMap.containsKey(f)) {
                             //remove no static function call object
@@ -109,6 +118,7 @@ public class ServerlessJarLoaderFactoryBean implements InitializingBean {
                     jarFunctionListMap.remove(jarFileName);
                 }
                 loader.close();
+                System.gc();
             }
         }
     }
@@ -135,6 +145,32 @@ public class ServerlessJarLoaderFactoryBean implements InitializingBean {
                 serverlessFunMap.put(functionName, new DynamicFunction(handler, parameters, false, callMethod));
             }
         }
+    }
+    public void registerServerlessFunctionByCode(String functionName,Object callMethods,Object className,String javaCode) throws Exception{
+        ClassPool pool=ClassPool.getDefault();
+        String classPartName=ObjectUtils.isEmpty(className)?"Proxy$"+System.currentTimeMillis():className.toString();
+        String classFullName="com.robin.serverless.function."+classPartName;
+        CtClass ctClass=pool.makeClass(classFullName);
+        pool.insertClassPath(new ClassClassPath(IUserDefineServerlessFunction.class));
+        CtClass interfaceClazz=pool.get(IUserDefineServerlessFunction.class.getName());
+        ctClass.addInterface(interfaceClazz);
+        CtMethod method=new CtMethod(pool.get("java.lang.Object"),"doFunction",new CtClass[]{pool.get("java.util.Map")},ctClass);
+        String content=javaCode.replace("map","$1");
+        method.setBody("{"+content+"}");
+        ctClass.addMethod(method);
+        Class<?> dynamicClass=ctClass.toClass();
+        Object userFuncObj=dynamicClass.getConstructor().newInstance();
+        userDefinedObjectMap.put(functionName, userFuncObj);
+        MethodHandle handler = MethodHandles.publicLookup().unreflect(dynamicClass.getMethod("doFunction", Map.class));
+        if (handler != null) {
+            ServerlessParameter parameter = new ServerlessParameter();
+            parameter.setParamName("map");
+            parameter.setJavaType(Map.class);
+            List<ServerlessParameter> parameters = new ArrayList<>();
+            parameters.add(parameter);
+            serverlessFunMap.put(functionName, new DynamicFunction(handler, parameters, false, callMethods));
+        }
+
     }
 
     public Object invokeFunc(HttpServletRequest request, HttpServletResponse response, String funcName) {

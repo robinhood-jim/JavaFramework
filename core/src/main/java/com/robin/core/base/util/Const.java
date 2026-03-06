@@ -334,6 +334,8 @@ public class Const {
         NOTLIKE("NOTLIKE"," NOT LIKE"),
         LLIKE("LL"," LIKE "),
         RLIKE("RL", " LIKE "),
+        UNION("UNION"," UNION "),
+        UNIONALL("UNIONALL"," UNION ALL "),
         HAVING("HAVING"," HAVING ");
 
         private String value;
@@ -350,6 +352,19 @@ public class Const {
         }
         public String getSignal(){
             return signal;
+        }
+    }
+    public enum ARITHMETIC{
+        PLUS("+"),
+        MINUS("-"),
+        MULTIPLE("*"),
+        DIVIDE("/");
+        private String value;
+        ARITHMETIC(String value){
+            this.value=value;
+        }
+        public String getValue() {
+            return value;
         }
     }
     public enum LINKOPERATOR {
@@ -372,6 +387,7 @@ public class Const {
         }
 
     }
+
 
     public enum HTTPRESPONSECODE{
         OK(200),
@@ -438,6 +454,14 @@ public class Const {
         public String getValue(){
             return value;
         }
+        public static ACCESSRESOURCE forName(String name){
+            for(ACCESSRESOURCE s:ACCESSRESOURCE.values()){
+                if(s.getValue().equalsIgnoreCase(name)){
+                    return s;
+                }
+            }
+            return null;
+        }
     }
     public enum FILEFORMATSTR {
         JSON("json"),
@@ -502,7 +526,7 @@ public class Const {
         INNER("INNER"),
         LEFT("LEFT"),
         RIGHT("RIGHT"),
-        OUT("OUT");
+        OUT("FULL OUTTER");
 
         private String value;
         JOINTYPE(String value){

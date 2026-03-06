@@ -61,6 +61,8 @@ public class KafkaResourceWriter extends AbstractQueueWriter {
 
     @Override
     public void close() throws IOException {
-        producer.close();
+        if(producer!=null) {
+            producer.close();
+        }
     }
 }

@@ -29,8 +29,8 @@ public class YamlUtils {
         System.out.println(map);
     }
     public static <T> T loadFromStream(InputStream inputStream,Class<T> clazz){
-        Yaml tyaml=new Yaml(new Constructor(clazz.getClass()));
-        return tyaml.load(inputStream);
+        Yaml tyaml=new Yaml();
+        return tyaml.loadAs(inputStream,clazz);
     }
     public static <T> T loadFromClassPath(String classPath,Class<T> clazz){
         return loadFromStream(clazz.getClassLoader().getResourceAsStream(classPath),clazz);
