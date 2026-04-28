@@ -322,13 +322,19 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
             StringBuilder buffer = new StringBuilder();
             buffer.append(getWholeSelectSql(type)).append(Const.SQL_WHERE);
             StringBuilder queryBuffer = new StringBuilder();
+            AnnotationRetriever.EntityContent<T> tableDef = AnnotationRetriever.getMappingTableByCache(type);
             Map<String, FieldContent> map1 = AnnotationRetriever.getMappingFieldsMapCache(type);
             List<FieldContent> fields = AnnotationRetriever.getMappingFieldsCache(type);
             List<Map<String, Object>> rsList;
             if (map1.containsKey(fieldName)) {
+                List<Object> queryParam=Lists.newArrayList(fieldValues);
                 generateQuerySqlBySingleFields(map1.get(fieldName), oper, queryBuffer, fieldValues.length);
+                if(tableDef.isContainStatusColumn()){
+                    appendStatusColumn(queryBuffer,tableDef.getStatusColumn());
+                    queryParam.add(tableDef.getStatusValue());
+                }
                 buffer.append(queryBuffer);
-                rsList = queryBySql(buffer.toString(), fieldValues);
+                rsList = queryBySql(buffer.toString(), queryParam.toArray());
                 wrapList(type, retlist, fields, rsList);
             } else {
                 throw new DAOException("query Field not in entity");
@@ -374,6 +380,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
         List<T> retlist = new ArrayList<>();
         try {
             StringBuilder builder = new StringBuilder();
+            AnnotationRetriever.EntityContent<T> tableDef = AnnotationRetriever.getMappingTableByCache(type);
             List<FieldContent> fields = AnnotationRetriever.getMappingFieldsCache(type);
             builder.append(getWholeSelectSql(type)).append(Const.SQL_WHERE);
             StringBuilder queryBuffer = new StringBuilder();
@@ -381,12 +388,17 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
 
             List<Map<String, Object>> rsList;
             if (map1.containsKey(fieldName)) {
+                List<Object> queryParam=Lists.newArrayList(fieldValues);
                 generateQuerySqlBySingleFields(map1.get(fieldName), oper, queryBuffer, fieldValues.length);
+                if(tableDef.isContainStatusColumn()){
+                    appendStatusColumn(queryBuffer,tableDef.getStatusColumn());
+                    queryParam.add(tableDef.getStatusValue());
+                }
                 builder.append(queryBuffer);
                 if (!ObjectUtils.isEmpty(orderByStr)) {
                     builder.append(" order by ").append(orderByStr);
                 }
-                rsList = queryBySql(builder.toString(), fieldValues);
+                rsList = queryBySql(builder.toString(), queryParam.toArray());
                 wrapList(type, retlist, fields, rsList);
             } else {
                 throw new DAOException("query Field not in entity");
@@ -941,6 +953,9 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
                 queryBuffer.append(columncfg.getFieldName()).append(Const.OPERATOR.EQ.getValue()).append("?");
                 break;
         }
+    }
+    private void appendStatusColumn(StringBuilder queryBuilder,String statusColumn){
+        queryBuilder.append(" AND ").append(statusColumn).append("=?");
     }
 
     private void wrapResultToModelWithKey(BaseObject obj, Map<String, Object> map, List<FieldContent> fields, Serializable pkObj) throws Throwable {

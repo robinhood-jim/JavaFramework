@@ -356,7 +356,10 @@ public class EntityMappingUtil {
                 segment.getAvailableFields().add(field);
                 sqlbuffer.append(field.getFieldName()).append(Const.SQL_AS).append(field.getPropertyName()).append(",");
             }
-
+        }
+        if(tableDef.isContainStatusColumn()){
+            wherebuffer.append(tableDef.getStatusColumn()).append("=? and ");
+            selectObjs.add(tableDef.getStatusValue());
         }
         sqlbuffer.deleteCharAt(sqlbuffer.length() - 1).append(Const.SQL_FROM);
         appendSchemaAndTable(tableDef, sqlbuffer, sqlGen);

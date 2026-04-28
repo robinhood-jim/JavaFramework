@@ -5,7 +5,6 @@ import com.robin.core.base.util.Const;
 import com.robin.core.base.util.ResourceConst;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.util.AvroUtils;
-import com.robin.core.resaccess.iterator.AbstractQueueIterator;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -65,7 +64,7 @@ public class KafkaIterator extends AbstractQueueIterator {
         List<Map<String,Object>> retList=new ArrayList<>();
         if(null!=records){
             for(ConsumerRecord<String,byte[]> record:records){
-                retList.add(AvroUtils.byteArrayBijectionToMap(schema,recordInjection,record.value()));
+                retList.add(dSerialize(record.value(),serializeType));
             }
         }
         return retList;

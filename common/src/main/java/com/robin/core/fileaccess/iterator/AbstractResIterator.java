@@ -1,5 +1,7 @@
 package com.robin.core.fileaccess.iterator;
 
+import com.google.gson.Gson;
+import com.robin.comm.util.json.GsonUtil;
 import com.robin.core.base.exception.OperationNotSupportException;
 import com.robin.core.fileaccess.fs.AbstractFileSystemAccessor;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
@@ -22,6 +24,7 @@ public abstract class AbstractResIterator implements IResourceIterator {
     protected Map<String, DataSetColumnMeta> columnMap=new HashMap<>();
     protected Logger logger= LoggerFactory.getLogger(getClass());
     protected String identifier;
+    protected Gson gson= GsonUtil.getGson();
     protected AbstractResIterator(){
 
     }
