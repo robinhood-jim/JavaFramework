@@ -9,7 +9,6 @@ import com.robin.comm.util.json.GsonUtil;
 import com.robin.core.base.util.Const;
 import com.robin.core.base.util.ResourceConst;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
-import com.robin.core.resaccess.iterator.AbstractQueueIterator;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.Connection;
@@ -108,8 +107,7 @@ public class RabbitMQIterator extends AbstractQueueIterator {
         try {
 
             while ((response = channel.basicGet(queueName, false)) != null) {
-                Map<String, Object> map = gson.fromJson(new String(response.getBody()), new TypeToken<Map<String, Object>>() {
-                }.getType());
+                Map<String, Object> map = dSerialize(response.getBody(),serializeType);
                 retList.add(map);
 
                 channel.basicAck(response.getEnvelope().getDeliveryTag(), false);

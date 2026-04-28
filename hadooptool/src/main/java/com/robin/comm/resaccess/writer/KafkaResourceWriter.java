@@ -1,7 +1,6 @@
 package com.robin.comm.resaccess.writer;
 
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
-import com.robin.core.fileaccess.writer.AbstractQueueWriter;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -39,7 +38,7 @@ public class KafkaResourceWriter extends AbstractQueueWriter {
     }
 
     @Override
-    public void writeMessage(String topic, Map<String, ?> map) throws IOException {
+    public void writeMessage(String topic, Map<String, Object> map) throws IOException {
         byte[] output= constructContent(map);
         producer.send(new ProducerRecord<>(topic, key,output));
     }

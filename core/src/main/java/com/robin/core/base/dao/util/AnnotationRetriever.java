@@ -212,6 +212,13 @@ public class AnnotationRetriever {
             if (!ObjectUtils.isEmpty(jdbcDao)) {
                 content.setJdbcDao(jdbcDao);
             }
+            if(!ObjectUtils.isEmpty(entity.statusColumn())){
+                content.setStatusColumn(entity.statusColumn());
+                content.setContainStatusColumn(true);
+            }
+            if(!ObjectUtils.isEmpty(entity.statusValue())){
+                content.setStatusValue(entity.statusValue());
+            }
         } else {
             flag = clazz.isAnnotationPresent(Entity.class);
             if (flag) {
@@ -749,6 +756,9 @@ public class AnnotationRetriever {
         private String schema;
         private String jdbcDao;
         private Class<T> clazz;
+        private boolean containStatusColumn=false;
+        private String statusColumn;
+        private String statusValue=Const.VALID;
 
         public EntityContent(String tableName) {
             this.tableName = tableName;

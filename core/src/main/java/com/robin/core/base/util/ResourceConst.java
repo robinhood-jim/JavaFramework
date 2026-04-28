@@ -1,6 +1,9 @@
 package com.robin.core.base.util;
 
 
+import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
+
 public class ResourceConst {
     public static final String WORKINGPATHPARAM="output.workingPath";
     public static final String USETMPFILETAG="output.usingTmpFiles";
@@ -20,6 +23,7 @@ public class ResourceConst {
     public static final String STORAGEFILTERSQL="storage.FilterSql";
     public static final String PARQUETFILEFORMAT="parquet.file.format";
     public static final String USEADMINTG="useAdmin";
+    public static final String SERIALIZETYPE_COLUMN="output.SerializeType";
 
     public enum IngestType {
         TYPE_HDFS(1L,"HDFS"),
@@ -93,21 +97,28 @@ public class ResourceConst {
             return String.valueOf(this.value);
         }
     }
-    public enum VALUE_TYPE{
+    public enum SERIALIZETYPE {
         AVRO("avro"),
         JSON("json"),
-        XML("xml"),
         PROTOBUF("proto"),
-        ORC("orc"),
-        CSV("csv"),
-        PARQUET("parquet");
+        MESSAGEPACK("msgpack"),
+        BIJECTION("bijection");
         private String value;
-        VALUE_TYPE(String value){
+        SERIALIZETYPE(String value){
             this.value=value;
         }
 
         public String getValue() {
             return value;
+        }
+        public static SERIALIZETYPE ParseFrom(String input){
+            Assert.isTrue(!ObjectUtils.isEmpty(input),"");
+            for(SERIALIZETYPE type :values()){
+                if(type.getValue().equalsIgnoreCase(input)){
+                    return type;
+                }
+            }
+            throw new IllegalArgumentException("unknown valueType"+input);
         }
     }
     public enum RESTYPE{
