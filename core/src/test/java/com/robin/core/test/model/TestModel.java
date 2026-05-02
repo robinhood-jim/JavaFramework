@@ -7,7 +7,7 @@ import lombok.Data;
 
 import java.sql.Timestamp;
 
-@MappingEntity(value = "t_test",schema = "test")
+@MappingEntity(value = "t_test",schema = "test", logicColumn = "status")
 @Data
 public class TestModel extends BaseObject{
 	@MappingField(primary=true,increment=true)
@@ -20,6 +20,6 @@ public class TestModel extends BaseObject{
 	private Long csId;
 	@MappingField
 	private Timestamp createTime;
-
+	private Integer status;
 	
 }

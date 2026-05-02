@@ -19,6 +19,7 @@ public interface MetaObjectHandler {
         return metaObject.hasGetter(fieldName) && metaObject.hasSetter(fieldName);
     }
 
+
     default Object getFieldValByName(String fieldName, MetaObject metaObject) {
         return metaObject.hasGetter(fieldName) ? metaObject.getValue(fieldName) : null;
     }

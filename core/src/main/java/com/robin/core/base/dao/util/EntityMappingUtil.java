@@ -260,7 +260,7 @@ public class EntityMappingUtil {
         return updateSegment;
     }
 
-    public static UpdateSegment getUpdateSegmentByKey(BaseObject obj, BaseSqlGen sqlGen) throws SQLException {
+    public static UpdateSegment getUpdateSegmentByKey(BaseObject obj, BaseSqlGen sqlGen,JdbcDao jdbcDao) throws SQLException {
         AnnotationRetriever.EntityContent<? extends BaseObject> tableDef = AnnotationRetriever.getMappingTableByCache(obj.getClass());
         List<FieldContent> fields = AnnotationRetriever.getMappingFieldsCache(obj.getClass());
         //AnnotationRetriever.validateEntity(obj);
@@ -305,18 +305,25 @@ public class EntityMappingUtil {
                 if (!CollectionUtils.isEmpty(field.getPrimaryKeys())) {
                     for (FieldContent pkFields : field.getPrimaryKeys()) {
                         Object tobj = AnnotationRetriever.getValueFromVO(pkFields, obj);
-                        wherebuffer.append(pkFields.getFieldName()).append("=?,");
+                        wherebuffer.append(pkFields.getFieldName()).append("=? and");
                         whereObjects.add(tobj);
                     }
                 } else if (field.isPrimary()) {
-                    wherebuffer.append(field.getFieldName()).append("=?,");
+                    wherebuffer.append(field.getFieldName()).append("=? and ");
                     whereObjects.add(object);
                 }
             }
         }
+        if(tableDef.isContainLogicColumn()){
+            wherebuffer.append(tableDef.getLogicColumn()).append("=? and ");
+            whereObjects.add(tableDef.getValidValue());
+        }else if(jdbcDao.isContainLogicColumn()){
+            wherebuffer.append(jdbcDao.getLogicColumn()).append("=? and ");
+            whereObjects.add(jdbcDao.getValidValue());
+        }
         objList.addAll(whereObjects);
         updateSegment.setFieldStr(fieldBuffer.substring(0, fieldBuffer.length() - 1));
-        updateSegment.setWhereStr(wherebuffer.substring(0, wherebuffer.length() - 1));
+        updateSegment.setWhereStr(wherebuffer.substring(0, wherebuffer.length() - 5));
         updateSegment.setParams(objList);
         return updateSegment;
     }
@@ -357,9 +364,12 @@ public class EntityMappingUtil {
                 sqlbuffer.append(field.getFieldName()).append(Const.SQL_AS).append(field.getPropertyName()).append(",");
             }
         }
-        if(tableDef.isContainStatusColumn()){
-            wherebuffer.append(tableDef.getStatusColumn()).append("=? and ");
-            selectObjs.add(tableDef.getStatusValue());
+        if(tableDef.isContainLogicColumn()){
+            wherebuffer.append(tableDef.getLogicColumn()).append("=? and ");
+            selectObjs.add(tableDef.getValidValue());
+        }else if(jdbcDao.isContainLogicColumn()){
+            wherebuffer.append(jdbcDao.getLogicColumn()).append("=? and ");
+            selectObjs.add(jdbcDao.getValidValue());
         }
         sqlbuffer.deleteCharAt(sqlbuffer.length() - 1).append(Const.SQL_FROM);
         appendSchemaAndTable(tableDef, sqlbuffer, sqlGen);
@@ -370,8 +380,9 @@ public class EntityMappingUtil {
         return segment;
     }
 
-    public static SelectSegment getSelectByVOSegment(Class<? extends BaseObject> type, BaseObject vo, String orderByStr, String wholeSelectSql) throws Throwable {
+    public static <T extends BaseObject> SelectSegment getSelectByVOSegment(Class<T> type, BaseObject vo, String orderByStr, String wholeSelectSql,JdbcDao jdbcDao) throws Throwable {
         AnnotationRetriever.isBaseObjectClassValid(type);
+        AnnotationRetriever.EntityContent<T> tableDef = AnnotationRetriever.getMappingTableByCache(type);
         List<Object> params = new ArrayList<>();
         StringBuilder builder = new StringBuilder();
         builder.append(wholeSelectSql).append(Const.SQL_WHERE);
@@ -384,7 +395,13 @@ public class EntityMappingUtil {
                 params.add(obj);
                 builder.append(" and ");
             }
-
+        }
+        if(tableDef.isContainLogicColumn()){
+            builder.append(tableDef.getLogicColumn()).append("=? and ");
+            params.add(tableDef.getValidValue());
+        }else if(jdbcDao.isContainLogicColumn()){
+            builder.append(jdbcDao.getLogicColumn()).append("=? and ");
+            params.add(jdbcDao.getValidValue());
         }
         String sql = builder.substring(0, builder.length() - 5);
         if (orderByStr != null && !orderByStr.isEmpty()) {
@@ -397,7 +414,7 @@ public class EntityMappingUtil {
         return selectSegment;
     }
 
-    public static SelectSegment getSelectByVOSegment(Class<? extends BaseObject> type, FilterCondition condition, String wholeSelectSql) {
+    public static <T extends BaseObject> SelectSegment getSelectByVOSegment(Class<T> type, FilterCondition condition, String wholeSelectSql) {
         AnnotationRetriever.isBaseObjectClassValid(type);
         List<Object> params = new ArrayList<>();
         StringBuilder builder = new StringBuilder();

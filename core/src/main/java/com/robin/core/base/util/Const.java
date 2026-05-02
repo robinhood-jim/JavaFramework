@@ -181,6 +181,8 @@ public class Const {
 
     public static final String VALID = "1";
     public static final String INVALID = "0";
+    public static final Integer VALID_INT=1;
+    public static final Integer INVALID_INT=0;
     public static final String DEFAULT_DATETIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
     public static final Pattern MATCHER_OF_PARAMETER = Pattern.compile("%\\[\\w+\\]");

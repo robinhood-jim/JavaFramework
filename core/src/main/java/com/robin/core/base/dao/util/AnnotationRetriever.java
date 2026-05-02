@@ -212,12 +212,16 @@ public class AnnotationRetriever {
             if (!ObjectUtils.isEmpty(jdbcDao)) {
                 content.setJdbcDao(jdbcDao);
             }
-            if(!ObjectUtils.isEmpty(entity.statusColumn())){
-                content.setStatusColumn(entity.statusColumn());
-                content.setContainStatusColumn(true);
+
+            if(!ObjectUtils.isEmpty(entity.logicColumn())){
+                content.setLogicColumn(entity.logicColumn());
+                content.setContainLogicColumn(true);
             }
-            if(!ObjectUtils.isEmpty(entity.statusValue())){
-                content.setStatusValue(entity.statusValue());
+            if(!ObjectUtils.isEmpty(entity.validValue())){
+                content.setValidValue(Integer.parseInt(entity.validValue()));
+            }
+            if(!ObjectUtils.isEmpty(entity.invalidValue())){
+                content.setInvalidValue(Integer.parseInt(entity.invalidValue()));
             }
         } else {
             flag = clazz.isAnnotationPresent(Entity.class);
@@ -756,9 +760,10 @@ public class AnnotationRetriever {
         private String schema;
         private String jdbcDao;
         private Class<T> clazz;
-        private boolean containStatusColumn=false;
-        private String statusColumn;
-        private String statusValue=Const.VALID;
+        private boolean containLogicColumn =false;
+        private String logicColumn;
+        private Integer validValue =Const.VALID_INT;
+        private Integer invalidValue =Const.INVALID_INT;
 
         public EntityContent(String tableName) {
             this.tableName = tableName;

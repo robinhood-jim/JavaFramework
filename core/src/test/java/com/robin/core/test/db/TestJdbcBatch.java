@@ -32,7 +32,7 @@ public class TestJdbcBatch extends TestCase {
         collectionMeta.addColumnMeta("creator",Const.META_TYPE_INTEGER,null);
         collectionMeta.addColumnMeta("time",Const.META_TYPE_TIMESTAMP,null);
 
-        Iterator<Map<String,String>> iterator=new Iterator<Map<String, String>>() {
+        Iterator<Map<String,String>> iterator=new Iterator<>() {
             Map<String,String> rowMap=new HashMap<>();
             int pos=0;
             Random random=new Random(123123123L);

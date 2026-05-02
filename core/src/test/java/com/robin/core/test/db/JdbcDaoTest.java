@@ -89,6 +89,18 @@ public class JdbcDaoTest extends TestCase {
         log.info("get id {}",id);
         assertNotNull(id);
     }
+    @Test
+    public void testQueryByField(){
+        TestModelService modelService=SpringContextHolder.getBean(TestModelService.class);
+        TestModel model=modelService.getEntity(10);
+        List<TestModel> list= modelService.queryByField(TestModel::getName, Const.OPERATOR.LIKE,"res%");
+        assertNotNull(list);
+    }
+    @Test
+    public void testDeleteLogic(){
+        TestModelService modelService=SpringContextHolder.getBean(TestModelService.class);
+        modelService.deleteEntity(new Integer[]{10});
+    }
 
     @Test
     public void testAnnotationInsert() {
@@ -99,7 +111,12 @@ public class JdbcDaoTest extends TestCase {
         model.setCsId(1L);
         Integer id = service.saveEntity(model);
         assertNotNull(id);
-        model.setName("ressds");
+    }
+    @Test
+    public void TestAnnotationUpdate(){
+        TestModelService service = (TestModelService) SpringContextHolder.getBean("modelService");
+        TestModel model =service.getEntity(10);
+        model.setName("test111");
         model.setCsId(2L);
         service.updateEntity(model);
     }

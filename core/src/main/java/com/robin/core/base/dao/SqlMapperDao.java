@@ -23,6 +23,7 @@ import org.springframework.util.ObjectUtils;
 
 import javax.sql.DataSource;
 import java.lang.invoke.MethodHandle;
+import java.lang.reflect.InvocationTargetException;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -205,7 +206,7 @@ public class SqlMapperDao extends JdbcDaoSupport {
                             }
                         } else {
                             try {
-                                Object targetObject = segment1.getResultClass().newInstance();
+                                Object targetObject = segment1.getResultClass().getDeclaredConstructor().newInstance();
                                 for (int i = 0; i < count; i++) {
                                     String columnName = rsmd.getColumnName(i + 1);
                                     if (!segment1.getColumnMapper().containsKey(columnName)) {
@@ -214,7 +215,8 @@ public class SqlMapperDao extends JdbcDaoSupport {
                                     CommJdbcUtil.setTargetValue(targetObject, resultSet.getObject(i + 1), segment1.getColumnMapper().get(columnName).left, segment1.getColumnMapper().get(columnName).right, pageQuery);
                                 }
                                 retList.add(targetObject);
-                            } catch (IllegalAccessException|InstantiationException ex1) {
+                            } catch (IllegalAccessException | InstantiationException | NoSuchMethodException |
+                                     InvocationTargetException ex1) {
                                 throw new SQLException("target Type can not initialize");
                             }
                         }
