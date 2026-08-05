@@ -1,20 +1,19 @@
 package com.robin.core.base.dao.util;
 
-import cn.hutool.core.util.ObjectUtil;
+
 import com.robin.core.base.annotation.MappingField;
 import lombok.Data;
 import org.springframework.util.ObjectUtils;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.List;
 
 @Data
 public class FieldContent {
     private String propertyName;
     private String fieldName;
-    private String dataType;
+    private Integer dataType;
     private String sequenceName;
     private boolean required;
     private boolean increment;
@@ -29,6 +28,10 @@ public class FieldContent {
     private int length;
     private String defaultValue;
     private Object value;
+    private boolean ifLogicColumn;
+    private String validValue;
+    private String invalidValue;
+
     //composite primary keys
     private List<FieldContent> primaryKeys;
 
@@ -66,7 +69,7 @@ public class FieldContent {
             content.setField(field);
             return this;
         }
-        public Builder setDataType(String dataType){
+        public Builder setDataType(Integer dataType){
             content.setDataType(dataType);
             return this;
         }
@@ -109,7 +112,7 @@ public class FieldContent {
         public Builder withMappingField(MappingField mapfield){
             String fieldName=null;
 
-            if(!ObjectUtil.isEmpty(mapfield)) {
+            if(!ObjectUtils.isEmpty(mapfield)) {
                 String colfield = mapfield.value();
                 if (!ObjectUtils.isEmpty(colfield)) {
                     fieldName = colfield;

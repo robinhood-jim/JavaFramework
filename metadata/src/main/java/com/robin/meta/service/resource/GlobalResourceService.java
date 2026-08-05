@@ -101,7 +101,7 @@ public class GlobalResourceService extends BaseAnnotationJdbcService<GlobalResou
                 connection = SimpleJdbcDao.getConnection(meta);
                 List<DataBaseColumnMeta> columnList = DataBaseUtil.getTableMetaByTableName(connection, tableName, schema, meta.getDbType());
                 for (DataBaseColumnMeta columnmeta : columnList) {
-                    colmeta.addColumnMeta(columnmeta.getColumnName(), columnmeta.getColumnType().toString(), null);
+                    colmeta.addColumnMeta(columnmeta.getColumnName(), columnmeta.getColumnType(), null);
                 }
                 List<String> pkList = DataBaseUtil.getAllPrimaryKeyByTableName(connection, tableName, schema);
                 colmeta.setPkColumns(pkList);

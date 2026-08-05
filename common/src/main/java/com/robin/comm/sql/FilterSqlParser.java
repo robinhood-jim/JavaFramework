@@ -273,7 +273,7 @@ public class FilterSqlParser {
                 retVal = !cmpObject(inPartMap,columnMap,node, leftValue, rightValue, node.getNotCompareOper());
                 break;
             case "like":
-                Assert.isTrue(Const.META_TYPE_STRING.equals(columnMap.get(node.getLeftNode().getValue()).getColumnType()),"only string column can use like");
+                Assert.isTrue(Const.CLASSTYPE.STRING.equals(columnMap.get(node.getLeftNode().getValue()).getColumnType()),"only string column can use like");
                 String fitStr=node.getRightNode().getValue();
                 if(fitStr.startsWith("%")){
                     if(fitStr.endsWith("%")){

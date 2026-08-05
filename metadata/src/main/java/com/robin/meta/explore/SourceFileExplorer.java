@@ -54,7 +54,7 @@ public class SourceFileExplorer {
                 readHeader=ireader.getHeader(true);
             }
             List<String> resultlist;
-            Map<String,Map<String, Long>> typeMap=new HashMap<>();
+            Map<String,Map<Const.CLASSTYPE, Long>> typeMap=new HashMap<>();
             Map<String,Map<String, Long>> dateFormatMap=new HashMap<>();
             while((resultlist=ireader.read())!=null && columnPos<readLines){
                 for(int pos=0;pos<headers.length;pos++){
@@ -71,7 +71,7 @@ public class SourceFileExplorer {
     public static void exploreJson(BufferedReader reader,DataCollectionMeta meta,int readLines){
         int columnPos=1;
         Gson gson= GsonUtil.getGson();
-        Map<String,Map<String, Long>> typeMap=new HashMap<>();
+        Map<String,Map<Const.CLASSTYPE, Long>> typeMap=new HashMap<>();
         Map<String,Map<String, Long>> dateFormatMap=new HashMap<>();
         List<String> columns=new ArrayList<>();
         try{
@@ -94,23 +94,23 @@ public class SourceFileExplorer {
             log.error("",ex);
         }
     }
-    private static void adjustColumnTypeAndFormat(String[] columnNames,Map<String,Map<String,Long>> typeMap,Map<String,Map<String,Long>> dateFormatMap,DataCollectionMeta meta){
+    private static void adjustColumnTypeAndFormat(String[] columnNames,Map<String,Map<Const.CLASSTYPE,Long>> typeMap,Map<String,Map<String,Long>> dateFormatMap,DataCollectionMeta meta){
         for(String columnName:columnNames) {
-            List<Map.Entry<String, Long>> sortList = CollectionsUtil.getSortedMapByLongValue(typeMap.get(columnName), false);
+            List<Map.Entry<Const.CLASSTYPE, Long>> sortList = CollectionsUtil.getSortedMapByLongValue(Const.CLASSTYPE.class,typeMap.get(columnName), false);
             if(dateFormatMap.containsKey(columnName)){
-                List<Map.Entry<String,Long>> dateFormatList=CollectionsUtil.getSortedMapByLongValue(dateFormatMap.get(columnName),false);
+                List<Map.Entry<String,Long>> dateFormatList=CollectionsUtil.getSortedMapByLongValue(String.class, dateFormatMap.get(columnName),false);
                 meta.addColumnMeta(columnName,sortList.get(0).getKey(),null,false,dateFormatList.get(0).getKey());
             }else{
                 //data with Same type
                 if(sortList.size()==1){
                     meta.addColumnMeta(columnName,sortList.get(0).getKey(),null);
                 }else{
-                    if(sortList.get(0).getKey().equals(Const.META_TYPE_INTEGER)){
+                    if(sortList.get(0).getKey().equals(Const.CLASSTYPE.INTEGER)){
                         //second large type contains less than 5 percent of primary type, skip secondary type
                         if(sortList.get(1).getValue().doubleValue()/sortList.get(0).getValue().doubleValue()<=0.05){
                             meta.addColumnMeta(columnName,sortList.get(0).getKey(),null);
                         }else{
-                            meta.addColumnMeta(columnName,Const.META_TYPE_NUMERIC,null);
+                            meta.addColumnMeta(columnName, Const.CLASSTYPE.NUMERIC,null);
                         }
                     }else{
                         meta.addColumnMeta(columnName,sortList.get(0).getKey(),null);
@@ -120,26 +120,26 @@ public class SourceFileExplorer {
             }
         }
     }
-    private static void getTypeByData(String targetValue,String columnName, Map<String,Map<String, Long>> dataTypeMap, Map<String,Map<String, Long>> dateFomatMap){
-        String type;
+    private static void getTypeByData(String targetValue,String columnName, Map<String,Map<Const.CLASSTYPE, Long>> dataTypeMap, Map<String,Map<String, Long>> dateFomatMap){
+        Const.CLASSTYPE type;
         boolean isDate=false;
         if(NumberUtils.isDigits(targetValue) && !targetValue.contains(".")){
             try{
                 Integer.parseInt(targetValue);
-                type=Const.META_TYPE_INTEGER;
+                type= Const.CLASSTYPE.INTEGER;
             }catch(Exception ex){
-                type=Const.META_TYPE_BIGINT;
+                type= Const.CLASSTYPE.LONG;
             }
             addDataWithType(type,columnName, dataTypeMap);
         }else if(NumberUtils.isNumber(targetValue)){
-            addDataWithType(Const.META_TYPE_DOUBLE,columnName, dataTypeMap);
+            addDataWithType(Const.CLASSTYPE.DOUBLE,columnName, dataTypeMap);
         }
         else {
-            if(!isDateWithType(columnName,normal_format, targetValue, "yyyy-MM-dd hh:mm:ss",dateFomatMap)){
-                if(!isDateWithType(columnName,short_format, targetValue, "yyyyMMdd", dateFomatMap)){
-                    if(!isDateWithType(columnName,day_format, targetValue, "yyyy-MM-dd",dateFomatMap)){
-                        if(!isDateWithType(columnName,digital_format, targetValue, "yyyyMMddhhmmss", dateFomatMap)){
-                            if(isDateWithType(columnName,full_format, targetValue, "yyyy-MM-dd hh:mm:ss.SSS", dateFomatMap)){
+            if(!isDateWithType(columnName,normal_format, targetValue, "yyyy-MM-dd hh:mm:ss",dataTypeMap,dateFomatMap)){
+                if(!isDateWithType(columnName,short_format, targetValue, "yyyyMMdd",dataTypeMap, dateFomatMap)){
+                    if(!isDateWithType(columnName,day_format, targetValue, "yyyy-MM-dd",dataTypeMap,dateFomatMap)){
+                        if(!isDateWithType(columnName,digital_format, targetValue, "yyyyMMddhhmmss",dataTypeMap, dateFomatMap)){
+                            if(isDateWithType(columnName,full_format, targetValue, "yyyy-MM-dd hh:mm:ss.SSS",dataTypeMap, dateFomatMap)){
                                 isDate=true;
                             }
                         }else{
@@ -155,18 +155,34 @@ public class SourceFileExplorer {
                 isDate=true;
             }
             if(!isDate){
-                addDataWithType(Const.META_TYPE_STRING,columnName, dataTypeMap);
+                addDataWithType(Const.CLASSTYPE.STRING,columnName, dataTypeMap);
             }else{
-                addDataWithType(Const.META_TYPE_TIMESTAMP,columnName, dataTypeMap);
+                addDataWithType(Const.CLASSTYPE.TIMESTAMP,columnName, dataTypeMap);
             }
         }
 
     }
-    private static boolean isDateWithType(String columnName, SimpleDateFormat format, String datastr, String formatstr, Map<String,Map<String, Long>> dateFormatMap){
+    private static boolean isDateWithType(String columnName, SimpleDateFormat format, String datastr, String formatstr,Map<String,Map<Const.CLASSTYPE, Long>> typeMap, Map<String,Map<String, Long>> dateFormatMap){
         boolean isok=false;
         try{
             if(format.parse(datastr)!=null && datastr.length()==formatstr.length()){
-                addDataWithType(formatstr,columnName, dateFormatMap);
+                addDataWithType(Const.CLASSTYPE.DATE,columnName, typeMap);
+                Map<String,Long> map=new HashMap<>();
+                map.put(formatstr,0L);
+                dateFormatMap.putIfAbsent(columnName,map);
+                dateFormatMap.get(columnName).put(formatstr,dateFormatMap.get(columnName).get(formatstr)+1);
+                isok=true;
+            }
+        }catch(Exception ex){
+
+        }
+        return isok;
+    }
+    private static boolean isTimestampWithType(String columnName, SimpleDateFormat format, String datastr, String formatstr, Map<String,Map<Const.CLASSTYPE, Long>> dateFormatMap){
+        boolean isok=false;
+        try{
+            if(format.parse(datastr)!=null && datastr.length()==formatstr.length()){
+                addDataWithType(Const.CLASSTYPE.TIMESTAMP,columnName, dateFormatMap);
                 isok=true;
             }
         }catch(Exception ex){
@@ -176,18 +192,11 @@ public class SourceFileExplorer {
     }
 
 
-    private static void addDataWithType(String dbtype, String columnName, Map<String,Map<String, Long>> typeMap){
-        if(typeMap.containsKey(columnName)) {
-            if (!typeMap.get(columnName).containsKey(dbtype)) {
-                typeMap.get(columnName).put(dbtype, 1L);
-            } else {
-                typeMap.get(columnName).put(dbtype, typeMap.get(columnName).get(dbtype) + 1);
-            }
-        }else{
-            Map<String,Long> tmap=new HashMap<>();
-            tmap.put(dbtype,1L);
-            typeMap.put(columnName,tmap);
-        }
+    private static void addDataWithType(Const.CLASSTYPE dbtype, String columnName, Map<String,Map<Const.CLASSTYPE, Long>> typeMap){
+        Map<Const.CLASSTYPE,Long> tmap=new HashMap<>();
+        tmap.put(dbtype,0L);
+        typeMap.putIfAbsent(columnName,tmap);
+        typeMap.get(columnName).put(dbtype, typeMap.get(columnName).get(dbtype) + 1);
     }
     public static final String getSpiltChar(String split){
         String tmpSplit=split;

@@ -200,7 +200,7 @@ public class ExcelBaseOper {
         return cs;
     }
 
-    public static Cell merged(Sheet sheet,String colType, int startRow, int startCell, int endRow, int endCell, CellStyle cs, String value, CreationHelper helper) {
+    public static Cell merged(Sheet sheet, Const.CLASSTYPE colType, int startRow, int startCell, int endRow, int endCell, CellStyle cs, String value, CreationHelper helper) {
         Cell cell;
         CellRangeAddress cellRangeAddress = new CellRangeAddress(startRow, endRow, startCell, endCell);
         sheet.addMergedRegion(cellRangeAddress);
@@ -340,29 +340,29 @@ public class ExcelBaseOper {
         return cell;
     }
 
-    public static Cell createCell(Row row1,int j, String value, String colType, CellStyle cellStyle, CreationHelper helper) {
+    public static Cell createCell(Row row1, int j, String value, Const.CLASSTYPE colType, CellStyle cellStyle, CreationHelper helper) {
         Cell cell;
-        if (colType.equals(Const.META_TYPE_STRING)) {
+        if (colType.equals(Const.CLASSTYPE.STRING)) {
             cell = createCell(row1, j, cellStyle, helper, value);
-        } else if (colType.equals(Const.META_TYPE_NUMERIC) || colType.equals(Const.META_TYPE_DOUBLE)) {
+        } else if (colType.equals(Const.CLASSTYPE.NUMERIC) || colType.equals(Const.CLASSTYPE.DOUBLE)) {
             if (!StringUtils.isEmpty(value)) {
                 cell = createCell(row1, j, cellStyle, helper, Double.parseDouble(value));
             } else {
                 cell = createCell(row1, j, cellStyle, helper, "");
             }
-        } else if (colType.equals(Const.META_TYPE_INTEGER)) {
+        } else if (colType.equals(Const.CLASSTYPE.INTEGER)) {
             if (!StringUtils.isEmpty(value)) {
                 cell = createCell(row1, j, cellStyle, helper, Integer.parseInt(value));
             } else {
                 cell = createCell(row1, j, cellStyle, helper, "");
             }
-        } else if (colType.equals(Const.META_TYPE_DATE) || colType.equals(Const.META_TYPE_TIMESTAMP)) {
+        } else if (colType.equals(Const.CLASSTYPE.DATE) || colType.equals(Const.CLASSTYPE.TIMESTAMP)) {
             if (!StringUtils.isEmpty(value)) {
                 cell = createCellDate(row1, j, cellStyle, helper, value);
             } else {
                 cell = createCell(row1, j, cellStyle, helper, "");
             }
-        } else if (colType.equalsIgnoreCase(Const.META_TYPE_FORMULA)) {
+        } else if (colType.equals(Const.CLASSTYPE.FORMULA)) {
             cell = createFormulaCell(row1, j, cellStyle, value);
         } else {
             cell = createCell(row1, j, cellStyle, helper, value);

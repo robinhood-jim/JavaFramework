@@ -8,12 +8,11 @@ import com.robin.core.base.util.Const;
 import com.robin.core.base.util.ResourceConst;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.dfs.minio.MinioUtils;
-import io.minio.BucketExistsArgs;
-import io.minio.MakeBucketArgs;
-import io.minio.MinioAsyncClient;
+import io.minio.*;
 import io.minio.admin.MinioAdminClient;
 import io.minio.admin.QuotaUnit;
 import io.minio.admin.UserInfo;
+import io.minio.messages.Item;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.OkHttpClient;
@@ -25,6 +24,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -181,6 +183,19 @@ public class MinioFileSystemAccessor extends AbstractCloudStorageFileSystemAcces
             adminClient.setPolicy(paramMap.get("userName"), "true".equalsIgnoreCase(paramMap.get("isGroup")), paramMap.get("policyName"));
         }
         return true;
+    }
+
+    @Override
+    public List<String> listPath(String inputPath) throws Exception {
+        Iterable<Result<Item>> iterable= client.listObjects(ListObjectsArgs.builder().bucket(bucketName).region(region).prefix(inputPath).build());
+        List<String> retList=new ArrayList<>();
+        if(!iterable.iterator().hasNext()){
+            Iterator<Result<Item>> iterator=iterable.iterator();
+            while (iterator.hasNext()){
+                retList.add(iterator.next().get().objectName());
+            }
+        }
+        return retList;
     }
 
     public static class Builder{

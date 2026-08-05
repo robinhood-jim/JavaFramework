@@ -19,6 +19,7 @@ import com.robin.core.base.dao.util.AnnotationRetriever;
 import com.robin.core.base.dao.util.FieldContent;
 import com.robin.core.base.datameta.DataBaseColumnMeta;
 import com.robin.core.base.exception.DAOException;
+import com.robin.core.base.util.Const;
 import com.robin.core.query.util.PageQuery;
 import com.robin.core.query.util.QueryString;
 
@@ -62,8 +63,8 @@ public interface BaseSqlGen {
 
     String getFieldDefineSqlPart(FieldContent field);
     String getFieldDefineSqlByMeta(DataBaseColumnMeta columnMeta);
-    String returnTypeDef(String dataType, FieldContent field);
-    String returnTypeDef(String dataType, DataBaseColumnMeta field);
+    String returnTypeDef(Integer dataType, FieldContent field);
+    String returnTypeDef(Const.CLASSTYPE dataType, DataBaseColumnMeta field);
     String getSchemaName(String schema);
     String getAlertColumnSqlPart(AnnotationRetriever.EntityContent entityContent, FieldContent fieldContent, AlertType type);
     String getDbType();

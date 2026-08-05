@@ -124,17 +124,17 @@ public abstract class AbstractSparkModeler implements Serializable {
         StructType type=new StructType();
         for(int i=0;i<collectionMeta.getColumnList().size();i++){
             DataSetColumnMeta setColumnMeta=collectionMeta.getColumnList().get(i);
-            if(Const.META_TYPE_BIGINT.equals(setColumnMeta.getColumnType()) ){
+            if(Const.CLASSTYPE.LONG.equals(setColumnMeta.getColumnType()) ){
                 type.add(new StructField(setColumnMeta.getColumnName(), LongType,true, Metadata.empty()));
-            }else if(Const.META_TYPE_INTEGER.equals(setColumnMeta.getColumnType())){
+            }else if(Const.CLASSTYPE.INTEGER.equals(setColumnMeta.getColumnType())){
                 type.add(new StructField(setColumnMeta.getColumnName(),IntegerType,true,Metadata.empty()));
-            }else if(Const.META_TYPE_DOUBLE.equals(setColumnMeta.getColumnType()) || Const.META_TYPE_NUMERIC.equals(setColumnMeta.getColumnType())){
+            }else if(Const.CLASSTYPE.DOUBLE.equals(setColumnMeta.getColumnType()) || Const.CLASSTYPE.NUMERIC.equals(setColumnMeta.getColumnType())){
                 type.add(new StructField(setColumnMeta.getColumnName(),DoubleType,true,Metadata.empty()));
-            }else if(Const.META_TYPE_FLOAT.equals(setColumnMeta.getColumnType())){
+            }else if(Const.CLASSTYPE.FLOAT.equals(setColumnMeta.getColumnType())){
                 type.add(new StructField(setColumnMeta.getColumnName(),FloatType,true,Metadata.empty()));
-            }else if(Const.META_TYPE_SHORT.equals(setColumnMeta.getColumnType())){
+            }else if(Const.CLASSTYPE.SHORT.equals(setColumnMeta.getColumnType())){
                 type.add(new StructField(setColumnMeta.getColumnName(),ShortType,true,Metadata.empty()));
-            }else if(Const.META_TYPE_DATE.equals(setColumnMeta.getColumnType()) || Const.META_TYPE_TIMESTAMP.equals(setColumnMeta.getColumnType())){
+            }else if(Const.CLASSTYPE.DATE.equals(setColumnMeta.getColumnType()) || Const.CLASSTYPE.TIMESTAMP.equals(setColumnMeta.getColumnType())){
                 type.add(new StructField(setColumnMeta.getColumnName(),TimestampType,true,Metadata.empty()));
             }else{
                 type.add(new StructField(setColumnMeta.getColumnName(),StringType,true,Metadata.empty()));

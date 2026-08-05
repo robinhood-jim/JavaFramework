@@ -15,10 +15,7 @@
  */
 package com.robin.core.script;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -27,7 +24,9 @@ import javax.script.CompiledScript;
 import javax.script.ScriptEngineFactory;
 import javax.script.ScriptEngineManager;
 
+import com.robin.core.base.util.Const;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.util.CollectionUtils;
 
 public class ScriptExecutor  {
 	private ConcurrentMap<String, BaseScriptExecutor> scriptExecutorMap=new ConcurrentHashMap<>();
@@ -42,7 +41,7 @@ public class ScriptExecutor  {
 	}
 
 
-	public List<String> getAllScriptEngineNames() {
+	private List<String> getAllScriptEngineNames() {
         List<String> scriptEngineNames = new ArrayList<>();
         ScriptEngineManager factory = new ScriptEngineManager();
         for (ScriptEngineFactory fac : factory.getEngineFactories()) {
@@ -52,14 +51,35 @@ public class ScriptExecutor  {
                 name = "js";
             } else if (name.toLowerCase().endsWith("ruby")) {
                 name = "jruby";
-            }
-            scriptEngineNames.add(name.toLowerCase());
+            }else if("Spring Expression Language".equalsIgnoreCase(name)){
+				name="spel";
+			}
+			if(!scriptEngineNames.contains(name)) {
+				scriptEngineNames.add(name.toLowerCase());
+			}
         }
         Collections.sort(scriptEngineNames);
         return scriptEngineNames;
     }
 	public Bindings createBindings(String scriptName){
 		return scriptExecutorMap.get(scriptName).createBindings();
+	}
+	public void fillBindings(Bindings bindings,Map<String,Object> paramMap){
+		bindings.clear();
+		if(!CollectionUtils.isEmpty(paramMap)){
+			for (Map.Entry<String, Object> entry : paramMap.entrySet()) {
+				bindings.put(entry.getKey(), entry.getValue());
+			}
+		}
+	}
+	public Bindings createBindings(String scriptName,Map<String,Object> paramMap){
+		Bindings bindings=scriptExecutorMap.get(scriptName).createBindings();
+		if(!CollectionUtils.isEmpty(paramMap)){
+			for (Map.Entry<String, Object> entry : paramMap.entrySet()) {
+				bindings.put(entry.getKey(), entry.getValue());
+			}
+		}
+		return bindings;
 	}
 	public Object evaluate(String scriptname,String key,String scripts,Bindings bindings) throws Exception{
 		return scriptExecutorMap.get(scriptname).evaluate(key, scripts, bindings);
@@ -86,5 +106,27 @@ public class ScriptExecutor  {
 	public static ScriptExecutor getInstance(){
 		return InnerClass.scriptExecutor;
 	}
-	
+	public static void main(String[] args) throws Exception{
+		Random random=new Random(123123L);
+		CompiledScript script= ScriptExecutor.getInstance().returnScript(Const.SCRIPTENGINE.JS.getName(),"k","(a-b)/c-Math.sin(d)*e");
+		double a,b,e;
+		int c,d;
+		System.out.println(System.currentTimeMillis()/1000);
+		Bindings bindings=ScriptExecutor.getInstance().createBindings(Const.SCRIPTENGINE.JS.getName());
+		for (int i=0;i<200000;i++){
+			a= random.nextDouble()*1000;
+			b= random.nextDouble()*100;
+			c= random.nextInt(100);
+			d=random.nextInt(89);
+			e= random.nextDouble()*100;
+			bindings.put("a",a);
+			bindings.put("b",b);
+			bindings.put("c",c);
+			bindings.put("d",d);
+			bindings.put("e",e);
+			Object value=script.eval(bindings);
+		}
+		System.out.println(System.currentTimeMillis()/1000);
+	}
+
 }

@@ -15,6 +15,7 @@
  */
 package com.robin.comm.util.xls;
 
+import com.robin.core.base.util.Const;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.meta.DataSetColumnMeta;
 import lombok.Data;
@@ -87,11 +88,11 @@ public class ExcelSheetProp {
 			prop.setFileExt(fileExt);
 			return this;
 		}
-		public Builder addColumnProp(String columnName,String columnCode,String columnType){
+		public Builder addColumnProp(String columnName, String columnCode, Const.CLASSTYPE columnType){
 			prop.getColumnPropList().add(new ExcelColumnProp(columnName,columnCode,columnType));
 			return this;
 		}
-		public Builder addColumnProp(String columnName,String columnCode,String columnType,String formula){
+		public Builder addColumnProp(String columnName, String columnCode, Const.CLASSTYPE columnType, String formula){
 			prop.getColumnPropList().add(new ExcelColumnProp(columnName,columnCode,columnType,formula));
 			return this;
 		}
@@ -99,7 +100,7 @@ public class ExcelSheetProp {
 			prop.getColumnPropList().add(columnProp);
 			return this;
 		}
-		public Builder addColumnProp(String columnName,String columnCode,String columnType,boolean needMerge){
+		public Builder addColumnProp(String columnName, String columnCode, Const.CLASSTYPE columnType, boolean needMerge){
 			prop.getColumnPropList().add(new ExcelColumnProp(columnName,columnCode,columnType,needMerge));
 			return this;
 		}

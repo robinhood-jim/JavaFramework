@@ -54,17 +54,17 @@ public class ByteBufferMapSerializer {
                         throw new OperationNotSupportException("read unexpected byte "+gap);
                     }
                 }
-                if(Const.META_TYPE_BIGINT.equals(meta.getColumnType())){
+                if(Const.CLASSTYPE.LONG.equals(meta.getColumnType())){
                     valueMap.put(meta.getColumnName(),inputStream.readLong());
-                }else if(Const.META_TYPE_INTEGER.equals(meta.getColumnType())){
+                }else if(Const.CLASSTYPE.INTEGER.equals(meta.getColumnType())){
                     valueMap.put(meta.getColumnName(),inputStream.readInt());
-                }else if(Const.META_TYPE_SHORT.equals(meta.getColumnType())){
+                }else if(Const.CLASSTYPE.SHORT.equals(meta.getColumnType())){
                     valueMap.put(meta.getColumnName(),inputStream.readShort());
-                }else if(Const.META_TYPE_DOUBLE.equals(meta.getColumnType())){
+                }else if(Const.CLASSTYPE.DOUBLE.equals(meta.getColumnType())){
                     valueMap.put(meta.getColumnName(),inputStream.readDouble());
-                }else if(Const.META_TYPE_TIMESTAMP.equals(meta.getColumnType())){
+                }else if(Const.CLASSTYPE.TIMESTAMP.equals(meta.getColumnType())){
                     valueMap.put(meta.getColumnName(),inputStream.readTimeStamp());
-                }else if(Const.META_TYPE_STRING.equals(meta.getColumnType())){
+                }else if(Const.CLASSTYPE.STRING.equals(meta.getColumnType())){
                     valueMap.put(meta.getColumnName(),new String(inputStream.readString(64),"utf8"));
                 }
                 else{

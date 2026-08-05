@@ -170,7 +170,7 @@ public class CommRecordGenerator {
                         Assert.isTrue(sqlNodes.size()==3,"substr function must have three parameters");
                         Assert.isTrue(SqlKind.IDENTIFIER.equals(sqlNodes.get(0).getKind())," first parameter must be column");
                         String column=sqlNodes.get(0).toString();
-                        if(!Const.META_TYPE_STRING.equals(segment.getOriginSchemaMap().get(column).getColumnType())){
+                        if(!Const.CLASSTYPE.STRING.equals(segment.getOriginSchemaMap().get(column).getColumnType())){
                             throw new OperationNotSupportException("only string column can substr");
                         }
                         Integer fromPos=((Number)((SqlLiteral)sqlNodes.get(1)).getValue()).intValue();
@@ -349,9 +349,9 @@ public class CommRecordGenerator {
         return runValue;
     }
     protected static void checkColumnNumeric(SqlSegment segment,String columnName){
-        Assert.isTrue(Const.META_TYPE_INTEGER.equals(segment.getOriginSchemaMap().get(columnName).getColumnType())
-                    || Const.META_TYPE_BIGINT.equals(segment.getOriginSchemaMap().get(columnName).getColumnType())
-                    || Const.META_TYPE_DOUBLE.equals(segment.getOriginSchemaMap().get(columnName).getColumnType()),"require numeric column");
+        Assert.isTrue(Const.CLASSTYPE.INTEGER.equals(segment.getOriginSchemaMap().get(columnName).getColumnType())
+                    || Const.CLASSTYPE.LONG.equals(segment.getOriginSchemaMap().get(columnName).getColumnType())
+                    || Const.CLASSTYPE.DOUBLE.equals(segment.getOriginSchemaMap().get(columnName).getColumnType()),"require numeric column");
     }
 
     private static Object getValueWithCalculate(Map<String, Object> inputMap, SqlSegment segment, SqlNode nodes) {

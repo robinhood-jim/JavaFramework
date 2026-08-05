@@ -21,7 +21,7 @@ public class FilterCondition {
     private Object value;
     private List<?> values;
     private List<FilterCondition> conditions;
-    private String columnType;
+    private Const.CLASSTYPE columnType;
     private Const.LINKOPERATOR linkOper = Const.LINKOPERATOR.LINK_AND;
     private Class<? extends BaseObject> mappingClass;
     private String orderByStr;
@@ -40,7 +40,7 @@ public class FilterCondition {
         this.operator = operator;
     }
 
-    public FilterCondition(String columnCode, String columnType, Const.OPERATOR operator) {
+    public FilterCondition(String columnCode, Const.CLASSTYPE columnType, Const.OPERATOR operator) {
         this.columnCode = columnCode;
         this.columnType = columnType;
         this.operator = operator;
@@ -58,7 +58,7 @@ public class FilterCondition {
         this.value = value;
     }
 
-    public FilterCondition(String columnCode, String columnType, Const.OPERATOR operator, Object value) {
+    public FilterCondition(String columnCode, Const.CLASSTYPE columnType, Const.OPERATOR operator, Object value) {
         this.columnCode = columnCode;
         this.operator = operator;
         this.value = value;

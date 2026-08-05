@@ -39,13 +39,13 @@ public class TestParquetWriter {
         Connection conn=null;
         try {
             DataCollectionMeta colmeta = new DataCollectionMeta();
-            colmeta.addColumnMeta("id", Const.META_TYPE_BIGINT, null);
-            colmeta.addColumnMeta("device_id", Const.META_TYPE_STRING, null);
-            colmeta.addColumnMeta("route_no", Const.META_TYPE_BIGINT, null);
-            colmeta.addColumnMeta("from_station", Const.META_TYPE_INTEGER, null);
-            colmeta.addColumnMeta("to_station", Const.META_TYPE_INTEGER, null);
-            colmeta.addColumnMeta("predict_value", Const.META_TYPE_INTEGER, null);
-            colmeta.addColumnMeta("predict_time", Const.META_TYPE_TIMESTAMP, null);
+            colmeta.addColumnMeta("id", Const.CLASSTYPE.LONG, null);
+            colmeta.addColumnMeta("device_id", Const.CLASSTYPE.STRING, null);
+            colmeta.addColumnMeta("route_no", Const.CLASSTYPE.LONG, null);
+            colmeta.addColumnMeta("from_station", Const.CLASSTYPE.INTEGER, null);
+            colmeta.addColumnMeta("to_station", Const.CLASSTYPE.INTEGER, null);
+            colmeta.addColumnMeta("predict_value", Const.CLASSTYPE.INTEGER, null);
+            colmeta.addColumnMeta("predict_time", Const.CLASSTYPE.TIMESTAMP, null);
             colmeta.setPath("/tmp/luoming/out.parquet.snappy");
             colmeta.setFileFormat(Const.FILETYPE_PARQUET);
             conn= SimpleJdbcDao.getConnection(meta);

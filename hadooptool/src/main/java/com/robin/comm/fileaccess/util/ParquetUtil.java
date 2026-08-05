@@ -337,32 +337,31 @@ public class ParquetUtil {
         Types.MessageTypeBuilder builder = Types.buildMessage();
         for (DataSetColumnMeta columnMeta : colmeta.getColumnList()) {
             switch (columnMeta.getColumnType()) {
-                case Const.META_TYPE_SHORT:
+                case SHORT:
                     builder.optional(PrimitiveType.PrimitiveTypeName.INT32).as(OriginalType.INT_16).named(columnMeta.getColumnName());
                     break;
-                case Const.META_TYPE_INTEGER:
+                case INTEGER:
                     builder.optional(PrimitiveType.PrimitiveTypeName.INT32).as(OriginalType.INT_32).named(columnMeta.getColumnName());
                     break;
-                case Const.META_TYPE_FLOAT:
+                case FLOAT:
                     builder.optional(PrimitiveType.PrimitiveTypeName.FLOAT).named(columnMeta.getColumnName());
                     break;
-                case Const.META_TYPE_DOUBLE:
-                case Const.META_TYPE_DECIMAL:
+                case DOUBLE:
+                case DECIMAL:
                     builder.optional(PrimitiveType.PrimitiveTypeName.DOUBLE).named(columnMeta.getColumnName());
                     break;
-                case Const.META_TYPE_BIGINT:
+                case LONG:
                     builder.optional(PrimitiveType.PrimitiveTypeName.INT64).as(OriginalType.INT_64).named(columnMeta.getColumnName());
                     break;
-                case Const.META_TYPE_DATE:
+                case DATE:
                     break;
-                case Const.META_TYPE_TIMESTAMP:
+                case TIMESTAMP:
                     builder.optional(PrimitiveType.PrimitiveTypeName.INT64).as(OriginalType.TIMESTAMP_MILLIS).named(columnMeta.getColumnName());
                     break;
-                case Const.META_TYPE_STRING:
+                case STRING:
                     builder.optional(PrimitiveType.PrimitiveTypeName.BINARY).as(OriginalType.UTF8).named(columnMeta.getColumnName());
                     break;
-                case Const.META_TYPE_BINARY:
-                case Const.META_TYPE_BLOB:
+                case BLOB:
                     builder.optional(PrimitiveType.PrimitiveTypeName.BINARY).named(columnMeta.getColumnName());
                     break;
                 default:

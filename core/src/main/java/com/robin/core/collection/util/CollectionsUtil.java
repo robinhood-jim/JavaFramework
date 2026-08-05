@@ -24,12 +24,12 @@ public class CollectionsUtil {
 
 	}
 
-	public static List<Map.Entry<String,Long>> getSortedMapByLongValue(Map<String,Long> h, final boolean asc) {
-		List<Map.Entry<String, Long>> l = new ArrayList<>(h.entrySet());
-		Collections.sort(l, (o1, o2) -> getCompareVal(o1, o2,asc));
+	public static <T> List<Map.Entry<T,Long>> getSortedMapByLongValue(Class<T> clazz, Map<T,Long> h, final boolean asc) {
+		List<Map.Entry<T, Long>> l = new ArrayList<>(h.entrySet());
+		Collections.sort(l, (o1, o2) -> getCompareVal(clazz, o1, o2,asc));
 		return l;
 	}
-	private static int getCompareVal(Map.Entry<String, ?> o1, Map.Entry<String, ?> o2,boolean asc) {
+	private static <T> int  getCompareVal(Class<T> clazz, Map.Entry<T, ?> o1, Map.Entry<T, ?> o2,boolean asc) {
 		int retval = 0;
 		if(o1.getValue() instanceof Long) {
 			if ((Long) o2.getValue() > (Long) o1.getValue()) {
@@ -76,16 +76,7 @@ public class CollectionsUtil {
 		}
 		return retval;
 	}
-	public static List<Map.Entry<String,Integer>> getSortedMapByIntValue(Map<String,Integer> h,final boolean asc) {
-		List<Map.Entry<String, Integer>> l = new ArrayList<>(h.entrySet());
-		Collections.sort(l, (o1, o2) -> getCompareVal(o1,o2,asc));
-		return l;
-	}
-	public static List<Map.Entry<String,Double>> getSortedMapByDoubleValue(Map<String,Double> h,final boolean asc) {
-		List<Map.Entry<String, Double>> l = new ArrayList<>(h.entrySet());
-		Collections.sort(l, (o1, o2) -> getCompareVal(o1,o2,asc));
-		return l;
-	}
+
 	public static boolean isEmpty(Collection<?> collection){
 		return CollectionUtils.isEmpty(collection);
 	}

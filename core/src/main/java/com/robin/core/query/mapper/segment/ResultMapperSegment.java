@@ -16,7 +16,7 @@ import java.util.Map;
 public class  ResultMapperSegment extends AbstractSegment {
     private String className;
     private Class<?> resultClass;
-    private Map<String, ImmutablePair<String, String>> columnMapper = new HashMap<>();
+    private Map<String, ImmutablePair<String, Const.CLASSTYPE>> columnMapper = new HashMap<>();
 
     public ResultMapperSegment(String nameSpace, String id, String value) {
         super(nameSpace, id, value);
@@ -41,35 +41,35 @@ public class  ResultMapperSegment extends AbstractSegment {
         }
     }
 
-    private String getMetaType(String jdbcType) {
-        String metaType = null;
+    private Const.CLASSTYPE getMetaType(String jdbcType) {
+        Const.CLASSTYPE metaType = null;
         switch (jdbcType.toUpperCase()) {
             case "CHAR":
             case "VARCHAR":
-                metaType = Const.META_TYPE_STRING;
+                metaType = Const.CLASSTYPE.STRING;
                 break;
             case "DOUBLE":
             case "NUMERIC":
-                metaType = Const.META_TYPE_DOUBLE;
+                metaType = Const.CLASSTYPE.DOUBLE;
                 break;
             case "BIGINT":
-                metaType = Const.META_TYPE_BIGINT;
+                metaType = Const.CLASSTYPE.LONG;
                 break;
             case "INT":
-                metaType = Const.META_TYPE_INTEGER;
+                metaType = Const.CLASSTYPE.INTEGER;
                 break;
             case "TIMESTAMP":
             case "DATE":
-                metaType = Const.META_TYPE_TIMESTAMP;
+                metaType = Const.CLASSTYPE.TIMESTAMP;
                 break;
             default:
-                metaType = Const.META_TYPE_STRING;
+                metaType = Const.CLASSTYPE.STRING;
                 break;
         }
         return metaType;
     }
 
-    public Map<String, ImmutablePair<String, String>> getColumnMapper() {
+    public Map<String, ImmutablePair<String, Const.CLASSTYPE>> getColumnMapper() {
         return columnMapper;
     }
 

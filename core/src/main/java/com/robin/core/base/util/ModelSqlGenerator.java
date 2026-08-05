@@ -16,6 +16,7 @@ import org.apache.commons.dbutils.DbUtils;
 import org.springframework.util.CollectionUtils;
 
 import java.sql.Connection;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -98,7 +99,7 @@ public class ModelSqlGenerator {
                 if (columMap.containsKey(field.getFieldName())) {
                     //length change
                     if (field.getDataType().equals(columMap.get(field.getFieldName()).getColumnType())) {
-                        if (!field.getDataType().equals(Const.META_TYPE_INTEGER) && !field.getDataType().equals(Const.META_TYPE_BIGINT)) {
+                        if (field.getDataType()!=Types.INTEGER && field.getDataType()!=Types.BIGINT) {
                             if (field.getLength() != 0 && field.getLength() != columMap.get(field.getFieldName()).getColumnLength()) {
                                 alertSqls.add(sqlGen.getAlertColumnSqlPart(entityContent, field, BaseSqlGen.AlertType.ALERT));
                             }

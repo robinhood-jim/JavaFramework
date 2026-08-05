@@ -11,7 +11,7 @@ import static com.mongodb.client.model.Filters.*;
 public class MongoQueryUtils {
     public static Bson getCondition(FieldContent content, Const.OPERATOR operator, Object[] value) {
         String columnName = content.getPropertyName();
-        String columnType = AnnotationRetriever.getFieldType(content);
+        Const.CLASSTYPE columnType = AnnotationRetriever.getFieldType(content);
         Assert.isTrue(value!=null && value.length>1,"");
         Bson filter=null;
         switch (operator) {

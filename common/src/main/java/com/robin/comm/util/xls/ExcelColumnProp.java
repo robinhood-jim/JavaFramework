@@ -15,6 +15,7 @@
  */
 package com.robin.comm.util.xls;
 
+import com.robin.core.base.util.Const;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -23,7 +24,7 @@ import lombok.Setter;
 public class ExcelColumnProp {
     private String columnName;
     private String columnCode;
-    private String columnType;
+    private Const.CLASSTYPE columnType;
     private String formula;
     private String format;
     private boolean needMerge;
@@ -32,25 +33,20 @@ public class ExcelColumnProp {
     private ExcelColumnProp() {
 
     }
-
-    public ExcelColumnProp(String columnName, String columnCode, String columnType, boolean needMerge) {
+    public ExcelColumnProp(String columnName, String columnCode, Const.CLASSTYPE columnType){
         this.columnCode = columnCode;
         this.columnName = columnName;
         this.columnType = columnType;
+    }
+    public ExcelColumnProp(String columnName, String columnCode, Const.CLASSTYPE columnType, boolean needMerge) {
+        this(columnName,columnCode,columnType);
         this.needMerge = needMerge;
     }
-    public ExcelColumnProp(String columnName, String columnCode, String columnType, String formula) {
-        this.columnCode = columnCode;
-        this.columnName = columnName;
-        this.columnType = columnType;
+    public ExcelColumnProp(String columnName, String columnCode, Const.CLASSTYPE columnType, String formula) {
+        this(columnName,columnCode,columnType);
         this.formula = formula;
     }
 
-    public ExcelColumnProp(String columnName, String columnCode, String columnType) {
-        this.columnCode = columnCode;
-        this.columnName = columnName;
-        this.columnType = columnType;
-        this.needMerge = false;
-    }
+
 
 }

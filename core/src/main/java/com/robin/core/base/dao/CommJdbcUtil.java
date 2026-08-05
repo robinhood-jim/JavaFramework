@@ -67,21 +67,21 @@ public class CommJdbcUtil {
                 for (int i = 1; i <= len; i++) {
                     String columnType = pageQuery.getColumnTypes().get(String.valueOf(i - 1));
                     String value = pageQuery.getParameters().get(String.valueOf(i));
-                    switch (columnType) {
-                        case Const.META_TYPE_INTEGER:
+                    switch (Const.CLASSTYPE.forName(columnType)) {
+                        case INTEGER:
                             ps.setInt(i, Integer.parseInt(value));
                             break;
-                        case Const.META_TYPE_DOUBLE:
+                        case DOUBLE:
                             ps.setDouble(i, Double.parseDouble(value));
                             break;
-                        case Const.META_TYPE_BIGINT:
+                        case LONG:
                             ps.setLong(i, Long.parseLong(value));
                             break;
-                        case Const.META_TYPE_DATE:
+                        case DATE:
                             Date date = new Date(LocalDateTime.parse(value, dayFormat).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
                             ps.setDate(i, date);
                             break;
-                        case Const.META_TYPE_TIMESTAMP:
+                        case TIMESTAMP:
                             Timestamp ts = new Timestamp(LocalDateTime.parse(value, timeFormat).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
                             ps.setTimestamp(i, ts);
                             break;
@@ -317,38 +317,38 @@ public class CommJdbcUtil {
         return retObj;
     }
 
-    static void setTargetValue(Object target, Object value, String columnName, String columnType, PageQuery<Map<String, Object>> pageQuery) throws DAOException {
+    static void setTargetValue(Object target, Object value, String columnName, Const.CLASSTYPE columnType, PageQuery<Map<String, Object>> pageQuery) throws DAOException {
         try {
             if (value != null) {
                 Object targetValue = null;
                 if (columnType == null) {
                     targetValue = value;
-                } else if (columnType.equals(Const.META_TYPE_INTEGER)) {
+                } else if (columnType.equals(Const.CLASSTYPE.INTEGER)) {
                     if (NumberUtils.isDigits(value.toString())) {
                         targetValue = NumberUtils.createInteger(value.toString());
                     } else {
                         throw new DAOException("Column " + columnName + " is not integer value");
                     }
-                } else if (columnType.equals(Const.META_TYPE_DOUBLE) || columnType.equals(Const.META_TYPE_NUMERIC)) {
+                } else if (columnType.equals(Const.CLASSTYPE.DOUBLE) || columnType.equals(Const.CLASSTYPE.NUMERIC)) {
                     if (NumberUtils.isNumber(value.toString())) {
                         targetValue = NumberUtils.createDouble(value.toString());
                     } else {
                         throw new DAOException("Column " + columnName + " is not double value");
                     }
-                } else if (columnType.equals(Const.META_TYPE_BIGINT)) {
+                } else if (columnType.equals(Const.CLASSTYPE.LONG)) {
                     if (NumberUtils.isDigits(value.toString())) {
                         targetValue = NumberUtils.createLong(value.toString());
                     } else {
                         throw new DAOException("Column " + columnName + " is not long value");
                     }
-                } else if (columnType.equals(Const.META_TYPE_DATE)) {
+                } else if (columnType.equals(Const.CLASSTYPE.DATE)) {
                     if (Date.class.isAssignableFrom(value.getClass()) || java.util.Date.class.isAssignableFrom(value.getClass()) || LocalDateTime.class.isAssignableFrom(value.getClass())) {
                         targetValue = value;
                     } else {
                         LocalDateTime ds=LocalDateTime.parse(value.toString(),DateTimeFormatHolder.getTimestampFormatter());
                         targetValue =new Timestamp(ds.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
                     }
-                } else if (columnType.equals(Const.META_TYPE_TIMESTAMP)) {
+                } else if (columnType.equals(Const.CLASSTYPE.TIMESTAMP)) {
                     if (Timestamp.class.isAssignableFrom(value.getClass()) || LocalDateTime.class.isAssignableFrom(value.getClass())) {
                         targetValue = value;
                     } else {
@@ -571,7 +571,7 @@ public class CommJdbcUtil {
             if (value == null) {
                 value = valueMap.get(columnMeta.getColumnName().toLowerCase());
             }
-            if (Const.META_TYPE_INTEGER.equals(columnMeta.getColumnType())) {
+            if (Const.CLASSTYPE.INTEGER.equals(columnMeta.getColumnType())) {
                 if (StringUtils.isEmpty(value)) {
                     ps.setNull(pos + 1, Types.INTEGER);
                 } else {
@@ -581,7 +581,7 @@ public class CommJdbcUtil {
                         ps.setNull(pos + 1, Types.INTEGER);
                     }
                 }
-            } else if (Const.META_TYPE_BIGINT.equals(columnMeta.getColumnType())) {
+            } else if (Const.CLASSTYPE.LONG.equals(columnMeta.getColumnType())) {
                 if (StringUtils.isEmpty(value)) {
                     ps.setNull(pos + 1, Types.BIGINT);
                 } else {
@@ -591,7 +591,7 @@ public class CommJdbcUtil {
                         ps.setNull(pos + 1, Types.BIGINT);
                     }
                 }
-            } else if (Const.META_TYPE_NUMERIC.equals(columnMeta.getColumnType()) || Const.META_TYPE_DOUBLE.equals(columnMeta.getColumnType())) {
+            } else if (Const.CLASSTYPE.NUMERIC.equals(columnMeta.getColumnType()) || Const.CLASSTYPE.DOUBLE.equals(columnMeta.getColumnType())) {
                 if (StringUtils.isEmpty(value)) {
                     ps.setNull(pos + 1, Types.DOUBLE);
                 } else {
@@ -601,7 +601,7 @@ public class CommJdbcUtil {
                         ps.setNull(pos + 1, Types.DOUBLE);
                     }
                 }
-            } else if (Const.META_TYPE_DATE.equals(columnMeta.getColumnType()) || Const.META_TYPE_TIMESTAMP.equals(columnMeta.getColumnType())) {
+            } else if (Const.CLASSTYPE.DATE.equals(columnMeta.getColumnType()) || Const.CLASSTYPE.TIMESTAMP.equals(columnMeta.getColumnType())) {
                 if (StringUtils.isEmpty(value)) {
                     ps.setNull(pos + 1, Types.DATE);
                 } else {
@@ -613,7 +613,7 @@ public class CommJdbcUtil {
                         ps.setDate(pos + 1, new Date(LocalDateTime.parse(value, timeFormat).toInstant(ZoneOffset.UTC).toEpochMilli()));
                     }
                 }
-            } else if (Const.META_TYPE_STRING.equals(columnMeta.getColumnType())) {
+            } else if (Const.CLASSTYPE.STRING.equals(columnMeta.getColumnType())) {
                 if (value != null) {
                     ps.setString(pos + 1, value);
                 } else {
@@ -640,31 +640,31 @@ public class CommJdbcUtil {
             if (value == null) {
                 value = resultMap.get(typeMap.get("name").toLowerCase());
             }
-            if (Const.META_TYPE_STRING.equals(typeMap.get("dataType"))) {
+            if (Const.CLASSTYPE.STRING.equals(typeMap.get("dataType"))) {
                 if (value != null) {
                     ps.setString(pos + 1, value);
                 } else {
                     ps.setNull(pos + 1, Types.VARCHAR);
                 }
-            } else if (Const.META_TYPE_NUMERIC.equals(typeMap.get("dataType"))) {
+            } else if (Const.CLASSTYPE.NUMERIC.equals(typeMap.get("dataType"))) {
                 if (value == null || "".equals(value)) {
                     ps.setNull(pos + 1, Types.DOUBLE);
                 } else {
                     ps.setDouble(pos + 1, Double.parseDouble(value));
                 }
-            } else if (Const.META_TYPE_INTEGER.equals(typeMap.get("dataType"))) {
+            } else if (Const.CLASSTYPE.INTEGER.equals(typeMap.get("dataType"))) {
                 if (StringUtils.isEmpty(value)) {
                     ps.setNull(pos + 1, Types.INTEGER);
                 } else {
                     ps.setInt(pos + 1, Integer.parseInt(value));
                 }
-            } else if (Const.META_TYPE_DOUBLE.equals(typeMap.get("dataType"))) {
+            } else if (Const.CLASSTYPE.DOUBLE.equals(typeMap.get("dataType"))) {
                 if (StringUtils.isEmpty(value)) {
                     ps.setNull(pos + 1, Types.DOUBLE);
                 } else {
                     ps.setDouble(pos + 1, Double.parseDouble(value));
                 }
-            } else if (Const.META_TYPE_DATE.equals(typeMap.get("dataType")) || Const.META_TYPE_TIMESTAMP.equals(typeMap.get("dataType"))) {
+            } else if (Const.CLASSTYPE.DATE.equals(typeMap.get("dataType")) || Const.CLASSTYPE.TIMESTAMP.equals(typeMap.get("dataType"))) {
 
                 if (value == null || "".equals(value)) {
                     ps.setNull(pos + 1, Types.DATE);

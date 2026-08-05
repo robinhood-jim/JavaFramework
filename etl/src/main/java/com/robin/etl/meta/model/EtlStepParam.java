@@ -1,5 +1,6 @@
 package com.robin.etl.meta.model;
 
+import com.robin.core.base.annotation.LogicColumn;
 import com.robin.core.base.annotation.MappingEntity;
 import com.robin.core.base.annotation.MappingField;
 import com.robin.core.base.model.BaseObject;
@@ -9,7 +10,7 @@ import lombok.Data;
  * @author robinjim
  * @version 1.0
  */
-@MappingEntity("t_step_param")
+@MappingEntity(value = "t_step_param")
 @Data
 public class EtlStepParam extends BaseObject {
     @MappingField(primary = true,increment = true)
@@ -22,7 +23,7 @@ public class EtlStepParam extends BaseObject {
     private String paramName;
     @MappingField
     private String paramValue;
-
+    @LogicColumn
     private String status;
 
 

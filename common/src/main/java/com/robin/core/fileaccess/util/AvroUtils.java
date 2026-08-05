@@ -62,21 +62,21 @@ public class AvroUtils {
 
             for (DataBaseColumnMeta meta : columnList) {
                 switch (meta.getColumnType()) {
-                    case Const.META_TYPE_BIGINT:
+                    case LONG:
                         fields = fields.name(meta.getColumnName()).type().nullable().longType().noDefault();
                         break;
-                    case Const.META_TYPE_INTEGER:
+                    case INTEGER:
                         fields = fields.name(meta.getColumnName()).type().nullable().intType().noDefault();
                         break;
-                    case Const.META_TYPE_DOUBLE:
-                    case Const.META_TYPE_NUMERIC:
+                    case DOUBLE:
+                    case NUMERIC:
                         fields = fields.name(meta.getColumnName()).type().nullable().doubleType().noDefault();
                         break;
-                    case Const.META_TYPE_TIMESTAMP:
+                    case TIMESTAMP:
                         Schema timestampMilliType = LogicalTypes.timestampMillis().addToSchema(Schema.create(Schema.Type.LONG));
                         fields = fields.name(meta.getColumnName()).type(timestampMilliType).noDefault();
                         break;
-                    case Const.META_TYPE_BOOLEAN:
+                    case BOOLEAN:
                         fields = fields.name(meta.getColumnName()).type().nullable().booleanType().noDefault();
                         break;
                     default:
@@ -112,34 +112,34 @@ public class AvroUtils {
 
                 for (DataSetColumnMeta meta : colmeta.getColumnList()) {
                     switch (meta.getColumnType()) {
-                        case Const.META_TYPE_BIGINT:
+                        case LONG:
                             if (meta.isRequired()) {
                                 fields = fields.name(meta.getColumnName()).type().longType().noDefault();
                             } else {
                                 fields = fields.name(meta.getColumnName()).type().nullable().longType().noDefault();
                             }
                             break;
-                        case Const.META_TYPE_INTEGER:
+                        case INTEGER:
                             if (meta.isRequired()) {
                                 fields = fields.name(meta.getColumnName()).type().intType().noDefault();
                             } else {
                                 fields = fields.name(meta.getColumnName()).type().nullable().intType().noDefault();
                             }
                             break;
-                        case Const.META_TYPE_DOUBLE:
-                        case Const.META_TYPE_NUMERIC:
+                        case DOUBLE:
+                        case NUMERIC:
                             if (meta.isRequired()) {
                                 fields = fields.name(meta.getColumnName()).type().doubleType().noDefault();
                             } else {
                                 fields = fields.name(meta.getColumnName()).type().nullable().doubleType().noDefault();
                             }
                             break;
-                        case Const.META_TYPE_TIMESTAMP:
-                        case Const.META_TYPE_DATE:
+                        case TIMESTAMP:
+                        case DATE:
                             Schema timestampMilliType = LogicalTypes.timestampMillis().addToSchema(Schema.create(Schema.Type.LONG));
                             fields = fields.name(meta.getColumnName()).type(timestampMilliType).noDefault();
                             break;
-                        case Const.META_TYPE_BOOLEAN:
+                        case BOOLEAN:
                             if (meta.isRequired()) {
                                 fields = fields.name(meta.getColumnName()).type().booleanType().noDefault();
                             } else {

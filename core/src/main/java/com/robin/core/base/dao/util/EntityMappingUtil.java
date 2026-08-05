@@ -9,6 +9,7 @@ import com.robin.core.base.model.BasePrimaryObject;
 import com.robin.core.base.spring.SpringContextHolder;
 import com.robin.core.base.util.Const;
 import com.robin.core.base.util.IUserUtils;
+import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.sql.util.BaseSqlGen;
 import com.robin.core.sql.util.FilterCondition;
 import lombok.Data;
@@ -63,7 +64,7 @@ public class EntityMappingUtil {
                 }
                 DataBaseColumnMeta columnMeta=Optional.ofNullable(columnMetaMap.get(content.getFieldName().toLowerCase())).orElse(columnMetaMap.get(content.getFieldName().toUpperCase()));
 
-                if (content.getDataType().equals(Const.META_TYPE_BLOB) || content.getDataType().equals(Const.META_TYPE_CLOB)) {
+                if (content.getDataType().equals(Types.CLOB) || content.getDataType().equals(Types.BLOB)) {
                     insertSegment.setContainlob(true);
                 }
                 if (!content.isIncrement() && !content.isSequential()) {
@@ -104,6 +105,15 @@ public class EntityMappingUtil {
                                 paramTypes.add(new SqlParameter(columnMeta.getDataType()));
                             }
                         }
+                    }else {
+                        TableLogicConfig config=getLogicDeleteConfig(obj.getClass(),jdbcDao);
+                        if(config!=null && config.getColumnName().equals(content.getFieldName())){
+                            fieldBuffer.append(content.getFieldName()).append(",");
+                            valueBuffer.append("?,");
+                            params.add(ConvertUtil.parseParameter(content.getDataType(),config.getValidValue()));
+                            paramTypes.add(new SqlParameter(columnMeta.getDataType()));
+                        }
+
                     }
                 } else {
                     insertSegment.setHasPrimaryKey(true);
@@ -314,12 +324,10 @@ public class EntityMappingUtil {
                 }
             }
         }
-        if(tableDef.isContainLogicColumn()){
-            wherebuffer.append(tableDef.getLogicColumn()).append("=? and ");
-            whereObjects.add(tableDef.getValidValue());
-        }else if(jdbcDao.isContainLogicColumn()){
-            wherebuffer.append(jdbcDao.getLogicColumn()).append("=? and ");
-            whereObjects.add(jdbcDao.getValidValue());
+        TableLogicConfig config=EntityMappingUtil.getLogicDeleteConfig(obj.getClass(),jdbcDao);
+        if(config!=null) {
+            wherebuffer.append(config.getColumnName()).append("=? and ");
+            whereObjects.add(config.getValidValue());
         }
         objList.addAll(whereObjects);
         updateSegment.setFieldStr(fieldBuffer.substring(0, fieldBuffer.length() - 1));
@@ -364,12 +372,10 @@ public class EntityMappingUtil {
                 sqlbuffer.append(field.getFieldName()).append(Const.SQL_AS).append(field.getPropertyName()).append(",");
             }
         }
-        if(tableDef.isContainLogicColumn()){
-            wherebuffer.append(tableDef.getLogicColumn()).append("=? and ");
-            selectObjs.add(tableDef.getValidValue());
-        }else if(jdbcDao.isContainLogicColumn()){
-            wherebuffer.append(jdbcDao.getLogicColumn()).append("=? and ");
-            selectObjs.add(jdbcDao.getValidValue());
+        TableLogicConfig config=getLogicDeleteConfig(clazz,jdbcDao);
+        if(config!=null){
+            wherebuffer.append(config.getColumnName()).append("=? and ");
+            selectObjs.add(config.getValidValue());
         }
         sqlbuffer.deleteCharAt(sqlbuffer.length() - 1).append(Const.SQL_FROM);
         appendSchemaAndTable(tableDef, sqlbuffer, sqlGen);
@@ -379,10 +385,26 @@ public class EntityMappingUtil {
         segment.setValues(selectObjs);
         return segment;
     }
+    public static <T extends  BaseObject> TableLogicConfig getLogicDeleteConfig(Class<T> type,JdbcDao dao){
+        List<FieldContent> fields=AnnotationRetriever.getMappingFieldsCache(type);
+        Optional<FieldContent> optional=fields.stream().filter(f ->f.isIfLogicColumn()).findAny();
+        TableLogicConfig config=null;
+        if(optional.isPresent()){
+            config=new TableLogicConfig();
+            config.setColumnName(optional.get().getFieldName());
+            config.setValidValue(optional.get().getValidValue());
+            config.setInvalidValue(optional.get().getInvalidValue());
+        }else if(dao.isContainLogicColumn()) {
+            config=new TableLogicConfig();
+            config.setColumnName(dao.getLogicColumn());
+            config.setValidValue(dao.getValidValue().toString());
+            config.setInvalidValue(dao.getInvalidValue().toString());
+        }
+        return config;
+    }
 
     public static <T extends BaseObject> SelectSegment getSelectByVOSegment(Class<T> type, BaseObject vo, String orderByStr, String wholeSelectSql,JdbcDao jdbcDao) throws Throwable {
         AnnotationRetriever.isBaseObjectClassValid(type);
-        AnnotationRetriever.EntityContent<T> tableDef = AnnotationRetriever.getMappingTableByCache(type);
         List<Object> params = new ArrayList<>();
         StringBuilder builder = new StringBuilder();
         builder.append(wholeSelectSql).append(Const.SQL_WHERE);
@@ -396,12 +418,10 @@ public class EntityMappingUtil {
                 builder.append(" and ");
             }
         }
-        if(tableDef.isContainLogicColumn()){
-            builder.append(tableDef.getLogicColumn()).append("=? and ");
-            params.add(tableDef.getValidValue());
-        }else if(jdbcDao.isContainLogicColumn()){
-            builder.append(jdbcDao.getLogicColumn()).append("=? and ");
-            params.add(jdbcDao.getValidValue());
+        TableLogicConfig config=getLogicDeleteConfig(type,jdbcDao);
+        if(config!=null){
+            builder.append(config.getColumnName()).append("=? and ");
+            params.add(config.getValidValue());
         }
         String sql = builder.substring(0, builder.length() - 5);
         if (orderByStr != null && !orderByStr.isEmpty()) {

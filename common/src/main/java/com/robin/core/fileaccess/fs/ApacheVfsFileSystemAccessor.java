@@ -1,5 +1,6 @@
 package com.robin.core.fileaccess.fs;
 
+import com.robin.core.base.exception.MissingConfigException;
 import com.robin.core.base.exception.OperationNotSupportException;
 import com.robin.core.base.util.Const;
 import com.robin.core.convert.util.ConvertUtil;
@@ -20,6 +21,7 @@ import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class ApacheVfsFileSystemAccessor extends AbstractFileSystemAccessor {
     private ThreadLocal<FileObject> local = new ThreadLocal<>();
@@ -180,8 +182,8 @@ public class ApacheVfsFileSystemAccessor extends AbstractFileSystemAccessor {
             return fo;
         } catch (FileSystemException ex) {
             logger.info("{}", ex.getMessage());
+            throw ex;
         }
-        return null;
     }
 
     public boolean checkFileExist(VfsParam param, String resourcePath) throws Exception {
@@ -215,6 +217,34 @@ public class ApacheVfsFileSystemAccessor extends AbstractFileSystemAccessor {
             return getRawInResource(fileObject, colmeta);
         } catch (Exception ex) {
             throw new IOException(ex);
+        }
+    }
+
+    @Override
+    public List<String> listPath(String inputPath) throws Exception {
+        VfsParam param = new VfsParam();
+
+        ConvertUtil.convertToTarget(colmeta.getResourceCfgMap(), param);
+        try (FileObject fo =  manager.resolveFile(getUriByParam(param, inputPath).toString(), getOptions(param))) {
+            if(fo.isFolder()){
+                FileObject [] files=fo.findFiles(new AllFileSelector());
+                return Arrays.stream(files).map(f->f.getPath().toFile().getPath()).collect(Collectors.toList());
+            }else{
+                throw new MissingConfigException("not a directory");
+            }
+        }catch (Exception ex){
+            throw ex;
+        }
+    }
+
+    @Override
+    public boolean isDirectory(String inputPath) throws Exception {
+        VfsParam param = new VfsParam();
+        ConvertUtil.convertToTarget(colmeta.getResourceCfgMap(), param);
+        try (FileObject fo =  manager.resolveFile(getUriByParam(param, inputPath).toString(), getOptions(param))) {
+            return fo.isFolder();
+        }catch (Exception ex){
+            throw ex;
         }
     }
 

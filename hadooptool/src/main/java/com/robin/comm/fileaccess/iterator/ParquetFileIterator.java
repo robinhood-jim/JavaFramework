@@ -54,10 +54,8 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Paths;
 import java.sql.Timestamp;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 import static org.apache.parquet.filter2.predicate.FilterApi.*;
@@ -303,101 +301,101 @@ public class ParquetFileIterator extends AbstractFileIterator {
         }
         switch (operator) {
             case GREATER_THAN:
-                if (Const.META_TYPE_INTEGER.equals(meta.getColumnType())) {
+                if (Const.CLASSTYPE.INTEGER.equals(meta.getColumnType())) {
                     predicate = gt(intColumn(columnName), Integer.parseInt(value.toString()));
-                } else if (Const.META_TYPE_DOUBLE.equals(meta.getColumnType()) || Const.META_TYPE_DECIMAL.equals(meta.getColumnType())) {
+                } else if (Const.CLASSTYPE.DOUBLE.equals(meta.getColumnType()) || Const.CLASSTYPE.DECIMAL.equals(meta.getColumnType())) {
                     predicate = gt(doubleColumn(columnName), Double.parseDouble(value.toString()));
-                } else if (Const.META_TYPE_BIGINT.equals(meta.getColumnType()) || Const.META_TYPE_TIMESTAMP.equals(meta.getColumnType())) {
+                } else if (Const.CLASSTYPE.LONG.equals(meta.getColumnType()) || Const.CLASSTYPE.TIMESTAMP.equals(meta.getColumnType())) {
                     predicate = gt(longColumn(columnName), Long.parseLong(value.toString()));
                 } else {
                     throw new OperationNotSupportException("type not support");
                 }
                 break;
             case GREATER_THAN_OR_EQUAL:
-                if (Const.META_TYPE_INTEGER.equals(meta.getColumnType())) {
+                if (Const.CLASSTYPE.INTEGER.equals(meta.getColumnType())) {
                     predicate = gtEq(intColumn(columnName), Integer.parseInt(value.toString()));
-                } else if (Const.META_TYPE_DOUBLE.equals(meta.getColumnType()) || Const.META_TYPE_DECIMAL.equals(meta.getColumnType())) {
+                } else if (Const.CLASSTYPE.DOUBLE.equals(meta.getColumnType()) || Const.CLASSTYPE.DECIMAL.equals(meta.getColumnType())) {
                     predicate = gtEq(doubleColumn(columnName), Double.parseDouble(value.toString()));
-                } else if (Const.META_TYPE_BIGINT.equals(meta.getColumnType()) || Const.META_TYPE_TIMESTAMP.equals(meta.getColumnType())) {
+                } else if (Const.CLASSTYPE.LONG.equals(meta.getColumnType()) || Const.CLASSTYPE.TIMESTAMP.equals(meta.getColumnType())) {
                     predicate = gtEq(longColumn(columnName), Long.parseLong(value.toString()));
                 } else {
                     throw new OperationNotSupportException("type not support");
                 }
                 break;
             case EQUALS:
-                if (Const.META_TYPE_INTEGER.equals(meta.getColumnType())) {
+                if (Const.CLASSTYPE.INTEGER.equals(meta.getColumnType())) {
                     predicate = eq(intColumn(columnName), Integer.parseInt(value.toString()));
-                } else if (Const.META_TYPE_DOUBLE.equals(meta.getColumnType()) || Const.META_TYPE_DECIMAL.equals(meta.getColumnType())) {
+                } else if (Const.CLASSTYPE.DOUBLE.equals(meta.getColumnType()) || Const.CLASSTYPE.DECIMAL.equals(meta.getColumnType())) {
                     predicate = eq(doubleColumn(columnName), Double.parseDouble(value.toString()));
-                } else if (Const.META_TYPE_BIGINT.equals(meta.getColumnType()) || Const.META_TYPE_TIMESTAMP.equals(meta.getColumnType())) {
+                } else if (Const.CLASSTYPE.LONG.equals(meta.getColumnType()) || Const.CLASSTYPE.TIMESTAMP.equals(meta.getColumnType())) {
                     predicate = eq(longColumn(columnName), Long.parseLong(value.toString()));
-                } else if (Const.META_TYPE_STRING.equals(meta.getColumnType())) {
+                } else if (Const.CLASSTYPE.STRING.equals(meta.getColumnType())) {
                     predicate = eq(binaryColumn(columnName), Binary.fromString(value.toString()));
                 } else {
                     throw new OperationNotSupportException("type not support");
                 }
                 break;
             case LESS_THAN:
-                if (Const.META_TYPE_INTEGER.equals(meta.getColumnType())) {
+                if (Const.CLASSTYPE.INTEGER.equals(meta.getColumnType())) {
                     predicate = lt(intColumn(columnName), Integer.parseInt(value.toString()));
-                } else if (Const.META_TYPE_DOUBLE.equals(meta.getColumnType()) || Const.META_TYPE_DECIMAL.equals(meta.getColumnType())) {
+                } else if (Const.CLASSTYPE.DOUBLE.equals(meta.getColumnType()) || Const.CLASSTYPE.DECIMAL.equals(meta.getColumnType())) {
                     predicate = lt(doubleColumn(columnName), Double.parseDouble(value.toString()));
-                } else if (Const.META_TYPE_BIGINT.equals(meta.getColumnType()) || Const.META_TYPE_TIMESTAMP.equals(meta.getColumnType())) {
+                } else if (Const.CLASSTYPE.LONG.equals(meta.getColumnType()) || Const.CLASSTYPE.TIMESTAMP.equals(meta.getColumnType())) {
                     predicate = lt(longColumn(columnName), Long.parseLong(value.toString()));
                 } else {
                     throw new OperationNotSupportException("type not support");
                 }
                 break;
             case LESS_THAN_OR_EQUAL:
-                if (Const.META_TYPE_INTEGER.equals(meta.getColumnType())) {
+                if (Const.CLASSTYPE.INTEGER.equals(meta.getColumnType())) {
                     predicate = ltEq(intColumn(columnName), Integer.parseInt(value.toString()));
-                } else if (Const.META_TYPE_DOUBLE.equals(meta.getColumnType()) || Const.META_TYPE_DECIMAL.equals(meta.getColumnType())) {
+                } else if (Const.CLASSTYPE.DOUBLE.equals(meta.getColumnType()) || Const.CLASSTYPE.DECIMAL.equals(meta.getColumnType())) {
                     predicate = ltEq(doubleColumn(columnName), Double.parseDouble(value.toString()));
-                } else if (Const.META_TYPE_BIGINT.equals(meta.getColumnType()) || Const.META_TYPE_TIMESTAMP.equals(meta.getColumnType())) {
+                } else if (Const.CLASSTYPE.LONG.equals(meta.getColumnType()) || Const.CLASSTYPE.TIMESTAMP.equals(meta.getColumnType())) {
                     predicate = ltEq(longColumn(columnName), Long.parseLong(value.toString()));
                 } else {
                     throw new OperationNotSupportException("type not support");
                 }
                 break;
             case NOT_EQUALS:
-                if (Const.META_TYPE_INTEGER.equals(meta.getColumnType())) {
+                if (Const.CLASSTYPE.INTEGER.equals(meta.getColumnType())) {
                     predicate = notEq(intColumn(columnName), Integer.parseInt(value.toString()));
-                } else if (Const.META_TYPE_DOUBLE.equals(meta.getColumnType()) || Const.META_TYPE_DECIMAL.equals(meta.getColumnType())) {
+                } else if (Const.CLASSTYPE.DOUBLE.equals(meta.getColumnType()) || Const.CLASSTYPE.DECIMAL.equals(meta.getColumnType())) {
                     predicate = notEq(doubleColumn(columnName), Double.parseDouble(value.toString()));
-                } else if (Const.META_TYPE_BIGINT.equals(meta.getColumnType()) || Const.META_TYPE_TIMESTAMP.equals(meta.getColumnType())) {
+                } else if (Const.CLASSTYPE.LONG.equals(meta.getColumnType()) || Const.CLASSTYPE.TIMESTAMP.equals(meta.getColumnType())) {
                     predicate = notEq(longColumn(columnName), Long.parseLong(value.toString()));
                 } else {
                     throw new OperationNotSupportException("type not support");
                 }
                 break;
             case IN:
-                if (Const.META_TYPE_INTEGER.equals(meta.getColumnType())) {
+                if (Const.CLASSTYPE.INTEGER.equals(meta.getColumnType())) {
                     predicate = in(intColumn(columnName), Sets.newHashSet(super.segment.getInPartMap().get(columnName).stream().map(Integer::valueOf).collect(Collectors.toList())));
-                } else if (Const.META_TYPE_DOUBLE.equals(meta.getColumnType()) || Const.META_TYPE_DECIMAL.equals(meta.getColumnType())) {
+                } else if (Const.CLASSTYPE.DOUBLE.equals(meta.getColumnType()) || Const.CLASSTYPE.DECIMAL.equals(meta.getColumnType())) {
                     predicate = in(doubleColumn(columnName), Sets.newHashSet(super.segment.getInPartMap().get(columnName).stream().map(Double::valueOf).collect(Collectors.toList())));
-                } else if (Const.META_TYPE_BIGINT.equals(meta.getColumnType()) || Const.META_TYPE_TIMESTAMP.equals(meta.getColumnType())) {
+                } else if (Const.CLASSTYPE.LONG.equals(meta.getColumnType()) || Const.CLASSTYPE.TIMESTAMP.equals(meta.getColumnType())) {
                     predicate = in(longColumn(columnName), Sets.newHashSet(super.segment.getInPartMap().get(columnName).stream().map(Long::valueOf).collect(Collectors.toList())));
-                } else if (Const.META_TYPE_STRING.equals(meta.getColumnType())) {
+                } else if (Const.CLASSTYPE.STRING.equals(meta.getColumnType())) {
                     predicate = in(binaryColumn(columnName), Sets.newHashSet(super.segment.getInPartMap().get(columnName).stream().map(Binary::fromString).collect(Collectors.toList())));
                 } else {
                     throw new OperationNotSupportException("type not support");
                 }
                 break;
             case NOT_IN:
-                if (Const.META_TYPE_INTEGER.equals(meta.getColumnType())) {
+                if (Const.CLASSTYPE.INTEGER.equals(meta.getColumnType())) {
                     predicate = notIn(intColumn(columnName), Sets.newHashSet(super.segment.getInPartMap().get(columnName).stream().map(Integer::valueOf).collect(Collectors.toList())));
-                } else if (Const.META_TYPE_DOUBLE.equals(meta.getColumnType()) || Const.META_TYPE_DECIMAL.equals(meta.getColumnType())) {
+                } else if (Const.CLASSTYPE.DOUBLE.equals(meta.getColumnType()) || Const.CLASSTYPE.DECIMAL.equals(meta.getColumnType())) {
                     predicate = notIn(doubleColumn(columnName), Sets.newHashSet(super.segment.getInPartMap().get(columnName).stream().map(Double::valueOf).collect(Collectors.toList())));
-                } else if (Const.META_TYPE_BIGINT.equals(meta.getColumnType()) || Const.META_TYPE_TIMESTAMP.equals(meta.getColumnType())) {
+                } else if (Const.CLASSTYPE.LONG.equals(meta.getColumnType()) || Const.CLASSTYPE.TIMESTAMP.equals(meta.getColumnType())) {
                     predicate = notIn(longColumn(columnName), Sets.newHashSet(super.segment.getInPartMap().get(columnName).stream().map(Long::valueOf).collect(Collectors.toList())));
-                } else if (Const.META_TYPE_STRING.equals(meta.getColumnType())) {
+                } else if (Const.CLASSTYPE.STRING.equals(meta.getColumnType())) {
                     predicate = notIn(binaryColumn(columnName), Sets.newHashSet(super.segment.getInPartMap().get(columnName).stream().map(Binary::fromString).collect(Collectors.toList())));
                 } else {
                     throw new OperationNotSupportException("type not support");
                 }
                 break;
             case LIKE:
-                if (Const.META_TYPE_STRING.equals(meta.getColumnType())){
+                if (Const.CLASSTYPE.STRING.equals(meta.getColumnType())){
                     predicate=FilterApi.userDefined(FilterApi.binaryColumn(columnName),new CharLikePredicate(value.toString()));
                 }else {
                     throw new OperationNotSupportException("type not support");

@@ -28,6 +28,7 @@ import com.robin.core.base.reflect.ReflectUtils;
 import com.robin.core.base.spring.SpringContextHolder;
 import com.robin.core.base.util.Const;
 import com.robin.core.base.util.LicenseUtils;
+import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.query.extractor.ResultSetOperationExtractor;
 import com.robin.core.query.extractor.SplitPageResultSetExtractor;
@@ -358,7 +359,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
             if (map1.containsKey(fieldName)) {
                 List<Object> queryParam=Lists.newArrayList(fieldValues);
                 JdbcHelper.generateQuerySqlBySingleFields(map1.get(fieldName), oper, queryBuffer, fieldValues.length);
-                appendLogicColumnCondition(tableDef,queryBuffer,queryParam);
+                appendLogicColumnCondition(fields,queryBuffer,queryParam);
                 buffer.append(queryBuffer);
                 rsList = queryBySql(buffer.toString(), queryParam.toArray());
                 JdbcHelper.wrapList(type, retlist, fields, rsList);
@@ -416,7 +417,7 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
             if (map1.containsKey(fieldName)) {
                 List<Object> queryParam=Lists.newArrayList(fieldValues);
                 JdbcHelper.generateQuerySqlBySingleFields(map1.get(fieldName), oper, queryBuffer, fieldValues.length);
-                appendLogicColumnCondition(tableDef,queryBuffer,queryParam);
+                appendLogicColumnCondition(fields,queryBuffer,queryParam);
                 builder.append(queryBuffer);
                 if (!ObjectUtils.isEmpty(orderByStr)) {
                     builder.append(" order by ").append(orderByStr);
@@ -733,12 +734,13 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
             AnnotationRetriever.EntityContent<T> tableDef = AnnotationRetriever.getMappingTableByCache(clazz);
             List<FieldContent> fields = AnnotationRetriever.getMappingFieldsCache(clazz);
             FieldContent pkField=fields.stream().filter(FieldContent::isPrimary).findFirst().get();
-            boolean isLogicDelete=tableDef.isContainLogicColumn() || logicDelete;
+            TableLogicConfig config=EntityMappingUtil.getLogicDeleteConfig(clazz,this);
+
             StringBuilder buffer = new StringBuilder();
             List<Serializable> ids = Lists.newArrayList(value);
             Map<String, Object> params = new HashMap<>();
             params.put("ids",ids);
-            if(!isLogicDelete) {
+            if(config==null) {
                 buffer.append("delete from ");
                 if (tableDef.getSchema() != null && !tableDef.getSchema().isEmpty()) {
                     buffer.append(sqlGen.getSchemaName(tableDef.getSchema())).append(".");
@@ -750,18 +752,14 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
                 if (tableDef.getSchema() != null && !tableDef.getSchema().isEmpty()) {
                     buffer.append(sqlGen.getSchemaName(tableDef.getSchema())).append(".");
                 }
-                String curLogicColumn=tableDef.isContainLogicColumn()?tableDef.getLogicColumn():logicColumn;
-                Integer curValidValue=tableDef.isContainLogicColumn()?tableDef.getValidValue():validValue;
-                Integer curInvalidValue=tableDef.isContainLogicColumn()?tableDef.getInvalidValue():invalidValue;
-
                 buffer.append(tableDef.getTableName()).append(" set ");
-                buffer.append(curLogicColumn);
+                buffer.append(config.getColumnName());
                 buffer.append("=:invalid ").append(Const.SQL_WHERE);
                 buffer.append(pkField.getFieldName()).append(" in (:ids) and ");
-                buffer.append(curLogicColumn);
+                buffer.append(config.getColumnName());
                 buffer.append("=:valid ");
-                params.put("valid",curValidValue);
-                params.put("invalid",curInvalidValue);
+                params.put("valid",config.getValidValue());
+                params.put("invalid",config.getInvalidValue());
             }
             if (log.isDebugEnabled()) {
                 log.debug("delete sql= {}", buffer);
@@ -899,10 +897,11 @@ public class JdbcDao extends JdbcDaoSupport implements IjdbcDao {
         this.lobHandler = lobHandler;
     }
 
-    private  <T extends BaseObject> void  appendLogicColumnCondition(AnnotationRetriever.EntityContent<T> tableDef,StringBuilder queryBuffer, List<Object> queryParam){
-        if(tableDef.isContainLogicColumn()){
-            appendLogicColumn(queryBuffer,tableDef.getLogicColumn());
-            queryParam.add(tableDef.getValidValue());
+    private  <T extends BaseObject> void  appendLogicColumnCondition(List<FieldContent> fieldContents,StringBuilder queryBuffer, List<Object> queryParam){
+        Optional<FieldContent> logicDeleteContent=fieldContents.stream().filter(f -> f.isIfLogicColumn()).findAny();
+        if(logicDeleteContent.isPresent()){
+            appendLogicColumn(queryBuffer,logicDeleteContent.get().getFieldName());
+            queryParam.add(ConvertUtil.parseParameter(logicDeleteContent.get().getDataType(),logicDeleteContent.get().getValidValue()));
         }else if(logicDelete){
             appendLogicColumn(queryBuffer,logicColumn);
             queryParam.add(validValue);

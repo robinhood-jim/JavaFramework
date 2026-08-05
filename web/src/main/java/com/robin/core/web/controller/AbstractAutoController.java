@@ -229,7 +229,7 @@ public abstract class AbstractAutoController<O extends BaseObject, P extends Ser
                 String key=entry.getKey();
                 Object value=entry.getValue();
                 if(contentMap.containsKey(key)){
-                    String columnType =columnMetaMap.containsKey(contentMap.get(key).getFieldName())?
+                    Const.CLASSTYPE columnType =columnMetaMap.containsKey(contentMap.get(key).getFieldName())?
                             columnMetaMap.get(contentMap.get(key).getFieldName()).getColumnType():columnMetaMap.get(contentMap.get(key).getFieldName().toUpperCase()).getColumnType();
                     if(Map.class.isInstance(value)){
                         Map<String,Object> tmap=(Map<String,Object>)value;

@@ -16,9 +16,11 @@
 package com.robin.core.fileaccess.meta;
 
 import cn.hutool.setting.yaml.YamlUtil;
+import com.google.common.collect.Lists;
 import com.robin.core.base.datameta.BaseDataBaseMeta;
 import com.robin.core.base.datameta.DataBaseColumnMeta;
 import com.robin.core.base.datameta.DataBaseParam;
+import com.robin.core.base.util.Const;
 import com.robin.core.base.util.FileUtils;
 import com.robin.core.base.util.ResourceConst;
 import com.robin.core.convert.util.ConvertUtil;
@@ -37,7 +39,7 @@ import java.util.stream.Collectors;
 
 @Data
 @Slf4j
-public class DataCollectionMeta implements Serializable {
+public class DataCollectionMeta implements Serializable,Cloneable {
 	private String split=",";
 	private String encode="UTF-8";
 	private List<DataSetColumnMeta> columnList=new ArrayList<>();
@@ -71,26 +73,26 @@ public class DataCollectionMeta implements Serializable {
 		valueClassName=fullClassName.substring(pos+1);
 	}
 
-	public void addColumnMeta(String columnName,String columnType,Object defaultNullValue){
+	public void addColumnMeta(String columnName, Const.CLASSTYPE columnType, Object defaultNullValue){
 		this.columnList.add(new DataSetColumnMeta(columnName, columnType, defaultNullValue));
 		columnNameMap.put(columnName,1);
 	}
-	public void addColumnMeta(String columnName,String columnType,boolean flushOut){
+	public void addColumnMeta(String columnName, Const.CLASSTYPE columnType, boolean flushOut){
 		this.columnList.add(new DataSetColumnMeta(columnName, columnType, flushOut));
 		columnNameMap.put(columnName,1);
 	}
 
-	public void addColumnMeta(String columnName,String columnType,Object defaultNullValue,boolean required){
+	public void addColumnMeta(String columnName, Const.CLASSTYPE columnType, Object defaultNullValue, boolean required){
 		this.columnList.add(new DataSetColumnMeta(columnName, columnType, defaultNullValue,required));
 		columnNameMap.put(columnName,null);
 	}
-	public void addColumnMeta(String columnName,String columnCode,String columnType,Object defaultNullValue,boolean required){
+	public void addColumnMeta(String columnName, String columnCode, Const.CLASSTYPE columnType, Object defaultNullValue, boolean required){
 		DataSetColumnMeta setColumnMeta=new DataSetColumnMeta(columnName,columnCode, columnType, defaultNullValue);
 		setColumnMeta.setRequired(required);
 		this.columnList.add(setColumnMeta);
 		columnNameMap.put(columnName,null);
 	}
-	public void addColumnMeta(String columnName,String columnType,Object defaultNullValue,boolean required,String dateFormat){
+	public void addColumnMeta(String columnName, Const.CLASSTYPE columnType, Object defaultNullValue, boolean required, String dateFormat){
 		this.columnList.add(new DataSetColumnMeta(columnName, columnType, defaultNullValue,required,dateFormat));
 		columnNameMap.put(columnName,null);
 	}
@@ -99,7 +101,7 @@ public class DataCollectionMeta implements Serializable {
 		columnNameMap.put(columnMeta.getColumnName(),1);
 	}
 
-	public  DataSetColumnMeta createColumnMeta(String columnName,String columnType,Object defaultNullValue){
+	public  DataSetColumnMeta createColumnMeta(String columnName, Const.CLASSTYPE columnType, Object defaultNullValue){
 		return new DataSetColumnMeta(columnName,columnType,defaultNullValue);
 	}
 	public Map<String,Integer> getColumnNameMap(){
@@ -107,7 +109,7 @@ public class DataCollectionMeta implements Serializable {
 	}
 	public static List<DataSetColumnMeta> parseMeta(List<DataBaseColumnMeta> columnMetas){
 		if(!CollectionUtils.isEmpty(columnMetas)){
-			return columnMetas.stream().map(f->new DataSetColumnMeta(f.getColumnName(),f.getColumnType().toString(),f.getDefaultValue(),!f.isNullable(),null)).collect(Collectors.toList());
+			return columnMetas.stream().map(f->new DataSetColumnMeta(f.getColumnName(),f.getColumnType(),f.getDefaultValue(),!f.isNullable(),null)).collect(Collectors.toList());
 		}
 		return Collections.emptyList();
 	}
@@ -132,16 +134,20 @@ public class DataCollectionMeta implements Serializable {
 		public Builder(){
 
 		}
-		public DataCollectionMeta.Builder addColumn(String name, String columnType){
+		public DataCollectionMeta.Builder addColumn(String name, Const.CLASSTYPE columnType){
 			meta.addColumnMeta(name,columnType,null);
 			return this;
 		}
-		public DataCollectionMeta.Builder addColumn(String columnName,String columnType,String defaultNullValue){
+		public DataCollectionMeta.Builder addColumn(String columnName, Const.CLASSTYPE columnType, String defaultNullValue){
 			meta.addColumnMeta(columnName,columnType,defaultNullValue);
 			return this;
 		}
-		public DataCollectionMeta.Builder addColumn(String columnName,String columnType,boolean flushOut){
+		public DataCollectionMeta.Builder addColumn(String columnName, Const.CLASSTYPE columnType, boolean flushOut){
 			meta.addColumnMeta(columnName,columnType,flushOut);
+			return this;
+		}
+		public DataCollectionMeta.Builder add(DataSetColumnMeta columnMeta){
+			meta.addColumnMeta(columnMeta);
 			return this;
 		}
 		public DataCollectionMeta.Builder dateFormatter(String formatter){
@@ -173,7 +179,10 @@ public class DataCollectionMeta implements Serializable {
 			return this;
 		}
 		public DataCollectionMeta.Builder fsType(String fsType){
-			meta.setFsType(fsType);
+			Const.FILESYSTEM filesystem= Const.FILESYSTEM.forName(fsType);
+			if(filesystem!=null) {
+				meta.setFsType(filesystem.getValue());
+			}
 			return this;
 		}
 		public DataCollectionMeta.Builder resPath(String resPath){
@@ -231,4 +240,10 @@ public class DataCollectionMeta implements Serializable {
 		return null;
 	}
 
+	@Override
+	public Object clone() throws CloneNotSupportedException {
+		DataCollectionMeta colMeta=(DataCollectionMeta) super.clone();
+		colMeta.columnList= Lists.newArrayList(this.columnList);
+		return colMeta;
+	}
 }

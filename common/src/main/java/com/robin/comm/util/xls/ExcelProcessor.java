@@ -19,7 +19,6 @@ import com.robin.core.base.dao.SimpleJdbcDao;
 import com.robin.core.base.util.Const;
 import com.robin.core.convert.util.DataTypeEnum;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFDataFormat;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
@@ -91,7 +90,7 @@ public class ExcelProcessor {
                 if (i >= prop.getColumnPropList().size()) {
                     break;
                 }
-                String type = prop.getColumnPropList().get(i).getColumnType();
+                Const.CLASSTYPE type = prop.getColumnPropList().get(i).getColumnType();
 
                 Cell cell = row.getCell(i);
                 Object strCell = "";
@@ -162,11 +161,11 @@ public class ExcelProcessor {
                 for (int j = 0; j < collist.size(); j++) {
                     int colpos = collist.get(j);
                     DataTypeEnum column = columnList.get(j);
-                    String type = column.getDataType();
+                    Integer type = column.getDataType();
                     HSSFCell cell = (HSSFCell) row.getCell(colpos);
                     Object strCell = "";
                     if (cell != null) {
-                        strCell = readValue(cell, type, format, evaluator);
+                        strCell = readValue(cell, Const.getByDataType(type), format, evaluator);
                     }
                     if (!StringUtils.isEmpty(strCell)) {
                         ishasrecord = true;
@@ -187,30 +186,30 @@ public class ExcelProcessor {
         return pos;
     }
 
-    public static Object readValue(Cell cell, String type, DateTimeFormatter format, FormulaEvaluator evaluator) {
+    public static Object readValue(Cell cell, Const.CLASSTYPE type, DateTimeFormatter format, FormulaEvaluator evaluator) {
         Object strCell;
         if (cell != null) {
             switch (cell.getCellType()) {
                 case NUMERIC:
-                    if (DateUtil.isCellDateFormatted(cell) || type.equals(Const.META_TYPE_DATE) || type.equals(Const.META_TYPE_TIMESTAMP)) {
+                    if (DateUtil.isCellDateFormatted(cell) || type.equals(Const.CLASSTYPE.DATE) || type.equals(Const.CLASSTYPE.TIMESTAMP)) {
                         double d = cell.getNumericCellValue();
                         Date date = DateUtil.getJavaDate(d);
                         strCell = new Timestamp(date.getTime());
                     } else {
                         double d = cell.getNumericCellValue();
                         switch (type) {
-                            case Const.META_TYPE_INTEGER:
+                            case INTEGER:
                                 strCell = Double.valueOf(d).intValue();
                                 break;
-                            case Const.META_TYPE_BIGINT:
+                            case LONG:
                                 strCell = Double.valueOf(d).longValue();
                                 break;
-                            case Const.META_TYPE_FLOAT:
+                            case FLOAT:
                                 strCell = Double.valueOf(d).floatValue();
                                 break;
-                            case Const.META_TYPE_DOUBLE:
-                            case Const.META_TYPE_DECIMAL:
-                            case Const.META_TYPE_NUMERIC:
+                            case DOUBLE:
+                            case DECIMAL:
+                            case NUMERIC:
                                 strCell = d;
                                 break;
                             default:
@@ -222,7 +221,7 @@ public class ExcelProcessor {
                 case STRING:
                     String str = cell.getStringCellValue();
                     switch (type) {
-                        case Const.META_TYPE_INTEGER:
+                        case INTEGER:
                             if (!StringUtils.isEmpty(str)) {
                                 Double d = Double.valueOf(str);
                                 strCell = d.intValue();
@@ -230,14 +229,14 @@ public class ExcelProcessor {
                                 strCell = 0.0;
                             }
                             break;
-                        case Const.META_TYPE_BIGINT:
+                        case LONG:
                             if (!StringUtils.isEmpty(str)) {
                                 strCell = Double.valueOf(str).longValue();
                             } else {
                                 strCell = 0L;
                             }
                             break;
-                        case Const.META_TYPE_FLOAT:
+                        case FLOAT:
                             if (!StringUtils.isEmpty(str)) {
                                 Double d = Double.valueOf(str);
                                 strCell = d.floatValue();
@@ -245,9 +244,9 @@ public class ExcelProcessor {
                                 strCell = Float.valueOf("0");
                             }
                             break;
-                        case Const.META_TYPE_DOUBLE:
-                        case Const.META_TYPE_DECIMAL:
-                        case Const.META_TYPE_NUMERIC:
+                        case DOUBLE:
+                        case DECIMAL:
+                        case NUMERIC:
                             if (!StringUtils.isEmpty(str)) {
                                 double d = Double.parseDouble(str);
                                 strCell = (float) d;
@@ -255,8 +254,8 @@ public class ExcelProcessor {
                                 strCell = 0.0;
                             }
                             break;
-                        case Const.META_TYPE_DATE:
-                        case Const.META_TYPE_TIMESTAMP:
+                        case DATE:
+                        case TIMESTAMP:
                             if (!StringUtils.isEmpty(str)) {
                                 LocalDateTime dateTime = LocalDateTime.parse(str, format);
                                 strCell = Timestamp.valueOf(dateTime);
@@ -290,25 +289,25 @@ public class ExcelProcessor {
         return strCell;
     }
 
-    private static Object getDefaultValue(String type) {
+    private static Object getDefaultValue(Const.CLASSTYPE type) {
         Object strCell;
         switch (type) {
-            case Const.META_TYPE_INTEGER:
+            case INTEGER:
                 strCell = 0;
                 break;
-            case Const.META_TYPE_BIGINT:
+            case LONG:
                 strCell = 0L;
                 break;
-            case Const.META_TYPE_FLOAT:
+            case FLOAT:
                 strCell = Float.valueOf("0");
                 break;
-            case Const.META_TYPE_DATE:
-            case Const.META_TYPE_TIMESTAMP:
+            case DATE:
+            case TIMESTAMP:
                 strCell = null;
                 break;
-            case Const.META_TYPE_DOUBLE:
-            case Const.META_TYPE_DECIMAL:
-            case Const.META_TYPE_NUMERIC:
+            case DOUBLE:
+            case DECIMAL:
+            case NUMERIC:
                 strCell = 0.0;
                 break;
             default:
@@ -398,11 +397,11 @@ public class ExcelProcessor {
         }
     }
 
-    public static void createRows(Row row, ExcelSheetProp prop, List<Pair<String, Object>> values, CellStyle style) {
+    /*public static void createRows(Row row, ExcelSheetProp prop, List<Pair<String, Object>> values, CellStyle style) {
         for (int i = prop.getStartCol(); i < prop.getStartCol() + values.size(); i++) {
             createCell(values.get(i).getKey(), style, row, i, values.get(i).getValue().toString());
         }
-    }
+    }*/
 
     /**
      * @param prop
@@ -634,15 +633,15 @@ public class ExcelProcessor {
             if (!CollectionUtils.isEmpty(region.getSubRegions())) {
                 if (region.getColheigth() == 1 && region.getCollength() == 1) {
                     CellStyle style = ExcelBaseOper.getHeaderStyle(wb, 1, HorizontalAlignment.CENTER, region, header);
-                    Cell cell = ExcelBaseOper.createCell(baserow, startcol, value, Const.META_TYPE_STRING, style, helper);
+                    Cell cell = ExcelBaseOper.createCell(baserow, startcol, value, Const.CLASSTYPE.STRING, style, helper);
                     cell.setCellValue(name);
                 } else {
                     CellStyle style = ExcelBaseOper.getHeaderStyle(wb, 3, HorizontalAlignment.CENTER, region, header);
-                    ExcelBaseOper.merged(targetsheet, Const.META_TYPE_STRING, baseRow, startcol, baseRow + region.getColheigth() - 1, startcol + region.getCollength() - 1, style, value, helper);
+                    ExcelBaseOper.merged(targetsheet, Const.CLASSTYPE.STRING, baseRow, startcol, baseRow + region.getColheigth() - 1, startcol + region.getCollength() - 1, style, value, helper);
                 }
             } else {
                 CellStyle style = ExcelBaseOper.getHeaderStyle(wb, 3, HorizontalAlignment.CENTER, region, header);
-                ExcelBaseOper.merged(targetsheet, Const.META_TYPE_STRING, baseRow, startcol, baseRow + region.getColheigth() - 1, startcol + region.getCollength() - 1, style, value, helper);
+                ExcelBaseOper.merged(targetsheet, Const.CLASSTYPE.STRING, baseRow, startcol, baseRow + region.getColheigth() - 1, startcol + region.getCollength() - 1, style, value, helper);
             }
         }
         int tmpcol = startcol;
@@ -661,10 +660,10 @@ public class ExcelProcessor {
         Row baseRow = headerRows[column.getStartrow()];
         if (column.getRowspan() > 1 || column.getColspan() > 1) {
             style = ExcelBaseOper.getHeaderStyle(wb, 3, HorizontalAlignment.CENTER, prop);
-            ExcelBaseOper.merged(targetsheet, Const.META_TYPE_STRING, column.getStartrow(), column.getStartcol(), column.getStartrow() + column.getRowspan() - 1, column.getStartcol() + column.getColspan() - 1, style, column.getColumnName(), helper);
+            ExcelBaseOper.merged(targetsheet, Const.CLASSTYPE.STRING, column.getStartrow(), column.getStartcol(), column.getStartrow() + column.getRowspan() - 1, column.getStartcol() + column.getColspan() - 1, style, column.getColumnName(), helper);
         } else {
             style = ExcelBaseOper.getHeaderStyle(wb, 1, HorizontalAlignment.CENTER, prop);
-            ExcelBaseOper.createCell(baseRow, column.getStartcol(), column.getColumnName(), Const.META_TYPE_STRING, style, helper);
+            ExcelBaseOper.createCell(baseRow, column.getStartcol(), column.getColumnName(), Const.CLASSTYPE.STRING, style, helper);
         }
     }
 
@@ -673,10 +672,11 @@ public class ExcelProcessor {
         Row baseRow = headerRows[region.getStartrow()];
         if (region.getColheigth() > 1 || region.getCollength() > 1) {
             style = ExcelBaseOper.getHeaderStyle(wb, 3, HorizontalAlignment.CENTER, prop);
-            ExcelBaseOper.merged(targetsheet, Const.META_TYPE_STRING, region.getStartrow(), region.getStartcol(), region.getStartrow() + region.getColheigth() - 1, region.getStartcol() + region.getCollength() - 1, style, region.getName(), helper);
+            ExcelBaseOper.merged(targetsheet, Const.CLASSTYPE.STRING, region.getStartrow(), region.getStartcol(), region.getStartrow() + region.getColheigth() - 1, region.getStartcol() + region.getCollength() - 1, style, region.getName(), helper);
         } else {
             style = ExcelBaseOper.getHeaderStyle(wb, 1, HorizontalAlignment.CENTER, prop);
-            ExcelBaseOper.createCell(baseRow, region.getStartcol(), region.getName(), Const.META_TYPE_STRING, style, helper);
+            ExcelBaseOper.createCell(baseRow, region.getStartcol(), region.getName(), Const.CLASSTYPE.STRING, style, helper);
+
         }
     }
 
@@ -713,7 +713,7 @@ public class ExcelProcessor {
         for (int j = 0; j < prop.getColumnPropList().size(); j++) {
             ExcelColumnProp excelprop = prop.getColumnPropList().get(j);
             String columnCode = excelprop.getColumnCode();
-            String columnType = excelprop.getColumnType();
+            Const.CLASSTYPE columnType = excelprop.getColumnType();
             boolean needMerge = excelprop.isNeedMerge();
             Object valObj = map.get(columnCode);
             String valueobj;
@@ -749,7 +749,7 @@ public class ExcelProcessor {
                     ExcelBaseOper.createCell(row, j, valueobj, columnType, stylesingle, helper);
                 }
             } else {
-                if(Const.META_TYPE_FORMULA.equals(excelprop.getColumnType())){
+                if(Const.CLASSTYPE.FORMULA.equals(excelprop.getColumnType())){
                     valueobj=ExcelBaseOper.returnFormulaWithPos(excelprop.getFormula(),i+prop.getStartRow()+1);
                 }
                 ExcelBaseOper.createCell(row, j, valueobj, columnType, stylesingle, helper);
@@ -759,7 +759,7 @@ public class ExcelProcessor {
         for (int k = 0; k < fieldCount; k++) {
             ExcelColumnProp excelprop = prop.getColumnPropList().get(k);
             boolean needMerge = excelprop.isNeedMerge();
-            String columnType = excelprop.getColumnType();
+            Const.CLASSTYPE columnType = excelprop.getColumnType();
             CellStyle stylesingle = ExcelCellStyleUtil.getCellStyle(wb, 1, 1, columnType, header, cellMap);
             CellStyle stylemutil = ExcelCellStyleUtil.getCellStyle(wb, 1, 2, columnType, header, cellMap);
             if (needMerge) {
@@ -792,7 +792,7 @@ public class ExcelProcessor {
                         ExcelBaseOper.merged(targetsheet, prop.getColumnPropList().get(d).getColumnType(), fromPos[d] + startRow, startCol + i, i + startRow, startCol + i, stylemutil, valueArr[d], helper);
                     } else {
                         String columnCode = prop.getColumnPropList().get(d).getColumnCode();
-                        String columnType = prop.getColumnPropList().get(d).getColumnType();
+                        Const.CLASSTYPE columnType = prop.getColumnPropList().get(d).getColumnType();
                         CellStyle stylesingle = ExcelCellStyleUtil.getCellStyle(wb, 1, 1, columnType, header, cellMap);
                         Object valObj = map.get(columnCode);
                         String valueobj;
@@ -862,7 +862,7 @@ public class ExcelProcessor {
                     if (valueobj != null) {
                         value = valueobj.toString();
                     }
-                    String colType = columnProp.getColumnType();
+                    Const.CLASSTYPE colType = columnProp.getColumnType();
 
                     if (columname != null && !"".equals(columname)) {
                         CellStyle cellStyle = ExcelCellStyleUtil.getCellStyle(wb, 1, 1, colType, null, cellMap);
@@ -876,28 +876,28 @@ public class ExcelProcessor {
 
     }
 
-    public static void createCell(String colType, CellStyle cellStyle, Row row1, int j, String value) {
-        if (colType.equals(Const.META_TYPE_STRING)) {
+    public static void createCell(Const.CLASSTYPE colType, CellStyle cellStyle, Row row1, int j, String value) {
+        if (colType.equals(Const.CLASSTYPE.STRING)) {
             createCell(cellStyle, row1, (short) j, value);
-        } else if (colType.equals(Const.META_TYPE_NUMERIC) || colType.equals(Const.META_TYPE_DOUBLE)) {
+        } else if (colType.equals(Const.CLASSTYPE.NUMERIC) || colType.equals(Const.CLASSTYPE.DOUBLE)) {
             if (!StringUtils.isEmpty(value)) {
                 createCell(cellStyle, row1, (short) j, Double.parseDouble(value));
             } else {
                 createNullCell(cellStyle, row1, (short) j);
             }
-        } else if (colType.equals(Const.META_TYPE_BIGINT)) {
+        } else if (colType.equals(Const.CLASSTYPE.LONG)) {
             if (!StringUtils.isEmpty(value)) {
                 createCell(cellStyle, row1, (short) j, Long.parseLong(value));
             } else {
                 createNullCell(cellStyle, row1, (short) j);
             }
-        } else if (colType.equalsIgnoreCase(Const.META_TYPE_INTEGER)) {
+        } else if (colType.equals(Const.CLASSTYPE.INTEGER)) {
             if (!StringUtils.isEmpty(value)) {
                 createCell(cellStyle, row1, (short) j, Integer.parseInt(value));
             } else {
                 createNullCell(cellStyle, row1, (short) j);
             }
-        } else if (colType.equals(Const.META_TYPE_DATE)) {
+        } else if (colType.equals(Const.CLASSTYPE.DATE)) {
             if (!"".equals(value)) {
                 createCellDate(cellStyle, row1, (short) j, value);
             }

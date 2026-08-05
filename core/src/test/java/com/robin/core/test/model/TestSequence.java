@@ -5,6 +5,8 @@ import com.robin.core.base.annotation.MappingField;
 import com.robin.core.base.model.BaseObject;
 import lombok.Data;
 
+import java.sql.Types;
+
 @MappingEntity(value = "t_testseq",jdbcDao = "jdbcDao1")
 @Data
 public class TestSequence extends BaseObject {
@@ -12,7 +14,7 @@ public class TestSequence extends BaseObject {
     private Long id;
     private String name;
     private String code;
-    @MappingField(datatype = "blob")
+    @MappingField(datatype = Types.BLOB)
     private byte[] picture;
     //column not exists
     private String addition;

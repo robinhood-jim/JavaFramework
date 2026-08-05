@@ -1,5 +1,6 @@
 package com.robin.core.test.model;
 
+import com.robin.core.base.annotation.LogicColumn;
 import com.robin.core.base.annotation.MappingEntity;
 import com.robin.core.base.annotation.MappingField;
 import com.robin.core.base.model.BaseObject;
@@ -7,7 +8,7 @@ import lombok.Data;
 
 import java.sql.Timestamp;
 
-@MappingEntity(value = "t_test",schema = "test", logicColumn = "status")
+@MappingEntity(value = "t_test",schema = "test")
 @Data
 public class TestModel extends BaseObject{
 	@MappingField(primary=true,increment=true)
@@ -20,6 +21,7 @@ public class TestModel extends BaseObject{
 	private Long csId;
 	@MappingField
 	private Timestamp createTime;
+	@LogicColumn
 	private Integer status;
 	
 }

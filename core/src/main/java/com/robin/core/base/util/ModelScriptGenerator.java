@@ -17,6 +17,8 @@ package com.robin.core.base.util;
 
 import com.robin.core.base.annotation.MappingEntity;
 import com.robin.core.base.datameta.BaseDataBaseMeta;
+import com.robin.core.base.datameta.DataBaseMetaFactory;
+import com.robin.core.base.datameta.DataBaseParam;
 import com.robin.core.base.model.BaseObject;
 import com.robin.core.base.reflect.ClassGraphReflector;
 import com.robin.core.sql.util.BaseSqlGen;
@@ -31,12 +33,13 @@ import java.io.OutputStreamWriter;
 public class ModelScriptGenerator {
     public static void main(String[] args) {
         if (args == null || args.length < 2) {
-            System.out.println("usage java -classpath .:./* com.robin.core.base.util.ModelScriptGenerator %DBTYPE% %OUTPUT_FILE%");
+            System.out.println("usage java -classpath .:./* com.robin.core.base.util.ModelScriptGenerator $DBTYPE $OUTPUT_FILE");
             System.exit(-1);
         }
-        String configFile = args[0];
+        String dbType = args[0];
         String outputFile = args[1];
-
+        BaseDataBaseMeta meta= DataBaseMetaFactory.getDataBaseMetaByType(dbType,new DataBaseParam());
+        generateScript(dbType,meta,outputFile);
     }
     public static void generateScript(String dbType, BaseDataBaseMeta meta,String outputFile, String... packageNames){
 

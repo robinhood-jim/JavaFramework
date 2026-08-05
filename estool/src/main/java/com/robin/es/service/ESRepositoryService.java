@@ -17,7 +17,6 @@ import com.robin.core.sql.util.FilterConditionBuilder;
 import com.robin.es.util.BaseObjectWrapper;
 import com.robin.es.util.CommEsQueryUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequest;
@@ -38,7 +37,6 @@ import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.index.query.TermQueryBuilder;
 import org.elasticsearch.index.reindex.BulkByScrollResponse;
 import org.elasticsearch.index.reindex.DeleteByQueryRequest;
 import org.elasticsearch.search.SearchHit;
@@ -52,7 +50,6 @@ import org.springframework.util.ObjectUtils;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
@@ -516,23 +513,23 @@ public abstract class ESRepositoryService<V extends BaseObject, P extends Serial
     }
 
     private String getType(FieldContent content) {
-        String columnType = AnnotationRetriever.getFieldType(content);
+        Const.CLASSTYPE columnType = AnnotationRetriever.getFieldType(content);
         String esType = null;
         switch (columnType) {
-            case Const.META_TYPE_FLOAT:
+            case FLOAT:
                 esType = "float";
                 break;
-            case Const.META_TYPE_DOUBLE:
+            case DOUBLE:
                 esType = "double";
                 break;
-            case Const.META_TYPE_SHORT:
+            case SHORT:
                 esType = "short";
                 break;
-            case Const.META_TYPE_BIGINT:
+            case LONG:
                 esType = "long";
                 break;
-            case Const.META_TYPE_DATE:
-            case Const.META_TYPE_TIMESTAMP:
+            case DATE:
+            case TIMESTAMP:
                 esType = "date";
                 //paramMap.put("format", "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis");
                 break;

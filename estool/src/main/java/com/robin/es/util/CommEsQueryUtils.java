@@ -233,23 +233,23 @@ public class CommEsQueryUtils {
 
 
 
-    private static FieldType getByFieldType(String columnType) {
+    private static FieldType getByFieldType(Const.CLASSTYPE columnType) {
         FieldType type = FieldType.Auto;
         switch (columnType) {
-            case Const.META_TYPE_BIGINT:
+            case LONG:
                 type = FieldType.Long;
                 break;
-            case Const.META_TYPE_FLOAT:
+            case FLOAT:
                 type = FieldType.Double;
                 break;
-            case Const.META_TYPE_INTEGER:
+            case INTEGER:
                 type = FieldType.Integer;
                 break;
-            case Const.META_TYPE_SHORT:
+            case SHORT:
                 type = FieldType.Short;
                 break;
-            case Const.META_TYPE_DATE:
-            case Const.META_TYPE_TIMESTAMP:
+            case DATE:
+            case TIMESTAMP:
                 type = FieldType.Date;
                 break;
         }
@@ -331,20 +331,20 @@ public class CommEsQueryUtils {
         return value;
     }
 
-    public static Object parseValue(@NonNull String columnType, String value) {
+    public static Object parseValue(@NonNull Const.CLASSTYPE columnType, String value) {
         Object retVal = null;
         if (!ObjectUtils.isEmpty(value)) {
             switch (columnType) {
-                case Const.META_TYPE_DOUBLE:
+                case DOUBLE:
                     retVal = Double.valueOf(value);
                     break;
-                case Const.META_TYPE_INTEGER:
+                case INTEGER:
                     retVal = Integer.valueOf(value);
                     break;
-                case Const.META_TYPE_BIGINT:
+                case LONG:
                     retVal = Long.valueOf(value);
                     break;
-                case Const.META_TYPE_FLOAT:
+                case FLOAT:
                     retVal = Float.valueOf(value);
                     break;
                 default:
@@ -356,7 +356,7 @@ public class CommEsQueryUtils {
 
     public static void getCondition(BoolQueryBuilder queryBuilders, FieldContent content, Const.OPERATOR operator, Object[] value) {
         String columnName = content.getPropertyName();
-        String columnType = AnnotationRetriever.getFieldType(content);
+        Const.CLASSTYPE columnType = AnnotationRetriever.getFieldType(content);
         Assert.isTrue(value!=null && value.length>1,"");
         switch (operator) {
             case GE:

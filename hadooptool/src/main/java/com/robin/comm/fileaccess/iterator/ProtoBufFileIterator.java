@@ -68,11 +68,13 @@ public class ProtoBufFileIterator extends AbstractFileIterator {
             } else {
                 message = null;
             }
-            if (message == null) {
+           /* if (message == null) {
                 throw new NoSuchElementException("");
-            }
-            for (Descriptors.FieldDescriptor descriptor : container.getSchema().getMessageDescriptor(colmeta.getValueClassName()).getFields()) {
-                cachedValue.put(descriptor.getName(), message.getField(descriptor));
+            }*/
+            if(message!=null) {
+                for (Descriptors.FieldDescriptor descriptor : container.getSchema().getMessageDescriptor(colmeta.getValueClassName()).getFields()) {
+                    cachedValue.put(descriptor.getName(), message.getField(descriptor));
+                }
             }
 
         } catch (Exception ex) {

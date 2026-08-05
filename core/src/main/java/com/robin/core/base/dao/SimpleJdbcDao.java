@@ -635,12 +635,12 @@ public class SimpleJdbcDao {
                 try {
                     while (rs.next()) {
                         for (int i = 0; i < columncount; i++) {
-                            String type = DataBaseUtil.translateDbType(meta.getColumnType(i + 1));
+                            Const.CLASSTYPE type = DataBaseUtil.translateDbType(meta.getColumnType(i + 1));
                             if (rs.wasNull()) {
                                 resultList.add("");
                                 continue;
                             }
-                            if (!type.equals(Const.META_TYPE_DATE)) {
+                            if (!type.equals(Const.CLASSTYPE.DATE)) {
                                 resultList.add(rs.getString(i + 1));
                             } else {
                                 resultList.add(dateformat.format(rs.getTimestamp(i + 1)));
@@ -680,7 +680,7 @@ public class SimpleJdbcDao {
             } else {
                 insertSqlbuilder.append(" values (");
             }
-            final List<String> columnTypes = new ArrayList<>();
+            final List<Const.CLASSTYPE> columnTypes = new ArrayList<>();
             int columnCount = qRunner.query(conn, querySql, rs -> {
                 ResultSetMetaData meta = rs.getMetaData();
                 int columncount = meta.getColumnCount();
@@ -713,13 +713,13 @@ public class SimpleJdbcDao {
                                 obj1[i] = null;
                                 continue;
                             }
-                            if (columnTypes.get(i).equalsIgnoreCase(Const.META_TYPE_BIGINT)) {
+                            if (columnTypes.get(i).equals(Const.CLASSTYPE.LONG)) {
                                 obj1[i] = Long.valueOf(arr[i]);
-                            } else if (columnTypes.get(i).equalsIgnoreCase(Const.META_TYPE_INTEGER)) {
+                            } else if (columnTypes.get(i).equals(Const.CLASSTYPE.INTEGER)) {
                                 obj1[i] = Integer.valueOf(arr[i]);
-                            } else if (columnTypes.get(i).equalsIgnoreCase(Const.META_TYPE_DOUBLE) || columnTypes.get(i).equalsIgnoreCase(Const.META_TYPE_NUMERIC)) {
+                            } else if (columnTypes.get(i).equals(Const.CLASSTYPE.DOUBLE) || columnTypes.get(i).equals(Const.CLASSTYPE.NUMERIC)) {
                                 obj1[i] = Double.valueOf(arr[i]);
-                            } else if (columnTypes.get(i).equals(Const.META_TYPE_DATE)) {
+                            } else if (columnTypes.get(i).equals(Const.CLASSTYPE.DATE)) {
                                 obj1[i] = dateformat.parse(arr[i]);
                             } else {
                                 obj1[i] = arr[i];
@@ -764,20 +764,20 @@ public class SimpleJdbcDao {
         if (value == null) {
             value = resultMap.get(poolobj.get("name").toLowerCase());
         }
-        String dataType=poolobj.get(DATATYPE);
+        Const.CLASSTYPE dataType= Const.CLASSTYPE.forName(poolobj.get(DATATYPE));
         switch (dataType){
-            case Const.META_TYPE_NUMERIC:
-            case Const.META_TYPE_DOUBLE:
+            case NUMERIC:
+            case DOUBLE:
                 objArr[row][pos] =Optional.ofNullable(value).map(Double::valueOf);
                 break;
-            case Const.META_TYPE_INTEGER:
+            case INTEGER:
                 objArr[row][pos] =Optional.ofNullable(value).map(Integer::valueOf);
                 break;
-            case Const.META_TYPE_DATE:
+            case DATE:
                 Optional<String> optional= Optional.ofNullable(value);
                 objArr[row][pos] =optional.isPresent()?new Date(DateUtils.parseDate(optional.get(), dateFormat, dayFormat).getTime()):null;
                 break;
-            case Const.META_TYPE_TIMESTAMP:
+            case TIMESTAMP:
                 Optional<String> optional1= Optional.ofNullable(value);
                 objArr[row][pos] =optional1.isPresent()?new Timestamp(DateUtils.parseDate(optional1.get(), dayFormat, dayFormat).getTime()):null;
                 break;

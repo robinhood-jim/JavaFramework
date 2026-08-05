@@ -163,7 +163,7 @@ public class XlsxFileIterator extends AbstractFileIterator{
         }
     }
     private Object parseValue(String value, DataSetColumnMeta columnMeta){
-        if(!columnMeta.getColumnType().equals(Const.META_TYPE_TIMESTAMP)){
+        if(!columnMeta.getColumnType().equals(Const.CLASSTYPE.TIMESTAMP)){
            return ConvertUtil.convertStringToTargetObject(value, columnMeta, formatter);
         }else{
             double dValue=Double.valueOf(value);

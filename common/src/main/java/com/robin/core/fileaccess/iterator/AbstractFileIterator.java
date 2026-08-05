@@ -85,8 +85,8 @@ public abstract class AbstractFileIterator implements IResourceIterator {
         for (DataSetColumnMeta meta : colmeta.getColumnList()) {
             columnList.add(meta.getColumnName());
             columnMap.put(meta.getColumnName(), meta);
-            if (Const.META_TYPE_FORMULA.equals(meta.getColumnType())) {
-                meta.setColumnType(Const.META_TYPE_DOUBLE);
+            if (Const.CLASSTYPE.FORMULA.equals(meta.getColumnType())) {
+                meta.setColumnType(Const.CLASSTYPE.DOUBLE);
             }
         }
         if (!CollectionUtils.isEmpty(colmeta.getResourceCfgMap()) && !ObjectUtils.isEmpty(colmeta.getResourceCfgMap().get(ResourceConst.STORAGEFILTERSQL))) {

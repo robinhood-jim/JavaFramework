@@ -23,10 +23,10 @@ public class DBSCANTest {
         meta.setFileFormat(Const.FILESUFFIX_CSV);
         meta.setPath("file:///e:/iris.csv");
         //"erwidth","banlength","banwidth","class"
-        meta.addColumnMeta("erlength", Const.META_TYPE_DOUBLE,null);
-        meta.addColumnMeta("erwidth", Const.META_TYPE_DOUBLE,null);
-        meta.addColumnMeta("banlength", Const.META_TYPE_DOUBLE,null);
-        meta.addColumnMeta("banwidth", Const.META_TYPE_DOUBLE,null);
+        meta.addColumnMeta("erlength", Const.CLASSTYPE.DOUBLE,null);
+        meta.addColumnMeta("erwidth", Const.CLASSTYPE.DOUBLE,null);
+        meta.addColumnMeta("banlength", Const.CLASSTYPE.DOUBLE,null);
+        meta.addColumnMeta("banwidth", Const.CLASSTYPE.DOUBLE,null);
 
         try(IResourceIterator iterator= TextFileIteratorFactory.getProcessIteratorByType(meta)){
             DBSCANModeler modeler=new DBSCANModeler(meta,iterator);

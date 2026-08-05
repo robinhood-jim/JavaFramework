@@ -26,6 +26,7 @@ import org.springframework.util.StringUtils;
 import javax.naming.OperationNotSupportedException;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.InputMismatchException;
@@ -134,37 +135,37 @@ public class OrcFileWriter extends AbstractFileWriter {
             for (int i = 0; i < colmeta.getColumnList().size(); i++) {
                 DataSetColumnMeta columnMeta = colmeta.getColumnList().get(i);
                 if (StringUtils.isEmpty(columnMeta.getColumnType()) || Objects.isNull(map.get(columnMeta.getColumnName()))) {
-                    if (!columnMeta.getColumnType().equals(Const.META_TYPE_STRING)) {
+                    if (!columnMeta.getColumnType().equals(Const.CLASSTYPE.STRING)) {
                         continue;
                     } else {
                         ((BytesColumnVector) batch.cols[i]).setVal(row, "".getBytes());
                     }
                 }
                 switch (columnMeta.getColumnType()) {
-                    case Const.META_TYPE_INTEGER:
+                    case INTEGER:
                         ((LongColumnVector) batch.cols[i]).vector[row] = Integer.valueOf(map.get(columnMeta.getColumnName()).toString());
                         break;
-                    case Const.META_TYPE_SHORT:
+                    case SHORT:
                         ((LongColumnVector) batch.cols[i]).vector[row] = Short.valueOf(map.get(columnMeta.getColumnName()).toString());
                         break;
-                    case Const.META_TYPE_BIGINT:
+                    case LONG:
                         ((LongColumnVector) batch.cols[i]).vector[row] = Long.valueOf(map.get(columnMeta.getColumnName()).toString());
                         break;
-                    case Const.META_TYPE_DOUBLE:
+                    case DOUBLE:
                         ((DoubleColumnVector) batch.cols[i]).vector[row] = Double.valueOf(map.get(columnMeta.getColumnName()).toString());
                         break;
-                    case Const.META_TYPE_DECIMAL:
+                    case DECIMAL:
                         BigDecimal decimal = new BigDecimal(Double.valueOf(map.get(columnMeta.getColumnName()).toString()));
                         if (columnMeta.getScale() > 0) {
-                            decimal.setScale(columnMeta.getScale(), BigDecimal.ROUND_DOWN);
+                            decimal.setScale(columnMeta.getScale(), RoundingMode.DOWN);
                         }
                         HiveDecimal decimal1 = HiveDecimal.create(decimal);
                         if (columnMeta.getScale() > 0) {
-                            decimal1.setScale(columnMeta.getScale());
+                            decimal1.setScale(columnMeta.getScale(),HiveDecimal.ROUND_CEILING);
                         }
                         ((DecimalColumnVector) batch.cols[i]).vector[row] = new HiveDecimalWritable(decimal1);
                         break;
-                    case Const.META_TYPE_DATE:
+                    case DATE:
                         if (Date.class.isAssignableFrom(map.get(columnMeta.getColumnName()).getClass())) {
                             ((LongColumnVector) batch.cols[i]).vector[row] = (((Date) map.get(columnMeta.getColumnName())).getTime());
                         } else if (java.sql.Date.class.isAssignableFrom(map.get(columnMeta.getColumnName()).getClass())) {
@@ -173,22 +174,21 @@ public class OrcFileWriter extends AbstractFileWriter {
                             ((LongColumnVector) batch.cols[i]).vector[row] = (Long.valueOf(map.get(columnMeta.getColumnName()).toString()));
                         }
                         break;
-                    case Const.META_TYPE_TIMESTAMP:
+                    case TIMESTAMP:
                         if (Timestamp.class.isAssignableFrom(map.get(columnMeta.getColumnName()).getClass())) {
                             ((TimestampColumnVector) batch.cols[i]).set(row, (Timestamp) map.get(columnMeta.getColumnName()));
                         } else if (Long.class.isAssignableFrom(map.get(columnMeta.getColumnName()).getClass())) {
                             ((TimestampColumnVector) batch.cols[i]).set(row, new Timestamp(Long.valueOf(map.get(columnMeta.getColumnName()).toString())));
                         }
                         break;
-                    case Const.META_TYPE_STRING:
+                    case STRING:
                         if (!StringUtils.isEmpty(map.get(columnMeta.getColumnName()))) {
                             ((BytesColumnVector) batch.cols[i]).setVal(row, map.get(columnMeta.getColumnName()).toString().getBytes());
                         } else {
                             ((BytesColumnVector) batch.cols[i]).setVal(row, "".getBytes());
                         }
                         break;
-                    case Const.META_TYPE_BINARY:
-                    case Const.META_TYPE_BLOB:
+                    case BLOB:
                         ((BytesColumnVector) batch.cols[i]).setVal(row, (byte[]) map.get(columnMeta.getColumnName()));
                         break;
                     default:

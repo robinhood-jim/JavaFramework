@@ -20,13 +20,13 @@ public class OffHeapMapTest {
     @Test
     public void testSerialAndUnSerial(){
         DataCollectionMeta.Builder builder=new DataCollectionMeta.Builder();
-        builder.addColumn("id", Const.META_TYPE_BIGINT,null);
-        builder.addColumn("name",Const.META_TYPE_STRING,null);
-        builder.addColumn("description",Const.META_TYPE_STRING,null);
-        builder.addColumn("sno",Const.META_TYPE_INTEGER,null);
-        builder.addColumn("price",Const.META_TYPE_DOUBLE,null);
-        builder.addColumn("amount",Const.META_TYPE_INTEGER,null);
-        builder.addColumn("type",Const.META_TYPE_INTEGER,null);
+        builder.addColumn("id", Const.CLASSTYPE.LONG,null);
+        builder.addColumn("name",Const.CLASSTYPE.STRING,null);
+        builder.addColumn("description",Const.CLASSTYPE.STRING,null);
+        builder.addColumn("sno",Const.CLASSTYPE.INTEGER,null);
+        builder.addColumn("price",Const.CLASSTYPE.DOUBLE,null);
+        builder.addColumn("amount",Const.CLASSTYPE.INTEGER,null);
+        builder.addColumn("type",Const.CLASSTYPE.INTEGER,null);
         DataCollectionMeta colmeta=builder.build();
 
         Map<String, Object> recMap = new HashMap<>();

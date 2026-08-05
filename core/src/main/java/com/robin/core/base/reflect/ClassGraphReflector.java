@@ -16,6 +16,9 @@ public class ClassGraphReflector implements InitializingBean {
     private ScanResult scanResult;
     //default Scan package
     private String scanPackage="com.robin";
+    public ClassGraphReflector(){
+
+    }
 
 
     @Override
@@ -70,6 +73,8 @@ public class ClassGraphReflector implements InitializingBean {
         return scanResult.getClassInfo(clazz.getCanonicalName()).hasAnnotation(annotationClazz.getCanonicalName())
                 && scanResult.getClassInfo(clazz.getCanonicalName()).hasFieldAnnotation(annotationFields.getCanonicalName());
     }
-
+    public ClassInfoList getDirectChildClass(Class<?> baseClass){
+        return scanResult.getSubclasses(baseClass.getCanonicalName()).directOnly();
+    }
 
 }
