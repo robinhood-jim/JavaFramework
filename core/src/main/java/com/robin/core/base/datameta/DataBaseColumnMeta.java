@@ -15,6 +15,7 @@
  */
 package com.robin.core.base.datameta;
 
+import com.robin.core.base.util.Const;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -22,7 +23,7 @@ import java.io.Serializable;
 @Data
 public class DataBaseColumnMeta implements Serializable {
 	private String columnName;
-	private String columnType;
+	private Const.CLASSTYPE columnType;
 	private Integer dataType;
 	private String typeName;
 	private Integer columnLength;
@@ -41,16 +42,17 @@ public class DataBaseColumnMeta implements Serializable {
 	private DataBaseColumnMeta() {
 		
 	}
-	public DataBaseColumnMeta(String columnName,String columnType) {
+
+	public DataBaseColumnMeta(String columnName, Const.CLASSTYPE columnType) {
 		this.columnName=columnName;
 		this.columnType=columnType;
 	}
-	public DataBaseColumnMeta(String columnName,String columnType,Integer length) {
-		this.columnName=columnName;
-		this.columnType=columnType;
+
+	public DataBaseColumnMeta(String columnName, Const.CLASSTYPE columnType, Integer length) {
+		this(columnName,columnType);
 		if(length!=null) {
-            this.columnLength=length;
-        }
+			this.columnLength=length;
+		}
 	}
 	public static class Builder{
 		private DataBaseColumnMeta meta=new DataBaseColumnMeta();
@@ -62,6 +64,10 @@ public class DataBaseColumnMeta implements Serializable {
 			return this;
 		}
 		public Builder columnType(String columnType){
+			meta.setColumnType(Const.CLASSTYPE.forName(columnType));
+			return this;
+		}
+		public Builder columnType(Const.CLASSTYPE columnType){
 			meta.setColumnType(columnType);
 			return this;
 		}

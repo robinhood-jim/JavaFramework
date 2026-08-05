@@ -20,6 +20,9 @@ import com.robin.core.base.annotation.MappingField;
 import com.robin.core.base.model.BaseObject;
 import lombok.Data;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
 @MappingEntity(value = "t_sys_user_info",schema = "frameset",jdbcDao = "jdbcDao1")
 @Data
 public class SysUser extends BaseObject {
@@ -42,6 +45,8 @@ public class SysUser extends BaseObject {
     private Integer orderNo;
     @MappingField(value ="user_password")
     private String userPassword;
+    private LocalDateTime createTm;
+    private BigDecimal dVal;
 
 
 }

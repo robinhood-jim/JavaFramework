@@ -191,7 +191,7 @@ public class CommSqlParser {
                     }
                     columns.add(meta1);
                 } else {
-                    columns.add(new DataSetColumnMeta(columnName, Const.META_TYPE_FORMULA));
+                    columns.add(new DataSetColumnMeta(columnName, Const.CLASSTYPE.FORMULA));
                 }
             }
         }
@@ -405,7 +405,7 @@ public class CommSqlParser {
         private List<SqlNode> functionParams;
         private String aliasName;
         private SqlLiteral constantValue;
-        private String columnType;
+        private Const.CLASSTYPE columnType;
         private SqlNode node;
         private SqlKind sqlKind = SqlKind.IDENTIFIER;
         private String nodeString;
@@ -429,10 +429,10 @@ public class CommSqlParser {
             this.calculator = node.toString().replace(Quoting.BACK_TICK.string, "").replaceAll("\\s+", "");
             this.sqlKind = SqlKind.LISTAGG;
             if (FilterSqlParser.fourZeOper.matcher(calculator).find()) {
-                columnType = Const.META_TYPE_DOUBLE;
+                columnType = Const.CLASSTYPE.DOUBLE;
                 polandQueue = PolandNotationUtil.parsePre(calculator);
             } else {
-                columnType = Const.META_TYPE_BOOLEAN;
+                columnType = Const.CLASSTYPE.BOOLEAN;
             }
         }
 
@@ -442,17 +442,17 @@ public class CommSqlParser {
                     SqlNumericLiteral literal1 = (SqlNumericLiteral) literal;
                     if (literal1.getScale() == 0) {
                         if (literal1.getPrec() < 12) {
-                            columnType = Const.META_TYPE_INTEGER;
+                            columnType = Const.CLASSTYPE.INTEGER;
                         } else {
-                            columnType = Const.META_TYPE_BIGINT;
+                            columnType = Const.CLASSTYPE.LONG;
                         }
                     } else {
-                        columnType = Const.META_TYPE_DOUBLE;
+                        columnType = Const.CLASSTYPE.DOUBLE;
                     }
                 } else if (SqlTimeLiteral.class.isAssignableFrom(literal.getClass())) {
-                    columnType = Const.META_TYPE_TIMESTAMP;
+                    columnType = Const.CLASSTYPE.TIMESTAMP;
                 } else if (SqlCharStringLiteral.class.isAssignableFrom(literal.getClass())) {
-                    columnType = Const.META_TYPE_STRING;
+                    columnType = Const.CLASSTYPE.STRING;
                 }
             }
         }
@@ -464,14 +464,14 @@ public class CommSqlParser {
         String groupSql = "select max(a1),min(a2),sum(c1),c3 from test where ((a1+a2)*a9)/10>a3 group by c3 having sum(c1)>100 order by c3 desc,sum(c1) asc";
 
         DataCollectionMeta.Builder builder = new DataCollectionMeta.Builder();
-        DataCollectionMeta meta = builder.addColumn("a1", Const.META_TYPE_DOUBLE).addColumn("a2", Const.META_TYPE_DOUBLE)
-                .addColumn("a3", Const.META_TYPE_DOUBLE).addColumn("a4", Const.META_TYPE_DOUBLE)
-                .addColumn("a5", Const.META_TYPE_DOUBLE).addColumn("a6", Const.META_TYPE_DOUBLE)
-                .addColumn("a7", Const.META_TYPE_INTEGER).addColumn("a8", Const.META_TYPE_DOUBLE)
-                .addColumn("a9", Const.META_TYPE_DOUBLE).addColumn("b1", Const.META_TYPE_DOUBLE)
-                .addColumn("b2", Const.META_TYPE_DOUBLE).addColumn("b3", Const.META_TYPE_DOUBLE)
-                .addColumn("c1", Const.META_TYPE_DOUBLE).addColumn("c2", Const.META_TYPE_DOUBLE)
-                .addColumn("c3", Const.META_TYPE_INTEGER).addColumn("c4", Const.META_TYPE_STRING).tableName("test").build();
+        DataCollectionMeta meta = builder.addColumn("a1", Const.CLASSTYPE.DOUBLE).addColumn("a2", Const.CLASSTYPE.DOUBLE)
+                .addColumn("a3", Const.CLASSTYPE.DOUBLE).addColumn("a4", Const.CLASSTYPE.DOUBLE)
+                .addColumn("a5", Const.CLASSTYPE.DOUBLE).addColumn("a6", Const.CLASSTYPE.DOUBLE)
+                .addColumn("a7", Const.CLASSTYPE.INTEGER).addColumn("a8", Const.CLASSTYPE.DOUBLE)
+                .addColumn("a9", Const.CLASSTYPE.DOUBLE).addColumn("b1", Const.CLASSTYPE.DOUBLE)
+                .addColumn("b2", Const.CLASSTYPE.DOUBLE).addColumn("b3", Const.CLASSTYPE.DOUBLE)
+                .addColumn("c1", Const.CLASSTYPE.DOUBLE).addColumn("c2", Const.CLASSTYPE.DOUBLE)
+                .addColumn("c3", Const.CLASSTYPE.INTEGER).addColumn("c4", Const.CLASSTYPE.STRING).tableName("test").build();
         SqlSegment segment = CommSqlParser.parseSingleTableQuerySql(sql, Lex.MYSQL, meta, "N_COLUMN");
         Map<String, Object> map = new HashMap<>();
         map.put("a1", 1.0);

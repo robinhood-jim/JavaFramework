@@ -86,9 +86,9 @@ public class OracleSqlGen extends AbstractSqlGen implements BaseSqlGen {
 		if(containsSqlInjection(condition.getValue())){
 			return null;
 		}
-		if(Const.META_TYPE_DATE.equals(condition.getColumnType())){
+		if(Const.CLASSTYPE.DATE.equals(condition.getColumnType())){
 			return "to_date('" + condition.getValue().toString() + "','"+dayFormatStr+"')";
-		}else if(Const.META_TYPE_TIMESTAMP.equals(condition.getColumnType())){
+		}else if(Const.CLASSTYPE.TIMESTAMP.equals(condition.getColumnType())){
 			return "to_date('" + condition.getValue().toString() + "','"+timeFormatStr+"')";
 		}
 		return super.wrapValue(condition);

@@ -28,6 +28,5 @@ public @interface MappingEntity {
 	String jdbcDao() default "jdbcDao";
 	//Does all field must declare explicit?
 	boolean explicit() default false;
-	String statusColumn() default "";
-	String statusValue() default "";
+
 }

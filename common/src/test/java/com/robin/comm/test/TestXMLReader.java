@@ -11,7 +11,6 @@ import org.apache.avro.Schema;
 import org.apache.avro.SchemaBuilder;
 import org.apache.avro.generic.GenericRecord;
 import org.junit.Test;
-import org.springframework.core.io.support.SpringFactoriesLoader;
 
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectOutputStream;
@@ -24,10 +23,10 @@ import java.util.List;
 public class TestXMLReader {
     public static void main(String[] args) {
         DataCollectionMeta colmeta = new DataCollectionMeta();
-        colmeta.addColumnMeta("col1", Const.META_TYPE_BIGINT, null);
-        colmeta.addColumnMeta("col2", Const.META_TYPE_STRING, null);
-        colmeta.addColumnMeta("id", Const.META_TYPE_STRING, null);
-        colmeta.addColumnMeta("key", Const.META_TYPE_STRING, null);
+        colmeta.addColumnMeta("col1", Const.CLASSTYPE.LONG, null);
+        colmeta.addColumnMeta("col2", Const.CLASSTYPE.STRING, null);
+        colmeta.addColumnMeta("id", Const.CLASSTYPE.STRING, null);
+        colmeta.addColumnMeta("key", Const.CLASSTYPE.STRING, null);
         colmeta.setEncode("UTF-8");
         colmeta.setPath("f:/test.xml");
         colmeta.setFileFormat(Const.FILEFORMATSTR.XML.getValue());

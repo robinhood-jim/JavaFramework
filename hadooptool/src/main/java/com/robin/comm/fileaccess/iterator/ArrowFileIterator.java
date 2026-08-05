@@ -9,7 +9,6 @@ import com.robin.core.fileaccess.util.AvroUtils;
 import org.apache.arrow.memory.BufferAllocator;
 import org.apache.arrow.memory.RootAllocator;
 import org.apache.arrow.vector.*;
-import org.apache.arrow.vector.compression.CompressionCodec;
 import org.apache.arrow.vector.ipc.ArrowStreamReader;
 import org.apache.arrow.vector.types.pojo.Field;
 import org.apache.arrow.vector.types.pojo.Schema;
@@ -94,25 +93,25 @@ public class ArrowFileIterator extends AbstractFileIterator {
             ex.printStackTrace();
         }
     }
-    public void wrapValue(Field field, String columnName, String columnType, int row, Map<String,Object> valueMap) throws UnsupportedEncodingException {
+    public void wrapValue(Field field, String columnName, Const.CLASSTYPE columnType, int row, Map<String,Object> valueMap) throws UnsupportedEncodingException {
         FieldVector vectors=currentBatch.getVector(field);
         if(IntVector.class.isAssignableFrom(vectors.getClass())){
             IntVector intVector=(IntVector) vectors;
-            if(Const.META_TYPE_INTEGER.equals(columnType)){
+            if(Const.CLASSTYPE.INTEGER.equals(columnType)){
                 valueMap.put(columnName,intVector.get(row));
-            }else if(Const.META_TYPE_BIGINT.equals(columnType)){
+            }else if(Const.CLASSTYPE.LONG.equals(columnType)){
                 valueMap.put(columnName,intVector.getValueAsLong(row));
             }
         }else if(BigIntVector.class.isAssignableFrom(vectors.getClass())){
             BigIntVector bVector=(BigIntVector) vectors;
-            if(Const.META_TYPE_INTEGER.equals(columnType)){
+            if(Const.CLASSTYPE.INTEGER.equals(columnType)){
                 valueMap.put(columnName,Integer.valueOf(String.valueOf(bVector.get(row))));
-            }else if(Const.META_TYPE_BIGINT.equals(columnType)){
+            }else if(Const.CLASSTYPE.LONG.equals(columnType)){
                 valueMap.put(columnName,bVector.getValueAsLong(row));
             }
         }else if(TimeStampVector.class.isAssignableFrom(vectors.getClass())){
             valueMap.put(columnName,new Timestamp(((TimeStampVector)vectors).get(row)));
-        }else if(Const.META_TYPE_STRING.equals(columnType)){
+        }else if(Const.CLASSTYPE.STRING.equals(columnType)){
             valueMap.put(columnName,new String(((VarCharVector)vectors).get(row),"utf-8"));
         }
     }

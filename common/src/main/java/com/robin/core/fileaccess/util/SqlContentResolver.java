@@ -8,7 +8,6 @@ import com.robin.core.base.exception.MissingConfigException;
 import com.robin.core.base.exception.OperationNotSupportException;
 import com.robin.core.base.util.Const;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.calcite.avatica.util.Quoting;
 import org.apache.calcite.sql.*;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
@@ -168,7 +167,7 @@ public class SqlContentResolver {
                     Assert.isTrue(sqlNodes.size() == 3, "substr function must have three parameters");
                     Assert.isTrue(SqlKind.IDENTIFIER.equals(sqlNodes.get(0).getKind()), " first parameter must be column");
                     ca.setColumnName(sqlNodes.get(0).toString());
-                    if (!Const.META_TYPE_STRING.equals(ca.getSegment().getOriginSchemaMap().get(ca.getColumnName()).getColumnType())) {
+                    if (!Const.CLASSTYPE.STRING.equals(ca.getSegment().getOriginSchemaMap().get(ca.getColumnName()).getColumnType())) {
                         throw new OperationNotSupportException("only string column can substr");
                     }
                     ca.setLeftValue(((Number) ((SqlLiteral) sqlNodes.get(1)).getValue()).intValue());
@@ -364,9 +363,9 @@ public class SqlContentResolver {
     }
 
     public static void checkColumnNumeric(SqlSegment segment, String columnName) {
-        Assert.isTrue(Const.META_TYPE_INTEGER.equals(segment.getOriginSchemaMap().get(columnName).getColumnType())
-                || Const.META_TYPE_BIGINT.equals(segment.getOriginSchemaMap().get(columnName).getColumnType())
-                || Const.META_TYPE_DOUBLE.equals(segment.getOriginSchemaMap().get(columnName).getColumnType()), "require numeric column");
+        Assert.isTrue(Const.CLASSTYPE.INTEGER.equals(segment.getOriginSchemaMap().get(columnName).getColumnType())
+                || Const.CLASSTYPE.LONG.equals(segment.getOriginSchemaMap().get(columnName).getColumnType())
+                || Const.CLASSTYPE.DOUBLE.equals(segment.getOriginSchemaMap().get(columnName).getColumnType()), "require numeric column");
     }
 
     private static boolean cmpNumber(SqlKind comparator, Number left, Number right) {

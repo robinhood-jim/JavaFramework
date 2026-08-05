@@ -76,6 +76,7 @@ public class CustomerURLClassLoader extends URLClassLoader {
                 String key = new String(keyDecryptByte);
                 encryptKeyMap.put(className, Pair.of(confusedName, key));
             }
+
         } catch (Exception ex) {
             ex.printStackTrace();
         }

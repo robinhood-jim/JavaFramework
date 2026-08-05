@@ -46,9 +46,9 @@ public class WekaUtils {
                             normalList.add(String.valueOf(j));
                         }
                         attribute = new Attribute(setColumnMeta.getColumnName(), normalList);
-                    } else if (setColumnMeta.getColumnType().equals(Const.META_TYPE_BIGINT) || setColumnMeta.getColumnType().equals(Const.META_TYPE_INTEGER) || setColumnMeta.getColumnType().equals(Const.META_TYPE_DECIMAL) || setColumnMeta.getColumnType().equals(Const.META_TYPE_DOUBLE)) {
+                    } else if (setColumnMeta.getColumnType().equals(Const.CLASSTYPE.LONG) || setColumnMeta.getColumnType().equals(Const.CLASSTYPE.INTEGER) || setColumnMeta.getColumnType().equals(Const.CLASSTYPE.DECIMAL) || setColumnMeta.getColumnType().equals(Const.CLASSTYPE.DOUBLE)) {
                         attribute = new Attribute(setColumnMeta.getColumnName());
-                    } else if (setColumnMeta.getColumnType().equals(Const.META_TYPE_DATE) || setColumnMeta.getColumnType().equals(Const.META_TYPE_TIMESTAMP)) {
+                    } else if (setColumnMeta.getColumnType().equals(Const.CLASSTYPE.DATE) || setColumnMeta.getColumnType().equals(Const.CLASSTYPE.TIMESTAMP)) {
                         attribute = new Attribute(setColumnMeta.getColumnName(), "yyyy-MM-dd");
                     } else {
                         attribute = new Attribute(setColumnMeta.getColumnName());
@@ -70,9 +70,9 @@ public class WekaUtils {
                                     pos = setColumnMeta.getNominalValues().indexOf(value);
                                 }
                                 instance.setValue(attributeMap.get(setColumnMeta.getColumnName()), Double.parseDouble(String.valueOf(pos)));
-                            } else if (setColumnMeta.getColumnType().equals(Const.META_TYPE_BIGINT) || setColumnMeta.getColumnType().equals(Const.META_TYPE_INTEGER) || setColumnMeta.getColumnType().equals(Const.META_TYPE_DECIMAL) || setColumnMeta.getColumnType().equals(Const.META_TYPE_DOUBLE)) {
+                            } else if (setColumnMeta.getColumnType().equals(Const.CLASSTYPE.LONG) || setColumnMeta.getColumnType().equals(Const.CLASSTYPE.INTEGER) || setColumnMeta.getColumnType().equals(Const.CLASSTYPE.DECIMAL) || setColumnMeta.getColumnType().equals(Const.CLASSTYPE.DOUBLE)) {
                                 instance.setValue(attributeMap.get(setColumnMeta.getColumnName()), Double.valueOf(map.get(setColumnMeta.getColumnName()).toString()));
-                            } else if (setColumnMeta.getColumnType().equals(Const.META_TYPE_DATE) || setColumnMeta.getColumnType().equals(Const.META_TYPE_TIMESTAMP)) {
+                            } else if (setColumnMeta.getColumnType().equals(Const.CLASSTYPE.DATE) || setColumnMeta.getColumnType().equals(Const.CLASSTYPE.TIMESTAMP)) {
 
                             } else {
                                 instance.setValue(attributeMap.get(setColumnMeta.getColumnName()), map.get(setColumnMeta.getColumnName()).toString());

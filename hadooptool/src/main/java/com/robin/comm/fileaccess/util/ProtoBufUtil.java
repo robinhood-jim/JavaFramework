@@ -18,21 +18,21 @@ import java.io.InputStream;
 public class ProtoBufUtil {
     public static String translateType(DataSetColumnMeta column) {
         String retStr = "";
-        if(column.getColumnType().equals(Const.META_TYPE_INTEGER)){
+        if(column.getColumnType().equals(Const.CLASSTYPE.INTEGER)){
             retStr="int32";
-        } else if (column.getColumnType().equals(Const.META_TYPE_BIGINT)) {
+        } else if (column.getColumnType().equals(Const.CLASSTYPE.LONG)) {
             retStr = "int64";
-        } else if (column.getColumnType().equals(Const.META_TYPE_DOUBLE)) {
+        } else if (column.getColumnType().equals(Const.CLASSTYPE.DOUBLE)) {
             retStr = "double";
-        } else if (column.getColumnType().equals(Const.META_TYPE_NUMERIC)) {
+        } else if (column.getColumnType().equals(Const.CLASSTYPE.NUMERIC)) {
             retStr = "float";
-        } else if (column.getColumnType().equals(Const.META_TYPE_TIMESTAMP)) {
+        } else if (column.getColumnType().equals(Const.CLASSTYPE.TIMESTAMP)) {
             retStr = "int64";
-        } else if (column.getColumnType().equals(Const.META_TYPE_BOOLEAN)) {
+        } else if (column.getColumnType().equals(Const.CLASSTYPE.BOOLEAN)) {
             retStr = "bool";
-        } else if (column.getColumnType().equals(Const.META_TYPE_STRING) ||column.getColumnType().equals(Const.META_TYPE_CLOB)) {
+        } else if (column.getColumnType().equals(Const.CLASSTYPE.STRING) ||column.getColumnType().equals(Const.CLASSTYPE.CLOB)) {
             retStr = "string";
-        } else if (column.getColumnType().equals(Const.META_TYPE_BINARY) || column.getColumnType().equals(Const.META_TYPE_BLOB)) {
+        } else if (column.getColumnType().equals(Const.CLASSTYPE.BLOB)) {
             retStr = "byte";
         }
         return retStr;

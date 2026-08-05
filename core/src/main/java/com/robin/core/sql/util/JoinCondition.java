@@ -6,6 +6,7 @@ import com.robin.core.base.model.BaseObject;
 import com.robin.core.base.util.Const;
 import lombok.Data;
 import org.apache.commons.lang3.tuple.Triple;
+import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
@@ -33,9 +34,9 @@ public class JoinCondition {
         }
 
         public <L extends BaseObject,R extends BaseObject> JoinCondition.Builder join(PropertyFunction<L, ?> leftColumn, PropertyFunction<R, ?> rightColumn, Const.JOINTYPE joinType) {
-            String leftColumnType = AnnotationRetriever.getFieldType(leftColumn);
-            String rightColumnType = AnnotationRetriever.getFieldType(rightColumn);
-            //Assert.isTrue(leftColumnType.equals(rightColumnType), " join columns does not have same type!");
+            Const.CLASSTYPE leftColumnType = AnnotationRetriever.getFieldType(leftColumn);
+            Const.CLASSTYPE rightColumnType = AnnotationRetriever.getFieldType(rightColumn);
+            Assert.isTrue(leftColumnType.equals(rightColumnType), " join columns does not have same type!");
             statement.getJoins().add(Triple.of(leftColumn, rightColumn, joinType));
             Class<L> leftModelClass=AnnotationRetriever.getFieldOwnedClass(leftColumn);
             Class<R> rightModelClass=AnnotationRetriever.getFieldOwnedClass(rightColumn);

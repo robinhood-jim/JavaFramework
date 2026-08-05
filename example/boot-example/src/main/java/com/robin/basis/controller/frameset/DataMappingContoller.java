@@ -154,7 +154,7 @@ public class DataMappingContoller extends AbstractCrudDhtmlxController<ProjectIn
                 Map<String, String> map = new HashMap<>();
                 String columnName = meta1.getColumnName();
                 map.put("columnName", meta1.getColumnName());
-                map.put("columnType", meta1.getColumnType().toString());
+                map.put("columnType", meta1.getColumnType().getValue());
                 columnName = columnName.replace("-", "").replaceAll("_", "").replaceAll("$", "");
                 map.put("propName", columnName);
                 map.put("propType", "");

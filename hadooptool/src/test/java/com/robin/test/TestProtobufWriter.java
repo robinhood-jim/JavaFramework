@@ -36,10 +36,10 @@ public class TestProtobufWriter extends TestCase {
         try(Connection connection= SimpleJdbcDao.getConnection(meta)) {
             //List<DataBaseColumnMeta> columnMetaList= DataBaseUtil.getTableMetaByTableName(connection,"t_sys_code","nrd_server_dev",BaseDataBaseMeta.TYPE_MYSQL);
             DataCollectionMeta colmeta = new DataCollectionMeta();
-            colmeta.addColumnMeta("id", Const.META_TYPE_INTEGER,null);
-            colmeta.addColumnMeta("cs_id",Const.META_TYPE_INTEGER,null);
-            colmeta.addColumnMeta("item_name",Const.META_TYPE_STRING,null);
-            colmeta.addColumnMeta("item_value",Const.META_TYPE_STRING,null);
+            colmeta.addColumnMeta("id", Const.CLASSTYPE.INTEGER,null);
+            colmeta.addColumnMeta("cs_id",Const.CLASSTYPE.INTEGER,null);
+            colmeta.addColumnMeta("item_name",Const.CLASSTYPE.STRING,null);
+            colmeta.addColumnMeta("item_value",Const.CLASSTYPE.STRING,null);
             colmeta.setEncode("UTF-8");
             colmeta.setFileFormat(Const.FILESUFFIX_PROTOBUF);
 
@@ -75,10 +75,10 @@ public class TestProtobufWriter extends TestCase {
     @Test
     public void testRead(){
         DataCollectionMeta colmeta = new DataCollectionMeta();
-        colmeta.addColumnMeta("id", Const.META_TYPE_INTEGER,null);
-        colmeta.addColumnMeta("cs_id",Const.META_TYPE_INTEGER,null);
-        colmeta.addColumnMeta("item_name",Const.META_TYPE_STRING,null);
-        colmeta.addColumnMeta("item_value",Const.META_TYPE_STRING,null);
+        colmeta.addColumnMeta("id", Const.CLASSTYPE.INTEGER,null);
+        colmeta.addColumnMeta("cs_id",Const.CLASSTYPE.INTEGER,null);
+        colmeta.addColumnMeta("item_name",Const.CLASSTYPE.STRING,null);
+        colmeta.addColumnMeta("item_value",Const.CLASSTYPE.STRING,null);
         colmeta.setPath("d:/tmp/luoming/1.proto");
         try{
             IResourceIterator iterator= TextFileIteratorFactory.getProcessIteratorByPath(colmeta,new FileInputStream("d:/tmp/luoming/1.proto"));

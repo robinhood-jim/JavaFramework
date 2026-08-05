@@ -23,12 +23,12 @@ public class DecisionTreeTest {
         meta.setFileFormat(Const.FILESUFFIX_CSV);
         //change to your machine local path
         meta.setPath("file:///e:/iris.csv");
-        meta.addColumnMeta("erlength", Const.META_TYPE_DOUBLE,null);
-        meta.addColumnMeta("erwidth", Const.META_TYPE_DOUBLE,null);
-        meta.addColumnMeta("banlength", Const.META_TYPE_DOUBLE,null);
-        meta.addColumnMeta("banwidth", Const.META_TYPE_DOUBLE,null);
+        meta.addColumnMeta("erlength", Const.CLASSTYPE.DOUBLE,null);
+        meta.addColumnMeta("erwidth", Const.CLASSTYPE.DOUBLE,null);
+        meta.addColumnMeta("banlength", Const.CLASSTYPE.DOUBLE,null);
+        meta.addColumnMeta("banwidth", Const.CLASSTYPE.DOUBLE,null);
         //nominal target column
-        DataSetColumnMeta columnMeta=meta.createColumnMeta("class",Const.META_TYPE_STRING,null);
+        DataSetColumnMeta columnMeta=meta.createColumnMeta("class", Const.CLASSTYPE.STRING,null);
         columnMeta.setNominalValues(Arrays.asList(new String[]{"setosa", "versicolor","virginica"}));
         meta.addColumnMeta(columnMeta);
         Map<String,String> configMap=new HashMap<>();

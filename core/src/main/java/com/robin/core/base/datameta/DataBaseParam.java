@@ -96,7 +96,7 @@ public class DataBaseParam implements Serializable {
 		this.passwd=passwd;
 		this.userName=userName;
 	}
-	private DataBaseParam(){
+	public DataBaseParam(){
 
 	}
 	@Override

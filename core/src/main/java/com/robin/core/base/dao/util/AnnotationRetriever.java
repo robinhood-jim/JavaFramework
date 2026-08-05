@@ -16,6 +16,7 @@
 package com.robin.core.base.dao.util;
 
 import com.baomidou.mybatisplus.annotation.*;
+import com.robin.core.base.annotation.LogicColumn;
 import com.robin.core.base.annotation.MappingEntity;
 import com.robin.core.base.annotation.MappingField;
 import com.robin.core.base.exception.ConfigurationIncorrectException;
@@ -103,11 +104,18 @@ public class AnnotationRetriever {
             for (int i = 0; i < fields.size(); i++) {
                 Field field = fields.get(i);
                 MappingField mapfield = field.getAnnotation(MappingField.class);
+                FieldContent content=null;
                 if (isFieldValid(entity, mapfield, field)) {
-                    FieldContent content = retrieveField(field, fieldClasses.get(i));
-                    if (content != null) {
-                        list.add(content);
-                    }
+                    content = retrieveField(field, fieldClasses.get(i));
+                }
+                LogicColumn logicColumn=field.getAnnotation(LogicColumn.class);
+                if(logicColumn!=null  && !Modifier.isStatic(field.getModifiers()) && !Modifier.isFinal(field.getModifiers())){
+                    content.setIfLogicColumn(true);
+                    content.setValidValue(logicColumn.value());
+                    content.setInvalidValue(logicColumn.delval());
+                }
+                if (!Objects.isNull(content)) {
+                    list.add(content);
                 }
             }
         } else {
@@ -129,13 +137,20 @@ public class AnnotationRetriever {
                 flag = clazz.isAnnotationPresent(TableName.class);
                 if (flag) {
                     Field[] fields = clazz.getDeclaredFields();
+                    FieldContent content=null;
                     for (Field field : fields) {
                         TableField mapfield = field.getAnnotation(TableField.class);
                         if ((!Objects.isNull(mapfield) && mapfield.exist()) || (!Modifier.isStatic(field.getModifiers()) && !Modifier.isFinal(field.getModifiers()))) {
-                            FieldContent content = retrieveFieldByMyBatis(field, clazz);
-                            if (!Objects.isNull(content)) {
-                                list.add(content);
-                            }
+                            content = retrieveFieldByMyBatis(field, clazz);
+                        }
+                        TableLogic logicField=field.getAnnotation(TableLogic.class);
+                        if(Objects.isNull(logicField)){
+                            content.setIfLogicColumn(true);
+                            content.setValidValue(logicField.value());
+                            content.setInvalidValue(logicField.delval());
+                        }
+                        if (!Objects.isNull(content)) {
+                            list.add(content);
                         }
                     }
                 }
@@ -211,13 +226,6 @@ public class AnnotationRetriever {
             content = getEntityContent(clazz,tableName, schema, false, false);
             if (!ObjectUtils.isEmpty(jdbcDao)) {
                 content.setJdbcDao(jdbcDao);
-            }
-            if(!ObjectUtils.isEmpty(entity.statusColumn())){
-                content.setStatusColumn(entity.statusColumn());
-                content.setContainStatusColumn(true);
-            }
-            if(!ObjectUtils.isEmpty(entity.statusValue())){
-                content.setStatusValue(entity.statusValue());
             }
         } else {
             flag = clazz.isAnnotationPresent(Entity.class);
@@ -434,7 +442,7 @@ public class AnnotationRetriever {
             Type type = getMethod.getReturnType();
             Method setMethod = clazz.getDeclaredMethod("set" + colname, field.getType());
             String fieldName = null;
-            String datatype = null;
+            int datatype = -1000;
             FieldContent.Builder builder = new FieldContent.Builder();
             builder.withMappingField(mapfield).setGetMethod(lookup.unreflect(getMethod)).setSetMethod(lookup.unreflect(setMethod)).setField(field).setPropertyName(field.getName());
             if (mapfield != null) {
@@ -587,47 +595,47 @@ public class AnnotationRetriever {
         return aClass;
     }
 
-    public static <T> String getFieldType(PropertyFunction<T, ?> field) {
+    public static <T> Const.CLASSTYPE getFieldType(PropertyFunction<T, ?> field) {
         Class<?> clazz = field.getClass();
         String name = clazz.getName();
         SerializedLambda lambda = Optional.ofNullable(functionMap.get(name)).map(Reference::get).orElseGet(() -> getLambdaSerialized(field));
         String retClass = lambda.getImplMethodSignature();
-        String retType = Const.META_TYPE_STRING;
+        Const.CLASSTYPE retType = Const.CLASSTYPE.STRING;
 
         if ("()Ljava/lang/Long;".equals(retClass)) {
-            retType = Const.META_TYPE_BIGINT;
+            retType = Const.CLASSTYPE.LONG;
         } else if ("()Ljava/lang/Double;".equals(retClass) || "()Ljava/lang/BigDecimal;".equals(retClass)) {
-            retType = Const.META_TYPE_DOUBLE;
+            retType = Const.CLASSTYPE.DOUBLE;
         } else if ("()Ljava/lang/Integer;".equals(retClass)) {
-            retType = Const.META_TYPE_INTEGER;
+            retType = Const.CLASSTYPE.INTEGER;
         } else if ("()Ljava/lang/Short;".equals(retClass)) {
-            retType = Const.META_TYPE_SHORT;
+            retType = Const.CLASSTYPE.SHORT;
         } else if ("()Ljava/lang/byte;".equals(retClass)) {
-            retType = Const.META_TYPE_BLOB;
+            retType = Const.CLASSTYPE.BLOB;
         } else if ("()Ljava/sql/Date;".equals(retClass) || "()Ljava/util/Date;".equals(retClass) || "()Ljava/time/LocalDate;".equals(retClass)) {
-            retType = Const.META_TYPE_DATE;
+            retType = Const.CLASSTYPE.DATE;
         } else if ("()Ljava/sql/Timestamp;".equals(retClass) || "()Ljava/time/LocalDateTime;".equals(retClass)) {
-            retType = Const.META_TYPE_TIMESTAMP;
+            retType = Const.CLASSTYPE.TIMESTAMP;
         }
         return retType;
     }
-    public static String getFieldType(FieldContent content){
+    public static Const.CLASSTYPE getFieldType(FieldContent content){
         Class<?> clazz=content.getField().getType();
-        String retType = Const.META_TYPE_STRING;
+        Const.CLASSTYPE retType = Const.CLASSTYPE.STRING;
         if(Long.class.isAssignableFrom(clazz)){
-            retType=Const.META_TYPE_BIGINT;
+            retType= Const.CLASSTYPE.LONG;
         }else if(Double.class.isAssignableFrom(clazz) || Float.class.isAssignableFrom(clazz)){
-            retType=Const.META_TYPE_DOUBLE;
+            retType= Const.CLASSTYPE.DOUBLE;
         }else if(Integer.class.isAssignableFrom(clazz)){
-            retType=Const.META_TYPE_INTEGER;
+            retType= Const.CLASSTYPE.INTEGER;
         }else if(Short.class.isAssignableFrom(clazz)){
-            retType=Const.META_TYPE_SHORT;
+            retType= Const.CLASSTYPE.SHORT;
         }else if(byte[].class.isAssignableFrom(clazz)){
-            retType=Const.META_TYPE_BLOB;
+            retType= Const.CLASSTYPE.BLOB;
         }else if(Date.class.isAssignableFrom(clazz)){
-            retType=Const.META_TYPE_DATE;
+            retType= Const.CLASSTYPE.DATE;
         }else if(java.util.Date.class.isAssignableFrom(clazz) && Timestamp.class.isAssignableFrom(clazz)){
-            retType=Const.META_TYPE_TIMESTAMP;
+            retType= Const.CLASSTYPE.TIMESTAMP;
         }
         return retType;
     }
@@ -666,10 +674,10 @@ public class AnnotationRetriever {
             setParameter(ps, pos, value);
             return;
         }
-        String datatype = field.getDataType();
-        if (datatype.equalsIgnoreCase(Const.META_TYPE_CLOB)) {
+        int datatype = field.getDataType();
+        if (datatype==Types.CLOB) {
             lobHandler.getLobCreator().setClobAsString(ps, pos, value.toString());
-        } else if (datatype.equalsIgnoreCase(Const.META_TYPE_BLOB)) {
+        } else if (datatype==Types.BLOB) {
             lobHandler.getLobCreator().setBlobAsBytes(ps, pos, (byte[]) value);
         } else {
             setParameter(ps, pos, value);
@@ -703,15 +711,11 @@ public class AnnotationRetriever {
         }
     }
 
-    private static void parseType(FieldContent content, Type type, String datatype) {
-        if (StringUtils.isEmpty(datatype)) {
+    private static void parseType(FieldContent content, Type type, int datatype) {
+        if (datatype==-1000) {
             adjustByType(content, type);
         } else {
-            if ("clob".equalsIgnoreCase(datatype)) {
-                content.setDataType(Const.META_TYPE_CLOB);
-            } else if ("blob".equalsIgnoreCase(datatype)) {
-                content.setDataType(Const.META_TYPE_BLOB);
-            }
+            content.setDataType(datatype);
         }
     }
 
@@ -722,29 +726,29 @@ public class AnnotationRetriever {
 
     private static void adjustByType(FieldContent content, Type type) {
         if (type.equals(Void.class)) {
-            content.setDataType(Const.META_TYPE_INTEGER);
+            content.setDataType(Types.INTEGER);
         } else if (type.equals(Long.class)) {
-            content.setDataType(Const.META_TYPE_BIGINT);
+            content.setDataType(Types.BIGINT);
         } else if (type.equals(Integer.class)) {
-            content.setDataType(Const.META_TYPE_INTEGER);
+            content.setDataType(Types.INTEGER);
         } else if (type.equals(Double.class)) {
-            content.setDataType(Const.META_TYPE_NUMERIC);
+            content.setDataType(Types.DOUBLE);
         } else if (type.equals(Float.class)) {
-            content.setDataType(Const.META_TYPE_NUMERIC);
+            content.setDataType(Types.FLOAT);
         } else if (type.equals(String.class)) {
-            content.setDataType(Const.META_TYPE_STRING);
+            content.setDataType(Types.VARCHAR);
         } else if (type.equals(java.util.Date.class)) {
-            content.setDataType(Const.META_TYPE_TIMESTAMP);
+            content.setDataType(Types.TIMESTAMP);
         } else if (type.equals(Date.class)) {
-            content.setDataType(Const.META_TYPE_DATE);
+            content.setDataType(Types.DATE);
         } else if (type.equals(byte[].class)) {
-            content.setDataType(Const.META_TYPE_BLOB);
+            content.setDataType(Types.BLOB);
         } else if (type.equals(Timestamp.class)) {
-            content.setDataType(Const.META_TYPE_TIMESTAMP);
+            content.setDataType(Types.TIMESTAMP);
         } else if (type.equals(Short.class)) {
-            content.setDataType(Const.META_TYPE_SHORT);
+            content.setDataType(Types.SMALLINT);
         } else {
-            content.setDataType(Const.META_TYPE_OBJECT);
+            content.setDataType(Types.JAVA_OBJECT);
         }
     }
 
@@ -756,9 +760,8 @@ public class AnnotationRetriever {
         private String schema;
         private String jdbcDao;
         private Class<T> clazz;
-        private boolean containStatusColumn=false;
-        private String statusColumn;
-        private String statusValue=Const.VALID;
+        private boolean containLogicColumn =false;
+
 
         public EntityContent(String tableName) {
             this.tableName = tableName;

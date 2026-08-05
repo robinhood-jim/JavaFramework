@@ -15,7 +15,7 @@ public class EtlStepCondition extends BaseObject {
 	@MappingField
 	private Long parentStepId;
 	@MappingField
-	private Long subStepId;
+	private Long stepId;
 	@MappingField
 	private Short hasCondition;
 	@MappingField

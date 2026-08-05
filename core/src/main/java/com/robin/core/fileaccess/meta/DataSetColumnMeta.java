@@ -1,6 +1,7 @@
 package com.robin.core.fileaccess.meta;
 
 import com.robin.core.base.datameta.DataBaseColumnMeta;
+import com.robin.core.base.util.Const;
 import lombok.Data;
 import org.springframework.util.ObjectUtils;
 
@@ -12,9 +13,10 @@ import java.util.List;
 public class DataSetColumnMeta implements Serializable {
     private String columnName;
     private String columnCode;
-    private String columnType;
+    private Const.CLASSTYPE columnType;
     private Object defaultNullValue;
     private String dateFormat;
+    private Integer dataType;
     private boolean required;
     private boolean algrithColumn;
     private boolean primary;
@@ -29,7 +31,7 @@ public class DataSetColumnMeta implements Serializable {
 
     }
 
-    public DataSetColumnMeta(String columnName,String columnType,Object defaultNullValue){
+    public DataSetColumnMeta(String columnName, Const.CLASSTYPE columnType, Object defaultNullValue){
         this.columnName=columnName;
         this.columnCode=columnName;
         this.columnType=columnType;
@@ -39,28 +41,31 @@ public class DataSetColumnMeta implements Serializable {
             this.defaultNullValue="";
         }
     }
-    public DataSetColumnMeta(String columnName,String columnCode,String columnType,Object defaultNullValue){
+    public DataSetColumnMeta(String columnName, String columnCode, Const.CLASSTYPE columnType, Object defaultNullValue){
         this(columnName,columnType,defaultNullValue);
         this.columnCode=columnCode;
     }
-    public DataSetColumnMeta(String columnName,String columnType){
+
+    public DataSetColumnMeta(String columnName, Const.CLASSTYPE columnType){
         this(columnName,columnType,null);
     }
-    public DataSetColumnMeta(String columnName,String columnType,String algrithOper,boolean flushOut){
+    public DataSetColumnMeta(String columnName, Const.CLASSTYPE columnType, String algrithOper, boolean flushOut){
         this(columnName,columnType,null);
         this.algrithOper=algrithOper;
         this.flushOut=flushOut;
     }
-    public DataSetColumnMeta(String columnName,String columnType,boolean flushOut){
+
+    public DataSetColumnMeta(String columnName, Const.CLASSTYPE columnType, boolean flushOut){
         this(columnName,columnType,null);
         this.flushOut=flushOut;
     }
-    public DataSetColumnMeta(String columnName,String columnType,Object defaultNullValue,boolean required,String dateFormat){
+
+    public DataSetColumnMeta(String columnName, Const.CLASSTYPE columnType, Object defaultNullValue, boolean required, String dateFormat){
         this(columnName,columnType,defaultNullValue);
         this.required=required;
         this.dateFormat=dateFormat;
     }
-    public DataSetColumnMeta(String columnName,String columnType,Object defaultNullValue,boolean required){
+    public DataSetColumnMeta(String columnName, Const.CLASSTYPE columnType, Object defaultNullValue, boolean required){
         this(columnName,columnType,defaultNullValue);
         this.required=required;
     }

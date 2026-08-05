@@ -117,21 +117,21 @@ public class ESSchemaAwareUtil {
         }
         return indexCfgMap;
     }
-    public static String translateEsType(String columnType) {
+    public static Const.CLASSTYPE translateEsType(String columnType) {
         Assert.notNull(columnType,"type is null");
-        String retType;
+        Const.CLASSTYPE retType;
         if ("auto".equalsIgnoreCase(columnType) || "keyword".equalsIgnoreCase(columnType) || "text".equalsIgnoreCase(columnType)) {
-            retType=Const.META_TYPE_STRING;
+            retType= Const.CLASSTYPE.STRING;
         }else if("double".equalsIgnoreCase(columnType)){
-            retType=Const.META_TYPE_DOUBLE;
+            retType= Const.CLASSTYPE.DOUBLE;
         }else if("integer".equalsIgnoreCase(columnType)){
-            retType=Const.META_TYPE_INTEGER;
+            retType= Const.CLASSTYPE.INTEGER;
         }else if("float".equalsIgnoreCase(columnType)){
-            retType=Const.META_TYPE_NUMERIC;
+            retType= Const.CLASSTYPE.NUMERIC;
         }else if("short".equalsIgnoreCase(columnType)){
-            retType=Const.META_TYPE_SHORT;
+            retType= Const.CLASSTYPE.SHORT;
         }else {
-            retType=Const.META_TYPE_STRING;
+            retType= Const.CLASSTYPE.STRING;
         }
         return retType;
     }

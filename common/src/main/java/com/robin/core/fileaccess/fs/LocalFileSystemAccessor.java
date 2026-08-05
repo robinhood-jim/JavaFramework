@@ -2,10 +2,14 @@ package com.robin.core.fileaccess.fs;
 
 import com.robin.core.base.util.Const;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.DirectoryFileFilter;
+import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.*;
 import java.net.URI;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class LocalFileSystemAccessor extends AbstractFileSystemAccessor {
 	private static LocalFileSystemAccessor accessor=new LocalFileSystemAccessor();
@@ -103,5 +107,16 @@ public class LocalFileSystemAccessor extends AbstractFileSystemAccessor {
 
 		}
 		return url;
+	}
+
+	@Override
+	public List<String> listPath(String inputPath) throws Exception {
+		return FileUtils.listFiles(new File(getProcessPath(inputPath)), FileFilterUtils.fileFileFilter(), DirectoryFileFilter.DIRECTORY).stream().map(f->f.getPath()).collect(Collectors.toList());
+	}
+
+	@Override
+	public boolean isDirectory(String inputPath) {
+		File file=new File(getProcessPath(inputPath));
+		return file.exists() && file.isDirectory();
 	}
 }

@@ -19,6 +19,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.sql.Types;
 
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
@@ -28,7 +29,7 @@ public @interface MappingField {
 	boolean increment() default false;
 	String sequenceName() default "";
 	boolean required() default false;
-	String datatype() default "";
+	int datatype() default Types.VARCHAR;
 	int precise() default 0;
 	int scale() default 0;
 	int length() default 0;

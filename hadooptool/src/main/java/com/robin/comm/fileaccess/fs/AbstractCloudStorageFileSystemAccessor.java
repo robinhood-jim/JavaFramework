@@ -10,6 +10,7 @@ import org.apache.flink.core.memory.MemorySegment;
 import org.springframework.util.ObjectUtils;
 
 import java.io.*;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -106,4 +107,14 @@ public abstract class AbstractCloudStorageFileSystemAccessor extends AbstractFil
 
     public abstract InputStream getObject(String bucketName, String objectName);
     public abstract boolean createBucket(String name, Map<String,String> paramMap, Map<String,Object> retMap) throws Exception;
+
+    @Override
+    public List<String> listPath(String inputPath) throws Exception {
+        return null;
+    }
+
+    @Override
+    public boolean isDirectory(String inputPath) throws Exception {
+        return true;
+    }
 }

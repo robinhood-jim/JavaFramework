@@ -4,7 +4,6 @@ import com.google.common.base.Splitter;
 import com.robin.core.base.util.Const;
 import com.robin.core.base.util.ResourceConst;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
-import com.robin.core.fileaccess.util.AvroUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.kafka.clients.consumer.ConsumerConfig;

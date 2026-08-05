@@ -20,6 +20,8 @@ import com.robin.core.base.annotation.MappingField;
 import com.robin.core.base.model.BaseObject;
 import lombok.Data;
 
+import java.sql.Types;
+
 @MappingEntity(value ="testtablob",schema = "test")
 @Data
 public class TestLob extends BaseObject {
@@ -27,9 +29,9 @@ public class TestLob extends BaseObject {
 	private Long id;
 	@MappingField
 	private String name;
-	@MappingField(datatype="clob")
+	@MappingField(datatype= Types.CLOB)
 	private String lob1;
-	@MappingField(datatype="blob")
+	@MappingField(datatype=Types.BLOB)
 	private byte[] lob2;
 
 	

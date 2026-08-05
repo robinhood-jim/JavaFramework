@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.util.List;
 
 /**
  * Singleton HDFS FileSystem Accessor,using defaultName as key
@@ -133,5 +134,15 @@ public class HdfsFileSystemAccessor extends AbstractFileSystemAccessor {
         } catch (Exception ex) {
             throw new IOException(ex);
         }
+    }
+
+    @Override
+    public List<String> listPath(String inputPath) throws Exception {
+        return hdfsUtil.listFile(inputPath);
+    }
+
+    @Override
+    public boolean isDirectory(String inputPath) throws Exception {
+        return hdfsUtil.isDirectory(inputPath);
     }
 }

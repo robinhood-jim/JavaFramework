@@ -42,7 +42,7 @@ public class FilterConditionBuilder {
         return this;
     }
 
-    public FilterConditionBuilder eq(String columnName, Object object, String columnType) {
+    public FilterConditionBuilder eq(String columnName, Object object, Const.CLASSTYPE columnType) {
         conditions.add(new FilterCondition(columnName, columnType, Const.OPERATOR.EQ, object));
         return this;
     }
@@ -61,7 +61,7 @@ public class FilterConditionBuilder {
         String fieldName = AnnotationRetriever.getFieldName(function);
         Class<T> mappingClass=AnnotationRetriever.getFieldOwnedClass(function);
         Map<String, FieldContent> map1 = AnnotationRetriever.getMappingFieldsMapCache(mappingClass);
-        String columnType = AnnotationRetriever.getFieldType(function);
+        Const.CLASSTYPE columnType = AnnotationRetriever.getFieldType(function);
         return Optional.ofNullable(map1.get(fieldName)).map(f -> {
             FilterCondition condition = constructCondition(f.getFieldName(),columnType, Const.OPERATOR.EQ,mappingClass,object);
             return condition;
@@ -71,7 +71,7 @@ public class FilterConditionBuilder {
         String fieldName = AnnotationRetriever.getFieldName(left);
         Class<T> mappingClass=AnnotationRetriever.getFieldOwnedClass(left);
         Map<String, FieldContent> map1 = AnnotationRetriever.getMappingFieldsMapCache(mappingClass);
-        String columnType = AnnotationRetriever.getFieldType(left);
+        Const.CLASSTYPE columnType = AnnotationRetriever.getFieldType(left);
         return Optional.ofNullable(map1.get(fieldName)).map(f -> {
             FilterCondition condition = constructCondition(f.getFieldName(),columnType, Const.OPERATOR.EQ,mappingClass,right);
             return condition;
@@ -83,7 +83,7 @@ public class FilterConditionBuilder {
         String fieldName = AnnotationRetriever.getFieldName(function);
         Class<T> mappingClass=AnnotationRetriever.getFieldOwnedClass(function);
         Map<String, FieldContent> map1 = AnnotationRetriever.getMappingFieldsMapCache(mappingClass);
-        String columnType = AnnotationRetriever.getFieldType(function);
+        Const.CLASSTYPE columnType = AnnotationRetriever.getFieldType(function);
         Optional.ofNullable(map1.get(fieldName)).map(f -> {
             FilterCondition condition = constructCondition(f.getFieldName(),columnType, Const.OPERATOR.EQ,mappingClass,object);
             conditions.add(condition);
@@ -94,14 +94,14 @@ public class FilterConditionBuilder {
     public <T extends BaseObject> FilterConditionBuilder addEq(Class<T> mappingClass,String fieldName, Object object) {
         Map<String, FieldContent> map1 = AnnotationRetriever.getMappingFieldsMapCache(mappingClass);
         Optional.ofNullable(map1.get(fieldName)).map(f -> {
-            String columnType = AnnotationRetriever.getFieldType(map1.get(fieldName));
+            Const.CLASSTYPE columnType = AnnotationRetriever.getFieldType(map1.get(fieldName));
             FilterCondition condition = constructCondition(f.getFieldName(),columnType, Const.OPERATOR.EQ,mappingClass,object);
             conditions.add(condition);
             return f;
         }).orElseThrow(()->new ConfigurationIncorrectException("class " + mappingClass.getCanonicalName() + " can not parse"));
         return this;
     }
-    private <T extends BaseObject> FilterCondition constructCondition(String fieldName,String columnType,Const.OPERATOR operator,Class<T> mappingClass,Object object){
+    private <T extends BaseObject> FilterCondition constructCondition(String fieldName, Const.CLASSTYPE columnType, Const.OPERATOR operator, Class<T> mappingClass, Object object){
         FilterCondition condition = new FilterCondition(fieldName, operator);
         condition.setMappingClass(mappingClass);
         condition.setValue(object);
@@ -115,12 +115,12 @@ public class FilterConditionBuilder {
         return condition;
     }
 
-    public <T extends BaseObject> FilterConditionBuilder addIn(String columnName, String columnType, List<?> objects) {
+    public <T extends BaseObject> FilterConditionBuilder addIn(String columnName, Const.CLASSTYPE columnType, List<?> objects) {
         conditions.add(in(columnName, columnType, objects));
         return this;
     }
 
-    public FilterCondition in(String columnName, String columnType, List<?> objects) {
+    public FilterCondition in(String columnName, Const.CLASSTYPE columnType, List<?> objects) {
         FilterCondition condition = new FilterCondition(columnName, Const.OPERATOR.IN);
         condition.setValues(objects);
         condition.setAliasMap(aliasMap);
@@ -133,7 +133,7 @@ public class FilterConditionBuilder {
     }
     public <T extends BaseObject> FilterCondition in(PropertyFunction<T,?> function, List<?> objects) {
         String fieldName = AnnotationRetriever.getFieldName(function);
-        String columnType = AnnotationRetriever.getFieldType(function);
+        Const.CLASSTYPE columnType = AnnotationRetriever.getFieldType(function);
         Class<T> mappingClass=AnnotationRetriever.getFieldOwnedClass(function);
         Map<String, FieldContent> map1 = AnnotationRetriever.getMappingFieldsMapCache(mappingClass);
         String columnName;
@@ -161,7 +161,7 @@ public class FilterConditionBuilder {
         return condition;
     }
 
-    public <T extends BaseObject> FilterConditionBuilder addIn(String columnName, List<?> objects, String columnType) {
+    public <T extends BaseObject> FilterConditionBuilder addIn(String columnName, List<?> objects, Const.CLASSTYPE columnType) {
         FilterCondition condition = new FilterCondition(columnName, Const.OPERATOR.IN);
         condition.setValues(objects);
         condition.setColumnType(columnType);
@@ -173,7 +173,7 @@ public class FilterConditionBuilder {
     public <T extends BaseObject> FilterConditionBuilder addIn(PropertyFunction<T, ?> function,  List<?> objects) {
         String fieldName = AnnotationRetriever.getFieldName(function);
         Class<T> mappingClass=AnnotationRetriever.getFieldOwnedClass(function);
-        String columnType = AnnotationRetriever.getFieldType(function);
+        Const.CLASSTYPE columnType = AnnotationRetriever.getFieldType(function);
         Map<String, FieldContent> map1 = AnnotationRetriever.getMappingFieldsMapCache(mappingClass);
         Optional.ofNullable(map1.get(fieldName)).map(f -> {
             conditions.add(in(f.getFieldName(), columnType, objects));
@@ -183,7 +183,7 @@ public class FilterConditionBuilder {
         return this;
     }
 
-    public FilterCondition notIn(String columnName, String columnType, List<?> objects) {
+    public FilterCondition notIn(String columnName, Const.CLASSTYPE columnType, List<?> objects) {
         FilterCondition condition = new FilterCondition(columnName, Const.OPERATOR.NOTIN);
         condition.setValues(objects);
         condition.setAliasMap(aliasMap);
@@ -205,7 +205,7 @@ public class FilterConditionBuilder {
 
     public <T extends BaseObject> FilterConditionBuilder addIn(PropertyFunction<T, ?> function,FilterCondition inClause){
         String fieldName = AnnotationRetriever.getFieldName(function);
-        String columnType = AnnotationRetriever.getFieldType(function);
+        Const.CLASSTYPE columnType = AnnotationRetriever.getFieldType(function);
         Class<T> mappingClass=AnnotationRetriever.getFieldOwnedClass(function);
         Map<String, FieldContent> map1 = AnnotationRetriever.getMappingFieldsMapCache(mappingClass);
         Optional.ofNullable(map1.get(fieldName)).map(f -> {
@@ -227,14 +227,14 @@ public class FilterConditionBuilder {
         return this;
     }
 
-    public <T extends BaseObject> FilterConditionBuilder addNotIn(String columnName, String columnType, List<?> objects) {
+    public <T extends BaseObject> FilterConditionBuilder addNotIn(String columnName, Const.CLASSTYPE columnType, List<?> objects) {
         conditions.add(notIn(columnName, columnType, objects));
         return this;
     }
 
     public <T extends BaseObject> FilterConditionBuilder addNotIn(PropertyFunction<T, ?> function, List<?> objects) {
         String fieldName = AnnotationRetriever.getFieldName(function);
-        String columnType = AnnotationRetriever.getFieldType(function);
+        Const.CLASSTYPE columnType = AnnotationRetriever.getFieldType(function);
         Class<T> mappingClass=AnnotationRetriever.getFieldOwnedClass(function);
         Map<String, FieldContent> map1 = AnnotationRetriever.getMappingFieldsMapCache(mappingClass);
         Optional.ofNullable(map1.get(fieldName)).map(f -> {
@@ -245,7 +245,7 @@ public class FilterConditionBuilder {
         return this;
     }
 
-    public FilterCondition between(String columnName, String columnType, List<?> objects) {
+    public FilterCondition between(String columnName, Const.CLASSTYPE columnType, List<?> objects) {
         FilterCondition condition = new FilterCondition(columnName, columnType, Const.OPERATOR.BETWEEN);
         condition.setAliasMap(aliasMap);
         condition.setValues(objects);
@@ -255,14 +255,14 @@ public class FilterConditionBuilder {
         return condition;
     }
 
-    public <T extends BaseObject> FilterConditionBuilder addBetween(String columnName, String columnType, List<?> objects) {
+    public <T extends BaseObject> FilterConditionBuilder addBetween(String columnName, Const.CLASSTYPE columnType, List<?> objects) {
         conditions.add(between(columnName, columnType, objects));
         return this;
     }
 
     public <T extends BaseObject> FilterConditionBuilder addBetween(PropertyFunction<T, ?> function, List<?> objects) {
         String fieldName = AnnotationRetriever.getFieldName(function);
-        String columnType = AnnotationRetriever.getFieldType(function);
+        Const.CLASSTYPE columnType = AnnotationRetriever.getFieldType(function);
         Class<T> mappingClass=AnnotationRetriever.getFieldOwnedClass(function);
         Map<String, FieldContent> map1 = AnnotationRetriever.getMappingFieldsMapCache(mappingClass);
         Optional.ofNullable(map1.get(fieldName)).map(f -> {
@@ -273,7 +273,7 @@ public class FilterConditionBuilder {
         return this;
     }
 
-    public FilterCondition filter(String columnName, String columnType, Const.OPERATOR operator, Object object) {
+    public FilterCondition filter(String columnName, Const.CLASSTYPE columnType, Const.OPERATOR operator, Object object) {
         FilterCondition condition= new FilterCondition(columnName, columnType, operator, object);
         if(sqlBuilder!=null){
             condition.setSqlBuilder(sqlBuilder);
@@ -291,7 +291,7 @@ public class FilterConditionBuilder {
 
     public <T extends BaseObject> FilterCondition filter(PropertyFunction<T, ?> function, Const.OPERATOR operator, Object object) {
         String fieldName = AnnotationRetriever.getFieldName(function);
-        String columnType = AnnotationRetriever.getFieldType(function);
+        Const.CLASSTYPE columnType = AnnotationRetriever.getFieldType(function);
         Class<T> mappingClass=AnnotationRetriever.getFieldOwnedClass(function);
         Map<String, FieldContent> map1 = AnnotationRetriever.getMappingFieldsMapCache(mappingClass);
         return Optional.ofNullable(map1.get(fieldName)).map(f ->
@@ -301,7 +301,7 @@ public class FilterConditionBuilder {
     }
     public <T extends BaseObject,R extends BaseObject> FilterCondition filter(PropertyFunction<T, ?> function, Const.OPERATOR operator, PropertyFunction<R,?> object) {
         String fieldName = AnnotationRetriever.getFieldName(function);
-        String columnType = AnnotationRetriever.getFieldType(function);
+        Const.CLASSTYPE columnType = AnnotationRetriever.getFieldType(function);
         Class<T> mappingClass=AnnotationRetriever.getFieldOwnedClass(function);
         Map<String, FieldContent> map1 = AnnotationRetriever.getMappingFieldsMapCache(mappingClass);
         return Optional.ofNullable(map1.get(fieldName)).map(f ->
@@ -310,7 +310,7 @@ public class FilterConditionBuilder {
                 new ConfigurationIncorrectException("class " + mappingClass.getCanonicalName() + " can not parse"));
     }
 
-    public FilterConditionBuilder addFilter(String columnName, String columnType, Const.OPERATOR operator, Object object) {
+    public FilterConditionBuilder addFilter(String columnName, Const.CLASSTYPE columnType, Const.OPERATOR operator, Object object) {
         FilterCondition condition=new FilterCondition(columnName, columnType, operator, object);
         if(sqlBuilder!=null){
             condition.setSqlBuilder(sqlBuilder);
@@ -327,7 +327,7 @@ public class FilterConditionBuilder {
         return this;
     }
 
-    public FilterConditionBuilder addFilter(String columnName, String columnType, Const.OPERATOR operator, List<?> values) {
+    public FilterConditionBuilder addFilter(String columnName, Const.CLASSTYPE columnType, Const.OPERATOR operator, List<?> values) {
         FilterCondition condition = new FilterCondition(columnName, columnType, operator);
         condition.setValues(values);
         condition.setAliasMap(aliasMap);
@@ -338,7 +338,7 @@ public class FilterConditionBuilder {
         return this;
     }
 
-    public FilterConditionBuilder addFilter(String columnName, Const.OPERATOR operator, List<?> values, String columnType) {
+    public FilterConditionBuilder addFilter(String columnName, Const.OPERATOR operator, List<?> values, Const.CLASSTYPE columnType) {
         FilterCondition condition = new FilterCondition(columnName, columnType, operator);
         condition.setValues(values);
         condition.setAliasMap(aliasMap);
@@ -348,7 +348,7 @@ public class FilterConditionBuilder {
         conditions.add(condition);
         return this;
     }
-    public <T extends BaseObject> FilterConditionBuilder addFilter(Class<T> mappingClass, String propertyName, Const.OPERATOR operator, List<?> values, String columnType) {
+    public <T extends BaseObject> FilterConditionBuilder addFilter(Class<T> mappingClass, String propertyName, Const.OPERATOR operator, List<?> values, Const.CLASSTYPE columnType) {
         Map<String, FieldContent> map1 = AnnotationRetriever.getMappingFieldsMapCache(mappingClass);
         if(map1.containsKey(propertyName)) {
             FilterCondition condition = new FilterCondition(map1.get(propertyName).getFieldName(), columnType, operator);
@@ -365,7 +365,7 @@ public class FilterConditionBuilder {
 
     public <T extends BaseObject> FilterConditionBuilder addFilter(PropertyFunction<T, ?> function, Const.OPERATOR operator, Object value) {
         String fieldName = AnnotationRetriever.getFieldName(function);
-        String columnType = AnnotationRetriever.getFieldType(function);
+        Const.CLASSTYPE columnType = AnnotationRetriever.getFieldType(function);
         Class<T> mappingClass=AnnotationRetriever.getFieldOwnedClass(function);
         Map<String, FieldContent> map1 = AnnotationRetriever.getMappingFieldsMapCache(mappingClass);
         Optional.ofNullable(map1.get(fieldName)).map(f -> {
@@ -378,7 +378,7 @@ public class FilterConditionBuilder {
 
     public <T extends BaseObject> FilterConditionBuilder addFilter(PropertyFunction<T, ?> function, Const.OPERATOR operator, List<?> value) {
         String fieldName = AnnotationRetriever.getFieldName(function);
-        String columnType = AnnotationRetriever.getFieldType(function);
+        Const.CLASSTYPE columnType = AnnotationRetriever.getFieldType(function);
         Class<T> mappingClass=AnnotationRetriever.getFieldOwnedClass(function);
         Map<String, FieldContent> map1 = AnnotationRetriever.getMappingFieldsMapCache(mappingClass);
         Optional.ofNullable(map1.get(fieldName)).map(f -> {

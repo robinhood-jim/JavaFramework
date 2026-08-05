@@ -9,22 +9,22 @@ public class ParquetReaderUtil {
     private ParquetReaderUtil(){
 
     }
-    public static String parseColumnType(PrimitiveType type){
-        String rettype= Const.META_TYPE_STRING;
+    public static Const.CLASSTYPE parseColumnType(PrimitiveType type){
+        Const.CLASSTYPE rettype= Const.CLASSTYPE.STRING;
         if(type.getPrimitiveTypeName().equals(PrimitiveType.PrimitiveTypeName.INT32)){
-            rettype=Const.META_TYPE_INTEGER;
+            rettype= Const.CLASSTYPE.INTEGER;
         }else if(type.getPrimitiveTypeName().equals(PrimitiveType.PrimitiveTypeName.INT64)){
             if(LogicalTypeAnnotation.dateType().equals(type.getLogicalTypeAnnotation()) || LogicalTypeAnnotation.timestampType(true, LogicalTypeAnnotation.TimeUnit.MILLIS).equals(type.getLogicalTypeAnnotation())){
-                rettype=Const.META_TYPE_TIMESTAMP;
+                rettype= Const.CLASSTYPE.TIMESTAMP;
             }else {
-                rettype = Const.META_TYPE_BIGINT;
+                rettype = Const.CLASSTYPE.LONG;
             }
         }else if(type.getPrimitiveTypeName().equals(PrimitiveType.PrimitiveTypeName.DOUBLE)){
-            rettype=Const.META_TYPE_DOUBLE;
+            rettype= Const.CLASSTYPE.DOUBLE;
         }else if(type.getPrimitiveTypeName().equals(PrimitiveType.PrimitiveTypeName.FLOAT)){
-            rettype=Const.META_TYPE_DOUBLE;
+            rettype= Const.CLASSTYPE.DOUBLE;
         }else if(type.getPrimitiveTypeName().equals(PrimitiveType.PrimitiveTypeName.INT96)){
-            rettype=Const.META_TYPE_TIMESTAMP;
+            rettype= Const.CLASSTYPE.TIMESTAMP;
         }
         return rettype;
     }

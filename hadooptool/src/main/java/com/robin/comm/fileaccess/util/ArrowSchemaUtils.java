@@ -25,20 +25,20 @@ public class ArrowSchemaUtils {
             for(DataSetColumnMeta meta:colmeta.getColumnList()){
 
                 switch (meta.getColumnType()){
-                    case Const.META_TYPE_INTEGER:
+                    case INTEGER:
                         fieldList.add(new Field(meta.getColumnName(), FieldType.nullable(new ArrowType.Int(32,true)),null));
                         break;
-                    case Const.META_TYPE_BIGINT:
+                    case LONG:
                         fieldList.add(new Field(meta.getColumnName(), FieldType.nullable(new ArrowType.Int(64,true)),null));
                         break;
-                    case Const.META_TYPE_FLOAT:
-                    case Const.META_TYPE_DOUBLE:
+                    case FLOAT:
+                    case DOUBLE:
                         fieldList.add(new Field(meta.getColumnName(), FieldType.nullable(new ArrowType.Decimal(30,1)),null));
                         break;
-                    case Const.META_TYPE_TIMESTAMP:
+                    case TIMESTAMP:
                         fieldList.add(new Field(meta.getColumnName(), FieldType.nullable(new ArrowType.Timestamp(TimeUnit.MILLISECOND,"utc")),null));
                         break;
-                    case Const.META_TYPE_STRING:
+                    case STRING:
                         fieldList.add(new Field(meta.getColumnName(), FieldType.nullable(new ArrowType.Utf8()),null));
                         break;
                     default:

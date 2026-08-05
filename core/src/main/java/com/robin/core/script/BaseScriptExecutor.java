@@ -36,6 +36,7 @@ public class BaseScriptExecutor  implements IscriptExecutor{
 	public BaseScriptExecutor(String scriptEngineName){
 		ScriptEngineManager factory = new ScriptEngineManager();
 		scriptEngine = factory.getEngineByName(scriptEngineName);
+		logger.info("get {} with class {}",scriptEngineName,scriptEngine.getClass().getName());
 		compEngine = (Compilable) scriptEngine;
 		cache=CacheBuilder.newBuilder().concurrencyLevel(4).weakKeys().maximumSize(10000).removalListener(new KeyRemoveListener()).expireAfterAccess(120, TimeUnit.MINUTES).build(new CacheLoader<String, CompiledScript>(){
 			@Override

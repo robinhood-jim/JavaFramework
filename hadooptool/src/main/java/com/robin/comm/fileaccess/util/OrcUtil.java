@@ -34,34 +34,33 @@ public class OrcUtil {
                     continue;
                 }
                 switch (columnMeta.getColumnType()){
-                    case Const.META_TYPE_SHORT:
+                    case SHORT:
                         schema.addField(columnMeta.getColumnName(),TypeDescription.createShort());
                         break;
-                    case Const.META_TYPE_INTEGER:
+                    case INTEGER:
                         schema.addField(columnMeta.getColumnName(),TypeDescription.createInt());
                         break;
-                    case Const.META_TYPE_NUMERIC:
-                    case Const.META_TYPE_DOUBLE:
-                    case Const.META_TYPE_FLOAT:
+                    case NUMERIC:
+                    case DOUBLE:
+                    case FLOAT:
                         schema.addField(columnMeta.getColumnName(),TypeDescription.createDouble());
                         break;
-                    case Const.META_TYPE_DECIMAL:
+                    case DECIMAL:
                         schema.addField(columnMeta.getColumnName(),TypeDescription.createDecimal());
                         break;
-                    case Const.META_TYPE_BIGINT:
+                    case LONG:
                         schema.addField(columnMeta.getColumnName(),TypeDescription.createLong());
                         break;
-                    case Const.META_TYPE_DATE:
+                    case DATE:
                         schema.addField(columnMeta.getColumnName(),TypeDescription.createDate());
                         break;
-                    case Const.META_TYPE_TIMESTAMP:
+                    case TIMESTAMP:
                         schema.addField(columnMeta.getColumnName(),TypeDescription.createTimestamp());
                         break;
-                    case Const.META_TYPE_STRING:
+                    case STRING:
                         schema.addField(columnMeta.getColumnName(),TypeDescription.createString());
                         break;
-                    case Const.META_TYPE_BINARY:
-                    case Const.META_TYPE_BLOB:
+                    case BLOB:
                         schema.addField(columnMeta.getColumnName(),TypeDescription.createBinary());
                         break;
                     default:
@@ -192,24 +191,24 @@ public class OrcUtil {
         Object targetVal=null;
         try {
             switch (columnMeta.getColumnType()) {
-                case Const.META_TYPE_INTEGER:
-                case Const.META_TYPE_BIGINT:
+                case INTEGER:
+                case LONG:
                     type = PredicateLeaf.Type.LONG;
                     targetVal = Long.parseLong(value.toString());
                     break;
-                case Const.META_TYPE_DOUBLE:
+                case DOUBLE:
                     type = PredicateLeaf.Type.FLOAT;
                     targetVal =Double.parseDouble(value.toString());
                     break;
-                case Const.META_TYPE_DECIMAL:
+                case DECIMAL:
                     type = PredicateLeaf.Type.DECIMAL;
                     targetVal =new HiveDecimalWritable(HiveDecimal.create(Double.parseDouble(value.toString())));
                     break;
-                case Const.META_TYPE_DATE:
+                case DATE:
                     type = PredicateLeaf.Type.DATE;
                     targetVal = Long.parseLong(value.toString());
                     break;
-                case Const.META_TYPE_TIMESTAMP:
+                case TIMESTAMP:
                     type = PredicateLeaf.Type.TIMESTAMP;
                     if(Timestamp.class.isAssignableFrom(value.getClass())){
                         targetVal= value;
@@ -229,16 +228,16 @@ public class OrcUtil {
     private static Object returnWithType(DataSetColumnMeta columnMeta,Object value){
         Object targetVal=null;
         switch (columnMeta.getColumnType()) {
-            case Const.META_TYPE_INTEGER:
-            case Const.META_TYPE_BIGINT:
+            case INTEGER:
+            case LONG:
                 targetVal = Long.parseLong(value.toString());
                 break;
-            case Const.META_TYPE_DOUBLE:
-            case Const.META_TYPE_DECIMAL:
+            case DOUBLE:
+            case DECIMAL:
                 targetVal = Double.parseDouble(value.toString());
                 break;
-            case Const.META_TYPE_DATE:
-            case Const.META_TYPE_TIMESTAMP:
+            case DATE:
+            case TIMESTAMP:
                 targetVal = new Timestamp(Long.parseLong(value.toString()));
                 break;
             default:
@@ -253,38 +252,38 @@ public class OrcUtil {
         }
         return AvroUtils.getSchemaFromMeta(colmeta);
     }
-    private static String parseFromCategory(TypeDescription.Category category){
-        String columnType=Const.META_TYPE_STRING;
+    private static Const.CLASSTYPE parseFromCategory(TypeDescription.Category category){
+        Const.CLASSTYPE columnType= Const.CLASSTYPE.STRING;
         switch (category){
             case LONG:
-                columnType= Const.META_TYPE_BIGINT;
+                columnType= Const.CLASSTYPE.LONG;
                 break;
             case INT:
-                columnType=Const.META_TYPE_INTEGER;
+                columnType= Const.CLASSTYPE.INTEGER;
                 break;
             case FLOAT:
-                columnType=Const.META_TYPE_FLOAT;
+                columnType= Const.CLASSTYPE.FLOAT;
                 break;
             case SHORT:
-                columnType=Const.META_TYPE_SHORT;
+                columnType= Const.CLASSTYPE.SHORT;
                 break;
             case DOUBLE:
             case DECIMAL:
-                columnType=Const.META_TYPE_DOUBLE;
+                columnType= Const.CLASSTYPE.DOUBLE;
                 break;
             case DATE:
-                columnType=Const.META_TYPE_DATE;
+                columnType= Const.CLASSTYPE.DATE;
                 break;
             case TIMESTAMP:
             case TIMESTAMP_INSTANT:
-                columnType=Const.META_TYPE_TIMESTAMP;
+                columnType= Const.CLASSTYPE.TIMESTAMP;
                 break;
             case VARCHAR:
             case STRING:
-                columnType=Const.META_TYPE_STRING;
+                columnType= Const.CLASSTYPE.STRING;
                 break;
             case BINARY:
-                columnType=Const.META_TYPE_BLOB;
+                columnType= Const.CLASSTYPE.BLOB;
                 break;
         }
         return columnType;

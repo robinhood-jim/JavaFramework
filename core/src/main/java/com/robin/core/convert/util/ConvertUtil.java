@@ -417,37 +417,68 @@ public class ConvertUtil {
         }
         return ret;
     }
-
-    public static Object parseParameter(DataSetColumnMeta meta, Object strValue) {
+    public static Object parseParameter(Integer dataType,Object strValue){
         if (strValue == null) {
             return null;
         }
         Object ret = null;
         if (!StringUtils.isEmpty(strValue)) {
-            if (Const.META_TYPE_INTEGER.equals(meta.getColumnType())) {
+            if (dataType==Types.INTEGER) {
                 ret = Integer.parseInt(strValue.toString());
-            } else if (Const.META_TYPE_BIGINT.equals(meta.getColumnType())) {
+            } else if (dataType==Types.BIGINT) {
                 ret = Long.parseLong(strValue.toString());
-            } else if (Const.META_TYPE_FLOAT.equals(meta.getColumnType())) {
+            } else if (dataType==Types.FLOAT) {
                 ret = Float.parseFloat(strValue.toString());
-            } else if (Const.META_TYPE_DOUBLE.equals(meta.getColumnType()) || Const.META_TYPE_DECIMAL.equals(meta.getColumnType())) {
+            } else if (dataType==Types.DOUBLE || dataType==Types.DECIMAL || dataType==Types.NUMERIC) {
                 ret = Double.parseDouble(strValue.toString());
-            } else if (Const.META_TYPE_SHORT.equals(meta.getColumnType())) {
+            } else if (dataType==Types.SMALLINT) {
                 ret = Short.valueOf(strValue.toString());
-            } else if (Const.META_TYPE_DATE.equals(meta.getColumnType()) || Const.META_TYPE_TIMESTAMP.equals(meta.getColumnType())) {
+            } else if (dataType==Types.DATE  || dataType==Types.TIMESTAMP) {
                 LocalDateTime localDateTime = getLocalDateTimeFrom(strValue);
-                if (Const.META_TYPE_DATE.equals(meta.getColumnType())) {
+                if (dataType==Types.DATE) {
                     ret = new java.util.Date(localDateTime.toInstant(ZoneOffset.ofHours(8)).toEpochMilli());
-                } else if (Const.META_TYPE_TIMESTAMP.equals(meta.getColumnType())) {
+                } else {
                     ret = new Timestamp(localDateTime.toInstant(ZoneOffset.ofHours(8)).toEpochMilli());
                 }
-            } else if (Const.META_TYPE_STRING.equals(meta.getColumnType())) {
-                ret = strValue.toString();
             } else {
                 ret = strValue.toString();
             }
         }
         return ret;
+    }
+    public static Object parseParameter(Const.CLASSTYPE columnType, Object strValue){
+        if (strValue == null) {
+            return null;
+        }
+        Object ret = null;
+        if (!StringUtils.isEmpty(strValue)) {
+            if (Const.CLASSTYPE.INTEGER.equals(columnType)) {
+                ret = Integer.parseInt(strValue.toString());
+            } else if (Const.CLASSTYPE.LONG.equals(columnType)) {
+                ret = Long.parseLong(strValue.toString());
+            } else if (Const.CLASSTYPE.FLOAT.equals(columnType)) {
+                ret = Float.parseFloat(strValue.toString());
+            } else if (Const.CLASSTYPE.DOUBLE.equals(columnType) || Const.CLASSTYPE.NUMERIC.equals(columnType)
+                    || Const.CLASSTYPE.DECIMAL.equals(columnType)) {
+                ret = Double.parseDouble(strValue.toString());
+            } else if (Const.CLASSTYPE.SHORT.equals(columnType)) {
+                ret = Short.valueOf(strValue.toString());
+            } else if (Const.CLASSTYPE.DATE.equals(columnType) || Const.CLASSTYPE.TIMESTAMP.equals(columnType)) {
+                LocalDateTime localDateTime = getLocalDateTimeFrom(strValue);
+                if (Const.CLASSTYPE.DATE.equals(columnType)) {
+                    ret = new java.util.Date(localDateTime.toInstant(ZoneOffset.ofHours(8)).toEpochMilli());
+                } else {
+                    ret = new Timestamp(localDateTime.toInstant(ZoneOffset.ofHours(8)).toEpochMilli());
+                }
+            } else {
+                ret = strValue.toString();
+            }
+        }
+        return ret;
+    }
+
+    public static Object parseParameter(DataSetColumnMeta meta, Object strValue) {
+       return parseParameter(meta.getColumnType(),strValue);
     }
 
 
@@ -582,7 +613,7 @@ public class ConvertUtil {
 
     public static Object convertStringToTargetObject(String value, DataSetColumnMeta meta, DateTimeFormatter formatter) {
         Object retObj;
-        String columnType = meta.getColumnType();
+        Const.CLASSTYPE columnType = meta.getColumnType();
         retObj = translateValue(value, columnType, meta.getColumnName(), formatter);
         if (retObj == null && meta.getDefaultNullValue() != null) {
             retObj = meta.getDefaultNullValue();
@@ -627,29 +658,28 @@ public class ConvertUtil {
         return retObj;
     }
 
-    private static Object translateValue(String value, String columnType, String columnName, DateTimeFormatter dateformat) throws RuntimeException {
+    private static Object translateValue(String value, Const.CLASSTYPE columnType, String columnName, DateTimeFormatter dateformat) throws RuntimeException {
         Object retObj;
         try {
             if (value == null || StringUtils.isEmpty(value.trim())) {
                 return null;
             }
-            if (columnType.equals(Const.META_TYPE_INTEGER)) {
+            if (Const.CLASSTYPE.INTEGER.equals(columnType)) {
                 if (value.contains(".")) {
                     value = value.substring(0, value.indexOf("."));
                 }
                 retObj = Integer.valueOf(value);
-            } else if (columnType.equals(Const.META_TYPE_BIGINT)) {
+            } else if (Const.CLASSTYPE.LONG.equals(columnType)) {
                 if (value.contains(".")) {
                     value = value.substring(0, value.indexOf("."));
                 }
                 retObj = Long.valueOf(value);
-            } else if (columnType.equals(Const.META_TYPE_NUMERIC)) {
+            } else if (Const.CLASSTYPE.NUMERIC.equals(columnType) || Const.CLASSTYPE.DECIMAL.equals(columnType)
+                || Const.CLASSTYPE.DOUBLE.equals(columnType)) {
                 retObj = Double.valueOf(value);
-            } else if (columnType.equals(Const.META_TYPE_DOUBLE)) {
-                retObj = Double.valueOf(value);
-            } else if (columnType.equals(Const.META_TYPE_DATE)) {
+            } else if (Const.CLASSTYPE.DATE.equals(columnType)) {
                 retObj = new java.util.Date(LocalDateTime.parse(value, dateformat).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
-            } else if (columnType.equals(Const.META_TYPE_TIMESTAMP)) {
+            } else if (Const.CLASSTYPE.TIMESTAMP.equals(columnType)) {
                 retObj = new Timestamp(LocalDateTime.parse(value, dateformat).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
             } else {
                 retObj = value;

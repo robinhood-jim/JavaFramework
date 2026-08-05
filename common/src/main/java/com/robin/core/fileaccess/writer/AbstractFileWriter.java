@@ -42,7 +42,7 @@ public abstract class AbstractFileWriter implements IResourceWriter {
 	protected BufferedWriter writer;
 	protected DataCollectionMeta colmeta;
 	protected OutputStream out;
-	protected Map<String, String> columnMap=new HashMap<>();
+	protected Map<String, Const.CLASSTYPE> columnMap=new HashMap<>();
 	protected List<String> columnList=new ArrayList<>();
 	protected Logger logger= LoggerFactory.getLogger(getClass());
 	protected DateTimeFormatter formatter;
@@ -134,7 +134,7 @@ public abstract class AbstractFileWriter implements IResourceWriter {
 
 	}
 	protected String getOutputStringByType(Map<String,?> valueMap,String columnName){
-		String columnType=columnMap.get(columnName);
+		Const.CLASSTYPE columnType=columnMap.get(columnName);
 		Object obj=getMapValueByMeta(valueMap,columnName);
 		if(obj!=null) {
             return DataBaseUtil.toStringByDBType(obj,columnType,formatter);
@@ -145,7 +145,7 @@ public abstract class AbstractFileWriter implements IResourceWriter {
 
 	protected Object getMapValueByMeta(Map<String,?> valueMap,String columnName){
 		Object obj=null;
-		String columnType=columnMap.get(columnName);
+		Const.CLASSTYPE columnType=columnMap.get(columnName);
 		if(valueMap.containsKey(columnName)){
 			obj=valueMap.get(columnName);
 		}else if(valueMap.containsKey(columnName.toUpperCase())){

@@ -31,12 +31,12 @@ public class TestResourceReadWrite extends TestCase {
 		BaseDataBaseMeta meta=DataBaseMetaFactory.getDataBaseMetaByType(BaseDataBaseMeta.TYPE_MYSQL, param);
 		try(Connection conn=SimpleJdbcDao.getConnection(meta)){
 			DataCollectionMeta.Builder builder=new DataCollectionMeta.Builder();
-			builder.addColumn("param_sn",Const.META_TYPE_INTEGER,null);
-			builder.addColumn("weixin_order_id",Const.META_TYPE_STRING,null);
-			builder.addColumn("open_id",Const.META_TYPE_STRING,null);
-			builder.addColumn("total_money",Const.META_TYPE_INTEGER,null);
-			builder.addColumn("subscribe_id",Const.META_TYPE_STRING,null);
-			builder.addColumn("product_name",Const.META_TYPE_STRING,null);
+			builder.addColumn("param_sn",Const.CLASSTYPE.INTEGER,null);
+			builder.addColumn("weixin_order_id",Const.CLASSTYPE.STRING,null);
+			builder.addColumn("open_id",Const.CLASSTYPE.STRING,null);
+			builder.addColumn("total_money",Const.CLASSTYPE.INTEGER,null);
+			builder.addColumn("subscribe_id",Const.CLASSTYPE.STRING,null);
+			builder.addColumn("product_name",Const.CLASSTYPE.STRING,null);
 
 			builder.resourceCfg("hostName", "127.0.0.1").resourceCfg("protocol", "ftp")
 					.resourceCfg("file.useAvroEncode","true")
@@ -87,12 +87,12 @@ public class TestResourceReadWrite extends TestCase {
 	@Test
 	public void testRead(){
 		DataCollectionMeta.Builder builder = new DataCollectionMeta.Builder();
-		builder.addColumn("param_sn",Const.META_TYPE_INTEGER,null);
-		builder.addColumn("weixin_order_id",Const.META_TYPE_STRING,null);
-		builder.addColumn("open_id",Const.META_TYPE_STRING,null);
-		builder.addColumn("total_money",Const.META_TYPE_INTEGER,null);
-		builder.addColumn("subscribe_id",Const.META_TYPE_STRING,null);
-		builder.addColumn("product_name",Const.META_TYPE_STRING,null);
+		builder.addColumn("param_sn",Const.CLASSTYPE.INTEGER,null);
+		builder.addColumn("weixin_order_id",Const.CLASSTYPE.STRING,null);
+		builder.addColumn("open_id",Const.CLASSTYPE.STRING,null);
+		builder.addColumn("total_money",Const.CLASSTYPE.INTEGER,null);
+		builder.addColumn("subscribe_id",Const.CLASSTYPE.STRING,null);
+		builder.addColumn("product_name",Const.CLASSTYPE.STRING,null);
 
 		builder.resourceCfg("hostName", "127.0.0.1").resourceCfg("protocol", "ftp")
 				.resourceCfg("port", 21).resourceCfg("userName", "test").resourceCfg("password", "test").fileFormat(Const.FILEFORMATSTR.PARQUET.getValue())

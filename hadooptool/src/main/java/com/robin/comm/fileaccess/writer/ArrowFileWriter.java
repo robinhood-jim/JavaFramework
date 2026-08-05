@@ -5,7 +5,6 @@ import com.robin.core.base.exception.MissingConfigException;
 import com.robin.core.base.util.Const;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import com.robin.core.fileaccess.meta.DataSetColumnMeta;
-import com.robin.core.fileaccess.util.ResourceUtil;
 import com.robin.core.fileaccess.writer.AbstractFileWriter;
 import org.apache.arrow.compression.CommonsCompressionFactory;
 import org.apache.arrow.memory.BufferAllocator;
@@ -123,19 +122,19 @@ public class ArrowFileWriter extends AbstractFileWriter {
         if (!ObjectUtils.isEmpty(valueMap.get(meta.getColumnName()))) {
             if (IntVector.class.isAssignableFrom(vectors.getClass())) {
                 IntVector intVector = (IntVector) vectors;
-                if (Const.META_TYPE_INTEGER.equals(meta.getColumnType())) {
+                if (Const.CLASSTYPE.INTEGER.equals(meta.getColumnType())) {
                     intVector.setSafe(row, (Integer) valueMap.get(meta.getColumnName()));
                 }
             } else if (DecimalVector.class.isAssignableFrom(vectors.getClass())) {
                 ((DecimalVector) vectors).setSafe(row, getValueByScale(valueMap.get(meta.getColumnName()).toString(), 2));
             } else if (BigIntVector.class.isAssignableFrom(vectors.getClass())) {
                 BigIntVector bVector = (BigIntVector) vectors;
-                if (Const.META_TYPE_BIGINT.equals(meta.getColumnType())) {
+                if (Const.CLASSTYPE.LONG.equals(meta.getColumnType())) {
                     bVector.setSafe(row, (Long) valueMap.get(meta.getColumnName()));
                 }
             } else if (TimeStampVector.class.isAssignableFrom(vectors.getClass())) {
                 ((TimeStampVector) vectors).setSafe(row, ((Timestamp) valueMap.get(meta.getColumnName())).getTime());
-            } else if (Const.META_TYPE_STRING.equals(meta.getColumnType())) {
+            } else if (Const.CLASSTYPE.STRING.equals(meta.getColumnType())) {
                 ((VarCharVector) vectors).setSafe(row, valueMap.get(meta.getColumnName()).toString().getBytes("utf8"));
             }
         }

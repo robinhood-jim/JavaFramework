@@ -53,14 +53,14 @@ public class ArffFileIterator extends PlainTextFileIterator{
         String columnName=arr[0].trim();
         DataSetColumnMeta columnMeta=null;
         if("REAL".equalsIgnoreCase(arr[1]) || "numeric".equalsIgnoreCase(arr[1])){
-            columnMeta=new DataSetColumnMeta(columnName,Const.META_TYPE_DOUBLE,null);
+            columnMeta=new DataSetColumnMeta(columnName, Const.CLASSTYPE.DOUBLE,null);
         }else if("string".equalsIgnoreCase(arr[1])){
-            columnMeta=new DataSetColumnMeta(columnName,Const.META_TYPE_STRING,null);
+            columnMeta=new DataSetColumnMeta(columnName, Const.CLASSTYPE.STRING,null);
         }else if("date".equalsIgnoreCase(type)){
-            columnMeta=new DataSetColumnMeta(columnName,Const.META_TYPE_TIMESTAMP,null);
+            columnMeta=new DataSetColumnMeta(columnName, Const.CLASSTYPE.TIMESTAMP,null);
         }else if(type.startsWith("{")){
             List<String> nominalValues= Lists.newArrayList(type.substring(1,type.length()-1).split(","));
-            columnMeta=new DataSetColumnMeta(columnName,Const.META_TYPE_STRING,null);
+            columnMeta=new DataSetColumnMeta(columnName, Const.CLASSTYPE.STRING,null);
             columnMeta.setNominalValues(nominalValues);
         }
         return columnMeta;

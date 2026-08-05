@@ -50,25 +50,25 @@ public class SmileUtils {
     private static DataType wrapDataType(DataSetColumnMeta columnMeta){
         DataType type=null;
         switch (columnMeta.getColumnType()){
-            case Const.META_TYPE_BIGINT:
+            case LONG:
                 type= DataTypes.LongType;
                 break;
-            case Const.META_TYPE_INTEGER:
+            case INTEGER:
                 type=DataTypes.IntegerType;
                 break;
-            case Const.META_TYPE_DOUBLE:
+            case DOUBLE:
                 type=DataTypes.DoubleType;
                 break;
-            case Const.META_TYPE_DECIMAL:
+            case DECIMAL:
                 type=DataTypes.DecimalType;
                 break;
-            case  Const.META_TYPE_TIMESTAMP:
+            case  TIMESTAMP:
                 type=DataTypes.TimeType;
                 break;
-            case Const.META_TYPE_SHORT:
+            case SHORT:
                 type=DataTypes.ShortType;
                 break;
-            case Const.META_TYPE_STRING:
+            case STRING:
                 if(CollectionUtils.isEmpty(columnMeta.getNominalValues())) {
                     type = DataTypes.StringType;
                 }else{

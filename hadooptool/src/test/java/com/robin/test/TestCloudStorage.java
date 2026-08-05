@@ -40,13 +40,13 @@ public class TestCloudStorage extends TestCase {
     @Test
     public void testWriteToMinio(){
         DataCollectionMeta.Builder builder=new DataCollectionMeta.Builder();
-        builder.addColumn("id", Const.META_TYPE_BIGINT,null);
-        builder.addColumn("name",Const.META_TYPE_STRING,null);
-        builder.addColumn("description",Const.META_TYPE_STRING,null);
-        builder.addColumn("sno",Const.META_TYPE_INTEGER,null);
-        builder.addColumn("price",Const.META_TYPE_DOUBLE,null);
-        builder.addColumn("amount",Const.META_TYPE_INTEGER,null);
-        builder.addColumn("type",Const.META_TYPE_INTEGER,null);
+        builder.addColumn("id", Const.CLASSTYPE.LONG,null);
+        builder.addColumn("name",Const.CLASSTYPE.STRING,null);
+        builder.addColumn("description",Const.CLASSTYPE.STRING,null);
+        builder.addColumn("sno",Const.CLASSTYPE.INTEGER,null);
+        builder.addColumn("price",Const.CLASSTYPE.DOUBLE,null);
+        builder.addColumn("amount",Const.CLASSTYPE.INTEGER,null);
+        builder.addColumn("type",Const.CLASSTYPE.INTEGER,null);
 
         builder.resourceCfg(ResourceConst.PARQUETFILEFORMAT,ResourceConst.PARQUETSUPPORTFORMAT.PROTOBUF.getValue()).fileFormat(Const.FILEFORMATSTR.PROTOBUF.getValue())
                 .resPath("file:///f:/bigdata4.proto").resourceCfg("protocol",Const.VFS_PROTOCOL.FTP.getValue()).fsType(Const.FILESYSTEM.LOCAL.getValue())
@@ -116,16 +116,16 @@ public class TestCloudStorage extends TestCase {
     @Test
     public static void testWriteStAX() {
         ExcelSheetProp.Builder newBuilder = ExcelSheetProp.Builder.newBuilder();
-        newBuilder.addColumnProp(new ExcelColumnProp("name", "name", Const.META_TYPE_STRING, false));
-        newBuilder.addColumnProp(new ExcelColumnProp("time", "time", Const.META_TYPE_TIMESTAMP, false));
-        newBuilder.addColumnProp(new ExcelColumnProp("intcol", "intcol", Const.META_TYPE_INTEGER, false));
-        newBuilder.addColumnProp(new ExcelColumnProp("dval", "dval", Const.META_TYPE_DOUBLE, false));
-        newBuilder.addColumnProp(new ExcelColumnProp("dval2", "dval2", Const.META_TYPE_DOUBLE, false));
-        newBuilder.addColumnProp(new ExcelColumnProp("diff", "diff", Const.META_TYPE_FORMULA, "(D{P}-E{P})/C{P}"));
+        newBuilder.addColumnProp(new ExcelColumnProp("name", "name", Const.CLASSTYPE.STRING, false));
+        newBuilder.addColumnProp(new ExcelColumnProp("time", "time", Const.CLASSTYPE.TIMESTAMP, false));
+        newBuilder.addColumnProp(new ExcelColumnProp("intcol", "intcol", Const.CLASSTYPE.INTEGER, false));
+        newBuilder.addColumnProp(new ExcelColumnProp("dval", "dval", Const.CLASSTYPE.DOUBLE, false));
+        newBuilder.addColumnProp(new ExcelColumnProp("dval2", "dval2", Const.CLASSTYPE.DOUBLE, false));
+        newBuilder.addColumnProp(new ExcelColumnProp("diff", "diff", Const.CLASSTYPE.FORMULA, "(D{P}-E{P})/C{P}"));
         DataCollectionMeta.Builder builder = new DataCollectionMeta.Builder();
-        builder.addColumn("name", Const.META_TYPE_STRING).addColumn("time", Const.META_TYPE_TIMESTAMP)
-                .addColumn("intcol", Const.META_TYPE_INTEGER).addColumn("dval", Const.META_TYPE_DOUBLE)
-                .addColumn("dval2", Const.META_TYPE_DOUBLE).addColumn("diff", Const.META_TYPE_DOUBLE)
+        builder.addColumn("name", Const.CLASSTYPE.STRING).addColumn("time", Const.CLASSTYPE.TIMESTAMP)
+                .addColumn("intcol", Const.CLASSTYPE.INTEGER).addColumn("dval", Const.CLASSTYPE.DOUBLE)
+                .addColumn("dval2", Const.CLASSTYPE.DOUBLE).addColumn("diff", Const.CLASSTYPE.DOUBLE)
                 .resourceCfg(Const.COLUMN_XLSX_MULTIPLESHEETS,"true")
                 .fileFormat(Const.FILEFORMATSTR.XLSX.getValue()).resPath("tmp/test.xlsx");
         DataCollectionMeta meta = builder.build();
@@ -156,13 +156,13 @@ public class TestCloudStorage extends TestCase {
     @Test
     public void testReadFromMinio() throws Exception{
         DataCollectionMeta.Builder builder=new DataCollectionMeta.Builder();
-        builder.addColumn("id",Const.META_TYPE_BIGINT,null);
-        builder.addColumn("name",Const.META_TYPE_STRING,null);
-        builder.addColumn("description",Const.META_TYPE_STRING,null);
-        builder.addColumn("sno",Const.META_TYPE_INTEGER,null);
-        builder.addColumn("price",Const.META_TYPE_DOUBLE,null);
-        builder.addColumn("amount",Const.META_TYPE_INTEGER,null);
-        builder.addColumn("type",Const.META_TYPE_INTEGER,null);
+        builder.addColumn("id",Const.CLASSTYPE.LONG,null);
+        builder.addColumn("name",Const.CLASSTYPE.STRING,null);
+        builder.addColumn("description",Const.CLASSTYPE.STRING,null);
+        builder.addColumn("sno",Const.CLASSTYPE.INTEGER,null);
+        builder.addColumn("price",Const.CLASSTYPE.DOUBLE,null);
+        builder.addColumn("amount",Const.CLASSTYPE.INTEGER,null);
+        builder.addColumn("type",Const.CLASSTYPE.INTEGER,null);
 
         builder.resourceCfg(ResourceConst.PARQUETFILEFORMAT,ResourceConst.PARQUETSUPPORTFORMAT.AVRO.getValue())
                 //.resourceCfg(ResourceConst.STORAGEFILTERSQL,"select name,sno,type,price*amount as totalFee from test where price*amount>500 and sno<7 and name like 'A%'")
@@ -203,11 +203,11 @@ public class TestCloudStorage extends TestCase {
     @Test
     public void test1(){
         DataCollectionMeta.Builder builder=new DataCollectionMeta.Builder();
-        builder.addColumn("id",Const.META_TYPE_BIGINT,null);
-        builder.addColumn("name",Const.META_TYPE_STRING,null);
-        builder.addColumn("description",Const.META_TYPE_STRING,null);
-        builder.addColumn("sno",Const.META_TYPE_INTEGER,null);
-        builder.addColumn("price",Const.META_TYPE_DOUBLE,null);
+        builder.addColumn("id",Const.CLASSTYPE.LONG,null);
+        builder.addColumn("name",Const.CLASSTYPE.STRING,null);
+        builder.addColumn("description",Const.CLASSTYPE.STRING,null);
+        builder.addColumn("sno",Const.CLASSTYPE.INTEGER,null);
+        builder.addColumn("price",Const.CLASSTYPE.DOUBLE,null);
         FilterSqlParser.FilterSqlResult result= FilterSqlParser.doParse(builder.build(),"id>4097 and price*4>500 and name like 'A%'");
         Map<String,Object> valueMap=new HashMap<>();
         valueMap.put("id",5000);

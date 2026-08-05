@@ -32,7 +32,7 @@ public class ExcelCellStyleUtil {
     }
 
 
-    public static CellStyle getNoBorderCellType(Workbook wb, String metaType) {
+    public static CellStyle getNoBorderCellType(Workbook wb, Const.CLASSTYPE metaType) {
         CellStyle cs = wb.createCellStyle();
         cs.setAlignment(HorizontalAlignment.CENTER);
         cs.setBorderBottom(BorderStyle.THIN);
@@ -45,24 +45,24 @@ public class ExcelCellStyleUtil {
         return cs;
     }
 
-    private static void extractMeta(Workbook wb,String metaType, CellStyle cs) {
+    private static void extractMeta(Workbook wb, Const.CLASSTYPE metaType, CellStyle cs) {
         switch (metaType) {
-            case Const.META_TYPE_NUMERIC:
-            case Const.META_TYPE_DOUBLE:
-            case Const.META_TYPE_FLOAT:
+            case NUMERIC:
+            case DOUBLE:
+            case FLOAT:
                 cs.setDataFormat(HSSFDataFormat.getBuiltinFormat("0.00"));
                 break;
-            case Const.META_TYPE_DATE:
-            case Const.META_TYPE_TIMESTAMP:
+            case DATE:
+            case TIMESTAMP:
                 cs.setDataFormat(wb.getCreationHelper().createDataFormat().getFormat(DateTimeFormatHolder.getTimestampFormatter().toString()));
                 break;
-            case Const.META_TYPE_INTEGER:
+            case INTEGER:
                 cs.setDataFormat(HSSFDataFormat.getBuiltinFormat("0"));
                 break;
         }
     }
 
-    public static CellStyle getBorderCellType(Workbook wb, String metaType) {
+    public static CellStyle getBorderCellType(Workbook wb, Const.CLASSTYPE metaType) {
         CellStyle cs = wb.createCellStyle();
         cs.setAlignment(HorizontalAlignment.CENTER);
         cs.setBorderBottom(BorderStyle.THIN);
@@ -83,7 +83,7 @@ public class ExcelCellStyleUtil {
         return cs;
 
     }
-    public static CellStyle getCellStyle(Workbook wb,String metaType,Map<String, CellStyle> cellMap){
+    public static CellStyle getCellStyle(Workbook wb, Const.CLASSTYPE metaType, Map<Const.CLASSTYPE, CellStyle> cellMap){
         if(cellMap.containsKey(metaType)){
             return cellMap.get(metaType);
         }else{
@@ -110,7 +110,7 @@ public class ExcelCellStyleUtil {
         }
     }
 
-    public static CellStyle getCellStyle(Workbook wb, int rowspan, int colspan, String metaType, TableConfigProp header, Map<String, CellStyle> cellMap) {
+    public static CellStyle getCellStyle(Workbook wb, int rowspan, int colspan, Const.CLASSTYPE metaType, TableConfigProp header, Map<String, CellStyle> cellMap) {
         CellStyle cs = null;
         if (cellMap.containsKey("C_" + rowspan + "_" + colspan + "_" + metaType)) {
             cs = cellMap.get("C_" + rowspan + "_" + colspan + "_" + metaType);

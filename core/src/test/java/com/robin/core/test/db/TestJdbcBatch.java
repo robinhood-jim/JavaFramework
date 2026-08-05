@@ -26,13 +26,13 @@ public class TestJdbcBatch extends TestCase {
 
         int maxrow=1000;
         DataCollectionMeta collectionMeta=new DataCollectionMeta();
-        collectionMeta.addColumnMeta("name", Const.META_TYPE_STRING,null);
-        collectionMeta.addColumnMeta("code",Const.META_TYPE_STRING,null);
-        collectionMeta.addColumnMeta("amount",Const.META_TYPE_DOUBLE,null);
-        collectionMeta.addColumnMeta("creator",Const.META_TYPE_INTEGER,null);
-        collectionMeta.addColumnMeta("time",Const.META_TYPE_TIMESTAMP,null);
+        collectionMeta.addColumnMeta("name", Const.CLASSTYPE.STRING,null);
+        collectionMeta.addColumnMeta("code", Const.CLASSTYPE.STRING,null);
+        collectionMeta.addColumnMeta("amount", Const.CLASSTYPE.DOUBLE,null);
+        collectionMeta.addColumnMeta("creator", Const.CLASSTYPE.INTEGER,null);
+        collectionMeta.addColumnMeta("time", Const.CLASSTYPE.TIMESTAMP,null);
 
-        Iterator<Map<String,String>> iterator=new Iterator<Map<String, String>>() {
+        Iterator<Map<String,String>> iterator=new Iterator<>() {
             Map<String,String> rowMap=new HashMap<>();
             int pos=0;
             Random random=new Random(123123123L);

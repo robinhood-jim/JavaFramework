@@ -18,6 +18,7 @@ package com.robin.core.base.util;
 
 import com.google.common.collect.Lists;
 
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -47,23 +48,7 @@ public class Const {
     public static final int FIELD_TYPE_DATE = 4;
 
     public static final int FIELD_TYPE_BOOLEAN = 5;
-    //datameta type
-    public static final String META_TYPE_STRING = "1";
-    public static final String META_TYPE_DATE = "2";
-    public static final String META_TYPE_NUMERIC = "3";
-    public static final String META_TYPE_INTEGER = "4";
-    public static final String META_TYPE_BIGINT = "5";
-    public static final String META_TYPE_DOUBLE = "6";
-    public static final String META_TYPE_BOOLEAN = "7";
-    public static final String META_TYPE_BINARY = "8";
-    public static final String META_TYPE_TIMESTAMP = "9";
-    public static final String META_TYPE_CLOB = "10";
-    public static final String META_TYPE_BLOB = "11";
-    public static final String META_TYPE_OBJECT = "12";
-    public static final String META_TYPE_SHORT = "13";
-    public static final String META_TYPE_FORMULA = "14";
-    public static final String META_TYPE_FLOAT = "15";
-    public static final String META_TYPE_DECIMAL = "16";
+
     //filter type
     public static final String FILTER_OPER_BETWEEN = "BT";
     public static final String FILTER_OPER_LIKE = "LK";
@@ -118,6 +103,77 @@ public class Const {
         public String toString() {
             return String.valueOf(this.value);
         }
+    }
+    public enum CLASSTYPE {
+        SHORT("SHORT"),
+        LONG("LONG"),
+        INTEGER("INTEGER"),
+        FLOAT("FLOAT"),
+        DOUBLE("DOUBLE"),
+        DATE("DATE"),
+        TIMESTAMP("TIMESTAMP"),
+        BOOLEAN("BOOLEAN"),
+        DECIMAL("DECIMAL"),
+        NUMERIC("NUMERIC"),
+        STRING("STRING"),
+        CLOB("CLOB"),
+        BLOB("BLOB"),
+        CHAR("CHAR"),
+        FORMULA("FORMULA");
+        private String value;
+        CLASSTYPE(String value){
+            this.value=value;
+        }
+
+        public String getValue() {
+            return value;
+        }
+        public static CLASSTYPE forName(String name){
+            for(CLASSTYPE s: CLASSTYPE.values()){
+                if(s.getValue().equalsIgnoreCase(name)){
+                    return s;
+                }
+            }
+            return null;
+        }
+    }
+    public static CLASSTYPE getByDataType(Integer dataType){
+        CLASSTYPE retType= CLASSTYPE.STRING;
+        switch (dataType){
+            case Types.BIGINT:
+                retType= CLASSTYPE.LONG;
+                break;
+            case Types.SMALLINT:
+                retType= CLASSTYPE.SHORT;
+                break;
+            case Types.INTEGER:
+                retType= CLASSTYPE.INTEGER;
+                break;
+            case Types.FLOAT:
+                retType= CLASSTYPE.FLOAT;
+                break;
+            case Types.DOUBLE:
+            case Types.NUMERIC:
+            case Types.DECIMAL:
+                retType= CLASSTYPE.DOUBLE;
+                break;
+            case Types.DATE:
+                retType= CLASSTYPE.DATE;
+                break;
+            case Types.TIMESTAMP:
+                retType= CLASSTYPE.TIMESTAMP;
+                break;
+            case Types.CLOB:
+                retType= CLASSTYPE.CLOB;
+                break;
+            case Types.BLOB:
+                retType= CLASSTYPE.BLOB;
+                break;
+            default:
+                retType= CLASSTYPE.STRING;
+                break;
+        }
+        return retType;
     }
 
 
@@ -181,6 +237,8 @@ public class Const {
 
     public static final String VALID = "1";
     public static final String INVALID = "0";
+    public static final Integer VALID_INT=1;
+    public static final Integer INVALID_INT=0;
     public static final String DEFAULT_DATETIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
     public static final Pattern MATCHER_OF_PARAMETER = Pattern.compile("%\\[\\w+\\]");
@@ -237,36 +295,7 @@ public class Const {
         }
     }
 
-    public enum META_TYPE {
-        METATYPE_CHAR(META_TYPE_STRING, "CHAR"),
-        METATYPE_VARCHAR(META_TYPE_STRING, "VARCHAR"),
-        METATYPE_BIGINT(META_TYPE_BIGINT, "BIGINT"),
-        METATYPE_DOUBLE(META_TYPE_DOUBLE, "DOUBLE"),
-        METATYPE_NUMERIC(META_TYPE_DOUBLE, "NUMERIC"),
-        METATYPE_TIMESTAMP(META_TYPE_TIMESTAMP, "TIMESTMAP"),
-        METATYPE_INT(META_TYPE_INTEGER, "INT");
 
-        private String name;
-        private String id;
-
-        META_TYPE(String id, String name) {
-            this.id = id;
-            this.name = name;
-        }
-
-        @Override
-        public String toString() {
-            return name;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public String getValue() {
-            return id;
-        }
-    }
 
     public enum CYCLE_TYPE {
         YEAR("8"),    //年
@@ -552,6 +581,19 @@ public class Const {
         }
         public String getCode() {
             return code;
+        }
+    }
+    public enum SCRIPTENGINE{
+        JS("js"),
+        GRAAL("graal.js"),
+        RUBY("jruby");
+        private String name;
+        SCRIPTENGINE(String name){
+            this.name=name;
+        }
+
+        public String getName() {
+            return name;
         }
     }
 }

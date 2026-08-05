@@ -29,6 +29,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
+import java.sql.Types;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -266,7 +267,7 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
 
     @Override
     public String getFieldDefineSqlPart(FieldContent field) {
-        String datatype = field.getDataType();
+        Integer datatype = field.getDataType();
         StringBuilder builder = new StringBuilder();
         String name = field.getFieldName();
         if (name == null || "".equals(name)) {
@@ -278,7 +279,7 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
     }
     @Override
     public String getFieldDefineSqlByMeta(DataBaseColumnMeta columnMeta){
-        String datatype = columnMeta.getColumnType();
+        Const.CLASSTYPE datatype = columnMeta.getColumnType();
         StringBuilder builder = new StringBuilder();
         String name = columnMeta.getColumnName();
         builder.append(name).append(" ").append(returnTypeDef(datatype, columnMeta));
@@ -356,7 +357,7 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
                 case LIKE:
                 case RLIKE:
                 case LLIKE:
-                    if (Const.META_TYPE_STRING.equals(param.getColumnType())) {
+                    if (Const.CLASSTYPE.STRING.equals(param.getColumnType())) {
                         if (param.getValue().toString().startsWith("%") || param.getValue().toString().endsWith("%")) {
                             String str = param.getValue().toString().replace("%", "");
                             if (!ObjectUtils.isEmpty(str)) {
@@ -422,13 +423,13 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
         if(containsSqlInjection(condition.getValue())){
             return null;
         }
-        if(Const.META_TYPE_DATE.equals(condition.getColumnType()) || Const.META_TYPE_TIMESTAMP.equals(condition.getColumnType()) ||Const.META_TYPE_STRING.equals(condition.getColumnType())){
+        if(Const.CLASSTYPE.DATE.equals(condition.getColumnType()) || Const.CLASSTYPE.TIMESTAMP.equals(condition.getColumnType()) || Const.CLASSTYPE.STRING.equals(condition.getColumnType())){
             return "'"+condition.getValue().toString()+"'";
         }
         return condition.getValue().toString();
     }
-    protected String wrapValue(String value,String columnType){
-        if(Const.META_TYPE_DATE.equals(columnType) || Const.META_TYPE_TIMESTAMP.equals(columnType) ||Const.META_TYPE_STRING.equals(columnType)){
+    protected String wrapValue(String value, Const.CLASSTYPE columnType){
+        if(Const.CLASSTYPE.DATE.equals(columnType) || Const.CLASSTYPE.TIMESTAMP.equals(columnType) || Const.CLASSTYPE.STRING.equals(columnType)){
             return "'"+value+"'";
         }
         return value;
@@ -441,20 +442,22 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
 
 
     @Override
-    public String returnTypeDef(String dataType, FieldContent field) {
+    public String returnTypeDef(Integer dataType, FieldContent field) {
         StringBuilder builder=new StringBuilder();
+
         switch (dataType) {
-            case Const.META_TYPE_BIGINT:
+            case Types.BIGINT:
                 builder.append(getLongFormat());
                 break;
-            case Const.META_TYPE_INTEGER:
+            case Types.INTEGER:
                 builder.append(getIntegerFormat());
                 break;
-            case Const.META_TYPE_SHORT:
+            case Types.SMALLINT:
                 builder.append(getShortFormat());
                 break;
-            case Const.META_TYPE_DOUBLE:
-            case Const.META_TYPE_NUMERIC:
+            case Types.DOUBLE:
+            case Types.DECIMAL:
+            case Types.NUMERIC:
                 int precise = field.getPrecise();
                 int scale = field.getScale();
                 if (precise == 0) {
@@ -465,13 +468,13 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
                 }
                 builder.append(getDecimalFormat(precise, scale));
                 break;
-            case Const.META_TYPE_DATE:
+            case Types.DATE:
                 builder.append("DATE");
                 break;
-            case Const.META_TYPE_TIMESTAMP:
+            case Types.TIMESTAMP:
                 builder.append(getTimestampFormat());
                 break;
-            case Const.META_TYPE_STRING:
+            case Types.VARCHAR:
                 int length = field.getLength()==0?32:field.getLength();
                 if (length == 1) {
                     builder.append(getCharFormat(1));
@@ -479,10 +482,10 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
                     builder.append(getVarcharFormat(length));
                 }
                 break;
-            case Const.META_TYPE_CLOB:
+            case Types.CLOB:
                 builder.append(getClobFormat());
                 break;
-            case Const.META_TYPE_BLOB:
+            case Types.BLOB:
                 builder.append(getBlobFormat());
                 break;
             default:
@@ -499,13 +502,13 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
         return builder.toString();
     }
     @Override
-    public String returnTypeDef(String dataType, DataBaseColumnMeta field) {
+    public String returnTypeDef(Const.CLASSTYPE dataType, DataBaseColumnMeta field) {
         StringBuilder builder=new StringBuilder();
-        if(dataType.equals(Const.META_TYPE_BIGINT)){
+        if(dataType.equals(Const.CLASSTYPE.LONG)){
             builder.append(getLongFormat());
-        }else if(dataType.equals(Const.META_TYPE_INTEGER)){
+        }else if(dataType.equals(Const.CLASSTYPE.INTEGER)){
             builder.append(getIntegerFormat());
-        }else if(dataType.equals(Const.META_TYPE_DOUBLE) || dataType.equals(Const.META_TYPE_NUMERIC)){
+        }else if(dataType.equals(Const.CLASSTYPE.DOUBLE) || dataType.equals(Const.CLASSTYPE.NUMERIC)){
             int precise= field.getDataPrecise();
             int scale= field.getDataScale();
             if(precise==0) {
@@ -515,11 +518,11 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
                 scale=8;
             }
             builder.append(getDecimalFormat(precise,scale));
-        }else if(dataType.equals(Const.META_TYPE_DATE)){
+        }else if(dataType.equals(Const.CLASSTYPE.DATE)){
             builder.append("DATE");
-        }else if(dataType.equals(Const.META_TYPE_TIMESTAMP)){
+        }else if(dataType.equals(Const.CLASSTYPE.TIMESTAMP)){
             builder.append(getTimestampFormat());
-        }else if(dataType.equals(Const.META_TYPE_STRING)){
+        }else if(dataType.equals(Const.CLASSTYPE.STRING)){
             int length= field.getColumnLength();
             if(length==0){
                 length=32;
@@ -529,9 +532,9 @@ public abstract class AbstractSqlGen implements BaseSqlGen {
             } else {
                 builder.append(getVarcharFormat(length));
             }
-        }else if(dataType.equals(Const.META_TYPE_CLOB)){
+        }else if(dataType.equals(Const.CLASSTYPE.CLOB)){
             builder.append(getClobFormat());
-        }else if(dataType.equals(Const.META_TYPE_BLOB)){
+        }else if(dataType.equals(Const.CLASSTYPE.BLOB)){
             builder.append(getBlobFormat());
         }
         if(field.isIncrement() && supportIncrement()){

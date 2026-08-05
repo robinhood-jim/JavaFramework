@@ -44,10 +44,10 @@ public class TestResourceGen {
 		Pair<BufferedWriter, OutputStream> pair=null;
 		try{
 			DataCollectionMeta colmeta=new DataCollectionMeta();
-			colmeta.addColumnMeta("infoId",Const.META_TYPE_BIGINT,null);
-			colmeta.addColumnMeta("url",Const.META_TYPE_STRING,null);
-			colmeta.addColumnMeta("title",Const.META_TYPE_STRING,null);
-			colmeta.addColumnMeta("content",Const.META_TYPE_STRING,null);
+			colmeta.addColumnMeta("infoId",Const.CLASSTYPE.LONG,null);
+			colmeta.addColumnMeta("url",Const.CLASSTYPE.STRING,null);
+			colmeta.addColumnMeta("title",Const.CLASSTYPE.STRING,null);
+			colmeta.addColumnMeta("content",Const.CLASSTYPE.STRING,null);
 			conn=SimpleJdbcDao.getConnection(meta);
 			List<Map<String, Object>> list=SimpleJdbcDao.queryString(conn, "select config_name as name,config_value as value from t_hadoop_cluster_config where cluster_id=4");
 			conn=SimpleJdbcDao.getConnection(meta1);

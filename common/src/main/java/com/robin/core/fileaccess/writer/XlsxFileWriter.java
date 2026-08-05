@@ -46,7 +46,7 @@ public class XlsxFileWriter extends AbstractFileWriter{
     private OPCPackage opcPackage;
 
     private static final char CHARA = 'A';
-    private final Map<String,CellStyle> cellStyleMap=new HashMap<>();
+    private final Map<Const.CLASSTYPE,CellStyle> cellStyleMap=new HashMap<>();
     private int rowPos=2;
     private int currentSheetPos=0;
     private ExcelSheetProp sheetProp;
@@ -180,7 +180,7 @@ public class XlsxFileWriter extends AbstractFileWriter{
             }
             streamWriter.flush();
             if(!(out instanceof FinishableOutputStream)) {
-                writer.flush();
+                out.flush();
             }else{
                 ((FinishableOutputStream) out).finish();
             }
@@ -261,7 +261,7 @@ public class XlsxFileWriter extends AbstractFileWriter{
         builder.append((char)(CHARA + secondPos - 1));
         return builder.toString();
     }
-    protected void writeLine(Map<String, Object> valueMap, DataCollectionMeta colmeta, Map<String, CellStyle> cellStyleMap, int rowpos) throws XMLStreamException {
+    protected void writeLine(Map<String, Object> valueMap, DataCollectionMeta colmeta, Map<Const.CLASSTYPE, CellStyle> cellStyleMap, int rowpos) throws XMLStreamException {
 
         streamWriter.writeStartElement("row");
         streamWriter.writeAttribute("r", String.valueOf(rowpos));
@@ -271,7 +271,7 @@ public class XlsxFileWriter extends AbstractFileWriter{
                 streamWriter.writeStartElement("c");
                 streamWriter.writeAttribute("r", getEndCell(i + 1) + rowpos);
                 streamWriter.writeAttribute("s", String.valueOf(style.getFontIndexAsInt()));
-                if (Const.META_TYPE_STRING.equals(colmeta.getColumnList().get(i).getColumnType())) {
+                if (Const.CLASSTYPE.STRING.equals(colmeta.getColumnList().get(i).getColumnType())) {
                     streamWriter.writeAttribute("t", "inlineStr");
                     streamWriter.writeStartElement("is");
                     streamWriter.writeStartElement("t");
@@ -281,7 +281,7 @@ public class XlsxFileWriter extends AbstractFileWriter{
                 } else {
                     streamWriter.writeAttribute("t", "n");
 
-                    if (Const.META_TYPE_TIMESTAMP.equals(colmeta.getColumnList().get(i).getColumnType()) || Const.META_TYPE_DATE.equals(colmeta.getColumnList().get(i).getColumnType())) {
+                    if (Const.CLASSTYPE.TIMESTAMP.equals(colmeta.getColumnList().get(i).getColumnType()) || Const.CLASSTYPE.DATE.equals(colmeta.getColumnList().get(i).getColumnType())) {
                         streamWriter.writeStartElement("v");
                         Object value = valueMap.get(colmeta.getColumnList().get(i).getColumnName());
                         Date valDate = null;
@@ -308,7 +308,7 @@ public class XlsxFileWriter extends AbstractFileWriter{
                     streamWriter.writeEndElement();
                 }
                 streamWriter.writeEndElement();
-            }else if(Const.META_TYPE_FORMULA.equals(sheetProp.getColumnPropList().get(i).getColumnType())){
+            }else if(Const.CLASSTYPE.FORMULA.equals(sheetProp.getColumnPropList().get(i).getColumnType())){
                 streamWriter.writeStartElement("c");
                 streamWriter.writeAttribute("r", getEndCell(i + 1) + rowpos);
                 streamWriter.writeAttribute("s", String.valueOf(style.getFontIndexAsInt()));
@@ -326,8 +326,8 @@ public class XlsxFileWriter extends AbstractFileWriter{
         this.sheetProp = sheetProp;
     }
 
-    private void writeHeader(List<String> columnName, Map<String, CellStyle> cellStyleMap) throws Exception {
-        CellStyle style = cellStyleMap.get(Const.META_TYPE_STRING);
+    private void writeHeader(List<String> columnName, Map<Const.CLASSTYPE, CellStyle> cellStyleMap) throws Exception {
+        CellStyle style = cellStyleMap.get(Const.CLASSTYPE.STRING);
         streamWriter.writeStartElement("row");
         streamWriter.writeAttribute("r", "1");
         for (int i = 0; i < columnName.size(); i++) {

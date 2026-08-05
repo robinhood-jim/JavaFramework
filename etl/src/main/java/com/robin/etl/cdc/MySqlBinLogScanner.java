@@ -13,7 +13,7 @@ import com.robin.core.base.datameta.DataBaseMetaFactory;
 import com.robin.core.base.datameta.DataBaseParam;
 import com.robin.core.base.exception.OperationNotSupportException;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
-import com.robin.core.fileaccess.writer.AbstractQueueWriter;
+import com.robin.comm.resaccess.writer.AbstractQueueWriter;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;

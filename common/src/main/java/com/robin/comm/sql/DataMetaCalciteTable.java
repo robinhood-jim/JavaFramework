@@ -22,26 +22,26 @@ public class DataMetaCalciteTable extends AbstractTable {
         Assert.isTrue(!ObjectUtils.isEmpty(colmeta) && !CollectionUtils.isEmpty(colmeta.getColumnList()),"meta define is missing!");
         RelDataTypeFactory.Builder builder = typeFactory.builder();
         for(DataSetColumnMeta columnMeta:colmeta.getColumnList()){
-            if(Const.META_TYPE_INTEGER.equals(columnMeta.getColumnType())){
+            if(Const.CLASSTYPE.INTEGER.equals(columnMeta.getColumnType())){
                 builder.add(columnMeta.getColumnName(), SqlTypeName.INTEGER);
-            }else if(Const.META_TYPE_BIGINT.equals(columnMeta.getColumnType())){
+            }else if(Const.CLASSTYPE.LONG.equals(columnMeta.getColumnType())){
                 builder.add(columnMeta.getColumnName(), SqlTypeName.BIGINT);
             }
-            else if(Const.META_TYPE_DOUBLE.equals(columnMeta.getColumnType())){
+            else if(Const.CLASSTYPE.DOUBLE.equals(columnMeta.getColumnType())){
                 builder.add(columnMeta.getColumnName(), SqlTypeName.DOUBLE);
             }
-            else if(Const.META_TYPE_DECIMAL.equals(columnMeta.getColumnType())){
+            else if(Const.CLASSTYPE.DECIMAL.equals(columnMeta.getColumnType())){
                 builder.add(columnMeta.getColumnName(), SqlTypeName.DECIMAL);
             }
-            else if(Const.META_TYPE_TIMESTAMP.equals(columnMeta.getColumnType())){
+            else if(Const.CLASSTYPE.TIMESTAMP.equals(columnMeta.getColumnType())){
                 builder.add(columnMeta.getColumnName(), SqlTypeName.TIMESTAMP);
             }
-            else if(Const.META_TYPE_DATE.equals(columnMeta.getColumnType())){
+            else if(Const.CLASSTYPE.DATE.equals(columnMeta.getColumnType())){
                 builder.add(columnMeta.getColumnName(), SqlTypeName.DATE);
             }
-            else if(Const.META_TYPE_CLOB.equals(columnMeta.getColumnType()) || Const.META_TYPE_BLOB.equals(columnMeta.getColumnType())){
+            else if(Const.CLASSTYPE.CLOB.equals(columnMeta.getColumnType()) || Const.CLASSTYPE.BLOB.equals(columnMeta.getColumnType())){
                 builder.add(columnMeta.getColumnName(), SqlTypeName.BINARY);
-            }else if(Const.META_TYPE_STRING.equals(columnMeta.getColumnType())){
+            }else if(Const.CLASSTYPE.STRING.equals(columnMeta.getColumnType())){
                 builder.add(columnMeta.getColumnName(), SqlTypeName.VARCHAR);
             }
         }

@@ -4,6 +4,7 @@ import com.robin.core.fileaccess.meta.DataCollectionMeta;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.*;
+import java.util.List;
 
 /**
  *  All FileSystem accessor interface,Extends By Local/VFS/HDFS and cloud storage supported.
@@ -61,4 +62,6 @@ public interface IFileSystemAccessor extends Closeable {
     void init(DataCollectionMeta meta);
     void finishReadOrWrite() throws IOException;
     String getIdentifier();
+    List<String> listPath(String inputPath) throws Exception;
+    boolean isDirectory(String inputPath) throws Exception;
 }

@@ -6,7 +6,6 @@ import com.google.protobuf.DynamicMessage;
 import com.robin.comm.fileaccess.util.ProtoBufUtil;
 import com.robin.core.base.exception.OperationNotSupportException;
 import com.robin.core.base.util.ResourceConst;
-import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.fileaccess.fs.AbstractFileSystemAccessor;
 import com.robin.core.fileaccess.iterator.AbstractResIterator;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;

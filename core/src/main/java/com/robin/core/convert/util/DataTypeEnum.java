@@ -20,7 +20,7 @@ import java.io.Serializable;
 public class DataTypeEnum implements Serializable{
 	
 	private static final long serialVersionUID = 1L;
-	private String dataType;
+	private Integer dataType;
 	private String name; 
 	private String cnName;
 	private String indicatorId; 
@@ -29,10 +29,10 @@ public class DataTypeEnum implements Serializable{
 	private String isNull;
 	private String dataPercise;
 	private String dataLength;
-	public String getDataType() {
+	public Integer getDataType() {
 		return dataType;
 	}
-	public void setDataType(String dataType) {
+	public void setDataType(Integer dataType) {
 		this.dataType = dataType;
 	}
 	public String getName() {

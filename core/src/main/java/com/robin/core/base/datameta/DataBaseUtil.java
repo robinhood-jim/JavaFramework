@@ -131,7 +131,7 @@ public class DataBaseUtil {
             List<String> pklist = this.getAllPrimaryKeyByTableName(tablename, dbOrtablespacename);
             while (rs.next()) {
                 String columnname = rs.getString("COLUMN_NAME");
-                String columnType = translateDbType(rs.getInt("DATA_TYPE"));
+                Const.CLASSTYPE columnType = translateDbType(rs.getInt("DATA_TYPE"));
                 int datalength = !ObjectUtils.isEmpty(rs.getString("COLUMN_SIZE"))?Integer.parseInt(rs.getString("COLUMN_SIZE")):0;
                 boolean nullable = rs.getInt("NULLABLE") != DatabaseMetaData.columnNoNulls;
                 String comment = rs.getString("REMARKS");
@@ -157,7 +157,7 @@ public class DataBaseUtil {
         }
     }
 
-    private static void setType(String columnname, String columnType, Integer datatype, String typeName, int datalength, boolean nullable, String comment, int precise, int scale, DataBaseColumnMeta.Builder builder) {
+    private static void setType(String columnname, Const.CLASSTYPE columnType, Integer datatype, String typeName, int datalength, boolean nullable, String comment, int precise, int scale, DataBaseColumnMeta.Builder builder) {
         builder.columnName(columnname);
         builder.columnType(columnType);
         builder.dataType(datatype);
@@ -208,7 +208,7 @@ public class DataBaseUtil {
             }
             while (rs.next()) {
                 String columnname = rs.getString("COLUMN_NAME");
-                String columnType = translateDbType(rs.getInt("DATA_TYPE"));
+                Const.CLASSTYPE columnType = translateDbType(rs.getInt("DATA_TYPE"));
                 int datalength = !ObjectUtils.isEmpty(rs.getString("COLUMN_SIZE"))?Integer.parseInt(rs.getString("COLUMN_SIZE")):0;
                 boolean nullable = rs.getInt("NULLABLE") != DatabaseMetaData.columnNoNulls;
                 String comment = "";
@@ -305,47 +305,47 @@ public class DataBaseUtil {
         }
     }
 
-    public static String translateDbType(Integer type) {
-        String retStr;
+    public static Const.CLASSTYPE translateDbType(Integer type) {
+        Const.CLASSTYPE retStr;
         if (type == Types.INTEGER || type == Types.TINYINT) {
-            retStr = Const.META_TYPE_INTEGER;
+            retStr = Const.CLASSTYPE.INTEGER;
         } else if (type == Types.BIGINT) {
-            retStr = Const.META_TYPE_BIGINT;
+            retStr = Const.CLASSTYPE.LONG;
         } else if (type == Types.NUMERIC) {
-            retStr = Const.META_TYPE_NUMERIC;
+            retStr = Const.CLASSTYPE.NUMERIC;
         } else if (type == Types.FLOAT) {
-            retStr = Const.META_TYPE_FLOAT;
+            retStr = Const.CLASSTYPE.FLOAT;
         } else if (type == Types.DECIMAL) {
-            retStr = Const.META_TYPE_DECIMAL;
+            retStr = Const.CLASSTYPE.DECIMAL;
         } else if (type == Types.DOUBLE) {
-            retStr = Const.META_TYPE_DOUBLE;
+            retStr = Const.CLASSTYPE.DOUBLE;
         } else if (type == Types.DATE) {
-            retStr = Const.META_TYPE_DATE;
+            retStr = Const.CLASSTYPE.DATE;
         } else if (type == Types.TIME || type == Types.TIMESTAMP) {
-            retStr = Const.META_TYPE_TIMESTAMP;
+            retStr = Const.CLASSTYPE.TIMESTAMP;
         } else if (type == Types.BOOLEAN) {
-            retStr = Const.META_TYPE_BOOLEAN;
+            retStr = Const.CLASSTYPE.BOOLEAN;
         } else if (type == Types.BLOB || type == Types.BINARY || type == Types.BIT) {
-            retStr = Const.META_TYPE_BINARY;
+            retStr = Const.CLASSTYPE.BLOB;
         } else {
-            retStr = Const.META_TYPE_STRING;
+            retStr = Const.CLASSTYPE.STRING;
         }
         return retStr;
     }
 
     public static Map<String, Object> transformDbTypeByObj(Object obj) {
         Map<String, Object> retMap = new HashMap<>();
-        String type = null;
+        Const.CLASSTYPE type = null;
 
         DateTimeFormatter targetFormat = null;
         if (obj instanceof Long) {
-            type = Const.META_TYPE_BIGINT;
+            type = Const.CLASSTYPE.LONG;
         } else if (obj instanceof Integer) {
-            type = Const.META_TYPE_INTEGER;
+            type = Const.CLASSTYPE.INTEGER;
         } else if (obj instanceof Double || obj instanceof Float) {
-            type = Const.META_TYPE_DOUBLE;
+            type = Const.CLASSTYPE.DOUBLE;
         } else if (obj instanceof Date || obj instanceof Timestamp) {
-            type = Const.META_TYPE_TIMESTAMP;
+            type = Const.CLASSTYPE.TIMESTAMP;
         } else if (obj instanceof String) {
             if (isStringValueDate(obj.toString(), format)) {
                 targetFormat = format;
@@ -357,9 +357,9 @@ public class DataBaseUtil {
                 targetFormat = format3;
             }
             if (targetFormat != null) {
-                type = Const.META_TYPE_TIMESTAMP;
+                type = Const.CLASSTYPE.TIMESTAMP;
             } else {
-                type = Const.META_TYPE_STRING;
+                type = Const.CLASSTYPE.STRING;
             }
         }
         retMap.put("type", type);
@@ -377,21 +377,21 @@ public class DataBaseUtil {
         return false;
     }
 
-    public static Object translateValueByDBType(String value, String type) throws ParseException {
+    public static Object translateValueByDBType(String value, Const.CLASSTYPE type) throws ParseException {
         Object retObj;
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
         switch (type) {
-            case Const.META_TYPE_INTEGER:
+            case INTEGER:
                 retObj = Integer.valueOf(value);
                 break;
-            case Const.META_TYPE_BIGINT:
+            case LONG:
                 retObj = Long.valueOf(value);
                 break;
-            case Const.META_TYPE_NUMERIC:
-            case Const.META_TYPE_DOUBLE:
+            case NUMERIC:
+            case DOUBLE:
                 retObj = Double.valueOf(value);
                 break;
-            case Const.META_TYPE_DATE:
+            case DATE:
                 retObj = format.parse(value);
                 break;
             default:
@@ -401,20 +401,20 @@ public class DataBaseUtil {
         return retObj;
     }
 
-    public static boolean isValueValid(Object value, String type) {
+    public static boolean isValueValid(Object value, Const.CLASSTYPE type) {
         boolean validtag = false;
         if (value != null) {
             switch (type) {
-                case Const.META_TYPE_INTEGER:
-                case Const.META_TYPE_BIGINT:
-                case Const.META_TYPE_NUMERIC:
-                case Const.META_TYPE_DOUBLE:
+                case INTEGER:
+                case LONG:
+                case NUMERIC:
+                case DOUBLE:
                     if (NumberUtils.isNumber(value.toString())) {
                         validtag = true;
                     }
                     break;
-                case Const.META_TYPE_DATE:
-                case Const.META_TYPE_TIMESTAMP:
+                case DATE:
+                case TIMESTAMP:
                     if (Date.class.isAssignableFrom(value.getClass()) || java.sql.Date.class.isAssignableFrom(value.getClass()) || Timestamp.class.isAssignableFrom(value.getClass()) || Long.class.isAssignableFrom(value.getClass())) {
                         validtag = true;
                     }
@@ -426,14 +426,14 @@ public class DataBaseUtil {
         return validtag;
     }
 
-    public static String toStringByDBType(Object value, String type, DateTimeFormatter formatter) {
+    public static String toStringByDBType(Object value, Const.CLASSTYPE type, DateTimeFormatter formatter) {
         String retObj = null;
         if (value != null) {
-            if (type.equals(Const.META_TYPE_INTEGER) || type.equals(Const.META_TYPE_BIGINT) || type.equals(Const.META_TYPE_NUMERIC) || type.equals(Const.META_TYPE_DOUBLE)) {
+            if (type.equals(Const.CLASSTYPE.INTEGER) || type.equals(Const.CLASSTYPE.LONG) || type.equals(Const.CLASSTYPE.NUMERIC) || type.equals(Const.CLASSTYPE.DOUBLE)) {
                 if (NumberUtils.isNumber(value.toString())) {
                     retObj = value.toString();
                 }
-            } else if (type.equals(Const.META_TYPE_DATE) || type.equals(Const.META_TYPE_TIMESTAMP)) {
+            } else if (type.equals(Const.CLASSTYPE.DATE) || type.equals(Const.CLASSTYPE.TIMESTAMP)) {
                 long millsecod ;
                 if (value instanceof java.util.Date) {
                     millsecod = ((java.util.Date) value).getTime();
