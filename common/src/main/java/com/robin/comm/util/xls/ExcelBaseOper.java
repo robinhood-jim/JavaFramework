@@ -34,6 +34,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 
 import java.awt.Color;
 import java.io.IOException;
@@ -41,6 +42,9 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -220,102 +224,6 @@ public class ExcelBaseOper {
         }
     }
 
-
-    private static void calculateStartColumnofRow(int row, int pos, ExcelHeaderProp header, int[][] startColArr) {
-        if (row == 0) {
-            if (pos == 0) {
-                startColArr[0][0] = 0;
-            } else {
-                startColArr[0][pos] = startColArr[0][pos - 1]
-                        + header.getHeaderColumnList().get(0).get(pos - 1)
-                        .getColspan();
-            }
-        } else {
-            int count = header.getHeaderColumnList().size();
-            if (pos == 0) {
-                int poscount = 0;
-                int posfix = pos + 1;
-                for (int i = 0; i < row; i++) {
-                    List<ExcelHeaderColumn> list = header.getHeaderColumnList().get(i);
-                    for (int j = 0; j < list.size(); j++) {
-                        ExcelHeaderColumn column = list.get(j);
-                        int rowspan = column.getRowspan();
-                        if (rowspan + i != count) {
-                            poscount++;
-                        }
-                        if (poscount == posfix) {
-                            startColArr[row][pos] = startColArr[i][j];
-                            return;
-                        }
-                    }
-                }
-            } else {
-                List<ExcelHeaderColumn> listabove = header.getHeaderColumnList().get(row - 1);
-                List<ExcelHeaderColumn> list = header.getHeaderColumnList().get(row);
-                int nums = 0;
-                int totallength = 0;
-                int[] collength = new int[pos];
-                for (int i = 0; i < pos; i++) {
-                    totallength += list.get(i).getColspan();
-                    collength[i] = totallength;
-                }
-
-                for (int i = 0; i < listabove.size(); i++) {
-                    ExcelHeaderColumn column = listabove.get(i);
-                    int rowspan = column.getRowspan();
-                    int colspan = column.getColspan();
-                    if (rowspan + row - 1 != count) {
-                        nums += colspan;
-                    }
-
-                    if (nums > totallength) {
-                        if (isColumnTheFirstChild(collength, listabove, i, row, count)) {
-                            startColArr[row][pos] = startColArr[row - 1][i];
-
-                        } else {
-
-                            startColArr[row][pos] = startColArr[row][pos - 1] + header.getHeaderColumnList().get(row).get(pos - 1).getColspan();
-                        }
-                        break;
-
-                    } else if (nums == totallength && i < listabove.size() - 1) {
-
-                        int temp1 = i + 1;
-                        while (header.getHeaderColumnList().get(row - 1).get(temp1).getRowspan() + row - 1 == count) {
-                            temp1++;
-                        }
-                        startColArr[row][pos] = startColArr[row - 1][temp1];
-                        break;
-                    }
-                }
-                if (startColArr[row][pos] == 0) {
-                    startColArr[row][pos] = startColArr[row][pos - 1] + header.getHeaderColumnList().get(row).get(pos - 1).getColspan();
-                }
-            }
-        }
-
-    }
-
-    private static boolean isColumnTheFirstChild(int[] collengtharr, List<ExcelHeaderColumn> listabove, int abovecol, int aboverow, int rowcount) {
-        int nums = 0;
-        boolean isfrist = false;
-        int beforemaxnums = collengtharr[collengtharr.length - 1];
-        for (int i = 0; i < abovecol; i++) {
-            ExcelHeaderColumn column = listabove.get(i);
-            int rowspan = column.getRowspan();
-            int colspan = column.getColspan();
-            if (rowspan + aboverow - 1 != rowcount) {
-                nums += colspan;
-            }
-        }
-        if (nums == beforemaxnums) {
-            isfrist = true;
-        }
-        return isfrist;
-
-    }
-
-
     public static Row creatRow(Sheet sheet, int i) {
         return sheet.createRow(i);
     }
@@ -340,32 +248,54 @@ public class ExcelBaseOper {
         return cell;
     }
 
-    public static Cell createCell(Row row1, int j, String value, Const.CLASSTYPE colType, CellStyle cellStyle, CreationHelper helper) {
+    public static Cell createCell(Row row1, int j, Object value, Const.CLASSTYPE colType, CellStyle cellStyle, CreationHelper helper) {
         Cell cell;
+
         if (colType.equals(Const.CLASSTYPE.STRING)) {
-            cell = createCell(row1, j, cellStyle, helper, value);
+            cell = createCell(row1, j, cellStyle, helper, value.toString());
         } else if (colType.equals(Const.CLASSTYPE.NUMERIC) || colType.equals(Const.CLASSTYPE.DOUBLE)) {
-            if (!StringUtils.isEmpty(value)) {
-                cell = createCell(row1, j, cellStyle, helper, Double.parseDouble(value));
+            if (!ObjectUtils.isEmpty(value)) {
+                cell = createCell(row1, j, cellStyle, helper, Double.parseDouble(value.toString()));
             } else {
                 cell = createCell(row1, j, cellStyle, helper, "");
             }
         } else if (colType.equals(Const.CLASSTYPE.INTEGER)) {
-            if (!StringUtils.isEmpty(value)) {
-                cell = createCell(row1, j, cellStyle, helper, Integer.parseInt(value));
+            if (!ObjectUtils.isEmpty(value)) {
+                cell = createCell(row1, j, cellStyle, helper, Integer.parseInt(value.toString()));
             } else {
                 cell = createCell(row1, j, cellStyle, helper, "");
             }
         } else if (colType.equals(Const.CLASSTYPE.DATE) || colType.equals(Const.CLASSTYPE.TIMESTAMP)) {
-            if (!StringUtils.isEmpty(value)) {
-                cell = createCellDate(row1, j, cellStyle, helper, value);
+            if (!ObjectUtils.isEmpty(value)) {
+                Long timeTs=0L;
+                if(value.getClass().equals(Long.class)){
+                    timeTs=Long.valueOf(value.toString());
+                }else if(value.getClass().equals(LocalDateTime.class)){
+                    LocalDateTime dateTime=(LocalDateTime) value;
+                    timeTs=dateTime.toInstant(ZoneId.systemDefault().getRules().getOffset(dateTime)).toEpochMilli();
+                }else if(value.getClass().equals(Timestamp.class)){
+                    Timestamp timestamp=(Timestamp) value;
+                    timeTs=timestamp.getTime();
+                }else if(value.getClass().equals(java.util.Date.class)){
+                    java.util.Date date=(java.util.Date)value;
+                    timeTs=date.getTime();
+                }else if(value.getClass().equals(java.sql.Date.class)){
+                    java.sql.Date date=(java.sql.Date)value;
+                    timeTs=date.getTime();
+                }
+                if(timeTs>0L) {
+                    double dateVal=DateUtil.getExcelDate(new Timestamp(timeTs));
+                    cell = createCellDate(row1, j, cellStyle, helper, dateVal);
+                }else{
+                    cell = createCell(row1, j, cellStyle, helper, "");
+                }
             } else {
                 cell = createCell(row1, j, cellStyle, helper, "");
             }
         } else if (colType.equals(Const.CLASSTYPE.FORMULA)) {
-            cell = createFormulaCell(row1, j, cellStyle, value);
+            cell = createFormulaCell(row1, j, cellStyle, value.toString());
         } else {
-            cell = createCell(row1, j, cellStyle, helper, value);
+            cell = createCell(row1, j, cellStyle, helper, value.toString());
         }
         return cell;
     }
@@ -399,11 +329,10 @@ public class ExcelBaseOper {
         return cell;
     }
 
-    private static Cell createCellDate(Row row, int column, CellStyle cellStyle, CreationHelper helper, String value) {
+    private static Cell createCellDate(Row row, int column, CellStyle cellStyle, CreationHelper helper, double value) {
         Cell cell = row.createCell(column);
         //cellStyle.setDataFormat(helper.createDataFormat().getFormat("yyyy-MM-dd hh:mm:ss"));
-
-        cell.setCellValue(new Date(Long.parseLong(value)));
+        cell.setCellValue(value);
         cell.setCellStyle(cellStyle);
         return cell;
     }

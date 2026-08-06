@@ -1,5 +1,6 @@
 package com.robin.comm.util.xls;
 
+import com.robin.core.base.util.Const;
 import com.robin.core.query.extractor.ResultSetOperationExtractor;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.CreationHelper;
@@ -20,7 +21,7 @@ public class ExcelRsExtractor extends ResultSetOperationExtractor {
     TableConfigProp header;
     CreationHelper helper;
     //cell style map
-    Map<String, CellStyle> cellMap = new HashMap<>();
+    Map<Const.CLASSTYPE, CellStyle> cellMap = new HashMap<>();
 
     int pos;
     int processRows = 0;
@@ -34,6 +35,7 @@ public class ExcelRsExtractor extends ResultSetOperationExtractor {
 
     @Override
     public boolean executeAdditionalOperation(Map<String, Object> map, ResultSetMetaData rsmd) throws SQLException {
+        ExcelCellStyleUtil.initCellStyle(workbook,cellMap);
         ExcelProcessor.processSingleLine(map, workbook, targetSheet, pos, prop, header, helper,cellMap);
         pos++;
         processRows++;

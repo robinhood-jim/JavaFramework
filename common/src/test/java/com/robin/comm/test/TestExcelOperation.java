@@ -110,7 +110,7 @@ public class TestExcelOperation {
         builder.addColumn("name", Const.CLASSTYPE.STRING).addColumn("time", Const.CLASSTYPE.TIMESTAMP)
                 .addColumn("intcol", Const.CLASSTYPE.INTEGER).addColumn("dval", Const.CLASSTYPE.DOUBLE)
                 .addColumn("dval2", Const.CLASSTYPE.DOUBLE).addColumn("diff", Const.CLASSTYPE.DOUBLE)
-                .fileFormat(Const.FILEFORMATSTR.XLSX.getValue()).resPath("file:///d:/test.xlsx");
+                .fileFormat(Const.FILEFORMATSTR.XLSX.getValue()).resPath("file:///d:/test1.xlsx");
         DataCollectionMeta meta = builder.build();
         XMLOutputFactory factory = XMLOutputFactory.newFactory();
         XMLStreamWriter writer=null;
@@ -125,9 +125,7 @@ public class TestExcelOperation {
             Sheet sheet=workbook.createSheet("sheet1");
             PackagePartName packagePartName = PackagingURIHelper.createPartName("/xl/worksheets/sheet1.xml");
             opcPackage.removePart(packagePartName);
-            for(int i=0;i<meta.getColumnList().size();i++){
-                ExcelCellStyleUtil.getCellStyle(workbook, meta.getColumnList().get(i).getColumnType(), cellStyleMap);
-            }
+            ExcelCellStyleUtil.initCellStyle(workbook,cellStyleMap);
             workbook.write(byteOut);
         }catch (Exception ex1){
             ex1.printStackTrace();
@@ -171,7 +169,7 @@ public class TestExcelOperation {
             writeHeader(writer,Arrays.asList("name","time","intcol","dval","dval2","diff"),cellStyleMap);
             cachedMap.clear();
             Long startTs = System.currentTimeMillis() - 3600 * 24 * 1000;
-            for(int j=0;j<600000;j++){
+            for(int j=0;j<60000;j++){
                 cachedMap.put("name", StringUtils.generateRandomChar(12));
                 cachedMap.put("time", String.valueOf(startTs + j * 1000));
                 cachedMap.put("intcol", String.valueOf(random.nextInt(1000)));
@@ -184,6 +182,7 @@ public class TestExcelOperation {
             writer.flush();
             writer.close();
             zout.closeEntry();
+
         }catch (Exception ex){
             ex.printStackTrace();
         }
@@ -321,8 +320,8 @@ public class TestExcelOperation {
         prop.addColumnProp(new ExcelColumnProp("dval", "dval", Const.CLASSTYPE.DOUBLE, false));
         prop.addColumnProp(new ExcelColumnProp("dval2", "dval2", Const.CLASSTYPE.DOUBLE, false));
         prop.addColumnProp(new ExcelColumnProp("diff", "diff", Const.CLASSTYPE.FORMULA, "(D{P}-E{P})/C{P}"));
-        //prop.addColumnProp(new ExcelColumnProp("差距1", "sep1", Const.DBCOLUMNTYPE.FORMULA, "D{P+1}-D{P}"));
-        //prop.addColumnProp(new ExcelColumnProp("差距2", "sep2", Const.DBCOLUMNTYPE.FORMULA, "D{P-1}-D{P}"));
+        prop.addColumnProp(new ExcelColumnProp("差距1", "sep1", Const.CLASSTYPE.FORMULA, "D{P+1}-D{P}"));
+        prop.addColumnProp(new ExcelColumnProp("差距2", "sep2", Const.CLASSTYPE.FORMULA, "D{P-1}-D{P}"));
         TableConfigProp header = new TableConfigProp();
         header.setContainrow(1);
         Random random = new Random(12312321321312L);
@@ -347,7 +346,7 @@ public class TestExcelOperation {
 
             @Override
             public boolean hasNext() {
-                if (row < 50000)
+                if (row < 5000)
                     return true;
                 return false;
             }
@@ -356,7 +355,7 @@ public class TestExcelOperation {
             public Map<String, Object> next() {
                 map.clear();
                 map.put("name", StringUtils.generateRandomChar(12));
-                map.put("time", String.valueOf(startTs + row * 1000));
+                map.put("time", startTs + row * 1000);
                 map.put("intcol", String.valueOf(random.nextInt(1000)));
                 map.put("dval", String.valueOf(random.nextDouble() * 1000));
                 map.put("dval2", String.valueOf(random.nextDouble() * 500));
@@ -370,7 +369,7 @@ public class TestExcelOperation {
             }
         };
         Workbook wb = ExcelProcessor.generateExcelFile(prop.build(), header, iterator);
-        FileOutputStream out = new FileOutputStream("d:/test.xlsx");
+        FileOutputStream out = new FileOutputStream("d:/testorigin.xlsx");
         wb.write(out);
         out.close();
 
@@ -483,7 +482,7 @@ public class TestExcelOperation {
         try (Workbook wb = new XSSFWorkbook();
              FileOutputStream outputStream = new FileOutputStream("e:/1234.xlsx")) {
             Sheet fSheet = wb.createSheet("test");
-            ExcelProcessor.fillSheet(fSheet, sheetProp, tableConfigProp);
+            ExcelProcessor.fillSheet(fSheet, sheetProp, tableConfigProp,new HashMap<>());
             wb.write(outputStream);
         } catch (Exception ex) {
             ex.printStackTrace();

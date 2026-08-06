@@ -94,9 +94,7 @@ public class XlsxFileWriter extends AbstractFileWriter{
             workbook.createSheet("sheet1");
             PackagePartName packagePartName = PackagingURIHelper.createPartName("/xl/worksheets/sheet1.xml");
             opcPackage.removePart(packagePartName);
-            for(int i=0;i<colmeta.getColumnList().size();i++){
-                ExcelCellStyleUtil.getCellStyle(workbook, colmeta.getColumnList().get(i).getColumnType(), cellStyleMap);
-            }
+            ExcelCellStyleUtil.initCellStyle(workbook,cellStyleMap);
             byteOut=new ByteArrayOutputStream();
 
             if(!multipleSheets) {

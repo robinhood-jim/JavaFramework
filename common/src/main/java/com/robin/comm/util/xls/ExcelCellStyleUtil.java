@@ -53,12 +53,18 @@ public class ExcelCellStyleUtil {
                 cs.setDataFormat(HSSFDataFormat.getBuiltinFormat("0.00"));
                 break;
             case DATE:
+                DateTimeFormatHolder.getTimestampFormatter();
+                cs.setDataFormat(wb.getCreationHelper().createDataFormat().getFormat(DateTimeFormatHolder.getYmdPattern()));
+                break;
             case TIMESTAMP:
-                cs.setDataFormat(wb.getCreationHelper().createDataFormat().getFormat(DateTimeFormatHolder.getTimestampFormatter().toString()));
+                DateTimeFormatHolder.getTimestampFormatter();
+                cs.setDataFormat(wb.getCreationHelper().createDataFormat().getFormat(DateTimeFormatHolder.getTimestampPattern()));
                 break;
             case INTEGER:
                 cs.setDataFormat(HSSFDataFormat.getBuiltinFormat("0"));
                 break;
+            default:
+                cs.setDataFormat(HSSFDataFormat.getBuiltinFormat("General"));
         }
     }
 
@@ -83,7 +89,7 @@ public class ExcelCellStyleUtil {
         return cs;
 
     }
-    public static CellStyle getCellStyle(Workbook wb, Const.CLASSTYPE metaType, Map<Const.CLASSTYPE, CellStyle> cellMap){
+    protected static CellStyle getCellStyle(Workbook wb, Const.CLASSTYPE metaType, Map<Const.CLASSTYPE, CellStyle> cellMap){
         if(cellMap.containsKey(metaType)){
             return cellMap.get(metaType);
         }else{
@@ -109,8 +115,17 @@ public class ExcelCellStyleUtil {
             return cs;
         }
     }
+    public static void initCellStyle(Workbook wb, Map<Const.CLASSTYPE, CellStyle> cellMap){
+        getCellStyle(wb,Const.CLASSTYPE.DOUBLE,cellMap);
+        getCellStyle(wb,Const.CLASSTYPE.INTEGER,cellMap);
+        getCellStyle(wb,Const.CLASSTYPE.FLOAT,cellMap);
+        getCellStyle(wb,Const.CLASSTYPE.DATE,cellMap);
+        getCellStyle(wb,Const.CLASSTYPE.TIMESTAMP,cellMap);
+        getCellStyle(wb,Const.CLASSTYPE.STRING,cellMap);
+        getCellStyle(wb,Const.CLASSTYPE.FORMULA,cellMap);
+    }
 
-    public static CellStyle getCellStyle(Workbook wb, int rowspan, int colspan, Const.CLASSTYPE metaType, TableConfigProp header, Map<String, CellStyle> cellMap) {
+    /*public static CellStyle getCellStyle(Workbook wb, int rowspan, int colspan, Const.CLASSTYPE metaType, TableConfigProp header, Map<String, CellStyle> cellMap) {
         CellStyle cs = null;
         if (cellMap.containsKey("C_" + rowspan + "_" + colspan + "_" + metaType)) {
             cs = cellMap.get("C_" + rowspan + "_" + colspan + "_" + metaType);
@@ -147,7 +162,7 @@ public class ExcelCellStyleUtil {
             cellMap.put("C_" + rowspan + "_" + colspan + "_" + metaType, cs);
         }
         return cs;
-    }
+    }*/
 
 
 }
