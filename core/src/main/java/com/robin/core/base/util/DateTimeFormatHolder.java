@@ -57,7 +57,7 @@ public class DateTimeFormatHolder {
         return ymdFormatter.get();
     }
     public static String getYmdPattern(){
-        if(ObjectUtils.isEmpty(ymdPattern)){
+        if(ObjectUtils.isEmpty(ymdPattern.get())){
             ymdPattern.set("yyyy-MM-dd");
         }
         return ymdPattern.get();

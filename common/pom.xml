@@ -145,7 +145,7 @@
             <artifactId>poi-ooxml</artifactId>
             <optional>true</optional>
         </dependency>
-        <dependency>
+       <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-ooxml-schemas</artifactId>
             <optional>true</optional>

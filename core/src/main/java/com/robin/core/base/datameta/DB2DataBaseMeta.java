@@ -15,6 +15,7 @@
  */
 package com.robin.core.base.datameta;
 
+import com.robin.core.base.util.Const;
 import com.robin.core.sql.util.BaseSqlGen;
 import com.robin.core.sql.util.DB2SqlGen;
 
@@ -35,7 +36,7 @@ public class DB2DataBaseMeta extends BaseDataBaseMeta implements DataBaseInterfa
 	}
 	@Override
     public boolean suppportSequnce() {
-		return false;
+		return true;
 	}
 
 	@Override
@@ -57,6 +58,31 @@ public class DB2DataBaseMeta extends BaseDataBaseMeta implements DataBaseInterfa
     public BaseSqlGen getSqlGen() {
 		return DB2SqlGen.getInstance();
 	}
+	@Override
+	public String getSqlNextSequenceValue(String sequenceName) {
+		return "SELECT NEXT VALUE FOR " + sequenceName + " FROM SYSIBM.SYSDUMMY1";
+	}
 
-
+	@Override
+	public String getSqlCurrentSequenceValue(String sequenceName) {
+		return "SELECT PREVIOUS VALUE FOR " + sequenceName + " FROM SYSIBM.SYSDUMMY1";
+	}
+	@Override
+	public String getSqlSequenceExists(String sequenceName){
+		if (sequenceName.contains(".")) {
+			return "SELECT * FROM SYSCAT.SEQUENCES WHERE SEQSCHEMA = '"
+					+ sequenceName.substring(0, sequenceName.indexOf('.')).toUpperCase()
+					+ "' AND SEQNAME = '"
+					+ sequenceName
+					.substring(sequenceName.indexOf('.') + 1, sequenceName.length())
+					.toUpperCase()
+					+ "'";
+		} else {
+			return "SELECT * FROM SYSCAT.SEQUENCES WHERE SEQNAME = '" + sequenceName.toUpperCase() + "'";
+		}
+	}
+	@Override
+	public String getTruncateTableStatement(String tableName) {
+		return Const.SQL_ALTERTABLE +tableName+" ACTIVATE NOT LOGGED INITIALLY WITH EMPTY TABLE";
+	}
 }

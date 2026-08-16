@@ -245,6 +245,7 @@ public class Const {
 
     public static final String MRFRAME_YARN = "yarn";
     public static final String SQL_SELECT = "SELECT ";
+    public static final String SQL_ALTERTABLE="ALTER TABLE ";
     public static final String SQL_UPDATE = "UPDATE ";
     public static final String SQL_AS = " AS ";
     public static final String SQL_FROM = " FROM ";

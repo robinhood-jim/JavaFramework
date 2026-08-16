@@ -53,7 +53,7 @@ public class ExcelCellStyleUtil {
                 cs.setDataFormat(HSSFDataFormat.getBuiltinFormat("0.00"));
                 break;
             case DATE:
-                DateTimeFormatHolder.getTimestampFormatter();
+                DateTimeFormatHolder.getYmdFormatter();
                 cs.setDataFormat(wb.getCreationHelper().createDataFormat().getFormat(DateTimeFormatHolder.getYmdPattern()));
                 break;
             case TIMESTAMP:

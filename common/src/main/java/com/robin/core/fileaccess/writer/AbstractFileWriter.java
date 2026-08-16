@@ -50,6 +50,7 @@ public abstract class AbstractFileWriter implements IResourceWriter {
 	protected String identifier;
 	protected boolean useBufferedWriter=false;
 	protected boolean useRawOutputStream=false;
+	protected boolean encounterError=false;
 
 	public AbstractFileWriter(){
 
@@ -85,7 +86,12 @@ public abstract class AbstractFileWriter implements IResourceWriter {
 
 	@Override
 	public void writeRecord(List<Object> map) throws IOException, OperationNotSupportedException {
-		writeRecord(wrapListToMap(map));
+		try {
+			writeRecord(wrapListToMap(map));
+		}catch (Exception ex){
+			encounterError=true;
+			throw  ex;
+		}
 	}
 	
 	protected Map<String, Object> wrapListToMap(List<Object> list){
@@ -125,6 +131,9 @@ public abstract class AbstractFileWriter implements IResourceWriter {
 	public void close() throws IOException{
 		if(writer!=null){
 			writer.close();
+		}
+		if(!encounterError) {
+			finishWrite();
 		}
 		accessUtil.finishWrite(out);
 		accessUtil.finishReadOrWrite();

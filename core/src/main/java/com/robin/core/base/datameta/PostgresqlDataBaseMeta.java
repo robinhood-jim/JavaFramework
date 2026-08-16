@@ -35,7 +35,7 @@ public class PostgresqlDataBaseMeta extends BaseDataBaseMeta{
 
 	@Override
     public boolean suppportSequnce() {
-		return false;
+		return true;
 	}
 
 	@Override
@@ -58,4 +58,19 @@ public class PostgresqlDataBaseMeta extends BaseDataBaseMeta{
 		return PostgreSqlSqlGen.getInstance();
 	}
 
+	@Override
+	public String getSqlCurrentSequenceValue(String sequenceName) {
+		return "SELECT currval('" + sequenceName + "')";
+	}
+	@Override
+	public String getSqlNextSequenceValue(String sequenceName) {
+		return "SELECT nextval('" + sequenceName + "')";
+	}
+
+	@Override
+	public String getSqlSequenceExists(String sequenceName) {
+		return "SELECT relname AS sequence_name FROM pg_catalog.pg_statio_all_sequences WHERE relname = '"
+				+ sequenceName.toLowerCase()
+				+ "'";
+	}
 }

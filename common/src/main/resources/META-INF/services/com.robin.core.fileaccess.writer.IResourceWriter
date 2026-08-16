@@ -1,4 +1,0 @@
-com.robin.core.fileaccess.writer.JsonFileWriter
-com.robin.core.fileaccess.writer.PlainTextFileWriter
-com.robin.core.fileaccess.writer.XmlFileWriter
-com.robin.core.fileaccess.writer.XlsxFileWriter

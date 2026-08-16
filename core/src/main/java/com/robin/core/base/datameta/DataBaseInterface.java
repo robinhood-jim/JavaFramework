@@ -15,6 +15,8 @@
  */
 package com.robin.core.base.datameta;
 
+import com.robin.core.fileaccess.meta.DataSetColumnMeta;
+
 import java.util.List;
 
 public interface DataBaseInterface {
@@ -23,9 +25,9 @@ public interface DataBaseInterface {
 	boolean suppportSequnce();
 	boolean supportAutoInc();
 	int getDefaultDatabasePort();
-	String getSQLNextSequenceValue(String sequenceName);
-	String getSQLCurrentSequenceValue(String sequenceName);
-	String getSQLSequenceExists(String sequenceName);
+	String getSqlNextSequenceValue(String sequenceName);
+	String getSqlCurrentSequenceValue(String sequenceName);
+	String getSqlSequenceExists(String sequenceName);
 	boolean supportsSchemas();
 	List<DataBaseTableMeta> listAllTable(String schema) throws Exception;
 	String getAddColumnStatement(String tablename, String schema,DataBaseColumnMeta v);
@@ -33,4 +35,7 @@ public interface DataBaseInterface {
 	DataBaseParam getParam();
 	String getUrlTemplate();
 	String getCatalog(String schema);
+	String getTruncateTableStatement(String tableName);
+	String getFieldDefinition(DataSetColumnMeta meta);
+	String getDropColumnStatement(String tableName,DataSetColumnMeta columnMeta);
 }

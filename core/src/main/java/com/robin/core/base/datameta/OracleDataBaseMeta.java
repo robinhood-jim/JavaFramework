@@ -19,6 +19,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import com.robin.core.base.util.Const;
 import com.robin.core.sql.util.BaseSqlGen;
 import com.robin.core.sql.util.OracleSqlGen;
 import org.apache.commons.lang3.StringUtils;
@@ -104,5 +105,33 @@ public class OracleDataBaseMeta extends BaseDataBaseMeta implements DataBaseInte
 			builder.append(")");
 		}
 		return builder.toString();
+	}
+	@Override
+	public String getSqlNextSequenceValue(String sequenceName) {
+		return Const.SQL_SELECT+sequenceName+".currval from DUAL";
+	}
+
+	@Override
+	public String getSqlCurrentSequenceValue(String sequenceName) {
+		return Const.SQL_SELECT+sequenceName+".nextval from DUAL";
+	}
+	@Override
+	public String getSqlSequenceExists(String sequenceName){
+		int dotPos = sequenceName.indexOf('.');
+		String sql = "";
+		if (dotPos == -1) {
+			sql =
+					"SELECT * FROM USER_SEQUENCES WHERE SEQUENCE_NAME = '" + sequenceName.toUpperCase() + "'";
+		} else {
+			String schemaName = sequenceName.substring(0, dotPos);
+			String seqName = sequenceName.substring(dotPos + 1);
+			sql =
+					"SELECT * FROM ALL_SEQUENCES WHERE SEQUENCE_NAME = '"
+							+ seqName.toUpperCase()
+							+ "' AND SEQUENCE_OWNER = '"
+							+ schemaName.toUpperCase()
+							+ "'";
+		}
+		return sql;
 	}
 }

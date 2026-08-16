@@ -34,7 +34,7 @@ public class SqlserverDataBaseMeta extends BaseDataBaseMeta {
 
 	@Override
     public boolean suppportSequnce() {
-		return false;
+		return true;
 	}
 
 	@Override
@@ -59,5 +59,18 @@ public class SqlserverDataBaseMeta extends BaseDataBaseMeta {
 	@Override
 	public String getCatalog(String schema) {
 		return schema;
+	}
+	public String getSqlNextSequenceValue(String sequenceName) {
+		return String.format("SELECT NEXT VALUE FOR %s", sequenceName);
+	}
+
+	@Override
+	public String getSqlCurrentSequenceValue(String sequenceName) {
+		return String.format("SELECT current_value FROM sys.sequences WHERE name = '%s'", sequenceName);
+	}
+
+	@Override
+	public String getSqlSequenceExists(String sequenceName) {
+		return String.format("SELECT 1 FROM sys.sequences WHERE name = '%s'", sequenceName);
 	}
 }

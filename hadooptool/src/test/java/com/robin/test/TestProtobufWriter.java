@@ -1,11 +1,13 @@
 package com.robin.test;
 
 
+import com.robin.comm.fileaccess.writer.ParquetFileWriter;
 import com.robin.core.base.dao.SimpleJdbcDao;
 import com.robin.core.base.datameta.BaseDataBaseMeta;
 import com.robin.core.base.datameta.DataBaseMetaFactory;
 import com.robin.core.base.datameta.DataBaseParam;
 import com.robin.core.base.util.Const;
+import com.robin.core.base.util.StringUtils;
 import com.robin.core.fileaccess.iterator.IResourceIterator;
 import com.robin.core.fileaccess.iterator.TextFileIteratorFactory;
 import com.robin.core.fileaccess.meta.DataCollectionMeta;
@@ -23,7 +25,9 @@ import java.io.FileInputStream;
 import java.sql.Connection;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 public class TestProtobufWriter extends TestCase {
     private Logger logger = LoggerFactory.getLogger(TestProtobufWriter.class);
@@ -88,6 +92,33 @@ public class TestProtobufWriter extends TestCase {
         }catch (Exception ex){
             logger.error("{}",ex);
         }
+    }
+    @Test
+    public void TestGen(){
+        DataCollectionMeta.Builder builder=DataCollectionMeta.Builder.newBuilder();
+        builder.fsType("LOCAL").resPath("file:///f:/bigdata4.proto")
+                .addColumn("id", Const.CLASSTYPE.LONG).addColumn("name", Const.CLASSTYPE.STRING)
+                .addColumn("description", Const.CLASSTYPE.STRING).addColumn("sno", Const.CLASSTYPE.INTEGER)
+                .addColumn("price", Const.CLASSTYPE.DOUBLE).addColumn("amount", Const.CLASSTYPE.INTEGER).addColumn("type", Const.CLASSTYPE.INTEGER);
+        DataCollectionMeta meta=builder.build();
+        Random random=new Random(123123L);
+        Map<String,Object> valueMap=new HashMap<>();
+        try(AbstractFileWriter writer=new ParquetFileWriter(meta)){
+            writer.beginWrite();
+            for(long i=0;i<10000L;i++){
+                valueMap.put("id",i);
+                valueMap.put("name", StringUtils.generateRandomChar(8));
+                valueMap.put("description",StringUtils.generateRandomChar(8));
+                valueMap.put("sno",random.nextInt(3)+1);
+                valueMap.put("price",random.nextDouble()*100);
+                valueMap.put("amout",random.nextInt(100));
+                valueMap.put("type",random.nextInt(3)+1);
+                writer.writeRecord(valueMap);
+            }
+        }catch (Exception ex){
+            ex.printStackTrace();
+        }
+
     }
 
 }

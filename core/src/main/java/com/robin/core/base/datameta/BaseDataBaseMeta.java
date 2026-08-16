@@ -15,7 +15,10 @@
  */
 package com.robin.core.base.datameta;
 
+import com.robin.core.base.util.Const;
 import com.robin.core.convert.util.ConvertUtil;
+import com.robin.core.fileaccess.meta.DataCollectionMeta;
+import com.robin.core.fileaccess.meta.DataSetColumnMeta;
 import com.robin.core.sql.util.BaseSqlGen;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -73,12 +76,12 @@ public abstract class BaseDataBaseMeta implements DataBaseInterface, Serializabl
 		}
 	}
 	@Override
-	public String getSQLNextSequenceValue(String sequenceName) {
+	public String getSqlNextSequenceValue(String sequenceName) {
 		return null;
 	}
 
 	@Override
-	public String getSQLCurrentSequenceValue(String sequenceName) {
+	public String getSqlCurrentSequenceValue(String sequenceName) {
 		return null;
 	}
 	@Override
@@ -87,7 +90,7 @@ public abstract class BaseDataBaseMeta implements DataBaseInterface, Serializabl
 	}
 
 	@Override
-	public String getSQLSequenceExists(String sequenceName) {
+	public String getSqlSequenceExists(String sequenceName) {
 		return null;
 	}
 	public abstract BaseSqlGen getSqlGen();
@@ -153,4 +156,58 @@ public abstract class BaseDataBaseMeta implements DataBaseInterface, Serializabl
 		return builder.toString();
 	}
 
+	@Override
+	public String getTruncateTableStatement(String tableName) {
+		return "TRUNCATE "+tableName;
+	}
+	public String getAddColumnStatement(String tableName, DataSetColumnMeta columnMeta){
+		return Const.SQL_ALTERTABLE+tableName+" ADD COLUMN "+getFieldDefinition(columnMeta);
+	}
+	public String getDropColumnStatement(String tableName,DataSetColumnMeta columnMeta){
+		return Const.SQL_ALTERTABLE+tableName+" DROP ("+columnMeta.getColumnCode()+");";
+	}
+	public String getFieldDefinition(DataSetColumnMeta meta){
+		StringBuilder builder=new StringBuilder(meta.getColumnCode()).append(' ');
+		switch (meta.getColumnType()){
+			case DATE:
+			case TIMESTAMP:
+				builder.append("TIMESTAMP");
+				break;
+			case INTEGER:
+				builder.append("INTEGER");
+				break;
+			case FLOAT:
+				builder.append("FLOAT");
+				break;
+			case LONG:
+				builder.append("BIGINT");
+				break;
+			case DOUBLE:
+			case DECIMAL:
+			case NUMERIC:
+				builder.append("NUMERIC(").append(meta.getScale()).append(",").append(meta.getPrecise()).append(")");
+				break;
+			case STRING:
+				builder.append("VARCHAR(").append(meta.getLength()==null?"32":String.valueOf(meta.getLength()));
+				break;
+			case BOOLEAN:
+				builder.append("CHAR(1)");
+				break;
+			case CLOB:
+				builder.append("CLOB");
+				break;
+			case BLOB:
+				builder.append("BLOB");
+				break;
+		}
+		if(meta.isIncrement()){
+			builder.append(" IDENTITY");
+		}
+		if(meta.isPrimary()){
+			builder.append(" NOT NULL PRIMARY KEY");
+		}else if(meta.isRequired()){
+			builder.append(" NOT NULL");
+		}
+		return builder.toString();
+	}
 }
