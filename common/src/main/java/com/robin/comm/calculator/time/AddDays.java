@@ -16,13 +16,13 @@ public class AddDays extends AbstractCalculator {
     public AddDays(){
         functionName="ADDDAYS";
     }
-    public AddDays(DataCollectionMeta collectionMeta,String[] parameters){
-        super(collectionMeta,parameters);
+    public AddDays(DataCollectionMeta collectionMeta){
+        super(collectionMeta);
         functionName="ADDDAYS";
     }
 
     @Override
-    public Pair<Const.CLASSTYPE, Object> doCalculator(Map<String, Object> inputObj) {
+    public Pair<Const.CLASSTYPE, Object> doCalculator(Map<String, Object> inputObj,String[] parameters) {
         setInput(inputObj);
         LocalDateTime dateTime=null;
         Object originTime=getValue(parameters[0]);

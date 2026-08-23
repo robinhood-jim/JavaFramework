@@ -12,17 +12,18 @@ public class Sin extends AbstractCalculator {
     public Sin(){
         functionName="SIN";
     }
-    public Sin(DataCollectionMeta collectionMeta, String[] parameters) {
-        super(collectionMeta, parameters);
+    public Sin(DataCollectionMeta collectionMeta) {
+        super(collectionMeta);
         functionName="SIN";
-        Assert.isTrue(parameters.length==1,"one parameter required");
-        Const.CLASSTYPE metaType=getMetaTypeByPos(0);
-        Assert.isTrue(metaType== Const.CLASSTYPE.DOUBLE,"must be double column");
+
     }
 
     @Override
-    public Pair<Const.CLASSTYPE, Object> doCalculator(Map<String, Object> inputObj) {
+    public Pair<Const.CLASSTYPE, Object> doCalculator(Map<String, Object> inputObj,String[] parameters) {
         setInput(inputObj);
+        Assert.isTrue(parameters.length==1,"one parameter required");
+        Const.CLASSTYPE metaType=getMetaTypeByPos(0,parameters);
+        Assert.isTrue(metaType== Const.CLASSTYPE.DOUBLE,"must be double column");
         return Pair.of(Const.CLASSTYPE.DOUBLE,Math.sin(Double.valueOf(getValue(parameters[0]).toString())));
     }
     //public static String getFunctionName(){return "SIN";}

@@ -13,13 +13,13 @@ public class UnCap extends AbstractCalculator {
     public UnCap(){
         functionName="UN_CAP";
     }
-    public UnCap(DataCollectionMeta collectionMeta,String[] paramters){
-        super(collectionMeta,paramters);
+    public UnCap(DataCollectionMeta collectionMeta){
+        super(collectionMeta);
         functionName="UN_CAP";
     }
 
     @Override
-    public Pair<Const.CLASSTYPE, Object> doCalculator(Map<String, Object> inputObj) {
+    public Pair<Const.CLASSTYPE, Object> doCalculator(Map<String, Object> inputObj,String[] parameters) {
         setInput(inputObj);
         Object value=getValue(parameters[0]);
         String retStr=null;

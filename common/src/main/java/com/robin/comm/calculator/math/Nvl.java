@@ -12,18 +12,18 @@ public class Nvl extends AbstractCalculator {
     public Nvl(){
         functionName="NVL";
     }
-    public Nvl(DataCollectionMeta collectionMeta,String[] parameters){
-        super(collectionMeta,parameters);
+    public Nvl(DataCollectionMeta collectionMeta){
+        super(collectionMeta);
         functionName="NVL";
     }
     @Override
-    public Pair<Const.CLASSTYPE, Object> doCalculator(Map<String, Object> inputObj) {
+    public Pair<Const.CLASSTYPE, Object> doCalculator(Map<String, Object> inputObj,String[] parameters) {
         setInput(inputObj);
         for(int i=0;i<parameters.length;i++){
             if(!ObjectUtils.isEmpty(getValue(parameters[i]))){
-                return Pair.of(getMetaTypeByPos(i),getValue(parameters[i]));
+                return Pair.of(getMetaTypeByPos(i,parameters),getValue(parameters[i]));
             }
         }
-        return Pair.of(getMetaTypeByPos(0),null);
+        return Pair.of(getMetaTypeByPos(0,parameters),null);
     }
 }

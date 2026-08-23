@@ -26,7 +26,7 @@ public class CalculatorFactory {
             while(iterator.hasNext()){
                 ICalculator iCalculator=iterator.next();
                 classMap.put(iCalculator.getFunctionName(),iCalculator.getClass());
-                Constructor<? extends ICalculator> constructor1 = iCalculator.getClass().getConstructor(DataCollectionMeta.class, String[].class);
+                Constructor<? extends ICalculator> constructor1 = iCalculator.getClass().getConstructor(DataCollectionMeta.class);
                 constructorMap.put(iCalculator.getFunctionName(), constructor1);
             }
         }catch (NoSuchMethodException ex){
@@ -40,7 +40,7 @@ public class CalculatorFactory {
         Constructor<? extends ICalculator> constructor=constructorMap.getOrDefault(funcName.toUpperCase(),constructorMap.get(funcName.toLowerCase()));
         try {
             if (clazz != null) {
-                return constructor.newInstance(collectionMeta, parameters);
+                return constructor.newInstance(collectionMeta);
             }
             else {
                 throw new MissingConfigException("funcName is missing");
@@ -66,6 +66,6 @@ public class CalculatorFactory {
                 calculator.addParameterValue(parameterDefine.getParameterName(),pair.getKey(),pair.getValue());
             }
         }
-        return calculator.doCalculator(input);
+        return calculator.doCalculator(input,parameters.toArray(new String[0]));
     }
 }

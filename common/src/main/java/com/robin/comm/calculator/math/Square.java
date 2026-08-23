@@ -13,16 +13,17 @@ public class Square extends AbstractCalculator {
     public Square(){
         functionName="SQUARE";
     }
-    public Square(DataCollectionMeta collectionMeta, String[] parameters) {
-        super(collectionMeta, parameters);
+    public Square(DataCollectionMeta collectionMeta) {
+        super(collectionMeta);
         functionName="SQUARE";
-        Assert.isTrue(parameters.length==1,"one parameter required");
+
     }
 
     @Override
-    public Pair<Const.CLASSTYPE, Object> doCalculator(Map<String, Object> inputObj) {
+    public Pair<Const.CLASSTYPE, Object> doCalculator(Map<String, Object> inputObj,String[] parameters) {
         setInput(inputObj);
-        Const.CLASSTYPE metaType=getMetaTypeByPos(0);
+        Assert.isTrue(parameters.length==1,"one parameter required");
+        Const.CLASSTYPE metaType=getMetaTypeByPos(0,parameters);
         Object retValue=null;
         switch (metaType){
             case SHORT:

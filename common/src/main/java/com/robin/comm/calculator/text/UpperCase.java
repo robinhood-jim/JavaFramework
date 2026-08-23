@@ -13,13 +13,13 @@ public class UpperCase extends AbstractCalculator {
     public UpperCase(){
         functionName="UPPER";
     }
-    public UpperCase(DataCollectionMeta collectionMeta, String[] parameters) {
-        super(collectionMeta, parameters);
+    public UpperCase(DataCollectionMeta collectionMeta) {
+        super(collectionMeta);
         functionName="UPPER";
     }
 
     @Override
-    public Pair<Const.CLASSTYPE, Object> doCalculator(Map<String, Object> inputObj) {
+    public Pair<Const.CLASSTYPE, Object> doCalculator(Map<String, Object> inputObj,String[] parameters) {
         setInput(inputObj);
         Object value=getValue(parameters[0]);
         String retStr=null;

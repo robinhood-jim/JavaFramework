@@ -13,18 +13,19 @@ public class Round extends AbstractCalculator {
     public Round(){
         functionName="ROUND";
     }
-    public Round(DataCollectionMeta collectionMeta, String[] parameters) {
-        super(collectionMeta, parameters);
+    public Round(DataCollectionMeta collectionMeta) {
+        super(collectionMeta);
         functionName="ROUND";
-        if(parameters.length==2){
-            scale=Integer.parseInt(parameters[1]);
-        }
+
     }
 
     @Override
-    public Pair<Const.CLASSTYPE, Object> doCalculator(Map<String, Object> inputObj) {
+    public Pair<Const.CLASSTYPE, Object> doCalculator(Map<String, Object> inputObj,String[] parameters) {
         setInput(inputObj);
-        Const.CLASSTYPE metaType=getMetaTypeByPos(0);
+        if(parameters.length==2){
+            scale=Integer.parseInt(parameters[1]);
+        }
+        Const.CLASSTYPE metaType=getMetaTypeByPos(0,parameters);
         Object retValue=null;
         Const.CLASSTYPE retType= Const.CLASSTYPE.INTEGER;
         switch (metaType){

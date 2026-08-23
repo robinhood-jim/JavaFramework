@@ -13,16 +13,17 @@ public class Multiply extends AbstractCalculator {
         functionName="MULTIPLY";
     }
 
-    public Multiply(DataCollectionMeta collectionMeta, String[] parameters) {
-        super(collectionMeta, parameters);
+    public Multiply(DataCollectionMeta collectionMeta) {
+        super(collectionMeta);
         functionName="MULTIPLY";
-        Assert.isTrue(parameters.length==2,"Add parameter must be two");
+
     }
 
     @Override
-    public Pair<Const.CLASSTYPE, Object> doCalculator(Map<String, Object> inputObj) {
+    public Pair<Const.CLASSTYPE, Object> doCalculator(Map<String, Object> inputObj,String[] parameters) {
         setInput(inputObj);
-        Const.CLASSTYPE metaType=getMetaTypeByPos(0);
+        Assert.isTrue(parameters.length==2,"Add parameter must be two");
+        Const.CLASSTYPE metaType=getMetaTypeByPos(0,parameters);
         Const.CLASSTYPE retMetaType= Const.CLASSTYPE.LONG;
         Object retValue=null;
         switch (metaType){
@@ -36,7 +37,6 @@ public class Multiply extends AbstractCalculator {
                 retMetaType= Const.CLASSTYPE.LONG;
                 break;
             case FLOAT:
-
             case DOUBLE:
                 retValue=Double.parseDouble(getValue(parameters[0]).toString())*Double.parseDouble(getValue(parameters[1]).toString());
                 retMetaType= Const.CLASSTYPE.DOUBLE;

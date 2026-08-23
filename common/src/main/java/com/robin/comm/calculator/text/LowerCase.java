@@ -13,13 +13,13 @@ public class LowerCase extends AbstractCalculator {
     public LowerCase(){
         functionName="LOWERCASE";
     }
-    public LowerCase(DataCollectionMeta collectionMeta,String[] parameters){
-        super(collectionMeta,parameters);
+    public LowerCase(DataCollectionMeta collectionMeta){
+        super(collectionMeta);
         functionName="LOWERCASE";
     }
 
     @Override
-    public Pair<Const.CLASSTYPE, Object> doCalculator(Map<String, Object> inputObj) {
+    public Pair<Const.CLASSTYPE, Object> doCalculator(Map<String, Object> inputObj,String[] parameters) {
         setInput(inputObj);
         Object value=getValue(parameters[0]);
         String retStr=null;

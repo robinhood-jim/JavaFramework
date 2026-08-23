@@ -13,16 +13,17 @@ public class Cos extends AbstractCalculator {
         functionName="COS";
     }
 
-    public Cos(DataCollectionMeta meta,String[] parameters){
-        super(meta,parameters);
+    public Cos(DataCollectionMeta meta){
+        super(meta);
         functionName="COS";
-        Assert.isTrue(parameters.length==1,"one parameter required");
-        Const.CLASSTYPE metaType=getMetaTypeByPos(0);
-        Assert.isTrue(metaType== Const.CLASSTYPE.DOUBLE,"must be double column");
+
     }
     @Override
-    public Pair<Const.CLASSTYPE, Object> doCalculator(Map<String, Object> inputObj) {
+    public Pair<Const.CLASSTYPE, Object> doCalculator(Map<String, Object> inputObj,String[] parameters) {
         setInput(inputObj);
+        Assert.isTrue(parameters.length==1,"one parameter required");
+        Const.CLASSTYPE metaType=getMetaTypeByPos(0,parameters);
+        Assert.isTrue(metaType== Const.CLASSTYPE.DOUBLE,"must be double column");
         return Pair.of(Const.CLASSTYPE.DOUBLE,Math.cos(Double.valueOf(getValue(parameters[0]).toString())));
     }
     //public static String getFunctionName(){return "COS";}

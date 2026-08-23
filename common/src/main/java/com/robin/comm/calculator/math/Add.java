@@ -12,16 +12,16 @@ public class Add extends AbstractCalculator {
     public Add(){
         functionName="ADD";
     }
-    public Add(DataCollectionMeta collectionMeta, String[] parameters) {
-        super(collectionMeta, parameters);
+    public Add(DataCollectionMeta collectionMeta) {
+        super(collectionMeta);
         functionName="ADD";
-        Assert.isTrue(parameters.length==2,"Add parameter must be two");
     }
 
     @Override
-    public Pair<Const.CLASSTYPE, Object> doCalculator(Map<String, Object> inputObj) {
+    public Pair<Const.CLASSTYPE, Object> doCalculator(Map<String, Object> inputObj,String[] parameters) {
         setInput(inputObj);
-        Const.CLASSTYPE metaType=getMetaTypeByPos(0);
+        Assert.isTrue(parameters.length==2,"Add parameter must be two");
+        Const.CLASSTYPE metaType=getMetaTypeByPos(0,parameters);
         Object retValue=null;
         switch (metaType){
             case SHORT:

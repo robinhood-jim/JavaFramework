@@ -6,7 +6,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import java.util.Map;
 
 public interface ICalculator {
-    Pair<Const.CLASSTYPE,Object> doCalculator(Map<String,Object> inputObj);
+    Pair<Const.CLASSTYPE,Object> doCalculator(Map<String,Object> inputObj,String[] parameters);
     String getFunctionName();
     void clearTemp();
     Object getValue(String parameterName);

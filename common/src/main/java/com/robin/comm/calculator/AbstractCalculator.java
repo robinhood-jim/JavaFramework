@@ -16,16 +16,14 @@ public abstract class AbstractCalculator implements ICalculator {
     protected Map<String,Object> inputMap;
     protected Map<String,Object> calculateMap=new HashMap<>();
     protected Map<String, DataSetColumnMeta> columnMetaMap;
-    protected String[] parameters;
     protected String functionName;
     public AbstractCalculator(){
 
     }
-    public AbstractCalculator(DataCollectionMeta collectionMeta,String[] parameters){
+    public AbstractCalculator(DataCollectionMeta collectionMeta){
         if( collectionMeta!=null && !CollectionUtils.isEmpty(collectionMeta.getColumnList())){
             columnMetaMap=collectionMeta.getColumnList().stream().collect(Collectors.toMap(DataSetColumnMeta::getColumnCode, Function.identity()));
         }
-        this.parameters=parameters;
     }
     protected void setInput(Map<String,Object> input){
         inputMap=input;
@@ -45,7 +43,7 @@ public abstract class AbstractCalculator implements ICalculator {
         calculateMap.putIfAbsent(parameterName,value);
 
     }
-    protected Const.CLASSTYPE getMetaTypeByPos(int pos){
+    protected Const.CLASSTYPE getMetaTypeByPos(int pos,String[] parameters){
         if(pos<parameters.length){
             DataSetColumnMeta columnMeta=columnMetaMap.getOrDefault(parameters[pos],null);
             if(columnMeta!=null){

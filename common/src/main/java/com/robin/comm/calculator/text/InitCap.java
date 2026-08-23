@@ -13,12 +13,12 @@ public class InitCap extends AbstractCalculator {
     public InitCap(){
         functionName="INIT_CAP";
     }
-    public InitCap(DataCollectionMeta collectionMeta,String[] paramters){
-        super(collectionMeta,paramters);
+    public InitCap(DataCollectionMeta collectionMeta){
+        super(collectionMeta);
         functionName="INIT_CAP";
     }
     @Override
-    public Pair<Const.CLASSTYPE, Object> doCalculator(Map<String, Object> inputObj) {
+    public Pair<Const.CLASSTYPE, Object> doCalculator(Map<String, Object> inputObj,String[] parameters) {
         setInput(inputObj);
         Object value=getValue(parameters[0]);
         String retStr=null;

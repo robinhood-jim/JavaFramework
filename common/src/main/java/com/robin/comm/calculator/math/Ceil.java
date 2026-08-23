@@ -13,16 +13,17 @@ public class Ceil  extends AbstractCalculator {
         functionName="CEIL";
     }
 
-    public Ceil(DataCollectionMeta collectionMeta, String[] parameters) {
-        super(collectionMeta, parameters);
+    public Ceil(DataCollectionMeta collectionMeta) {
+        super(collectionMeta);
         functionName="CEIL";
-        Assert.isTrue(parameters.length==1,"one parameter required");
+
     }
 
     @Override
-    public Pair<Const.CLASSTYPE, Object> doCalculator(Map<String, Object> inputObj) {
+    public Pair<Const.CLASSTYPE, Object> doCalculator(Map<String, Object> inputObj,String[] parameters) {
         setInput(inputObj);
-        Const.CLASSTYPE metaType=getMetaTypeByPos(0);
+        Assert.isTrue(parameters.length==1,"one parameter required");
+        Const.CLASSTYPE metaType=getMetaTypeByPos(0,parameters);
         Object retValue=null;
         Double ceilVal=Math.ceil(Double.parseDouble(getValue(parameters[0]).toString()));
         switch (metaType){

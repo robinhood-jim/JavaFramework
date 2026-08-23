@@ -13,18 +13,18 @@ public class Floor extends AbstractCalculator {
         functionName="FLOOR";
     }
 
-    public Floor(DataCollectionMeta collectionMeta, String[] parameters) {
-        super(collectionMeta, parameters);
+    public Floor(DataCollectionMeta collectionMeta) {
+        super(collectionMeta);
         functionName="FLOOR";
-        Assert.isTrue(parameters.length==1,"one parameter required");
+
     }
 
     @Override
-    public Pair<Const.CLASSTYPE, Object> doCalculator(Map<String, Object> inputObj) {
+    public Pair<Const.CLASSTYPE, Object> doCalculator(Map<String, Object> inputObj,String[] parameters) {
         setInput(inputObj);
-
+        Assert.isTrue(parameters.length==1,"one parameter required");
         Object retValue=null;
-        Const.CLASSTYPE metaType=getMetaTypeByPos(0);
+        Const.CLASSTYPE metaType=getMetaTypeByPos(0,parameters);
         double floorVal=Math.floor(Double.parseDouble(getValue(parameters[0]).toString()));
         switch (metaType){
             case SHORT:

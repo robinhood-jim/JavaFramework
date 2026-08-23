@@ -11,33 +11,32 @@ import java.util.List;
 import java.util.Map;
 
 public class Percentile extends AbstractCalculator {
-    List<Double> inputValues;
+    List<Double> inputValues=new ArrayList<>();
     org.apache.commons.math3.stat.descriptive.rank.Percentile percentile;
     public Percentile(){
         functionName="PERCENTILE";
     }
 
-    public Percentile(DataCollectionMeta collectionMeta, String[] parameters) {
-        super(collectionMeta, parameters);
+    public Percentile(DataCollectionMeta collectionMeta) {
+        super(collectionMeta);
         functionName="PERCENTILE";
-        inputValues=new ArrayList<>(parameters.length);
+
         percentile=new org.apache.commons.math3.stat.descriptive.rank.Percentile();
     }
 
     @Override
-    public Pair<Const.CLASSTYPE, Object> doCalculator(Map<String, Object> inputObj) {
+    public Pair<Const.CLASSTYPE, Object> doCalculator(Map<String, Object> inputObj,String[] parameters) {
         setInput(inputObj);
         inputValues.clear();
         for(int i=0;i<parameters.length;i++){
-            inputValues.add(getParameterValue(0));
+            inputValues.add(getParameterValue(0,parameters));
         }
-
         double p50=percentile.evaluate(inputValues.stream().mapToDouble(Double::doubleValue).toArray(),50);
         return Pair.of(Const.CLASSTYPE.DOUBLE,p50);
 
     }
-    private double getParameterValue(int pos){
-        Const.CLASSTYPE metaType=getMetaTypeByPos(0);
+    private double getParameterValue(int pos,String[] parameters){
+        Const.CLASSTYPE metaType=getMetaTypeByPos(0,parameters);
         Object originValue=getValue(parameters[pos]);
         double retValue = 0.0;
         if(!ObjectUtils.isEmpty(originValue)) {

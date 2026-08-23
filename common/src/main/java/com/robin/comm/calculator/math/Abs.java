@@ -13,16 +13,15 @@ public class Abs  extends AbstractCalculator {
         functionName="ABS";
     }
 
-    public Abs(DataCollectionMeta collectionMeta, String[] parameters) {
-        super(collectionMeta, parameters);
+    public Abs(DataCollectionMeta collectionMeta) {
+        super(collectionMeta);
         functionName="ABS";
-        Assert.isTrue(parameters.length==1,"one parameter required");
     }
-
     @Override
-    public Pair<Const.CLASSTYPE, Object> doCalculator(Map<String, Object> inputObj) {
+    public Pair<Const.CLASSTYPE, Object> doCalculator(Map<String, Object> inputObj,String[] parameters) {
         setInput(inputObj);
-        Const.CLASSTYPE metaType=getMetaTypeByPos(0);
+        Assert.isTrue(parameters.length==1,"one parameter required");
+        Const.CLASSTYPE metaType=getMetaTypeByPos(0,parameters);
         Object retValue=null;
         switch (metaType){
             case SHORT:

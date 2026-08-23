@@ -15,16 +15,17 @@ public class Md5 extends AbstractCalculator {
         functionName="MD5";
     }
 
-    public Md5(DataCollectionMeta collectionMeta, String[] parameters) {
-        super(collectionMeta, parameters);
+    public Md5(DataCollectionMeta collectionMeta) {
+        super(collectionMeta);
         functionName="MD5";
-        Const.CLASSTYPE metaType=getMetaTypeByPos(0);
-        Assert.isTrue(metaType.equals(Const.CLASSTYPE.STRING),"");
+
     }
 
     @Override
-    public Pair<Const.CLASSTYPE, Object> doCalculator(Map<String, Object> inputObj) {
+    public Pair<Const.CLASSTYPE, Object> doCalculator(Map<String, Object> inputObj,String[] parameters) {
         setInput(inputObj);
+        Const.CLASSTYPE metaType=getMetaTypeByPos(0,parameters);
+        Assert.isTrue(metaType.equals(Const.CLASSTYPE.STRING),"");
         Object value=getValue(parameters[0]);
         if(!ObjectUtils.isEmpty(value)){
             String str= DigestUtil.md5Hex(value.toString());
