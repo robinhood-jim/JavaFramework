@@ -21,6 +21,7 @@ import weka.core.Instances;
 import weka.filters.Filter;
 import weka.filters.unsupervised.instance.RemovePercentage;
 
+import java.sql.Timestamp;
 import java.util.*;
 
 //Weka Utils return Instances by meta define
@@ -73,7 +74,12 @@ public class WekaUtils {
                             } else if (setColumnMeta.getColumnType().equals(Const.CLASSTYPE.LONG) || setColumnMeta.getColumnType().equals(Const.CLASSTYPE.INTEGER) || setColumnMeta.getColumnType().equals(Const.CLASSTYPE.DECIMAL) || setColumnMeta.getColumnType().equals(Const.CLASSTYPE.DOUBLE)) {
                                 instance.setValue(attributeMap.get(setColumnMeta.getColumnName()), Double.valueOf(map.get(setColumnMeta.getColumnName()).toString()));
                             } else if (setColumnMeta.getColumnType().equals(Const.CLASSTYPE.DATE) || setColumnMeta.getColumnType().equals(Const.CLASSTYPE.TIMESTAMP)) {
-
+                                Object value=map.get(setColumnMeta.getColumnName());
+                                if(value.getClass().isAssignableFrom(java.util.Date.class)){
+                                    instance.setValue(attributeMap.get(setColumnMeta.getColumnName()),((java.util.Date)value).getTime());
+                                }else if(value.getClass().isAssignableFrom(Timestamp.class)){
+                                    instance.setValue(attributeMap.get(setColumnMeta.getColumnName()),((Timestamp)value).getTime());
+                                }
                             } else {
                                 instance.setValue(attributeMap.get(setColumnMeta.getColumnName()), map.get(setColumnMeta.getColumnName()).toString());
                             }

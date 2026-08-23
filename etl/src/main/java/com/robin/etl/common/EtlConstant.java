@@ -99,6 +99,7 @@ public class EtlConstant {
     public static final String PARAM_DB_USER="db.username";
     public static final String PARAM_DB_PASSWORD="db.password";
     public static final String PARAM_DB_TYPE="db.type";
+    public static final String PARAM_DB_TABLENAME="db.tableName";
     public static final String PARAM_DATASOURCE_ID="dataSourceId";
     public static final String PARAM_STORAGE_TYPE="storageType";
     public static final String PARAM_STORAGE_PARAMETERS="storageParameters";
@@ -113,6 +114,10 @@ public class EtlConstant {
     public static final String PARAM_AGGREGATES="aggregates";
     public static final String AGG_COUNT_FIELD="$AGGCOUNTFIELD";
     public static final String PARAM_INPUTSOURCEMETA = "$inputMeta";
+    public static final String PARAM_OUTPUTSOURCEMETA = "$outputMeta";
+    public static final String PARAM_FUNCTIONCALL="functionCall";
+    public static final String PARAM_TARGETFIELD="targetField";
+    public static final String PARAM_SEPARATOR="separator";
 
 
     public static final List<String> WORKNODECMDPARAM= Arrays.asList(new String[]{"command","operation","jobId","taskId","deplayTs"});

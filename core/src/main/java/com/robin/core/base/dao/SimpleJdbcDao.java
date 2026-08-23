@@ -21,6 +21,7 @@ import com.robin.core.base.datameta.DataBaseUtil;
 import com.robin.core.base.exception.DAOException;
 import com.robin.core.base.util.Const;
 import com.robin.core.base.util.LicenseUtils;
+import com.robin.core.convert.util.ConvertUtil;
 import com.robin.core.query.extractor.ResultSetOperationExtractor;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.QueryRunner;
@@ -43,6 +44,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Stream;
 
 
 @SuppressWarnings("unused")
@@ -580,6 +583,56 @@ public class SimpleJdbcDao {
             }
         }
         return retnum;
+    }
+    public static <T> long simpleBatch(Connection conn,Class<T> clazz, String insertSql, List<String> valueFields, Stream<T> stream,long batchSize) throws DAOException{
+        QueryRunner qRunner = new QueryRunner();
+        boolean inputMap=clazz.isAssignableFrom(Map.class);
+        Map<Integer,Boolean> stopFlagMap=new HashMap<>();
+        stopFlagMap.put(1,false);
+        AtomicLong count=new AtomicLong(0L);
+        try(PreparedStatement stmt =  conn.prepareStatement(insertSql)) {
+            conn.setAutoCommit(false);
+            stream.takeWhile(x->!stopFlagMap.get(1)).forEach(m->{
+                Map<String, Object> sourceMap =null;
+                List<Object> value=new ArrayList<>();
+                try {
+                    if (inputMap) {
+                        sourceMap = (Map<String, Object>) m;
+                    } else {
+                        sourceMap = new HashMap<>();
+                        ConvertUtil.objectToMapObj(m, sourceMap);
+                    }
+                    for (String field : valueFields) {
+                        value.add(sourceMap.get(field));
+                    }
+                    qRunner.fillStatement(stmt, value);
+                    stmt.addBatch();
+                    count.incrementAndGet();
+                    if(count.get() % batchSize==0){
+                        stmt.executeBatch();
+                        stmt.clearBatch();
+                    }
+                }catch (Exception e1){
+                    stopFlagMap.put(1,true);
+                }
+            });
+            if(!stopFlagMap.get(1)){
+                if(count.get() % batchSize!=0) {
+                    stmt.executeBatch();
+                }
+                conn.commit();
+                return count.get();
+            }else{
+                throw new DAOException("Stream with error");
+            }
+        }catch (SQLException ex){
+            try {
+                conn.rollback();
+            } catch (Exception e) {
+                throw new DAOException(e);
+            }
+            throw new DAOException(ex);
+        }
     }
 
     public int batchUpdate(final String sql, final List<Map<String, String>> columnCfgList, final List<Map<String, String>> objList) throws DAOException {
